@@ -5,6 +5,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
+import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -101,6 +102,7 @@ public class QueryQosFactoryTest extends TestCase {
            "   <content>false</content>\n" +
            "   <local>false</local>\n" +
            "   <initialUpdate>false</initialUpdate>\n" +
+           "   <history numEntries='20' newestFirst='false'/>\n" +
            "   <filter type='myPlugin' version='1.0'>a!=100</filter>\n" +
            "   <filter type='anotherPlugin' version='1.1'><![CDATA[b<100|a[0]>10]]></filter>\n" +
            "</qos>\n";
@@ -115,6 +117,8 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", false, qos.getWantContent());
          assertEquals("", false, qos.getWantLocal());
          assertEquals("", false, qos.getWantInitialUpdate());
+         assertEquals("", 20, qos.getHistoryQos().getNumEntries());
+         assertEquals("", false, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
          assertEquals("", 2, filterArr.length);
          assertEquals("", "myPlugin", filterArr[0].getType());
@@ -144,6 +148,8 @@ public class QueryQosFactoryTest extends TestCase {
          assertEquals("", true, qos.getWantContent());
          assertEquals("", true, qos.getWantLocal());
          assertEquals("", true, qos.getWantInitialUpdate());
+         assertEquals("", 1, qos.getHistoryQos().getNumEntries());
+         assertEquals("", true, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
          assertTrue("", null == filterArr);
       }
@@ -184,6 +190,9 @@ public class QueryQosFactoryTest extends TestCase {
          SubscribeQos subscribeQos = new SubscribeQos(glob);
          subscribeQos.setWantContent(false);
          subscribeQos.setSubscriptionId("MyOwnSentSubscribeId");
+         HistoryQos hh = new HistoryQos(glob, 33);
+         hh.setNewestFirst(false);
+         subscribeQos.setHistoryQos(hh);
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          subscribeQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
          subscribeQos.setPersistent(true);
@@ -193,6 +202,8 @@ public class QueryQosFactoryTest extends TestCase {
 
          assertEquals("", false, qos.getWantContent());
          assertEquals("", "MyOwnSentSubscribeId", qos.getSubscriptionId());
+         assertEquals("", 33, qos.getHistoryQos().getNumEntries());
+         assertEquals("", false, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
          assertEquals("", 2, filterArr.length);
          assertEquals("", "ContentLenFilter", filterArr[0].getType());
@@ -218,11 +229,16 @@ public class QueryQosFactoryTest extends TestCase {
       try {
          GetQos getQos = new GetQos(glob);
          getQos.setWantContent(false);
+         HistoryQos hh = new HistoryQos(glob, 33);
+         hh.setNewestFirst(false);
+         getQos.setHistoryQos(hh);
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
          getQos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter2", "3.2", new Query(glob, "a<10")));
          System.out.println("GetQos: " + getQos.toXml());
          QueryQosData qos = factory.readObject(getQos.toXml());
          assertEquals("", false, qos.getWantContent());
+         assertEquals("", 33, qos.getHistoryQos().getNumEntries());
+         assertEquals("", false, qos.getHistoryQos().getNewestFirst());
          AccessFilterQos[] filterArr = qos.getAccessFilterArr();
          assertEquals("", 2, filterArr.length);
          assertEquals("", "ContentLenFilter", filterArr[0].getType());
