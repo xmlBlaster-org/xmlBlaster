@@ -328,10 +328,12 @@ public abstract class AddressBase
    }
 
    /**
+    * NOTE: This setting has precedence over all environment or command line settings
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
+    *                If you pass null the value is reset to its default setting
     */
    public final void setType(String type) {
-      if (type == null) this.type.setValue("");
+      if (type == null) this.type.setValue(this.type.getDefaultValue(), PropEntry.CREATED_BY_DEFAULT);
       else this.type.setValue(type);
    }
 
@@ -346,7 +348,7 @@ public abstract class AddressBase
     * @return A human readable address for logging only
     */
    public String getLogId() {
-      if (getRawAddress() != null && getRawAddress().length() < 50) {
+      if (getRawAddress() != null && getRawAddress().length() > 0 && getRawAddress().length() < 50) {
          return getRawAddress();
       }
       return getBootstrapUrl();
