@@ -3,14 +3,14 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.13 2002/05/03 13:46:09 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.14 2002/05/06 07:26:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
@@ -23,7 +23,30 @@ import java.util.Vector;
  * Handling of subscribe() quality of services.
  * <p />
  * QoS Informations sent from the client to the server via the subscribe() method<br />
- * They are needed to control the xmlBlaster
+ * They are needed to control xmlBlaster
+ * <p />
+ * A full example:
+ * <pre>
+ *  &lt;qos>
+ *     &lt;meta>false&lt;/meta>
+ *     &lt;content>false&lt;/content>
+ *     &lt;local>false&lt;/local>
+ *     &lt;filter type='ContentLength' version='1.0'>
+ *        8000
+ *     &lt;/filter>
+ *     &lt;filter type='ContainsChecker' version='7.1' xy='true'>
+ *        bug
+ *     &lt;/filter>
+ *     &lt;filter>
+ *        invalid filter without type
+ *     &lt;/filter>
+ *     &lt;queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+ *        &lt;callback type='EMAIL' sessionId='sd3lXjs9Fdlggh'>
+ *           et@mars.universe   &lt;!-- Sends messages to et with specified queue attributes -->
+ *        &lt;/callback>
+ *     &lt;/queue>
+ *  &lt;/qos>
+ * </pre>
  */
 public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 {
@@ -41,7 +64,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean local = true;
 
    private transient AccessFilterQos tmpFilter = null;
-   protected Vector filterVec = null;                         // To collect the filter when sax parsing
+   protected Vector filterVec = null;                      // To collect the filter when sax parsing
    protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
    private transient boolean inFilter = false;
 
@@ -183,7 +206,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
       if (name.equalsIgnoreCase("filter")) {
          inFilter = true;
-         tmpFilter = new AccessFilterQos();
+         tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
             if (filterVec == null) filterVec = new Vector();
