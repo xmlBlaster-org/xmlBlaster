@@ -29,7 +29,7 @@
          </tr>
 
          <tr>
-            <td>protocol/xmlrpc/hostname</td>
+            <td>plugin/xmlrpc/hostname</td>
             <td>localhost</td>
             <td>Specify a hostname where the XMLRPC server runs
             </td>
@@ -37,7 +37,7 @@
          </tr>
 
          <tr>
-            <td>protocol/xmlrpc/port</td>
+            <td>plugin/xmlrpc/port</td>
             <td>7607</td>
             <td>The XMLRPC server port
                 </td>
@@ -45,7 +45,7 @@
          </tr>
 
          <tr>
-            <td>protocol/xmlrpc/localHostname</td>
+            <td>plugin/xmlrpc/localHostname</td>
             <td>localhost</td>
             <td>The local address the xmlrpc is bound to. 
             Usually this is dynamically choosen by your operating system and you don't need
@@ -55,7 +55,7 @@
          </tr>
 
          <tr>
-            <td>protocol/xmlrpc/localPort</td>
+            <td>plugin/xmlrpc/localPort</td>
             <td>8900</td>
             <td>The local port the xmlrpc is bound to.
                 Default is -1 and the operating system chooses an arbitrary port.
@@ -64,7 +64,7 @@
          </tr>
 
          <tr>
-            <td>protocol/xmlrpc/debug</td>
+            <td>plugin/xmlrpc/debug</td>
             <td>false</td>
             <td>true switches debugging on
             </td>
@@ -75,7 +75,7 @@
    <configuration where="client">
       <p>The Java xmlrpc implementation on client side supports
          the same properties as the server.
-         You need to add the "dispatch/callback/" or "dispatch/clientSide/" prefix
+         You need to add the "dispatch/callback/" or "dispatch/connection/" prefix
          to the property key.<br />
          You have thes additional features on client side:
       </p>
@@ -97,7 +97,7 @@
    <see type="API">org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 05 22</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

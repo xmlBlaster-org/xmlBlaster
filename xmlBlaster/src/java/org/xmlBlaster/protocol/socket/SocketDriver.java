@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.33 2003/05/21 20:21:20 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.34 2003/05/23 09:04:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -39,10 +39,10 @@ import java.util.Iterator;
  * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
  * </pre>
  *
- * The variable protocol/socket/port (default 7607) sets the socket server port,
+ * The variable plugin/socket/port (default 7607) sets the socket server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -protocol/socket/port 9090
+ * java -jar lib/xmlBlaster.jar  -plugin/socket/port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -336,10 +336,10 @@ public class SocketDriver extends Thread implements I_Driver
     * Command line usage.
     * <p />
     * <ul>
-    *  <li><i>-protocol/socket/port</i>        The SOCKET web server port [7607]</li>
-    *  <li><i>-protocol/socket/hostname</i>    Specify a hostname where the SOCKET web server runs
+    *  <li><i>-plugin/socket/port</i>        The SOCKET web server port [7607]</li>
+    *  <li><i>-plugin/socket/hostname</i>    Specify a hostname where the SOCKET web server runs
     *                                          Default is the localhost.</li>
-    *  <li><i>-protocol/socket/backlog</i>     Queue size for incoming connection request [50]</li>
+    *  <li><i>-plugin/socket/backlog</i>     Queue size for incoming connection request [50]</li>
     *  <li><i>-dump[socket]</i>       true switches on detailed SOCKET debugging [false]</li>
     * </ul>
     * <p />
@@ -349,18 +349,18 @@ public class SocketDriver extends Thread implements I_Driver
    {
       String text = "\n";
       text += "SocketDriver options:\n";
-      text += "   -protocol/socket/port\n";
+      text += "   -plugin/socket/port\n";
       text += "                       The SOCKET server port [7607].\n";
-      text += "   -protocol/socket/hostname\n";
+      text += "   -plugin/socket/hostname\n";
       text += "                       Specify a hostname where the SOCKET server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -protocol/socket/SoTimeout\n";
+      text += "   -plugin/socket/SoTimeout\n";
       text += "                       How long may a socket read block in msec [0] (0 is forever).\n";
-      text += "   -protocol/socket/responseTimeout\n";
+      text += "   -plugin/socket/responseTimeout\n";
       text += "                       Max wait for the method return value/exception [60000] msec.\n";
-      text += "   -protocol/socket/backlog\n";
+      text += "   -plugin/socket/backlog\n";
       text += "                       Queue size for incoming connection request [50].\n";
-      text += "   -protocol/socket/threadPrio\n";
+      text += "   -plugin/socket/threadPrio\n";
       text += "                       The priority 1=min - 10=max of the listener thread [5].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";

@@ -161,7 +161,7 @@ public class SocketUrl
          this.inetAddress = java.net.InetAddress.getByName(this.hostname);
       } catch(java.net.UnknownHostException e) {
          Thread.currentThread().dumpStack();
-         String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-protocol/socket/" +
+         String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/socket/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warn(ME, txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, txt);

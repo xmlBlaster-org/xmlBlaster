@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.9 2003/05/21 20:21:39 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.10 2003/05/23 09:05:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -80,11 +80,11 @@ public class TestGetRegexFilter extends TestCase
       String[] args = new String[10];
       args[0] = "-bootstrapPort";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
-      args[2] = "-protocol/socket/port";
+      args[2] = "-plugin/socket/port";
       args[3] = "" + (serverPort-1);
-      args[4] = "-protocol/rmi/registryPort";
+      args[4] = "-plugin/rmi/registryPort";
       args[5] = "" + (serverPort-2);
-      args[6] = "-protocol/xmlrpc/port";
+      args[6] = "-plugin/xmlrpc/port";
       args[7] = "" + (serverPort-3);
       args[8] = "-MimeAccessPlugin[GnuRegexFilter][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.regex.GnuRegexFilter";

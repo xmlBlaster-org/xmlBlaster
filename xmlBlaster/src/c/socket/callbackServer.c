@@ -67,7 +67,7 @@ void initCallbackServer(callbackData *cbArgs)
       cbArgs->hostCB = serverHostName;
    }   
 
-   if (XMLBLASTER_DEBUG) printf("callbackServer: Starting callback server -dispatch/callback/protocol/socket/hostname %s -dispatch/callback/protocol/socket/port %d\n", cbArgs->hostCB, cbArgs->portCB);
+   if (XMLBLASTER_DEBUG) printf("callbackServer: Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n", cbArgs->hostCB, cbArgs->portCB);
 
    /*
     * Get a socket to work with.
@@ -208,9 +208,9 @@ int main(int argc, char** argv)
    data.portCB = 7610;
 
    for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-dispatch/callback/protocol/socket/hostname") == 0)
+      if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/hostname") == 0)
          data.hostCB = argv[++iarg];
-      else if (strcmp(argv[iarg], "-dispatch/callback/protocol/socket/port") == 0)
+      else if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/port") == 0)
          data.portCB = atoi(argv[++iarg]);
    }
 

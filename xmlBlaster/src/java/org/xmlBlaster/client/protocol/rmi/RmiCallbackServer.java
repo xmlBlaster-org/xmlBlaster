@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.24 2003/05/22 18:56:15 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.25 2003/05/23 09:04:40 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -37,9 +37,9 @@ import java.rmi.AlreadyBoundException;
  * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
  * You can specify another port or host to create/use a rmi-registry server:
  * <pre>
- *     -dispatch/callback/protocol/rmi/registryPort Specify a port number where rmiregistry listens.
+ *     -dispatch/callback/plugin/rmi/registryPort Specify a port number where rmiregistry listens.
  *                         Default is port 1099, the port 0 switches this feature off.
- *     -dispatch/callback/protocol/rmi/hostname     Specify a hostname where rmiregistry runs.
+ *     -dispatch/callback/plugin/rmi/hostname     Specify a hostname where rmiregistry runs.
  *                         Default is the localhost.
  * </pre>
  * <p />
@@ -53,7 +53,7 @@ import java.rmi.AlreadyBoundException;
  *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
  *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
  *        -Djava.rmi.server.hostname=hostname.domainname
- *        MyApp -dispatch/clientSide/protocol/rmi/registryPort 2079
+ *        MyApp -dispatch/connection/plugin/rmi/registryPort 2079
  * </pre>
  */
 public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
@@ -130,7 +130,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    {
       if (log.CALL) log.call(ME, "bindToRegistry() ...");
 
-      // -dispatch/callback/protocol/rmi/registryPort 1099
+      // -dispatch/callback/plugin/rmi/registryPort 1099
       this.rmiUrl = new RmiUrl(glob, this.callbackAddress);
 
       try {
@@ -144,10 +144,10 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(this.rmiUrl.getHostname(), this.rmiUrl.getRegistryPort());
                   log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
-                               " we will use this one. You could change the port with e.g. '-dispatch/callback/protocol/rmi/registryPort 1122' to run your own rmiregistry.");
+                               " we will use this one. You could change the port with e.g. '-dispatch/callback/plugin/rmi/registryPort 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
-                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -dispatch/callback/protocol/rmi/registryPort 1122 : " + e.toString();
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -dispatch/callback/plugin/rmi/registryPort 1122 : " + e.toString();
                   log.error(ME, text);
                   throw new XmlBlasterException(ME, text);
                }

@@ -18,7 +18,7 @@ Howto start the xmlBlaster server:
 
    Specify the IP address for the CORBA server (multi homed hosts):
 
-     java org.xmlBlaster.Main -bootstrapHostname 196.197.24.11 -protocol/ior/hostname 196.197.24.11
+     java org.xmlBlaster.Main -bootstrapHostname 196.197.24.11 -plugin/ior/hostname 196.197.24.11
 
      (the first option is used for our http-IOR server the second for JacORB CORBA)
 
@@ -43,11 +43,11 @@ Howto start the xmlBlaster server:
 
   Using RMI:
 
-     java javaclients.ClientSub -dispatch/clientSide/protocol RMI
+     java javaclients.ClientSub -dispatch/connection/protocol RMI
 
   Using XMLRPC:
 
-     java javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
+     java javaclients.ClientSub -dispatch/connection/protocol XMLRPC
 
   Other options:
 

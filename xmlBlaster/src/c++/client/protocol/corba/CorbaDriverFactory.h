@@ -51,7 +51,7 @@ private:
    const string   ME;
    Global&        global_;
    Log&           log_;
-   DriversMap     drivers_;	    // the map containing all drivers created by this factory
+   DriversMap     drivers_;         // the map containing all drivers created by this factory
    bool           doRun_;           // the command: if set to 'false' the thread will stop.
    bool           isRunning_;       // the status: if the thread is running it is 'true'
    Mutex          mutex_,           // the mutex passed to all CorbaDriver instances (for singlethreaded)

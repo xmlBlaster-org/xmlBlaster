@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.19 2003/05/21 20:20:42 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.20 2003/05/23 09:04:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -38,12 +38,12 @@ import java.net.MalformedURLException;
  *  java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy  javaclients.rmi.ClientGet -loginName Jeff
  *
  *  Options:
- *     -dispatch/clientside/protocol/rmi/hostname localhost       // Where the server rmi registry is
- *     -dispatch/clientSide/protocol/rmi/registryPort 1099        // Port of server rmi registry
+ *     -dispatch/clientside/plugin/rmi/hostname localhost       // Where the server rmi registry is
+ *     -dispatch/connection/plugin/rmi/registryPort 1099        // Port of server rmi registry
  *
  *  or directly:
- *     -protocol/rmi/AuthServerUrl "rmi://localhost:1099/I_AuthServer"
- *     -protocol/rmi/XmlBlasterUrl "rmi://localhost:1099/I_XmlBlaster"
+ *     -plugin/rmi/AuthServerUrl "rmi://localhost:1099/I_AuthServer"
+ *     -plugin/rmi/XmlBlasterUrl "rmi://localhost:1099/I_XmlBlaster"
  *
  * </pre>
  * @see <a href="http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html" target="others">RMI FAQ</a>
@@ -214,10 +214,10 @@ public class ClientGet
          log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = glob.getProperty().get("dispatch/clientside/protocol/rmi/hostname", hostname);
+      hostname = glob.getProperty().get("dispatch/clientside/plugin/rmi/hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = glob.getProperty().get("dispatch/clientSide/protocol/rmi/registryPort",
+      int registryPort = glob.getProperty().get("dispatch/connection/plugin/rmi/registryPort",
                          org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 

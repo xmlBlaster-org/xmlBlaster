@@ -47,11 +47,11 @@ public class Util
       Vector vec = new Vector();
       vec.addElement("-bootstrapPort");
       vec.addElement(""+serverPort);
-      vec.addElement("-protocol/socket/port");
+      vec.addElement("-plugin/socket/port");
       vec.addElement(""+(serverPort-1));
-      vec.addElement("-protocol/rmi/registryPort");
+      vec.addElement("-plugin/rmi/registryPort");
       vec.addElement(""+(serverPort-2));
-      vec.addElement("-protocol/xmlrpc/port");
+      vec.addElement("-plugin/xmlrpc/port");
       vec.addElement(""+(serverPort-3));
       vec.addElement("-admin.remoteconsole.port");  // -admin.remoteconsole.port 0 : switch off telnet
       vec.addElement(""+0);
@@ -67,11 +67,11 @@ public class Util
       String[] argsDefault = {
          "-bootstrapPort",
          "" + Constants.XMLBLASTER_PORT,
-         "-dispatch/clientSide/protocol/socket/port",
+         "-dispatch/connection/plugin/socket/port",
          "" + org.xmlBlaster.protocol.socket.ExecutorBase.DEFAULT_SERVER_PORT,
-         "-dispatch/clientSide/protocol/rmi/registryPort",
+         "-dispatch/connection/plugin/rmi/registryPort",
          "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
-         "-dispatch/clientSide/protocol/xmlrpc/port",
+         "-dispatch/connection/plugin/xmlrpc/port",
          "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT,
          "-admin.remoteconsole.port",
          "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT

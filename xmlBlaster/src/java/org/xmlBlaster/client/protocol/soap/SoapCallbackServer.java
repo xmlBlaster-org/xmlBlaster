@@ -34,10 +34,10 @@ import java.io.IOException;
  * which delegates it to this update() method.
  * <p />
  * <pre>
- *     -dispatch/callback/protocol/soap/port
+ *     -dispatch/callback/plugin/soap/port
  *                       Specify a port number where soap callback webserver listens.
  *                       Default is port 8689, the port 0 switches this feature off.
- *     -dispatch/callback/protocol/soap/hostname
+ *     -dispatch/callback/plugin/soap/hostname
  *                       Specify a hostname where xmlrp callback server runs.
  *                       Default is the localhost.
  * </pre>

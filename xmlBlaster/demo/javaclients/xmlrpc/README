@@ -24,7 +24,7 @@ To run this demo do the following:
 
 - Start the xml-rpc client from this directory
 
-     java javaclients.xmlrpc.XmlRpcHttpClientRaw  -xmlrpc.host myHostName  < demo.xml
+     java javaclients.xmlrpc.XmlRpcHttpClientRaw  -dispatch/connection/plugin/xmlrpc/hostname myHostName  < demo.xml
 
   Type your host name instead of 'myHostName',
   where the xmlBlaster xmlrpc server is listening.
@@ -38,7 +38,7 @@ NOTE: There is are helper class in src/java/org/xmlBlaster/client/protocol/xmlrp
       It wraps the 'low level' xml-rpc invocation.
       You can switch all our demos to run with XMLRPC instead of CORBA or RMI as follows:
 
-       java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
+       java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/connection/protocol XMLRPC
 
 NOTE: https should work as well (see xmlrpc mailing list):
     You may install SUN JSSE (or used another product, because this one is only a proof of

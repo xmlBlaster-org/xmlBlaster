@@ -91,7 +91,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       string text = "";
       text += string("Control client side failsafe queue properties (message recorder):\n");
-      text += string("   -queue/clientSide/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
+      text += string("   -queue/connection/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("                       0 switches recording of invocations off.\n");
       text += string("                       -1 sets it to unlimited.\n");
       text += string("   -queue.type         The queue plugin type [") + DEFAULT_type + string("].\n");

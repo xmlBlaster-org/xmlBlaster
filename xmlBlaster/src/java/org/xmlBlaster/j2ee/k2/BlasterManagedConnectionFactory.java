@@ -238,7 +238,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    */
    public void setRmiHostname(String arg) throws IllegalStateException {
       try {
-         glob.getProperty().set("dispatch/clientside/protocol/rmi/hostname", arg);
+         glob.getProperty().set("dispatch/clientside/plugin/rmi/hostname", arg);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
          x.setLinkedException(ex);
@@ -250,7 +250,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     * Null if not
     */
    public String getRmiHostname() {
-      return glob.getProperty().get("dispatch/clientside/protocol/rmi/hostname", (String)null);
+      return glob.getProperty().get("dispatch/clientside/plugin/rmi/hostname", (String)null);
    }
 
    /**
@@ -258,7 +258,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    */
    public void setRmiRegistryPort(String arg) throws IllegalStateException {
       try {
-         glob.getProperty().set("dispatch/clientSide/protocol/rmi/registryPort", arg);
+         glob.getProperty().set("dispatch/connection/plugin/rmi/registryPort", arg);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
          x.setLinkedException(ex);
@@ -270,7 +270,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     * Null if not
     */
    public String getRmiRegistryPort() {
-      return glob.getProperty().get("dispatch/clientSide/protocol/rmi/registryPort", (String)null);
+      return glob.getProperty().get("dispatch/connection/plugin/rmi/registryPort", (String)null);
    }
 
 
@@ -279,7 +279,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    */
    public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
       try {
-         glob.getProperty().set("dispatch/clientSide/protocol/rmi/AuthServerUrl", arg);
+         glob.getProperty().set("dispatch/connection/plugin/rmi/AuthServerUrl", arg);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
          x.setLinkedException(ex);
@@ -291,7 +291,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     * Null if not
     */
    public String getRmiAuthserverUrl() {
-      return glob.getProperty().get("dispatch/clientSide/protocol/rmi/AuthServerUrl", (String)null);
+      return glob.getProperty().get("dispatch/connection/plugin/rmi/AuthServerUrl", (String)null);
    }
 
    /**
@@ -299,7 +299,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    */
    public void setIor(String arg) throws IllegalStateException {
       try {
-         glob.getProperty().set("dispatch/callback/protocol/ior/iorString", arg);
+         glob.getProperty().set("dispatch/callback/plugin/ior/iorString", arg);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
          x.setLinkedException(ex);
@@ -311,7 +311,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     * Null if not
     */
    public String getIor() {
-      return glob.getProperty().get("dispatch/callback/protocol/ior/iorString", (String)null);
+      return glob.getProperty().get("dispatch/callback/plugin/ior/iorString", (String)null);
    }
 
    /**
@@ -319,7 +319,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    */
    public void setIorFile(String arg) throws IllegalStateException {
       try {
-         glob.getProperty().set("dispatch/clientSide/protocol/ior/iorFile", arg);
+         glob.getProperty().set("dispatch/connection/plugin/ior/iorFile", arg);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
          x.setLinkedException(ex);
@@ -371,7 +371,7 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
     * Null if not
     */
    public String getIorFile() {
-      return glob.getProperty().get("dispatch/clientSide/protocol/ior/iorFile", (String)null);
+      return glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null);
    }
    /**
     * Set the security plugin to use, see {@link org.xmlBlaster.authentication.plugins}.

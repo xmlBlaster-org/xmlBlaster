@@ -40,11 +40,11 @@ import java.io.IOException;
  * <p />
  * <code>   java org.xmlBlaster.Main -bootstrapPort 3412</code>
  * <p />
- * <code>   java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/XmlBlaster_Ref</code>
+ * <code>   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
  * <code>   java org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
  * <p />
- * <code>   java org.xmlBlaster.Main -protocol/xmlrpc/hostname 102.24.64.60 -protocol/xmlrpc/port 8081</code>
+ * <code>   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081</code>
  * <p />
  * <code>   java org.xmlBlaster.Main -?</code>
  *
@@ -491,11 +491,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   java org.xmlBlaster.Main -cluster false");
       log.plain(ME, "   java org.xmlBlaster.Main -cluster.node.id heron");
       log.plain(ME, "   java org.xmlBlaster.Main -bootstrapPort 3412");
-      log.plain(ME, "   java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/XmlBlaster_Ref.ior");
+      log.plain(ME, "   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref.ior");
       log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
       log.plain(ME, "   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
       log.plain(ME, "   java org.xmlBlaster.Main -logFile /tmp/test.log -logDevice file,console");
-      log.plain(ME, "   java org.xmlBlaster.Main -protocol/xmlrpc/hostname 102.24.64.60 -protocol/xmlrpc/port 8081");
+      log.plain(ME, "   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081");
       log.plain(ME, "   java org.xmlBlaster.Main -?");
       log.plain(ME, "See xmlBlaster.properties for more options");
       log.plain(ME, "");

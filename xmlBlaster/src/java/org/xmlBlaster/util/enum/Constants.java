@@ -107,7 +107,7 @@ public class Constants
    /** Type of a message callback queue */
    public final static String RELATING_SUBJECT = "subject";
    /** Type of a message queue  on client side */
-   public final static String RELATING_CLIENT = "clientSide";
+   public final static String RELATING_CLIENT = "connection";
    /** Type of a history message queue containing references on messages */
    public final static String RELATING_HISTORY = "history";
    /** MessageUnit cache */

@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.17 2003/05/21 20:20:40 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.18 2003/05/23 09:04:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -36,7 +36,7 @@ import org.xmlBlaster.util.MsgUnit;
  * <pre>
  *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSubDispatch
  *
- *    java javaclients.ClientSubDispatch -loginName Jeff -dispatch/clientSide/protocol RMI
+ *    java javaclients.ClientSubDispatch -loginName Jeff -dispatch/connection/protocol RMI
  *
  *    java javaclients.ClientSubDispatch -help
  * </pre>

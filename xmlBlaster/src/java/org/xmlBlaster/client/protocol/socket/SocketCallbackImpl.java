@@ -119,10 +119,10 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          int threadPrio = this.callbackAddress.getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
          try {
             t.setPriority(threadPrio);
-            if (log.TRACE) log.trace(ME, "-dispatch/callback/protocol/socket/threadPrio = " + threadPrio);
+            if (log.TRACE) log.trace(ME, "-dispatch/callback/plugin/socket/threadPrio = " + threadPrio);
          }
          catch (IllegalArgumentException e) {
-            log.warn(ME, "Your -dispatch/callback/protocol/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+            log.warn(ME, "Your -dispatch/callback/plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
          }
          t.start();
       }
@@ -173,7 +173,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
                // Parse the message and invoke callback to client code in a separate thread
                // to avoid dead lock when client does a e.g. publish() during this update()
                WorkerThread t = new WorkerThread(glob, this, receiver);
-               // -dispatch/callback/protocol/socket/invokerThreadPrio 5
+               // -dispatch/callback/plugin/socket/invokerThreadPrio 5
                t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
                t.start();
             }

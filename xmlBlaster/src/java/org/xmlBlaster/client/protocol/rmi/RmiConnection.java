@@ -436,16 +436,16 @@ public class RmiConnection implements I_XmlBlasterConnection
    {
       String text = "\n";
       text += "RmiConnection 'RMI' options:\n";
-      text += "   -dispatch/clientSide/protocol/rmi/registryPort\n";
+      text += "   -dispatch/connection/plugin/rmi/registryPort\n";
       text += "                       Specify a port number where rmiregistry of the xmlBlaster server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -dispatch/clientSide/protocol/rmi/hostname\n";
+      text += "   -dispatch/connection/plugin/rmi/hostname\n";
       text += "                       Specify a hostname where rmiregistry of the xmlBlaster server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -dispatch/callback/protocol/rmi/registryPort\n";
+      text += "   -dispatch/callback/plugin/rmi/registryPort\n";
       text += "                       Specify a port number where rmiregistry for the callback server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -dispatch/callback/protocol/rmi/hostname\n";
+      text += "   -dispatch/callback/plugin/rmi/hostname\n";
       text += "                       Specify a hostname where rmiregistry for the callback server runs.\n";
       text += "                       Default is the localhost (useful for multi homed hosts).\n";
       text += "\n";

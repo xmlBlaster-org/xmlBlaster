@@ -141,7 +141,7 @@ sub _fromXml {
 #       clearSessions='false'
 #       sessionId='sessionId:129.194.17.16-null-1053040177135-712235115-24'/>
 #   <queue
-#       relating='clientSide'
+#       relating='connection'
 #       maxEntries='10000000'
 #       maxEntriesCache='1000'>
 #    <address

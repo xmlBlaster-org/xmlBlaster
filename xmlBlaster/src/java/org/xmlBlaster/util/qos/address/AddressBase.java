@@ -140,16 +140,16 @@ public abstract class AddressBase
 
    /**
     * Configure property settings. 
-    * "-/node/heron/dispatch/clientSide/delay 20" has precedence over "-delay 10"
+    * "-/node/heron/dispatch/connection/delay 20" has precedence over "-delay 10"
     */
    protected void initialize()
    {
       // SOCKET, IOR, XMLRPC, RMI, ...
       this.type.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "protocol");
 
-      // dispatch/callback/protocol/socket/hostname
-      // dispatch/clientSide/protocol/ior/localPort
-      envPrefix = "protocol/"+this.type.getValue().toLowerCase()+"/";
+      // dispatch/callback/plugin/socket/hostname
+      // dispatch/connection/plugin/ior/localPort
+      envPrefix = "plugin/"+this.type.getValue().toLowerCase()+"/";
 
       this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapHostname");
       this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapPort");
@@ -181,10 +181,10 @@ public abstract class AddressBase
     * You typically use this method in your client code to overwrite settings,.
     * please check the protocol specific documentation about the supported settings.
     * </p>
-    * @param key    The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    * @param key    The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     *               The searched property is depending on the type (here "socket")
-    *               and instance (here "clientSide") e.g. "protocol/socket/SOLingerTimeout"
-    *               and with higher precedence "dispatch/clientSide/protocol/socket/SOLingerTimeout"
+    *               and instance (here "connection") e.g. "plugin/socket/SOLingerTimeout"
+    *               and with higher precedence "dispatch/connection/plugin/socket/SOLingerTimeout"
     * @param value  The value, e.g. "10000"
     */
    public void setPluginProperty(String key, String value) {
@@ -194,7 +194,7 @@ public abstract class AddressBase
 
    /**
     * Plugins may query their properties here
-    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropString getEnv(String key, String defaultValue) {
       PropString tmp = new PropString(key, defaultValue);
@@ -211,7 +211,7 @@ public abstract class AddressBase
 
    /**
     * Plugins may query their properties here
-    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropInt getEnv(String key, int defaultValue) {
       PropInt tmp = new PropInt(key, defaultValue);
@@ -228,7 +228,7 @@ public abstract class AddressBase
 
    /**
     * Plugins may query their properties here
-    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropLong getEnv(String key, long defaultValue) {
       PropLong tmp = new PropLong(key, defaultValue);
@@ -245,7 +245,7 @@ public abstract class AddressBase
 
    /**
     * Plugins may query their properties here
-    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
     */
    public PropBoolean getEnv(String key, boolean defaultValue) {
       PropBoolean tmp = new PropBoolean(key, defaultValue);
@@ -262,7 +262,7 @@ public abstract class AddressBase
 
    /**
     * Returns the completed key which was found and chosen. 
-    * @return For "responseTimeout" it could be "dispatch/callback/protocol/socket/responseTimeout"
+    * @return For "responseTimeout" it could be "dispatch/callback/plugin/socket/responseTimeout"
     */
    public String getEnvLookupKey(String key) {
       PropString tmp = new PropString("");
@@ -355,10 +355,10 @@ public abstract class AddressBase
     * <p>To set other protocols try e.g.:</p>
     * <pre>
     *  String[] args = { "-protocol", "SOCKET",
-    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
-    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
-    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
-    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
+    *                    "-dispatch/connection/plugin/socket/hostname", "myHost",
+    *                    "-dispatch/connection/plugin/socket/port", "7666",
+    *                    "-dispatch/connection/plugin/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/connection/plugin/socket/localPort", "8888" };       // optional
     *  glob.init(args);
     * </pre>
     * @param host An IP or DNS
@@ -406,10 +406,10 @@ public abstract class AddressBase
     * <p>To set other protocols try e.g.:</p>
     * <pre>
     *  String[] args = { "-protocol", "SOCKET",
-    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
-    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
-    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
-    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
+    *                    "-dispatch/connection/plugin/socket/hostname", "myHost",
+    *                    "-dispatch/connection/plugin/socket/port", "7666",
+    *                    "-dispatch/connection/plugin/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/connection/plugin/socket/localPort", "8888" };       // optional
     *  glob.init(args);
     * </pre>
     */
@@ -449,14 +449,14 @@ public abstract class AddressBase
     * </p>
     * <p>
     * Setting the address here has precedence over any environment settings
-    * like <i>-dispatch/clientSide/protocol/socket/port 7666</i> on command line
+    * like <i>-dispatch/connection/plugin/socket/port 7666</i> on command line
     * or
     * <pre>
     *  String[] args = { "-protocol", "SOCKET",
-    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
-    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
-    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
-    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
+    *                    "-dispatch/connection/plugin/socket/hostname", "myHost",
+    *                    "-dispatch/connection/plugin/socket/port", "7666",
+    *                    "-dispatch/connection/plugin/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/connection/plugin/socket/localPort", "8888" };       // optional
     *  glob.init(args);
     * </pre>
     * @param rawAddress The address specific for the protocol, e.g. "et@mars.univers" for EMAIL
@@ -960,7 +960,7 @@ public abstract class AddressBase
     //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
       text += "   -dispatch/" + this.instanceName + "/protocol\n";
       text += "                       Protocol to use [" + DEFAULT_type + "]\n";
-     // text += "   -dispatch/" + this.instanceName + "/protocol/" + this.type + "/port\n";
+     // text += "   -dispatch/" + this.instanceName + "/plugin/" + this.type + "/port\n";
      // text += "                       Port to use for the protocol [" + DEFAULT_port + "]\n";
       text += "   -dispatch/" + this.instanceName + "/pingInterval\n";
       text += "                       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";

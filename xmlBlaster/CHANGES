@@ -31,35 +31,43 @@ Changes for 0.xxx [xx, xxx 2003]
       These replacements where made:
       hostname                -> bootstrapHostname
       port                    -> bootstrapPort
-      socket.port             -> dispatch/clientSide/protocol/socket/port
-      socket.hostname         -> dispatch/clientSide/protocol/socket/hostname
-      socket.cb.multiThreaded -> dispatch/callback/protocol/socket/multiThreaded
-      socket.threadPrio       -> dispatch/callback/protocol/socket/threadPrio
-      socket.responseTimeout  -> dispatch/callback/protocol/socket/responseTimeout
-      socket.responseTimeout  -> protocol/socket/responseTimeout  (server)
-      ns                      -> dispatch/clientSide/protocol/ior/useNameService
-      ns                      -> protocol/ior/useNameService  (server)
-      ior                     -> dispatch/callback/protocol/ior/iorString
-      ior                     -> dispatch/clientSide/protocol/ior/iorString
-      ior                     -> protocol/ior/iorString  (server)
-      ior.file                -> dispatch/clientSide/protocol/ior/iorFile
-      ior.portCB              -> dispatch/callback/protocol/ior/port
-      ior.hostnameCB          -> dispatch/callback/protocol/ior/hostname
-      ior.port                -> dispatch/clientSide/protocol/ior/port
-      ior.port                -> protocol/ior/port  (server)
-      ior.hostname            -> dispatch/clientSide/protocol/ior/hostname
-      ior.hostname            -> protocol/ior/hostname (server)
-      xmlrpc.port             -> dispatch/clientSide/protocol/xmlrpc/port
-      xmlrpc.hostname         -> dispatch/clientSide/protocol/xmlrpc/hostname
-      xmlrpc.portCB           -> dispatch/callback/protocol/xmlrpc/port
-      xmlrpc.hostnameCB       -> dispatch/callback/protocol/xmlrpc/hostname
+      socket.port             -> dispatch/connection/plugin/socket/port
+      socket.hostname         -> dispatch/connection/plugin/socket/hostname
+      socket.cb.multiThreaded -> dispatch/callback/plugin/socket/multiThreaded
+      socket.threadPrio       -> dispatch/callback/plugin/socket/threadPrio
+      socket.responseTimeout  -> dispatch/callback/plugin/socket/responseTimeout
+      socket.responseTimeout  -> plugin/socket/responseTimeout  (server)
+      ns                      -> dispatch/connection/plugin/ior/useNameService
+      ns                      -> plugin/ior/useNameService  (server)
+      ior                     -> dispatch/callback/plugin/ior/iorString
+      ior                     -> dispatch/connection/plugin/ior/iorString
+      ior                     -> plugin/ior/iorString  (server)
+      ior.file                -> dispatch/connection/plugin/ior/iorFile
+      ior.portCB              -> dispatch/callback/plugin/ior/port
+      ior.hostnameCB          -> dispatch/callback/plugin/ior/hostname
+      ior.port                -> dispatch/connection/plugin/ior/port
+      ior.port                -> plugin/ior/port  (server)
+      ior.hostname            -> dispatch/connection/plugin/ior/hostname
+      ior.hostname            -> plugin/ior/hostname (server)
+      xmlrpc.port             -> dispatch/connection/plugin/xmlrpc/port
+      xmlrpc.hostname         -> dispatch/connection/plugin/xmlrpc/hostname
+      xmlrpc.portCB           -> dispatch/callback/plugin/xmlrpc/port
+      xmlrpc.hostnameCB       -> dispatch/callback/plugin/xmlrpc/hostname
       iorHost                 -> hostname
       iorPort                 -> port           (3411)
-      rmi.registryPortCB      -> dispatch/callback/protocol/rmi/registryPort
-      rmi.registryPort        -> dispatch/clientSide/protocol/rmi/registryPort
-      rmi.AuthServer.url      -> dispatch/clientSide/protocol/rmi/AuthServerUrl
-
-
+      rmi.registryPortCB      -> dispatch/callback/plugin/rmi/registryPort
+      rmi.registryPort        -> dispatch/connection/plugin/rmi/registryPort
+      rmi.AuthServer.url      -> dispatch/connection/plugin/rmi/AuthServerUrl
+   
+   6. The ConnectQos xml markup changed from
+        <address ... hostname='...' port='...'>
+      to
+        <address ... bootstrapHostname='...' bootstrapPort='...'>
+   
+   7. Please copy the new config/xmlBlaster.properties.template
+         to $HOME/xmlBlaster.properties
+      Please copy the new config/xmlBlasterPlugins.xml.template
+         to $HOME/xmlBlasterPlugins.xml
 
  o BUGFIX: Server side command line usage was showing client side usage as well
 
@@ -1292,11 +1300,11 @@ Changes for 0.79 [Nov, 3 2000]
     This allows to switch the used protocol (IOR,RMI,XMLRPC)
     on command line without recompilation.
     For coding example see demo/javaclients/ClientSub.java
-    To switch protocol use the -dispatch/clientSide/protocol command line option.
+    To switch protocol use the -dispatch/connection/protocol command line option.
     Example:
-      jaco javaclients.ClientSub -dispatch/clientSide/protocol IOR
-      jaco javaclients.ClientSub -dispatch/clientSide/protocol RMI
-      jaco javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
+      jaco javaclients.ClientSub -dispatch/connection/protocol IOR
+      jaco javaclients.ClientSub -dispatch/connection/protocol RMI
+      jaco javaclients.ClientSub -dispatch/connection/protocol XMLRPC
 
   - NOTE: You need to use the new xmlBlaster.properties file.
     Remove your old in your HOME directory and use the

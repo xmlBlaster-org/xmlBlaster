@@ -232,11 +232,11 @@ instructions.
 
 3. A variant using a file to pass the server IOR:
 
-     java org.xmlBlaster.MainGUI -protocol/ior/iorFile /tmp/Blaster_Ref
+     java org.xmlBlaster.MainGUI -plugin/ior/iorFile /tmp/Blaster_Ref
 
    and a testclient
 
-     java javaclients.ClientSub -protocol/ior/iorFile /tmp/Blaster_Ref
+     java javaclients.ClientSub -plugin/ior/iorFile /tmp/Blaster_Ref
 
 
 4. Variant using a naming service and corbaloc to find it.

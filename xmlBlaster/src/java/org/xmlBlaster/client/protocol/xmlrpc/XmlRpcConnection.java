@@ -113,7 +113,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.clientAddress = address;
       this.xmlRpcUrl = new XmlRpcUrl(glob, this.clientAddress);
       try {
-         // dispatch/clientSide/protocol/xmlrpc/debug
+         // dispatch/connection/plugin/xmlrpc/debug
          if (this.clientAddress.getEnv("debug", false).getValue() == true)
             XmlRpc.setDebug(true);
 
@@ -604,19 +604,19 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       String text = "\n";
       text += "XmlRpcConnection 'XMLRPC' options:\n";
-      text += "   -dispatch/clientSide/protocol/xmlrpc/port\n";
+      text += "   -dispatch/connection/plugin/xmlrpc/port\n";
       text += "                       Specify a port number where xmlBlaster XMLRPC web server listens.\n";
       text += "                       Default is port "+org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
-      text += "   -dispatch/clientSide/protocol/xmlrpc/hostname\n";
+      text += "   -dispatch/connection/plugin/xmlrpc/hostname\n";
       text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -dispatch/callback/protocol/xmlrpc/port\n";
+      text += "   -dispatch/callback/plugin/xmlrpc/port\n";
       text += "                       Specify a port number for the callback web server to listen.\n";
       text += "                       Default is port "+XmlRpcCallbackServer.DEFAULT_CALLBACK_PORT+", the port 0 switches this feature off.\n";
-      text += "   -dispatch/callback/protocol/xmlrpc/hostname\n";
+      text += "   -dispatch/callback/plugin/xmlrpc/hostname\n";
       text += "                       Specify a hostname where the callback web server shall run.\n";
       text += "                       Default is the localhost (useful for multi homed hosts).\n";
-      text += "   -protocol/xmlrpc/debug\n";
+      text += "   -plugin/xmlrpc/debug\n";
       text += "                       true switches on detailed XMLRPC debugging [false].\n";
       text += "\n";
       return text;

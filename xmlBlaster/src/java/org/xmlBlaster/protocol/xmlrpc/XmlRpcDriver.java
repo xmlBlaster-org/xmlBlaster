@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.44 2003/05/22 18:50:07 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.45 2003/05/23 09:04:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -33,10 +33,10 @@ import java.io.IOException;
  * CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
  * </pre>
  *
- * The variable protocol/xmlrpc/port (default 8080) sets the http web server port,
+ * The variable plugin/xmlrpc/port (default 8080) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -protocol/xmlrpc/port 9090
+ * java -jar lib/xmlBlaster.jar  -plugin/xmlrpc/port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -146,11 +146,11 @@ public class XmlRpcDriver implements I_Driver
 
       this.xmlRpcUrl = new XmlRpcUrl(glob, addressServer); // e.g. "http://127.168.1.1:8080/"
       if (this.xmlRpcUrl.getPort() < 1) {
-         log.info(ME, "Option protocol/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
+         log.info(ME, "Option plugin/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
          return;
       }
 
-      // "-protocol/xmlrpc/debug true"
+      // "-plugin/xmlrpc/debug true"
       if (addressServer.getEnv("debug", false).getValue() == true)
          XmlRpc.setDebug(true);
    }
@@ -215,12 +215,12 @@ public class XmlRpcDriver implements I_Driver
    {
       String text = "\n";
       text += "XmlRpcDriver options:\n";
-      text += "   -protocol/xmlrpc/port\n";
+      text += "   -plugin/xmlrpc/port\n";
       text += "                       The XMLRPC web server port [" + DEFAULT_HTTP_PORT + "].\n";
-      text += "   -protocol/xmlrpc/hostname\n";
+      text += "   -plugin/xmlrpc/hostname\n";
       text += "                       Specify a hostname where the XMLRPC web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -protocol/xmlrpc/debug.\n";
+      text += "   -plugin/xmlrpc/debug.\n";
       text += "                       true switches on detailed XMLRPC debugging [false].\n";
       text += "\n";
       return text;

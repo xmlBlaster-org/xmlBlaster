@@ -894,13 +894,13 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append("   -protocol           Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XMLRPC'.\n");
       sb.append("                       This is used for connection to xmlBlaster and for the callback connection.\n");
       sb.append("                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n");
-      sb.append("   -dispatch/clientSide/protocol <protocol>\n");
+      sb.append("   -dispatch/connection/protocol <protocol>\n");
       sb.append("                       Specify the protocol to connect to xmlBlaster only (not for the callback).\n");
       sb.append("   -dispatch/callback/protocol <protocol>\n");
       sb.append("                       Specify the protocol for the callback connection only.\n");
       sb.append("              Example: java MyApp -protocol SOCKET\n");
-      sb.append("                       java MyApp -dispatch/clientSide/protocol RMI -dispatch/clientside/protocol/rmi/hostname 192.168.10.34\n");
-      sb.append("                       java MyApp -dispatch/clientSide/protocol RMI -dispatch/callback/protocol XMLRPC\n");
+      sb.append("                       java MyApp -dispatch/connection/protocol RMI -dispatch/connection/plugin/rmi/hostname 192.168.10.34\n");
+      sb.append("                       java MyApp -dispatch/connection/protocol RMI -dispatch/callback/protocol XMLRPC\n");
       sb.append("\n");
       sb.append("Security features:\n");
       sb.append("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");

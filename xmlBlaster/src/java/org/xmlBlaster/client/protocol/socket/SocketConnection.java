@@ -153,7 +153,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       this.socketUrl = new SocketUrl(glob, this.clientAddress);
 
       if (this.socketUrl.getPort() < 1) {
-         String str = "Option dispatch/clientSide/protocol/socket/port set to " + this.socketUrl.getPort() +
+         String str = "Option dispatch/connection/plugin/socket/port set to " + this.socketUrl.getPort() +
                       ", socket client not started";
          log.info(ME, str);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, str);
@@ -191,11 +191,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          throw e;
       }
       catch (java.net.UnknownHostException e) {
-         String str = "XmlBlaster server host is unknown, '-dispatch/clientSide/protocol/socket/hostname=<ip>': " + e.toString();
+         String str = "XmlBlaster server host is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>': " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
-                                       "XmlBlaster server is unknown, '-dispatch/clientSide/protocol/socket/hostname=<ip>'", e);
+                                       "XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
       }
       catch (java.io.IOException e) {
          String str = "Connection to xmlBlaster server failed: " + e.toString();
@@ -205,7 +205,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         String str = "Socket client connection to '" + this.socketUrl.getUrl() + "' failed, try options '-dispatch/clientSide/protocol/socket/hostname <ip> -dispatch/clientSide/protocol/socket/port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
+         String str = "Socket client connection to '" + this.socketUrl.getUrl() + "' failed, try options '-dispatch/connection/plugin/socket/hostname <ip> -dispatch/connection/plugin/socket/port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
 
@@ -634,21 +634,21 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Command line usage.
     * <p />
-    *  <li>-dispatch/clientSide/protocol/socket/port
+    *  <li>-dispatch/connection/plugin/socket/port
     *                      Specify a port number where xmlBlaster SOCKET server listens
     *                      Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off</li>
-    *  <li>-dispatch/clientSide/protocol/socket/hostname
+    *  <li>-dispatch/connection/plugin/socket/hostname
     *                      Specify a hostname where the xmlBlaster web server runs.
     *                      Default is the localhost</li>
-    *  <li>-dispatch/clientSide/protocol/socket/localPort
+    *  <li>-dispatch/connection/plugin/socket/localPort
     *                      You can specify our client side port as well (usually you shouldn't)
     *                      Default is that the port is chosen by the operating system</li>
-    *  <li>-dispatch/clientSide/protocol/socket/localHostname
+    *  <li>-dispatch/connection/plugin/socket/localHostname
     *                      Specify the hostname who we are. Makes sense for multi homed computers
     *                      Defaults to our hostname</li>
-    *  <li>-dispatch/callback/protocol/socket/responseTimeout  How long to wait for a method invocation to return
+    *  <li>-dispatch/callback/plugin/socket/responseTimeout  How long to wait for a method invocation to return
     *                      Defaults to one minute</li>
-    *  <li>-dispatch/callback/protocol/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
+    *  <li>-dispatch/callback/plugin/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
     *  <li>-dump[socket]   true switches on detailed SOCKET debugging [false]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
@@ -658,24 +658,24 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       String text = "\n";
       text += "SocketConnection 'SOCKET' options:\n";
-      text += "   -dispatch/clientSide/protocol/socket/port\n";
+      text += "   -dispatch/connection/plugin/socket/port\n";
       text += "                       Specify a port number where xmlBlaster SOCKET server listens.\n";
       text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
-      text += "   -dispatch/clientSide/protocol/socket/hostname\n";
+      text += "   -dispatch/connection/plugin/socket/hostname\n";
       text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -dispatch/clientSide/protocol/socket/localPort\n";
+      text += "   -dispatch/connection/plugin/socket/localPort\n";
       text += "                       You can specify our client side port as well (usually you shouldn't)\n";
       text += "                       Default is that the port is chosen by the operating system.\n";
-      text += "   -dispatch/clientSide/protocol/socket/localHostname\n";
+      text += "   -dispatch/connection/plugin/socket/localHostname\n";
       text += "                       Specify the hostname who we are. Makes sense for multi homed computers.\n";
       text += "                       Defaults to our hostname.\n";
-      text += "   -dispatch/callback/protocol/socket/responseTimeout\n";
+      text += "   -dispatch/callback/plugin/socket/responseTimeout\n";
       text += "                       How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
-      text += "   -dispatch/callback/protocol/socket/threadPrio\n";
+      text += "   -dispatch/callback/plugin/socket/threadPrio\n";
       text += "                       The priority 1=min - 10=max of the callback listener thread [5].\n";
-      text += "   -dispatch/callback/protocol/socket/multiThreaded\n";
+      text += "   -dispatch/callback/plugin/socket/multiThreaded\n";
       text += "                       Use seperate threads per update() on client side [true].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";

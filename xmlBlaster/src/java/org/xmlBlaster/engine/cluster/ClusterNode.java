@@ -124,7 +124,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *   <li>delay[heron] defaults to 4000L</li>
     *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
     *   <li>retries[heron] defaults to -1 == forever</li>
-    *   <li>queue/clientSide/maxEntries[heron] defaults to 100000</li>
+    *   <li>queue/CACHE/maxEntries[heron] defaults to 100000</li>
     *   <li>security.plugin.type[heron] defaults to "htpasswd"</li>
     *   <li>security.plugin.version[heron] defaults to "1.0"</li>
     *   <li>name[heron] the login name defaults to our local node id</li>

@@ -34,9 +34,9 @@ import org.apache.xmlrpc.WebServer;
  * which delegates it to this update() method.
  * <p />
  * <pre>
- *     -dispatch/callback/protocol/xmlrpc/port    Specify a port number where xmlrpc callback webserver listens.
+ *     -dispatch/callback/plugin/xmlrpc/port    Specify a port number where xmlrpc callback webserver listens.
  *                         Default is port 8081, the port 0 switches this feature off.
- *     -dispatch/callback/protocol/xmlrpc/hostname  Specify a hostname where xmlrp callback server runs.
+ *     -dispatch/callback/plugin/xmlrpc/hostname  Specify a hostname where xmlrp callback server runs.
  *                         Default is the localhost.
  * </pre>
  * If the callback server can't be established because of the port is not free,
@@ -115,7 +115,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
       try {
          if (this.xmlRpcUrlCallback.getPort() > 0) {
             // Start an 'xmlrpc webserver' if desired
-            int numTries = 20; // start looking for a free port, begin with default port -dispatch/callback/protocol/xmlrpc/port <port>
+            int numTries = 20; // start looking for a free port, begin with default port -dispatch/callback/plugin/xmlrpc/port <port>
             for (int ii=0; ii<numTries; ii++) {
                try {
                   webServer = new WebServer(this.xmlRpcUrlCallback.getPort(), this.xmlRpcUrlCallback.getInetAddress());
@@ -134,7 +134,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                   this.xmlRpcUrlCallback.setPort(this.xmlRpcUrlCallback.getPort() + 1);
                }
                if (ii == (numTries-1)) {
-                  log.error(ME, "Can't find free port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server, please use '-dispatch/callback/protocol/xmlrpc/port <port>' to specify a free one.");
+                  log.error(ME, "Can't find free port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server, please use '-dispatch/callback/plugin/xmlrpc/port <port>' to specify a free one.");
                }
             }
             webServer.addHandler("$default", new XmlRpcCallbackImpl(this));      // register update() method
@@ -143,7 +143,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             //log.info(ME, "Created XmlRpc callback http server");
          }
          else
-            log.info(ME, "XmlRpc callback http server not created, because of -dispatch/callback/protocol/xmlrpc/port is 0");
+            log.info(ME, "XmlRpc callback http server not created, because of -dispatch/callback/plugin/xmlrpc/port is 0");
       } catch (XmlBlasterException e) {
          throw e;
       } catch (Exception e) {

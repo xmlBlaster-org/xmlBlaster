@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.7 2003/03/26 12:01:01 laghi Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.8 2003/05/23 09:05:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *  java org.xmlBlaster.test.qos.TestPubBurstMode -numPublish 10000 -dispatch/clientSide/protocol RMI -warn false
+ *  java org.xmlBlaster.test.qos.TestPubBurstMode -numPublish 10000 -dispatch/connection/protocol RMI -warn false
  *  java junit.textui.TestRunner org.xmlBlaster.test.qos.TestPubBurstMode
  *  java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestPubBurstMode
  * </pre>

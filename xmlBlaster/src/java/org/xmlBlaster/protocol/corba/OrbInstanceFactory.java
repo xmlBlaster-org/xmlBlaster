@@ -109,7 +109,7 @@ public final class OrbInstanceFactory
          props.put("org.omg.CORBA.ORBSingletonClass", tmp);
       }
       
-      // -dispatch/clientSide/protocol/ior/hostname   
+      // -dispatch/connection/plugin/ior/hostname   
       String hostname = address.getEnv("hostname", (String)null).getValue();
       if (log.TRACE) log.trace(ME, "initializeOrbEnv(" + address.getEnvLookupKey("hostname") + "=" + hostname);
 

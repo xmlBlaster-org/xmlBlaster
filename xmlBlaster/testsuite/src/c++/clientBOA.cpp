@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
          strncpy(objref_str, argv[1], 1024);
       }
       else if (argc == 3) {
-         strncpy(objref_str, argv[2], 1024); // allow -dispatch/clientSide/protocol/ior/iorString ...
+         strncpy(objref_str, argv[2], 1024); // allow -dispatch/connection/plugin/ior/iorString ...
       }
       else {
         cout << "Enter IOR from AuthServer-Server: ";

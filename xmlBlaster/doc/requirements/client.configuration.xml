@@ -30,7 +30,7 @@
         the name of the parameter, then a space and then the value to be assigned. For example the 
         following is correct syntax:
         <pre>
-java HelloWorld2 -dispatch/clientSide/pingInterval 1000
+java HelloWorld2 -dispatch/connection/pingInterval 1000
         </pre>                                    
         <b>For a list of all available command line parameters invoke -help on the command line:</b>
        <pre>
@@ -56,7 +56,7 @@ java HelloWorld2 -help
      <p>The following is a list of groups of properties used to configure xmlBlaster clients. <i><b>We
      are changing the syntax for the properties from the original "dot and bracket" syntax like
      <pre>
-  -dispatch/callback/protocol/socket/responseTimeout 1000
+  -dispatch/callback/plugin/socket/responseTimeout 1000
   -trace[core] true
      </pre>
      to the new "slash" notation which we believe fits better our needs 
@@ -99,26 +99,26 @@ java HelloWorld2 -help
      <table border="1">
        <tr><th>Command line</th><th>Comment and [default]</th></tr>
        <tr>
-         <td>-dispatch/clientSide/burstMode/collectTimeOneway</td>
+         <td>-dispatch/connection/burstMode/collectTimeOneway</td>
          <td>Number of milliseconds we shall collect oneway publish messages [0].
              This allows performance tuning, try set it to 200.</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/pingInterval</td>
+         <td>-dispatch/connection/pingInterval</td>
          <td>Pinging every given milliseconds [10000]</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/retries</td>
+         <td>-dispatch/connection/retries</td>
          <td>How often to retry if connection fails (-1 is forever) [-1]</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/delay</td>
+         <td>-dispatch/connection/delay</td>
          <td>Delay between connection retries in milliseconds [5000] A delay value > 0 
             switches fails save mode on, 0 switches it off</td>
       </tr>
 
        <tr>
-         <td>-dispatch/clientSide/protocol</td>
+         <td>-dispatch/connection/protocol</td>
          <td>You can choose another protocol for the communication to xmlBlaster [defaults to -protocol]</td>
       </tr>
        <tr>
@@ -126,8 +126,8 @@ java HelloWorld2 -help
          <td>You can choose another bootstrapPort for the communication to xmlBlaster [3412]</td>
       </tr>
        <tr>
-         <td>-dispatch/clientSide/protocol/xmlrpc/port</td>
-         <td>You can choose another XmlRpc port for the communication to xmlBlaster [defaults to -protocol/xmlrpc/port]</td>
+         <td>-dispatch/connection/plugin/xmlrpc/port</td>
+         <td>You can choose another XmlRpc port for the communication to xmlBlaster [defaults to -plugin/xmlrpc/port]</td>
       </tr>
 
 
@@ -145,21 +145,21 @@ java HelloWorld2 -help
      <table border="1">
        <tr><th>Command line</th><th>Comment and [default]</th></tr>
        <tr>
-         <td>-dispatch/clientSide/protocol/socket/hostname</td>
+         <td>-dispatch/connection/plugin/socket/hostname</td>
          <td>IP or DNS host name where the xmlBlaster server is running [localhost].</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/protocol/socket/port</td>
+         <td>-dispatch/connection/plugin/socket/port</td>
          <td>The port where the server is listening [7607]</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/protocol/socket/localHostname</td>
+         <td>-dispatch/connection/plugin/socket/localHostname</td>
          <td>Usually you don't need to set this parameter.
              My be useful for example if you are running on a multi homed host
              having multiple local IP addresses [localhost].</td>
        </tr>
        <tr>
-         <td>-dispatch/clientSide/protocol/socket/localPort</td>
+         <td>-dispatch/connection/plugin/socket/localPort</td>
          <td>Usually this is dynamically chosen by your OS. You can configure it
              for example if you need to force a local port to satisfy a firewall.</td>
        </tr>
@@ -216,7 +216,7 @@ java HelloWorld2 -help
          <td>You can choose another protocol for the callback server [defaults to -protocol]</td>
       </tr>
        <tr>
-         <td>-dispatch/callback/protocol/socket/port</td>
+         <td>-dispatch/callback/plugin/socket/port</td>
          <td>You can choose another port for the callback server [defaults to the protocol specific default port]</td>
       </tr>
     </table>
@@ -227,15 +227,15 @@ java HelloWorld2 -help
      <center>
      <table border="1">
        <tr><th>Command line</th><th>Comment and [default]</th></tr>
-       <tr><td>-queue/clientSide/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
-       <tr><td>-queue/clientSide/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
-       <tr><td>-queue/clientSide/maxBytes</td><td>The maximum size in bytes of the storage [10485760].</td></tr>
-       <tr><td>-queue/clientSide/maxBytesCache</td><td>The maximum size in bytes in the cache [2097152].</td></tr>
-       <tr><td>-queue/clientSide/onOverflow</td><td>What happens if storage is full [deadMessage]</td></tr>
-       <tr><td>-queue/clientSide/onFailure</td><td>Error handling when storage failed [deadMessage]</td></tr>
-       <tr><td>-queue/clientSide/type</td><td>The plugin type [RAM]</td></tr>
-       <tr><td>-queue/clientSide/version</td><td>The plugin version [1.0]</td></tr>
-       <tr><td>-queue/clientSide/defaultPlugin</td><td>The plugin type,version (short form) [RAM,1.0]</td></tr>
+       <tr><td>-queue/connection/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
+       <tr><td>-queue/connection/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
+       <tr><td>-queue/connection/maxBytes</td><td>The maximum size in bytes of the storage [10485760].</td></tr>
+       <tr><td>-queue/connection/maxBytesCache</td><td>The maximum size in bytes in the cache [2097152].</td></tr>
+       <tr><td>-queue/connection/onOverflow</td><td>What happens if storage is full [deadMessage]</td></tr>
+       <tr><td>-queue/connection/onFailure</td><td>Error handling when storage failed [deadMessage]</td></tr>
+       <tr><td>-queue/connection/type</td><td>The plugin type [RAM]</td></tr>
+       <tr><td>-queue/connection/version</td><td>The plugin version [1.0]</td></tr>
+       <tr><td>-queue/connection/defaultPlugin</td><td>The plugin type,version (short form) [RAM,1.0]</td></tr>
      </table>
      </center>
      </p>
@@ -262,7 +262,7 @@ java HelloWorld2 -help
      <pre>
 -maxBytes 10000
      </pre>
-     <b>then you will assign this both to the clientSide queue and to the callback queue.</b>
+     <b>then you will assign this both to the connection queue and to the callback queue.</b>
      <p>
      To understand the command syntax imagine a simple xml representation of an xmlBlaster client.
      </p>
@@ -321,7 +321,7 @@ java HelloWorld2 -help
           <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
           
           <!-- The settings used on the client side -->
-          <dispatch id='clientSide'
+          <dispatch id='connection'
                     pingInterval='2000' retries='-1' delay='5000'
                     oneway='false'>
              <plugin refid='queueCACHE'>
@@ -387,7 +387,7 @@ java HelloWorld2 -help
       both on client and server side since no prefix is specified) to 20 seconds.
       <pre>
     java HelloWorld2 -queue/callback/maxEntries 100   \
-                     -queue/clientSide/maxEntries 100 \
+                     -queue/connection/maxEntries 100 \
                      -pingInterval 20000
       </pre>
       The following command line has the same effect since it sets the maximum number of entries for 
@@ -397,11 +397,11 @@ java HelloWorld2 -help
       <pre>
     java HelloWorld2 -maxEntries 100                        \
                      -dispatch/callback/pingInterval 20000  \
-                     -dispatch/clientSide/pingInterval 3000 \
+                     -dispatch/connection/pingInterval 3000 \
                      -protocol SOCKET
       </pre>
       The <i>-dispatch/callback/pingInterval</i> property is sent to the server with the ConnectQos
-      and configures the server behavior. The <i>-dispatch/clientSide/pingInterval</i> setting is only
+      and configures the server behavior. The <i>-dispatch/connection/pingInterval</i> setting is only
       evaluated on the client side. <i>-maxEntries 100</i> is looked at on client and on server side.<br />
       We have chosen the SOCKET protocol to talk to xmlBaster.
 
@@ -420,6 +420,6 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
 </requirement>
 

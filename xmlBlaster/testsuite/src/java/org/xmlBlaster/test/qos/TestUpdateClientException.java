@@ -87,11 +87,11 @@ public class TestUpdateClientException extends TestCase implements I_Callback
       String[] args = {
             "-bootstrapPort",        // For all protocol we may use set an alternate server port
             "" + serverPort,
-            "-protocol/socket/port",
+            "-plugin/socket/port",
             "" + (serverPort-1),
-            "-protocol/rmi/registryPort",
+            "-plugin/rmi/registryPort",
             "" + (serverPort-2),
-            "-protocol/xmlrpc/port",
+            "-plugin/xmlrpc/port",
             "" + (serverPort-3),
             "-MimeAccessPlugin[ContentLenFilter][1.0]",
             "org.xmlBlaster.engine.qos.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3",

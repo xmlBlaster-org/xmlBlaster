@@ -27,7 +27,7 @@ Howto start the xmlBlaster server:
    or start...
 
      java org.xmlBlaster.Main -bootstrapPort 3412 
-     java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/XmlBlaster_Ref
+     java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref
      
 
 

@@ -59,10 +59,10 @@ public class HandleClient extends Executor implements Runnable
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
-         if (log.TRACE) log.trace(ME, "-protocol/socket/threadPrio "+threadPrio);
+         if (log.TRACE) log.trace(ME, "-plugin/socket/threadPrio "+threadPrio);
       }
       catch (IllegalArgumentException e) {
-         log.warn(ME, "Your -protocol/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+         log.warn(ME, "Your -plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
       }
       t.start();
    }

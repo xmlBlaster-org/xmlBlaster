@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.35 2003/05/21 20:21:20 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.36 2003/05/23 09:04:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -65,9 +65,9 @@ import org.xmlBlaster.authentication.Authenticate;
  * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
  * You can specify another port or host to create/use a rmi-registry server:
  * <pre>
- *     -protocol/rmi/registryPort   Specify a port number where rmiregistry listens.
+ *     -plugin/rmi/registryPort   Specify a port number where rmiregistry listens.
  *                         Default is port 1099, the port 0 switches this feature off.
- *     -protocol/rmi/hostname Specify a hostname where rmiregistry runs.
+ *     -plugin/rmi/hostname Specify a hostname where rmiregistry runs.
  *                         Default is the localhost.
  * </pre>
  * <p />
@@ -76,7 +76,7 @@ import org.xmlBlaster.authentication.Authenticate;
  *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
  *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
  *        -Djava.rmi.server.hostname=hostname.domainname
- *        MyApp -protocol/rmi/registryPort 2078
+ *        MyApp -plugin/rmi/registryPort 2078
  * </pre>
  * Another option is to include the directory of xmlBlaster.policy into
  * your CLASSPATH.
@@ -185,7 +185,7 @@ public class RmiDriver implements I_Driver
 
       XmlBlasterSecurityManager.createSecurityManager(glob);
 
-      // protocol/rmi/registryPort
+      // plugin/rmi/registryPort
       int registryPort = addressServer.getEnv("registryPort", DEFAULT_REGISTRY_PORT).getValue(); // default xmlBlaster RMI publishing port is 1099
       String hostname = addressServer.getEnv("hostname", glob.getLocalIP()).getValue();
 
@@ -200,10 +200,10 @@ public class RmiDriver implements I_Driver
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
                   log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
-                               " we will use this one. You could change the port with e.g. '-protocol/rmi/registryPort 1122' to run your own rmiregistry.");
+                               " we will use this one. You could change the port with e.g. '-plugin/rmi/registryPort 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
-                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -protocol/rmi/registryPortCB=1122 : " + e.toString();
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -plugin/rmi/registryPortCB=1122 : " + e.toString();
                   log.error(ME, text);
                   throw new XmlBlasterException(ME, text);
                }
@@ -351,10 +351,10 @@ public class RmiDriver implements I_Driver
    {
       String text = "\n";
       text += "RmiDriver options:\n";
-      text += "   -protocol/rmi/registryPort\n";
+      text += "   -plugin/rmi/registryPort\n";
       text += "                       Specify a port number where rmiregistry listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -protocol/rmi/hostname\n";
+      text += "   -plugin/rmi/hostname\n";
       text += "                       Specify a hostname where rmiregistry runs.\n";
       text += "                       Default is the localhost.\n";
       text += "\n";

@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClientRaw.java,v 1.8 2003/05/21 20:20:45 ruff Exp $
+Version:   $Id: XmlRpcHttpClientRaw.java,v 1.9 2003/05/23 09:04:26 ruff Exp $
 Author:    "Michele Laghi" <laghi@swissinfo.org>
 ------------------------------------------------------------------------------*/
 
@@ -115,9 +115,9 @@ public class XmlRpcHttpClientRaw
    private void testRaw()
    {
       try {
-         String host = glob.getProperty().get("xmlrpc.host", "localhost");
-         int port = glob.getProperty().get("dispatch/clientSide/protocol/xmlrpc/port", 8080);
-         int cb_port = glob.getProperty().get("dispatch/callback/protocol/xmlrpc/port", 8081);
+         String host = glob.getProperty().get("dispatch/connection/plugin/xmlrpc/hostname", "localhost");
+         int port = glob.getProperty().get("dispatch/connection/plugin/xmlrpc/port", 8080);
+         int cb_port = glob.getProperty().get("dispatch/callback/plugin/xmlrpc/port", 8081);
          String urlStr = "http://" + host + ":" + port;
 
          log.info(ME, "Connected to xmlBlaster using XMLRPC");
@@ -183,8 +183,8 @@ public class XmlRpcHttpClientRaw
       System.out.println("java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml <options>");
       System.out.println("----------------------------------------------------------");
       System.out.println("   -h                  Show the complete usage.");
-      System.out.println("   -xmlrpc.host        The XMLRPC web server host [localhost].");
-      System.out.println("   -dispatch/clientSide/protocol/xmlrpc/port        The XMLRPC web server port [8080].");
+      System.out.println("   -dispatch/connection/plugin/xmlrpc/hostname  The XMLRPC web server host [localhost].");
+      System.out.println("   -dispatch/connection/plugin/xmlrpc/port      The XMLRPC web server port [8080].");
       //System.out.println("   -xmlrpc.cb_host     My XMLRPC callback web server host (e.g. for multi homed hosts) [localhost].");
       //System.out.println("   -xmlrpc.cb_port     My XMLRPC callback web server port [8081].");
       System.out.println(Global.instance().usage());

@@ -8,17 +8,17 @@ Another source to see how CORBA access is implemented, see files in
 
    Start xmlBlaster server:
 
-      java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/NS_Ref
+      java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/NS_Ref
 
 
    Start the client:
 
-      jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref
+      jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref
 
 
    To get some more logging infos try:
 
-      jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref -trace true
+      jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref -trace true
 
 
    This displays the usage:

@@ -100,9 +100,9 @@ public class SocketUrlTest extends TestCase {
             int port = 8888;
             String type = "socket";
             String[] args = {
-               "-protocol/"+type+"/hostname",
+               "-plugin/"+type+"/hostname",
                hostname,
-               "-protocol/"+type+"/port",
+               "-plugin/"+type+"/port",
                ""+port 
             };
             glob.init(args);

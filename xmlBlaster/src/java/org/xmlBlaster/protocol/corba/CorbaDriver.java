@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.66 2003/05/22 18:53:51 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.67 2003/05/23 09:04:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -213,7 +213,7 @@ public class CorbaDriver implements I_Driver
             log.info(ME, "Published AuthServer IOR on " + glob.getBootstrapAddress().getRawAddress());
          }
 
-         // 3) Publish IOR to a naming service -protocol/ior/useNameService  true/false
+         // 3) Publish IOR to a naming service -plugin/ior/useNameService  true/false
          boolean useNameService = this.addressServer.getEnv("useNameService", true).getValue();  // default is to publish myself to the naming service
          if (useNameService) {
 
@@ -313,7 +313,7 @@ public class CorbaDriver implements I_Driver
                   log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
-                  log.info(ME, "You don't need the naming service, i'll switch to protocol/ior/iorFile = " + iorFile);
+                  log.info(ME, "You don't need the naming service, i'll switch to plugin/ior/iorFile = " + iorFile);
                }
                else {
                   usage();
@@ -329,7 +329,7 @@ public class CorbaDriver implements I_Driver
                else if (iorFile != null) {
                   log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\nYou don't need the naming service, i'll switch to protocol/ior/iorFile = " + iorFile);
+                               "\nYou don't need the naming service, i'll switch to plugin/ior/iorFile = " + iorFile);
                }
                else {
                   usage();
@@ -622,18 +622,18 @@ public class CorbaDriver implements I_Driver
       text += "                       This is useful for multihomed hosts or dynamic dial in IPs.\n";
       text += "   -bootstrapPort      Port number where the builtin http server publishes its AuthServer IOR.\n";
       text += "                       Default is bootstrap port "+Constants.XMLBLASTER_PORT+", the port 0 switches this feature off.\n";
-      text += "   -protocol/ior/iorFile\n";
+      text += "   -plugin/ior/iorFile\n";
       text += "                       Specify a file where to dump the IOR of the AuthServer (for client access).\n";
-      text += "   -protocol/ior/iorString\n";
+      text += "   -plugin/ior/iorString\n";
       text += "                       Clients can specify the raw IOR string directly (for client access).\n";
-      text += "   -protocol/ior/useNameService true/false [true]\n";
+      text += "   -plugin/ior/useNameService true/false [true]\n";
       text += "                       Publish the IOR to a naming service.\n";
-      text += "   -protocol/ior/hostname\n";
+      text += "   -plugin/ior/hostname\n";
       text += "                       Allows to set the corba server IP address for multi-homed hosts.\n";
-      text += "   -protocol/ior/port  Allows to set the corba server port number.\n";
+      text += "   -plugin/ior/port  Allows to set the corba server port number.\n";
       text += " For JacORB only:\n";
-      text += "   java -DOAIAddr=<ip> Use '-dispatch/clientSide/protocol/ior/hostname'\n";
-      text += "   java -DOAPort=<nr>  Use '-protocol/ior/port'\n";
+      text += "   java -DOAIAddr=<ip> Use '-dispatch/connection/plugin/ior/hostname'\n";
+      text += "   java -DOAPort=<nr>  Use '-plugin/ior/port'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";

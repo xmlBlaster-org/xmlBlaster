@@ -3,25 +3,25 @@ Here is a little demo to use PHP langage to access xmlBlaster.
 
 At least, you need a xmlBlaster server running somewhere
 
-	- Start xmlBlaster
-	$ cd xmlBlaster
-	$ java -jar lib/xmlBlaster.jar
+        - Start xmlBlaster
+        $ cd xmlBlaster
+        $ java -jar lib/xmlBlaster.jar
 
 Then,
 
-	- On the same computer, or on another one, you'll need a http server with PHP langage activated.
-	- copy php/xmlrpc demo files into a folder,
-	- call http://your.httpd.server/the.php.folder.demo/index.php
-	- fill some fields, Server, usually machine_name.domain_name,
-	  Port, 8080, User and Password, Using the default config/xmlBlaster.htpasswd file
-	  guest & secret (Make sure xmlBlaster is configured to use the htpasswd file).
-	- click "connect" button ...
-	- Enter an XPATH Query such as //key once you are logged in.
-	  Some example XPATH Queries...
-	  //key[starts-with(@oid, '__sys__UserList')]
-	  //key[starts-with(@oid, '__sys__Login')]
-	  //key[starts-with(@oid, '__sys__Logout')]
-		
+        - On the same computer, or on another one, you'll need a http server with PHP langage activated.
+        - copy php/xmlrpc demo files into a folder,
+        - call http://your.httpd.server/the.php.folder.demo/index.php
+        - fill some fields, Server, usually machine_name.domain_name,
+          Port, 8080, User and Password, Using the default config/xmlBlaster.htpasswd file
+          guest & secret (Make sure xmlBlaster is configured to use the htpasswd file).
+        - click "connect" button ...
+        - Enter an XPATH Query such as //key once you are logged in.
+          Some example XPATH Queries...
+          //key[starts-with(@oid, '__sys__UserList')]
+          //key[starts-with(@oid, '__sys__Login')]
+          //key[starts-with(@oid, '__sys__Logout')]
+                
 nice & easy, isn't it ?
 
 xmlrpc.inc : xmlrpc for php by Edd Dumbill (C) 1999-2001 <edd@usefulinc.com>
@@ -31,19 +31,19 @@ xmlBlaster.inc : by cyrille@ktaland.com. The code is very very simple, need to b
 DOCS :
 
 See
-	xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
-	with all xmlrpc allowed server-methods you can invoke.
+        xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
+        with all xmlrpc allowed server-methods you can invoke.
 
 -------------------------------------------------------------------
 CHANGES :
 
 2002-07-08 cyrille@ktaland.com
-	- first hack of da php demo, in a dark & very hot night.
+        - first hack of da php demo, in a dark & very hot night.
 2003-02-28 bencom@bencom.co.nz
-	- Fixed dirty reg exp for new sessionId layout. 
-	- Fixed file permissions. PB
+        - Fixed dirty reg exp for new sessionId layout. 
+        - Fixed file permissions. PB
 2003-05-03 bencom@bencom.co.nz
-	- Fixed $xpathQuery character escaping. The form field adds
-	\ to the single quotes this must be removed.
-	- Clarified the README a little (needs more work) based on the
-	  shortcomings I noticed. PB
+        - Fixed $xpathQuery character escaping. The form field adds
+        \ to the single quotes this must be removed.
+        - Clarified the README a little (needs more work) based on the
+          shortcomings I noticed. PB

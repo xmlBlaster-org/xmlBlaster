@@ -19,14 +19,14 @@
  java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
       -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
       -Djava.rmi.server.hostname=hostname.domainname \
-      org.xmlBlaster.Main -protocol/rmi/registryPort 2078
+      org.xmlBlaster.Main -plugin/rmi/registryPort 2078
 </pre>
 
    <p>
      Example how to configure RMI on client startup:
    </p>
 <pre>
- java HelloWorld3 -protocol RMI -protocol/rmi/registryPort 2078
+ java HelloWorld3 -protocol RMI -plugin/rmi/registryPort 2078
 </pre>
    </example>
 
@@ -43,28 +43,28 @@
          </tr>
 
          <tr>
-            <td>protocol/rmi/hostname</td>
+            <td>plugin/rmi/hostname</td>
             <td>localhost</td>
             <td>The host where a client tries to find the RMI registry server.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>protocol/rmi/registryPort</td>
+            <td>plugin/rmi/registryPort</td>
             <td>1099</td>
             <td>The port where the RMI registry is searched.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>protocol/rmi/AuthServerUrl</td>
+            <td>plugin/rmi/AuthServerUrl</td>
             <td>rmi://myserver:1099/I_AuthServer</td>
             <td>The registry entry</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          
          <tr>
-            <td>protocol/rmi/XmlBlasterUrl</td>
+            <td>plugin/rmi/XmlBlasterUrl</td>
             <td>rmi://myserver:1099/I_XmlBlaster</td>
             <td>The registry entry</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -80,7 +80,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 05 20</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>

@@ -419,7 +419,7 @@ public abstract class Executor implements ExecutorBase
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
-         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.dispatch/callback/protocol/socket/responseTimeout <millis>";
+         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -dispatch/callback/plugin/socket/responseTimeout <millis>";
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
       }
 
@@ -453,7 +453,7 @@ public abstract class Executor implements ExecutorBase
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.dispatch/callback/protocol/socket/responseTimeout <millis>";
+            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -dispatch/callback/plugin/socket/responseTimeout <millis>";
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
          }
       }

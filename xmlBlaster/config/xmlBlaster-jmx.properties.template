@@ -68,11 +68,11 @@ CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 # well with JBoss
 #
 
-protocol/rmi/registryPort=1298
-#protocol/rmi/hostname
+plugin/rmi/registryPort=1298
+#plugin/rmi/hostname
 soap.port=1280
-protocol/socket/port=7607
-protocol/xmlrpc/port=1281
+plugin/socket/port=7607
+plugin/xmlrpc/port=1281
 -DOAPort=7609
 #
 # Set logging

@@ -84,11 +84,11 @@ public class TestPublishFilter extends TestCase
       String[] args = new String[10];
       args[0] = "-bootstrapPort";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
-      args[2] = "-protocol/socket/port";
+      args[2] = "-plugin/socket/port";
       args[3] = "" + (serverPort-1);
-      args[4] = "-protocol/rmi/registryPort";
+      args[4] = "-plugin/rmi/registryPort";
       args[5] = "" + (serverPort-2);
-      args[6] = "-protocol/xmlrpc/port";
+      args[6] = "-plugin/xmlrpc/port";
       args[7] = "" + (serverPort-3);
       args[8] = "-MimePublishPlugin[PublishLenChecker][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.demo.PublishLenChecker,DEFAULT_MAX_LEN=10,THROW_EXCEPTION_FOR_LEN=3";

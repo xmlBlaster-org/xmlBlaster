@@ -33,11 +33,11 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco org.xmlBlaster.Main -protocol/ior/iorFile /tmp/NS_Ref
+ *    jaco org.xmlBlaster.Main -plugin/ior/iorFile /tmp/NS_Ref
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorString `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorString `cat /tmp/NS_Ref`
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -loginName "Jeff" `cat /tmp/NS_Ref`
  * </pre>
@@ -54,8 +54,8 @@ public class ClientRaw
 
    public ClientRaw(String args[]) {
       this.args = args;
-      System.out.println("   -dispatch/clientSide/protocol/ior/iorString  The raw IOR string from xmlBlaster.");
-      System.out.println("   -dispatch/clientSide/protocol/ior/iorFile    The raw IOR string from a file.");
+      System.out.println("   -dispatch/connection/plugin/ior/iorString  The raw IOR string from xmlBlaster.");
+      System.out.println("   -dispatch/connection/plugin/ior/iorFile    The raw IOR string from a file.");
       Global glob = new Global(args);
       this.log = glob.getLog("client");
       orb = org.omg.CORBA.ORB.init(this.args,null);
@@ -64,8 +64,8 @@ public class ClientRaw
          ME = Args.getArg(this.args, "-loginName", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(this.args, "-dispatch/clientSide/protocol/ior/iorFile", (String)null); // a file with the IOR string
-         String authServerIOR = Args.getArg(this.args, "-dispatch/clientSide/protocol/ior/iorString", (String)null); // the IOR string "IOR:00405..."
+         String fileName = Args.getArg(this.args, "-dispatch/connection/plugin/ior/iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = Args.getArg(this.args, "-dispatch/connection/plugin/ior/iorString", (String)null); // the IOR string "IOR:00405..."
 
          if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
 
@@ -82,9 +82,9 @@ public class ClientRaw
             if (nc == null) {
                log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "Start the server:\n"
-                           + "   jaco org.xmlBlaster.Main -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n"
+                           + "   jaco org.xmlBlaster.Main -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n"
                            + "Start this client:\n"
-                           + "   jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n");
+                           + "   jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n");
                usage();
                System.err.println(ME + ": Read xmlBlaster/INSTALL for help");
                System.exit(1);
@@ -221,10 +221,10 @@ public class ClientRaw
 
    static void usage() {
       System.out.println("\nAvailable options:");
-      System.out.println("   -loginName               The login name [ClientRaw].");
-      System.out.println("   -dispatch/clientSide/protocol/ior/iorFile File with the IOR string from xmlBlaster.");
-      System.out.println("   -dispatch/callback/protocol/ior/iorString                The raw IOR string from xmlBlaster.");
-      System.out.println("Example: jaco javaclients.corba.ClientRaw -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n");
+      System.out.println("   -loginName                               The login name [ClientRaw].");
+      System.out.println("   -dispatch/connection/plugin/ior/iorFile  File with the IOR string from xmlBlaster.");
+      System.out.println("   -dispatch/callback/plugin/ior/iorString  The raw IOR string from xmlBlaster.");
+      System.out.println("Example: jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n");
       System.exit(1);
    }
 

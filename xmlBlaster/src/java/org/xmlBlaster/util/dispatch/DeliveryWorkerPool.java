@@ -65,7 +65,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
       // Example server side:
       // -dispatch/callback/minimumPoolSize 34
       // Example client side:
-      // -dispatch/clientSide/minimumPoolSize 28
+      // -dispatch/connection/minimumPoolSize 28
       String context = null; // usually 'client/joe'
       String instanceName = (glob.isServerSide()) ? Constants.RELATING_CALLBACK : Constants.RELATING_CLIENT;
       this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, "dispatch", instanceName, "maximumPoolSize");

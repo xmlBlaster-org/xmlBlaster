@@ -17,7 +17,7 @@ This is an example to access xmlBlaster from a Perl client
 
 3) Start the xmlBlaster server
 
-    java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/ior.dat -calls true
+    java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/ior.dat -calls true
 
 
 4) And connect with the Perl client

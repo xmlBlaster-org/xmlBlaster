@@ -36,7 +36,7 @@ import junit.framework.*;
  * <pre>
  *  java org.xmlBlaster.Main
  *
- *  java org.xmlBlaster.test.qos.TestSubLostClient -dispatch/clientSide/protocol IIOP
+ *  java org.xmlBlaster.test.qos.TestSubLostClient -dispatch/connection/protocol IIOP
  *
  *  java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubLostClient
  *  java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubLostClient

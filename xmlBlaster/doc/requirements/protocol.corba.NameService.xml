@@ -119,7 +119,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
          </tr>
 
          <tr>
-            <td>protocol/ior/useNameService</td>
+            <td>plugin/ior/useNameService</td>
             <td>true</td>
             <td>If set to true, xmlBlaster tries to register itself in a NameService</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -172,7 +172,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>

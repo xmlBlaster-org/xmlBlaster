@@ -131,11 +131,11 @@ public class TestEmbeddedXmlBlaster extends TestCase
       String[] args = {
          "-bootstrapPort",        // For all protocol we may use set an alternate server port
          "" + serverPort,
-         "-protocol/socket/port",
+         "-plugin/socket/port",
          "" + (serverPort-1),
-         "-protocol/rmi/registryPort",
+         "-plugin/rmi/registryPort",
          "" + (serverPort-2),
-         "-protocol/xmlrpc/port",
+         "-plugin/xmlrpc/port",
          "" + (serverPort-3),
          "-ProtocolPlugin[IOR][1.0]",
          "org.xmlBlaster.protocol.corba.CorbaDriver",

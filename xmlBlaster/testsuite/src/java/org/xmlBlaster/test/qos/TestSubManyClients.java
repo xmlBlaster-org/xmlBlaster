@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.7 2003/03/26 12:01:01 laghi Exp $
+Version:   $Id: TestSubManyClients.java,v 1.8 2003/05/23 09:05:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -42,7 +42,7 @@ import junit.framework.*;
  * <pre>
  *  java  -Xms10m -Xmx220m org.xmlBlaster.Main -info false
  *
- *  java org.xmlBlaster.test.qos.TestSubManyClients -numClients 10000 -dispatch/clientSide/protocol RMI -warn false
+ *  java org.xmlBlaster.test.qos.TestSubManyClients -numClients 10000 -dispatch/connection/protocol RMI -warn false
  *
  *  java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubManyClients
  *  java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubManyClients

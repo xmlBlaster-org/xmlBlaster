@@ -100,11 +100,11 @@ public class SocketCbConnection extends Executor
          initialize(glob, this.clientAddress, this.sock, null);
       }
       catch (java.net.UnknownHostException e) {
-         String str = "XmlBlaster server host is unknown, '-dispatch/callback/protocol/socket/hostname=<ip>': " + e.toString();
+         String str = "XmlBlaster server host is unknown, '-dispatch/callback/plugin/socket/hostname=<ip>': " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
-                                       "XmlBlaster server is unknown, '-dispatch/callback/protocol/socket/hostname=<ip>'", e);
+                                       "XmlBlaster server is unknown, '-dispatch/callback/plugin/socket/hostname=<ip>'", e);
       }
       catch (java.io.IOException e) {
          String str = "Connection to xmlBlaster server failed: " + e.toString();
@@ -115,7 +115,7 @@ public class SocketCbConnection extends Executor
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
          String str = "Socket client connection to '" + this.socketUrl.getUrl() +
-                      "' failed, try options '-dispatch/callback/protocol/socket/hostname <ip> -dispatch/callback/protocol/socket/port <port>' and check if the client has established a callback SOCKET server";
+                      "' failed, try options '-dispatch/callback/plugin/socket/hostname <ip> -dispatch/callback/plugin/socket/port <port>' and check if the client has established a callback SOCKET server";
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
 
