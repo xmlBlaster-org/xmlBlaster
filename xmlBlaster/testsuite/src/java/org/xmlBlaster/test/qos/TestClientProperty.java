@@ -3,7 +3,7 @@ Name:      TestClientProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestClientProperty.java,v 1.2 2003/09/22 09:18:15 ruff Exp $
+Version:   $Id: TestClientProperty.java,v 1.3 2003/09/24 17:57:57 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -62,8 +62,8 @@ public class TestClientProperty extends TestCase implements I_Callback
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestClientProperty(Global glob) {
-      super("clientProperty");
+   public TestClientProperty(Global glob, String name) {
+      super(name);
       this.glob = glob;
       this.log = this.glob.getLog("test");
    }
@@ -330,7 +330,14 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestClientProperty(new Global()));
+      suite.addTest(new TestClientProperty(new Global(), "testConnectQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testDisconnectQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testPublishQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testSubscribeQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testUnSubscribeQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testGetQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testEraseQos"));
+      suite.addTest(new TestClientProperty(new Global(), "testUpdateQos"));
        return suite;
    }
 
@@ -347,7 +354,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          System.err.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestClientProperty test = new TestClientProperty(glob);
+      TestClientProperty test = new TestClientProperty(glob, "testClientProperty");
       test.setUp();
       test.testConnectQos();
       test.tearDown();
