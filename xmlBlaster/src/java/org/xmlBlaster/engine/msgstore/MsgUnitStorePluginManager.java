@@ -53,7 +53,7 @@ public class MsgUnitStorePluginManager extends PluginManagerBase
    public MsgUnitStorePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("msgUnitStore");
+      this.log = glob.getLog("core");
       this.ME = "MsgUnitStorePluginManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Constructor MsgUnitStorePluginManager");
    }
