@@ -163,6 +163,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Reset
     */
    public void resetConnection() {
+      if (log.TRACE) log.trace(ME, "resetConnection():");
       this.authServer   = null;
       this.xmlBlaster = null;
    }
@@ -535,6 +536,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          if (log.TRACE) log.trace(ME, "setConnectReturnQos(): xmlBlaster=" + this.xmlBlaster);
       }
       catch(Throwable e) {
+         this.xmlBlaster = null;
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "Login failed", e);
          xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
          throw xmlBlasterException;
@@ -603,6 +605,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Is called by logout()
     */
    public void shutdown() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "shutdown()");
       if (this.authServer != null) {
          this.authServer._release();
          this.authServer = null;
@@ -746,8 +749,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    }
 
    /**
-    * Ping the server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    * @see org.xmlBlaster.client.protocol.I_XmlBlasterConnection#ping(String)
     */
    public String ping(String qos) throws XmlBlasterException {
       if (this.xmlBlaster == null && this.authServer != null) {
