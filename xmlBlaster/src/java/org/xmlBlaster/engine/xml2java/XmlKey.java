@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.12 2002/04/19 11:01:35 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.13 2002/04/23 15:09:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
 
 import java.util.*;
 
@@ -81,7 +82,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
     * Construct a handler object for this xml message key.
     * @param xmlKey_literal The xml based message meta data
     */
-   public XmlKey(String xmlKey_literal) throws XmlBlasterException
+   public XmlKey(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
       super(xmlKey_literal);
       this.xmlKey_literal=xmlKey_literal;
@@ -93,12 +94,26 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
     * @param xmlKey_literal The xml based message meta data
     * @param isPublish Invoked from a client publish()
     */
-   public XmlKey(String xmlKey_literal, boolean isPublish) throws XmlBlasterException
+   public XmlKey(Global glob, String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
       super(xmlKey_literal, isPublish);
       this.xmlKey_literal=xmlKey_literal;
    }
 
+   /*
+    * Try to find out if this is an internal message only
+   public boolean isLocalMessage() throws XmlBlasterException
+   {
+      if (getKeyOid().startsWith(Constants.INTERNAL_OID_PRAEFIX) &&
+          getKeyOid().indexOf("["+glob.getId()+"]") >= 0)
+         return true;
+
+      if (isDefaultDomain())
+         return true;
+
+      return false;
+   }
+    */
 
    /**
     * We need this to allow checking if an existing XPath subscription matches this new message type.
@@ -168,25 +183,26 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
       long elapsed;
       String testName;
       XmlKey key;
+      Global glob = new Global(args);
       // Test on 600 MHz Linux 2.4 with SUN Jdk 1.3.1 beta 15
       try {
-         key = new XmlKey("<key oid='Hello' queryType='XPATH'>//key</key>");
+         key = new XmlKey(glob, "<key oid='Hello' queryType='XPATH'>//key</key>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
          
-         key = new XmlKey("<key oid=\"Hello\" queryType=''><Hacker /></key>");
+         key = new XmlKey(glob, "<key oid=\"Hello\" queryType=''><Hacker /></key>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
 
-         key = new XmlKey("<key   oid='' queryType='EXACT'/>");
+         key = new XmlKey(glob, "<key   oid='' queryType='EXACT'/>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
 
-         key = new XmlKey("<key oid='' contentMime='application/dummy' contentMimeExtended='1.0' domain='RUGBY'><Hacker /></key>");
+         key = new XmlKey(glob, "<key oid='' contentMime='application/dummy' contentMimeExtended='1.0' domain='RUGBY'><Hacker /></key>");
          System.out.println("keyOid=|" + key.getKeyOid() + "| queryType=" + key.getQueryTypeStr() + "\n" + key.toXml());
 
          for (int kk=0; kk<runs; kk++) {
             testName = "DomParseGivenOid";
             startTime = System.currentTimeMillis();
             for (int ii=0; ii<count; ii++) {
-               key = new XmlKey("<key oid='Hello'><Hacker /></key>");
+               key = new XmlKey(glob, "<key oid='Hello'><Hacker /></key>");
                key.getQueryType(); // Force DOM parse
                String oid = key.getKeyOid();
                String query = key.getQueryString(); // Force a DOM parse
@@ -207,7 +223,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
             testName = "DomParseGeneratedOid";
             startTime = System.currentTimeMillis();
             for (int ii=0; ii<count; ii++) {
-               key = new XmlKey("<key oid=''><Hacker /></key>");
+               key = new XmlKey(glob, "<key oid=''><Hacker /></key>");
                String oid = key.getKeyOid();
                //System.out.println(key.toXml()); // oid="192.168.1.2-7609-1015227424082-660"
             }
@@ -226,7 +242,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
             testName = "SimpleParseGivenOid";
             startTime = System.currentTimeMillis();
             for (int ii=0; ii<count; ii++) {
-               key = new XmlKey("<key oid='Hello'><Hacker /></key>");
+               key = new XmlKey(glob, "<key oid='Hello'><Hacker /></key>");
                String oid = key.getKeyOid();
                String domain = key.getDomain();  // the key attributes we parse ourself (without DOM)
                String contentMime = key.getContentMime();
