@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.11 2002/04/21 10:34:41 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.12 2002/04/25 06:14:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -96,7 +96,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
          return;
       }
       catch (Throwable e) {
-         String location = locator.toString();
+         String location = (locator == null) ? "" : locator.toString();
          if (e instanceof org.xml.sax.SAXParseException)
             location = getLocationString((SAXParseException)e);
 
