@@ -30,7 +30,7 @@ public class Demo
 
          String receiver = glob.getProperty().get("email.receiver", "xmlblaster@xmlblaster.org");
          CallbackAddress cbAddr =new CallbackAddress(glob, "EMAIL");
-         cbAddr.setAddress(receiver);
+         cbAddr.setRawAddress(receiver);
          qos.addCallbackAddress(cbAddr);
          
          con.connect(qos, null);  // Login to xmlBlaster without callback instantiation

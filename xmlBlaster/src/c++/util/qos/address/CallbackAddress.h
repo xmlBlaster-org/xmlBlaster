@@ -3,14 +3,14 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.4 2003/01/16 18:03:56 laghi Exp $
+Version:   $Id: CallbackAddress.h,v 1.5 2003/05/21 20:20:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding callback address string and protocol string.
  * <p />
  * <pre>
- * &lt;callback type='XML-RPC' sessionId='4e56890ghdFzj0'
+ * &lt;callback type='XMLRPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
  *           oneway='false' useForSubjectQueue='true'
  *           dispatchPlugin='Priority,1.0'>
@@ -45,7 +45,7 @@ private:
 public:
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>

@@ -119,8 +119,8 @@ void CorbaConnection::initAuthenticationService()
      return;
 
   // 1) check if argument -IOR at program startup is given
-  string authServerIOR = /* -ior IOR string is directly given */
-     log_.getProperties().getStringProperty("ior","");
+  string authServerIOR = /* -dispatch/clientSide/protocol/ior/iorString IOR string is directly given */
+     log_.getProperties().getStringProperty("dispatch/callback/protocol/ior/iorString","");
   if (authServerIOR != "") {
      CORBA::Object_var
         obj = orb_->string_to_object(authServerIOR.c_str());
@@ -128,11 +128,11 @@ void CorbaConnection::initAuthenticationService()
      log_.info(me(),"Accessing xmlBlaster using your given IOR string");
      return;
   }
-  if (log_.trace()) log_.trace(me(), "No -ior ...");
+  if (log_.trace()) log_.trace(me(), "No -dispatch/clientSide/protocol/ior/iorString ...");
 
   string authServerIORFile =
-     log_.getProperties().getStringProperty("ior.file","");
-  // -ior.file IOR string is given through a file
+     log_.getProperties().getStringProperty("dispatch/clientSide/protocol/ior/iorFile","");
+  // -dispatch/clientSide/protocol/ior/iorFile IOR string is given through a file
   if (authServerIORFile != "") {
      ifstream in(authServerIORFile.c_str());
      if ((!in) /* && (log_.PANIC) */ )
@@ -147,17 +147,17 @@ void CorbaConnection::initAuthenticationService()
      log_.info(me(), msg);
      return;
   }
-  if (log_.trace()) log_.trace(me(), "No -ior.file ...");
+  if (log_.trace()) log_.trace(me(), "No -dispatch/clientSide/protocol/ior/iorFile ...");
 
   // 3) Using builtin http IOR download ...
   {
      char myHostName[126];
      strcpy(myHostName, "localhost");
      gethostname(myHostName, 125);
-     string iorHost = log_.getProperties().getStringProperty("hostname",myHostName);
+     string iorHost = log_.getProperties().getStringProperty("bootstrapHostname",myHostName);
      // Port may be a name from /etc/services: "xmlBlaster 3412/tcp"
-     string iorPortStr = log_.getProperties().getStringProperty("port","3412"); // default port=3412 (xmlblaster)
-     if (log_.trace()) log_.trace(me(), "Trying -hostname=" + iorHost + " and -port=" + iorPortStr + " ...");
+     string iorPortStr = log_.getProperties().getStringProperty("bootstrapPort","3412"); // default bootstrapPort=3412 (xmlblaster)
+     if (log_.trace()) log_.trace(me(), "Trying -bootstrapHostname=" + iorHost + " and -bootstrapPort=" + iorPortStr + " ...");
      struct sockaddr_in xmlBlasterAddr;
      memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
      xmlBlasterAddr.sin_family=AF_INET;
@@ -170,7 +170,7 @@ void CorbaConnection::initAuthenticationService()
         if (portP != NULL)
            xmlBlasterAddr.sin_port = portP->s_port;
         else
-           xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("port",3412));
+           xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("bootstrapPort",3412));
         int s = socket(AF_INET, SOCK_STREAM, 0);
         if (s != -1) {
            int ret=0;
@@ -201,7 +201,7 @@ void CorbaConnection::initAuthenticationService()
               if (log_.trace()) log_.trace(me(), "Received IOR data: '" + authServerIOR + "'");
            }
            else {
-              log_.warn(me(), "Connecting to -hostname=" + iorHost + " failed"); // errno
+              log_.warn(me(), "Connecting to -bootstrapHostname=" + iorHost + " failed"); // errno
            }
            ::shutdown(s, 2);
         }
@@ -214,23 +214,23 @@ void CorbaConnection::initAuthenticationService()
               authServer_ = 0;
            }
            authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
-           string msg  = "Accessing xmlBlaster using -hostname "+iorHost;
+           string msg  = "Accessing xmlBlaster using -bootstrapHostname "+iorHost;
            log_.info(me(), msg);
            return;
         }
      }
   }
-  if (log_.trace()) log_.trace(me(), "No -hostname and -port ...");
+  if (log_.trace()) log_.trace(me(), "No -bootstrapHostname and -bootstrapPort ...");
 
 
   // 4) asking Name Service CORBA compliant
-  bool useNameService=log_.getProperties().getBoolProperty("ns",true);
-  // -ns default is to ask the naming service
+  bool useNameService=log_.getProperties().getBoolProperty("dispatch/clientSide/protocol/ior/useNameService",true);
+  // -dispatch/clientSide/protocol/ior/useNameService default is to ask the naming service
 
   string text = "Can't access xmlBlaster Authentication Service";
   text += ", is the server running and ready?\n - try to specify ";
-  text += "'-ior.file <fileName>' if server is running on same host\n";
-  text += " - try to specify '-hostname <hostName>  -port 3412' to ";
+  text += "'-dispatch/clientSide/protocol/ior/iorFile <fileName>' if server is running on same host\n";
+  text += " - try to specify '-bootstrapHostname <hostName>  -bootstrapPort 3412' to ";
   text += "locate xmlBlaster\n  - or contact your ";
   text += "system administrator to start a naming service";
 
@@ -357,7 +357,7 @@ void CorbaConnection::initAuthenticationService()
       }
    } // if (useNameService)
 
-   if (log_.trace()) log_.trace(me(), "No -ns ...");
+   if (log_.trace()) log_.trace(me(), "No -dispatch/clientSide/protocol/ior/useNameService ...");
    throw XmlBlasterException("communication.noConnection", "client", me(), "en", text);
 } // initAuthenticationService() 
 
@@ -896,11 +896,16 @@ void CorbaConnection::usage()
   string me="";
   log.plain(me, "");
   log.plain(me, "Client connection options:");
-  log.plain(me, "  -ior <IOR:00...>    The IOR string of the xmlBlaster-authentication server.");
-  log.plain(me, "  -hostname <host>    The host where to find xmlBlaster [localhost]");
-  log.plain(me, "  -port <port>        The port where xmlBlaster publishes its IOR [3412]");
-  log.plain(me, "  -ior.file <file>    A file with the xmlBlaster-authentication server IOR.");
-  log.plain(me, "  -ns <true/false>    Try to access xmlBlaster through a naming service [true]");
+  log.plain(me, "  -bootstrapHostname <host>");
+  log.plain(me, "                      The host where to find xmlBlaster [localhost]");
+  log.plain(me, "  -bootstrapPort     <port>");
+  log.plain(me, "                      The bootstrap port where xmlBlaster publishes its IOR [3412]");
+  log.plain(me, "  -dispatch/clientSide/protocol/ior/iorString <IOR:00...>");
+  log.plain(me, "                      The IOR string of the xmlBlaster-authentication server.");
+  log.plain(me, "  -dispatch/clientSide/protocol/ior/iorFile <file>");
+  log.plain(me, "                      A file with the xmlBlaster-authentication server IOR.");
+  log.plain(me, "  -dispatch/clientSide/protocol/ior/useNameService <true/false>");
+  log.plain(me, "                      Try to access xmlBlaster through a naming service [true]");
   log.plain(me, "");
 }
 

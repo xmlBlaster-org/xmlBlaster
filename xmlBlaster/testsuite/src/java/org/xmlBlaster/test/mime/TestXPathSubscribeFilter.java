@@ -84,20 +84,18 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      String[] args = new String[16];
-      args[0] = "-port";        // For all protocol we may use set an alternate server port
+      String[] args = new String[14];
+      args[0] = "-bootstrapPort";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
-      args[2] = "-socket.port";
+      args[2] = "-protocol/socket/port";
       args[3] = "" + (serverPort-1);
-      args[4] = "-rmi.registryPort";
+      args[4] = "-protocol/rmi/registryPort";
       args[5] = "" + (serverPort-2);
-      args[6] = "-xmlrpc.port";
+      args[6] = "-protocol/xmlrpc/port";
       args[7] = "" + (serverPort-3);
       args[8] = "-MimeAccessPlugin[XPathFilter][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.xpath.XPathFilter";
       //,classpath=xpath/jaxen-core.jar:xpath/jaxen-dom.jar:xpath/saxpath.jar
-      args[10] = "-client.port";
-      args[11] = "" + serverPort;
       args[12] = "-admin.remoteconsole.port";
       args[13] = "0";
       args[14] = "-trace";

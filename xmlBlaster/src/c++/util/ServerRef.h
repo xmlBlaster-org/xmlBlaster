@@ -10,7 +10,7 @@ Comment:   Holding serverRef address string and protocol string to
  * Helper class holding serverRef address string and protocol string.
  * <p />
  * Holds example a CORBA "IOR:00012..." string
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
@@ -40,7 +40,7 @@ public:
     ServerRef& operator =(const ServerRef& serverRef);
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param address A serverRef address for your client, suitable to the protocol
     *                for email e.g. "xmlblaster@xmlBlaster.org"
     */

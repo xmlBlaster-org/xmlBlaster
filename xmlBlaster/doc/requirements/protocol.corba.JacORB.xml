@@ -39,9 +39,9 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
 </pre>
    </example>
 
-   <configuration>
+   <configuration where="server">
       <p>
-      These parameters allow to configure JacORB, please consult the JacORB
+      These parameters allow to configure JacORB on server side, please consult the JacORB
       documentation and the requirement <i>protocol.corba.NameService</i> for further settings.
       </p>
       <table border="1">
@@ -53,7 +53,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          </tr>
 
          <tr>
-            <td>hostname</td>
+            <td>bootstrapHostname</td>
             <td>localhost</td>
             <td>The host where a client tries to download the CORBA IOR.
             XmlBlaster servers have the feature to pass their CORBA plugin IOR
@@ -62,15 +62,15 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          </tr>
 
          <tr>
-            <td>port</td>
+            <td>bootstrapPort</td>
             <td>3412</td>
-            <td>The port where the internal xmlBlaster http server listens.
+            <td>The bootstrap port where the internal xmlBlaster http server listens.
             This is a IANA registered port, uniquely dedicated for xmlBlaster.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>ior.hostname</td>
+            <td>protocol/ior/hostname</td>
             <td>localhost</td>
             <td>Allows to set the corba server IP address for multi-homed hosts.
                 Usually you don't need to specify this as the CORBA library
@@ -80,7 +80,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          </tr>
          
          <tr>
-            <td>ior.port</td>
+            <td>protocol/ior/port</td>
             <td>[random]</td>
             <td>Allows to set the corba server port number.
                 Usually you don't need to specify this as the CORBA library
@@ -90,16 +90,23 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
          </tr>
 
          <tr>
-            <td>ior.file</td>
+            <td>protocol/ior/iorFile</td>
             <td>-</td>
             <td>Specify a file where to dump the IOR of the AuthServer (server side) and how to reach the server (for client access).</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>ior</td>
+            <td>protocol/ior/iorString</td>
             <td>-</td>
-            <td>Specify the raw IOR string (for client access).</td>
+            <td>Specify the raw IOR string (for client access), for example "IOR:0003400..."</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>protocol/ior/useNameService</td>
+            <td>true</td>
+            <td>XmlBlaster tries to register its service in a CORBA naming service</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
@@ -122,7 +129,7 @@ java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>

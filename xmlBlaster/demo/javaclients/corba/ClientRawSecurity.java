@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.14 2003/01/05 23:06:54 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.15 2003/05/21 20:20:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -37,11 +37,11 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java org.xmlBlaster.Main -ior.file /tmp/NS_Ref
+ *    java org.xmlBlaster.Main -protocol/ior/iorFile /tmp/NS_Ref
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -ior `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -dispatch/clientSide/protocol/ior/iorString `cat /tmp/NS_Ref`
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -loginName "Jeff" `cat /tmp/NS_Ref`
  * </pre>
@@ -68,8 +68,8 @@ public class ClientRawSecurity
          ME = Args.getArg(args, "-loginName", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(args, "-ior.file", (String)null); // a file with the IOR string
-         String authServerIOR = Args.getArg(args, "-ior", (String)null); // the IOR string
+         String fileName = Args.getArg(args, "-dispatch/clientSide/protocol/ior/iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = Args.getArg(args, "-dispatch/clientSide/protocol/ior/iorString", (String)null); // the IOR string
 
          if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
 
@@ -86,9 +86,9 @@ public class ClientRawSecurity
             if (nc == null) {
                log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "Start the server:\n"
-                           + "   jaco org.xmlBlaster.Main -ior.file /tmp/NS_Ref\n"
+                           + "   jaco org.xmlBlaster.Main -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n"
                            + "Start this client:\n"
-                           + "   jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref\n");
+                           + "   jaco javaclients.corba.ClientRawSecurity -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n");
                usage();
                log.error(ME, "Read xmlBlaster/INSTALL for help");
                System.exit(1);
@@ -248,10 +248,10 @@ public class ClientRawSecurity
    {
       System.out.println("\nAvailable options:");
       System.out.println("   -loginName          The login name [ClientRawSecurity].");
-      System.out.println("   -ior.file           File with the IOR string from xmlBlaster.");
-      System.out.println("   -ior                The raw IOR string from xmlBlaster.");
+      System.out.println("   -dispatch/clientSide/protocol/ior/iorFile           File with the IOR string from xmlBlaster.");
+      System.out.println("   -dispatch/callback/protocol/ior/iorString                The raw IOR string from xmlBlaster.");
       Global.instance().usage();
-      System.err.println("Example: jaco javaclients.corba.ClientRawSecurity -ior.file /tmp/NS_Ref\n");
+      System.err.println("Example: jaco javaclients.corba.ClientRawSecurity -dispatch/clientSide/protocol/ior/iorFile /tmp/NS_Ref\n");
       System.exit(1);
    }
 

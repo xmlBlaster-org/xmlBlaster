@@ -45,16 +45,14 @@ public class Util
    public static Vector getOtherServerPortVec(int serverPort) {
       // For all protocol we may use set an alternate server port
       Vector vec = new Vector();
-      vec.addElement("-port");
+      vec.addElement("-bootstrapPort");
       vec.addElement(""+serverPort);
-      vec.addElement("-socket.port");
+      vec.addElement("-protocol/socket/port");
       vec.addElement(""+(serverPort-1));
-      vec.addElement("-rmi.registryPort");
+      vec.addElement("-protocol/rmi/registryPort");
       vec.addElement(""+(serverPort-2));
-      vec.addElement("-xmlrpc.port");
+      vec.addElement("-protocol/xmlrpc/port");
       vec.addElement(""+(serverPort-3));
-      vec.addElement("-client.port");
-      vec.addElement(""+serverPort);
       vec.addElement("-admin.remoteconsole.port");  // -admin.remoteconsole.port 0 : switch off telnet
       vec.addElement(""+0);
       //vec.addElement(""+(serverPort-4));
@@ -67,16 +65,14 @@ public class Util
    public static String[] getDefaultServerPorts()
    {
       String[] argsDefault = {
-         "-port",
+         "-bootstrapPort",
          "" + Constants.XMLBLASTER_PORT,
-         "-socket.port",
-         "" + org.xmlBlaster.protocol.socket.SocketDriver.DEFAULT_SERVER_PORT,
-         "-rmi.registryPort",
+         "-dispatch/clientSide/protocol/socket/port",
+         "" + org.xmlBlaster.protocol.socket.ExecutorBase.DEFAULT_SERVER_PORT,
+         "-dispatch/clientSide/protocol/rmi/registryPort",
          "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
-         "-xmlrpc.port",
+         "-dispatch/clientSide/protocol/xmlrpc/port",
          "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT,
-         "-client.port",
-         "" + Constants.XMLBLASTER_PORT,
          "-admin.remoteconsole.port",
          "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT
          };

@@ -3,12 +3,13 @@ Name:      OrbInstanceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   OrbInstanceWrapper class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: OrbInstanceWrapper.java,v 1.2 2003/04/04 17:34:50 ruff Exp $
+Version:   $Id: OrbInstanceWrapper.java,v 1.3 2003/05/21 20:21:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
@@ -36,13 +37,13 @@ public class OrbInstanceWrapper
     * @param glob
     * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getArgs(String[], Properties)
     * @param props application-specific properties; may be <code>null</code>, see org.omg.CORBA.ORB.init(String[], Properties)
-    * @param forCB set to true if used to configure the callback ORB (adds 'CB' to command line properties)
+    * @param address The configuration of the address
     * @return Access to a new created orb handle
     * @see org.omg.CORBA.ORB#init(String[], Properties)
     */
-   public synchronized org.omg.CORBA.ORB getOrb(String[] args, Properties props, boolean forCB) {
+   public synchronized org.omg.CORBA.ORB getOrb(String[] args, Properties props, AddressBase address) {
       if (this.orb == null) {
-         this.orb = OrbInstanceFactory.createOrbInstance(glob, args, (Properties)null, forCB);
+         this.orb = OrbInstanceFactory.createOrbInstance(glob, args, (Properties)null, address);
       }
       this.referenceCounter++;
       return this.orb;

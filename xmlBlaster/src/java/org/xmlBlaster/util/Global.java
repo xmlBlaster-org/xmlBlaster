@@ -352,8 +352,8 @@ public class Global implements Cloneable
       this.id = getProperty().get("server.node.id", (String)null);
       if (this.id == null)
          this.id = getProperty().get("cluster.node.id", "xmlBlaster");  // fallback
-      if (this.id == null && getBootstrapAddress().getPort() > 0) {
-         this.id = getBootstrapAddress().getAddress();
+      if (this.id == null && getBootstrapAddress().getBootstrapPort() > 0) {
+         this.id = getBootstrapAddress().getBootstrapHostname() + ":" + getBootstrapAddress().getBootstrapPort();
       }
    }
 
@@ -1010,7 +1010,7 @@ public class Global implements Cloneable
    /**
     * The key is the protocol and the address to access the callback instance.
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getRawAddress()'
     * @return The instance of the protocol callback driver or null if not known
     */
    public final I_CallbackDriver getNativeCallbackDriver(String key)
@@ -1022,7 +1022,7 @@ public class Global implements Cloneable
    /**
     * The key is the protocol and the address to access the callback instance.
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getRawAddress()'
     * @param The instance of the protocol callback driver
     */
    public final void addNativeCallbackDriver(String key, I_CallbackDriver driver)
@@ -1034,7 +1034,7 @@ public class Global implements Cloneable
    /**
     * The key is the protocol and the address to access the callback instance.
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getRawAddress()'
     * @param The instance of the protocol callback driver
     */
    public final void removeNativeCallbackDriver(String key)
@@ -1049,7 +1049,7 @@ public class Global implements Cloneable
     * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
-    * @param key  e.g. <i>"SOCKET192.168.2.2:7604"</i> from 'cbAddr.getType() + cbAddr.getAddress()'<br />
+    * @param key  e.g. <i>"SOCKET192.168.2.2:7604"</i> from 'cbAddr.getType() + cbAddr.getRawAddress()'<br />
     *             or <i>"/xmlBlaster/I_Authenticate"</i>
     * @return The instance of this object
     */
@@ -1064,7 +1064,7 @@ public class Global implements Cloneable
     * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getRawAddress()'
     * @param The instance of the protocol callback driver
     */
    public final void addObjectEntry(String key, Object driver)
@@ -1078,7 +1078,7 @@ public class Global implements Cloneable
     * This is helpful if you have more than one I_XmlBlasterAccess or cluster nodes
     * running in the same JVM
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getRawAddress()'
     */
    public final void removeObjectEntry(String key)
    {
@@ -1097,11 +1097,11 @@ public class Global implements Cloneable
     * <p />
     * Is configurable with
     * <pre>
-    *   -hostname myhost.mycompany.com   (or the raw IP)
-    *   -port 3412
+    *   -bootstrapHostname myhost.mycompany.com   (or the raw IP)
+    *   -bootstrapPort 3412
     * </pre>
     * Defaults to the local machine and the IANA xmlBlaster port.<br />
-    * You can set "-port 0" to avoid starting the internal HTTP server
+    * You can set "-bootstrapPort 0" to avoid starting the internal HTTP server
     */
    public final Address getBootstrapAddress() {
       if (this.bootstrapAddress == null) {
@@ -1109,10 +1109,11 @@ public class Global implements Cloneable
             if (this.bootstrapAddress == null) {
                if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
                this.bootstrapAddress = new Address(this);
-               this.bootstrapAddress.setHostname(getBootstrapHostname());
-               this.bootstrapAddress.setPort(getBootstrapPort());
-               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getHostname() +
-                              " port=" + this.bootstrapAddress.getPort() + ": " + this.bootstrapAddress.getAddress());
+               this.bootstrapAddress.setBootstrapHostname(getBootstrapHostname());
+               this.bootstrapAddress.setBootstrapPort(getBootstrapPort());
+               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getBootstrapHostname() +
+                              " port=" + this.bootstrapAddress.getBootstrapPort() + ": " + this.bootstrapAddress.getRawAddress());
+               this.bootstrapAddress.setRawAddress("xmlBlaster://" + getBootstrapHostname() + ":" + getBootstrapPort());
             }
          }
       }
@@ -1120,53 +1121,34 @@ public class Global implements Cloneable
    }
 
    /**
-    * Please prefer getBootstrapAddress().getHostname() as this is cached and better performing
+    * Please prefer getBootstrapAddress().getBootstrapHostname() as this is cached and better performing
     */
    public final String getBootstrapHostname() {
-      boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
-      if (supportOldStyle) {
-         String iorHost = getProperty().get("iorHost", getLocalIP());
-         return getProperty().get("hostname", iorHost);
-      }
-      else {
-         return getProperty().get("hostname", getLocalIP());
-      }
+      return getProperty().get("bootstrapHostname", getLocalIP());
    }
 
    /**
-    * Please prefer getBootstrapAddress().getPort() as this is cached and better performing
+    * Please prefer getBootstrapAddress().getBootstrapPort() as this is cached and better performing
     */
    public final int getBootstrapPort() {
-      boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
+      boolean supportOldStyle = true; // for a while we support the old style -dispatch/callback/protocol/ior/iorStringHost and -dispatch/callback/protocol/ior/iorStringPort
       if (supportOldStyle) {
          int iorPort = getProperty().get("iorPort", Constants.XMLBLASTER_PORT);
-         return getProperty().get("port", iorPort);
+         return getProperty().get("bootstrapPort", iorPort);
       }
       else {
-         return getProperty().get("port", Constants.XMLBLASTER_PORT);
+         return getProperty().get("bootstrapPort", Constants.XMLBLASTER_PORT);
       }
    }
 
    /**
-    * Returns a local IP or hostname to use.
-    * <p />
-    * The precedence of finding the callback hostname is as
-    * described in getCbHostname() but if the given param is found
-    * as a property this has precedence.
-    * @return The bootstrap callback hostname, is never null
-    */
-   public String getCbHostname(String param) {
-      return getProperty().get(param, getCbHostname());
-   }
-
-   /**
-    * Returns a local IP or hostname as a default setting to use for callback servers.
+    * Returns a local IP or bootstrapHostname as a default setting to use for callback servers.
     * <p />
     * It is determined by doing a short connect to the xmlBlaster HTTP server
     * an reading the used local hostname.
     * The precedence of finding the callback hostname is:
     * <ol>
-    *  <li>Evaluate the -hostnameCB property</li>
+    *  <li>Evaluate the -bootstrapHostnameCB property</li>
     *  <li>Try to determine it by a temporary connection to the xmlBlaster bootstrap server and reading the used local IP</li>
     *  <li>Use default IP of this host</li>
     * </ol>
@@ -1176,8 +1158,8 @@ public class Global implements Cloneable
       if (this.cbHostname == null) {
          try {
             Address addr = getBootstrapAddress();
-            if (addr.getPort() > 0) {
-               Socket sock = new Socket(addr.getHostname(), addr.getPort());
+            if (addr.getBootstrapPort() > 0) {
+               Socket sock = new Socket(addr.getBootstrapHostname(), addr.getBootstrapPort());
                this.cbHostname = sock.getLocalAddress().getHostAddress();
                sock.close();
                sock = null;
@@ -1189,7 +1171,7 @@ public class Global implements Cloneable
          }
          if (this.cbHostname == null)
             this.cbHostname = getLocalIP();
-         this.cbHostname = getProperty().get("hostnameCB", this.cbHostname);
+         this.cbHostname = getProperty().get("bootstrapHostnameCB", this.cbHostname);
       }
       return this.cbHostname;
    }
@@ -1208,12 +1190,12 @@ public class Global implements Cloneable
     */
    public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
-      if (logDefault.CALL) logDefault.call(ME, "Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getAddress()) + ") ...");
+      if (logDefault.CALL) logDefault.call(ME, "Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getRawAddress()) + ") ...");
       //log.info(ME, "accessFromInternalHttpServer address=" + address.toXml());
       Address addr = address;
-      if (addr != null && addr.getPort() > 0) {
-         if (addr.getHostname() == null || addr.getHostname().length() < 1) {
-            addr.setHostname(getLocalIP());
+      if (addr != null && addr.getBootstrapPort() > 0) {
+         if (addr.getBootstrapHostname() == null || addr.getBootstrapHostname().length() < 1) {
+            addr.setBootstrapHostname(getLocalIP());
          }
       }
       else {
@@ -1225,14 +1207,14 @@ public class Global implements Cloneable
             urlPath = "/" + urlPath;
 
          if (logDefault.TRACE) logDefault.trace(ME, "Trying internal http server on " + 
-                               addr.getHostname() + ":" + addr.getPort() + "" + urlPath);
-         java.net.URL nsURL = new java.net.URL("http", addr.getHostname(), addr.getPort(), urlPath);
+                               addr.getBootstrapHostname() + ":" + addr.getBootstrapPort() + "" + urlPath);
+         java.net.URL nsURL = new java.net.URL("http", addr.getBootstrapHostname(), addr.getBootstrapPort(), urlPath);
          java.io.InputStream nsis = nsURL.openStream();
          byte[] bytes = new byte[4096];
          java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
          int numbytes;
          for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
-            if (logDefault.TRACE) logDefault.trace(ME, "XmlBlaster on host " + addr.getHostname() + " and port " + addr.getPort() + " returns empty data, trying again after sleeping 10 milli ...");
+            if (logDefault.TRACE) logDefault.trace(ME, "XmlBlaster on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + " returns empty data, trying again after sleeping 10 milli ...");
             org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
@@ -1244,22 +1226,22 @@ public class Global implements Cloneable
          return data;
       }
       catch(MalformedURLException e) {
-         String text = "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".";
+         String text = "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrap port " + addr.getBootstrapPort() + ".";
          logDefault.error(ME, text + e.toString());
          e.printStackTrace();
          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME+"NoHttpServer", text, e);
       }
       catch(IOException e) {
-         if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
+         if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + ": " + e.toString());
          throw new XmlBlasterException(this, ErrorCode.COMMUNICATION_NOCONNECTION, ME+"NoHttpServer",
-                   "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".", e);
+                   "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrap port " + addr.getBootstrapPort() + ".", e);
       }
    }
 
    /**
     * The IP address where we are running.
     * <p />
-    * You can specify the local IP address with e.g. -hostname 192.168.10.1
+    * You can specify the local IP address with e.g. -bootstrapHostname 192.168.10.1
     * on command line, useful for multi-homed hosts.
     *
     * @return The local IP address, defaults to '127.0.0.1' if not known.
@@ -1267,14 +1249,14 @@ public class Global implements Cloneable
    public final String getLocalIP()
    {
       if (this.ip_addr == null) {
-         if (getBootstrapAddress().hasHostname()) { // check if hostname is available to avoid infinit looping
-            this.ip_addr = getBootstrapAddress().getHostname();
+         if (getBootstrapAddress().hasBootstrapHostname()) { // check if bootstrapHostname is available to avoid infinit looping
+            this.ip_addr = getBootstrapAddress().getBootstrapHostname();
          }
          else {
             try {
                this.ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
-               logDefault.warn(ME, "Can't determine local IP address, try e.g. '-hostname 192.168.10.1' on command line: " + e.toString());
+               logDefault.warn(ME, "Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
             }
             if (this.ip_addr == null) this.ip_addr = "127.0.0.1";
          }
@@ -1359,7 +1341,7 @@ public class Global implements Cloneable
       if (this.httpServer == null) {
          synchronized(this) {
             if (this.httpServer == null)
-               this.httpServer = new HttpIORServer(this, getBootstrapAddress().getHostname(), getBootstrapAddress().getPort());
+               this.httpServer = new HttpIORServer(this, getBootstrapAddress().getBootstrapHostname(), getBootstrapAddress().getBootstrapPort());
          }
       }
       return this.httpServer;

@@ -214,7 +214,7 @@ public:
       XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(ME, "Example:");
-      log_.plain(ME, "   TestGet -hostname serverHost.myCompany.com");
+      log_.plain(ME, "   TestGet -bootstrapHostname serverHost.myCompany.com");
       log_.plain(ME, "----------------------------------------------------------");
    }
 };

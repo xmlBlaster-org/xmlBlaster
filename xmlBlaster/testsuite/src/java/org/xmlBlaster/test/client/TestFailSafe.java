@@ -86,7 +86,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
       glob.init(Util.getOtherServerPorts(serverPort));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          con = glob.getXmlBlasterAccess(); // Find orb
 
@@ -149,7 +149,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
 
-         // reset to default server port (necessary if other tests follow in the same JVM).
+         // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
          Util.resetPorts(glob);
 
          this.glob = null;

@@ -121,7 +121,7 @@ public class CbQueueProperty extends QueuePropertyBase
       CbQueueProperty prop = new CbQueueProperty(new Global(args), null, null);
       System.out.println(prop.toXml());
       CallbackAddress adr = new CallbackAddress(new Global(args), "EMAIL");
-      adr.setAddress("et@mars.sun");
+      adr.setRawAddress("et@mars.sun");
       prop.setCallbackAddress(adr);
       System.out.println(prop.toXml());
    }

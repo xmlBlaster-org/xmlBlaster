@@ -98,7 +98,7 @@ public class CallbackNativeDriver implements I_CallbackDriver
       try {
          if (msgArr == null || msgArr.length < 1) 
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-         log.info(ME, "xmlBlaster.update to " + callbackAddress.getAddress());
+         log.info(ME, "xmlBlaster.update to " + callbackAddress.getRawAddress());
 
          String[] ret = new String[msgArr.length];
          for (int ii=0; ii<ret.length; ii++)
@@ -129,7 +129,7 @@ public class CallbackNativeDriver implements I_CallbackDriver
    {
       if (msgArr == null || msgArr.length < 1) 
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
-      log.info(ME, "xmlBlaster.updateOneway to " + callbackAddress.getAddress());
+      log.info(ME, "xmlBlaster.updateOneway to " + callbackAddress.getRawAddress());
    }
 
    /**

@@ -27,6 +27,7 @@ public class AllTests
       suite.addTest(TestTopicLifeCycle.suite());
       //suite.addTest(TestTopicHistory.suite());
       suite.addTest(TestReferenceCount.suite());
+      suite.addTest(TestReferenceCountSwap.suite());
       return suite;
    }
 }

@@ -16,7 +16,7 @@
 #               on my linux redhat 7.2 it was already installed.
 #               - perl XML Parser :
 #               perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)
-#               - perl XML-RPC :
+#               - perl XMLRPC :
 #               xml-rpc implemeted by Frontier (Frontier-RPC-x.xx).
 #               Look at CPAN for this package.
 #
@@ -35,7 +35,7 @@
 #
 # 2001-12-17 11:54 mAd@ktaland.com
 #
-#       Connect to xmlBlaster via XML-RPC
+#       Connect to xmlBlaster via XMLRPC
 #       IOR with MICO is to heavy to install ;o{
 #
 

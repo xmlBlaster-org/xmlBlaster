@@ -279,13 +279,15 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
       Here we start the xmlBlaster server and it will offer its SOCKET service on host <i>myHost.com</i> and on port <i>7766</i>:
       </p>
       <pre>
-java -jar lib/xmlBlaster.jar -socket.hostname myHost.com -socket.port 7766
+java -jar lib/xmlBlaster.jar -dispatch/clientSide/protocol/socket/hostname myHost.com
+                             -dispatch/clientSide/protocol/socket/port 7766
       </pre>
       <p>
       This client tries to find an xmlBlaster server instance at host <i>myHost.com</i> and on port <i>7766</i>:
       </p>
       <pre>
-java HelloWorld3 -protocol SOCKET -socket.hostname myHost.com -socket.port 7766
+java HelloWorld3 -protocol SOCKET -dispatch/clientSide/protocol/socket/hostname myHost.com
+                                  -dispatch/clientSide/protocol/socket/port 7766
       </pre>
 
       <br />
@@ -296,16 +298,20 @@ java HelloWorld3 -protocol SOCKET -socket.hostname myHost.com -socket.port 7766
 ...
 
 String[] args = { "-protocol", "SOCKET",
-                "-socket.hostname", "myHost.com",
-                "-socket.port", "7766",
-                "-socket.localHostname", "myHost.com",
-                "-socket.localPort", "8888" };
+                "-dispatch/clientSide/protocol/socket/hostname", "myHost.com",
+                "-dispatch/clientSide/protocol/socket/port", "7766",
+                "-dispatch/clientSide/protocol/socket/localHostname", "myHost.com",
+                "-dispatch/clientSide/protocol/socket/localPort", "8888" };
 glob.init(args);
 
 ConnectQos qos = new ConnectQos(glob);
 
 ...
       </pre>
+      <p>
+      The raw address transferred in the QoS markup is of the form
+      <i>socket://host:port</i>, for example <i>socket://127.168.1.2:7607</i>.
+      <p>
    </example>
 
    <configuration where="server">
@@ -318,7 +324,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.hostname</td>
+            <td>protocol/socket/hostname</td>
             <td>localhost</td>
             <td>Specify a hostname where the SOCKET server runs
             </td>
@@ -326,7 +332,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.port</td>
+            <td>protocol/socket/port</td>
             <td>7607</td>
             <td>The SOCKET server port
                 </td>
@@ -334,7 +340,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.localHostname</td>
+            <td>protocol/socket/localHostname</td>
             <td>localhost</td>
             <td>The local address the socket is bound to. 
             Usually this is dynamically choosen by your operating system and you don't need
@@ -344,7 +350,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.localPort</td>
+            <td>protocol/socket/localPort</td>
             <td>8900</td>
             <td>The local port the socket is bound to.
                 Default is -1 and the operating system chooses an arbitrary port.
@@ -353,7 +359,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.responseTimeout</td>
+            <td>protocol/socket/responseTimeout</td>
             <td>60000 (one minute)</td>
             <td>When a method is invoked we wait the given time on a response.<br />
             The response is the return value or an exception for method invocations which
@@ -363,7 +369,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.SoTimeout</td>
+            <td>protocol/socket/SoTimeout</td>
             <td>0</td>
             <td>How long we max. block on InputStream.read(). Please leave this value
                 0, as we should block on input stream indefinitely to receive a new message.
@@ -372,7 +378,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.SoLingerTimeout</td>
+            <td>protocol/socket/SoLingerTimeout</td>
             <td>60000 (one minute)</td>
             <td>If the socket is closed, how long shall we try to deliver unsent data from the socket stack.
             </td>
@@ -380,7 +386,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.backlog</td>
+            <td>protocol/socket/backlog</td>
             <td>50</td>
             <td>Socket queue size for incoming connection request
             </td>
@@ -388,8 +394,8 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.threadPrio</td>
-            <td>5</td>
+            <td>protocol/socket/threadPrio</td>
+            <td>NORM_PRIORITY = 5</td>
             <td>The priority 1=min - 10=max of the listener thread
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -406,8 +412,10 @@ ConnectQos qos = new ConnectQos(glob);
    </configuration>
    <configuration where="client">
       <p>The Java socket implementation on client side supports
-         the same properties as the server (we reuse the same implementation)
-         but has these additional features:
+         the same properties as the server (we reuse the same implementation).
+         You need to add the "dispatch/callback/" or "dispatch/clientSide/" prefix
+         to the property key.<br />
+         You have thes additional features on client side:
       </p>
       <table border="1">
          <tr>
@@ -418,7 +426,7 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
-            <td>socket.cb.multiThreaded</td>
+            <td>dispatch/callback/protocol/socket/multiThreaded</td>
             <td>true</td>
             <td>
             <ul>
@@ -438,6 +446,22 @@ ConnectQos qos = new ConnectQos(glob);
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+         <tr>
+            <td>dispatch/callback/protocol/socket/invokerThreadPrio</td>
+            <td>NORM_PRIORITY = 5</td>
+            <td>
+              The priority of the client side callback thread which calls your update method.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>dispatch/callback/protocol/socket/threadPrio</td>
+            <td>NORM_PRIORITY = 5</td>
+            <td>The priority 1=min - 10=max of the client side callback server listener thread
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
    </configuration>
    <todo type="HTML">
@@ -456,9 +480,10 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="REQ">protocol</see>
    <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
+   <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.30 $</revision>
+   <revision>$Revision: 1.31 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -28,14 +28,14 @@ import org.xmlBlaster.util.MsgUnit;
  * <br />
  * Over the internet with CORBA:
  * <pre>
- *   java Latency -numSend 100 -hostname server.xmlBlaster.org
+ *   java Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org
  *  or if you have a dynamic IP:
- *   java Latency -numSend 100 -hostname server.xmlBlaster.org -ior.hostnameCB <myCurrentIP>
+ *   java Latency -numSend 100 -bootstrapHostname server.xmlBlaster.org -dispatch/callback/protocol/ior/hostname <myCurrentIP>
  * </pre>
  * <br />
  * Over the internet with XmlRpc:
  * <pre>
- *   java Latency -numSend 100 -dispatch/clientSide/protocol XML-RPC -xmlrpc.hostname server.xmlBlaster.org -xmlrpc.hostnameCB <myCurrentIP>
+ *   java Latency -numSend 100 -dispatch/clientSide/protocol XMLRPC -dispatch/clientSide/protocol/xmlrpc/hostname server.xmlBlaster.org -dispatch/callback/protocol/xmlrpc/hostname <myCurrentIP>
  * </pre>
  * <p />
  * Results, for one round trip including publish -> processing in xmlBlaster -> update -> parsing in client (600 MHz AMD Linux):

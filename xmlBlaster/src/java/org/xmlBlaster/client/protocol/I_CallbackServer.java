@@ -9,6 +9,7 @@ package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 
 /**
@@ -31,21 +32,26 @@ public interface I_CallbackServer extends I_Plugin
     * Initialize and start the callback server. 
     * <p />
     * This is guaranteed to be invoked after the default constructor.
+    * <p>
+    * NOTE: The plugin needs to set callbackAddress.setRawAddress(addr) on success
+    * which is for example "et@mars.universe" or "http://myserver:8080/xmlrpc"
+    * </p>
     * @param glob The global handle with your environment settings
     * @param name The login name of the client, for logging only
+    * @param callbackAddress The address configuration of this callback server
     * @param client Your implementation to receive the callback messages from xmlBlaster
     */
-   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException;
+   public void initialize(Global glob, String name, CallbackAddress callbackAddress, I_CallbackExtended client) throws XmlBlasterException;
 
    /**
     * Returns the 'well known' protocol type. 
-    * @return E.g. "RMI", "SOCKET", "XML-RPC"
+    * @return E.g. "RMI", "SOCKET", "XMLRPC"
     */
    public String getCbProtocol();
    
    /**
     * Returns the current callback address. 
-    * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XML-RPC"
+    * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XMLRPC"
     *         or null if not known
     */
    public String getCbAddress() throws XmlBlasterException;

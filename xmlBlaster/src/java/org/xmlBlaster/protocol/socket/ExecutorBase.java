@@ -13,6 +13,8 @@ public interface ExecutorBase
 {
    /** Default port of xmlBlaster socket server is 7607 */
    public static final int DEFAULT_SERVER_PORT = 7607;
+   /** Default port of xmlBlaster socket server is 7608 */
+   public static final int DEFAULT_SERVER_CBPORT = 7608;
    /** Used for execute() */
    public final boolean WAIT_ON_RESPONSE = true;
    /** Used for execute() */

@@ -35,7 +35,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * <p />
  * Invoke: java HelloWorld6 -session.name jack/5
  * <p />
- * Invoke: java HelloWorld6 -session.name joe/2 -passwd secret -dispatch/clientSide/protocol XML-RPC
+ * Invoke: java HelloWorld6 -session.name joe/2 -passwd secret -dispatch/clientSide/protocol XMLRPC
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld6
@@ -55,10 +55,10 @@ public class HelloWorld6
          /*
          // Change protocol and server lookup:
          String[] args = { "-protocol", "SOCKET",
-                           "-socket.hostname", "myHost.com",
-                           "-socket.port", "7666",
-                           "-socket.localHostname", "myHost.com",
-                           "-socket.localPort", "8888" };
+                           "-dispatch/clientSide/protocol/socket/hostname", "myHost.com",
+                           "-dispatch/clientSide/protocol/socket/port", "7666",
+                           "-dispatch/clientSide/protocol/socket/localHostname", "myHost.com",
+                           "-dispatch/clientSide/protocol/socket/localPort", "8888" };
          glob.init(args);
          */
 

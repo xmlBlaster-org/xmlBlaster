@@ -3,7 +3,7 @@ Name:      I_Callback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.java,v 1.12 2003/03/24 19:59:10 ruff Exp $
+Version:   $Id: I_Callback.java,v 1.13 2003/05/21 20:21:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -16,9 +16,9 @@ import org.xmlBlaster.client.qos.UpdateQos;
  * update() methods, and delivers the client a nicer update() method.
  * <p>
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
- * or RMI or XML-RPC.
+ * or RMI or XMLRPC.
  *
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_Callback

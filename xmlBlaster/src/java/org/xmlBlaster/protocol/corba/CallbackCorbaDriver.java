@@ -34,6 +34,9 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    private OrbInstanceWrapper orbInstanceWrapper;
    private org.omg.CORBA.ORB orb;
 
+   public CallbackCorbaDriver () {
+   }
+
    /** Get a human readable name of this driver */
    public final String getName() {
       return ME;
@@ -47,10 +50,10 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       this.glob = glob;
       this.log = glob.getLog("corba");
       this.callbackAddress = callbackAddress;
-      String callbackIOR = callbackAddress.getAddress();
+      String callbackIOR = callbackAddress.getRawAddress();
       try {
          this.orbInstanceWrapper = OrbInstanceFactory.getOrbInstanceWrapper(this.glob, Constants.RELATING_CALLBACK);
-         this.orb = this.orbInstanceWrapper.getOrb(this.glob.getArgs(), null, true);
+         this.orb = this.orbInstanceWrapper.getOrb(this.glob.getArgs(), null, this.callbackAddress);
          this.cb = BlasterCallbackHelper.narrow(this.orb.string_to_object(callbackIOR));
          if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
       }
@@ -96,7 +99,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * @return "IOR:00034500350..."
     */
    public final String getRawAddress() {
-      return callbackAddress.getAddress();
+      return callbackAddress.getRawAddress();
    }
 
    /**
@@ -152,7 +155,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getAddress());
+      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getRawAddress());
       //log.info(ME, "xmlBlaster.updateOneway(" + msgArr.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgArr.length];

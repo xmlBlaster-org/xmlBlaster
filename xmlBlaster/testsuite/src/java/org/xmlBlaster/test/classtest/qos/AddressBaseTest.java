@@ -44,9 +44,9 @@ public class AddressBaseTest extends TestCase {
             Global glob = new Global();
             Address a = new Address(glob);
             a.setType("SOCKET");
-            a.setHostname("oioihost");
-            a.setPort(9999);
-            a.setAddress("127.0.0.1:7600");
+            a.setBootstrapHostname("oioihost");
+            a.setBootstrapPort(9999);
+            a.setRawAddress("127.0.0.1:7600");
             a.setCollectTime(12345L);
             a.setPingInterval(54321L);
             a.setRetries(17);
@@ -55,9 +55,9 @@ public class AddressBaseTest extends TestCase {
             a.setSecretSessionId("0x4546hwi89");
             System.out.println(a.toXml());
             assertEquals("", "SOCKET", a.getType());
-            assertEquals("", "oioihost", a.getHostname());
-            assertEquals("", 9999, a.getPort());
-            assertEquals("", "127.0.0.1:7600", a.getAddress());
+            assertEquals("", "oioihost", a.getBootstrapHostname());
+            assertEquals("", 9999, a.getBootstrapPort());
+            assertEquals("", "127.0.0.1:7600", a.getRawAddress());
             assertEquals("", 12345L, a.getCollectTime());
             assertEquals("", 54321L, a.getPingInterval());
             assertEquals("", 17, a.getRetries());
@@ -68,23 +68,23 @@ public class AddressBaseTest extends TestCase {
          {
             Global glob = new Global();
             Address a = new Address(glob);
-            a.setAddress("127.0.0.1:7600"); // A setAddress() should not be modified
-            a.setHostname("oioihost");
-            a.setPort(9999);
+            a.setRawAddress("127.0.0.1:7600"); // A setRawAddress() should not be modified
+            a.setBootstrapHostname("oioihost");
+            a.setBootstrapPort(9999);
             System.out.println(a.toXml());
-            assertEquals("", "oioihost", a.getHostname());
-            assertEquals("", 9999, a.getPort());
-            assertEquals("", "127.0.0.1:7600", a.getAddress());
+            assertEquals("", "oioihost", a.getBootstrapHostname());
+            assertEquals("", 9999, a.getBootstrapPort());
+            assertEquals("", "127.0.0.1:7600", a.getRawAddress());
          }
          {
             Global glob = new Global();
             Address a = new Address(glob);
-            a.setHostname("oioihost");
-            a.setPort(9999);
+            a.setBootstrapHostname("oioihost");
+            a.setBootstrapPort(9999);
             System.out.println(a.toXml());
-            assertEquals("", "oioihost", a.getHostname());
-            assertEquals("", 9999, a.getPort());
-            assertEquals("", "http://oioihost:9999", a.getAddress());
+            assertEquals("", "oioihost", a.getBootstrapHostname());
+            assertEquals("", 9999, a.getBootstrapPort());
+            assertEquals("", "", a.getRawAddress());
          }
          {
             String nodeId = "heron";
@@ -118,7 +118,8 @@ public class AddressBaseTest extends TestCase {
       System.out.println("***AddressBaseTest: testDefault ...");
       
       Address a = new Address(glob);
-      assertEquals("", glob.getBootstrapAddress().getAddress(), a.getAddress());
+      assertEquals("", "xmlBlaster://"+glob.getLocalIP()+":3412", glob.getBootstrapAddress().getRawAddress());
+      assertEquals("", "", a.getRawAddress());
 
       System.out.println("***AddressBaseTest: testDefault [SUCCESS]");
    }

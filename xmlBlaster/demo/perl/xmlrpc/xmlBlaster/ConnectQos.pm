@@ -17,7 +17,7 @@
 #         returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
 # 118          returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
 # 119          if (!returnValueStripped.equals(returnValue)) {
-# 120             log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+# 120             log.trace(ME, "Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
 # 121                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
 # 122          }
 # 123  
@@ -146,8 +146,8 @@ sub _fromXml {
 #       maxEntriesCache='1000'>
 #    <address
 #        type='IOR'
-#        hostname='129.194.17.16'
-#        port='3412'
+#        bootstrapHostname='129.194.17.16'
+#        bootstrapPort='3412'
 #        dispatchPlugin='undef'>
 #     http://129.194.17.16:3412
 #    </address>

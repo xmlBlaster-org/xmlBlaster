@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.41 2003/03/26 12:00:59 laghi Exp $
+Version:   $Id: ClientSub.java,v 1.42 2003/05/21 20:20:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -26,9 +26,9 @@ import org.xmlBlaster.util.MsgUnit;
  * The subscribe() should be recognized for this later arriving publish().
  * <p>
  * This demo uses the I_XmlBlasterAccess helper class, which hides the raw
- * CORBA/RMI/XML-RPC nastiness.<br />
+ * CORBA/RMI/XMLRPC nastiness.<br />
  * I_XmlBlasterAccesss hides how to find the xmlBlaster server (see I_XmlBlasterAccess API).<br />
- * I_XmlBlasterAccess installs a callback server (for CORBA,RMI or XML-RPC) for you and informs
+ * I_XmlBlasterAccess installs a callback server (for CORBA,RMI or XMLRPC) for you and informs
  * you about asynchronous callbacks using the I_Callback interface (method update() see below).
  * <p>
  * If you want to know step by step what happens with CORBA, study the corba/ClientRaw.java example.

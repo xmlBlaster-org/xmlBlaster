@@ -1,4 +1,4 @@
-See ../README for a generic (and recommended) XML-RPC demonstration.
+See ../README for a generic (and recommended) XMLRPC demonstration.
 
 See as well:   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
 
@@ -7,8 +7,8 @@ To run this demo do the following:
 
 - Make sure to have the following set in your $HOME/xmlBlaster.properties file:
 
-   ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
-   CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
+   ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+   CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
 
   This loads XmlRpc support into xmlBlaster.
 
@@ -36,9 +36,9 @@ NOTE: The client sends the data from demo.xml
 NOTE: There is are helper class in src/java/org/xmlBlaster/client/protocol/xmlrpc
       which Java clients can use.
       It wraps the 'low level' xml-rpc invocation.
-      You can switch all our demos to run with XML-RPC instead of CORBA or RMI as follows:
+      You can switch all our demos to run with XMLRPC instead of CORBA or RMI as follows:
 
-       java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
+       java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
 
 NOTE: https should work as well (see xmlrpc mailing list):
     You may install SUN JSSE (or used another product, because this one is only a proof of

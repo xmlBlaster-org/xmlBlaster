@@ -51,12 +51,19 @@ public class HandleClient extends Executor implements Runnable
     * Creates an instance which serves exactly one client. 
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock) throws IOException {
-      super.initialize(glob, sock, driver.getXmlBlaster());
+      super.initialize(glob, driver.getAddressServer(), sock, driver.getXmlBlaster());
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
       Thread t = new Thread(this, "XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient");
-      t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
+      int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
+      try {
+         t.setPriority(threadPrio);
+         if (log.TRACE) log.trace(ME, "-protocol/socket/threadPrio "+threadPrio);
+      }
+      catch (IllegalArgumentException e) {
+         log.warn(ME, "Your -protocol/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+      }
       t.start();
    }
 
@@ -203,19 +210,31 @@ public class HandleClient extends Executor implements Runnable
                      Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
                      this.ME += "-" + this.loginName;
                      log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
-                     callback = new CallbackSocketDriver(this.loginName, this);
 
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
-                        cbKey = cbArr[ii].getType() + cbArr[ii].getAddress();
-                        org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
-                        if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                           log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
-                           //oldCallback.shutdown(); don't destroy socket, is done by others
-                           driver.getGlobal().removeNativeCallbackDriver(cbKey);
-                           oldCallback = null;
+                        cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
+                        SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
+                        SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
+                        if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
+                        if (remoteUrl.equals(cbUrl)) {
+                           if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
+                           this.callback = new CallbackSocketDriver(this.loginName, this);
+                           org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
+                           if (oldCallback != null) { // Remove old and lost login of client with same callback address
+                              log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
+                              //oldCallback.shutdown(); don't destroy socket, is done by others
+                              driver.getGlobal().removeNativeCallbackDriver(cbKey);
+                              oldCallback = null;
+                           }
+                           driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                         }
-                        driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well
+                        else {
+                           log.error(ME, "Creating SEPARATE callback SOCKET connection to '" + remoteUrl.getUrl() + "'");
+                           this.callback = new CallbackSocketDriver(this.loginName);
+                           // DeliveryConnection.initialize() -> CbDeliveryConnection.connectLowlevel()
+                           // will later call callback.initialize(loginName, callbackAddress)
+                        }
                      }
 
                      ConnectReturnQosServer retQos = authenticate.connect(conQos);

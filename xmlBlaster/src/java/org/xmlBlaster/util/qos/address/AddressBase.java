@@ -18,6 +18,8 @@ import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
+import java.util.Hashtable;
+
 
 /**
  * Abstract helper class holding connect address and callback address string
@@ -34,19 +36,24 @@ public abstract class AddressBase
    protected final Global glob;
    protected final LogChannel log;
 
+   private Hashtable pluginAttributes;
+
    /** The root xml element: &lt;callback> or &lt;address>, is set from the derived class */
    protected String rootTag = null;
 
    protected String instanceName;
 
+   protected final String className = "dispatch";
+   protected final String context = null;
+   protected String envPrefix = "";
+
    /** The unique address, e.g. the CORBA IOR string */
-   private PropString address = new PropString(null);
+   private PropString rawAddress = new PropString("");
 
-   private String hostname;
-   protected boolean isHardcodedHostname = false; // set to true if setHostname() was explicitly called by user
+   private PropString bootstrapHostname = new PropString(""); // initially not "localhost" to ask bootstrap hostname
 
-   public static final int DEFAULT_port = Constants.XMLBLASTER_PORT; // 3412
-   private PropInt port = new PropInt(DEFAULT_port);
+   public static final int DEFAULT_bootstrapPort = Constants.XMLBLASTER_PORT; // 3412
+   private PropInt bootstrapPort = new PropInt(DEFAULT_bootstrapPort);
 
    /** The unique protocol type, e.g. "IOR" */
    public static final String DEFAULT_type = "IOR";
@@ -137,10 +144,18 @@ public abstract class AddressBase
     */
    protected void initialize()
    {
-      String context = null;
-      String className = "dispatch";
-      this.port.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "port");
+      // SOCKET, IOR, XMLRPC, RMI, ...
       this.type.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "protocol");
+
+      // dispatch/callback/protocol/socket/hostname
+      // dispatch/clientSide/protocol/ior/localPort
+      envPrefix = "protocol/"+this.type.getValue().toLowerCase()+"/";
+
+      this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapHostname");
+      this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+"bootstrapPort");
+      //log.error(ME, "DEBUG ONLY: Checking " + this.instanceName + ": " + envPrefix+"port to result=" + this.bootstrapPort.getValue() );
+
+      // These are protocol unspecific values
       this.collectTime.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTime");
       this.collectTimeOneway.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "burstMode/collectTimeOneway");
       this.pingInterval.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "pingInterval");
@@ -154,25 +169,138 @@ public abstract class AddressBase
       this.dispatchPlugin.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "DispatchPlugin/defaultPlugin");
    }
 
+   /**
+    * Set a protocol specific property. 
+    * <p>
+    * Setting a property here forces the setting in the plugin, it
+    * has precedence over any environment, xmlBlaster.properties or command line setting.
+    * <br />
+    * You typically use this method in your client code to overwrite settings,.
+    * please check the protocol specific documentation about the supported settings.
+    * </p>
+    * @param key    The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    *               The searched property is depending on the type (here "socket")
+    *               and instance (here "clientSide") e.g. "protocol/socket/SOLingerTimeout"
+    *               and with higher precedence "dispatch/clientSide/protocol/socket/SOLingerTimeout"
+    * @param value  The value, e.g. "10000"
+    */
+   public void setPluginProperty(String key, String value) {
+      if (this.pluginAttributes == null) this.pluginAttributes = new Hashtable();
+      this.pluginAttributes.put(key, value);
+   }
+
+   /**
+    * Plugins may query their properties here
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    */
+   public PropString getEnv(String key, String defaultValue) {
+      PropString tmp = new PropString(key, defaultValue);
+      if (this.pluginAttributes != null) {
+         Object val = this.pluginAttributes.get(key);
+         if (val != null) {
+            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
+            return tmp;
+         }
+      }
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      return tmp;
+   }
+
+   /**
+    * Plugins may query their properties here
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    */
+   public PropInt getEnv(String key, int defaultValue) {
+      PropInt tmp = new PropInt(key, defaultValue);
+      if (this.pluginAttributes != null) {
+         Object val = this.pluginAttributes.get(key);
+         if (val != null) {
+            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
+            return tmp;
+         }
+      }
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      return tmp;
+   }
+
+   /**
+    * Plugins may query their properties here
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    */
+   public PropLong getEnv(String key, long defaultValue) {
+      PropLong tmp = new PropLong(key, defaultValue);
+      if (this.pluginAttributes != null) {
+         Object val = this.pluginAttributes.get(key);
+         if (val != null) {
+            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
+            return tmp;
+         }
+      }
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      return tmp;
+   }
+
+   /**
+    * Plugins may query their properties here
+    * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "protocol/socket/")
+    */
+   public PropBoolean getEnv(String key, boolean defaultValue) {
+      PropBoolean tmp = new PropBoolean(key, defaultValue);
+      if (this.pluginAttributes != null) {
+         Object val = this.pluginAttributes.get(key);
+         if (val != null) {
+            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
+            return tmp;
+         }
+      }
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      return tmp;
+   }
+
+   /**
+    * Returns the completed key which was found and chosen. 
+    * @return For "responseTimeout" it could be "dispatch/callback/protocol/socket/responseTimeout"
+    */
+   public String getEnvLookupKey(String key) {
+      PropString tmp = new PropString("");
+      String k = tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      if (k != null && k.length() > 0)
+         return k;
+      return key;
+   }
 
    /**
     * A nice human readable name for this address (used for logging)
     */
    public final String getName() {
-      return getHostname()+":"+getPort();
+      return getLogId();
    }
 
    /**
     * Check if supplied address would connect to the address of this instance
     */
    public final boolean isSameAddress(AddressBase other) {
-      String oa = other.getAddress();
-      if (oa != null && oa.length() > 1 && oa.equals(getAddress()))
-         return true;
-      String oh = other.getHostname();
-      int op = other.getPort();
-      if (op > 0 && op == getPort() && oh != null && oh.equals(getHostname()))
-         return true;
+      if (other.getType().equals(getType())) {  // what about two different SOCKET connections??
+
+         String or = other.getRawAddress();
+         if (or != null && or.length() > 0) {
+            if (or.equals(getRawAddress())) {
+               return true;
+            }
+            else {
+               return false;
+            }
+         }
+
+         String oh = other.getBootstrapHostname();
+         int op = other.getBootstrapPort();
+         if (op > 0 && oh != null) {
+            if (op == getBootstrapPort() && oh.equals(getBootstrapHostname()))
+               return true;
+            else
+               return false;
+         }
+      }
       return false;
    }
 
@@ -193,7 +321,7 @@ public abstract class AddressBase
    }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
    public final void setType(String type) {
       if (type == null) this.type.setValue("");
@@ -211,117 +339,137 @@ public abstract class AddressBase
     * @return A human readable address for logging only
     */
    public String getLogId() {
-      if (getAddress() != null && getAddress().length() < 50) {
-         return getAddress();
+      if (getRawAddress() != null && getRawAddress().length() < 50) {
+         return getRawAddress();
       }
-      return getHostname() + ":" + getPort();
+      return getBootstrapUrl();
    }
 
    /**
     * Updates the internal address as well. 
     * <p>NOTE:</p>
-    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
+    * <p>This bootstrapping bootstrapPort is currently only used by the CORBA plugin.</p>
     * <p>To set other protocols try e.g.:</p>
     * <pre>
     *  String[] args = { "-protocol", "SOCKET",
-    *                    "-socket.hostname", "myHost",
-    *                    "-socket.port", "7666",
-    *                    "-socket.localHostname", "myHost",   // optional
-    *                    "-socket.localPort", "8888" };       // optional
+    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
+    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
+    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
     *  glob.init(args);
     * </pre>
     * @param host An IP or DNS
     */
-   public final void setHostname(String host) {
-      initHostname(host);
-      isHardcodedHostname = true;
+   public final void setBootstrapHostname(String host) {
+      if (host == null) this.bootstrapHostname.setValue("");
+      else this.bootstrapHostname.setValue(host);
    }
 
-   protected final void initHostname(String hostname) {
-      this.hostname = hostname;
-   }
-
-   /**
-    * @return true if the hostname is explicitly set by user with setHostname()
-    * false if it is determined automatically
-    */
-   public boolean isHardcodedHostname() {
-      return isHardcodedHostname;
+   public final void setDefaultBootstrapHostname(String host) {
+      if (host == null) this.bootstrapHostname.setValue("", PropEntry.CREATED_BY_DEFAULT);
+      else this.bootstrapHostname.setValue(host, PropEntry.CREATED_BY_DEFAULT);
    }
 
    /**
-    * Check if a hostname is set already
+    * Check if a bootstrapHostname is set already
     */
-   public boolean hasHostname() {
-      return (this.hostname != null && this.hostname.length() > 0);
+   public boolean hasBootstrapHostname() {
+      return (this.bootstrapHostname.getValue().length() > 0);
    }
 
    /**
     * @return The Hostname, IP or "" if not known
     */
-   public final String getHostname() {
-      if (this.hostname == null || this.hostname.length() < 1) {
-         this.hostname = glob.getBootstrapHostname();
+   public final String getBootstrapHostname() {
+      if (!hasBootstrapHostname()) {
+         this.bootstrapHostname.setValue(glob.getBootstrapHostname(), PropEntry.CREATED_BY_DEFAULT);
       }
-      return this.hostname;
+      return this.bootstrapHostname.getValue();
+   }
+
+   /**
+    * Returns a URL markup of the bootstrap server, currently it looks like
+    * <i>xmlBlaster://myServer.com:3412/IOR</i> but will probably change in a future release.
+    */
+   public final String getBootstrapUrl() {
+      return "xmlBlaster://" + getBootstrapHostname() + ":" + getBootstrapPort() + "/" + getType();
    }
 
    /**
     * Set the bootstrapping port. 
     * Updates the internal address as well. 
     * <p>NOTE:</p>
-    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
+    * <p>This bootstrapping bootstrapPort is currently only used by the CORBA plugin.</p>
     * <p>To set other protocols try e.g.:</p>
     * <pre>
     *  String[] args = { "-protocol", "SOCKET",
-    *                    "-socket.hostname", "myHost",
-    *                    "-socket.port", "7666",
-    *                    "-socket.localHostname", "myHost",   // optional
-    *                    "-socket.localPort", "8888" };       // optional
+    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
+    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
+    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
     *  glob.init(args);
     * </pre>
     */
-   public final void setPort(int port) {
-      this.port.setValue(port);
+   public final void setBootstrapPort(int bootstrapPort) {
+      this.bootstrapPort.setValue(bootstrapPort);
    }
 
-   public final int getPort() {
-      return this.port.getValue();
-   }
-
-   /**
-    * Set the callback address, it should fit to the protocol-type.
-    * <p>NOTE:</p>
-    * <p>This bootstrapping port is currently only used by the CORBA plugin.</p>
-    * <p>To set other protocols try e.g.:</p>
-    * <pre>
-    *  String[] args = { "-protocol", "SOCKET",
-    *                    "-socket.hostname", "myHost",
-    *                    "-socket.port", "7666",
-    *                    "-socket.localHostname", "myHost",   // optional
-    *                    "-socket.localPort", "8888" };       // optional
-    *  glob.init(args);
-    * </pre>
-    * @param address The callback address, e.g. "et@mars.univers"
-    */
-   public final void setAddress(String address) {
-      //if (address == null) { Thread.currentThread().dumpStack(); throw new IllegalArgumentException("AddressBase.setAddress(null) null argument is not allowed"); }
-      if (address == null) return;
-      this.address.setValue(address);
+   public final int getBootstrapPort() {
+      return this.bootstrapPort.getValue();
    }
 
    /**
-    * Returns the address.
-    * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
+    * The creation default will be overwritten by the given defaultPort. 
+    * <p>
+    * If the bootstrapPort was changed by environment setting, this setting has precedence
+    * over the given defaultPort and nothing happens.
+    * </p>
+    * <p>
+    * This is used by the protocol plugins which all have different defaults
+    * </p>
     */
-   public final String getAddress() {
-      if (!this.address.isModified()) {
-         String ad = "http://" + getHostname();
-         if (getPort() > 0)
-            ad += ":" + getPort();
-         this.address.setValue(ad, PropEntry.CREATED_BY_DEFAULT);
+   public final void setDefaultBootstrapPort(int defaultBootstrapPort) {
+      if (this.bootstrapPort.isDefault()) {
+         this.bootstrapPort.setValue(defaultBootstrapPort, PropEntry.CREATED_BY_DEFAULT);
       }
-      return this.address.getValue();
+   }
+
+   /**
+    * Set the callback address, it should fit to the protocol-type. 
+    *
+    * <p>
+    * If you set an address here you need to set it compatible to the
+    * protocol from getType().<br />
+    * For XmlRpc it looks typically like <i>http://myServer:8080</i>
+    * for CORBA like <i>IOR:00005395....</i> and
+    * for SOCKET like <i>128.56.44.12:7608</i>
+    * </p>
+    * <p>
+    * Setting the address here has precedence over any environment settings
+    * like <i>-dispatch/clientSide/protocol/socket/port 7666</i> on command line
+    * or
+    * <pre>
+    *  String[] args = { "-protocol", "SOCKET",
+    *                    "-dispatch/clientSide/protocol/socket/hostname", "myHost",
+    *                    "-dispatch/clientSide/protocol/socket/port", "7666",
+    *                    "-dispatch/clientSide/protocol/socket/localHostname", "myHost",   // optional
+    *                    "-dispatch/clientSide/protocol/socket/localPort", "8888" };       // optional
+    *  glob.init(args);
+    * </pre>
+    * @param rawAddress The address specific for the protocol, e.g. "et@mars.univers" for EMAIL
+    */
+   public final void setRawAddress(String rawAddress) {
+      if (rawAddress == null) rawAddress = "";
+      this.rawAddress.setValue(rawAddress);
+      if (log.TRACE) log.trace(ME, "setRawAddress=" + this.rawAddress.getValue());
+   }
+
+   /**
+    * Returns the rawAddress which is specific for each protocol. 
+    * @return e.g. "IOR:00001100022...." or "et@universe.com" or "" (never null)
+    */
+   public final String getRawAddress() {
+      return this.rawAddress.getValue();
    }
 
    /**
@@ -563,7 +711,7 @@ public abstract class AddressBase
 
       String tmp = character.toString().trim(); // The address
       if (tmp.length() > 0) {
-         setAddress(tmp);
+         setRawAddress(tmp);
       }
       character.setLength(0);
 
@@ -577,13 +725,24 @@ public abstract class AddressBase
                else if( attrs.getQName(i).equalsIgnoreCase("version") ) {
                   setVersion(attrs.getValue(i).trim());
                }
-               else if( attrs.getQName(i).equalsIgnoreCase("hostname") ) {
-                  setHostname(attrs.getValue(i).trim());
+               else if( attrs.getQName(i).equalsIgnoreCase("bootstrapHostname") ) {
+                  setBootstrapHostname(attrs.getValue(i).trim());
                }
-               else if( attrs.getQName(i).equalsIgnoreCase("port") ) {
+               else if( attrs.getQName(i).equalsIgnoreCase("hostname") ) { // deprecated -> use bootstrapHostname
+                  setBootstrapHostname(attrs.getValue(i).trim());
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("bootstrapPort") ) {
                   String ll = attrs.getValue(i).trim();
                   try {
-                     setPort(new Integer(ll).intValue());
+                     setBootstrapPort(new Integer(ll).intValue());
+                  } catch (NumberFormatException e) {
+                     log.error(ME, "Wrong format of <" + rootTag + " bootstrapPort='" + ll + "'>, expected an integer number.");
+                  }
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("port") ) {  // deprecated -> use bootstrapPort
+                  String ll = attrs.getValue(i).trim();
+                  try {
+                     setBootstrapPort(new Integer(ll).intValue());
                   } catch (NumberFormatException e) {
                      log.error(ME, "Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
                   }
@@ -705,9 +864,9 @@ public abstract class AddressBase
       if (name.equalsIgnoreCase(rootTag)) { // "callback"
          String tmp = character.toString().trim(); // The address (if after inner tags)
          if (tmp.length() > 0)
-            setAddress(tmp);
-         else if (getAddress() == null)
-            log.error(ME, rootTag + " QoS contains no address data");
+            setRawAddress(tmp);
+         else if (getRawAddress() == null)
+            log.error(ME, rootTag + " QoS contains no rawAddress data");
       }
       else if (name.equalsIgnoreCase("burstMode")) {
       }
@@ -745,10 +904,10 @@ public abstract class AddressBase
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
       if (this.version.isModified())
           sb.append(" version='").append(getVersion()).append("'");
-      if (getHostname() != null)
-          sb.append(" hostname='").append(getHostname()).append("'");
-      if (this.port.isModified())
-          sb.append(" port='").append(getPort()).append("'");
+      if (this.bootstrapHostname.isModified())
+          sb.append(" bootstrapHostname='").append(getBootstrapHostname()).append("'");
+      if (this.bootstrapPort.isModified())
+          sb.append(" bootstrapPort='").append(getBootstrapPort()).append("'");
       if (this.sessionId.isModified())
           sb.append(" sessionId='").append(getSecretSessionId()).append("'");
       if (this.pingInterval.isModified())
@@ -764,7 +923,7 @@ public abstract class AddressBase
       if (this.dispatchPlugin.isModified())
           sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
       sb.append(">");
-      sb.append(offset).append(" ").append(getAddress());
+      sb.append(offset).append(" ").append(getRawAddress());
       if (this.collectTime.isModified() || this.collectTime.isModified()) {
          sb.append(offset).append(" ").append("<burstMode");
          if (this.collectTime.isModified())
@@ -788,29 +947,25 @@ public abstract class AddressBase
       return sb.toString();
    }
 
-
-
-
-
-
-
-
-
    /**
-    * Get a usage string for the connection parameters
+    * Get a usage string for the connection parameters. 
+    * Currently only for client side usage
     */
    public String usage()
    {
       String text = "";
     //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/protocol      Protocol to use for this address [" + DEFAULT_type + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/port          Port to use for the protocol [" + DEFAULT_port + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/pingInterval  Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/retries       How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/delay         Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
-      text += "                                                     A delay value > 0 switches fails save mode on, 0 \n";
-      text += "                                                     switches it off\n";
-
+      text += "   -dispatch/" + this.instanceName + "/protocol\n";
+      text += "                       Protocol to use [" + DEFAULT_type + "]\n";
+     // text += "   -dispatch/" + this.instanceName + "/protocol/" + this.type + "/port\n";
+     // text += "                       Port to use for the protocol [" + DEFAULT_port + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/pingInterval\n";
+      text += "                       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/retries\n";
+      text += "                       How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/delay\n";
+      text += "                       Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
       return text;
    }
 }

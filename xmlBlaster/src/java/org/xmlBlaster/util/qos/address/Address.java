@@ -14,7 +14,7 @@ import org.xmlBlaster.util.enum.Constants;
  * Helper class holding address string, protocol string and client side connection properties.
  * <p />
  * <pre>
- * &lt;address type='XML-RPC' sessionId='4e56890ghdFzj0'
+ * &lt;address type='XMLRPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
  *           oneway='false'>
  *    http://server:8080/cb
@@ -36,17 +36,17 @@ public class Address extends AddressBase
    }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
    public Address(Global glob, String type) {
       super(glob, "address");
       this.instanceName = Constants.RELATING_CLIENT;
-      initialize();
       setType(type);
+      initialize();
    }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>
@@ -59,8 +59,8 @@ public class Address extends AddressBase
       super(glob, "address");
       this.nodeId = nodeId;
       this.instanceName = Constants.RELATING_CLIENT;
-      initialize();
       setType(type);
+      initialize();
    }
 
 
@@ -82,26 +82,26 @@ public class Address extends AddressBase
       return buf.toString();
    }
 
-   /** @return The literal address as given by getAddress() */
+   /** @return The literal address as given by getRawAddress() */
    public String toString() {
-      return getAddress();
+      return getRawAddress();
    }
 
+   /** Client side usage used by XmlBlasterAccess */
    public final String usage() {
       String text = "\nControl fail save connection to xmlBlaster server:\n";
       text += super.usage();
     //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
     //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -dispatch/" + this.instanceName + "/burstMode/collectTimeOneway\n";
-      text += "                                      Number of milliseconds we shall collect oneway\n";
-      text += "                                      publish messages [" + Address.DEFAULT_collectTime + "].\n";
-      text += "                                      This allows performance tuning, try set it to 200.\n";
+      text += "                       Number of milliseconds we shall collect oneway\n";
+      text += "                       publish messages [" + Address.DEFAULT_collectTime + "].\n";
+      text += "                       This allows performance tuning, try set it to 200.\n";
     //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
     //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
     //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
       return text;
    }
-
 
    /** For testing: java org.xmlBlaster.util.qos.address.Address */
    public static void main(String[] argsDefault)
@@ -111,9 +111,9 @@ public class Address extends AddressBase
             Global glob = new Global(argsDefault);
             Address a = new Address(glob);
             a.setType("SOCKET");
-            a.setHostname("oioihost");
-            a.setAddress("9999");
-            a.setAddress("127.0.0.1:7600");
+            a.setBootstrapHostname("oioihost");
+            a.setRawAddress("9999");
+            a.setRawAddress("127.0.0.1:7600");
             a.setCollectTime(12345L);
             a.setPingInterval(54321L);
             a.setRetries(17);

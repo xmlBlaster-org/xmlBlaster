@@ -691,13 +691,13 @@ public class SoapConnection implements I_XmlBlasterConnection
       String text = "\n";
       text += "SoapConnection 'SOAP' options:\n";
       text += "   -soap.port        Specify a port number where xmlBlaster SOAP web server listens.\n";
-      text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
+      text += "                     Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
       text += "   -soap.hostname    Specify a hostname where the xmlBlaster web server runs.\n";
-      text += "                       Default is the localhost.\n";
+      text += "                     Default is the localhost.\n";
       text += "   -soap.portCB      Specify a port number for the callback web server to listen.\n";
-      text += "                       Default is port "+SoapCallbackServer.DEFAULT_CALLBACK_PORT+", the port 0 switches this feature off.\n";
+      text += "                     Default is port "+SoapCallbackServer.DEFAULT_CALLBACK_PORT+", the port 0 switches this feature off.\n";
       text += "   -soap.hostnameCB  Specify a hostname where the callback web server shall run.\n";
-      text += "                       Default is the localhost (useful for multi homed hosts).\n";
+      text += "                     Default is the localhost (useful for multi homed hosts).\n";
       text += "\n";
       return text;
    }

@@ -124,7 +124,7 @@ public:
 
       string qos = string("<queue relating='clientSide' storeSwapLevel='1468006' storeSwapBytes='524288' ") +
                    string("reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") + 
-                   string("  <address type='IOR' hostname='127.0.0.2' dispatchPlugin='undef'>") + 
+                   string("  <address type='IOR' bootstrapHostname='127.0.0.2' dispatchPlugin='undef'>") + 
                    string("http://127.0.0.2:3412</address>\n") +
                    string("</queue>\n");
       
@@ -164,12 +164,12 @@ public:
           string("  <duplicateUpdates>false</duplicateUpdates>\n") +
           string("  <session name='/node/http_127_0_0_2_3412/client/Tim/-3' timeout='86400000' maxSessions='10' clearSessions='false' sessionId='IIOP:01110C332A141532012A0F'/>\n") +
           string("  <queue relating='clientSide' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
-          string("   <address type='IOR' hostname='127.0.0.2' dispatchPlugin='undef'>\n") +
+          string("   <address type='IOR' bootstrapHostname='127.0.0.2' dispatchPlugin='undef'>\n") +
           string("      http://127.0.0.2:3412\n") +
           string("   </address>\n") +
           string("  </queue>\n") +
           string("  <queue relating='callback' type='CACHE' version='1.0' maxEntries='10000000' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
-          string("   <callback type='IOR' hostname='127.0.0.1' dispatchPlugin='undef'>\n") +
+          string("   <callback type='IOR' bootstrapHostname='127.0.0.1' dispatchPlugin='undef'>\n") +
           string("      IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e300002000000000000002f000000010100000c0000006c696e75782e6c6f63616c00a6820000130000002f353936372f313034323232363530392f5f30000100000024000000010000000100000001000000140000000100000001000100000000000901010000000000\n") +
           string("   </callback>\n") +
           string("  </queue>\n") +

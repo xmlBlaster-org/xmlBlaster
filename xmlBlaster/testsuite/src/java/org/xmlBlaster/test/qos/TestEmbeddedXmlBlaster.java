@@ -112,7 +112,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
     *         Thread: JacORB Listener Thread on port 33489  Priority: 5 Daemon
     *         Thread: Thread-14  Priority: 10 Daemon
     *         Thread: Thread-16  Priority: 5 Daemon
-    *         Thread Group: XML-RPC Runner  Max Priority: 10
+    *         Thread Group: XMLRPC Runner  Max Priority: 10
     *     Thread Group: RMI Runtime  Max Priority: 10
     *         Thread: TCP Connection(3)-192.168.1.3  Priority: 5 Daemon
     *         Thread: TCP Connection(4)-192.168.1.3  Priority: 5 Daemon
@@ -129,16 +129,14 @@ public class TestEmbeddedXmlBlaster extends TestCase
       // Start xmlBlaster
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
-         "-port",        // For all protocol we may use set an alternate server port
+         "-bootstrapPort",        // For all protocol we may use set an alternate server port
          "" + serverPort,
-         "-socket.port",
+         "-protocol/socket/port",
          "" + (serverPort-1),
-         "-rmi.registryPort",
+         "-protocol/rmi/registryPort",
          "" + (serverPort-2),
-         "-xmlrpc.port",
+         "-protocol/xmlrpc/port",
          "" + (serverPort-3),
-         "-client.port",
-         "" + serverPort,
          "-ProtocolPlugin[IOR][1.0]",
          "org.xmlBlaster.protocol.corba.CorbaDriver",
          "-CbProtocolPlugin[IOR][1.0]",

@@ -17,12 +17,12 @@
 #
 # 2001-12-17 11:54 mAd@ktaland.com
 #
-#       Connect to xmlBlaster via XML-RPC
+#       Connect to xmlBlaster via XMLRPC
 #       IOR with MICO is to heavy to install ;o{
 #
 #       Lib required :
 #
-#       - XML-RPC implemeted by Frontier (Frontier-RPC-0.07b3)
+#       - XMLRPC implemeted by Frontier (Frontier-RPC-0.07b3)
 #       - XML Parser :
 #               install expat (expat-1.95.2 at http://sourceforge.net/projects/expat/)
 #               then perl module XML-Parser (XML-Parser.2.30 at http://search.cpan.org/search?dist=XML-Parser)

@@ -51,13 +51,13 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
       /**
        * Returns the 'well known' protocol type.
-       * @return E.g. "RMI", "SOCKET", "XML-RPC"
+       * @return E.g. "RMI", "SOCKET", "XMLRPC"
        */
       virtual string getCbProtocol() = 0;
          
       /**
        * Returns the current callback address.
-       * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XML-RPC"
+       * @return "rmi://develop.MarcelRuff.info:1099/xmlBlasterCB", "127.128.2.1:7607", "http://XMLRPC"
        *         or null if not known
        */
       virtual string getCbAddress() = 0;

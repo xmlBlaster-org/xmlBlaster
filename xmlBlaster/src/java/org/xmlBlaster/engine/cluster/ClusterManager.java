@@ -231,7 +231,7 @@ public final class ClusterManager implements I_RunlevelListener
       for (int ii=0; ii<drivers.length; ii++) {
          I_Driver driver = drivers[ii];
          Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
-         addr.setAddress(driver.getRawAddress());
+         addr.setRawAddress(driver.getRawAddress());
          this.myClusterNode.getNodeInfo().addAddress(addr);
       }
       if (drivers.length > 0) {
@@ -244,7 +244,7 @@ public final class ClusterManager implements I_RunlevelListener
          String rawAddr = driver.getRawAddress();
          if (rawAddr != null) {
             Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
-            addr.setAddress(rawAddr);
+            addr.setRawAddress(rawAddr);
             this.myClusterNode.getNodeInfo().addAddress(addr);
          }
       }
@@ -846,7 +846,7 @@ public final class ClusterManager implements I_RunlevelListener
       sb.append("Cluster support:\n");
       sb.append("   -cluster            Switch cluster support to true or false [true].\n");
       sb.append("   -cluster.node.id    A unique name for this xmlBlaster instance, e.g. 'com.myCompany.myHost'.\n");
-      sb.append("                       If not specified a unique name is choosen and displayed on command line.\n");
+      sb.append("                       If not specified a unique name is chosen and displayed on command line.\n");
       sb.append("   ...                 See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html\n");
       return sb.toString();
    }

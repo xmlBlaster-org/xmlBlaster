@@ -2,7 +2,7 @@
 The xmlrpclib module
 ====================
 
-This kit contains a Python implementation for Userland's XML-RPC
+This kit contains a Python implementation for Userland's XMLRPC
 protocol.  It also includes a simple server implementation, based on
 Python's SocketServer class.
 
@@ -18,7 +18,7 @@ release info
 This is version 0.9.8 of xmlrpclib.py.
 
 This version adds support for Secret Labs' fast sgmlop XML parser.
-When using sgmlop, XML-RPC unmarshalling is up to 20 times faster
+When using sgmlop, XMLRPC unmarshalling is up to 20 times faster
 than earlier versions. Marshalling is also slightly faster than
 before.
 
@@ -28,7 +28,7 @@ Transport classes for details.
 
 This is beta software.  There are no known bugs.
 
-The XML-RPC specification can be found at:
+The XMLRPC specification can be found at:
 
         http://www.xml-rpc.com
 

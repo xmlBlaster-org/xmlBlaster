@@ -171,7 +171,7 @@ Any other queue overwrites session delivery:
       <!-- Sends messages to tolkien, with default queue settings -->
    </callback>
 
-   <callback type='XML-RPC' sessionId='8sd3lXjspx9Fdlggh'>
+   <callback type='XMLRPC' sessionId='8sd3lXjspx9Fdlggh'>
       http:/www.mars.universe:8080/RPC2
    </callback>
 
@@ -257,7 +257,7 @@ This is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

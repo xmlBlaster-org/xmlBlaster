@@ -1,11 +1,11 @@
 #
-# XML-RPC CLIENT LIBRARY
-# $Id: xmlrpclib.py,v 1.1 2001/01/27 14:07:00 ruff Exp $
+# XMLRPC CLIENT LIBRARY
+# $Id: xmlrpclib.py,v 1.2 2003/05/21 20:20:50 ruff Exp $
 #
-# an XML-RPC client interface for Python.
+# an XMLRPC client interface for Python.
 #
 # the marshalling and response parser code can also be used to
-# implement XML-RPC servers.
+# implement XMLRPC servers.
 #
 # Notes:
 # this version uses the sgmlop XML parser, if installed.  this is
@@ -35,7 +35,7 @@
 # http://www.pythonware.com
 #
 # --------------------------------------------------------------------
-# The XML-RPC client interface is
+# The XMLRPC client interface is
 # 
 # Copyright (c) 1999 by Secret Labs AB
 # Copyright (c) 1999 by Fredrik Lundh
@@ -101,7 +101,7 @@ class ResponseError(Error):
     pass
 
 class Fault(Error):
-    # indicates a XML-RPC fault package
+    # indicates a XMLRPC fault package
     def __init__(self, faultCode, faultString, **extra):
 	self.faultCode = faultCode
 	self.faultString = faultString
@@ -116,7 +116,7 @@ class Fault(Error):
 # Special values
 
 # boolean wrapper
-# (you must use True or False to generate a "boolean" XML-RPC value)
+# (you must use True or False to generate a "boolean" XMLRPC value)
 
 class Boolean:
 
@@ -143,7 +143,7 @@ True, False = Boolean(1), Boolean(0)
 #
 # dateTime wrapper
 # (wrap your iso8601 string or time tuple or localtime time value in
-# this class to generate a "dateTime.iso8601" XML-RPC value)
+# this class to generate a "dateTime.iso8601" XMLRPC value)
 
 class DateTime:
 
@@ -168,7 +168,7 @@ class DateTime:
 
 #
 # binary data wrapper (NOTE: this is an extension to Userland's
-# XML-RPC protocol! only for use with compatible servers!)
+# XMLRPC protocol! only for use with compatible servers!)
 
 class Binary:
 
@@ -242,14 +242,14 @@ class SlowParser(xmllib.XMLParser):
 
 
 # --------------------------------------------------------------------
-# XML-RPC marshalling and unmarshalling code
+# XMLRPC marshalling and unmarshalling code
 
 class Marshaller:
-    """Generate an XML-RPC params chunk from a Python data structure"""
+    """Generate an XMLRPC params chunk from a Python data structure"""
 
     # USAGE: create a marshaller instance for each set of parameters,
     # and use "dumps" to convert your data (represented as a tuple) to
-    # a XML-RPC params chunk.  to write a fault response, pass a Fault
+    # a XMLRPC params chunk.  to write a fault response, pass a Fault
     # instance instead.  you may prefer to use the "dumps" convenience
     # function for this purpose (see below).
 
@@ -345,12 +345,12 @@ class Marshaller:
 
 class Unmarshaller:
 
-    # unmarshal an XML-RPC response, based on incoming XML event
+    # unmarshal an XMLRPC response, based on incoming XML event
     # messages (start, data, end).  call close to get the resulting
     # data structure
 
     # note that this reader is fairly tolerant, and gladly accepts
-    # bogus XML-RPC data without complaining (but not bogus XML).
+    # bogus XMLRPC data without complaining (but not bogus XML).
 
     # and again, if you don't understand what's going on in here,
     # that's perfectly ok.
@@ -494,7 +494,7 @@ def getparser():
     return SlowParser(target), target
 
 def dumps(params, methodname=None, methodresponse=None):
-    # convert a tuple or a fault object to an XML-RPC packet
+    # convert a tuple or a fault object to an XMLRPC packet
 
     assert type(params) == TupleType or isinstance(params, Fault),\
 	   "argument must be tuple or Fault instance"
@@ -502,7 +502,7 @@ def dumps(params, methodname=None, methodresponse=None):
     m = Marshaller()
     data = m.dumps(params)
 
-    # standard XML-RPC wrappings
+    # standard XMLRPC wrappings
     if methodname:
 	# a method call
 	data = (
@@ -523,8 +523,8 @@ def dumps(params, methodname=None, methodresponse=None):
     return data
 
 def loads(data):
-    # convert an XML-RPC packet to data plus a method name (None
-    # if not present).  if the XML-RPC packet represents a fault
+    # convert an XMLRPC packet to data plus a method name (None
+    # if not present).  if the XMLRPC packet represents a fault
     # condition, this function raises a Fault exception.
     p, u = getparser()
     p.feed(data)
@@ -536,7 +536,7 @@ def loads(data):
 # request dispatcher
 
 class _Method:
-    # some magic to bind an XML-RPC method to an RPC server.
+    # some magic to bind an XMLRPC method to an RPC server.
     # supports "nested" methods (e.g. examples.getStateName)
     def __init__(self, send, name):
 	self.__send = send
@@ -548,13 +548,13 @@ class _Method:
 
 
 class Transport:
-    """Handles an HTTP transaction to an XML-RPC server"""
+    """Handles an HTTP transaction to an XMLRPC server"""
 
     # client identifier (may be overridden)
     user_agent = "xmlrpclib.py/%s (by www.pythonware.com)" % __version__
 
     def request(self, host, handler, request_body):
-	# issue XML-RPC request
+	# issue XMLRPC request
 
 	import httplib
 	h = httplib.HTTP(host)
@@ -563,7 +563,7 @@ class Transport:
 	# required by HTTP/1.1
 	h.putheader("Host", host)
 
-	# required by XML-RPC
+	# required by XMLRPC
 	h.putheader("User-Agent", self.user_agent)
 	h.putheader("Content-Type", "text/xml")
 	h.putheader("Content-Length", str(len(request_body)))
@@ -602,7 +602,7 @@ class Transport:
 
 
 class Server:
-    """Represents a connection to an XML-RPC server"""
+    """Represents a connection to an XMLRPC server"""
 
     def __init__(self, uri, transport=None):
 	# establish a "logical" server connection
@@ -610,7 +610,7 @@ class Server:
 	# get the url
 	type, uri = urllib.splittype(uri)
 	if type != "http":
-	    raise IOError, "unsupported XML-RPC protocol"
+	    raise IOError, "unsupported XMLRPC protocol"
 	self.__host, self.__handler = urllib.splithost(uri)
 	if not self.__handler:
 	    self.__handler = "/RPC2"
@@ -650,7 +650,7 @@ class Server:
 
 if __name__ == "__main__":
 
-    # simple test program (from the XML-RPC specification)
+    # simple test program (from the XMLRPC specification)
     # server = Server("http://localhost:8000") # local server
 
     server = Server("http://betty.userland.com")

@@ -3,14 +3,14 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.3 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: Address.h,v 1.4 2003/05/21 20:20:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding address string, protocol string and client side connection properties.
  * <p />
  * <pre>
- * &lt;address type='XML-RPC' sessionId='4e56890ghdFzj0'
+ * &lt;address type='XMLRPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
  *           oneway='false'>
  *    http://server:8080/cb
@@ -41,7 +41,7 @@ private:
 public:
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>

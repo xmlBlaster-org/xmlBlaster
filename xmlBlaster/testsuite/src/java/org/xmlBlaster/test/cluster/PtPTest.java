@@ -139,7 +139,7 @@ public class PtPTest extends TestCase {
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
                                     "' content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time

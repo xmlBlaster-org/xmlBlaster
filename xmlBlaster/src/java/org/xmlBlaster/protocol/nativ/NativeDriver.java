@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.25 2003/03/22 12:28:06 laghi Exp $
+Version:   $Id: NativeDriver.java,v 1.26 2003/05/21 20:21:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
@@ -86,6 +87,11 @@ public class NativeDriver implements I_Driver
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
       throws XmlBlasterException {
+
+      this.glob = glob;
+      this.ME = "NativeDriver" + this.glob.getLogPrefixDashed();
+      this.log = glob.getLog("native");
+
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -98,7 +104,9 @@ public class NativeDriver implements I_Driver
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
-         init(glob, authenticate, xmlBlasterImpl);
+         
+         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         
          activate();
       }
       catch (XmlBlasterException ex) {
@@ -127,11 +135,8 @@ public class NativeDriver implements I_Driver
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(final Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   private void init(final Global glob, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
-      this.glob = glob;
-      this.ME = "NativeDriver" + this.glob.getLogPrefixDashed();
-      this.log = glob.getLog("native");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
       log.info(ME, "Started successfully native driver.");
@@ -141,7 +146,7 @@ public class NativeDriver implements I_Driver
       passwd = glob.getProperty().get("NativeDemo.password", "secret");
       // "NativeDemo" below is the 'callback protocol type', which results in instantiation of given the class:
       CallbackAddress callback = new CallbackAddress(glob, "NativeDemo");
-      callback.setAddress("org.xmlBlaster.protocol.nativ.CallbackNativeDriver");
+      callback.setRawAddress("org.xmlBlaster.protocol.nativ.CallbackNativeDriver");
       org.xmlBlaster.client.qos.ConnectQos connectQos =
           new org.xmlBlaster.client.qos.ConnectQos(glob, loginName, passwd);
       connectQos.addCallbackAddress(callback);

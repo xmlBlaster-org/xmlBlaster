@@ -44,7 +44,7 @@ import org.jutils.log.LogChannel;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.5 $ $Date: 2003/01/16 17:22:10 $
+ * @version $Revision: 1.6 $ $Date: 2003/05/21 20:21:13 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -74,12 +74,12 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    }
 
    /**
-    * Set the port the instance should run at.
-    * @param port Default port is 3412
+    * Set the bootstrap port the instance should run at.
+    * @param port Default bootstrapPort is 3412
     */
    public void setPort(String port) {
       try {
-         glob.getProperty().set("port", port);
+         glob.getProperty().set("bootstrapPort", port);
       }catch(org.jutils.JUtilsException ex) {
          IllegalStateException x = new IllegalStateException("Could not set: " + port + "-" + ex);
          throw x;
@@ -87,7 +87,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    }
 
    public String getPort() {
-      return glob.getProperty().get("port", (String)null);
+      return glob.getProperty().get("bootstrapPort", (String)null);
    }
 
    /**

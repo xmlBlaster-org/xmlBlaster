@@ -51,6 +51,7 @@ import java.applet.Applet;
  *  ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
  * </pre>
  *
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.rmi.html">The RMI requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -125,19 +126,18 @@ public class RmiConnection implements I_XmlBlasterConnection
 
       this.clientAddress = address;
 
-      String hostname = glob.getLocalIP();
-      hostname = glob.getProperty().get("rmi.hostname", hostname);
-
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = glob.getProperty().get("rmi.registryPort", DEFAULT_REGISTRY_PORT);
+      int registryPort = this.clientAddress.getEnv("registryPort", DEFAULT_REGISTRY_PORT).getValue();
+      String hostname = this.clientAddress.getEnv("hostname", glob.getLocalIP()).getValue();
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 
 
       String authServerUrl = prefix + "I_AuthServer";
-      String addr = glob.getProperty().get("rmi.AuthServer.url", authServerUrl);
+      String addr = this.clientAddress.getEnv("AuthServerUrl", authServerUrl).getValue();
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          this.authServer = (I_AuthServer)rem;
+         this.clientAddress.setRawAddress(addr);
          log.info(ME, "Accessed xmlBlaster authentication reference with '" + addr + "'");
       }
       else {
@@ -145,7 +145,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       }
 
       String xmlBlasterUrl = prefix + "I_XmlBlaster";
-      addr = glob.getProperty().get("rmi.XmlBlaster.url", xmlBlasterUrl);
+      addr = this.clientAddress.getEnv("XmlBlasterUrl", xmlBlasterUrl).getValue();
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          this.blasterServer = (I_XmlBlaster)rem;
@@ -437,13 +437,17 @@ public class RmiConnection implements I_XmlBlasterConnection
    {
       String text = "\n";
       text += "RmiConnection 'RMI' options:\n";
-      text += "   -rmi.registryPort   Specify a port number where rmiregistry of the xmlBlaster server listens.\n";
+      text += "   -dispatch/clientSide/protocol/rmi/registryPort\n";
+      text += "                       Specify a port number where rmiregistry of the xmlBlaster server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -rmi.hostname       Specify a hostname where rmiregistry of the xmlBlaster server runs.\n";
+      text += "   -dispatch/clientSide/protocol/rmi/hostname\n";
+      text += "                       Specify a hostname where rmiregistry of the xmlBlaster server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -rmi.registryPortCB Specify a port number where rmiregistry for the callback server listens.\n";
+      text += "   -dispatch/callback/protocol/rmi/registryPort\n";
+      text += "                       Specify a port number where rmiregistry for the callback server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -rmi.hostnameCB     Specify a hostname where rmiregistry for the callback server runs.\n";
+      text += "   -dispatch/callback/protocol/rmi/hostname\n";
+      text += "                       Specify a hostname where rmiregistry for the callback server runs.\n";
       text += "                       Default is the localhost (useful for multi homed hosts).\n";
       text += "\n";
       return text;

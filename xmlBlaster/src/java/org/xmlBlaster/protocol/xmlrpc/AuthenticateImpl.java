@@ -19,7 +19,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
- * The methods of this class are callable bei XML-RPC clients.
+ * The methods of this class are callable bei XMLRPC clients.
  * <p />
  * void return is not allowed so we return an empty string instead
  * <p />
@@ -120,7 +120,7 @@ public class AuthenticateImpl
       returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
       returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
       if (!returnValueStripped.equals(returnValue)) {
-         log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+         log.trace(ME, "Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                         "This shouldn't be a problem as long as your credentials doesn't contain '<'");
       }
       if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());

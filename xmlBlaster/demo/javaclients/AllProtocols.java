@@ -53,7 +53,7 @@ public class AllProtocols implements I_Callback
    };
    private final String[] argsXmlRpc = {
       "-protocol",
-      "XML-RPC",
+      "XMLRPC",
    };
    private final String[] argsRmi = {
       "-protocol",
@@ -62,7 +62,7 @@ public class AllProtocols implements I_Callback
    private final Con[] conList = {
       new Con(argsIOR, "IOR connection"),
       new Con(argsSocket, "SOCKET connection"),
-      new Con(argsXmlRpc, "XML-RPC connection"),
+      new Con(argsXmlRpc, "XMLRPC connection"),
       new Con(argsRmi, "RMI connection")
    };
 

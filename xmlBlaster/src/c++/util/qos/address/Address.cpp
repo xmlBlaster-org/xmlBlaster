@@ -3,14 +3,14 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.8 2003/03/26 22:28:13 ruff Exp $
+Version:   $Id: Address.cpp,v 1.9 2003/05/21 20:20:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding address string, protocol string and client side connection properties.
  * <p />
  * <pre>
- * &lt;address type='XML-RPC' sessionId='4e56890ghdFzj0'
+ * &lt;address type='XMLRPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
  *           oneway='false'>
  *    http://server:8080/cb
@@ -31,8 +31,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 
 inline void Address::initialize()
 {
-   setPort(global_.getProperty().getIntProperty("port", getPort()));
-   setPort(global_.getProperty().getIntProperty("client.port", getPort())); // this is stronger (do we need it?)
+   setPort(global_.getProperty().getIntProperty("bootstrapPort", getPort()));
 
    setType(global_.getProperty().getStringProperty("client.protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime", DEFAULT_collectTime));
@@ -48,7 +47,6 @@ inline void Address::initialize()
    setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
    if (nodeId_ != "") {
       setPort(global_.getProperty().getIntProperty("port["+nodeId_+"]", getPort()));
-      setPort(global_.getProperty().getIntProperty("client.port["+nodeId_+"]", getPort())); // this is stronger (do we need it?)
 
       setType(global_.getProperty().getStringProperty("client.protocol["+nodeId_+"]", getType()));
       setCollectTime(global_.getProperty().getLongProperty("burstMode.collectTime["+nodeId_+"]", getCollectTime()));

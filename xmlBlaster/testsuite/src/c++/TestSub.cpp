@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.21 2003/05/04 21:33:20 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.22 2003/05/21 20:21:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -411,7 +411,7 @@ private:
       XmlBlasterAccess::usage();
       log_.usage();
       log_.plain(ME, "Example:");
-      log_.plain(ME, "   TestSub -hostname myHost.myCompany.com -port 3412 -trace true");
+      log_.plain(ME, "   TestSub -bootstrapHostname myHost.myCompany.com -bootstrapPort 3412 -trace true");
       log_.plain(ME, "----------------------------------------------------------");
    }
 };

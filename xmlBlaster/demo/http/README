@@ -20,7 +20,7 @@ NOTE: http callbacks are tested with tomcat 3.2.x only.
 
 2. Start xmlBlaster
 
-   java org.xmlBlaster.Main -xmlrpc.port 8081
+   java org.xmlBlaster.Main -protocol/xmlrpc/port 8081
 
    (We tell XmlRpc not to use tomcats 8080 port)
 
@@ -64,7 +64,7 @@ use them in web.xml to configure the servlet
 Start it in the background on Linux:
 ====================================
 
-   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -xmlrpc.port 8081 -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -protocol/xmlrpc/port 8081 -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
 
    # start tomcat with xmlBlaster.war
    startup.sh   > /tmp/tomcat.log 2>&1 &

@@ -2,6 +2,61 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Incompatible changes (update xmlBlaster.properties and xmlBlasterPlugins.xml):
+
+   1. Removed XmlBlasterConnection.java, please use XmlBlasterAccess.java
+      Removed I_ConnectionProblems.java, please use I_ConnectionStateListener.java
+
+   2. XmlBlasterAccess.initCbServer(String loginName, String type, String version) -> initCbServer(String loginName, CallbackAddress cbAddress)
+
+   3. Protocol "XML-RPC" renamed to "XMLRPC"
+
+   4. The protocol address is now configurable with Address.java/CallbackAddress.java
+      with the method 
+         public void setPluginProperty(String key, String value);
+      or the old way with glob.setProperty()
+      AddressBase.java is redesigned, please check the javadoc.
+
+   5. Renamed property to new schema, try
+         java org.xmlBlaster.Main -help     (server side usage)
+         java HelloWorld3 -help             (client side usage)
+      These replacements where made:
+      hostname                -> bootstrapHostname
+      port                    -> bootstrapPort
+      socket.port             -> dispatch/clientSide/protocol/socket/port
+      socket.hostname         -> dispatch/clientSide/protocol/socket/hostname
+      socket.cb.multiThreaded -> dispatch/callback/protocol/socket/multiThreaded
+      socket.threadPrio       -> dispatch/callback/protocol/socket/threadPrio
+      socket.responseTimeout  -> dispatch/callback/protocol/socket/responseTimeout
+      socket.responseTimeout  -> protocol/socket/responseTimeout  (server)
+      ns                      -> dispatch/clientSide/protocol/ior/useNameService
+      ns                      -> protocol/ior/useNameService  (server)
+      ior                     -> dispatch/callback/protocol/ior/iorString
+      ior                     -> dispatch/clientSide/protocol/ior/iorString
+      ior                     -> protocol/ior/iorString  (server)
+      ior.file                -> dispatch/clientSide/protocol/ior/iorFile
+      ior.portCB              -> dispatch/callback/protocol/ior/port
+      ior.hostnameCB          -> dispatch/callback/protocol/ior/hostname
+      ior.port                -> dispatch/clientSide/protocol/ior/port
+      ior.port                -> protocol/ior/port  (server)
+      ior.hostname            -> dispatch/clientSide/protocol/ior/hostname
+      ior.hostname            -> protocol/ior/hostname (server)
+      xmlrpc.port             -> dispatch/clientSide/protocol/xmlrpc/port
+      xmlrpc.hostname         -> dispatch/clientSide/protocol/xmlrpc/hostname
+      xmlrpc.portCB           -> dispatch/callback/protocol/xmlrpc/port
+      xmlrpc.hostnameCB       -> dispatch/callback/protocol/xmlrpc/hostname
+      iorHost                 -> hostname
+      iorPort                 -> port           (3411)
+      rmi.registryPortCB      -> dispatch/callback/protocol/rmi/registryPort
+      rmi.registryPort        -> dispatch/clientSide/protocol/rmi/registryPort
+      rmi.AuthServer.url      -> dispatch/clientSide/protocol/rmi/AuthServerUrl
+
+
+
+ o BUGFIX: Server side command line usage was showing client side usage as well
+
+ o BUGIFX: PropBoolean had wrong Boolean to boolean conversion
+
  o BUGFIX Perl: Outdated sessionId markup in ConnectQos,
    fixed by Dominique.Petitpierre@adm.unige.ch 
 
@@ -10,7 +65,7 @@ Changes for 0.xxx [xx, xxx 2003]
 
  o Added basic support to connect to xmlBlaster from
    simple C with SOCKET protocol, see
-   xmlBlaster/demo/c/socket/README
+   xmlBlaster/src/c/README
 
  o Changed socket protocol parser to be more tolerant
    on partial messages (needed for C SOCKET client).
@@ -642,7 +697,7 @@ Changes for 0.80 [Sep, 25 2002]
     NOTE: You have to cope with different sorts of update messages
           now.
 
-  - Bugfix for client side -hostname parameter.
+  - Bugfix for client side -bootstrapHostname parameter.
 
   - Automatic detection of the local IP for dial in hosts
     with dynamic IP. In most cases you don't need to
@@ -818,9 +873,9 @@ Changes for 0.79f [Jun, 17 2002]
       UpdateQoS.java -> UpdateQos.java
 
     * Incompatible change of command line options:
-      -iorHost  ->  -hostname
-      -iorPort  ->  -port
-      -iorFile  ->  -ior.file
+      -dispatch/callback/protocol/ior/iorStringHost  ->  -hostname
+      -dispatch/callback/protocol/ior/iorStringPort  ->  -port
+      -dispatch/callback/protocol/ior/iorStringFile  ->  -dispatch/callback/protocol/ior/iorString.file
  
     * Incompatible change of QoS returns:
       Old: "<qos><state>OK</state></qos>"
@@ -989,7 +1044,7 @@ Changes for 0.79d [Dec, 30 2001]
 ================================
 
   - CORBA/C++ client helper classes now support http IOR download, e.g.:
-       TestGet -iorHost myHost -iorPort 7609
+       TestGet -dispatch/callback/protocol/ior/iorStringHost myHost -dispatch/callback/protocol/ior/iorStringPort 7609
 
   - Changed/Enhanced property file lookup for C++ clients
     see xmlBlaster/src/c++/util/Property.h
@@ -1100,9 +1155,9 @@ Changes for 0.79c [Sep, 05 2001]
    To study raw CORBA access with the new security plugin see
       xmlBlaster/demo/javaclients/corba/ClientRawSecurity.java
 
- - Changed XML-RPC 'void' method return values to return
+ - Changed XMLRPC 'void' method return values to return
    an 'empty string', since 'void' is not supported in the
-   XML-RPC spec.
+   XMLRPC spec.
    Bug reported by Cyrille Giquello <cyrille@ktaland.com>
 
  - Added qos support for get() responses, for example:
@@ -1225,15 +1280,15 @@ Changes for 0.79 [Nov, 3 2000]
     xmlBlaster/lib/jacorb.jar is patched (see lib/README).
 
   - NOTE: CorbaConnection.java removed, please use
-    XmlBlasterConnection.java instead.
-    This allows to switch the used protocol (IOR,RMI,XML-RPC)
+    XmlBlasterAccess.java instead.
+    This allows to switch the used protocol (IOR,RMI,XMLRPC)
     on command line without recompilation.
     For coding example see demo/javaclients/ClientSub.java
     To switch protocol use the -dispatch/clientSide/protocol command line option.
     Example:
       jaco javaclients.ClientSub -dispatch/clientSide/protocol IOR
       jaco javaclients.ClientSub -dispatch/clientSide/protocol RMI
-      jaco javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
+      jaco javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
 
   - NOTE: You need to use the new xmlBlaster.properties file.
     Remove your old in your HOME directory and use the
@@ -1256,7 +1311,7 @@ Changes for 0.79 [Nov, 3 2000]
     to HTTP 1.1 spec RFC 2068
 
   - New command line argument added to xmlBlaster server:
-    -iorHost <host>
+    -dispatch/callback/protocol/ior/iorStringHost <host>
     allows to specify where the internal http server publishes
     its bootstrapping IOR (for multi homed hosts).
 
@@ -1273,7 +1328,7 @@ Changes for 0.79 [Nov, 3 2000]
        export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
     whith $XMLBLASTER_HOME/config/xmlBlaster.policy
 
-  - Migrated to XML-RPC java.1.0_beta_4
+  - Migrated to XMLRPC java.1.0_beta_4
 
   - Migrated to Ant 1.2
 
@@ -1567,7 +1622,7 @@ Changes for 0.75 [Mar.28, 2000]
           Every xmlBlaster.property variable may as well be specified on
           command line. The leading "-" or "+" from the command line    key is
           stripped before it    is merged into the properties hash table.
-          For example, the "-ior.file" command line argument corresponds to the
+          For example, the "-dispatch/callback/protocol/ior/iorString.file" command line argument corresponds to the
           "ior.file" variable    in the xmlBlaster.properties file.
           See Property.java
 

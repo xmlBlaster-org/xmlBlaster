@@ -10,6 +10,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
@@ -142,11 +143,11 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Note that the returned instance is of your control only, we don't cache it in any way, this
     * method is only a helper hiding the plugin loading.
     * </p>
-    * @param type  E.g. "IOR" or "RMI", if null we use the same protocol as our client access (corba is default).
-    * @param version The version of the driver, e.g. "1.0"
+    * @param callbackAddress The callback address configuration, contains for example
+    *        type like "IOR" or "RMI" and version of the driver, e.g. "1.0"
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
     */
-   I_CallbackServer initCbServer(String loginName, String type, String version) throws XmlBlasterException;
+   I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException;
 
    /**
     * Access the client side security plugin. 

@@ -22,8 +22,8 @@
       <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    </plugin>
 
-   <!-- ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
-   <plugin id='protocol:XML-RPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+   <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
+   <plugin id='protocol:XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       <action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
       <action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    </plugin>

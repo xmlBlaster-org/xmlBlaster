@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <xmlrpc.h>
 #include <xmlrpc_client.h>
-#define NAME       "XML-RPC xmlBlaster.org C Client"
+#define NAME       "XMLRPC xmlBlaster.org C Client"
 #define VERSION    "0.1"
 #define SERVER_URL "http://localhost:8080/"
 
@@ -29,9 +29,9 @@ void usage()
 
 void die_if_fault_occurred (xmlrpc_env *env)
 {
-    /* Check our error-handling environment for an XML-RPC fault. */
+    /* Check our error-handling environment for an XMLRPC fault. */
     if (env->fault_occurred) {
-        fprintf(stderr, "XML-RPC Fault: %s (%d)\n",
+        fprintf(stderr, "XMLRPC Fault: %s (%d)\n",
                 env->fault_string, env->fault_code);
         usage();
         exit(1);
@@ -88,12 +88,12 @@ int main (int argc, char** argv)
       serverUrl = tmp;
    }
    
-   /* Start up our XML-RPC client library. */
+   /* Start up our XMLRPC client library. */
    xmlrpc_client_init(XMLRPC_CLIENT_NO_FLAGS, NAME, VERSION);
    xmlrpc_env_init(&env);
 
-   /* Call our XML-RPC server. */
-   sprintf(loginQos, "<qos><callback type='XML-RPC'>%.100s</callback></qos>", cbUrl);
+   /* Call our XMLRPC server. */
+   sprintf(loginQos, "<qos><callback type='XMLRPC'>%.100s</callback></qos>", cbUrl);
    printf("Login to %s as user %s ...\n", serverUrl, loginName);
    result = xmlrpc_client_call(&env, serverUrl,
                                "authenticate.login", "(ssss)",
@@ -125,7 +125,7 @@ int main (int argc, char** argv)
    /* Dispose of our result value. */
    xmlrpc_DECREF(result);
 
-   /* Shutdown our XML-RPC client library. */
+   /* Shutdown our XMLRPC client library. */
    xmlrpc_env_clean(&env);
    xmlrpc_client_cleanup();
 

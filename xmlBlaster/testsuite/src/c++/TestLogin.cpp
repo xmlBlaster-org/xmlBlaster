@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.10 2003/05/04 21:33:20 laghi Exp $
+Version:   $Id: TestLogin.cpp,v 1.11 2003/05/21 20:21:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -413,7 +413,7 @@ private:
       CorbaConnection::usage();
       log_.usage();
       log_.plain(me(), "Example:");
-      log_.plain(me(), "   TestLogin -ior.file /tmp/ior.dat -trace true");
+      log_.plain(me(), "   TestLogin -dispatch/clientSide/protocol/ior/iorFile /tmp/ior.dat -trace true");
       log_.plain(me(), "----------------------------------------------------------");
    }
 };

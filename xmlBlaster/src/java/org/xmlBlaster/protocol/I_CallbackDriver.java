@@ -31,7 +31,7 @@ public interface I_CallbackDriver extends I_Plugin
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
-    * @return e.g. "IOR" "EMAIL" "XML-RPC" depending on driver
+    * @return e.g. "IOR" "EMAIL" "XMLRPC" depending on driver
     */
    public String getProtocolId();
 

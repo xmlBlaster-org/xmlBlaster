@@ -75,7 +75,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
     * @return null
     */
    public String getRawAddress() {
-      return this.callbackAddress.getAddress();
+      return this.callbackAddress.getRawAddress();
    }
 
    /**
@@ -100,7 +100,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
       try {
          String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
          String from = glob.getProperty().get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
-         String to = callbackAddress.getAddress();
+         String to = callbackAddress.getRawAddress();
 
          // Get system properties
          Properties props = System.getProperties();
@@ -129,7 +129,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
       } catch (Throwable e) {
          // ErrorCode.USER* errors can't arrive here
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                     "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress(), e);
+                     "Sorry, email callback failed, no mail sent to " + callbackAddress.getRawAddress(), e);
 
       }
    }

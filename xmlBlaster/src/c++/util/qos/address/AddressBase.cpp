@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.12 2003/03/26 22:28:13 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.13 2003/05/21 20:20:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -122,7 +122,7 @@ string AddressBase::getSettings() const
 }
 
 /**
- * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+ * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
  */
 void AddressBase::setType(const string& type)
 {
@@ -148,7 +148,7 @@ void AddressBase::setHostname(const string& host)
 }
 
 /**
- * @return true if the hostname is explicitly set by user with setHostname()
+ * @return true if the bootstrapHostname is explicitly set by user with setHostname()
  * false if it is determined automatically
  */
 bool AddressBase::isHardcodedHostname()
@@ -157,7 +157,7 @@ bool AddressBase::isHardcodedHostname()
 }
 
 /**             
- * Check if a hostname is set already
+ * Check if a bootstrapHostname is set already
  */
 bool AddressBase::hasHostname() {
    return hostname_ != "";
@@ -488,9 +488,9 @@ string AddressBase::toXml(const string& extraOffset) const
    if ( (getVersion()!="") && (getVersion()!=DEFAULT_version))
       ret += string(" version='") + getVersion() + string("'");
    if (getHostname() != "")
-      ret += string(" hostname='") + getHostname() + string("'");
+      ret += string(" bootstrapHostname='") + getHostname() + string("'");
    if (DEFAULT_port != getPort())
-       ret += string(" port='") + lexical_cast<string>(getPort()) + string("'");
+       ret += string(" bootstrapPort='") + lexical_cast<string>(getPort()) + string("'");
    if (DEFAULT_sessionId != getSecretSessionId())
        ret += string(" sessionId='") + getSecretSessionId() + string("'");
    if (defaultPingInterval_ != getPingInterval())

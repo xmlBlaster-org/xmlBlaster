@@ -19,7 +19,6 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -118,12 +117,12 @@ public final class XmlBlasterNativeClient implements I_Callback
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                connected = true;
                conRetQos = connection.getConnectReturnQos();
-               log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + 
+               log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + 
                             connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
             }
 
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warn(ME, "I_ConnectionProblems: No connection to " + connection.getGlobal().getId());
+               log.warn(ME, "I_ConnectionStateListener: No connection to " + connection.getGlobal().getId());
                connected = false;
             }
 

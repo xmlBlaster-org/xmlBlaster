@@ -280,10 +280,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       if (addr == null)
          addr = new CallbackAddress(glob);
 
-      this.cbServer = initCbServer(getLoginName(), addr.getType(), addr.getVersion());
+      this.cbServer = initCbServer(getLoginName(), addr);
 
-      addr.setAddress(this.cbServer.getCbAddress());
       addr.setType(this.cbServer.getCbProtocol());
+      addr.setRawAddress(this.cbServer.getCbAddress());
       //addr.setVersion(this.cbServer.getVersion());
       //addr.setSecretSessionId(cbSessionId);
       prop.setCallbackAddress(addr);
@@ -294,10 +294,12 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    /**
     * @see I_XmlBlasterAccess#initCbServer(String, String, String)
     */
-   public I_CallbackServer initCbServer(String loginName, String type, String version) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Using 'client.cbProtocol=" + type + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
-      I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(type, version);
-      server.initialize(this.glob, loginName, this);
+   public I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException {
+      if (callbackAddress == null)
+         callbackAddress = new CallbackAddress(glob);
+      if (log.TRACE) log.trace(ME, "Using 'client.cbProtocol=" + callbackAddress.getType() + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
+      I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(callbackAddress.getType(), callbackAddress.getVersion());
+      server.initialize(this.glob, loginName, callbackAddress, this);
       return server;
    }
 
@@ -889,11 +891,16 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       StringBuffer sb = new StringBuffer(4096);
       sb.append("\n");
       sb.append("Choose a connection protocol:\n");
-      sb.append("   -dispatch/clientSide/protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
+      sb.append("   -protocol           Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XMLRPC'.\n");
+      sb.append("                       This is used for connection to xmlBlaster and for the callback connection.\n");
       sb.append("                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n");
-      sb.append("                       Example: java MyApp -protocol SOCKET\n");
-      sb.append("                                java MyApp -dispatch/clientSide/protocol RMI -rmi.hostname 192.168.10.34\n");
-      sb.append("                                java MyApp -dispatch/clientSide/protocol RMI -dispatch/callback/protocol XML-RPC\n");
+      sb.append("   -dispatch/clientSide/protocol <protocol>\n");
+      sb.append("                       Specify the protocol to connect to xmlBlaster only (not for the callback).\n");
+      sb.append("   -dispatch/callback/protocol <protocol>\n");
+      sb.append("                       Specify the protocol for the callback connection only.\n");
+      sb.append("              Example: java MyApp -protocol SOCKET\n");
+      sb.append("                       java MyApp -dispatch/clientSide/protocol RMI -dispatch/clientside/protocol/rmi/hostname 192.168.10.34\n");
+      sb.append("                       java MyApp -dispatch/clientSide/protocol RMI -dispatch/callback/protocol XMLRPC\n");
       sb.append("\n");
       sb.append("Security features:\n");
       sb.append("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");

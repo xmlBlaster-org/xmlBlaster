@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.32 2003/03/27 10:32:25 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.33 2003/05/21 20:21:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -11,6 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -38,10 +39,10 @@ import java.util.Iterator;
  * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
  * </pre>
  *
- * The variable socket.port (default 7607) sets the socket server port,
+ * The variable protocol/socket/port (default 7607) sets the socket server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -socket.port 9090
+ * java -jar lib/xmlBlaster.jar  -protocol/socket/port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -59,26 +60,22 @@ public class SocketDriver extends Thread implements I_Driver
    private Global glob;
    private LogChannel log;
    /** The singleton handle for this authentication server */
-   private I_Authenticate authenticate = null;
+   private I_Authenticate authenticate;
    /** The singleton handle for this xmlBlaster server */
-   private I_XmlBlaster xmlBlasterImpl = null;
-   /** Default port of xmlBlaster socket server is 7607 */
-   public static final int DEFAULT_SERVER_PORT = 7607;
-   /** The port for the socket server */
-   private int socketPort = DEFAULT_SERVER_PORT;
+   private I_XmlBlaster xmlBlasterImpl;
+   /** The socket address info object holding hostname (useful for multi homed hosts) and port */
+   private SocketUrl socketUrl;
    /** The socket server */
    private ServerSocket listen = null;
    /** The URL which clients need to use to access this server, e.g. "server.mars.univers:6701" */
    private String serverUrl = null;
-   /** The string representation like "192.168.1.1", useful if multihomed computer */
-   private String hostname = null;
-   /** xmlBlaster server host */
-   private java.net.InetAddress inetAddr = null;
    /** State of server */
    private boolean running = true;
    private boolean listenerReady = false;
    /** Remember all client connections */
    private Set handleClientSet = new HashSet();
+   /** The address configuration */
+   private AddressServer addressServer;
 
 
    /**
@@ -126,7 +123,9 @@ public class SocketDriver extends Thread implements I_Driver
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
-         init(glob, authenticate, xmlBlasterImpl);
+
+         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         
          activate();
       }
       catch (XmlBlasterException ex) {
@@ -142,7 +141,7 @@ public class SocketDriver extends Thread implements I_Driver
     * @return "server.mars.univers:6701"
     */
    public String getRawAddress() {
-      return serverUrl; // hostname + ":" + socketPort;
+      return this.socketUrl.getUrl(); // this.socketUrl.getHostname() + ":" + this.socketUrl.getPort();
    }
 
    /**
@@ -159,6 +158,10 @@ public class SocketDriver extends Thread implements I_Driver
       return this.xmlBlasterImpl;
    }
 
+   AddressServer getAddressServer() {
+      return this.addressServer;
+   }
+
    /**
     * Start xmlBlaster SOCKET access.
     * <p />
@@ -168,40 +171,23 @@ public class SocketDriver extends Thread implements I_Driver
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
+   private synchronized void init(Global glob, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
       this.glob = glob;
       this.ME = "SocketDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("socket");
       if (log.CALL) log.call(ME, "Entering init()");
+      this.addressServer = addressServer;
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      socketPort = glob.getProperty().get("socket.port", 7607);
+      this.socketUrl = new SocketUrl(glob, this.addressServer);
 
-      if (socketPort < 1) {
-         log.info(ME, "Option socket.port set to " + socketPort + ", socket server not started");
+      if (this.socketUrl.getPort() < 1) {
+         log.info(ME, "Option protocl/socket/port set to " + this.socketUrl.getPort() + ", socket server not started");
          return;
       }
-
-      hostname = glob.getProperty().get("socket.hostname", (String)null);
-      if (hostname == null) {
-         try  {
-            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-            hostname = addr.getHostName();
-         } catch (Exception e) {
-            log.info(ME, "Can't determine your hostname");
-            hostname = "localhost";
-         }
-      }
-      try {
-         inetAddr = java.net.InetAddress.getByName(hostname);
-      } catch(java.net.UnknownHostException e) {
-         throw new XmlBlasterException("InitSocketFailed", "The host [" + hostname + "] is invalid, try '-socket.hostname=<ip>': " + e.toString());
-      }
-
-      serverUrl = hostname + ":" + socketPort;
    }
 
    /**
@@ -228,7 +214,7 @@ public class SocketDriver extends Thread implements I_Driver
          // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
          // force closing by invoking server with this temporary client:
          try {
-            java.net.Socket socket = new Socket(listen.getInetAddress(), socketPort);
+            java.net.Socket socket = new Socket(listen.getInetAddress(), this.socketUrl.getPort());
             socket.close();
          } catch (java.io.IOException e) {
             log.warn(ME, "shutdown problem: " + e.toString());
@@ -283,16 +269,17 @@ public class SocketDriver extends Thread implements I_Driver
    public void run()
    {
       try {
-         int backlog = glob.getProperty().get("socket.backlog", 50); // queue for max 50 incoming connection request
-         listen = new ServerSocket(socketPort, backlog, inetAddr);
-         log.info(ME, "Started successfully socket driver on hostname=" + hostname + " port=" + socketPort);
-         serverUrl = hostname + ":" + socketPort;
+         int backlog = this.addressServer.getEnv("backlog", 50).getValue(); // queue for max 50 incoming connection request
+         if (log.TRACE) log.trace(ME, addressServer.getEnvLookupKey("backlog") + "=" + backlog);
+
+         listen = new ServerSocket(this.socketUrl.getPort(), backlog, this.socketUrl.getInetAddress());
+         log.info(ME, "Started successfully socket driver on '" + this.socketUrl.getUrl() + "'");
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
-            //log.trace(ME, "New incoming request on port=" + socketPort + " ...");
+            //log.trace(ME, "New incoming request on port=" + this.socketUrl.getPort() + " ...");
             if (!running) {
-               log.info(ME, "Closing server " + hostname + " on port " + socketPort + ".");
+               log.info(ME, "Closing server '" + this.socketUrl.getUrl() + "'");
                break;
             }
             HandleClient hh = new HandleClient(glob, this, accept);
@@ -302,16 +289,20 @@ public class SocketDriver extends Thread implements I_Driver
          }
       }
       catch (java.net.UnknownHostException e) {
-         log.error(ME, "Socket server problem, IP address '" + hostname + "' is invalid: " + e.toString());
+         log.error(ME, "Socket server problem, IP address '" + this.socketUrl.getHostname() + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         log.error(ME, "Socket server problem, port " + hostname + ":" + socketPort + " is not available: " + e.toString());
+         log.error(ME, "Socket server problem '" + this.socketUrl.getUrl() + "', the port " + this.socketUrl.getPort() + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
-         log.info(ME, "Socket " + hostname + ":" + socketPort + " closed successfully: " + e.toString());
+         log.info(ME, "Socket '" + this.socketUrl.getUrl() + "' closed successfully: " + e.toString());
       }
       catch (IOException e) {
-         log.error(ME, "Socket server problem on " + hostname + ":" + socketPort + ": " + e.toString());
+         log.error(ME, "Socket server problem on '" + this.socketUrl.getUrl() + "': " + e.toString());
+      }
+      catch (Throwable e) {
+         log.error(ME, "Socket server problem on '" + this.socketUrl.getUrl() + "': " + e.toString());
+         e.printStackTrace();
       }
       finally {
          listenerReady = true;
@@ -337,7 +328,7 @@ public class SocketDriver extends Thread implements I_Driver
          log.error(ME, e.toString());
       }
 
-      serverUrl = null;
+      this.socketUrl = null;
       log.info(ME, "Socket driver stopped, all resources released.");
    }
 
@@ -345,10 +336,10 @@ public class SocketDriver extends Thread implements I_Driver
     * Command line usage.
     * <p />
     * <ul>
-    *  <li><i>-socket.port</i>        The SOCKET web server port [7607]</li>
-    *  <li><i>-socket.hostname</i>    Specify a hostname where the SOCKET web server runs
-    *                          Default is the localhost.</li>
-    *  <li><i>-socket.backlog</i>     Queue size for incoming connection request [50]</li>
+    *  <li><i>-protocol/socket/port</i>        The SOCKET web server port [7607]</li>
+    *  <li><i>-protocol/socket/hostname</i>    Specify a hostname where the SOCKET web server runs
+    *                                          Default is the localhost.</li>
+    *  <li><i>-protocol/socket/backlog</i>     Queue size for incoming connection request [50]</li>
     *  <li><i>-dump[socket]</i>       true switches on detailed SOCKET debugging [false]</li>
     * </ul>
     * <p />
@@ -358,13 +349,19 @@ public class SocketDriver extends Thread implements I_Driver
    {
       String text = "\n";
       text += "SocketDriver options:\n";
-      text += "   -socket.port        The SOCKET server port [7607].\n";
-      text += "   -socket.hostname    Specify a hostname where the SOCKET server runs.\n";
+      text += "   -protocol/socket/port\n";
+      text += "                       The SOCKET server port [7607].\n";
+      text += "   -protocol/socket/hostname\n";
+      text += "                       Specify a hostname where the SOCKET server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -socket.SoTimeout   How long may a socket read block in msec [0] (0 is forever).\n";
-      text += "   -socket.responseTimeout Max wait for the method return value/exception [60000] msec.\n";
-      text += "   -socket.backlog     Queue size for incoming connection request [50].\n";
-      text += "   -socket.threadPrio  The priority 1=min - 10=max of the listener thread [5].\n";
+      text += "   -protocol/socket/SoTimeout\n";
+      text += "                       How long may a socket read block in msec [0] (0 is forever).\n";
+      text += "   -protocol/socket/responseTimeout\n";
+      text += "                       Max wait for the method return value/exception [60000] msec.\n";
+      text += "   -protocol/socket/backlog\n";
+      text += "                       Queue size for incoming connection request [50].\n";
+      text += "   -protocol/socket/threadPrio\n";
+      text += "                       The priority 1=min - 10=max of the listener thread [5].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;

@@ -32,9 +32,9 @@ import org.apache.xmlrpc.WebServer;
  * which delegates it to this update() method.
  * <p />
  * <pre>
- *     -xmlrpc.portCB      Specify a port number where xmlrpc callback webserver listens.
+ *     -dispatch/callback/protocol/xmlrpc/port    Specify a port number where xmlrpc callback webserver listens.
  *                         Default is port 8081, the port 0 switches this feature off.
- *     -xmlrpc.hostnameCB  Specify a hostname where xmlrp callback server runs.
+ *     -dispatch/callback/protocol/xmlrpc/hostname  Specify a hostname where xmlrp callback server runs.
  *                         Default is the localhost.
  * </pre>
  * If the callback server can't be established because of the port is not free,
@@ -53,10 +53,11 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    private LogChannel log = null;
    private I_CallbackExtended client;
    private String loginName;
-   /** The name for the XML-RPC registry */
+   /** The name for the XMLRPC registry */
    private String callbackServerUrl = null;
-   /** XmlBlaster XML-RPC callback web server listen port is 8081 */
+   /** XmlBlaster XMLRPC callback web server listen port is 8081 */
    public static final int DEFAULT_CALLBACK_PORT = 8081; // org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_CALLBACK_PORT;
+   public CallbackAddress callbackAddress;
    private WebServer webServer = null;
 
    /** You must call initialize after constructing me */
@@ -83,15 +84,17 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     * Construct a persistently named object.
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     */
-   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
+   public void initialize(Global glob, String name, CallbackAddress callbackAddress,
+                          I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "XmlRpcCallbackServer-" + name;
       this.glob = glob;
       this.log = glob.getLog("xmlrpc");
+      this.callbackAddress = callbackAddress;
       this.client = client;
       this.loginName = name;
       createCallbackServer();
-      log.info(ME, "Success, created XML-RPC callback server for " + loginName);
+      log.info(ME, "Success, created XMLRPC callback server for " + loginName);
    }
 
 
@@ -106,27 +109,23 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    {
       if (log.CALL) log.call(ME, "createCallbackServer() ...");
 
-      // TODO: Use ConnectQos to allow hardcoded hostname/socket
+      // -dispatch/callback/protocol/xmlrpc/port 7008
+      int callbackPort = this.callbackAddress.getEnv("port", DEFAULT_CALLBACK_PORT).getValue();
 
-      // Use the xmlBlaster-server xmlrpcRegistry as a fallback:
-      int callbackPort = glob.getProperty().get("xmlrpc.port",
-                                                DEFAULT_CALLBACK_PORT); // default xmlBlaster XML-RPC publishing port is 8081
-      // Use the given callback port if specified :
-      callbackPort = glob.getProperty().get("xmlrpc.portCB", callbackPort);
-
-      String hostname = glob.getCbHostname("xmlrpc.hostnameCB");
+      // -dispatch/callback/protocol/xmlrpc/hostname
+      String hostname = this.callbackAddress.getEnv("hostname", glob.getLocalIP()).getValue();
       java.net.InetAddress inetAddr = null;
       try {
          inetAddr = java.net.InetAddress.getByName(hostname);
       } catch(java.net.UnknownHostException e) {
-         if (log.TRACE) log.trace("InitXmlRpcFailed", "The host [" + hostname + "] for the callback server is invalid, try '-xmlrpc.hostnameCB=<ip>': " + e.toString());
-         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] for the callback server is invalid, try '-xmlrpc.hostnameCB=<ip>': " + e.toString());
+         if (log.TRACE) log.trace("InitXmlRpcFailed", "The host [" + hostname + "] for the callback server is invalid, try '-dispatch/callback/protocol/xmlrpc/hostname=<ip>': " + e.toString());
+         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] for the callback server is invalid, try '-dispatch/callback/protocol/xmlrpc/hostname=<ip>': " + e.toString());
       }
 
       try {
          if (callbackPort > 0) {
             // Start an 'xmlrpc webserver' if desired
-            int numTries = 20; // start looking for a free port, begin with default port -xmlrpc.portCB=<port>
+            int numTries = 20; // start looking for a free port, begin with default port -dispatch/callback/protocol/xmlrpc/port <port>
             for (int ii=0; ii<numTries; ii++) {
                try {
                   webServer = new WebServer(callbackPort, inetAddr);
@@ -145,31 +144,32 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                   callbackPort++;
                }
                if (ii == (numTries-1)) {
-                  log.error(ME, "Can't find free port " + callbackPort + " for XML-RCP callback server, please use -xmlrpc.portCB=<port> to specify a free one.");
+                  log.error(ME, "Can't find free port " + callbackPort + " for XML-RCP callback server, please use '-dispatch/callback/protocol/xmlrpc/port <port>' to specify a free one.");
                }
             }
             webServer.addHandler("$default", new XmlRpcCallbackImpl(this)); // register update() method
             callbackServerUrl = "http://" + hostname + ":" + callbackPort + "/";
+            this.callbackAddress.setRawAddress(callbackServerUrl); // e.g. "http://127.168.1.1:8082/"
             this.ME = "XmlRpcCallbackServer-" + callbackServerUrl;
             //log.info(ME, "Created XmlRpc callback http server");
          }
          else
-            log.info(ME, "XmlRpc callback http server not created, because of -xmlrpc.portCB is 0");
+            log.info(ME, "XmlRpc callback http server not created, because of -dispatch/callback/protocol/xmlrpc/port is 0");
       } catch (XmlBlasterException e) {
          throw e;
       } catch (Exception e) {
          e.printStackTrace();
-         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC callback server host=" + hostname + " port=" + callbackPort + ": " + e.toString());
+         throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XMLRPC callback server host=" + hostname + " port=" + callbackPort + ": " + e.toString());
       }
    }
 
    /**
     * Returns the 'well known' protocol type. 
-    * @return "XML-RPC"
+    * @return "XMLRPC"
     */
    public String getCbProtocol()
    {
-      return "XML-RPC";
+      return "XMLRPC";
    }
    
    /**
@@ -193,11 +193,11 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             webServer.shutdown();
          }
          catch(Throwable e) {
-            log.warn(ME, "Problems during shutdown of XML-RPC callback web server: " + e.toString());
+            log.warn(ME, "Problems during shutdown of XMLRPC callback web server: " + e.toString());
             return;
          }
       }
-      log.info(ME, "The XML-RPC callback server is shutdown.");
+      log.info(ME, "The XMLRPC callback server is shutdown.");
    }
 
    /**

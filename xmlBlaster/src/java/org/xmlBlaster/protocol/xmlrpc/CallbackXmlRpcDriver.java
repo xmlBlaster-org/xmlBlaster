@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 /**
- * This object sends a MsgUnitRaw back to a client using XML-RPC interface, in
+ * This object sends a MsgUnitRaw back to a client using XMLRPC interface, in
  * the same JVM.
  * <p>
  * The I_CallbackDriver.update() method of the client will be invoked
@@ -44,10 +44,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
-    * @return "XML-RPC"
+    * @return "XMLRPC"
     */
    public String getProtocolId() {
-      return "XML-RPC";
+      return "XMLRPC";
    }
 
    /** Enforced by I_Plugin */
@@ -72,7 +72,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @return "http://server.mars.universe:8080/"
     */
    public String getRawAddress() {
-      return callbackAddress.getAddress();
+      return callbackAddress.getRawAddress();
    }
 
    /**
@@ -81,7 +81,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by
     * xmlBlaster after instantiation of this class, telling us
     * the address to callback.
-    * @param  callbackAddress Contains the stringified XML-RPC callback handle of
+    * @param  callbackAddress Contains the stringified XMLRPC callback handle of
     *                      the client
     */
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
@@ -90,8 +90,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       this.log = glob.getLog("xmlrpc");
       this.callbackAddress = callbackAddress;
       try {
-         xmlRpcClient = new XmlRpcClient(callbackAddress.getAddress());
-         if (log.TRACE) log.trace(ME, "Accessing client callback web server using given url=" + callbackAddress.getAddress());
+         xmlRpcClient = new XmlRpcClient(callbackAddress.getRawAddress());
+         if (log.TRACE) log.trace(ME, "Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
       }
       catch (IOException ex1) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "init() failed", ex1);
@@ -137,13 +137,13 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
-         String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getAddress():"?") + " failed in client: " + ex.toString();
+         String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          // The remote client is only allowed to throw USER* errors!
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) { // e.g. IOException
-         String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getAddress():"?") + " failed: " + e.toString();
+         String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);
@@ -179,12 +179,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
-         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) {
-         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
          //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);

@@ -8,7 +8,7 @@
     <param>
       <value>
         <string>
-          &lt;qos>&lt;callback type='XML-RPC'>http://localhost:8081&lt;/callback>&lt;/qos>
+          &lt;qos>&lt;callback type='XMLRPC'>http://localhost:8081&lt;/callback>&lt;/qos>
         </string>
       </value>
     </param>

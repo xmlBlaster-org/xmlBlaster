@@ -61,14 +61,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * Connect to xmlBlaster using XML-RPC.
+    * Connect to xmlBlaster using XMLRPC.
     */
    public XmlRpcConnection(Global glob) throws XmlBlasterException {
       init(glob, null);
    }
 
    /**
-    * Connect to xmlBlaster using XML-RPC.
+    * Connect to xmlBlaster using XMLRPC.
     */
    public XmlRpcConnection(Global glob, Applet ap) throws XmlBlasterException {
       init(glob, null);
@@ -95,11 +95,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * @return The connection protocol name "XML-RPC"
+    * @return The connection protocol name "XMLRPC"
     */
    public final String getProtocol()
    {
-      return "XML-RPC";
+      return "XMLRPC";
    }
 
    /**
@@ -111,18 +111,18 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       this.clientAddress = address;
-
       try {
-         String hostname = address.getHostname();
-         hostname = glob.getProperty().get("xmlrpc.hostname", hostname);
-
-         // default xmlBlaster XML-RPC publishing port is 8080
-         int port = glob.getProperty().get("xmlrpc.port", DEFAULT_SERVER_PORT);
+         String hostname = this.clientAddress.getEnv("hostname", glob.getLocalIP()).getValue();
+         // default xmlBlaster XMLRPC publishing port is 8080
+         int port = this.clientAddress.getEnv("port", DEFAULT_SERVER_PORT).getValue();
          this.url = "http://" + hostname + ":" + port + "/";
 
-         if (glob.getProperty().get("xmlrpc.debug", false) == true)
+         // dispatch/clientSide/protocol/xmlrpc/debug
+         if (this.clientAddress.getEnv("debug", false).getValue() == true)
             XmlRpc.setDebug(true);
 
+         this.clientAddress.setRawAddress(this.url);
+         
          this.xmlRpcClient = new XmlRpcClient(url);
          log.info(ME, "Created XmlRpc client to " + url);
       }
@@ -144,9 +144,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
    private XmlRpcClient getXmlRpcClient() throws XmlBlasterException {
       if (this.xmlRpcClient == null) {
-         if (log.TRACE) log.trace(ME, "No XML-RPC connection available.");
+         if (log.TRACE) log.trace(ME, "No XMLRPC connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                                       "The XML-RPC xmlBlaster handle is null, no connection available");
+                                       "The XMLRPC xmlBlaster handle is null, no connection available");
       }
       return this.xmlRpcClient;
    }
@@ -175,7 +175,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          String qosStripped = StringHelper.replaceAll(qosOrig, "<![CDATA[", "");
          connectQos = StringHelper.replaceAll(qosStripped, "]]>", "");
          if (!connectQos.equals(qosOrig)) {
-            log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+            log.trace(ME, "Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
          }
 
@@ -609,16 +609,21 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public static String usage()
    {
       String text = "\n";
-      text += "XmlRpcConnection 'XML-RPC' options:\n";
-      text += "   -xmlrpc.port        Specify a port number where xmlBlaster XML-RPC web server listens.\n";
+      text += "XmlRpcConnection 'XMLRPC' options:\n";
+      text += "   -dispatch/clientSide/protocol/xmlrpc/port\n";
+      text += "                       Specify a port number where xmlBlaster XMLRPC web server listens.\n";
       text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
-      text += "   -xmlrpc.hostname    Specify a hostname where the xmlBlaster web server runs.\n";
+      text += "   -dispatch/clientSide/protocol/xmlrpc/hostname\n";
+      text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -xmlrpc.portCB      Specify a port number for the callback web server to listen.\n";
+      text += "   -dispatch/callback/protocol/xmlrpc/port\n";
+      text += "                       Specify a port number for the callback web server to listen.\n";
       text += "                       Default is port "+XmlRpcCallbackServer.DEFAULT_CALLBACK_PORT+", the port 0 switches this feature off.\n";
-      text += "   -xmlrpc.hostnameCB  Specify a hostname where the callback web server shall run.\n";
+      text += "   -dispatch/callback/protocol/xmlrpc/hostname\n";
+      text += "                       Specify a hostname where the callback web server shall run.\n";
       text += "                       Default is the localhost (useful for multi homed hosts).\n";
-      text += "   -xmlrpc.debug       true switches on detailed XML-RPC debugging [false].\n";
+      text += "   -protocol/xmlrpc/debug\n";
+      text += "                       true switches on detailed XMLRPC debugging [false].\n";
       text += "\n";
       return text;
    }
@@ -639,7 +644,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       try {
          XmlRpcConnection proxy = new XmlRpcConnection("http://localhost:8080", 8081);
 
-         String qos = "<qos><callback type='XML-RPC'>http://localhost:8081</callback></qos>";
+         String qos = "<qos><callback type='XMLRPC'>http://localhost:8081</callback></qos>";
          String sessionId = "Session1";
 
          String loginAnswer = proxy.login("LunaMia", "silence", qos, sessionId);

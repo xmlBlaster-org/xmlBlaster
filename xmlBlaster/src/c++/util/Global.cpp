@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.36 2003/05/12 21:45:28 ruff Exp $
+Version:   $Id: Global.cpp,v 1.37 2003/05/21 20:20:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -14,9 +14,9 @@ Version:   $Id: Global.cpp,v 1.36 2003/05/12 21:45:28 ruff Exp $
 
 #if defined(__GNUC__)
    // To support query state with 'ident libxmlBlaster.so' or 'what libxmlBlaster.so'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.36 2003/05/12 21:45:28 ruff Exp $";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.37 2003/05/21 20:20:55 ruff Exp $";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.36 2003/05/12 21:45:28 ruff Exp $";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.37 2003/05/21 20:20:55 ruff Exp $";
 #endif
 
 using namespace std;
@@ -155,15 +155,15 @@ string Global::getLocalIP() const
 
 string Global::getBootstrapHostname() const
 {
-   string hostname = getProperty().getStringProperty(string("hostname"), getLocalIP());
-   int port     = getProperty().getIntProperty(string("port"), Constants::XMLBLASTER_PORT);
-   return "http://" + hostname + ":" + lexical_cast<string>(port);
+   string bootstrapHostname = getProperty().getStringProperty(string("bootstrapHostname"), getLocalIP());
+   int bootstrapPort = getProperty().getIntProperty(string("bootstrapPort"), Constants::XMLBLASTER_PORT);
+   return "http://" + bootstrapHostname + ":" + lexical_cast<string>(bootstrapPort);
 }
 
 string Global::getCbHostname() const
 {
 //   std::cout << "Global::getCbHostname implementation is not finished" << std::endl;
-   return getProperty().getStringProperty(string("hostname"), getLocalIP());
+   return getProperty().getStringProperty(string("bootstrapHostname"), getLocalIP());
 }
 
 CbServerPluginManager& Global::getCbServerPluginManager()

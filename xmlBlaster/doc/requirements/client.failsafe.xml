@@ -185,7 +185,7 @@
       </p>
 
       <p>
-      Note: The protocol used (CORBA, RMI, XML-RPC etc.) is transparently hidden.
+      Note: The protocol used (CORBA, RMI, XMLRPC etc.) is transparently hidden.
       See I_XmlBlasterAccess.java for a usage description and TestFailSave.java (testsuite)
       for a code example how to use it.
       </p>
@@ -517,7 +517,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -d
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -10,7 +10,9 @@ import org.jutils.time.StopWatch;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
@@ -24,7 +26,9 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
 /**
@@ -32,11 +36,14 @@ import junit.framework.*;
  *
  * <p>Test 5000 subscribers (or numSubscribers) on one connection.</p>
  * <p>Test 5000 subscribers (or numSubscribers) with maxSubPerCon per connection</p>
- * <p>Test 5000 subscribers (or numSubscruber) on one connection each.</p>
+ * <p>Test 5000 subscribers (or numSubscribers) on one connection each.</p>
  * <p>Do it for IOP, RMI</p>
  *
- * <p>If withEmbedded is set to true will run without an embedded server.</p>
- *
+ * <p>If withEmbedded is set to false will run without an embedded server.</p>
+ * <pre>
+ *  java -Xms18M -Xmx256M org.xmlBlaster.test.stress.MassiveSubTest
+ *  java -Xms18M -Xmx256M junit.swingui.TestRunner -noloading org.xmlBlaster.test.stress.MassiveSubTest
+ * </pre>
  * @author Peter Antman
  */
 
@@ -53,6 +60,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private int serverPort = 7615;
    private EmbeddedXmlBlaster serverThread;
    private boolean messageArrived = false;
+   private MsgInterceptor updateInterceptor;
 
    private final String publishOid1 = "dummy1";
    private I_XmlBlasterAccess oneConnection;
@@ -130,7 +138,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          // If we have many subs on one con, we must raise the max size of the callback queue!
          CbQueueProperty cbProp =connectQos.getSessionCbQueueProperty();
          cbProp.setMaxEntries(numSubscribers+1000);
-         oneConnection.connect(connectQos, this); // Login to xmlBlaster
+         cbProp.setMaxEntriesCache(numSubscribers+1000);
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, this); // Collect received msgs
+         ConnectReturnQos connectReturnQos = oneConnection.connect(connectQos, this.updateInterceptor);
+         log.info(ME, "Connected: " + connectReturnQos.toXml());
       }
       catch (Exception e) {
           log.error(ME, "Login failed: " + e.toString());
@@ -206,8 +217,19 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          // reset to default server port (necessary if other tests follow in the same JVM).
          Util.resetPorts();
       }
+
+      this.glob = null;
+      this.log = null;
+      this.updateInterceptor = null;
+      this.oneConnection = null;
+      this.manyClients = null;
+      this.manyConnections = null;
+      this.stopWatch = null;
    }
 
+   /**
+    * helper
+    */
    public void subcribeMany()
    {
       try {
@@ -250,6 +272,11 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   try {
                      log.trace(ME,"Creating connection no: " +ci);
                      Global gg = glob.getClone(null);
+                     // Try to reuse the same ORB to avoid too many threads:
+                     if ("IOR".equals(gg.getProperty().get("protocol","IOR")) && ci > 0) {
+                        gg.addObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper",
+                                          (org.xmlBlaster.protocol.corba.OrbInstanceWrapper)manyConnections[ci-1].getGlobal().getObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper"));
+                     }
                      manyConnections[ci] = gg.getXmlBlasterAccess();
                      ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
                      // If we have many subs on one con, we must raise the max size of the callback queue!
@@ -260,7 +287,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                      //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
                      //connectQos.setSubjectQueueProperty(cbProp);
                      log.trace(ME,"Login qos: " +  connectQos.toXml());
-                     manyConnections[ci].connect(connectQos, this);
+                     ConnectReturnQos connectReturnQos = manyConnections[ci].connect(connectQos, this);
+                     log.info(ME, "Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
                   }
                   catch (Exception e) {
                      log.error(ME, "Login failed: " + e.toString());
@@ -277,12 +305,13 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                Global gg = glob.getClone(null);
                sub.connection = gg.getXmlBlasterAccess();
                ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
-               sub.connection.connect(connectQos, this);
+               ConnectReturnQos connectReturnQos = sub.connection.connect(connectQos, this);
+               log.info(ME, "Connected: " + connectReturnQos.toXml());
             }
             catch (Exception e) {
                log.error(ME, "Login failed: " + e.toString());
                assertTrue("Login failed: " + e.toString(), false);
-            }
+            }                                                        
          }
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
@@ -304,6 +333,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       log.info(ME, "Server memory per login consumed=" + memPerLogin);
       log.info(ME, "Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
           
+      //try { Thread.currentThread().sleep(5000000L); } catch( InterruptedException i) {}
+
       } catch (Error e) {
          e.printStackTrace();
          log.error(ME,"Could not set up subscribers: " +e);
@@ -393,6 +424,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       long delay = 2000L + 10 * numToRec;
       log.info(ME, "Waiting long enough for updates ..."+delay);
       Util.delay(delay);                          // Wait some time for callback to arrive ...
+      // !!!! this.updateInterceptor.
 
       if ( numReceived != numToRec ){
          // Warn and wait some more

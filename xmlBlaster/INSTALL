@@ -220,23 +220,23 @@ instructions.
 
 
 
-2. A variant using the xmlBlaster built in http server, specify the port to listen
+2. A variant using the xmlBlaster built in http server, specify the bootstrap port to listen
 
-     java org.xmlBlaster.MainGUI -port 3412
+     java org.xmlBlaster.MainGUI -bootstrapPort 3412
 
    and a testclient
 
-     java javaclients.ClientSub -hostname localhost -port 3412
+     java javaclients.ClientSub -bootstrapHostname localhost -bootstrapPort 3412
 
 
 
 3. A variant using a file to pass the server IOR:
 
-     java org.xmlBlaster.MainGUI -ior.file /tmp/Blaster_Ref
+     java org.xmlBlaster.MainGUI -protocol/ior/iorFile /tmp/Blaster_Ref
 
    and a testclient
 
-     java javaclients.ClientSub -ior.file /tmp/Blaster_Ref
+     java javaclients.ClientSub -protocol/ior/iorFile /tmp/Blaster_Ref
 
 
 4. Variant using a naming service and corbaloc to find it.
@@ -261,9 +261,9 @@ instructions.
 
      ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref
 
-   port 0 switches the internal http server off:
+   Bootstrap port 0 switches the internal http server off:
 
-     java org.xmlBlaster.MainGUI -port 0
+     java org.xmlBlaster.MainGUI -bootstrapPort 0
 
    This client looks into jacorb.properties to find the URL with the naming service IOR.
    Edit ${HOME}/jacorb.properties accordingly e.g.
@@ -276,7 +276,7 @@ instructions.
 
    Start a client:
 
-     java javaclients.ClientXml -port 0
+     java javaclients.ClientXml -bootstrapPort 0
 
    If you have problems, check your web server:
 

@@ -1,10 +1,10 @@
 """
-__version__ = '$Revision: 1.2 $'
-__date__    = '$Date: 2003/05/08 22:03:34 $'
+__version__ = '$Revision: 1.3 $'
+__date__    = '$Date: 2003/05/21 20:21:32 $'
 __author__  = 'Peter Arwanitis'
 __license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
 
-last change by $Author: spex66 $ 
+last change by $Author: ruff $ 
 
 """
 
@@ -69,7 +69,7 @@ class ResponsiveThreadedXMLRPCServer(threading.Thread):
        
        Example for an dispatcherClass to communicate with XmlBlaster
        It is simple :-) and you have a single place of connecting your code with
-       the interface to XML-RPC.
+       the interface to XMLRPC.
        
        This code is living part of the pyBlaster project 
        (http://www.xmlblaster.org/index.html)

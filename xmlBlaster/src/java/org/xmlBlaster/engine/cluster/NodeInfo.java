@@ -140,7 +140,7 @@ public final class NodeInfo
     */
    public void addCbAddress(CallbackAddress cbAddress) {
       if (cbAddressMap == null) cbAddressMap = new TreeMap();
-      this.cbAddressMap.put(cbAddress.getAddress(), cbAddress);
+      this.cbAddressMap.put(cbAddress.getRawAddress(), cbAddress);
    }
 
    /**

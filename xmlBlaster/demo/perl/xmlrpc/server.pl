@@ -30,7 +30,7 @@ print "Connected to xmlBlaster server on $server_url \n";
 
 # Call the remote server and get our result.
 my $sessionId = $server->call('authenticate.login', "dk2", "dk2",
-                "<qos><callback type='XML-RPC'>$local_url</callback>".
+                "<qos><callback type='XMLRPC'>$local_url</callback>".
                 "<local>false</local></qos>", "");
 print "\nLogin success with sessionId=$sessionId \n";
 

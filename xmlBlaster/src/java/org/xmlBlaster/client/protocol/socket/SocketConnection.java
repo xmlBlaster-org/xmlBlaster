@@ -30,6 +30,7 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import org.xmlBlaster.protocol.socket.Parser;
+import org.xmlBlaster.protocol.socket.SocketUrl;
 
 
 /**
@@ -52,18 +53,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    private String ME = "SocketConnection";
    private Global glob;
    private LogChannel log;
-   /** The port for the socket server */
-   private int port = DEFAULT_SERVER_PORT;
-   /** The port for our client side */
-   private int localPort = -1;
-   /** xmlBlaster server host */
-   private String hostname = "localhost";
-   /** our client side host */
-   private String localHostname = "localhost";
-   /** xmlBlaster server host */
-   private java.net.InetAddress inetAddr;
-   /** our client side host */
-   private java.net.InetAddress localInetAddr;
+   /** The info object holding hostname and port on the other side */
+   private SocketUrl socketUrl;
+   /** The info object holding hostname and port on this side */
+   private SocketUrl localSocketUrl;
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
@@ -157,77 +150,52 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       
       if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with raw socket to server ...");
 
+      this.socketUrl = new SocketUrl(glob, this.clientAddress);
+
+      if (this.socketUrl.getPort() < 1) {
+         String str = "Option dispatch/clientSide/protocol/socket/port set to " + this.socketUrl.getPort() +
+                      ", socket client not started";
+         log.info(ME, str);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, str);
+      }
+
+      this.localSocketUrl = new SocketUrl(glob, this.clientAddress, true, -1);
+
       try {
-         port = glob.getProperty().get("socket.port", DEFAULT_SERVER_PORT);
-         if (port < 1) {
-            String str = "Option socket.port set to " + port + ", socket client not started";
-            log.info(ME, str);
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, str);
-         }
-
-         hostname = glob.getProperty().get("socket.hostname", (String)null);
-         if (hostname == null) {
-            try  {
-               java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-               hostname = addr.getHostName();
-            } catch (Exception e) {
-               log.info(ME, "Can't determine your hostname");
-               hostname = "localhost";
-            }
-         }
-         try {
-            inetAddr = java.net.InetAddress.getByName(hostname);
-         } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The host [" + hostname + "] is invalid, try '-socket.hostname <ip>': " + e.toString());
-         }
-
-
-         localPort = glob.getProperty().get("socket.localPort", -1);
-         localHostname = glob.getProperty().get("socket.localHostname", (String)null);
-         if (localHostname == null) {
-            try  {
-               java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-               localHostname = addr.getHostName();
-            } catch (Exception e) {
-               log.info(ME, "Can't determine your localHostname");
-               localHostname = "localhost";
-            }
-         }
-         try {
-            localInetAddr = java.net.InetAddress.getByName(localHostname);
-         } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The host [" + localHostname + "] is invalid, try '-socket.localHostname <ip>': " + e.toString());
-         }
-
-         if (localPort > -1) {
-            this.sock = new Socket(inetAddr, port, localInetAddr, localPort);
-            log.info(ME, "Created SOCKET client connected to '" + hostname + "' on port " + port +
-                         ", your configured local parameters are '" + localHostname + "' on port " + localPort);
+         if (this.localSocketUrl.getPort() > -1) {
+            this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
+                                   this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
+            log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() +
+                         "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
+                         " on localPort=" + this.localSocketUrl.getPort());
          }
          else {
-            if (log.TRACE) log.trace(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
-            this.sock = new Socket(inetAddr, port);
-            this.localPort = this.sock.getLocalPort();
-            this.localHostname = this.sock.getLocalAddress().getHostAddress();
-            log.info(ME, "Created SOCKET client connected to '" + hostname + "' on port " + port + ", callback address is " + getLocalAddress());
+            if (log.TRACE) log.trace(ME, "Trying socket connection to " + socketUrl.getUrl() + " ...");
+            this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+            this.clientAddress.setPluginProperty("localPort", ""+this.sock.getLocalPort());
+            this.clientAddress.setPluginProperty("localHostname", this.sock.getLocalAddress().getHostAddress());
+            this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
+            log.info(ME, "Created SOCKET client connected to '" + socketUrl.getUrl() + "', callback address is '" + this.localSocketUrl.getUrl() + "'");
          }
          oStream = this.sock.getOutputStream();
          iStream = this.sock.getInputStream();
 
          // start the socket sender and callback thread here
          if (this.cbReceiver != null) { // only the first time, not on reconnect
-            this.cbReceiver.initialize(glob, getLoginName(), this.cbClient);
+            // NOTE: This address should come from the client !!!
+            org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
+            this.cbReceiver.initialize(glob, getLoginName(), cba, this.cbClient);
          }
       }
       catch (XmlBlasterException e) {
          throw e;
       }
       catch (java.net.UnknownHostException e) {
-         String str = "XmlBlaster server host is unknown, '-socket.hostname=<ip>': " + e.toString();
+         String str = "XmlBlaster server host is unknown, '-dispatch/clientSide/protocol/socket/hostname=<ip>': " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
-                                       "XmlBlaster server is unknown, '-socket.hostname=<ip>'", e);
+                                       "XmlBlaster server is unknown, '-dispatch/clientSide/protocol/socket/hostname=<ip>'", e);
       }
       catch (java.io.IOException e) {
          String str = "Connection to xmlBlaster server failed: " + e.toString();
@@ -237,7 +205,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
+         String str = "Socket client connection to '" + this.socketUrl.getUrl() + "' failed, try options '-dispatch/clientSide/protocol/socket/hostname <ip> -dispatch/clientSide/protocol/socket/port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
 
@@ -264,13 +232,13 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * A string with the local address and port (the client side). 
     * @return For example "localhost:66557"
     */
-   public String getLocalAddress() {
-      if (this.sock == null) {
+   public SocketUrl getLocalSocketUrl() {
+      if (this.localSocketUrl == null) {
          // Happens if on client startup an xmlBlaster server is not available
          if (log.TRACE) log.trace(ME, "Can't determine client address, no socket connection available");
          return null;
       }
-      return "" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort();
+      return this.localSocketUrl;
    }
 
    /**
@@ -305,7 +273,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          //      "Sorry, SOCKET callback handler is not available but is necessary if client connection is of type 'SOCKET', please do not mix 'SOCKET' with other protocols in the same client connection.");
          log.info(ME, "Creating default callback server type=" + getType());
          I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
-         server.initialize(this.glob, getLoginName(), this.cbClient);
+         // NOTE: This address should come from the client !!!
+         org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
+         server.initialize(this.glob, getLoginName(), cba, this.cbClient);
          // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
       }
 
@@ -664,17 +634,21 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Command line usage.
     * <p />
-    *  <li>-socket.port        Specify a port number where xmlBlaster SOCKET server listens
+    *  <li>-dispatch/clientSide/protocol/socket/port
+    *                      Specify a port number where xmlBlaster SOCKET server listens
     *                      Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off</li>
-    *  <li>-socket.hostname    Specify a hostname where the xmlBlaster web server runs.
+    *  <li>-dispatch/clientSide/protocol/socket/hostname
+    *                      Specify a hostname where the xmlBlaster web server runs.
     *                      Default is the localhost</li>
-    *  <li>-socket.localPort   You can specify our client side port as well (usually you shouldn't)
-    *                      Default is that the port is choosen by the operating system</li>
-    *  <li>-socket.localHostname  Specify the hostname who we are. Makes sense for multi homed computers
+    *  <li>-dispatch/clientSide/protocol/socket/localPort
+    *                      You can specify our client side port as well (usually you shouldn't)
+    *                      Default is that the port is chosen by the operating system</li>
+    *  <li>-dispatch/clientSide/protocol/socket/localHostname
+    *                      Specify the hostname who we are. Makes sense for multi homed computers
     *                      Defaults to our hostname</li>
-    *  <li>-socket.responseTimeout  How long to wait for a method invocation to return
+    *  <li>-dispatch/callback/protocol/socket/responseTimeout  How long to wait for a method invocation to return
     *                      Defaults to one minute</li>
-    *  <li>-socket.cb.multiThreaded Use seperate threads per update() on client side [true]</li>
+    *  <li>-dispatch/callback/protocol/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
     *  <li>-dump[socket]   true switches on detailed SOCKET debugging [false]</li>
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
@@ -684,18 +658,25 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       String text = "\n";
       text += "SocketConnection 'SOCKET' options:\n";
-      text += "   -socket.port        Specify a port number where xmlBlaster SOCKET server listens.\n";
+      text += "   -dispatch/clientSide/protocol/socket/port\n";
+      text += "                       Specify a port number where xmlBlaster SOCKET server listens.\n";
       text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
-      text += "   -socket.hostname    Specify a hostname where the xmlBlaster web server runs.\n";
+      text += "   -dispatch/clientSide/protocol/socket/hostname\n";
+      text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -socket.localPort   You can specify our client side port as well (usually you shouldn't)\n";
-      text += "                       Default is that the port is choosen by the operating system.\n";
-      text += "   -socket.localHostname  Specify the hostname who we are. Makes sense for multi homed computers.\n";
+      text += "   -dispatch/clientSide/protocol/socket/localPort\n";
+      text += "                       You can specify our client side port as well (usually you shouldn't)\n";
+      text += "                       Default is that the port is chosen by the operating system.\n";
+      text += "   -dispatch/clientSide/protocol/socket/localHostname\n";
+      text += "                       Specify the hostname who we are. Makes sense for multi homed computers.\n";
       text += "                       Defaults to our hostname.\n";
-      text += "   -socket.responseTimeout  How long to wait for a method invocation to return.\n";
+      text += "   -dispatch/callback/protocol/socket/responseTimeout\n";
+      text += "                       How long to wait for a method invocation to return.\n";
       text += "                       Defaults to one minute.\n";
-      text += "   -socket.threadPrio  The priority 1=min - 10=max of the callback listener thread [5].\n";
-      text += "   -socket.cb.multiThreaded Use seperate threads per update() on client side [true].\n";
+      text += "   -dispatch/callback/protocol/socket/threadPrio\n";
+      text += "                       The priority 1=min - 10=max of the callback listener thread [5].\n";
+      text += "   -dispatch/callback/protocol/socket/multiThreaded\n";
+      text += "                       Use seperate threads per update() on client side [true].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;

@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.43 2003/03/25 07:48:23 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.44 2003/05/21 20:21:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -81,7 +81,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected transient String tmpSecurityPluginVersion = null;
 
    /**
-    * The server reference, e.g. the CORBA IOR string or the XML-RPC url
+    * The server reference, e.g. the CORBA IOR string or the XMLRPC url
     * This is returned from XmlBlaster connect() and not used for login
     */
    private transient boolean inServerRef = false;
@@ -1203,10 +1203,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       String text = "\n";
       text += "Control my session and security settings\n";
       text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
-      text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
-      text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
-      text += "   -security.plugin.type    The security plugin to use [simple]\n";
-      text += "   -security.plugin.version The version of the plugin [1.0]\n";
+      text += "   -session.maxSessions\n";
+      text += "                       Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
+      text += "   -session.clearSessions\n";
+      text += "                       Kill other sessions running under my login name [false]\n";
+      text += "   -security.plugin.type\n";
+      text += "                       The security plugin to use [simple]\n";
+      text += "   -security.plugin.version\n";
+      text += "                       The version of the plugin [1.0]\n";
       text += "   -session.name       The name for login, e.g. 'joe' or with public session ID 'joe/2' []\n";
       text += "   -passwd             My password []\n";
       text += "\n";
@@ -1254,7 +1258,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      et@mars.universe\n" +
             "      <ptp>false</ptp>\n" +
             "   </callback>\n" +
-            "   <callback type='XML-RPC'>\n" +
+            "   <callback type='XMLRPC'>\n" +
             "      <ptp>true</ptp>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
@@ -1272,7 +1276,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <serverRef type='EMAIL'>\n" +
             "      et@mars.universe\n" +
             "   </serverRef>\n" +
-            "   <serverRef type='XML-RPC'>\n" +
+            "   <serverRef type='XMLRPC'>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </serverRef>\n" +
             "</qos>\n";

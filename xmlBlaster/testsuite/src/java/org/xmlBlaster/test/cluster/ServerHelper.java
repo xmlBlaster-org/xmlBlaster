@@ -118,27 +118,27 @@ public class ServerHelper {
 
    public void startHeron() {
       heronThread = EmbeddedXmlBlaster.startXmlBlaster(heronGlob);
-      log.info(ME, "'heron' is ready for testing on port " + heronPort);
+      log.info(ME, "'heron' is ready for testing on bootstrapPort " + heronPort);
    }
 
    public void startAvalon() {
       avalonThread = EmbeddedXmlBlaster.startXmlBlaster(avalonGlob);
-      log.info(ME, "'avalon' is ready for testing on port " + avalonPort);
+      log.info(ME, "'avalon' is ready for testing on bootstrapPort " + avalonPort);
    }
 
    public void startGolan() {
       golanThread = EmbeddedXmlBlaster.startXmlBlaster(golanGlob);
-      log.info(ME, "'golan' is ready for testing on port " + golanPort);
+      log.info(ME, "'golan' is ready for testing on bootstrapPort " + golanPort);
    }
 
    public void startFrodo() {
       frodoThread = EmbeddedXmlBlaster.startXmlBlaster(frodoGlob);
-      log.info(ME, "'frodo' is ready for testing on port " + frodoPort);
+      log.info(ME, "'frodo' is ready for testing on bootstrapPort " + frodoPort);
    }
 
    public void startBilbo() {
       bilboThread = EmbeddedXmlBlaster.startXmlBlaster(bilboGlob);
-      log.info(ME, "'bilbo' is ready for testing on port " + bilboPort);
+      log.info(ME, "'bilbo' is ready for testing on bootstrapPort " + bilboPort);
    }
 
    public void stopHeron() {

@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.37 2003/04/17 13:10:18 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.38 2003/05/21 20:21:04 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -45,6 +45,7 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
    private Global glob;
    private LogChannel log;
    private I_CallbackExtended boss;
+   private CallbackAddress callbackAddress;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -59,10 +60,11 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
     * @param boss My client which wants to receive the update() calls.
     * @param orb  A handle to my initialized orb
     */
-   public CorbaCallbackServer(Global glob, String name, I_CallbackExtended boss, org.omg.CORBA.ORB orb_) throws XmlBlasterException
+   public CorbaCallbackServer(Global glob, String name, CallbackAddress callbackAddress,
+                              I_CallbackExtended boss, org.omg.CORBA.ORB orb_) throws XmlBlasterException
    {
       //this.orb = orb_; // We create a new orb each time (Marcel 2003-03-27)
-      initialize(glob, name, boss);
+      initialize(glob, name, callbackAddress, boss);
    }
 
    /**
@@ -71,14 +73,16 @@ public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.
     * @param name The login name of the client, for logging only
     * @param boss My client which wants to receive the update() calls.
     */
-   public void initialize(Global glob, String name, I_CallbackExtended boss) throws XmlBlasterException
+   public void initialize(Global glob, String name, CallbackAddress callbackAddress,
+                          I_CallbackExtended boss) throws XmlBlasterException
    {
       this.glob = glob;
       if (this.glob == null)
          this.glob = new Global();
       this.log = this.glob.getLog("corba");
+      this.callbackAddress = callbackAddress;
 
-      this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,true);
+      this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,this.callbackAddress);
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;

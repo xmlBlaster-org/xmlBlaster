@@ -446,10 +446,10 @@
 &lt;clusternode id='heron' maxConnections='800'>
    &lt;info>
       &lt;address type='IOR'>IOR:00044550005...&lt;/address>
-      &lt;address type='XML-RPC' maxConnections='20'>
+      &lt;address type='XMLRPC' maxConnections='20'>
          http://www.mars.edu/RPC2
       &lt;/address>
-      &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
+      &lt;callback type='XMLRPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
       &lt;backupnode>
          &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
          &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
@@ -503,7 +503,7 @@
 cluster.node[heron]=\
    &lt;clusternode id='heron'>\
       &lt;info>\
-         &lt;address type='IOR' hostname='' port='7600'/>\
+         &lt;address type='IOR' bootstrapHostname='' bootstrapPort='7600'/>\
       &lt;/info>\
       &lt;master type='DomainToMaster'>\
          &lt;key queryType='DOMAIN' domain='*'/>\
@@ -653,7 +653,7 @@ cluster.node[heron]=\
       &lt;address type='IOR'>
          IOR:09456087000
       &lt;/address>
-      &lt;address type='XML-RPC'>
+      &lt;address type='XMLRPC'>
          http://www.mycomp.com/XMLRPC/
       &lt;/address>
       &lt;callback type='RMI'>
@@ -723,7 +723,7 @@ cluster.node[heron]=\
             <td>cluster.node.id</td>
             <td> 167.92.1.4:7607<br />or<br /> heron.mycomp.com</td>
             <td>The world wide unique name of this xmlBlaster instance (= cluster node id), 
-                if not specified defaults to the listen port of one of your activated
+                if not specified defaults to the unique listen address of one of your activated
                 protocol drivers.
                 If you specify the name yourself, you should use a unique name like <i>heron.mycompany.com</i>
             </td>
@@ -851,7 +851,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.42 $</revision>
+   <revision>$Revision: 1.43 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>

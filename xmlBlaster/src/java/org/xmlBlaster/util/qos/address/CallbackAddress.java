@@ -15,7 +15,7 @@ import org.xml.sax.Attributes;
  * Helper class holding callback address string and protocol string.
  * <p />
  * <pre>
- * &lt;callback type='XML-RPC' sessionId='4e56890ghdFzj0'
+ * &lt;callback type='XMLRPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
  *           oneway='false' useForSubjectQueue='true'
  *           dispatchPlugin='Priority,1.0'>
@@ -32,19 +32,19 @@ public class CallbackAddress extends AddressBase
    /**
     */
    public CallbackAddress(Global glob) {
-      super(glob, "callback");
+      super(glob, Constants.RELATING_CALLBACK); // "callback"
       this.instanceName = Constants.RELATING_CALLBACK;
       initialize();
    }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
    public CallbackAddress(Global glob, String type) {
-      super(glob, "callback");
+      super(glob, Constants.RELATING_CALLBACK); // "callback"
       this.instanceName = Constants.RELATING_CALLBACK;
-      initialize();
       setType(type);
+      initialize();
    }
 
    /** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
@@ -57,7 +57,7 @@ public class CallbackAddress extends AddressBase
    public long getDefaultPingInterval() { return Constants.MINUTE_IN_MILLIS; }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param nodeId  A unique string (typically the cluster node id we connect to).<br />
     *   This is used for extended env-variable support, e.g. for a given
     *    <code>nodeId="heron"</ code>
@@ -69,15 +69,14 @@ public class CallbackAddress extends AddressBase
    public CallbackAddress(Global glob, String type, String nodeId) {
       super(glob, "callback");
       this.nodeId = nodeId;
-      initialize();
       setType(type);
+      initialize();
    }
    
    /**
     * Configure property settings
     */
    protected void initialize() {
-      initHostname(glob.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
       super.initialize();
    }
 
@@ -105,28 +104,36 @@ public class CallbackAddress extends AddressBase
       setSecretSessionId(cbSessionId);
    }
 
-   /** @return The literal address as given by getAddress() */
+   /** @return The literal address as given by getRawAddress() */
    public String toString() {
-      return getAddress();
+      return getRawAddress();
    }
 
+   /** Client side usage used by XmlBlasterAccess */
    public final String usage() {
       String text = "\nControl xmlBlaster server side callback (if we install a local callback server):\n";
       text += super.usage();
-      text += "   -dispatch/" + this.instanceName + "/sessionId       The session ID which is passed to our callback server\n";
-      text += "                                      update() method.\n";
-      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTime  Number of milliseconds xmlBlaster shall collect\n";
-      text += "                                      callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
-      text += "                                      The burst mode allows performance tuning, try set it to 200.\n";
-      text += "   -dispatch/" + this.instanceName + "/oneway          Shall the update() messages be send oneway (no\n";
-      text += "                                      application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/compress/type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/compress/minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
-      text += "   -dispatch/" + this.instanceName + "/ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/sessionId\n";
+      text += "                       The session ID which is passed to our callback server's update() method.\n";
+      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTime\n";
+      text += "                       Number of milliseconds xmlBlaster shall collect\n";
+      text += "                       callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
+      text += "                       The burst mode allows performance tuning, try set it to 200.\n";
+      text += "   -dispatch/" + this.instanceName + "/oneway\n";
+      text += "                       Shall the update() messages be send oneway (no\n";
+      text += "                       application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
+      /*
+      text += "   -dispatch/" + this.instanceName + "/compress/type\n";
+      text += "                                      With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/compress/minSize\n";
+      text += "                                      Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      */
+      text += "   -dispatch/" + this.instanceName + "/ptpAllowed\n";
+      text += "                       PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      
       //text += "   -dispatch/callback/DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
       return text;
    }
-
 
    /** For testing: java org.xmlBlaster.util.qos.address.CallbackAddress */
    public static void main(String[] argsDefault) {
@@ -135,7 +142,7 @@ public class CallbackAddress extends AddressBase
             Global glob = new Global(argsDefault);
             CallbackAddress a = new CallbackAddress(glob);
             a.setType("SOCKET");
-            a.setAddress("127.0.0.1:7600");
+            a.setRawAddress("127.0.0.1:7600");
             a.setCollectTime(12345L);
             a.setPingInterval(54321L);
             a.setRetries(17);

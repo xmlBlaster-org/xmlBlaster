@@ -100,22 +100,6 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    }
 
    /**
-    * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
-    * <p />
-    * @param glob  parameters given on command line
-    * <ul>
-    *    <li>-ior  IOR string is directly given</li>
-    *    <li>-ior.file IOR string is given through a file</li>
-    *    <li>-hostname hostName or IP where xmlBlaster is running</li>
-    *    <li>-port where the internal xmlBlaster-http server publishes its IOR (defaults to 3412)</li>
-    *    <li>-ns true/false, if a naming service shall be used</li>
-    * </ul>
-    */
-   public CorbaConnection(Global glob) {
-      init(glob, null);
-   }
-
-   /**
     * CORBA client access to xmlBlaster for <strong>applets</strong>.
     * <p />
     * Use these environment settings for JacORB if you don't use this constructor!
@@ -174,15 +158,6 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("corba");
-
-      if (glob == null) {
-         log.error(ME, "glob is null");
-         Thread.currentThread().dumpStack();
-      }
-
-      if (this.orb == null) { // Thread leak !!!
-         this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,false);
-      }
       resetConnection();
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
@@ -253,8 +228,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       }
       catch (Throwable e) {
          String text = "Can't access naming service, is there any running?\n" +
-                       " - try to specify '-ior.file <fileName>' if server is running on same host (not using any naming service)\n" +
-                       " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
+                       " - try to specify '-dispatch/clientSide/protocol/ior/iorFile <fileName>' if server is running on same host (not using any naming service)\n" +
+                       " - try to specify '-bootstrapHostname <hostName> -bootstrapPort " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact the server administrator to start a naming service";
          if (this.verbose)
             log.warn(ME + ".NoNameService", text);
@@ -289,11 +264,11 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * <br />
     * <ul>
     *    <li>Give the authentication service string-IOR at command line, e.g.<br />
-    *        <code>   -ior "IOR:0000..."</code><br />
+    *        <code>   -dispatch/callback/protocol/ior/iorString "IOR:0000..."</code><br />
     *        or giving a file name<br />
-    *        <code>   -ior.file yourIorFile</code></li>
-    *    <li>Give the xmlBlaster host and port where xmlBlaster-Authenticate serves the IOR via http, give at command line e.g.
-    *        <code>   -hostname server.xmlBlaster.org  -port 3412</code></li>
+    *        <code>   -dispatch/clientSide/protocol/ior/iorFile yourIorFile</code></li>
+    *    <li>Give the xmlBlaster host and bootstrap port where xmlBlaster-Authenticate serves the IOR via http, give at command line e.g.
+    *        <code>   -bootstrapHostname server.xmlBlaster.org  -bootstrapPort 3412</code></li>
     *    <li>Try to find a naming service which knows about 'xmlBlaster-Authenticate'</li>
     * </ul>
     * <p />
@@ -310,16 +285,16 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       address = (address == null) ? new Address(glob) : address;
 
       try {
-         // 1) check if argument -IOR at program startup is given
-         String authServerIOR = glob.getProperty().get("ior", (String)null);  // -ior IOR string is directly given
+         // 1) check if argument -IOR at program startup is given "-dispatch/clientSide/protocol/ior/iorString"
+         String authServerIOR = address.getEnv("iorString", (String)null).getValue();
          if (authServerIOR != null) {
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
             if (this.verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string");
             return this.authServer;
          }
-         if (log.TRACE) log.trace(ME, "No -ior ...");
+         if (log.TRACE) log.trace(ME, "No -dispatch/clientSide/protocol/ior/iorString ...");
 
-         String authServerIORFile = glob.getProperty().get("ior.file", (String)null);  // -ior.file IOR string is given through a file
+         String authServerIORFile = glob.getProperty().get("dispatch/clientSide/protocol/ior/iorFile", (String)null);  // -dispatch/clientSide/protocol/ior/iorFile IOR string is given through a file
          if (authServerIORFile != null) {
             try {
                authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
@@ -330,10 +305,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
             return this.authServer;
          }
-         if (log.TRACE) log.trace(ME, "No -ior.file ...");
+         if (log.TRACE) log.trace(ME, "No -dispatch/clientSide/protocol/ior/iorFile ...");
 
 
-         // 2) check if argument -hostname <hostName or IP> -port <number> at program startup is given
+         // 2) check if argument -bootstrapHostname <hostName or IP> -bootstrapPort <number> at program startup is given
          // To avoid the name service, one can access the AuthServer IOR directly
          // using a http connection.
          try {
@@ -344,7 +319,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             }
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
             log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
-                         address.getHostname() + ":" + address.getPort());
+                         address.getBootstrapUrl());
             return this.authServer;
          }
          catch(XmlBlasterException e) {
@@ -356,7 +331,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                e.printStackTrace();
             }
          }
-         if (log.TRACE) log.trace(ME, "No -hostname / port for " + address.getAddress() + " ...");
+         if (log.TRACE) log.trace(ME, "No -bootstrapHostname / -bootstrapPort for " + address.getBootstrapUrl() + " ...");
 
          String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
          if (contextId == null) contextId = "";
@@ -368,13 +343,13 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          if (clusterKind == null) clusterKind = "";
 
          String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
-                     " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
-                     " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
+                     " - try to specify '-dispatch/clientSide/protocol/ior/iorFile <fileName>' if server is running on same host\n" +
+                     " - try to specify '-bootstrapHostname <hostName> -bootstrapPort " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
                      " - or start a naming service '" + contextId + "." + contextKind + "/" +
                               clusterId + "." + clusterKind + "'";
 
          // 3) asking Name Service CORBA compliant
-         boolean useNameService = glob.getProperty().get("ns", true);  // -ns default is to ask the naming service
+         boolean useNameService = address.getEnv("useNameService", true).getValue();  // -protocol/ior/ns default is to ask the naming service
          if (useNameService) {
 
             if (this.verbose) log.info(ME, "Trying to find a CORBA naming service ...");
@@ -485,7 +460,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text, e);
             }
          }
-         if (log.TRACE) log.trace(ME, "No -ns ...");
+         if (log.TRACE) log.trace(ME, "No -protocol/ior/useNameService ...");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
       }
       finally {
@@ -535,6 +510,9 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public void connectLowlevel(Address address) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "connectLowlevel() ...");
       this.clientAddress = address;
+      if (this.orb == null) {
+         this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(), null, this.clientAddress);
+      }
       getAuthenticationService(this.clientAddress);
       if (log.TRACE) log.trace(ME, "Success, connectLowlevel()");
    }
@@ -787,16 +765,23 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    {
       String text = "\n";
       text += "CorbaConnection 'IOR' options:\n";
-      text += "   -ior <IOR:00459...  The IOR string from the running xmlBlaster server.\n";
-      text += "   -ior.file <fileName>A file with the xmlBlaster IOR.\n";
-      text += "   -hostname <host>    The host where to find xmlBlaster internal HTTP IOR download [localhost]\n";
-      text += "   -port <port>        The port where xmlBlaster publishes its IOR [" + Constants.XMLBLASTER_PORT + "]\n";
-      text += "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]\n";
-      text += "   -ior.hostnameCB     Allows to set the callback-server's IP address for multi-homed hosts.\n";
-      text += "   -ior.portCB         Allows to set the callback-server's port number.\n";
+      text += "   -bootstrapHostname <hostname or IP>\n";
+      text += "                       The host where to find xmlBlaster internal HTTP IOR download [localhost]\n";
+      text += "   -bootstrapPort <port>\n";
+      text += "                       The bootstrap port where xmlBlaster publishes its IOR [" + Constants.XMLBLASTER_PORT + "]\n";
+      text += "   -dispatch/clientSide/protocol/ior/iorString <IOR:00459...>\n";
+      text += "                       The IOR string from the running xmlBlaster server.\n";
+      text += "   -dispatch/clientSide/protocol/ior/iorFile <fileName>\n";
+      text += "                       A file with the xmlBlaster IOR.\n";
+      text += "   -dispatch/clientSide/protocol/ior/useNameService <true/false>\n";
+      text += "                       Try to access xmlBlaster through a naming service [true]\n";
+      text += "   -dispatch/callback/protocol/ior/hostname <ip>\n";
+      text += "                       Allows to set the callback-server's IP address for multi-homed hosts.\n";
+      text += "   -dispatch/callback/protocol/ior/port <port>\n";
+      text += "                       Allows to set the callback-server's port number.\n";
       text += " For JacORB only:\n";
-      text += "   java -DOAIAddr=<ip> Use '-ior.hostnameCB'\n";
-      text += "   java -DOAPort=<nr>  Use '-ior.portCB'\n";
+      text += "   java -DOAIAddr=<ip> Use '-dispatch/callback/protocol/ior/hostname'\n";
+      text += "   java -DOAPort=<nr>  Use '-dispatch/callback/protocol/ior/port'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
       text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "   java -DORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";

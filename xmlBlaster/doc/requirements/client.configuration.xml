@@ -56,7 +56,7 @@ java HelloWorld2 -help
      <p>The following is a list of groups of properties used to configure xmlBlaster clients. <i><b>We
      are changing the syntax for the properties from the original "dot and bracket" syntax like
      <pre>
-  -socket.responseTimeout 100
+  -dispatch/callback/protocol/socket/responseTimeout 1000
   -trace[core] true
      </pre>
      to the new "slash" notation which we believe fits better our needs 
@@ -115,8 +115,12 @@ java HelloWorld2 -help
          <td>You can choose another protocol for the communication to xmlBlaster [defaults to -protocol]</td>
       </tr>
        <tr>
-         <td>-dispatch/clientSide/port</td>
-         <td>You can choose another port for the communication to xmlBlaster [defaults to -port]</td>
+         <td>-bootstrapPort</td>
+         <td>You can choose another bootstrapPort for the communication to xmlBlaster</td>
+      </tr>
+       <tr>
+         <td>-dispatch/clientSide/protocol/xmlrpc/port</td>
+         <td>You can choose another XmlRpc port for the communication to xmlBlaster [defaults to -protocol/xmlrpc/port]</td>
       </tr>
 
 
@@ -175,8 +179,8 @@ java HelloWorld2 -help
          <td>You can choose another protocol for the callback server [defaults to -protocol]</td>
       </tr>
        <tr>
-         <td>-dispatch/callback/port</td>
-         <td>You can choose another port for the callback server [defaults to -port]</td>
+         <td>-dispatch/callback/protocol/socket/port</td>
+         <td>You can choose another port for the callback server [defaults to the protocol specific default port]</td>
       </tr>
     </table>
     </center>
@@ -271,7 +275,7 @@ java HelloWorld2 -help
                 <attribute id='numBytes'>90023</attribute>
                 <attribute id='onOverflow'>DEAD_MESSAGE</attribute>
              </plugin>
-             <plugin refid='protocol:XML-RPC:users'>
+             <plugin refid='protocol:XMLRPC:users'>
                 <attribute id='hostname'>client.mycomp.com</attribute>
                 <attribute id='port'>8080</attribute>
              </plugin>
@@ -304,14 +308,14 @@ java HelloWorld2 -help
                 </attribute>
              </plugin>
              
-             <plugin id='protocol:XML-RPC:clientSide'
+             <plugin id='protocol:XMLRPC:clientSide'
                 className='org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection'>
                 <attribute id='hostname'>server.mycomp.com</attribute>
                 <attribute id='port'>6901</attribute>
              </plugin>
           </dispatch>
 
-          <plugin id='protocol:XML-RPC:callback'
+          <plugin id='protocol:XMLRPC:callback'
              className='org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver'>
              <attribute id='hostname'>client.mycomp.com</attribute>
              <attribute id='port'>8080</attribute>
@@ -378,6 +382,6 @@ java HelloWorld2 -help
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
 </requirement>
 

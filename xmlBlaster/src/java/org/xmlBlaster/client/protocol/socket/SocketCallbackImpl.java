@@ -13,6 +13,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
+import org.xmlBlaster.protocol.socket.SocketUrl;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
@@ -36,7 +37,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    /** The connection manager 'singleton' */
    private SocketConnection sockCon;
    /** A unique name for this client socket */
-   private String callbackAddressStr = null;
+   private SocketUrl socketUrl;
+   private CallbackAddress callbackAddress;
 
    /** Stop the thread */
    boolean running = false;
@@ -69,10 +71,12 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * Initialize and start the callback server
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
     */
-   public synchronized final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException {
+   public synchronized final void initialize(Global glob, String loginName,
+                            CallbackAddress callbackAddress, I_CallbackExtended cbClient) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
       this.ME = "SocketCallbackImpl-" + loginName;
+      this.callbackAddress = callbackAddress;
       setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class Executor:callback
 
@@ -98,18 +102,28 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          }
 
 
-         try {
-            super.initialize(this.sockCon.getGlobal(), sock, null);
+         try { // Executor
+            super.initialize(this.sockCon.getGlobal(), this.callbackAddress, sock, null);
          }
          catch (IOException e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Creation of SOCKET callback handler failed", e);
          }
-         this.callbackAddressStr = this.sockCon.getLocalAddress();
+
+         this.socketUrl = this.sockCon.getLocalSocketUrl();
+         this.callbackAddress.setRawAddress(this.socketUrl.getUrl());
+         if (log.TRACE) log.trace(ME, "Callback uri=" + this.socketUrl.getUrl());
 
          this.running = true;
          Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+this.sockCon.getLoginName());
          t.setDaemon(true);
-         t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
+         int threadPrio = this.callbackAddress.getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
+         try {
+            t.setPriority(threadPrio);
+            if (log.TRACE) log.trace(ME, "-dispatch/callback/protocol/socket/threadPrio = " + threadPrio);
+         }
+         catch (IllegalArgumentException e) {
+            log.warn(ME, "Your -dispatch/callback/protocol/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+         }
          t.start();
       }
    }
@@ -128,14 +142,14 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * <p />
     * This is no listen socket, as we need no callback server.
     * It is just the client side socket data of the established connection to xmlBlaster.
-    * @return "192.168.2.1:34520"
+    * @return "socket://192.168.2.1:34520"
     */
    public String getCbAddress() throws XmlBlasterException
    {
-      if ( sockCon == null ) {
+      if ( socketUrl == null ) {
          return "";
       }
-      return sockCon.getLocalAddress();
+      return socketUrl.getUrl();
    }
    
    /**
@@ -143,8 +157,9 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public void run()
    {
-      log.info(ME, "Started callback receiver plugin on '" + this.callbackAddressStr + "'");
-      boolean multiThreaded = glob.getProperty().get("socket.cb.multiThreaded", true);
+      log.info(ME, "Started callback receiver plugin on '" + this.socketUrl.getUrl() + "'");
+      boolean multiThreaded = this.callbackAddress.getEnv("multiThreaded", true).getValue();
+      if (log.TRACE) log.trace(ME, "SOCKET multiThreaded=" + multiThreaded);
 
       while(running) {
 
@@ -158,7 +173,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
                // Parse the message and invoke callback to client code in a separate thread
                // to avoid dead lock when client does a e.g. publish() during this update()
                WorkerThread t = new WorkerThread(glob, this, receiver);
-               t.setPriority(glob.getProperty().get("socket.cbInvokerThreadPrio", Thread.NORM_PRIORITY));
+               // -dispatch/callback/protocol/socket/invokerThreadPrio 5
+               t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
                t.start();
             }
             else {                  
@@ -187,16 +203,6 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          }
       }
       if (log.TRACE) log.trace(ME, "Terminating socket callback thread");
-   }
-
-   /**
-    * @return The XML-RPC registry entry of this server, which can be used for the loginQoS
-    */
-   public CallbackAddress getCallbackHandle()
-   {
-      CallbackAddress addr = new CallbackAddress(glob, "SOCKET");
-      addr.setAddress(callbackAddressStr);
-      return addr;
    }
 
    final SocketConnection getSocketConnection() {

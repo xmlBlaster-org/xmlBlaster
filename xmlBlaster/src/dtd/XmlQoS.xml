@@ -207,7 +207,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
                        This update mode is a 'transaction' for all collected messages -->
                        <!-- other attributes like numMsg or maxBytes could allow other 'transaction' ranges -->
          </callback>
-         <callback type='XML-RPC' sessionId='sldg03loQ22'>
+         <callback type='XMLRPC' sessionId='sldg03loQ22'>
             http:/www.mars.universe:8080/RPC2
          </callback>
               <!-- The session id is passed to the client callback server, he can check

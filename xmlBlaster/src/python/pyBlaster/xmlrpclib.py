@@ -1,11 +1,11 @@
 #
-# XML-RPC CLIENT LIBRARY
-# $Id: xmlrpclib.py,v 1.1 2003/04/12 21:05:54 petera Exp $
+# XMLRPC CLIENT LIBRARY
+# $Id: xmlrpclib.py,v 1.2 2003/05/21 20:21:32 ruff Exp $
 #
-# an XML-RPC client interface for Python.
+# an XMLRPC client interface for Python.
 #
 # the marshalling and response parser code can also be used to
-# implement XML-RPC servers.
+# implement XMLRPC servers.
 #
 # Notes:
 # this version is designed to work with Python 1.5.2 or newer.
@@ -51,7 +51,7 @@
 # http://www.pythonware.com
 #
 # --------------------------------------------------------------------
-# The XML-RPC client interface is
+# The XMLRPC client interface is
 #
 # Copyright (c) 1999-2002 by Secret Labs AB
 # Copyright (c) 1999-2002 by Fredrik Lundh
@@ -85,33 +85,33 @@
 # TODO: sort out True/False/boolean issues for Python 2.3
 
 """
-An XML-RPC client interface for Python.
+An XMLRPC client interface for Python.
 
 The marshalling and response parser code can also be used to
-implement XML-RPC servers.
+implement XMLRPC servers.
 
 Exported exceptions:
 
   Error          Base class for client errors
   ProtocolError  Indicates an HTTP protocol error
   ResponseError  Indicates a broken response package
-  Fault          Indicates an XML-RPC fault package
+  Fault          Indicates an XMLRPC fault package
 
 Exported classes:
 
-  ServerProxy    Represents a logical connection to an XML-RPC server
+  ServerProxy    Represents a logical connection to an XMLRPC server
 
-  Boolean        boolean wrapper to generate a "boolean" XML-RPC value
+  Boolean        boolean wrapper to generate a "boolean" XMLRPC value
   DateTime       dateTime wrapper for an ISO 8601 string or time tuple or
                  localtime integer value to generate a "dateTime.iso8601"
-                 XML-RPC value
+                 XMLRPC value
   Binary         binary data wrapper
 
   SlowParser     Slow but safe standard parser (based on xmllib)
-  Marshaller     Generate an XML-RPC params chunk from a Python data structure
-  Unmarshaller   Unmarshal an XML-RPC response from incoming XML event message
-  Transport      Handles an HTTP transaction to an XML-RPC server
-  SafeTransport  Handles an HTTPS transaction to an XML-RPC server
+  Marshaller     Generate an XMLRPC params chunk from a Python data structure
+  Unmarshaller   Unmarshal an XMLRPC response from incoming XML event message
+  Transport      Handles an HTTP transaction to an XMLRPC server
+  SafeTransport  Handles an HTTPS transaction to an XMLRPC server
 
 Exported constants:
 
@@ -120,12 +120,12 @@ Exported constants:
 
 Exported functions:
 
-  boolean        Convert any Python value to an XML-RPC boolean
+  boolean        Convert any Python value to an XMLRPC boolean
   getparser      Create instance of the fastest available parser & attach
                  to an unmarshalling object
-  dumps          Convert an argument tuple or a Fault instance to an XML-RPC
+  dumps          Convert an argument tuple or a Fault instance to an XMLRPC
                  request (or response, if the methodresponse option is used).
-  loads          Convert an XML-RPC packet to unmarshalled data plus a method
+  loads          Convert an XMLRPC packet to unmarshalled data plus a method
                  name (None if not present).
 """
 
@@ -225,8 +225,8 @@ class ProtocolError(Error):
             )
 
 ##
-# Indicates a broken XML-RPC response package.  This exception is
-# raised by the unmarshalling layer, if the XML-RPC response is
+# Indicates a broken XMLRPC response package.  This exception is
+# raised by the unmarshalling layer, if the XMLRPC response is
 # malformed.
 
 class ResponseError(Error):
@@ -234,16 +234,16 @@ class ResponseError(Error):
     pass
 
 ##
-# Indicates an XML-RPC fault response package.  This exception is
-# raised by the unmarshalling layer, if the XML-RPC response contains
+# Indicates an XMLRPC fault response package.  This exception is
+# raised by the unmarshalling layer, if the XMLRPC response contains
 # a fault string.  This exception can also used as a class, to
-# generate a fault XML-RPC message.
+# generate a fault XMLRPC message.
 #
-# @param faultCode The XML-RPC fault code.
-# @param faultString The XML-RPC fault string.
+# @param faultCode The XMLRPC fault code.
+# @param faultString The XMLRPC fault string.
 
 class Fault(Error):
-    """Indicates an XML-RPC fault package."""
+    """Indicates an XMLRPC fault package."""
     def __init__(self, faultCode, faultString, **extra):
         Error.__init__(self)
         self.faultCode = faultCode
@@ -258,9 +258,9 @@ class Fault(Error):
 # Special values
 
 ##
-# Wrapper for XML-RPC boolean values.  Use the xmlrpclib.True and
+# Wrapper for XMLRPC boolean values.  Use the xmlrpclib.True and
 # xmlrpclib.False constants, or the xmlrpclib.boolean() function, to
-# generate boolean XML-RPC values.
+# generate boolean XMLRPC values.
 #
 # @param value A boolean value.  Any true value is interpreted as True,
 #              all other values are interpreted as False.
@@ -268,7 +268,7 @@ class Fault(Error):
 class Boolean:
     """Boolean-value wrapper.
 
-    Use True or False to generate a "boolean" XML-RPC value.
+    Use True or False to generate a "boolean" XMLRPC value.
     """
 
     def __init__(self, value = 0):
@@ -297,7 +297,7 @@ class Boolean:
 True, False = Boolean(1), Boolean(0)
 
 ##
-# Map true or false value to XML-RPC boolean values.
+# Map true or false value to XMLRPC boolean values.
 #
 # @def boolean(value)
 # @param value A boolean value.  Any true value is mapped to True,
@@ -308,12 +308,12 @@ True, False = Boolean(1), Boolean(0)
 # @see False
 
 def boolean(value, _truefalse=(False, True)):
-    """Convert any Python value to XML-RPC 'boolean'."""
+    """Convert any Python value to XMLRPC 'boolean'."""
     return _truefalse[operator.truth(value)]
 
 ##
-# Wrapper for XML-RPC DateTime values.  This converts a time value to
-# the format used by XML-RPC.
+# Wrapper for XMLRPC DateTime values.  This converts a time value to
+# the format used by XMLRPC.
 # <p>
 # The value can be given as a string in the format
 # "yyyymmddThh:mm:ss", as a 9-item time tuple (as returned by
@@ -326,7 +326,7 @@ def boolean(value, _truefalse=(False, True)):
 
 class DateTime:
     """DateTime wrapper for an ISO 8601 string or time tuple or
-    localtime integer value to generate 'dateTime.iso8601' XML-RPC
+    localtime integer value to generate 'dateTime.iso8601' XMLRPC
     value.
     """
 
@@ -371,7 +371,7 @@ def _datetime(data):
 
 ##
 # Wrapper for binary data.  This can be used to transport any kind
-# of binary data over XML-RPC, using BASE64 encoding.
+# of binary data over XMLRPC, using BASE64 encoding.
 #
 # @param data An 8-bit string containing arbitrary data.
 
@@ -527,21 +527,21 @@ class SlowParser:
             xmllib.XMLParser.__init__(self) # pre-2.0
 
 # --------------------------------------------------------------------
-# XML-RPC marshalling and unmarshalling code
+# XMLRPC marshalling and unmarshalling code
 
 ##
-# XML-RPC marshaller.
+# XMLRPC marshaller.
 #
 # @param encoding Default encoding for 8-bit strings.  The default
 #     value is None (interpreted as UTF-8).
 # @see dumps
 
 class Marshaller:
-    """Generate an XML-RPC params chunk from a Python data structure.
+    """Generate an XMLRPC params chunk from a Python data structure.
 
     Create a Marshaller instance for each set of parameters, and use
     the "dumps" method to convert your data (represented as a tuple)
-    to an XML-RPC params chunk.  To write a fault response, pass a
+    to an XMLRPC params chunk.  To write a fault response, pass a
     Fault instance instead.  You may prefer to use the "dumps" module
     function for this purpose.
     """
@@ -592,7 +592,7 @@ class Marshaller:
     def dump_int(self, value, write):
         # in case ints are > 32 bits
         if value > MAXINT or value < MININT:
-            raise OverflowError, "int exceeds XML-RPC limits"
+            raise OverflowError, "int exceeds XMLRPC limits"
         write("<value><int>")
         write(str(value))
         write("</int></value>\n")
@@ -600,7 +600,7 @@ class Marshaller:
 
     def dump_long(self, value, write):
         if value > MAXINT or value < MININT:
-            raise OverflowError, "long int exceeds XML-RPC limits"
+            raise OverflowError, "long int exceeds XMLRPC limits"
         write("<value><int>")
         write(str(int(value)))
         write("</int></value>\n")
@@ -670,17 +670,17 @@ class Marshaller:
     dispatch[InstanceType] = dump_instance
 
 ##
-# XML-RPC unmarshaller.
+# XMLRPC unmarshaller.
 #
 # @see loads
 
 class Unmarshaller:
-    """Unmarshal an XML-RPC response, based on incoming XML event
+    """Unmarshal an XMLRPC response, based on incoming XML event
     messages (start, data, end).  Call close() to get the resulting
     data structure.
 
     Note that this reader is fairly tolerant, and gladly accepts bogus
-    XML-RPC data without complaining (but not bogus XML).
+    XMLRPC data without complaining (but not bogus XML).
     """
 
     # and again, if you don't understand what's going on in here,
@@ -865,7 +865,7 @@ def getparser():
     return parser, target
 
 ##
-# Convert a Python tuple or a Fault instance to an XML-RPC packet.
+# Convert a Python tuple or a Fault instance to an XMLRPC packet.
 #
 # @def dumps(params, **options)
 # @param params A tuple or Fault instance.
@@ -880,7 +880,7 @@ def getparser():
 def dumps(params, methodname=None, methodresponse=None, encoding=None):
     """data [,options] -> marshalled data
 
-    Convert an argument tuple or a Fault instance to an XML-RPC
+    Convert an argument tuple or a Fault instance to an XMLRPC
     request (or response, if the methodresponse option is used).
 
     In addition to the data object, the following options can be given
@@ -922,7 +922,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None):
     else:
         xmlheader = "<?xml version='1.0'?>\n" # utf-8 is default
 
-    # standard XML-RPC wrappings
+    # standard XMLRPC wrappings
     if methodname:
         # a method call
         if not isinstance(methodname, StringType):
@@ -947,10 +947,10 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None):
     return string.join(data, "")
 
 ##
-# Convert an XML-RPC packet to a Python object.  If the XML-RPC packet
+# Convert an XMLRPC packet to a Python object.  If the XMLRPC packet
 # represents a fault condition, this function raises a Fault exception.
 #
-# @param data An XML-RPC packet, given as an 8-bit string.
+# @param data An XMLRPC packet, given as an 8-bit string.
 # @return A tuple containing the the unpacked data, and the method name
 #     (None if not present).
 # @see Fault
@@ -958,10 +958,10 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None):
 def loads(data):
     """data -> unmarshalled data, method name
 
-    Convert an XML-RPC packet to unmarshalled data plus a method
+    Convert an XMLRPC packet to unmarshalled data plus a method
     name (None if not present).
 
-    If the XML-RPC packet represents a fault condition, this function
+    If the XMLRPC packet represents a fault condition, this function
     raises a Fault exception.
     """
     import sys
@@ -975,7 +975,7 @@ def loads(data):
 # request dispatcher
 
 class _Method:
-    # some magic to bind an XML-RPC method to an RPC server.
+    # some magic to bind an XMLRPC method to an RPC server.
     # supports "nested" methods (e.g. examples.getStateName)
     def __init__(self, send, name):
         self.__send = send
@@ -986,13 +986,13 @@ class _Method:
         return self.__send(self.__name, args)
 
 ##
-# Standard transport class for XML-RPC over HTTP.
+# Standard transport class for XMLRPC over HTTP.
 # <p>
 # You can create custom transports by subclassing this method, and
 # overriding selected methods.
 
 class Transport:
-    """Handles an HTTP transaction to an XML-RPC server."""
+    """Handles an HTTP transaction to an XMLRPC server."""
 
     # client identifier (may be overridden)
     user_agent = "xmlrpclib.py/%s (by www.pythonware.com)" % __version__
@@ -1002,12 +1002,12 @@ class Transport:
     #
     # @param host Target host.
     # @param handler Target PRC handler.
-    # @param request_body XML-RPC request body.
+    # @param request_body XMLRPC request body.
     # @param verbose Debugging flag.
     # @return Parsed response.
 
     def request(self, host, handler, request_body, verbose=0):
-        # issue XML-RPC request
+        # issue XMLRPC request
 
         h = self.make_connection(host)
         if verbose:
@@ -1061,7 +1061,7 @@ class Transport:
     #
     # @param connection Connection handle.
     # @param handler Target RPC handler.
-    # @param request_body XML-RPC body.
+    # @param request_body XMLRPC body.
 
     def send_request(self, connection, handler, request_body):
         connection.putrequest("POST", handler)
@@ -1087,7 +1087,7 @@ class Transport:
     # Send request body.
     #
     # @param connection Connection handle.
-    # @param request_body XML-RPC request body.
+    # @param request_body XMLRPC request body.
 
     def send_content(self, connection, request_body):
         connection.putheader("Content-Type", "text/xml")
@@ -1138,10 +1138,10 @@ class Transport:
         return u.close()
 
 ##
-# Standard transport class for XML-RPC over HTTPS.
+# Standard transport class for XMLRPC over HTTPS.
 
 class SafeTransport(Transport):
-    """Handles an HTTPS transaction to an XML-RPC server."""
+    """Handles an HTTPS transaction to an XMLRPC server."""
 
     # FIXME: mostly untested
 
@@ -1168,7 +1168,7 @@ class SafeTransport(Transport):
 
 ##
 # Standard server proxy.  This class establishes a virtual connection
-# to an XML-RPC server.
+# to an XMLRPC server.
 # <p>
 # This class is available as ServerProxy and Server.  New code should
 # use ServerProxy, to avoid confusion.
@@ -1184,7 +1184,7 @@ class SafeTransport(Transport):
 # @see Transport
 
 class ServerProxy:
-    """uri [,options] -> a logical connection to an XML-RPC server
+    """uri [,options] -> a logical connection to an XMLRPC server
 
     uri is the connection point on the server, given as
     scheme://host/target.
@@ -1212,7 +1212,7 @@ class ServerProxy:
         import urllib
         type, uri = urllib.splittype(uri)
         if type not in ("http", "https"):
-            raise IOError, "unsupported XML-RPC protocol"
+            raise IOError, "unsupported XMLRPC protocol"
         self.__host, self.__handler = urllib.splithost(uri)
         if not self.__handler:
             self.__handler = "/RPC2"
@@ -1268,7 +1268,7 @@ Server = ServerProxy
 
 if __name__ == "__main__":
 
-    # simple test program (from the XML-RPC specification)
+    # simple test program (from the XMLRPC specification)
 
     # server = ServerProxy("http://localhost:8000") # local server
     server = ServerProxy("http://betty.userland.com")

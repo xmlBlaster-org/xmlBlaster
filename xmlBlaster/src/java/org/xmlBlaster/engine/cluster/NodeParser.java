@@ -32,8 +32,8 @@ import org.xml.sax.Attributes;
  *
  *     &lt;info>
  *        &lt;address type='IOR'>IOR:09456087000&lt;/address>
- *        &lt;address type='XML-RPC'>http://www.mars.universe:8080/RPC2&lt;/address>
- *        &lt;callback type='XML-RPC'>http://www.mars.universe:8080/RPC2&lt;/callback>
+ *        &lt;address type='XMLRPC'>http://www.mars.universe:8080/RPC2&lt;/address>
+ *        &lt;callback type='XMLRPC'>http://www.mars.universe:8080/RPC2&lt;/callback>
  *        &lt;backupnode>
  *           &lt;clusternode id='avalon'/>
  *           &lt;clusternode id='golan'/>
@@ -266,7 +266,7 @@ public class NodeParser extends SaxHandlerBase
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <info>\n" +
             "     <address type='IOR'>IOR:09456087000</address>\n" +
-            "     <address type='XML-RPC'>http://www.mycomp.com/XMLRPC/</address>\n" +
+            "     <address type='XMLRPC'>http://www.mycomp.com/XMLRPC/</address>\n" +
             "     <callback type='RMI'>rmi://mycomp.com</callback>\n" +
             "     <backupnode>\n" +
             "        <clusternode id='bilbo.mycomp.com'/>\n" +

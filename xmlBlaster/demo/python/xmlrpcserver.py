@@ -1,8 +1,8 @@
 #
-# XML-RPC SERVER
-# $Id: xmlrpcserver.py,v 1.1 2001/01/27 14:07:00 ruff Exp $
+# XMLRPC SERVER
+# $Id: xmlrpcserver.py,v 1.2 2003/05/21 20:20:50 ruff Exp $
 #
-# a simple XML-RPC server for Python
+# a simple XMLRPC server for Python
 #
 # History:
 # 1999-02-01 fl  added to xmlrpclib distribution 

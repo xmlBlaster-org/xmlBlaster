@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.10 2003/03/26 22:28:13 ruff Exp $
+Version:   $Id: AddressBase.h,v 1.11 2003/05/21 20:20:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -207,7 +207,7 @@ public:
    string getSettings() const;
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
    void setType(const string& type);
 
@@ -223,13 +223,13 @@ public:
    void setHostname(const string& host);
 
    /**
-    * @return true if the hostname is explicitly set by user with setHostname()
+    * @return true if the bootstrapHostname is explicitly set by user with setHostname()
     * false if it is determined automatically
     */
    bool isHardcodedHostname();
 
    /**
-    * Check if a hostname is set already
+    * Check if a bootstrapHostname is set already
     */
    bool hasHostname();
 

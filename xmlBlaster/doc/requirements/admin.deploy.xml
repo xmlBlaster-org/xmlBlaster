@@ -79,7 +79,7 @@ build.sh -DADD_EMAIL=false -DADD_XMLRPC=false -DADD_PROP=my.properties  dist
       </pre></td></tr></table>
 
       <p>
-      This won't add EMAIL and XML-RPC support to the distribution and will
+      This won't add EMAIL and XMLRPC support to the distribution and will
       package your <code>my.properties</code> configuration file into
       xmlBlasterDist.jar instead of the default <code>xmlBlaster.properties</code>
       </p>
@@ -121,7 +121,7 @@ java org.xmlBlaster.Main  -propertyFile mySecond.properties
 java -Xms12M -Xmx128M -jar lib/xmlBlasterDist.jar
       -admin.remoteconsole.port 0
       -logFile /tmp/xmlBlaster.log
-      -xmlrpc.port 8081
+      -protocol/xmlrpc/port 8081
       -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
 
 echo "xmlBlaster started, see tail -n 100 -f /tmp/xmlBlaster.log"
@@ -162,8 +162,8 @@ sleep 5
          <tr>
             <td>ADD_XMLRPC</td>
             <td>true</td>
-            <td>Switch on/off XML-RPC support. If set to true,
-             it copies the XML-RPC supporting jar files as well.</td>
+            <td>Switch on/off XMLRPC support. If set to true,
+             it copies the XMLRPC supporting jar files as well.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
@@ -211,7 +211,7 @@ sleep 5
    
    <date>2002 06 04</date>
    
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

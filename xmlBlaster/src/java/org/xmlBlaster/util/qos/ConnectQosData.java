@@ -79,7 +79,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    protected I_SecurityQos securityQos;
 
    /**
-    * The server reference, e.g. the CORBA IOR string or the XML-RPC url
+    * The server reference, e.g. the CORBA IOR string or the XMLRPC url
     * This is returned from XmlBlaster connect() and not used for login
     */
    protected transient ServerRef[] serverRefArr;
@@ -485,7 +485,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    public ClientQueueProperty getClientQueueProperty() {
       if (this.clientQueuePropertyList.size() < 1) {
          if (log.TRACE) log.trace(ME, "Creating default server address instance");
-         setAddress(glob.getBootstrapAddress());
+         //setAddress(glob.getBootstrapAddress());
+         setAddress(new Address(glob));
       }
       if (this.clientQueuePropertyList.size() < 1) {
          log.error(ME, "Internal error, can't access address instance");

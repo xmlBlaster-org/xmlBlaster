@@ -34,10 +34,12 @@ import java.io.IOException;
  * which delegates it to this update() method.
  * <p />
  * <pre>
- *     -soap.portCB      Specify a port number where soap callback webserver listens.
- *                         Default is port 8689, the port 0 switches this feature off.
- *     -soap.hostnameCB  Specify a hostname where xmlrp callback server runs.
- *                         Default is the localhost.
+ *     -dispatch/callback/protocol/soap/port
+ *                       Specify a port number where soap callback webserver listens.
+ *                       Default is port 8689, the port 0 switches this feature off.
+ *     -dispatch/callback/protocol/soap/hostname
+ *                       Specify a hostname where xmlrp callback server runs.
+ *                       Default is the localhost.
  * </pre>
  * If the callback server can't be established because of the port is not free,
  * this driver loops and tries with a port number one higher until it finds a free port
@@ -99,7 +101,7 @@ public class SoapCallbackServer implements I_CallbackServer
       // Use the given callback port if specified :
       callbackPort = glob.getProperty().get("soap.portCB", callbackPort);
 
-      String hostname = glob.getCbHostname("soap.hostnameCB");
+      String hostname = glob.getCbHostname();
       java.net.InetAddress inetAddr = null;
       try {
          inetAddr = java.net.InetAddress.getByName(hostname);

@@ -32,9 +32,9 @@ public class AllTests
       //try { glob.getProperty().set("client.protocol", "SOCKET"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       //try { glob.getProperty().set("client.protocol", "IOR"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       //try { glob.getProperty().set("client.protocol", "RMI"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
-      //try { glob.getProperty().set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
+      //try { glob.getProperty().set("client.protocol", "XMLRPC"); } catch(JUtilsException e) { System.err.println("AllTests: " + e.toString()); }
       
-      // !!!!!! RMI, CORBA XML-RPC etc. all have thread leaks on shutdown
+      // !!!!!! RMI, CORBA XMLRPC etc. all have thread leaks on shutdown
       // Only the SOCKET protocol seems to be clean
       // So we currently switch off this test
       // suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster.class));

@@ -25,20 +25,20 @@ import org.xmlBlaster.util.MsgUnit;
  *
  * Invoke examples:
  * <pre>
- *  java javaclients.cluster.PublishToSlave -port 7601
- *  java javaclients.cluster.PublishToSlave -port 7604
+ *  java javaclients.cluster.PublishToSlave -bootstrapPort 7601
+ *  java javaclients.cluster.PublishToSlave -bootstrapPort 7604
  * </pre>
  * We expect avalon to run on 7601, the domain is RUGBY_NEWS if not changed.<br />
- * If we set -port 7604 we expect to find bilbo which routes the message over
+ * If we set -bootstrapPort 7604 we expect to find bilbo which routes the message over
  * several node hops to the master. The message content is "We win".
  *
  * <pre>
- *  java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE
+ *  java javaclients.cluster.PublishToSlave -bootstrapPort 7601 -domain STOCK_EXCHANGE
  * </pre>
  * Now our message is sent with domain='STOCK_EXCHANGE', it should be routed to avalon
  *
  * <pre>
- *  java javaclients.cluster.PublishToSlave -port 7604 -content "We loose" -numPublish 5 -interactivePublish true
+ *  java javaclients.cluster.PublishToSlave -bootstrapPort 7604 -content "We loose" -numPublish 5 -interactivePublish true
  * </pre>
  * Now our message is sent with the content "We loose" to bilbo, the message
  * is not forwarded as bilbo filters with a regular expression contents containing the word 'loose'.
@@ -54,7 +54,7 @@ public class PublishToSlave implements I_Callback
       try {
          con = glob.getXmlBlasterAccess();
 
-         log.info("", "Usage example: java javaclients.cluster.PublishToSlave -port 7601 -numPublish 1000 -interactivePublish false");
+         log.info("", "Usage example: java javaclients.cluster.PublishToSlave -bootstrapPort 7601 -numPublish 1000 -interactivePublish false");
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
          String content = glob.getProperty().get("content", "We win");
@@ -77,7 +77,7 @@ public class PublishToSlave implements I_Callback
             MsgUnit msgUnit = new MsgUnit(pk.toXml(), content.getBytes(), pq.toXml());
             PublishReturnQos retQos = con.publish(msgUnit);
             log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
-                                    "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
+                                    "' to xmlBlaster node with IP=" + glob.getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + retQos.getKeyOid());
          }
       }
@@ -121,7 +121,7 @@ public class PublishToSlave implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         System.err.println("Example: java javaclients.cluster.PublishToSlave -port 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
+         System.err.println("Example: java javaclients.cluster.PublishToSlave -bootstrapPort 7601 -domain STOCK_EXCHANGE -content 'We win'\n");
          System.exit(1);
       }
 

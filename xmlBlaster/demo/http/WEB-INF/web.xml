@@ -47,7 +47,7 @@
 
     <!-- Example to look for xmlBlaster on another host -->
     <!-- init-param>
-      <param-name>hostname</param-name>
+      <param-name>bootstrapHostname</param-name>
       <param-value>192.168.1.5</param-value>
       <description>IP where xmlBlaster is running if not on tomcats host (example for CORBA protocol)</description>
     </init-param -->

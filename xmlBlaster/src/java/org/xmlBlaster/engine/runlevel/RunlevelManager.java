@@ -13,7 +13,6 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.protocol.ProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.util.Set;

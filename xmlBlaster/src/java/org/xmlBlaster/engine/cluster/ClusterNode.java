@@ -179,7 +179,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          qos.getSessionQos().clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
          try {
-            log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
+            log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
 
             if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
                log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());

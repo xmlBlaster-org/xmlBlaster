@@ -96,13 +96,13 @@ public class BlasterManagedConnection implements ManagedConnection {
         this.pwd = pwd;
             /*
               Some params:
-              -dispatch/clientSide/protocol RMI | IOR | XML-RPC
+              -dispatch/clientSide/protocol RMI | IOR | XMLRPC | SOCKET
               
 
               RMI:
-              rmi.hostname
-              rmi.registryPort
-              rmi.AuthServer.url
+              dispatch/clientside/protocol/rmi/hostname
+              dispatch/clientSide/protocol/rmi/registryPort
+              dispatch/clientSide/protocol/rmi/AuthServerUrl
 
               Memo: for RMI server:
              -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  
@@ -111,10 +111,10 @@ public class BlasterManagedConnection implements ManagedConnection {
              
 
               CORBA:
-              -ior OR string is directly given
-              -ior.file IOR string is given through a file</li>
-              -hostname host name or IP where xmlBlaster is running</li>
-              -port where the internal xmlBlaster-http server publishes its Ior
+              -dispatch/callback/protocol/ior/iorString OR string is directly given
+              -dispatch/clientSide/protocol/ior/iorFile IOR string is given through a file</li>
+              -bootstrapHostname host name or IP where xmlBlaster is running</li>
+              -bootstrapPort where the internal xmlBlaster-http server publishes its Ior
 
               from/to system:
               -org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
@@ -125,7 +125,7 @@ public class BlasterManagedConnection implements ManagedConnection {
             // Test with env
             /*
             String rmiEnv[] = new String[] {"-dispatch/clientSide/protocol","RMI"};
-            String orbEnv[] = new String[] {"-dispatch/clientSide/protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-hostname","151.177.109.74"};
+            String orbEnv[] = new String[] {"-dispatch/clientSide/protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-bootstrapHostname","151.177.109.74"};
             */
             
         // Set up physical pipe

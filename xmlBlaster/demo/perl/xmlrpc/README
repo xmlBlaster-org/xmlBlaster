@@ -37,10 +37,10 @@ Thats it!
 
 
 -------------------------------------------------------------------
-For Perl XML-RPC implementations see:
+For Perl XMLRPC implementations see:
    http://www.xmlrpc.com/directory/1568/implementations
 
-Ken McLeod has implemented XML-RPC for Perl
+Ken McLeod has implemented XMLRPC for Perl
    http://search.cpan.org/CPAN/authors/id/K/KM/KMACLEOD/Frontier-RPC-0.06.tar.gz
    Unpack it and do:
         perl Makefile.PL
@@ -57,7 +57,7 @@ This is the simplest Perl client code:
 -------------------------------------------------------------------
 use Frontier::Client;
 
-# Make an object to represent the XML-RPC server.
+# Make an object to represent the XMLRPC server.
 $server_url = 'http://myHost:8080/';
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
 

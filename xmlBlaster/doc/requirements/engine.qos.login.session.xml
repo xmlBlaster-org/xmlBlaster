@@ -61,7 +61,7 @@
 
    <session timeout='3600000' maxSessions='20' clearSessions='false'/>
 
-   <callback type='XML-RPC' sessionId='sldg03loQ22'>
+   <callback type='XMLRPC' sessionId='sldg03loQ22'>
       http:/www.mars.universe:8080/RPC2
    </callback>
 </qos>
@@ -137,7 +137,7 @@
    <author>xmlBlaster@marcelruff.info</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>

@@ -120,13 +120,13 @@ importPackage(Packages.org.xmlBlaster.util);
       args = new Array(6);
       args[0] = new String("-protocol");
       args[1] = new String("SOCKET");
-      args[2] = new String("-socket.hostname");
+      args[2] = new String("-dispatch/clientSide/protocol/socket/hostname");
       args[3] = new String("217.83.166.225");
-      args[4] = new String("-socket.port");
+      args[4] = new String("-dispatch/clientSide/protocol/socket/port");
       args[5] = new String("2003");
       */
       args = new Array(2);
-      args[0] = new String("-hostname");
+      args[0] = new String("-bootstrapHostname");
       args[1] = new String("localhost");    // try "server.xmlBlaster.org"
       xmlBlaster = new I_XmlBlasterAccess(args);
 

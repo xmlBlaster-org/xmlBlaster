@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.42 2003/03/22 12:28:09 laghi Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.43 2003/05/21 20:21:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -11,6 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -23,19 +24,19 @@ import java.io.IOException;
 
 
 /**
- * XmlRpc driver class to invoke the xmlBlaster server over HTTP XML-RPC.
+ * XmlRpc driver class to invoke the xmlBlaster server over HTTP XMLRPC.
  * <p />
  * This driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- * ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
- * CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
+ * ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+ * CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
  * </pre>
  *
- * The variable xmlrpc.port (default 8080) sets the http web server port,
+ * The variable protocol/xmlrpc/port (default 8080) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -xmlrpc.port 9090
+ * java -jar lib/xmlBlaster.jar  -protocol/xmlrpc/port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -74,10 +75,10 @@ public class XmlRpcDriver implements I_Driver
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
-    * @return "XML-RPC"
+    * @return "XMLRPC"
     */
    public String getProtocolId() {
-      return "XML-RPC";
+      return "XMLRPC";
    }
 
    /** Enforced by I_Plugin */
@@ -108,7 +109,9 @@ public class XmlRpcDriver implements I_Driver
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
-         init(glob, authenticate, xmlBlasterImpl);
+
+         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+
          activate();
       }
       catch (XmlBlasterException ex) {
@@ -128,14 +131,14 @@ public class XmlRpcDriver implements I_Driver
    }
 
    /**
-    * Start xmlBlaster XML-RPC access.
+    * Start xmlBlaster XMLRPC access.
     * <p />
     * Enforced by interface I_Driver.
     * @param glob Global handle to access logging, property and commandline args
     * @param authenticate Handle to access authentication server
     * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
-   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
+   private synchronized void init(Global glob, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
       this.glob = glob;
@@ -145,17 +148,17 @@ public class XmlRpcDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      xmlPort = glob.getProperty().get("xmlrpc.port", DEFAULT_HTTP_PORT);
-
-      if (xmlPort < 1) {
-         log.info(ME, "Option xmlrpc.port set to " + xmlPort + ", xmlRpc server not started");
+      this.xmlPort = addressServer.getEnv("port", DEFAULT_HTTP_PORT).getValue();
+      if (this.xmlPort < 1) {
+         log.info(ME, "Option protocol/xmlrpc/port set to " + this.xmlPort + ", xmlRpc server not started");
          return;
       }
 
-      if (glob.getProperty().get("xmlrpc.debug", false) == true)
+      // "-protocol/xmlrpc/debug true"
+      if (addressServer.getEnv("debug", false).getValue() == true)
          XmlRpc.setDebug(true);
 
-      String hostname = glob.getProperty().get("xmlrpc.hostname", (String)null);
+      String hostname = addressServer.getEnv("hostname", glob.getLocalIP()).getValue();
       if (hostname == null) {
          try  {
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -166,11 +169,12 @@ public class XmlRpcDriver implements I_Driver
          }
       }
       try {
-         inetAddr = java.net.InetAddress.getByName(hostname);
+         this.inetAddr = java.net.InetAddress.getByName(hostname);
       } catch(java.net.UnknownHostException e) {
-         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-xmlrpc.hostname=<ip>': " + e.toString());
+         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-protocol/xmlrpc/hostname=<ip>': " + e.toString());
       }
-      serverUrl = "http://" + hostname + ":" + xmlPort + "/";
+      serverUrl = "http://" + hostname + ":" + this.xmlPort + "/";
+      addressServer.setRawAddress(serverUrl); // e.g. "http://127.168.1.1:8080/"
    }
 
    /**
@@ -179,14 +183,14 @@ public class XmlRpcDriver implements I_Driver
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
       try {
-         webServer = new WebServer(xmlPort, inetAddr);
+         webServer = new WebServer(this.xmlPort, this.inetAddr);
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, xmlBlasterImpl));
-         //serverUrl = "http://" + hostname + ":" + xmlPort + "/";
-         log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
+         //serverUrl = "http://" + hostname + ":" + this.xmlPort + "/";
+         log.info(ME, "Started successfully XMLRPC driver, access url=" + serverUrl);
       } catch (IOException e) {
-         log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
+         log.error(ME, "Error creating webServer on '" + this.inetAddr + ":" + this.xmlPort + "': " + e.toString());
          //e.printStackTrace();
       }
    }
@@ -206,14 +210,14 @@ public class XmlRpcDriver implements I_Driver
             log.warn(ME, "Problems during shutdown of xmlrpc web server: " + e.toString());
          }
          webServer = null;
-         log.info(ME, "XML-RPC driver stopped, handler released.");
+         log.info(ME, "XMLRPC driver stopped, handler released.");
       }
       else
-         log.info(ME, "XML-RPC shutdown, nothing to do.");
+         log.info(ME, "XMLRPC shutdown, nothing to do.");
    }
 
    /**
-    * Instructs XML-RPC driver to shut down.
+    * Instructs XMLRPC driver to shut down.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -234,10 +238,13 @@ public class XmlRpcDriver implements I_Driver
    {
       String text = "\n";
       text += "XmlRpcDriver options:\n";
-      text += "   -xmlrpc.port        The XML-RPC web server port [" + DEFAULT_HTTP_PORT + "].\n";
-      text += "   -xmlrpc.hostname    Specify a hostname where the XML-RPC web server runs.\n";
+      text += "   -protocol/xmlrpc/port\n";
+      text += "                       The XMLRPC web server port [" + DEFAULT_HTTP_PORT + "].\n";
+      text += "   -protocol/xmlrpc/hostname\n";
+      text += "                       Specify a hostname where the XMLRPC web server runs.\n";
       text += "                       Default is the localhost.\n";
-      text += "   -xmlrpc.debug       true switches on detailed XML-RPC debugging [false].\n";
+      text += "   -protocol/xmlrpc/debug.\n";
+      text += "                       true switches on detailed XMLRPC debugging [false].\n";
       text += "\n";
       return text;
    }

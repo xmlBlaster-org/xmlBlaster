@@ -77,12 +77,12 @@ namespace org {
        * <p />
        * @param arg  parameters given on command line
        * <ul>
-       *    <li>-ior  IOR string is directly given</li>
-       *    <li>-ior.file IOR string is given through a file</li>
-       *    <li>-hostname host name or IP where xmlBlaster is running</li>
-       *    <li>-port where the internal xmlBlaster-http server publishes 
+       *    <li>-dispatch/clientSide/protocol/ior/iorString  IOR string is directly given</li>
+       *    <li>-dispatch/clientSide/protocol/ior/iorFile IOR string is given through a file</li>
+       *    <li>-bootstrapHostname host name or IP where xmlBlaster is running</li>
+       *    <li>-bootstrapPort where the internal xmlBlaster-http server publishes 
        *         its IOR (defaults to 3412)</li>
-       *    <li>-ns true/false, if a naming service shall be used</li>
+       *    <li>-dispatch/clientSide/protocol/ior/useNameService true/false, if a naming service shall be used</li>
        * </ul>
        */
       CorbaConnection(Global& global, CORBA::ORB_ptr orb=NULL);
@@ -144,13 +144,13 @@ public:
        * <ul>
        *    <li>Give the authentication service string-IOR at command line,
        * e.g.<br />
-       *        <code>   -ior "IOR:0000..."</code><br />
+       *        <code>   -dispatch/clientSide/protocol/ior/iorString "IOR:0000..."</code><br />
        *        or giving a file name<br />
-       *        <code>   -ior.file yourIorFile</code></li>
-       *    <li>Give the xmlBlaster host and port where 
+       *        <code>   -dispatch/clientSide/protocol/ior/iorFile yourIorFile</code></li>
+       *    <li>Give the xmlBlaster host and bootstrap port where 
        * xmlBlaster-Authenticate serves the IOR via http, give at command line 
        * e.g.
-       *        <code>   -hostname server.xmlBlaster.org  -port 3412</code>
+       *        <code>   -bootstrapHostname server.xmlBlaster.org  -bootstrapPort 3412</code>
        * </li>
        *    <li>Try to find a naming service which knows about 
        * 'xmlBlaster-Authenticate'</li>

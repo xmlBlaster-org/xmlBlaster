@@ -8,7 +8,7 @@ use Frontier::Client;
 $server_url =  @ARGV[0];
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
 
-# Make an object to represent the XML-RPC server.
+# Make an object to represent the XMLRPC server.
 $server = Frontier::Client->new(url => $server_url);
 print "Connected to xmlBlaster server on $server_url \n";
 

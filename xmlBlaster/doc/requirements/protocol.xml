@@ -43,7 +43,7 @@
       xmlBlaster startup:
       </p>
       <p>
-      Example entry to xmlBlasterPlugins.xml for Corba, RMI and XML-RPC etc. drivers:
+      Example entry to xmlBlasterPlugins.xml for Corba, RMI and XMLRPC etc. drivers:
       </p>
      <table border="1"><tr><td><pre>
    &lt;plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
@@ -58,7 +58,7 @@
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    &lt;/plugin>
 
-   &lt;plugin id='protocol:XML-RPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+   &lt;plugin id='protocol:XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    &lt;/plugin>
@@ -70,7 +70,7 @@
      </pre></td></tr></table>
       <p>
       The callback driver protocol type for RMI is called "RMI"
-      for XmlRpc "XML-RPC"
+      for XmlRpc "XMLRPC"
       the Corba driver protocol is called "IOR" and finally
       "SOCKET" is our native socket based protocol.<br />
       This string is used when you do your login in the qos to specify
@@ -106,7 +106,7 @@
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>

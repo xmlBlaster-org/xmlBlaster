@@ -26,7 +26,7 @@ Invoke:    See usage text below
 #include <malloc.h>    // for file-read only
 #include <xmlrpc.h>
 #include <xmlrpc_client.h>
-#define NAME       "XML-RPC xmlBlaster.org C Client"
+#define NAME       "XMLRPC xmlBlaster.org C Client"
 #define VERSION    "0.79d"
 
 char *readFile(const char *const fileName);
@@ -87,15 +87,15 @@ int main (int argc, char** argv)
    printf("\n\n-------------------------------------------\n"
               "Hello as C XmlRpc client for xmlBlaster ...\n\n");
 
-   /* Start up our XML-RPC client library. */
+   /* Start up our XMLRPC client library. */
    xmlrpc_client_init(XMLRPC_CLIENT_NO_FLAGS, NAME, VERSION);
    xmlrpc_env_init(&env);
 
 
-   /* Login to xmlBlaster XML-RPC server. */
+   /* Login to xmlBlaster XMLRPC server. */
    {
       printf("Login to %s as user %s ...\n", serverUrl, loginName);
-      sprintf(loginQos, "<qos><callback type='XML-RPC'>%.100s</callback></qos>", cbUrl);
+      sprintf(loginQos, "<qos><callback type='XMLRPC'>%.100s</callback></qos>", cbUrl);
       result = xmlrpc_client_call(&env, serverUrl,
                                   "authenticate.login", "(ssss)",
                                   loginName, passwd, loginQos, "");
@@ -136,7 +136,7 @@ int main (int argc, char** argv)
    printf("Than hit a key to logout ...\n");
    getc(stdin);
 
-   /* Logout from xmlBlaster XML-RPC server. */
+   /* Logout from xmlBlaster XMLRPC server. */
    {
       printf("Logout from %s as user %s, sessionId=%s ...\n", serverUrl, loginName, sessionId);
       strcpy(loginQos, "<qos></qos>");
@@ -152,7 +152,7 @@ int main (int argc, char** argv)
       xmlrpc_DECREF(result);
    }
 
-   /* Shutdown our XML-RPC client library. */
+   /* Shutdown our XMLRPC client library. */
    xmlrpc_env_clean(&env);
    xmlrpc_client_cleanup();
 
@@ -170,9 +170,9 @@ int main (int argc, char** argv)
  */
 void die_if_fault_occurred (xmlrpc_env *env)
 {
-    /* Check our error-handling environment for an XML-RPC fault. */
+    /* Check our error-handling environment for an XMLRPC fault. */
     if (env->fault_occurred) {
-        fprintf(stderr, "XML-RPC Fault: %s (%d)\n",
+        fprintf(stderr, "XMLRPC Fault: %s (%d)\n",
                 env->fault_string, env->fault_code);
         usage();
         exit(1);

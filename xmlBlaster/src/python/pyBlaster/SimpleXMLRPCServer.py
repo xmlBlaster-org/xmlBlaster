@@ -1,6 +1,6 @@
-"""Simple XML-RPC Server.
+"""Simple XMLRPC Server.
 
-This module can be used to create simple XML-RPC servers
+This module can be used to create simple XMLRPC servers
 by creating a server and either installing functions, a
 class instance, or by extending the SimpleXMLRPCRequestHandler
 class.
@@ -48,7 +48,7 @@ class MathHandler(SimpleXMLRPCRequestHandler):
     def _dispatch(self, method, params):
         try:
             # We are forcing the 'export_' prefix on methods that are
-            # callable through XML-RPC to prevent potential security
+            # callable through XMLRPC to prevent potential security
             # problems
             func = getattr(self, 'export_' + method)
         except AttributeError:
@@ -75,21 +75,21 @@ import BaseHTTPServer
 import sys
 
 class SimpleXMLRPCRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    """Simple XML-RPC request handler class.
+    """Simple XMLRPC request handler class.
 
     Handles all HTTP POST requests and attempts to decode them as
-    XML-RPC requests.
+    XMLRPC requests.
 
-    XML-RPC requests are dispatched to the _dispatch method, which
+    XMLRPC requests are dispatched to the _dispatch method, which
     may be overriden by subclasses. The default implementation attempts
-    to dispatch XML-RPC calls to the functions or instance installed
+    to dispatch XMLRPC calls to the functions or instance installed
     in the server.
     """
 
     def do_POST(self):
         """Handles the HTTP POST request.
 
-        Attempts to interpret all HTTP POST requests as XML-RPC calls,
+        Attempts to interpret all HTTP POST requests as XMLRPC calls,
         which are forwarded to the _dispatch method for handling.
         """
 
@@ -127,15 +127,15 @@ class SimpleXMLRPCRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.connection.shutdown(1)
 
     def _dispatch(self, method, params):
-        """Dispatches the XML-RPC method.
+        """Dispatches the XMLRPC method.
 
-        XML-RPC calls are forwarded to a registered function that
-        matches the called XML-RPC method name. If no such function
+        XMLRPC calls are forwarded to a registered function that
+        matches the called XMLRPC method name. If no such function
         exists then the call is forwarded to the registered instance,
         if available.
 
         If the registered instance has a _dispatch method then that
-        method will be called with the name of the XML-RPC method and
+        method will be called with the name of the XMLRPC method and
         it's parameters as a tuple
         e.g. instance._dispatch('add',(2,3))
 
@@ -197,9 +197,9 @@ class SimpleXMLRPCRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             BaseHTTPServer.BaseHTTPRequestHandler.log_request(self, code, size)
 
 class SimpleXMLRPCServer(SocketServer.TCPServer):
-    """Simple XML-RPC server.
+    """Simple XMLRPC server.
 
-    Simple XML-RPC server that allows functions and a single instance
+    Simple XMLRPC server that allows functions and a single instance
     to be installed to handle requests.
     """
 
@@ -211,12 +211,12 @@ class SimpleXMLRPCServer(SocketServer.TCPServer):
         SocketServer.TCPServer.__init__(self, addr, requestHandler)
 
     def register_instance(self, instance):
-        """Registers an instance to respond to XML-RPC requests.
+        """Registers an instance to respond to XMLRPC requests.
 
         Only one instance can be installed at a time.
 
         If the registered instance has a _dispatch method then that
-        method will be called with the name of the XML-RPC method and
+        method will be called with the name of the XMLRPC method and
         it's parameters as a tuple
         e.g. instance._dispatch('add',(2,3))
 
@@ -227,14 +227,14 @@ class SimpleXMLRPCServer(SocketServer.TCPServer):
         Methods beginning with an '_' are considered private and will
         not be called by SimpleXMLRPCServer.
 
-        If a registered function matches a XML-RPC request, then it
+        If a registered function matches a XMLRPC request, then it
         will be called instead of the registered instance.
         """
 
         self.instance = instance
 
     def register_function(self, function, name = None):
-        """Registers a function to respond to XML-RPC requests.
+        """Registers a function to respond to XMLRPC requests.
 
         The optional name argument can be used to set a Unicode name
         for the function.

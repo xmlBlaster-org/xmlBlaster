@@ -77,7 +77,7 @@ public class ClientQueueProperty extends QueuePropertyBase
       ClientQueueProperty prop = new ClientQueueProperty(new Global(args), null);
       System.out.println(prop.toXml());
       Address adr = new Address(new Global(args), "EMAIL");
-      adr.setAddress("et@mars.sun");
+      adr.setRawAddress("et@mars.sun");
       prop.setAddress(adr);
       System.out.println(prop.toXml());
    }

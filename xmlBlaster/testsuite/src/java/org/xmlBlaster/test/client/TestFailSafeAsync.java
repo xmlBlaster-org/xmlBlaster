@@ -196,7 +196,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
 
-         // reset to default server port (necessary if other tests follow in the same JVM).
+         // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
          Util.resetPorts(glob);
          this.glob = null;
          this.log = null;

@@ -1,6 +1,6 @@
 # XmlBlaster.pm
 #
-#       use XML-RPC (Frontier) for connecting to xmlBlaster
+#       use XMLRPC (Frontier) for connecting to xmlBlaster
 #
 # 04/07/02 17:17 mad@ktaland.com
 #       upgrade

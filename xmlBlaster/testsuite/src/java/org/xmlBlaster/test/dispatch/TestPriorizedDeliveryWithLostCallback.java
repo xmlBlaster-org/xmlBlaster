@@ -116,11 +116,12 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       glob.init(Util.getOtherServerPorts(serverPort));
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
-        "-ProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver",
-        "-CbProtocolPlugin[XML-RPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver",
-        "-dispatch/clientSide/protocol", "XML-RPC",
-        "-dispatch/callback/protocol", "XML-RPC",
-        "-xmlrpc.portCB", ""+(serverPort+1),
+        "-ProtocolPlugin[XMLRPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver",
+        "-CbProtocolPlugin[XMLRPC][1.0]", "org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver",
+        "-dispatch/clientSide/protocol", "XMLRPC",
+        "-dispatch/callback/protocol", "XMLRPC",
+        "-protocol/xmlrpc/portxmlrpc.port", ""+(serverPort+1),
+        "-dispatch/callback/protocol/xmlrpc/port", ""+(serverPort+1),
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
         "-DispatchPlugin/defaultPlugin", "undef",  // configure "Priority,1.0" below with CallbackAddress
         "-PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin",
@@ -293,7 +294,8 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          this.updateInterceptor.clear();
          try {
             cbServer = new XmlRpcCallbackServer();
-            cbServer.initialize(this.glob, name, new AbstractCallbackExtended(glob) {
+            CallbackAddress cbAddress = new CallbackAddress(glob);
+            cbServer.initialize(this.glob, name, cbAddress, new AbstractCallbackExtended(glob) {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
                   try {
                      String contentStr = new String(content);

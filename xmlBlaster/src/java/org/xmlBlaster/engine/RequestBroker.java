@@ -2034,11 +2034,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    }
 
    public String getHostname() {
-      return glob.getBootstrapAddress().getAddress();
+      return glob.getBootstrapAddress().getBootstrapHostname();
    }
-   /** The bootstrap port */
+   /** The bootstrap bootstrap port */
    public int getPort() {
-      return glob.getBootstrapAddress().getPort();
+      return glob.getBootstrapAddress().getBootstrapPort();
    }
    /** The number of different users, the sessions may be higher */
    public int getNumClients() {

@@ -19,20 +19,18 @@ public final class PropLong extends PropEntry implements java.io.Serializable, C
     * Constructor for the default value
     */
    public PropLong(long value) {
-      super(null);
-      this.valueDefault = value;
-      this.value = value;
+      this(null, value);
    }
 
    /*
     * Constructor for the default value
     * @param propName The environment property name
+    */
    public PropLong(String propName, long value) {
       super(propName);
-      this.valueDefaut = value;
+      this.valueDefault = value;
       this.value = value;
    }
-    */
 
    /**
     * @return "long"

@@ -18,7 +18,7 @@
       method update() and ping(), see xmlBlaster.idl. This method is called by xmlBlaster for callbacks.
       </p>
       <p>
-      Other supported protocols are "RMI" and "XML-RPC", scheduled protocols are "EMAIL" and "SOAP".<br />
+      Other supported protocols are "RMI" and "XMLRPC", scheduled protocols are "EMAIL" and "SOAP".<br />
       </p>
       <p>
       Further protocols may be plugged into xmlBlaster very easy -
@@ -36,7 +36,7 @@
    <p>
    A callback address corresponds to a callback server created
    by a client. A client may establish many callback servers,
-   for example one CORBA and another for XML-RPC.
+   for example one CORBA and another for XMLRPC.
    Only one callback address is actively used by xmlBlaster.
    If the callback fails, the subsequent callback addresses will be
    tried until the message is delivered.
@@ -77,7 +77,7 @@
    <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.27 $</revision>
+   <revision>$Revision: 1.28 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

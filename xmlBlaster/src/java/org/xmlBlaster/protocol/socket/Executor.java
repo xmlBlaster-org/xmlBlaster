@@ -13,6 +13,7 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -71,6 +72,7 @@ public abstract class Executor implements ExecutorBase
    /** To avoid creating a new dummy on each request, we do it here */
    private final String DUMMY_OBJECT = "";
    private final Set latchSet = new HashSet();
+   private AddressBase addressConfig;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -92,16 +94,18 @@ public abstract class Executor implements ExecutorBase
     * - Possibly we can use the same socket between two xmlBlaster server (load balance)<br />
     * - Everything is together<br />
     * @param sock The open socket to/from a specific client
-    * @param xmlBlasterImpl Handle for the server implementation
+    * @param xmlBlasterImpl Handle for the server implementation, null on client side
     */
-   protected void initialize(Global glob, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
+   protected void initialize(Global glob, AddressBase addressConfig, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
+      this.addressConfig = addressConfig;
       this.sock = sock;
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
-      setResponseWaitTime(this.glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS));
+      setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
       // the responseWaitTime is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
@@ -109,10 +113,12 @@ public abstract class Executor implements ExecutorBase
 
       // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
       // But we always block on input read() to receive update() messages.
-      setSoTimeout(this.glob.getProperty().get("socket.SoTimeout", 0L)); // switch off
+      setSoTimeout(addressConfig.getEnv("SoTimeout", 0L).getValue()); // switch off
       this.sock.setSoTimeout((int)this.soTimeout);
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
 
-      setSoLingerTimeout(this.glob.getProperty().get("socket.SoLingerTimeout", Constants.MINUTE_IN_MILLIS));
+      setSoLingerTimeout(addressConfig.getEnv("SoLingerTimeout", Constants.MINUTE_IN_MILLIS).getValue());
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
       if (getSoLingerTimeout() > 0L)
          this.sock.setSoLinger(true, (int)this.soLingerTimeout);
       else
@@ -125,7 +131,8 @@ public abstract class Executor implements ExecutorBase
     */
    public final void setResponseWaitTime(long millis) {
       if (millis <= 0L) {
-         log.warn(ME, "socket.responseTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
+         log.warn(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + millis +
+                      " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
          this.responseWaitTime = Constants.MINUTE_IN_MILLIS;
       }
       this.responseWaitTime = millis;
@@ -137,7 +144,8 @@ public abstract class Executor implements ExecutorBase
     */
    public final void setSoTimeout(long millis) {
       if (millis < 0L) {
-         log.warn(ME, "socket.SoTimeout=" + millis + " is invalid, deactivating timeout");
+         log.warn(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + millis +
+                      " is invalid, is invalid, deactivating timeout");
          this.soTimeout = 0L;
       }
       this.soTimeout = millis;
@@ -153,7 +161,8 @@ public abstract class Executor implements ExecutorBase
     */
    public final void setSoLingerTimeout(long millis) {
       if (millis < 0L) {
-         log.warn(ME, "socket.SoLingerTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
+         log.warn(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + millis +
+                      " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
          this.soLingerTimeout = Constants.MINUTE_IN_MILLIS;
       }
       this.soLingerTimeout = millis;
@@ -410,7 +419,7 @@ public abstract class Executor implements ExecutorBase
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
-         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
+         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.dispatch/callback/protocol/socket/responseTimeout <millis>";
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
       }
 
@@ -444,7 +453,7 @@ public abstract class Executor implements ExecutorBase
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
+            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.dispatch/callback/protocol/socket/responseTimeout <millis>";
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
          }
       }

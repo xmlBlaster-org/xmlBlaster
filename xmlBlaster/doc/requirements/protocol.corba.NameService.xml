@@ -58,7 +58,7 @@ IOR:010000002800000049...
    <p>
    Now we are ready to start some servers and a client.
    We have set <i>-trace[corba] true</i> to get more logging output from the CORBA plugin,
-   further we have set <i>-port 0</i> to suppress internal IOR download (as we want to test the NameService).
+   further we have set <i>-bootstrapPort 0</i> to suppress internal IOR download (as we want to test the NameService).
    We choose another telnet access port for the second and third server with <i>-admin.remoteconsole.port 270x</i>
    to avoid a conflict and an ugly error output.
    </p>
@@ -67,14 +67,14 @@ IOR:010000002800000049...
 java -DORBInitRef.NameService=file:///tmp/ns.ior 
      -jar lib/xmlBlaster.jar
      -trace[corba] true
-     -port 0
+     -bootstrapPort 0
      -cluster.node.id heron
 
 # Start avalon:
 java -DORBInitRef.NameService=file:///tmp/ns.ior 
      -jar lib/xmlBlaster.jar
      -trace[corba] true
-     -port 0
+     -bootstrapPort 0
      -admin.remoteconsole.port 2703
      -cluster.node.id avalon
 
@@ -82,7 +82,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior
 java -DORBInitRef.NameService=file:///tmp/ns.ior 
      -jar lib/xmlBlaster.jar
      -trace[corba] true
-     -port 0
+     -bootstrapPort 0
      -admin.remoteconsole.port 2704
      -cluster.node.id frodo
 
@@ -119,7 +119,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
          </tr>
 
          <tr>
-            <td>ns</td>
+            <td>protocol/ior/useNameService</td>
             <td>true</td>
             <td>If set to true, xmlBlaster tries to register itself in a NameService</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -172,7 +172,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>

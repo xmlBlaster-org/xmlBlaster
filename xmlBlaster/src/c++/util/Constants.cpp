@@ -67,7 +67,7 @@ const char * REGEX       = "REGEX";
 
 const char * IOR     = "IOR";
 const char * EMAIL   = "EMAIL";
-const char * XML_RPC = "XML-RPC";
+const char * XML_RPC = "XMLRPC";
 
 const char * OFFSET  = "   ";
 const char * INDENT  = "   ";

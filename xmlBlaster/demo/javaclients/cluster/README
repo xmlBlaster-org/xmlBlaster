@@ -30,7 +30,7 @@ NOTE 3: The demo below has following setup.
   
    java org.xmlBlaster.Main -propertyFile avalon.properties -call[core] true
 
- 'avalon.mycomp.com' listens now on port 7601.
+ 'avalon.mycomp.com' listens now on bootstrapPort 7601.
  We have switched on logging of method calls in the 'core'
  to see when messages arrive.
 
@@ -38,14 +38,14 @@ NOTE 3: The demo below has following setup.
 3. Start a client connecting to avalon:
 =======================================
 
-   java javaclients.cluster.PublishToSlave -port 7601
+   java javaclients.cluster.PublishToSlave -bootstrapPort 7601
 
   or
 
-   java javaclients.cluster.PublishToSlave -port 7601 -numPublish 20 -interactivePublish true -session.name pubisher/2
+   java javaclients.cluster.PublishToSlave -bootstrapPort 7601 -numPublish 20 -interactivePublish true -session.name pubisher/2
 
  This publisher connects to the slave 'avalon'.
- The port 7601 is the same as specified for avalon in avalon.properties.
+ The bootstrapPort 7601 is the same as specified for avalon in avalon.properties.
  We publish up to 20 messages, each must be sent by hitting
  enter on your console.
  We login with the name 'publisher' with the well known public
@@ -65,7 +65,7 @@ NOTE 3: The demo below has following setup.
 5. Add a subscriber:
 ====================
 
-   java javaclients.HelloWorldSubscribe -port 7600 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1
+   java javaclients.HelloWorldSubscribe -bootstrapPort 7600 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1
 
    This subscriber connects to 'heron' (port 7600) which is the master of
    'PublishToSlave.RUGBY_NEWS' messages.

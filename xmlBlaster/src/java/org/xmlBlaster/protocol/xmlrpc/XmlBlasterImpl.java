@@ -17,7 +17,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
 
 
 /**
- * Implements the xmlBlaster server XML-RPC interface. Because the xml-rpc
+ * Implements the xmlBlaster server XMLRPC interface. Because the xml-rpc
  * protocol does not recognize user-defined classes, these must be converted to
  * something which xml-rpc does understand. That's why following transformations
  * will take place:

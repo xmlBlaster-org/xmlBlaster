@@ -82,7 +82,7 @@ public class ConnectQosTest extends TestCase {
          "   </callback>\n" +
          */
          "   <queue relating='callback' maxEntries='1600' maxBytes='2000'>\n" +
-         "      <callback type='XML-RPC'>\n" +
+         "      <callback type='XMLRPC'>\n" +
          "         <ptp>true</ptp>\n" +
          "         http:/www.mars.universe:8080/RPC2\n" +
          "      </callback>\n" +
@@ -93,7 +93,7 @@ public class ConnectQosTest extends TestCase {
          "   <serverRef type='EMAIL'>\n" +
          "      et@mars.universe\n" +
          "   </serverRef>\n" +
-         "   <serverRef type='XML-RPC'>\n" +
+         "   <serverRef type='XMLRPC'>\n" +
          "      http:/www.mars.universe:8080/RPC2\n" +
          "   </serverRef>\n" +
          "</qos>\n";

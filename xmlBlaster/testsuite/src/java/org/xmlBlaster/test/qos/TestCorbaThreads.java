@@ -20,6 +20,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 import org.xmlBlaster.protocol.corba.*;
 import org.omg.CORBA.ORB;
@@ -75,7 +76,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       for (int ii=0; ii<20; ii++) {
          System.out.println("Hit a key for ORB #" + ii + "/20");
          try { System.in.read(); } catch(java.io.IOException e) {}
-         ORB orb = OrbInstanceFactory.createOrbInstance(glob, new String[0], null, false);
+         ORB orb = OrbInstanceFactory.createOrbInstance(glob, new String[0], null, new CallbackAddress(glob));
          try {
             POA rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             rootPOA.the_POAManager().activate();
@@ -97,7 +98,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
                         "-CbProtocolPlugin[IOR][1.0]", "org.xmlBlaster.protocol.corba.CallbackCorbaDriver" };
       glob.init(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on port 8116");
+      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort 8116");
    }
 
    /**
@@ -113,9 +114,11 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          String passwd = "secret";
 
          cbServer = new CorbaCallbackServer();
-         cbServer.initialize(this.glob, loginName, this);
+         CallbackAddress cba = new CallbackAddress(this.glob);
+         cbServer.initialize(this.glob, loginName, cba, this);
 
-         corbaConnection = new CorbaConnection(glob);
+         corbaConnection = new CorbaConnection();
+         corbaConnection.init(glob, null);
          //cbServer = new CorbaCallbackServer(this.glob, loginName, this, corbaConnection.getOrb());
          ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
          corbaConnection.connect(connectQos.toXml());
@@ -129,7 +132,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    protected void tearDown() {
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
-      // reset to default server port (necessary if other tests follow in the same JVM).
+      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
       log.info(ME, "Ports reset to default: " + glob.getProperty().toXml());
    }

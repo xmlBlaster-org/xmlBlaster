@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.16 2003/03/26 12:00:59 laghi Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.17 2003/05/21 20:20:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -30,7 +30,7 @@ import org.xmlBlaster.util.MsgUnit;
  * with the need to look into them and decide why the arrived.
  * <p />
  * This demo uses the I_XmlBlasterAccess helper class, which hides the raw
- * CORBA/RMI/XML-RPC nastiness and allows this client side dispatching.
+ * CORBA/RMI/XMLRPC nastiness and allows this client side dispatching.
  * <br />
  * Invoke examples:<br />
  * <pre>

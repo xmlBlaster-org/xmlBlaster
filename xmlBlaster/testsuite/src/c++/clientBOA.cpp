@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 {
    AuthServer_var  authServer_obj;
    CORBA::ORB_var  orb;
-  CORBA::BOA_var  boa;
+   CORBA::BOA_var  boa;
    char            objref_str[1024];
 
    try {
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
          strncpy(objref_str, argv[1], 1024);
       }
       else if (argc == 3) {
-         strncpy(objref_str, argv[2], 1024); // allow -ior ...
+         strncpy(objref_str, argv[2], 1024); // allow -dispatch/clientSide/protocol/ior/iorString ...
       }
       else {
         cout << "Enter IOR from AuthServer-Server: ";

@@ -24,7 +24,7 @@ A callback Python demo (for asynchronous updates) is not yet available,
 donations from Python hackers are welcome!
 
 -------------------------------------------------------------------
-Fredrik Lundh has provided the excellent XML-RPC library for Python.
+Fredrik Lundh has provided the excellent XMLRPC library for Python.
    http://www.pythonware.com/products/xmlrpc/
 
 This three libs

@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.43 2003/04/03 09:04:17 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.44 2003/05/21 20:21:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -11,6 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -88,6 +89,11 @@ public class JdbcDriver implements I_Driver, I_Publish
    /** Enforced by I_Plugin */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
       throws XmlBlasterException {
+
+      this.glob = glob;
+      this.ME = "JdbcDriver" + this.glob.getLogPrefixDashed();
+      this.log = glob.getLog("jdbc");
+
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -100,7 +106,9 @@ public class JdbcDriver implements I_Driver, I_Publish
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
-         init(glob, authenticate, xmlBlasterImpl);
+
+         init(glob, new AddressServer(glob, getType(), glob.getId()), authenticate, xmlBlasterImpl);
+         
          activate();
       }
       catch (XmlBlasterException ex) {
@@ -127,11 +135,8 @@ public class JdbcDriver implements I_Driver, I_Publish
     * Enforced by interface I_Driver.
     * @param glob Global handle to access logging, property and commandline args
     */
-   public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   private synchronized void init(Global glob, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
-      this.glob = glob;
-      this.ME = "JdbcDriver" + this.glob.getLogPrefixDashed();
-      this.log = glob.getLog("jdbc");
       this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
@@ -164,12 +169,12 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       // "JDBC" below is the 'callback protocol type', which results in instantiation of the given class:
       CallbackAddress cbAddress = new CallbackAddress(glob, "JDBC");
-      cbAddress.setAddress("native-NameService:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
+      cbAddress.setRawAddress("native-NameService:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
 
       // Register the native callback driver
       CallbackJdbcDriver cbDriver = new CallbackJdbcDriver();
       cbDriver.init(glob, cbAddress);
-      cbRegistrationKey = cbAddress.getType() + cbAddress.getAddress();
+      cbRegistrationKey = cbAddress.getType() + cbAddress.getRawAddress();
       glob.addNativeCallbackDriver(cbRegistrationKey, cbDriver); // tell that we are the callback driver as well
 
       org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
@@ -213,9 +218,10 @@ public class JdbcDriver implements I_Driver, I_Publish
    {
       String text = "\n";
       text += "JdbcDriver options:\n";
-      text += "   -JdbcDriver.password  The internal xmlBlaster-password for the JDBC driver.\n";
-      text += "   -JdbcDriver.drivers   List of all jdbc drivers to initalize, e.g.\n";
-      text += "                         oracle.jdbc.driver.OracleDriver:org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
+      text += "   -JdbcDriver.password\n";
+      text += "                       The internal xmlBlaster-password for the JDBC driver.\n";
+      text += "   -JdbcDriver.drivers List of all jdbc drivers to initalize, e.g.\n";
+      text += "                       oracle.jdbc.driver.OracleDriver:org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
       text += "\n";
       return text;
    }

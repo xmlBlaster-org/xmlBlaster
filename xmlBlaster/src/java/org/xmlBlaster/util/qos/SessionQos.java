@@ -282,10 +282,14 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       String text = "\n";
       text += "Control my session settings\n";
       text += "   -session.name       The name for login, e.g. 'joe' or with public session ID 'joe/2' []\n";
-      text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
-      text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
-      text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
-      text += "   -session.secretSessionId The secret sessionId []\n";
+      text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever,\n";
+      text += "                       defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
+      text += "   -session.maxSessions\n";
+      text += "                       Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
+      text += "   -session.clearSessions\n";
+      text += "                       Kill other sessions running under my login name [false]\n";
+      text += "   -session.secretSessionId\n";
+      text += "                       The secret sessionId []\n";
       text += "\n";
       return text;
    }

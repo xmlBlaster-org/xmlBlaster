@@ -87,7 +87,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       this.port = glob.getProperty().get("admin.snmp.port", this.port);
       this.port = glob.getProperty().get("admin.snmp.port[" + glob.getId() + "]", this.port);
 
-      this.hostname = glob.getProperty().get("admin.snmp.hostname", glob.getBootstrapAddress().getHostname());
+      this.hostname = glob.getProperty().get("admin.snmp.hostname", glob.getBootstrapAddress().getBootstrapHostname());
       this.hostname = glob.getProperty().get("admin.snmp.hostname[" + glob.getId() + "]", this.hostname);
 
       boolean debug = glob.getProperty().get("admin.snmp.debug", false);

@@ -1,10 +1,10 @@
 """
-__version__ = '$Revision: 1.4 $'
-__date__    = '$Date: 2003/05/08 22:03:34 $'
+__version__ = '$Revision: 1.5 $'
+__date__    = '$Date: 2003/05/21 20:21:32 $'
 __author__  = 'spex66@gmx.net'
 __license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
 
-last change by $Author: spex66 $ 
+last change by $Author: ruff $ 
 
 """
 
@@ -34,10 +34,10 @@ THE ABSTRACT
 pyBlaster
     The Python way ("The first steps" :-)) to use www.XMLBLASTER.org
     
-    A Python module that provides the complete XMLBLASTER interface for XML-RPC 
+    A Python module that provides the complete XMLBLASTER interface for XMLRPC 
     This means for asynchronous updates (callbacks), too!
     
-    Fredrik Lundh has provided the excellent XML-RPC library for Python.
+    Fredrik Lundh has provided the excellent XMLRPC library for Python.
        http://www.pythonware.com/products/xmlrpc/
 
 
@@ -58,13 +58,13 @@ Core file
 
         My 1st Step:
             class XmlBlasterClient
-                Implementation of the complete(?) XML-RPC client interface
+                Implementation of the complete(?) XMLRPC client interface
                 With just a little beautifying of the method-signatures
 
         My 2nd Step:        
             class XmlBlasterCallbackClient
                 Specialisation of XmlBlasterClient with additional 
-                threaded XML-RPC server implementation
+                threaded XMLRPC server implementation
         
 
 Based on (if you have an uptodate installation, delete the provided files)
@@ -115,7 +115,7 @@ xb = pyBlaster.XmlBlasterCallbackClient()
 =======================================================
 THE TEST
 
-Developed under Python 2.2.2 with the XML-RPC update from pythonware
+Developed under Python 2.2.2 with the XMLRPC update from pythonware
 
 Success stories from Jython and other CPython version are appreciated!
 
@@ -170,7 +170,7 @@ class XmlBlasterClient:
         """
         
         if callback_url:
-            _cb = "<callback type='XML-RPC'>%s</callback>" % callback_url
+            _cb = "<callback type='XMLRPC'>%s</callback>" % callback_url
         else:
             _cb = ""
         
@@ -286,7 +286,7 @@ class XmlBlasterCallbackClient(XmlBlasterClient):
          
          Look for python cookbook hints on threaded programming
        
-       The XML-RPC callback server runs on an own port as a seperate thread
+       The XMLRPC callback server runs on an own port as a seperate thread
        (docstrings copied from the java version)
     """
 

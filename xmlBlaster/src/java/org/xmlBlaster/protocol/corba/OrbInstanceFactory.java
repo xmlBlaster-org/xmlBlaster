@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 //import org.xmlBlaster.util.JdkCompatible;
 import java.util.Properties;
 import java.util.Enumeration;
+import org.xmlBlaster.util.qos.address.AddressBase;
 
 /**
  * OrbInstanceFactory singleton to create a CORBA orb instance. 
@@ -53,10 +54,10 @@ public final class OrbInstanceFactory
     * and looks for NamingService on port 7608
     *
     * @param glob Handle to access logging, properties etc.
-    * @param forCB true=Initialize for callback server, false=Initialize for xmlBlaster server
+    * @param address The address configuration
     * @return The used properties for the ORB
     */
-   private synchronized static Properties initializeOrbEnv(Global glob, boolean forCB)
+   private synchronized static Properties initializeOrbEnv(Global glob, AddressBase address)
    {
       glob = (glob == null) ? Global.instance() : glob;
       LogChannel log = glob.getLog("corba");
@@ -107,17 +108,10 @@ public final class OrbInstanceFactory
          //JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", tmp);
          props.put("org.omg.CORBA.ORBSingletonClass", tmp);
       }
-         
-      String hostname = null;
-      String postfix = "";
-      if (forCB) postfix = "CB";
-      // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
-      if (forCB)
-         hostname = glob.getCbHostname();
-      hostname = glob.getProperty().get("hostname"+postfix, hostname);
-      // ... and overwrite it with a IOR specific hostname if given:
-      hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
-      if (log.TRACE) log.trace(ME, "initializeOrbEnv(forCB=" + forCB + ") hostname=" + hostname);
+      
+      // -dispatch/clientSide/protocol/ior/hostname   
+      String hostname = address.getEnv("hostname", (String)null).getValue();
+      if (log.TRACE) log.trace(ME, "initializeOrbEnv(" + address.getEnvLookupKey("hostname") + "=" + hostname);
 
       String orbClass = (String)props.get("org.omg.CORBA.ORBClass");
       if (orbClass != null && orbClass.indexOf("jacorb") >= 0) {
@@ -125,14 +119,14 @@ public final class OrbInstanceFactory
          if (hostname != null) {
             //JdkCompatible.setSystemProperty("OAIAddr", hostname);
             props.put("OAIAddr", hostname);
-            if (log.TRACE) log.trace(ME, "Using OAIAddr=ior.hostname"+postfix+"=" + props.getProperty("OAIAddr"));
+            if (log.TRACE) log.trace(ME, "Using OAIAddr=" + address.getEnvLookupKey("hostname") + "=" + props.getProperty("OAIAddr"));
          }
          
-         int port = glob.getProperty().get("ior.port"+postfix, 0);
+         int port = address.getEnv("port", 0).getValue();
          if (port > 0) {
             //JdkCompatible.setSystemProperty("OAPort", ""+port);
             props.put("OAPort", ""+port);
-            if (log.TRACE) log.trace(ME, "Using OAPort=ior.port"+postfix+"=" + props.getProperty("OAPort"));
+            if (log.TRACE) log.trace(ME, "Using OAPort=" + address.getEnvLookupKey("port") + "=" + props.getProperty("OAPort"));
          }
 
          int verbose = glob.getProperty().get("jacorb.verbosity", -1);
@@ -168,13 +162,13 @@ public final class OrbInstanceFactory
     * @param glob
     * @param args command line args, see org.omg.CORBA.ORB.init(), use glob.getArgs(String[], Properties)
     * @param props application-specific properties; may be <code>null</code>, see org.omg.CORBA.ORB.init(String[], Properties)
-    * @param forCB set to true if used to configure the callback ORB (adds 'CB' to command line properties)
+    * @param address The address configuration
     * @return Access to a new created orb handle
     * @see org.omg.CORBA.ORB#init(String[], Properties)
     */
-   public static org.omg.CORBA.ORB createOrbInstance(Global glob, String[] args, Properties props, boolean forCB) {
+   public static org.omg.CORBA.ORB createOrbInstance(Global glob, String[] args, Properties props, AddressBase address) {
       synchronized (System.class) {
-         Properties properties = initializeOrbEnv(glob, forCB);
+         Properties properties = initializeOrbEnv(glob, address);
          if (props != null) {
             Enumeration e = props.propertyNames();
             while (e.hasMoreElements()) {

@@ -66,7 +66,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
       
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
       //if (address.getId().equalsIgnoreCase("NATIVE")) {
-      this.cbKey = address.getType() + address.getAddress();
+      this.cbKey = address.getType() + address.getRawAddress();
       this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
 
       if (this.cbDriver == null) { // instantiate the callback plugin ...

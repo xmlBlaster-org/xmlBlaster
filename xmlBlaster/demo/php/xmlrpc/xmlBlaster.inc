@@ -1,17 +1,17 @@
 <?
 
 /**
- *	xmlBlaster.inc
+ *      xmlBlaster.inc
  *
- *	Client Functions for xmlBlaster Server - www.xmlBlaster.org
- *	Contains functions for accessing the server via XML-RPC
+ *      Client Functions for xmlBlaster Server - www.xmlBlaster.org
+ *      Contains functions for accessing the server via XMLRPC
  *
- *	TODO :
- *	- replace durty (but so fast ;o) regular expression by a real xml parsing !
+ *      TODO :
+ *      - replace durty (but so fast ;o) regular expression by a real xml parsing !
  *
- *	08/07/02 21:36 cyrille@ktaland.com
-*	Fixed dirty reg exp for new sessionId layout. PB
- *	28/02/03 10:58 bencom@bencom.co.nz
+ *      08/07/02 21:36 cyrille@ktaland.com
+*       Fixed dirty reg exp for new sessionId layout. PB
+ *      28/02/03 10:58 bencom@bencom.co.nz
  */
 
 // php xml-rpc implemetation by Edd Dumbill (C) 1999-2001 <edd@usefulinc.com>
@@ -22,204 +22,204 @@ include("xmlrpc.inc");
 //
 class xmlBlaster {
 
-	var $server ;
-	var $port ;
-	var $user ;
-	var $password ;
+        var $server ;
+        var $port ;
+        var $user ;
+        var $password ;
 
-	var $securityService_type = "htpasswd" ;
-	var $securityService_version = "1.0" ;
+        var $securityService_type = "htpasswd" ;
+        var $securityService_version = "1.0" ;
 
-	var $client ;
-	var $connectQos ;
-	var $isConnected ;
+        var $client ;
+        var $connectQos ;
+        var $isConnected ;
 
-	// =================
-	function xmlBlaster( $server, $port, $user, $password ){
+        // =================
+        function xmlBlaster( $server, $port, $user, $password ){
 
-		dbgprint( "xmlBlaster::xmlBlaster()");
+                dbgprint( "xmlBlaster::xmlBlaster()");
 
-		$this->server = $server ;
-		$this->port = ($port*1) ;
-		$this->user = $user ;
-		$this->password = $password ;
+                $this->server = $server ;
+                $this->port = ($port*1) ;
+                $this->user = $user ;
+                $this->password = $password ;
 
-		dbgprint( "xmlBlaster::xmlBlaster() $this->server::$this->port $this->user:$this->password");
+                dbgprint( "xmlBlaster::xmlBlaster() $this->server::$this->port $this->user:$this->password");
 
-		$this->connectQos = null ;
-		$this->isConnected = false ;
+                $this->connectQos = null ;
+                $this->isConnected = false ;
 
-	}//xmlBlaster
+        }//xmlBlaster
 
-	// =================
-	function isConnected(){
+        // =================
+        function isConnected(){
 
-		return $this->isConnected ;
+                return $this->isConnected ;
 
-	}//isConnected
+        }//isConnected
 
-	// =================
-	function sessionId(){
+        // =================
+        function sessionId(){
 
-		dbgprint( "xmlBlaster::sessionId()");
+                dbgprint( "xmlBlaster::sessionId()");
 
-		if( isset($this->connectQos) ){
-			dbgprint( "xmlBlaster::sessionId() sessionId = " . $this->connectQos->sessionId());
-			return $this->connectQos->sessionId() ;
-		}
-		return null ;
+                if( isset($this->connectQos) ){
+                        dbgprint( "xmlBlaster::sessionId() sessionId = " . $this->connectQos->sessionId());
+                        return $this->connectQos->sessionId() ;
+                }
+                return null ;
 
-	}//sessionId
+        }//sessionId
 
-	// =================
-	function connect(){
+        // =================
+        function connect(){
 
-		dbgprint( "xmlBlaster::connect()" );
+                dbgprint( "xmlBlaster::connect()" );
 
-		if( ! isset($this->server) ){
-			return array( 'ERROR', "To connect, you have to fill fields &lt;server&gt; &lt;port&gt; &lt;user&gt; &lt;password&gt;" );
-		}
+                if( ! isset($this->server) ){
+                        return array( 'ERROR', "To connect, you have to fill fields &lt;server&gt; &lt;port&gt; &lt;user&gt; &lt;password&gt;" );
+                }
 
-		$connect_qos_xml = "<qos>\n"
-				."<securityService type=\"".$this->securityService_type."\" version=\"".$this->securityService_version."\">\n"
-	            ."   <user>".$this->user."</user>\n"
-	            ."   <passwd>".$this->password."</passwd>\n"
-	            ."</securityService>\n"
-	            ."</qos>\n" ;
+                $connect_qos_xml = "<qos>\n"
+                                ."<securityService type=\"".$this->securityService_type."\" version=\"".$this->securityService_version."\">\n"
+                    ."   <user>".$this->user."</user>\n"
+                    ."   <passwd>".$this->password."</passwd>\n"
+                    ."</securityService>\n"
+                    ."</qos>\n" ;
 
-		$this->client = new xmlrpc_client( '/', $this->server, $this->port );
+                $this->client = new xmlrpc_client( '/', $this->server, $this->port );
 
-		/*if( ! isset( $this->client ) || $this->client==null ){
-			return array( 'ERROR', "Failed to connect, check you &lt;server&gt; and &lt;port&gt; parameters." );
-		}*/
+                /*if( ! isset( $this->client ) || $this->client==null ){
+                        return array( 'ERROR', "Failed to connect, check you &lt;server&gt; and &lt;port&gt; parameters." );
+                }*/
 
-		$rpcmsg = new xmlrpcmsg( "authenticate.connect", array(new xmlrpcval( $connect_qos_xml, "string" )) );
-		$result = $this->client->send( $rpcmsg );
+                $rpcmsg = new xmlrpcmsg( "authenticate.connect", array(new xmlrpcval( $connect_qos_xml, "string" )) );
+                $result = $this->client->send( $rpcmsg );
 
-		if( ! isset( $result ) || $result==0 ){
-			return array( 'ERROR', "Failed to connect, check you &lt;server&gt; and &lt;port&gt; parameters." );
-		}
+                if( ! isset( $result ) || $result==0 ){
+                        return array( 'ERROR', "Failed to connect, check you &lt;server&gt; and &lt;port&gt; parameters." );
+                }
 
-		if( $result->faultCode() ){
-			// a xml-rpc error occured
-			$res = xmlrpc_decode( $result->faultString() );
-			dbgprint( "ERROR xmlBlaster::connect() xml-rpc ERROR = $res" );
-			return array( 'ERROR', $res );
-		}
+                if( $result->faultCode() ){
+                        // a xml-rpc error occured
+                        $res = xmlrpc_decode( $result->faultString() );
+                        dbgprint( "ERROR xmlBlaster::connect() xml-rpc ERROR = $res" );
+                        return array( 'ERROR', $res );
+                }
 
-		$res = xmlrpc_decode( $result->value() );
-		$res_type = gettype( $res );
+                $res = xmlrpc_decode( $result->value() );
+                $res_type = gettype( $res );
 
 
-		if( gettype($res)=='array' && isset($res['faultString']) ){
-			// a xmlBlaster error occured
-			dbgprint( "ERROR xmlBlaster::connect() xmlBlaster ERROR = [".$res['faultString'] ."]" );
-			return array( 'ERROR', $res['faultString'] );
-		}
+                if( gettype($res)=='array' && isset($res['faultString']) ){
+                        // a xmlBlaster error occured
+                        dbgprint( "ERROR xmlBlaster::connect() xmlBlaster ERROR = [".$res['faultString'] ."]" );
+                        return array( 'ERROR', $res['faultString'] );
+                }
 
-		//dbgprint( "OK xmlBlaster::connect() response= [$res]" );
+                //dbgprint( "OK xmlBlaster::connect() response= [$res]" );
 
-		$this->connectQos = new ConnectQos( $res );
-		$this->isConnected = true ;
+                $this->connectQos = new ConnectQos( $res );
+                $this->isConnected = true ;
 
-		return array('OK','no error') ;
+                return array('OK','no error') ;
 
-	}//connect
+        }//connect
 
-	// =================
-	function logout(){
+        // =================
+        function logout(){
 
-		dbgprint( "xmlBlaster::logout()");
+                dbgprint( "xmlBlaster::logout()");
 
-		if( ! isset( $this->client ) ){
-			return ;
-		}
+                if( ! isset( $this->client ) ){
+                        return ;
+                }
 
-		// $self->{'server'}->call( 'authenticate.logout', $self->{'sessionId'} );	
-		$rpcmsg = new xmlrpcmsg( "authenticate.logout", array(new xmlrpcval( $this->sessionId(), "string" )) );
-		$result = $this->client->send( $rpcmsg );
+                // $self->{'server'}->call( 'authenticate.logout', $self->{'sessionId'} );      
+                $rpcmsg = new xmlrpcmsg( "authenticate.logout", array(new xmlrpcval( $this->sessionId(), "string" )) );
+                $result = $this->client->send( $rpcmsg );
 
-	}//logout
+        }//logout
 
-	// =================
-	function get( $key ){
+        // =================
+        function get( $key ){
 
-		dbgprint( "xmlBlaster::get()");
+                dbgprint( "xmlBlaster::get()");
 
-		$qos = '<qos></qos>' ;
+                $qos = '<qos></qos>' ;
 
-		//my $messages = $self->{'server'}->call( 'xmlBlaster.get', $self->{'sessionId'}, $key ,$qos );
-		$rpcmsg = new xmlrpcmsg( "xmlBlaster.get", array(
-							new xmlrpcval( $this->sessionId(), "string" ) ,
-							new xmlrpcval( $key, "string" ) ,
-							new xmlrpcval( $qos, "string" ) ,
-							) );
-		$result = $this->client->send( $rpcmsg );
+                //my $messages = $self->{'server'}->call( 'xmlBlaster.get', $self->{'sessionId'}, $key ,$qos );
+                $rpcmsg = new xmlrpcmsg( "xmlBlaster.get", array(
+                                                        new xmlrpcval( $this->sessionId(), "string" ) ,
+                                                        new xmlrpcval( $key, "string" ) ,
+                                                        new xmlrpcval( $qos, "string" ) ,
+                                                        ) );
+                $result = $this->client->send( $rpcmsg );
 
-		// check if xml-rpc error
+                // check if xml-rpc error
 
-		if( $result->faultCode() ){
-			// a xml-rpc error occured
-			$res = xmlrpc_decode( $result->faultString() );
-			dbgprint( "ERROR xmlBlaster::get() xml-rpc ERROR = $res" );
-			return array( 'ERROR', $res );
-		}
+                if( $result->faultCode() ){
+                        // a xml-rpc error occured
+                        $res = xmlrpc_decode( $result->faultString() );
+                        dbgprint( "ERROR xmlBlaster::get() xml-rpc ERROR = $res" );
+                        return array( 'ERROR', $res );
+                }
 
-		$res_array = xmlrpc_decode( $result->value() );
+                $res_array = xmlrpc_decode( $result->value() );
 
-		// check if xmlBlaster error
+                // check if xmlBlaster error
 
-		if( gettype($res_array)=='array' && isset($res_array['faultString']) ){
-			dbgprint( "ERROR xmlBlaster::get() xmlBlaster ERROR = [".$res_array['faultString'] ."]" );
-			return array( 'ERROR', $res_array['faultString'] );
-		}
+                if( gettype($res_array)=='array' && isset($res_array['faultString']) ){
+                        dbgprint( "ERROR xmlBlaster::get() xmlBlaster ERROR = [".$res_array['faultString'] ."]" );
+                        return array( 'ERROR', $res_array['faultString'] );
+                }
 
-		// copy raw results in a array of messageUnit
+                // copy raw results in a array of messageUnit
 
-		$messages = array( count($res_array) ) ;
+                $messages = array( count($res_array) ) ;
 
-		$cpt = 0 ;
-		foreach( $res_array as $r ){
-			$messages[$cpt ++ ] = new messageUnit( $r[0], $r[1], $r[2] );
-		}
+                $cpt = 0 ;
+                foreach( $res_array as $r ){
+                        $messages[$cpt ++ ] = new messageUnit( $r[0], $r[1], $r[2] );
+                }
 
-		return array( 'OK', $messages );
+                return array( 'OK', $messages );
 
-	}//get
+        }//get
 
 }//class xmlBlaster
 
 class messageUnit {
 
-	var $keyOid ;
-	var $content ;
-	var $qos ;
+        var $keyOid ;
+        var $content ;
+        var $qos ;
 
-	function messageUnit( $key, $content, $qos ){
+        function messageUnit( $key, $content, $qos ){
 
-		$this->keyOid = $key ;
-		$this->content = $content ;
-		$this->qos = $qos ;
+                $this->keyOid = $key ;
+                $this->content = $content ;
+                $this->qos = $qos ;
 
-	}//messageUnit
+        }//messageUnit
 
-	function content(){
+        function content(){
 
-		return $this->content ;
+                return $this->content ;
 
-	}//content
+        }//content
 
-	function keyOid(){
+        function keyOid(){
 
-		return $this->keyOid ;
+                return $this->keyOid ;
 
-	}//keyOid
+        }//keyOid
 
-	function qos(){
+        function qos(){
 
-		return $this->qos ;
+                return $this->qos ;
 
-	}//qos
+        }//qos
 
 }//messageUnit
 
@@ -228,45 +228,45 @@ class messageUnit {
 //
 class connectQos {
 
-	/*
-	<qos>
-	   <securityService type="htpasswd" version="1.0">
-	      <user>admin</user>
-	      <passwd>secret</passwd>
-	   </securityService>
-	   <ptp>true</ptp>
-	   <session timeout='86400000' maxSessions='10' clearSessions='false' publicSessionId='11'>
-	      <sessionId>sessionId:213.186.34.8-null-1026163123069-333257051-25</sessionId>
-	   </session>
-	</qos>
-	*/
+        /*
+        <qos>
+           <securityService type="htpasswd" version="1.0">
+              <user>admin</user>
+              <passwd>secret</passwd>
+           </securityService>
+           <ptp>true</ptp>
+           <session timeout='86400000' maxSessions='10' clearSessions='false' publicSessionId='11'>
+              <sessionId>sessionId:213.186.34.8-null-1026163123069-333257051-25</sessionId>
+           </session>
+        </qos>
+        */
 
-	var $sessionId ;
+        var $sessionId ;
 
-	var $xml ;
+        var $xml ;
 
-	// =================
-	function connectQos( $xml ){
+        // =================
+        function connectQos( $xml ){
 
-		dbgprint( "connectQos::connectQos()");
+                dbgprint( "connectQos::connectQos()");
 
-		$this->xml = $xml ;		
-		$this->sessionId = null ;
+                $this->xml = $xml ;             
+                $this->sessionId = null ;
 
-	}//connectQos
+        }//connectQos
 
-	// =================
-	function sessionId(){
+        // =================
+        function sessionId(){
 
-		dbgprint( "connectQos::sessionId()");
+                dbgprint( "connectQos::sessionId()");
 
-		if( ! isset($this->sessionId) )
-			if( preg_match( "/sessionId=\'(.*)\'\/>/", $this->xml, $matches ) ){
-				$this->sessionId = $matches[1];
-			}
-		return $this->sessionId ;
+                if( ! isset($this->sessionId) )
+                        if( preg_match( "/sessionId=\'(.*)\'\/>/", $this->xml, $matches ) ){
+                                $this->sessionId = $matches[1];
+                        }
+                return $this->sessionId ;
 
-	}//sessionId
+        }//sessionId
 
 }//class connectQos
 

@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.11 2003/04/03 09:05:45 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.12 2003/05/21 20:21:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -38,7 +38,7 @@ public class EmbeddedXmlBlaster
     * <p />
     * The returned xmlBlaster handle allows to control more than one
     * xmlBlaster server simultaneously (on different ports).
-    * @param port Default port is 3412
+    * @param serverPort Default bootstrapPort is 3412
     * @return the xmlBlaster handle, pass this to method stopXmlBlaster
     *         to shutdown the server again.
     */
@@ -46,7 +46,7 @@ public class EmbeddedXmlBlaster
    {
       Global glob = Global.instance().getClone(null);
       String[] args = {
-         "-port", "" + serverPort,
+         "-bootstrapPort", "" + serverPort,
          "-doBlocking", "false",
          "-xmlBlaster.isEmbedded", "true"
          };

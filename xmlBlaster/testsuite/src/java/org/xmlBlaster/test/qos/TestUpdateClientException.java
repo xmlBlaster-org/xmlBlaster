@@ -84,21 +84,19 @@ public class TestUpdateClientException extends TestCase implements I_Callback
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = new String[14];
-      args[0] = "-port";        // For all protocol we may use set an alternate server port
-      args[1] = "" + serverPort;
-      args[2] = "-socket.port";
-      args[3] = "" + (serverPort-1);
-      args[4] = "-rmi.registryPort";
-      args[5] = "" + (serverPort-2);
-      args[6] = "-xmlrpc.port";
-      args[7] = "" + (serverPort-3);
-      args[8] = "-MimeAccessPlugin[ContentLenFilter][1.0]";
-      args[9] = "org.xmlBlaster.engine.qos.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
-      args[10] = "-client.port";
-      args[11] = "" + serverPort;
-      args[12] = "-admin.remoteconsole.port";
-      args[13] = "0";
+      String[] args = {
+            "-bootstrapPort",        // For all protocol we may use set an alternate server port
+            "" + serverPort,
+            "-protocol/socket/port",
+            "" + (serverPort-1),
+            "-protocol/rmi/registryPort",
+            "" + (serverPort-2),
+            "-protocol/xmlrpc/port",
+            "" + (serverPort-3),
+            "-MimeAccessPlugin[ContentLenFilter][1.0]",
+            "org.xmlBlaster.engine.qos.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3",
+             "-admin.remoteconsole.port",
+            "0"};
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);

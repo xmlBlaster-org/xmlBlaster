@@ -148,7 +148,7 @@ public class DirtyReadTest extends TestCase {
          msgUnit = new MsgUnit(pk, contentStr.getBytes(), pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time

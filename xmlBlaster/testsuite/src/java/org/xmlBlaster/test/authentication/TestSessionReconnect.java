@@ -112,7 +112,7 @@ public class TestSessionReconnect extends TestCase
       try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
       if (serverThread != null)
          serverThread.stopServer(true);
-      // reset to default server port (necessary if other tests follow in the same JVM).
+      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
       Util.resetPorts();
    }
 

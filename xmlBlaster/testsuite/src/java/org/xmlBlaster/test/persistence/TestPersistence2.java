@@ -89,7 +89,7 @@ public class TestPersistence2 extends TestCase
    protected void setUp()
    {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
 
       doLogin();
    }
@@ -136,7 +136,7 @@ public class TestPersistence2 extends TestCase
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
-      // reset to default server port (necessary if other tests follow in the same JVM).
+      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
       Util.resetPorts();
    }
 

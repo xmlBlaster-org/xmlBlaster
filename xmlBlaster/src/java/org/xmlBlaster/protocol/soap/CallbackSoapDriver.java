@@ -40,7 +40,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
    private TransportConnection soapClient = null; // SOAP client to send method calls.
    /** See service.xml configuration */
    private final String service = "urn:I_XmlBlasterCallback";
-      //String callbackSoapServerBindName = "urn://" + hostname + ":" + port + "/I_XmlBlasterCallback/" + loginName;
+      //String callbackSoapServerBindName = "urn://" + bootstrapHostname + ":" + port + "/I_XmlBlasterCallback/" + loginName;
 
 
    /** Get a human readable name of this driver */
@@ -78,7 +78,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
     * @return "http://server.mars.universe:8686/"
     */
    public String getRawAddress() {
-      return callbackAddress.getAddress();
+      return callbackAddress.getRawAddress();
    }
 
    /**
@@ -98,7 +98,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
       URL sawURL;
       try {
          //This will only work if you are using an HTTP server defined in 'conf/config.xml'
-         //hostname    -    the hostname of the computer running the MathService example that we created
+         //hostname    -    the bootstrapHostname of the computer running the MathService example that we created
          //            probably localhost.
          //port      -   the port that the server is running on
          sawURL = new URL(getRawAddress()); // "http://develop:8686";
@@ -158,13 +158,13 @@ public class CallbackSoapDriver implements I_CallbackDriver
       }
       catch (SoapException ex) {
          XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
-         String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         String str = "Sending message to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          // TODO: distinguish between communication exception and exception thrown by remote user
          throw new XmlBlasterException(glob, ErrorCode.USER_UNKNOWN, ME, "", e);
       }
       catch (Throwable e) {
-         String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         String str = "Sending message to " + callbackAddress.getRawAddress() + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "", e);
@@ -202,13 +202,13 @@ public class CallbackSoapDriver implements I_CallbackDriver
       }
       catch (SoapException ex) {
          XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
-         String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         String str = "Sending message to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          // TODO: distinguish between communication exception and exception thrown by remote user
          throw new XmlBlasterException(glob, ErrorCode.USER_UNKNOWN, ME, "", e);
       }
       catch (Throwable e) {
-         String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         String str = "Sending message to " + callbackAddress.getRawAddress() + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "", e);

@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.22 2003/04/10 20:44:24 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.23 2003/05/21 20:21:05 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -35,9 +35,9 @@ import java.rmi.AlreadyBoundException;
  * A rmi-registry server is created automatically, if there is running already one, that is used.<br />
  * You can specify another port or host to create/use a rmi-registry server:
  * <pre>
- *     -rmi.registryPortCB Specify a port number where rmiregistry listens.
+ *     -dispatch/callback/protocol/rmi/registryPort Specify a port number where rmiregistry listens.
  *                         Default is port 1099, the port 0 switches this feature off.
- *     -rmi.hostnameCB     Specify a hostname where rmiregistry runs.
+ *     -dispatch/callback/protocol/rmi/hostname     Specify a hostname where rmiregistry runs.
  *                         Default is the localhost.
  * </pre>
  * <p />
@@ -51,7 +51,7 @@ import java.rmi.AlreadyBoundException;
  *   java -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  \
  *        -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
  *        -Djava.rmi.server.hostname=hostname.domainname
- *        MyApp -rmi.registryPort 2079
+ *        MyApp -dispatch/clientSide/protocol/rmi/registryPort 2079
  * </pre>
  */
 public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallback, I_CallbackServer
@@ -65,6 +65,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    private String callbackRmiServerBindName = null;
    /** XmlBlaster RMI registry listen port is 1099, to register callback server */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
+   private CallbackAddress callbackAddress;
 
 
    public RmiCallbackServer() throws java.rmi.RemoteException {
@@ -90,13 +91,15 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    /**
     * Construct the callback server. 
     */
-   public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
+   public void initialize(Global glob, String name, CallbackAddress callbackAddress,
+                          I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "RmiCallbackServer-" + name;
       this.glob = glob;
       this.log = glob.getLog("rmi");
       this.client = client;
       this.loginName = name;
+      this.callbackAddress = callbackAddress;
       createCallbackServer(this);
       if (log.TRACE) log.trace(ME, "Success, created RMI callback server for " + loginName);
    }
@@ -127,12 +130,10 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
       // TODO: Use ConnectQos to allow hardcoded hostname/socket
 
       // Use the xmlBlaster-server rmiRegistry as a fallback:
-      int registryPort = glob.getProperty().get("rmi.registryPort",
-                                                DEFAULT_REGISTRY_PORT); // default xmlBlaster RMI publishing port is 1099
-      // Use the given callback port if specified :
-      registryPort = glob.getProperty().get("rmi.registryPortCB", registryPort);
-
-      String hostname = glob.getCbHostname("rmi.hostnameCB");
+      // default xmlBlaster RMI publishing port is 1099
+      // dispatch/callback/protocol/rmi/registryPort
+      int registryPort = this.callbackAddress.getEnv("registryPort", DEFAULT_REGISTRY_PORT).getValue();
+      String hostname = this.callbackAddress.getEnv("hostname", glob.getLocalIP()).getValue();
 
       try {
          if (registryPort > 0) {
@@ -145,10 +146,10 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
                   log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
-                               " we will use this one. You could change the port with e.g. '-rmi.registryPortCB 1122' to run your own rmiregistry.");
+                               " we will use this one. You could change the port with e.g. '-dispatch/callback/protocol/rmi/registryPort 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
-                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -rmi.registryPortCB=1122 : " + e.toString();
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -dispatch/callback/protocol/rmi/registryPort 1122 : " + e.toString();
                   log.error(ME, text);
                   throw new XmlBlasterException(ME, text);
                }
@@ -162,6 +163,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
          try {
             Naming.bind(callbackRmiServerBindName, callbackRmiServer);
             log.info(ME, "Bound RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
+            this.callbackAddress.setRawAddress(callbackRmiServerBindName);
          } catch (AlreadyBoundException e) {
             try {
                Naming.rebind(callbackRmiServerBindName, callbackRmiServer);

@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.20 2003/03/24 16:12:46 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.21 2003/05/21 20:20:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -85,15 +85,15 @@ public class ClientSubEmail implements I_Callback
          ConnectQos loginQos = new ConnectQos(glob, loginName, passwd); // creates "<qos></qos>" string
 
          CallbackAddress c = new CallbackAddress(glob, "EMAIL");
-         c.setAddress(Args.getArg(args, "-email", "et@xyz.org"));
+         c.setRawAddress(Args.getArg(args, "-email", "et@xyz.org"));
          loginQos.addCallbackAddress(c);
 
          c = new CallbackAddress(glob, "EMAIL");
-         c.setAddress(Args.getArg(args, "-email2", "root@localhost"));
+         c.setRawAddress(Args.getArg(args, "-email2", "root@localhost"));
          loginQos.addCallbackAddress(c);
 
          c = new CallbackAddress(glob, "EMAIL");
-         c.setAddress(Args.getArg(args, "-email3", "et@xyz.org"));
+         c.setRawAddress(Args.getArg(args, "-email3", "et@xyz.org"));
          loginQos.addCallbackAddress(c);
 
          I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();

@@ -119,7 +119,7 @@ public class PublishTest extends TestCase {
          MsgUnit msgUnit = new MsgUnit(pk, contentStr, pq);
          PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
@@ -171,11 +171,11 @@ public class PublishTest extends TestCase {
          SubscribeQos sq = new SubscribeQos(glob);
          SubscribeReturnQos srq = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               assertInUpdate = serverHelper.getHeronGlob().getId() + ": Reveiving unexpected asynchronous update message";
+               assertInUpdate = serverHelper.getHeronGlob().getId() + ": Receiving unexpected asynchronous update message";
                assertEquals(assertInUpdate, oid, updateKey.getOid());
-               assertInUpdate = serverHelper.getHeronGlob().getId() + ": Reveiving corrupted asynchronous update message";
+               assertInUpdate = serverHelper.getHeronGlob().getId() + ": Receiving corrupted asynchronous update message";
                assertEquals(assertInUpdate, contentStr, new String(content));
-               log.info(ME+":"+serverHelper.getHeronGlob().getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               log.info(ME+":"+serverHelper.getHeronGlob().getId(), "heronCon - Receiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler, state=" + updateQos.getState());
                updateCounterHeron++;
                assertInUpdate = null;
                return "";
@@ -201,7 +201,7 @@ public class PublishTest extends TestCase {
          msgUnit = new MsgUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node bilbo with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
 
@@ -230,7 +230,7 @@ public class PublishTest extends TestCase {
          sq = new SubscribeQos(glob);
          srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "frodoCon - Receiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler, state=" + updateQos.getState());
                updateCounterFrodo++;
                assertInUpdate = null;
                return "";
@@ -258,7 +258,7 @@ public class PublishTest extends TestCase {
          msgUnit = new MsgUnit(pk, contentStr, pq);
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
-                                    "' to xmlBlaster node frodo with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
+                                    "' to xmlBlaster node frodo with IP=" + serverHelper.getFrodoGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time

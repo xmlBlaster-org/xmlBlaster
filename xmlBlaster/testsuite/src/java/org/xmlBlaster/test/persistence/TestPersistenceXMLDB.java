@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing persistent messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.9 2003/03/25 22:09:37 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.10 2003/05/21 20:21:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -82,7 +82,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
        String[] args = {
                          "-isRelease", "false",
                          "-logConsole", "true",
-                         "-hostname", "localhost",
+                         "-bootstrapHostname", "localhost",
                          "-socket.subscriptions", "ATD,VDM",
                          "-mom.username", "shInt",
                          "-mom.password", "xx",
@@ -94,7 +94,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       */
 
       st = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
+      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       return st;
    } // end of startServer
 
@@ -170,7 +170,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
    protected void tearDown()
    {
-      // reset to default server port (necessary if other tests follow in the same JVM).
+      // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
       Util.resetPorts();
    }
 

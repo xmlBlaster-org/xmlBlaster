@@ -20,9 +20,9 @@ import org.mozilla.javascript.JavaScriptException;
  * update() methods, and delivers the client a nicer update() method.
  * <p>
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
- * or RMI or XML-RPC.
+ * or RMI or XMLRPC.
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 public class JavascriptCallback implements I_Callback

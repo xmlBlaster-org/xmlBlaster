@@ -257,7 +257,7 @@ TODO
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support [true]"/>
-      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support [true]"/>
+      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support [false]"/>
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
       <echo message="         -DADD_TINYSQL=true    add tinySQL JDBC dBase driver support [false]"/>
@@ -276,7 +276,7 @@ TODO
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
-      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
+      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
       <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should use your own [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
@@ -697,7 +697,7 @@ TODO
 
       <echo message=""/>
       <echo message="   Start xmlBlaster and a demo data publisher:"/>
-      <echo message="      java org.xmlBlaster.Main -xmlrpc.port 8089    (we switch port to allow tomcat on 8080)"/>
+      <echo message="      java org.xmlBlaster.Main -protocol/xmlrpc/port 8089    (we switch port to allow tomcat on 8080)"/>
       <echo message="      java http.dhtml.systemInfo.SystemInfoPublisher"/>
       <echo message=""/>
       <echo message="   Start tomcat and invoke the demo with:"/>
@@ -1016,11 +1016,11 @@ TODO
       </switch>
       <switch value="${ADD_XMLRPC}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/xmlrpc.jar for XML-RPC support" />
+            <echo message="Adding ${lib.dir}/xmlrpc.jar for XMLRPC support" />
             <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
-            <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XML-RPC support added." />
+            <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XMLRPC support added." />
          </default>
       </switch>
       <switch value="${ADD_J2EE}">
@@ -1186,11 +1186,11 @@ TODO
       </switch>
       <switch value="${ADD_XMLRPC}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/xmlrpc.jar for XML-RPC support" />
+            <echo message="Adding ${lib.dir}/xmlrpc.jar for XMLRPC support" />
             <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
          </case>
          <default>
-            <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XML-RPC support added." />
+            <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XMLRPC support added." />
          </default>
       </switch>
       <switch value="${ADD_SNMP}">

@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.29 2003/05/21 14:34:00 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.30 2003/05/21 20:21:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -21,16 +21,16 @@ import java.io.*;
  * Delivering the Authentication Service IOR over HTTP.
  * <p />
  * This tiny HTTP server is always running in the xmlBlaster server on the
- * default port 3412.<br />
- * Clients may access through this port the AuthServer IOR if they
+ * default bootstrapPort 3412.<br />
+ * Clients may access through this bootstrap port the AuthServer IOR if they
  * don't want to use a naming service
  * <p />
- * You may specify on command line -port <port> and -hostname <host>
- * to choose another port or to choose a server IP address on
+ * You may specify on command line -bootstrapPort <port> and -bootstrapHostname <host>
+ * to choose another bootstrap port or to choose a server IP address on
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -49,7 +49,7 @@ public class HttpIORServer extends Thread
     * Create a little web server.
     * <p />
     * @param ip_addr The string representation like "192.168.1.1", useful if multihomed computer
-    * @param port    The port where we publish the IOR
+    * @param bootstrapPort    The bootstrap port where we publish the IOR
     */
    public HttpIORServer(Global glob, String ip_addr, int port)
    {
@@ -60,10 +60,10 @@ public class HttpIORServer extends Thread
       this.HTTP_PORT = port;
       this.ME +=  this.glob.getLogPrefixDashed();
       if (this.HTTP_PORT <= 0) {
-         if (log.CALL) log.call(ME, "Internal HttpServer not started, as port is " + this.HTTP_PORT);
+         if (log.CALL) log.call(ME, "Internal HttpServer not started, as -bootstrapPort is " + this.HTTP_PORT);
          return;
       }
-      if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " port=" + this.HTTP_PORT);
+      if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
       setDaemon(true);
       start();
    }
@@ -98,9 +98,9 @@ public class HttpIORServer extends Thread
          this.listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = this.listen.accept();
-            log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
+            log.trace(ME, "New incoming request on bootstrapPort=" + HTTP_PORT + " ...");
             if (!running) {
-               log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
+               log.info(ME, "Closing http server bootstrapPort=" + HTTP_PORT + ".");
                break;
             }
             HandleRequest hh = new HandleRequest(glob, log, accept, knownRequests);
@@ -110,7 +110,7 @@ public class HttpIORServer extends Thread
          log.error(ME, "HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         log.error(ME, "HTTP server problem, port " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
+         log.error(ME, "HTTP server problem, bootstrapPort " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
          log.info(ME, "Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());

@@ -16,7 +16,8 @@ Features:
   
   o Asynchronous access with client callback update() is under
     development
-    Posix threads DLL for Win, PocketPC, WinCE
+    Posix threads DLL for Win, PocketPC, WinCE:
+       http://sources.redhat.com/pthreads-win32
 
   o Reports exception nicely back to the client
 

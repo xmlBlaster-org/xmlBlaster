@@ -9,7 +9,7 @@
               )>
 
 <!ELEMENT callback (#PCDATA)>
-<!ATTLIST callback type (IOR|EMAIL|XML-RPC) #REQUIRED>
+<!ATTLIST callback type (IOR|EMAIL|XMLRPC) #REQUIRED>
 
 <!ELEMENT compress EMPTY>
 <!ATTLIST compress type (gzip) gzip>

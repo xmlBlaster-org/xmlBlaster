@@ -77,7 +77,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
     * @return "rmi://www.mars.universe:1099/I_AuthServer"
     */
    public String getRawAddress() {
-      return callbackAddress.getAddress();
+      return callbackAddress.getRawAddress();
    }
 
    /**
@@ -94,7 +94,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
       }
 
       this.callbackAddress = callbackAddress;
-      String addr = callbackAddress.getAddress(); // e.g. "rmi://localhost/xmlBlaster"
+      String addr = callbackAddress.getRawAddress(); // e.g. "rmi://localhost/xmlBlaster"
       Remote rem = null;
       try {
          rem = Naming.lookup(addr);
@@ -127,7 +127,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
 
    private I_XmlBlasterCallback getCb() throws XmlBlasterException {
       if (cb == null)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No callback to '" + callbackAddress.getAddress() + "' possible, no connection.");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No callback to '" + callbackAddress.getRawAddress() + "' possible, no connection.");
       return cb;
    }
 

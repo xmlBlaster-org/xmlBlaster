@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.22 2003/03/27 14:43:58 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.23 2003/05/21 20:20:45 ruff Exp $
 Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 
@@ -33,17 +33,17 @@ import org.xmlBlaster.util.MsgUnit;
  * When using this class as a client, the xmlrpc
  * protocol is completely transparent, even the Callback server is created for you.
  * <p />
- * Invoke example (this client forces XML-RPC as protocol hard coded):
+ * Invoke example (this client forces XMLRPC as protocol hard coded):
  * <pre>
  *    java -cp lib/xmlBlaster.jar javaclients.xmlrpc.XmlRpcHttpClient
  * </pre>
  *
  * <p />
  * NOTE:  Any java client using I_XmlBlasterAccess helper class will switch
- *        to XML-RPC if the command line parameter -protocol is specified as follows:
+ *        to XMLRPC if the command line parameter -protocol is specified as follows:
  * <br />
  * <pre>
- *    java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
+ *    java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XMLRPC
  * </pre>
  *
  * @author "Michele Laghi" <laghi@swissinfo.org>
@@ -72,8 +72,8 @@ public class XmlRpcHttpClient
    {
       this.log = glob.getLog("client");
       try {
-         // force XML-RPC protocol:
-         glob.getProperty().set("client.protocol", "XML-RPC");
+         // force XMLRPC protocol:
+         glob.getProperty().set("client.protocol", "XMLRPC");
          
          I_XmlBlasterAccess client = glob.getXmlBlasterAccess();
          

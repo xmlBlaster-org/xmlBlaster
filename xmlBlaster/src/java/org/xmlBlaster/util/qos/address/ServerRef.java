@@ -25,14 +25,14 @@ public class ServerRef
    private String type;
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     */
    public ServerRef(String type) {
       this.type = type;
    }
 
    /**
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
+    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
     * @param address A serverRef address for your client, suitable to the protocol
     *                for email e.g. "xmlblaster@xmlBlaster.org"
     */

@@ -160,8 +160,11 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private void initThis() {
       String myId = getProperty().get("cluster.node.id", (String)null);
-      if (myId == null && getBootstrapAddress().getPort() > 0) {
-         myId = getStrippedString(getBootstrapAddress().getAddress());
+      if (myId == null && getBootstrapAddress().getRawAddress() != null && getBootstrapAddress().getRawAddress().length() > 0) {
+         myId = getStrippedString(getBootstrapAddress().getRawAddress());
+      }
+      if (myId == null && getBootstrapAddress().getBootstrapPort() > 0) {
+         myId = getStrippedString(getBootstrapAddress().getBootstrapHostname() + ":" + getBootstrapAddress().getBootstrapPort());
       }
       if (myId == null) {
          if (useCluster()) {

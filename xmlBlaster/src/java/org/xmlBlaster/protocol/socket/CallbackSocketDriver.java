@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
  * One instance of this for each client to send him callback. 
  * <p />
  * This is sort of a dummy needed by the plugin framework which
- * assumed for CORBA/RMI/XML-RPC a separate callback connection
+ * assumed for CORBA/RMI/XMLRPC a separate callback connection
  * @author xmlBlaster@marcelruff.info
  */
 public class CallbackSocketDriver implements I_CallbackDriver
@@ -39,9 +39,24 @@ public class CallbackSocketDriver implements I_CallbackDriver
       (new Exception("")).printStackTrace();
    }
 
+   /**
+    * This constructor is called when the callback shall be tunneled through by
+    * the SAME SOCKET connection which the client already has established. 
+    */
    public CallbackSocketDriver(String loginName, HandleClient handler) {
       this.loginName = loginName;
+      this.ME += "-" + this.loginName;
       this.handler = handler;
+   }
+
+   /**
+    * This constructor is called when the callback shall be delivered by
+    * a separate SOCKET connection which we open here (in initialize())
+    */
+   public CallbackSocketDriver(String loginName /*, CallbackAddress callbackAddress*/) {
+      this.loginName = loginName;
+      this.ME += "-" + this.loginName;
+      //this.callbackAddress = callbackAddress;
    }
 
    public String getName() {
@@ -78,7 +93,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * @return "server.mars.univers:6701"
     */
    public String getRawAddress() {
-      return this.callbackAddress.getAddress();
+      return this.callbackAddress.getRawAddress();
    }
 
    public void init(Global glob, CallbackAddress callbackAddress) {
@@ -134,6 +149,5 @@ public class CallbackSocketDriver implements I_CallbackDriver
          this.handler.shutdown();
       }
    }
-
 }
 

@@ -138,7 +138,7 @@ public class XmlBlasterAccessTest extends TestCase {
 
          assertTrue("", xmlBlasterAccess.getCbServer() == null);
          try {
-            I_CallbackServer cbServer = xmlBlasterAccess.initCbServer(null, null, null);
+            I_CallbackServer cbServer = xmlBlasterAccess.initCbServer(null, null);
             assertTrue("", cbServer != null);
             assertTrue("", cbServer.getCbProtocol() != null);
             assertTrue("", cbServer.getCbAddress() != null);

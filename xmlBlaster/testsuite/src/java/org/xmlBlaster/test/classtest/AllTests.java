@@ -20,6 +20,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.RunLevelTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalLogTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SessionNameTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SocketUrlTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlBlasterAccessTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.FileIOTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimestampTest.class));

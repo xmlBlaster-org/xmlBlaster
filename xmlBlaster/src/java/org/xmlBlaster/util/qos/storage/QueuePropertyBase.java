@@ -642,16 +642,26 @@ public abstract class QueuePropertyBase implements Cloneable
       String prefix = getPrefix();
       String text = "";
       text += "\n" + headerline + "\n";
-      text += "   -"+prefix+"debug           Sets a debug flag on the queue (currently used for consistency asserts on jdbc queue) [false].\n";
-      text += "   -"+prefix+"maxEntries      The maximum allowed number of messages [" + this.maxEntries.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"maxEntriesCache The maximum allowed number of messages in the cache [" + this.maxEntriesCache.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"maxBytes        The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"maxBytesCache   The maximum size in bytes in the cache [" + this.maxBytesCache.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"onOverflow      What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"onFailure       Error handling when storage failed [" + this.onFailure.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"type            The plugin type [" + this.type.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"version         The plugin version [" + this.version.getDefaultValue() + "]\n";
-      text += "   -"+prefix+"defaultPlugin   The plugin type,version (short form) [" + this.type.getDefaultValue()+","+this.version.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"debug    Sets a debug flag on the queue [false].\n";
+      text += "                       Currently used for consistency asserts on jdbc queue.\n";
+      text += "   -"+prefix+"maxEntries\n";
+      text += "                       The maximum allowed number of messages [" + this.maxEntries.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxEntriesCache\n";
+      text += "                       The maximum allowed number of messages in the cache [" + this.maxEntriesCache.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxBytes\n";
+      text += "                       The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxBytesCache.\n";
+      text += "                       The maximum size in bytes in the cache [" + this.maxBytesCache.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"onOverflow\n";
+      text += "                       What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"onFailure\n";
+      text += "                       Error handling when storage failed [" + this.onFailure.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"type\n";
+      text += "                       The plugin type [" + this.type.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"version\n";
+      text += "                       The plugin version [" + this.version.getDefaultValue() + "]\n";
+      text += "   -"+prefix+"defaultPlugin\n";
+      text += "                       The plugin type,version (short form) [" + this.type.getDefaultValue()+","+this.version.getDefaultValue() + "]\n";
       return text;
    }
 
