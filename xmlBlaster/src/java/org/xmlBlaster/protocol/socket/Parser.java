@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.26 2002/09/05 12:06:28 ruff Exp $
+Version:   $Id: Parser.java,v 1.27 2002/09/09 13:33:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -198,6 +198,19 @@ public class Parser
     */
    public final byte getType() {
       return this.type;
+   }
+
+   /**
+    * Similar to getType() but returns a nice human readable string for logging output
+    */
+   public final String getTypeStr() {
+      if (isInvoke())
+         return "INVOKE";
+      else if (isResponse())
+         return "RESPONSE";
+      else if (isException())
+         return "EXCEPTION";
+      return "UNKNOWN_TYPE";
    }
 
    public final boolean isInvoke() {
@@ -418,7 +431,7 @@ public class Parser
     */
    public final String[] getQosArr() {
       if (msgVec.isEmpty()) {
-         throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
+         throw new IllegalArgumentException(ME + ": getQosArr() is called without having a response");
       }
       Vector msgs = getMessages();
       String[] strArr = new String[msgs.size()];

@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.22 2002/09/07 22:12:28 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.23 2002/09/09 13:33:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -66,6 +66,7 @@ public class HandleClient extends Executor implements Runnable
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
+      running = false;
       try {
          if (sock != null) {
             sock.close();
@@ -81,15 +82,15 @@ public class HandleClient extends Executor implements Runnable
       if (sessionId != null) {
          String tmp = sessionId;
          sessionId = null;
-         try {
-            authenticate.disconnect(tmp, "<qos/>");
+         try { // check first if session is in shutdown process already (avoid recursive disconnect()):
+            if (authenticate.sessionExists(sessionId))
+               authenticate.disconnect(tmp, "<qos/>");
          }
          catch(Throwable e) {
             log.warn(ME, e.toString());
             e.printStackTrace();
          }
       }
-      running = false;
       if (responseListenerMap.size() > 0)
          log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response");
    }
@@ -104,6 +105,7 @@ public class HandleClient extends Executor implements Runnable
    public final String[] sendUpdate(String cbSessionId, MsgQueueEntry[] msg, boolean expectingResponse) throws XmlBlasterException, ConnectionException
    {
       if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
+      if (!running) throw new XmlBlasterException(ME + ".Shutdown", "update() invocation ignored, we are shutdown");
 
       if (msg == null || msg.length < 1) {
          log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
@@ -142,6 +144,7 @@ public class HandleClient extends Executor implements Runnable
     */
    public final String ping(String qos) throws XmlBlasterException
    {
+      if (!running) throw new XmlBlasterException(ME + ".Shutdown", "ping() invocation ignored, we are shutdown");
       try {
          String cbSessionId = "";
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, cbSessionId);
@@ -215,8 +218,10 @@ public class HandleClient extends Executor implements Runnable
                }
             }
             catch (IOException e) {
-               log.error(ME, "Lost connection to client: " + e.toString());
-               shutdown();
+               if (running != false) { // Only if not triggered by our shutdown:sock.close()
+                  log.warn(ME, "Lost connection to client: " + e.toString());
+                  shutdown();
+               }
             }
             catch (Throwable e) {
                e.printStackTrace();

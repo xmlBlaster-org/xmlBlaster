@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.22 2002/09/05 12:08:01 ruff Exp $
+Version:   $Id: Executor.java,v 1.23 2002/09/09 13:33:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -165,6 +165,11 @@ public abstract class Executor implements ExecutorBase
       this.cbClient = cbClient;
    }
 
+   public final I_CallbackExtended getCbClient()
+   {
+      return this.cbClient;
+   }
+
    public final OutputStream getOutputStream() {
       return this.oStream;
    }
@@ -239,7 +244,7 @@ public abstract class Executor implements ExecutorBase
     */
    protected final boolean receive(Parser receiver) throws XmlBlasterException, IOException {
 
-      if (log.TRACE || SOCKET_DEBUG>0)  log.info(ME, "Receiving '" + receiver.getType() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.TRACE || SOCKET_DEBUG>0)  log.info(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
          // handling invocations ...
@@ -366,7 +371,7 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Invoking  parser type='" + parser.getType() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
+      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
