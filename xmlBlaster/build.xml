@@ -1466,6 +1466,7 @@ TODO
    <target name="prepare-cpp" depends="prepare" description="For internal use only, C++ client environment">
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
+      <echo message=" os.name       = ${os.name}"/>
       <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
       <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
       <echo message=" COMPILE_SOCKET_PLUGIN=${COMPILE_SOCKET_PLUGIN}"/>
@@ -1474,9 +1475,24 @@ TODO
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
       <echo message=" XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=${XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN}"/>
 
+      <!-- log4cplus -->
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="LOG4CPLUS_OS_EXCLUDES" value="**/nteventlogappender.cxx,**/*win*,**/*mac*" />
+         </case>
+         <case value="windows">
+            <property name="LOG4CPLUS_OS_EXCLUDES" value="**/*unix*,**/*mac*" />
+         </case>
+         <case value="mac">
+            <property name="LOG4CPLUS_OS_EXCLUDES" value="**/nteventlogappender.cxx,**/*win*,**/*unix*" />
+         </case>
+         <default>
+            <property name="LOG4CPLUS_OS_EXCLUDES" value="" />
+         </default>
+      </switch>
+
       <switch value="${os.name}" caseinsensitive="false">
          <case value="Linux">
-            <property name="LOG4CPLUS_OS_EXCLUDES" value="**/nteventlogappender.cxx,**/*win*,**/*mac*" />
             <switch value="${use-icc}" caseinsensitive="true">
                <case value="true">
                </case>
@@ -1574,8 +1590,13 @@ TODO
       <copy todir="${build.src.cpp.dir}" filtering="true">
          <fileset dir="${src.cpp.dir}">
             <exclude name="README"/>
+            <exclude name="**/log4cplus/property.cxx"/>
          </fileset>
       </copy>
+
+      <!-- Hack for Windows and compiling log4cplus (see also the above exclude property.cxx): -->
+      <!-- The Windows linker can't cope the same Porperty.obj file (one from xmlBlaster/util the other from xmlBlaster/log4cplus -->
+      <copy file="${src.cpp.dir}/log4cplus/property.cxx" tofile="${build.src.cpp.dir}/log4cplus/property2.cxx"/>
 
       <!--
          C: Copy all .c and .h files to the build.tmp directory.
@@ -1906,6 +1927,9 @@ TODO
            <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
            <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
 
+           <undefine name="HAVE_LSTAT" if="windows" /> <!-- log4cplus only configurator.cxx:604-->
+           <define name="LOG4CPLUS_BUILD_DLL" value="1" if="windows" /> <!-- log4cplus only -->
+           <define name="_WIN32" value="1" if="windows" />        <!-- log4cplus only -->
            <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
