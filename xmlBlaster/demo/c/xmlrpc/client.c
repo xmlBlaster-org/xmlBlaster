@@ -132,7 +132,8 @@ int main (int argc, char** argv)
       xmlrpc_DECREF(result);
    }
 
-   printf("\nPlease hit a key to logout ...\n");
+   printf("\nWait until callbackServer has received the response!\n");
+   printf("Than hit a key to logout ...\n");
    getc(stdin);
 
    /* Logout from xmlBlaster XML-RPC server. */
