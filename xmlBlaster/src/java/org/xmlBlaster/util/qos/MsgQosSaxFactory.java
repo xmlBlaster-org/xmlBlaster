@@ -34,20 +34,10 @@ import org.xml.sax.helpers.*;
  * <pre>
  *  &lt;qos> &lt;
  *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
- *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
  *     &lt;administrative>false&lt;/administrative>
- *     &lt;subscribe id='__subId:1'/> <!-- Only for updates, PtP message are marked with id='__subId:PtP' -->
- *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
- *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
- *     &lt;/rcvTimestamp>
  *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
- *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
  *     &lt;persistent/>
- *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
- *     &lt;route>
- *        &lt;node id='heron'/>
- *     &lt;/route>
  *     &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
  *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
  *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
@@ -76,6 +66,26 @@ import org.xml.sax.helpers.*;
  *     &lt;priority>7&lt;/priority>
  *     &lt;route>
  *        &lt;node id='bilbo' stratum='2' timestamp='34460239640' dirtyRead='true'/>
+ *     &lt;/route>
+ *  &lt;/qos>
+ * </pre>
+ * <p />
+ * Example for update() QoS:<p />
+ * <pre>
+ *  &lt;qos> &lt;
+ *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
+ *     &lt;sender>Tim&lt;/sender>
+ *     &lt;priority>5&lt;/priority>
+ *     &lt;subscribe id='__subId:1'/> <!-- Only for updates, PtP message are marked with id='__subId:PtP' -->
+ *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
+ *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
+ *     &lt;/rcvTimestamp>
+ *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
+ *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
+ *     &lt;persistent/>
+ *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
+ *     &lt;route>
+ *        &lt;node id='heron'/>
  *     &lt;/route>
  *  &lt;/qos>
  * </pre>

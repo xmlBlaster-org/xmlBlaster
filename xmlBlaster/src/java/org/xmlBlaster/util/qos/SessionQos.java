@@ -100,6 +100,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       }
 
       this.sessionName = new SessionName(glob, sessionNameStr);
+      //if (log.TRACE) log.trace(ME, "sessionName =" + sessionName.getRelativeName() + " absolute=" + sessionName.getAbsoluteName());
 
       {
          // user warning for the old style loginName

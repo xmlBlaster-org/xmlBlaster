@@ -68,8 +68,8 @@ public abstract class QueuePropertyBase implements Cloneable
    /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
    public static final double DEFAULT_reloadSwapBytesRatio = 0.25;
 
-   /** The unique protocol relating, e.g. "IOR" */
-   protected String relating = Constants.RELATING_SESSION;
+   /** The unique queue or storage name, e.g. "history" */
+   protected String relating = Constants.RELATING_CALLBACK;
 
    /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
    public long DEFAULT_maxMsg = 1000L;
@@ -169,7 +169,7 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /**
     * Configure property settings, add your own defaults in the derived class
-    * @param relating e.g. "history" or "cb", similar to <queue related='history'/> or
+    * @param relating e.g. "history" or "callback", similar to <queue related='history'/> or
     *                            <persistence related='msgUnitStore'/> etc.
     */
    protected void initialize(String relating) {
@@ -219,11 +219,11 @@ public abstract class QueuePropertyBase implements Cloneable
    }
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
+    * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT | Constants.RELATING_CLIENT
     */
    public void setRelating(String relating) {
-      if (Constants.RELATING_SESSION.equalsIgnoreCase(relating))
-         this.relating = Constants.RELATING_SESSION;
+      if (Constants.RELATING_CALLBACK.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_CALLBACK;
       else if (Constants.RELATING_SUBJECT.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_SUBJECT;
       else if (Constants.RELATING_CLIENT.equalsIgnoreCase(relating))
@@ -242,7 +242,7 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /**
     * Returns the queue id.
-    * @return relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @return relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
    public final String getRelating() {
       return this.relating;

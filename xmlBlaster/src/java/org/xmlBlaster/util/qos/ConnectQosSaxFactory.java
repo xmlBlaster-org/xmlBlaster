@@ -60,7 +60,7 @@ import java.io.Serializable;
  *   &lt;queue>
  *
  *   &lt;!-- The server side callback queue: -->
- *   &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *      &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *         IOR:10000010033200000099000010....
  *         &lt;burstMode collectTime='400' />
@@ -172,8 +172,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
          if (!inQueue) {
-            tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_SESSION, null); // Use default queue properties for this callback address
-            this.connectQosData.addCbQueueProperty(tmpCbProp);
+            tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, null); // Use default queue properties for this callback address
+            this.connectQosData.setSessionCbQueueProperty(tmpCbProp);
          }
          tmpCbAddr = new CallbackAddress(glob);
          tmpCbAddr.startElement(uri, localName, name, character, attrs);
@@ -206,15 +206,23 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             return;
          }
          String related = attrs.getValue("relating");
-         if ("client".equalsIgnoreCase(related)) {
+         if (Constants.RELATING_CLIENT.equalsIgnoreCase(related)) {
             tmpProp = new QueueProperty(glob, null);
             tmpProp.startElement(uri, localName, name, attrs);
             this.connectQosData.addClientQueueProperty(tmpProp);
          }
-         else {
-            tmpCbProp = new CbQueueProperty(glob, null, null);
+         else if (Constants.RELATING_CALLBACK.equalsIgnoreCase(related)) {
+            tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, null);
             tmpCbProp.startElement(uri, localName, name, attrs);
-            this.connectQosData.addCbQueueProperty(tmpCbProp);
+            this.connectQosData.setSessionCbQueueProperty(tmpCbProp);
+         }
+         else if (Constants.RELATING_SUBJECT.equalsIgnoreCase(related)) {
+            tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, null);
+            tmpCbProp.startElement(uri, localName, name, attrs);
+            this.connectQosData.setSubjectQueueProperty(tmpCbProp);
+         }
+         else {
+            log.warn(ME, "The given relating='" + related + "' is not supported, configuration for '" + related + "' is ignored");
          }
          character.setLength(0);
          return;
@@ -453,12 +461,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             sb.append(arr[ii].toXml(extraOffset+Constants.INDENT));
          }
       }
+
+      if (data.hasSubjectQueueProperty()) {
+         sb.append(data.getSubjectQueueProperty().toXml(extraOffset+Constants.INDENT));
+      }
       
-      {
-         CbQueueProperty[] arr = data.getCbQueuePropertArr();
-         for (int ii=0; arr!=null && ii<arr.length; ii++) {
-            sb.append(arr[ii].toXml(extraOffset+Constants.INDENT));
-         }
+      if (data.hasSessionCbQueueProperty()) {
+         sb.append(data.getSessionCbQueueProperty().toXml(extraOffset+Constants.INDENT));
       }
 
       {

@@ -24,13 +24,13 @@ public class CbQueueProperty extends QueuePropertyBase
    private final LogChannel log;
 
    /**
-    * @param relating  To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     * @see QueuePropertyBase#(Global, String)
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("dispatch");
-      String rel = (relating == null) ? Constants.RELATING_SESSION : relating;
+      String rel = (relating == null) ? Constants.RELATING_CALLBACK : relating;
       setRelating(rel);
       super.initialize(rel);
       if (log.TRACE) log.trace(ME, "Created CbQueueProperty " + rel + " " + super.nodeId);
@@ -48,21 +48,21 @@ public class CbQueueProperty extends QueuePropertyBase
    }
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
+    * @param relating    To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     */
    public final void setRelating(String relating) {
       if (relating == null) {
-         this.relating = Constants.RELATING_SESSION;
+         this.relating = Constants.RELATING_CALLBACK;
          return;
       }
       relating = relating.toLowerCase();
-      if (Constants.RELATING_SESSION.equals(relating))
-         this.relating = Constants.RELATING_SESSION;
+      if (Constants.RELATING_CALLBACK.equals(relating))
+         this.relating = Constants.RELATING_CALLBACK;
       else if (Constants.RELATING_SUBJECT.equals(relating))
          this.relating = Constants.RELATING_SUBJECT;
       else {
          log.warn(ME, "The queue relating attribute is invalid '" + relating + "', setting to session scope");
-         this.relating = Constants.RELATING_SESSION;
+         this.relating = Constants.RELATING_CALLBACK;
       }
    }
 
@@ -70,7 +70,7 @@ public class CbQueueProperty extends QueuePropertyBase
       return Constants.RELATING_SUBJECT.equals(getRelating());
    }
    public final boolean isSessionRelated() {
-      return Constants.RELATING_SESSION.equals(getRelating());
+      return Constants.RELATING_CALLBACK.equals(getRelating());
    }
 
    public final boolean onOverflowDeadMessage() {
