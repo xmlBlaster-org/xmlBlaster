@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.3 2000/05/05 18:00:56 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.4 2000/05/06 16:53:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package demo.html.systemInfo;
@@ -34,8 +34,15 @@ import java.io.*;
 public class SystemInfo extends HttpServlet
 {
    private static final String ME          = "SystemInfo";
-   private static final int closeTime      = 1000;
 
+   /**
+    * This method is invoked only once when the servlet is startet.
+    * @param conf init parameter of the servlet
+    */
+   public void init(ServletConfig conf) throws ServletException
+   {
+      super.init(conf);
+   }
 
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException
    {
@@ -43,7 +50,12 @@ public class SystemInfo extends HttpServlet
    }
 
 
-   /*
+   /**
+    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'. 
+    * <p />
+    * The message updates are received asynchronous over the callbackFrame.
+    * <br />
+    * The return from this doGet() may be ignored
     * @param request
     * @param response
     */
@@ -54,7 +66,7 @@ public class SystemInfo extends HttpServlet
 
       String sessionId = request.getRequestedSessionId();
       String actionType = Util.getParameter(request, "ActionType", null);
-      String output = "0";
+      String output = "Subscribing to " + actionType + " message ...";
 
       try {
          if (actionType == null) {
@@ -64,7 +76,7 @@ public class SystemInfo extends HttpServlet
          }
 
          CorbaConnection corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
-         corbaConnection.initCache(100);
+         corbaConnection.initCache(10);
 
          // Expecting actionType = "cpuinfo" or "meminfo" but it could be
          // any valid key oid.
@@ -75,8 +87,8 @@ public class SystemInfo extends HttpServlet
 
          MessageUnitContainer[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
          if (msgUnitArr.length == 1) {
-            output = new String(msgUnitArr[0].msgUnit.content);
-            Log.info(ME, "Accessed " + actionType + "=" + output);
+            String ret = new String(msgUnitArr[0].msgUnit.content);
+            Log.info(ME, "Accessed " + actionType + "=" + ret);
          }
       }
       catch (XmlBlasterException e) {
