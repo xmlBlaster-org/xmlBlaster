@@ -37,6 +37,7 @@ import org.xmlBlaster.util.Timestamp;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.util.StringTokenizer;
 import java.util.Iterator;
@@ -88,12 +89,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String intTxt = null;
    private String blobTxt = null;
    private String booleanTxt = null;
-   private String tablesTxt = null;
-   private String tableNameTxt = null;
 
    private boolean dbInitialized = false;
    private int maxStatementLength = 0;
-   private int[] errCodes = null;
    private boolean isConnected = true;
 
    private static boolean first = true;
@@ -104,6 +102,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
 //   private final int queueIncrement;
    private java.util.HashSet nodesCache;
+   private String pingStatement;
 
 
    /**
@@ -170,34 +169,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       this.blobTxt = (String)names.get("blob");
       if (this.blobTxt == null) this.blobTxt = "bytea";
 
-      this.tablesTxt = (String)names.get("tables");
-      if (this.tablesTxt == null) this.tablesTxt = "pg_tables";
-      this.tableNameTxt = (String)names.get("tablename");
-      if (this.tableNameTxt == null) tableNameTxt = "tablename";
+      this.pingStatement = (String)names.get("pingStatement");
+      if (this.pingStatement == null) this.pingStatement = "SHOW ALL";
 
       this.tableNamePrefix = this.pool.getTableNamePrefix();
       // this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
-
-      String errorCodesTxt = (String)names.get("connectionErrorCodes");
-      if (errorCodesTxt == null) errorCodesTxt = "1089:17002";
-
-      StringTokenizer tokenizer = new StringTokenizer(errorCodesTxt, ":");
-      this.errCodes = new int[tokenizer.countTokens()];
-      int nmax = tokenizer.countTokens();
-
-      String token = null;
-      for (int i=0; i < nmax; i++) {
-         try {
-            token = tokenizer.nextToken().trim();
-            this.errCodes[i] = Integer.parseInt(token);
-         }
-         catch (Exception ex) {
-            this.errCodes[i] = -1;
-            this.log.warn(ME, "error while parsing. '" + token + "' probably not an integer: ");
-         }
-      }
-
-      if (this.log.DUMP) this.log.dump(ME, "Constructor: num of error codes: "  + nmax);
 
       this.nodesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("nodesTableName", "NODES");
@@ -243,13 +219,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.CALL) this.log.call(ME, "ping");
       if (conn == null) return false; // this could occur if it was not possible to create the connection
 
-      Statement st = null;
+//      Statement st = null;
       try {
          // conn.isClosed();
-         st = conn.createStatement();
-         st.setQueryTimeout(this.pool.getQueryTimeout());
+//         st = conn.createStatement();
+//         st.setQueryTimeout(this.pool.getQueryTimeout());
 //          st.execute(""); <-- this will not work on ORACLE (fails)
-         st.execute("SELECT count(*) from " + this.tablesTxt);
+//         st.execute("SELECT count(*) from " + this.tablesTxt);
+//         st.execute(this.pingStatement);
+         conn.getMetaData().getTables(null, null, null, null);
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
          return true;
       }
@@ -257,6 +235,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          this.log.warn(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
          return false;
       }
+/*
       finally {
          try {
             if (st != null) st.close();
@@ -265,6 +244,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.warn(ME, "ping exception when closing the statement " + e.toString());
          }
       }
+*/
    }
 
   /**
@@ -358,6 +338,26 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
+    * Gets the names of all the tables used by XmlBlaster. This information is retrieved via the database's
+    * metadata.
+    * @param conn the connection on which to retrieve the metadata.
+    * @return HashSet the set containing all the existing tablenames.
+    */
+   synchronized private HashSet getXbTableNames(Connection conn) throws SQLException {
+      String[] types = { "TABLE" };
+      ResultSet rs = conn.getMetaData().getTables(null, null, null, types);
+      HashSet ret = new HashSet();
+      while (rs.next()) { // retrieve the result set ...
+         String table = rs.getString(3).toUpperCase();
+         // if (table.startsWith(this.tablePrefix))
+         // we currently add everything since I don't know what's better: speed here or when searching 
+         ret.add(table);
+      }
+      return ret;
+   }
+
+
+   /**
     * checks if all necessary tables exist. If a table does not exist and 'createTables' true, then the 
     * table is created.
     * @return boolean 'true' if the tables are all there after the invocation to this method, 'false' if at
@@ -374,44 +374,30 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       boolean queuesTableExists = false;
       boolean entriesTableExists = false;
 
-      String req = "SELECT count(*) from " + tablesTxt + " where upper(" + tableNameTxt + ")='" + this.nodesTableName.toUpperCase() + "'";
-      if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-
-      PreparedQuery query = null;
-
+      Connection conn = null;
+      String req = "retrieving metadata";
       try {
-         query = new PreparedQuery(pool, req, false, this.log, -1);
-         query.rs.next();         
-         int size = query.rs.getInt(1);
-         if (size > 0) nodesTableExists = true;
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "number of '" + this.nodesTableName  + "' is " + size);
+         conn = this.pool.getConnection();
+         conn.setAutoCommit(false);
+         HashSet set = getXbTableNames(conn);
 
-         req = "SELECT count(*) from " + tablesTxt + " where upper(" + tableNameTxt + ")='" + this.queuesTableName.toUpperCase() + "'";
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-         query.inTransactionRequest(req /*, -1*/);
-         query.rs.next();
-         size = query.rs.getInt(1);
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "number of '" + this.queuesTableName  + "' is " + size);
-         if (size > 0) queuesTableExists = true;
+         if (set.contains(this.nodesTableName.toUpperCase())) nodesTableExists = true;
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "nodes table exists : " + nodesTableExists);
 
-         req = "SELECT count(*) from " + tablesTxt + " where upper(" + tableNameTxt + ")='" + this.entriesTableName.toUpperCase() + "'";
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-         query.inTransactionRequest(req /*, -1*/);
-         query.rs.next();
-         size = query.rs.getInt(1);
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "number of '" + this.entriesTableName  + "' is " + size);
-         if (size > 0) entriesTableExists = true;
+         if (set.contains(this.queuesTableName.toUpperCase())) queuesTableExists = true;
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "queues table exists : " + queuesTableExists);
 
-         if (!createTables) 
-            return  nodesTableExists && queuesTableExists && entriesTableExists;
+         if (set.contains(this.entriesTableName.toUpperCase())) entriesTableExists = true;
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "entries table exists : " + entriesTableExists);
 
+         if (!createTables) return  nodesTableExists && queuesTableExists && entriesTableExists;
 
          if (!nodesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.nodesTableName + "' as the 'nodes' table");
             req = "CREATE TABLE " + this.nodesTableName.toUpperCase() + " (nodeId " + this.stringTxt + ", PRIMARY KEY (nodeId))";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-            update(req, query.conn);
+            update(req, conn);
          }
 
          if (!queuesTableExists) {
@@ -424,7 +410,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", FOREIGN KEY (nodeId) REFERENCES " + this.nodesTableName + " ON DELETE CASCADE)";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-            update(req, query.conn);
+            update(req, conn);
          }
 
          if (!entriesTableExists) {
@@ -441,26 +427,41 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", FOREIGN KEY (queueName, nodeId) REFERENCES " + this.queuesTableName + " ON DELETE CASCADE)";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
-            update(req, query.conn);
+            update(req, conn);
          }
-
+         if (!conn.getAutoCommit()) conn.commit();
          return true;
       }
       catch (XmlBlasterException ex) {
+         try {
+            if (!conn.getAutoCommit()) conn.rollback();
+         }
+         catch (Throwable e) {
+            this.log.error(ME, "tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
+         }
          throw ex;
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req))
+         try {
+            if (conn != null && !conn.getAutoCommit()) conn.rollback();
+         }
+         catch (Throwable e) {
+            this.log.error(ME, "tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
+         }
+
+         if (checkIfDBLoss(conn, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".tablesCheckAndSetup", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".tablesCheckAndSetup", "", ex); 
       }
       finally {
-         try {
-            if (query !=null) query.close();
-         }
-         catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
-            ex1.printStackTrace();
+         if (conn != null) {
+            try {
+               conn.setAutoCommit(true);
+            }
+            catch (Throwable e) {
+               this.log.error(ME, "tablesCheckAndSetup: exception occured when setting back autocommit flag, reason: " + e.toString());
+            }
+            this.pool.releaseConnection(conn);
          }
       }
    }
