@@ -119,7 +119,7 @@ public class ServerEntryFactory implements I_EntryFactory
                //Integer historyReferenceCounter = (Integer)obj[10];
             }
 
-            log.info(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
+            if (log.TRACE) log.trace(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
                          " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
                          " subscriptionId=" + subscriptionId + " state=" + state + " redeliverCount=" + redeliverCount);
             SessionName receiver = new SessionName(glob, receiverStr);
