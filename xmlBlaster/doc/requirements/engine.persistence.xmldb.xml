@@ -4,7 +4,7 @@
 <requirement id='engine.persistence.xmldb' type='NEW' prio='MEDIUM' status="DEPRECATED">
    <topic>XmlBlaster provides a XML:DB-API based persistence layer to store messages marked with &lt;persistent/></topic>
    <description>
-      <i>deprecated: see <a href="queue.jdbc.html">queue.jdbc requirement</a></i><br />      
+      <i>deprecated: see <a href="queue.jdbc.commontable.html">queue.jdbc.commontable requirement</a></i><br />      
 
       <p>
       To store messages and to restore them again after a new
@@ -84,7 +84,7 @@
    <see type="INTERNET">http://www.xmldb.org</see>
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>

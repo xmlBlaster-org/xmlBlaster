@@ -4,7 +4,7 @@
 <requirement id='engine.persistence.FileDriver' type='NEW' prio='MEDIUM' status="DEPRECATED">
    <topic>XmlBlaster provides a simple file based persistence layer to store messages marked with &lt;persistent/></topic>
    <description>
-      <i>deprecated: see <a href="queue.jdbc.html">queue.jdbc requirement</a></i><br />      
+      <i>deprecated: see <a href="queue.jdbc.commontable.html">queue.jdbc requirement</a></i><br />      
       <p>
       To store messages and to restore them again after a new
       startup of the xmlBlaster server there is a lightweight interface,
@@ -28,7 +28,7 @@
    <see>org.xmlBlaster.engine.persistence.filestore.FileDriver</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
