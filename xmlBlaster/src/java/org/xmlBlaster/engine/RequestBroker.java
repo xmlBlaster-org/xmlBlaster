@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.62 2000/03/18 21:18:47 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.63 2000/03/23 20:44:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.62 $
+ * @version $Revision: 1.63 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -564,10 +564,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *       &lt;Readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
     *                        &lt;!-- Default is Read/Write -->
     *
-    *       &lt;DefaultContent> &lt;!-- Used content if the content given is null -->
-    *          Empty
-    *       &lt;/DefaultContent>
-    *
     *       &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->
     *          $content GE 100 &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
     *       &lt;/check>
@@ -685,8 +681,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          }
       }
       else {
-         Log.warning(ME + ".UnsopportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
-         throw new XmlBlasterException(ME + ".UnsopportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+         Log.warning(ME + ".UnsupportedMoMStyle", "Unknown publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
+         throw new XmlBlasterException(ME + ".UnsupportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
       }
 
       publishedMessages++;

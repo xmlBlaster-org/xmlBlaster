@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.28 2000/03/03 15:52:29 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.29 2000/03/23 20:47:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -337,7 +337,7 @@ public class MessageUnitHandler
       if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
       // PERFORMANCE: All updates for each client should be collected !!!
-      //              This "Burst mode" code increase performance if the messages are small
+      //              This "Burst mode" code increases performance if the messages are small
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
 
