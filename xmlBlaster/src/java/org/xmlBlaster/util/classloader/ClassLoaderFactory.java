@@ -116,7 +116,15 @@ public class ClassLoaderFactory {
       else
          classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
 
-      if (log.TRACE) log.trace(ME, "Build new classpath with " + classPath.size() + " entries");
+      if (log.TRACE) {
+         String text = "Build new classpath with " + classPath.size() + " entries:";
+         for(int i = 0; i < classPath.size(); i++ ) {
+            text += (String)classPath.get(i);
+            if(i < (classPath.size() - 1) )
+               text += ":";
+         }
+         log.trace(ME, text);
+      }
       return new XmlBlasterClassLoader(glob, stringToUrl(classPath) );
    }
    /**
