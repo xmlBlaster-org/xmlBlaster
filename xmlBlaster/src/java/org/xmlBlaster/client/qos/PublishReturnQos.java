@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.Timestamp;
 
 
 /**
@@ -21,6 +22,8 @@ import org.xmlBlaster.util.qos.StatusQosData;
  *   &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
  *     &lt;key oid='HelloWorld'/>
+ *     &lt;rcvTimestamp nanos='1007764305862000002'/>
+ *     &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
@@ -76,6 +79,29 @@ public final class PublishReturnQos
     */
    public final String getKeyOid() {
       return this.statusQosData.getKeyOid();
+   }
+
+   /** 
+    * The approximate receive timestamp (UTC time),
+    * when message arrived in requestBroker.publish() method.<br />
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC<br />
+    * <p>
+    * This timestamp is unique for a message instance published and may be
+    * used to identify this message. For example a publisher and a receiver
+    * of a message can identify this message by its topic (key oid) and its
+    * receive timestamp.
+    * </p>
+    * <p>
+    * To get a human readable view on the timestamp try:
+    * </p>
+    * <pre>
+    * String time = publishReturnQos.getRcvTimestamp().toString();
+    *
+    * -> "2002-02-10 10:52:40.879456789"
+    * </pre>
+    */
+   public final Timestamp getRcvTimestamp() {
+      return this.statusQosData.getRcvTimestamp();
    }
 
    /**
