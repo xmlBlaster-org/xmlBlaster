@@ -82,13 +82,15 @@ TODO
    <property name="optimize" value="off" />
    <property name="deprecation" value="off" />
  
-   <property name="src.dir" value="./src/java"/>
+   <property name="src.java.dir" value="./src/java"/>
    <property name="dtd.dir" value="./src/dtd"/>
    <property name="doc.dir" value="./doc"/>
    <property name="classes.dir" value="./classes"/>
    <property name="javadoc.dir" value="./doc/api"/>
    <property name="testsuite.dir" value="./testsuite"/>
+   <property name="testsuite.java.dir" value="./testsuite/src/java"/>
    <property name="demo.dir" value="./demo"/>
+   <property name="demo.java.dir" value="./demo/javaclients"/>
    <property name="bin.dir" value="./bin"/>
    <property name="lib.dir" value="./lib"/>
    <property name="lib.dir.absolute" location="./lib"/>
@@ -124,7 +126,7 @@ TODO
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
-   <property name="cp.test" value="testsuite/src/java"/>
+   <property name="cp.test" value="${testsuite.java.dir}"/>
 
    <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
    <property name="soapdeploy.dir" value="./demo/soap"/>
@@ -203,7 +205,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Help on usage                                                       -->
    <!-- =================================================================== -->
-   <target name="usage" depends="prepare">
+   <target name="usage" depends="prepare" description="show help">
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
             <property name="script" value="build.sh" />
@@ -222,14 +224,7 @@ TODO
       <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
       <echo message="   demo        --> generates the demo.jar file"/>
       <echo message="   testsuite   --> generates the testsuite.jar file"/>
-      <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
-      <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
-      <echo message="   cpp-test    --> generates C++ test clients"/>
-      <echo message="   cpp         --> builds cpp-lib and cpp-test"/>
-      <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
-      <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
-      <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support [true]"/>
@@ -245,6 +240,7 @@ TODO
       <echo message="                   demonstrates persistent http callbacks"/>
       <echo message="   k2          --> create the J2EE connector"/>
       <echo message="   jms-adapter --> create the J2EE connector example bean"/>
+      <echo message=""/>
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
@@ -254,6 +250,22 @@ TODO
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
+      <echo message=""/>
+      <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
+      <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
+      <echo message="   cpp-test    --> generates C++ test clients"/>
+      <echo message="   cpp         --> builds cpp-lib and cpp-test"/>
+      <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
+      <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
+      <echo message=""/>
+      <echo message="   javadocs    --> generates the javadoc documentation"/>
+      <echo message="   javadocs-delete --> remove the above"/>
+      <echo message="   html        --> generates the html file of each java/cpp/python ... file in same directory"/>
+      <echo message="   html-delete --> remove the above"/>
+      <echo message="   requirements--> generates html files for all xml requirements"/>
+      <echo message="   requirements-delete --> remove the above"/>
+      <echo message="   docs        --> does javadoc, source-html and requirements"/>
+      <echo message="   docs-delete --> remove the above"/>
       <echo message=""/>
       <echo message=" See the comments inside the build.xml file for more details."/>
       <echo message="-------------------------------------------------------------"/>
@@ -272,7 +284,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Prepares the build directory                                        -->
    <!-- =================================================================== -->
-   <target name="prepare">
+   <target name="prepare" description="For internal use only">
       <mkdir dir="${build.dir}"/>
       <osfamily property="os.family" />
       <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
@@ -307,7 +319,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the source code                                            -->
    <!-- =================================================================== -->
-   <target name="prepare-src" depends="prepare">
+   <target name="prepare-src" depends="prepare" description="For internal use only">
       <!-- create directories -->
       <mkdir dir="${build.src}"/>
       <mkdir dir="${build.dest}"/>
@@ -316,7 +328,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster core source directory                       -->
    <!-- =================================================================== -->
-   <target name="xmlBlaster" depends="prepare-src">
+   <target name="xmlBlaster" depends="prepare-src" description="Compile xmlBlaster server and create a xmlBlaster.jar">
       <!-- convert idl -->
       <echo message="Converting idl..."/>
       <property name="idlBuild.required" value="true" />
@@ -330,12 +342,12 @@ TODO
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
             <java classname="${idl.class}" classpath="${cp}" fork="false"
-                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
+                 args="-p ${idl} -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
          </else>
       </if>
 
       <copy todir="${build.src}/xmlBlaster" filtering="true">
-         <fileset dir="${src.dir}">
+         <fileset dir="${src.java.dir}">
             <exclude name="org/jutils"/>
             <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
@@ -349,7 +361,7 @@ TODO
 
       <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
       <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
-      <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy verbose="true" file="${soap.dir}/service.xml" tofile="${build.dest}/service.xml"/>
@@ -386,7 +398,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster demo source directory                       -->
    <!-- =================================================================== -->
-   <target name="demo" depends="xmlBlaster">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
+   <target name="demo" depends="xmlBlaster" description="Compile the xmlBlaster demo clients">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.dir}">
          <exclude name="README"/>
@@ -409,7 +421,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster, demo, and  testsuite source directories    -->
    <!-- =================================================================== -->
-   <target name="all" depends="xmlBlaster,demo,testsuite">
+   <target name="all" depends="xmlBlaster,demo,testsuite" description="Compile xmlBlaster server, demo clients and testsuite clients">
    <!--target name="all" depends="prepare-src"-->
       <delete file="${lib.dir}/demo.jar"/>
       <delete file="${lib.dir}/testsuite.jar"/>
@@ -422,7 +434,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Compiles the xmlBlaster testsuite source directory                  -->
    <!-- =================================================================== -->
-   <target name="testsuite" depends="xmlBlaster">
+   <target name="testsuite" depends="xmlBlaster" description="Compile Java testsuite (based on junit)">
       <copy todir="${build.src}/testsuite/src/java/org">
          <fileset dir="${testsuite.dir}/src/java/org">
             <exclude name="README, Makefile"/>
@@ -443,14 +455,14 @@ TODO
    <!-- =================================================================== -->
    <!-- Builds the J2EE XmlBlaster resource adapter, with example bean      -->
    <!-- =================================================================== -->
-   <target name="k2" depends="xmlBlaster">
+   <target name="k2" depends="xmlBlaster" description="Build J2EE xmlBlaster resource adapter">
       <!-- Pack rar archive -->
       <!-- create tmp dir to build it up -->
       <mkdir dir="${build.dir}/ra"/>
       <mkdir dir="${build.dir}/ra/META-INF"/>
       <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
       <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
-      <copy file="${src.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
 
       <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
       <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
@@ -461,15 +473,15 @@ TODO
    <!-- =================================================================== -->
    <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
    <!-- =================================================================== -->
-   <target name="jms-adapter" depends="k2">
+   <target name="jms-adapter" depends="k2" description="Builds the J2EE XmlBlaster resource adapter example bean">
       <!-- Pack rar archive -->
       <!-- create tmp dir to build it up -->
       <mkdir dir="${build.dir}/jms"/>
       <mkdir dir="${build.dir}/jms/META-INF"/>
       <mkdir dir="${build.dir}/jms/javaclients/j2ee/k2/"/>
-      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
-      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
-      <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
+      <copy file="${demo.java.dir}/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
+      <copy file="${demo.java.dir}/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
+      <copy file="${demo.java.dir}/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
 
 
       <javac srcdir="${build.src}/javaclients/j2ee/k2/"
@@ -493,7 +505,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
    <!-- =================================================================== -->
-   <target name="deploy_war" depends="prepare">
+   <target name="deploy_war" depends="prepare" description="Creates a web archive (.war) to deploy to a modern servlet engine">
       <echo message="Please run 'build.sh all' before if you have changed some code"/>
       <mkdir dir="${build.war}"/>
       <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
@@ -513,10 +525,10 @@ TODO
       <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
  
       <copy todir="${build.war}/javascript">
-         <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
+         <fileset dir="${src.java.dir}/org/xmlBlaster/protocol/http/javascript"/>
       </copy>
       <copy todir="${build.war}/persistentWindow">
-         <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
+         <fileset dir="${src.java.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
       </copy>
       <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
       <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
@@ -551,12 +563,21 @@ TODO
    </target>
  
    <!-- =================================================================== -->
-   <!-- Creates the core javadoc documentation                              -->
+   <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
-   <target name="javadocs" depends="xmlBlaster">
+   <target name="docs" depends="xmlBlaster,javadocs,html,requirements" description="Creates the complete documentation (javadoc, source-html, requirements>">
+   </target>
+   <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Creates the javadoc documentation                                   -->
+   <!-- =================================================================== -->
+   <target name="javadocs" description="Creates the complete javadoc documentation">
+      <echo message="Creating javadoc documentation"/>
       <mkdir dir="${javadoc.dir}"/>
-      <javadoc packagenames="org.xmlBlaster.*"
-               sourcepath="${src.dir}"
+      <javadoc packagenames="org.xmlBlaster.*,javaclients"
+               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}"
                classpath="${cp}"
                destdir="${javadoc.dir}"
                author="true"
@@ -566,12 +587,98 @@ TODO
                doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;"
                bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
    </target>
+   <target name="javadocs-delete" description="Removes the javadoc documentation">
+      <delete dir="${javadoc.dir}" failonerror="false"/>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates a html view from each source file                           -->
+   <!-- code2html by Peter Palfrader http://www.palfrader.org/code2html     -->
+   <!-- =================================================================== -->
+   <target name="html" description="Creates a html view from each source file in the same directory">
+      <echo message="Creating html files from each found source file in any programming language"/>
+      <apply dir="." executable="bin/code2html" failonerror="false" parallel="false" dest=".">
+         <arg value="--linknumbers"/>
+         <arg value="--replace-tabs=3"/>
+         <arg value="--fallback=cpp"/> <!-- xmlBlaster.idl as c++, java is recognized automatically -->
+         <srcfile/>
+         <targetfile/>
+         <fileset dir=".">
+            <patternset>
+               <include name="**/*.idl"/>
+               <include name="**/*.java"/>
+               <include name="**/*.cpp,**/*.c,**/*.h,**/*.hpp"/>
+               <include name="**/*.pl,**/*.pm,**/*.perl"/>
+               <include name="**/*.py,**/*.python"/>
+               <include name="**/*.php,**/*.inc"/>
+               <include name="**/*.js"/>
+               <include name="**/*.tcl"/>
+            </patternset>
+         </fileset>
+         <mapper type="glob" from="*" to="*.html"/>
+      </apply>
+   </target>
+   <target name="html-delete" description="Removes html files generated from each source file">
+      <echo message="Deleting html files from each found source"/>
+      <delete>
+         <fileset dir=".">
+            <patternset>
+               <include name="**/*.idl.html"/>
+               <include name="**/*.java.html"/>
+               <include name="**/*.cpp,**/*.c,**/*.h,**/*.hpp.html"/>
+               <include name="**/*.pl,**/*.pm,**/*.perl.html"/>
+               <include name="**/*.py,**/*.python.html"/>
+               <include name="**/*.php,**/*.inc.html"/>
+               <include name="**/*.js.html"/>
+               <include name="**/*.tcl.html"/>
+            </patternset>
+         </fileset>
+      </delete>
+   </target>
+ 
+   <!-- =================================================================== -->
+   <!-- Creates html requirements from doc/requirements/ XML files          -->
+   <!-- =================================================================== -->
+   <target name="requirements" description="Creates html requirements from doc/requirements/ XML files">
+
+      <echo message="Creating overview requirement page"/>
+      <java classname="com.jclark.xsl.sax.Driver" classpath="${cp}" dir="${req.dir}" failonerror="false" fork="true">
+         <sysproperty key="com.jclark.xsl.sax.parser" value="com.jclark.xsl.dom.SunXMLProcessorImpl"/>
+         <arg line="all.xml overview.xsl requirement.html"/>
+      </java>
+
+      <echo message="Creating detail requirement pages"/>
+      <apply dir="." executable="java" failonerror="false" parallel="false" dest="doc/requirements">
+         <arg line="-cp ${cp}"/>
+         <arg line="-Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver"/>
+         <srcfile/>
+         <arg line="doc/requirements/detail.xsl"/>
+         <targetfile/>
+         <fileset dir="doc/requirements">
+            <patternset>
+               <include name="**/*.xml"/>
+            </patternset>
+         </fileset>
+         <mapper type="glob" from="*.xml" to="*.html"/>
+      </apply>
+   </target>
+   <target name="requirements-delete" description="Removes html requirements">
+      <echo message="Deleting all requirement html pages"/>
+      <delete>
+         <fileset dir="doc/requirements">
+            <patternset>
+               <include name="**/*.html"/>
+               <exclude name="**/package.html"/>
+            </patternset>
+         </fileset>
+      </delete>
+   </target>
  
    <!-- =================================================================== -->
    <!-- Creates the distribution                                            -->
    <!-- =================================================================== -->
-   <target name="dist" depends="delete,all,dist-only"/>
-   <target name="dist-only" depends="">
+   <target name="dist" depends="delete,all,dist-only" description="Creates a server distribution for deployment (see usage)"/>
+   <target name="dist-only" depends="" description="">
       <delete dir="${dist.dir}"/>
       <delete dir="${dist-classes.dir}"/>
 
@@ -749,8 +856,8 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
-   <target name="dist-client" depends="delete,all,dist-client-only"/>
-   <target name="dist-client-only" depends="">
+   <target name="dist-client" depends="delete,all,dist-client-only" description="Create a java client distribution"/>
+   <target name="dist-client-only" depends="" description="">
       <mkdir dir="${dist-client.dir}"/>
       <mkdir dir="${dist-client.dir}/lib"/>
       <mkdir dir="${dist-client.dir}/classes"/>
@@ -866,7 +973,7 @@ TODO
    <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
-   <target name="cpp-lib" depends="prepare">
+   <target name="cpp-lib" depends="prepare" description="Corba/C++ integration - create libxmlBlasterClient.sl (dll)">
 
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
@@ -979,11 +1086,11 @@ TODO
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
-   <target name="cpp-test" depends="prepare"> <!-- depends="prepare,cpp-lib" -->
+   <target name="cpp-test" depends="prepare" description="Corba/C++ integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
       <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
    </target>
  
-   <target name="compileCppExe">
+   <target name="compileCppExe" description="For internal use only (C++ clients build)">
       <echo message="Compiling of C++ test client '${testsuite.dir}/src/c++/bin/${exeName}' ..."/>
       <mkdir dir="${build.dir}/obj"/>
       <mkdir dir="${testsuite.dir}/src/c++/bin"/>
@@ -1020,12 +1127,12 @@ TODO
       </cc>
    </target>
  
-   <target name="cpp" depends="cpp-lib, cpp-test"/>
+   <target name="cpp" depends="cpp-lib, cpp-test" description="Compile C++ client library and test/demo clients"/>
 
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
-    <target name="cpp-clean" depends="prepare">
+    <target name="cpp-clean" depends="prepare" description="Remove C++ object files">
        <delete dir="${build.dir}/obj"/>
        <delete dir=".c_dependency_cache"/>
        <delete includeEmptyDirs="true" failonerror="false">
@@ -1033,7 +1140,7 @@ TODO
        </delete>
     </target>
  
-    <target name="cpp-delete" depends="cpp-clean">
+    <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
@@ -1042,7 +1149,7 @@ TODO
        </delete>
     </target>
 
-    <target name="clean" depends="cpp-clean">
+    <target name="clean" depends="cpp-clean" description="Remove generated Java and C++ files">
        <delete dir="${build.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
@@ -1050,7 +1157,7 @@ TODO
        </delete>
     </target>
  
-    <target name="delete" depends="clean,cpp-delete">
+    <target name="delete" depends="clean,cpp-delete" description="Remove all generated ditribution Java and C++ files">
        <delete dir="${dist-classes.dir}"/>
        <delete dir="${dist.dir}"/>
        <delete dir="${dist-client.dir}"/>
