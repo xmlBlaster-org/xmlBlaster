@@ -62,6 +62,10 @@ public class XmlScriptAccess {
       this.glob.init(properties);
    }
 
+   public void initArgs(String[] args) {
+      this.glob.init(args);
+   }
+
    /**
     * Send xml encoded requests to the xmlBlaster server. 
     * @exception All caught exceptions are thrown as RuntimeException
@@ -78,12 +82,13 @@ public class XmlScriptAccess {
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Client failed: " + e.getMessage());
+         e.printStackTrace();
          throw new RuntimeException(e.getMessage());
       }
       catch (Exception e) {
          log.error(ME, "Client failed: " + e.toString());
+         e.printStackTrace();
          throw new RuntimeException(e.toString());
-         // e.printStackTrace();
       }
    }
 
@@ -94,6 +99,7 @@ public class XmlScriptAccess {
       XmlScriptAccess access = new XmlScriptAccess();
       Properties props = access.createPropertiesInstance();
       //props.put("protocol", "SOCKET");
+      props.put("trace", "true");
       access.initialize(props);
       String request = "<xmlBlaster> <connect/> <disconnect /> </xmlBlaster>";
       String response = access.sendRequest(request);
