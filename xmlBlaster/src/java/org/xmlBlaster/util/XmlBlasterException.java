@@ -286,6 +286,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    /**
     * Timestamp when exception was thrown
+    * @return Never null
     */
    public final Timestamp getTimestamp() {
       if (this.timestamp == null) {
