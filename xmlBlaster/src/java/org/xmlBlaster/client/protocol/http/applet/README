@@ -1,0 +1,28 @@
+THIS CODE IS NOT FINISHED, IT IS NOT FUNCTIONAL YET!
+2003-10-01 marcel
+
+This simple client code shall allow applets to connect
+to xmlBlaster and receive instant callback messages
+with a persistent http connection.
+
+The applet XmlBlasterApplet.java is a demo applet showing
+how to do it.
+
+Compile:
+
+  build.sh all
+
+Deploy to tomcat:
+
+  build.sh deploy_war
+
+Start the applet in a browser:
+
+  http://localhost:8080/xmlBlaster/BasicApplet.html
+
+
+A similar approach we have implemented for a browser without an applet:
+See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
+     http://www.xmlblaster.org/xmlBlaster/demo/http/index.html
+     http://www.xmlblaster.org/xmlBlaster/doc/howto/http/http_tutorial.html
+
