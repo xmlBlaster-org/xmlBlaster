@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.43 2000/04/29 23:09:55 ruff Exp $
+Version:   $Id: Log.java,v 1.44 2000/05/02 13:12:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -223,24 +223,41 @@ public class Log
    {
       logFormatPropertyRead = true;
 
+      // Given flag -info switches off Log.info messages:
+      if (Property.propertyExists("info")) {
+         if (Property.getProperty("info", false)) Log.addLogLevel("INFO");
+         else Log.removeLogLevel("INFO");
+      }
+      if (Property.propertyExists("warn")) {
+         if (Property.getProperty("warn", false)) Log.addLogLevel("WARN");
+         else Log.removeLogLevel("WARN");
+      }
+      if (Property.propertyExists("error")) {
+         if (Property.getProperty("error", false)) Log.addLogLevel("ERROR");
+         else Log.removeLogLevel("ERROR");
+      }
+      if (Property.propertyExists("calls")) {
+         if (Property.getProperty("calls", false)) Log.addLogLevel("CALLS");
+         else Log.removeLogLevel("CALLS");
+      }
+      if (Property.propertyExists("time")) {
+         if (Property.getProperty("time", false)) Log.addLogLevel("TIME");
+         else Log.removeLogLevel("TIME");
+      }
+      if (Property.propertyExists("trace")) {
+         if (Property.getProperty("trace", false)) Log.addLogLevel("TRACE");
+         else Log.removeLogLevel("TRACE");
+      }
+      if (Property.propertyExists("dump")) {
+         if (Property.getProperty("dump", false)) Log.addLogLevel("DUMP");
+         else Log.removeLogLevel("DUMP");
+      }
+
       // Note: "+" parameters are a bad idea, we should change to -calls true/false
-      if (Property.getProperty("+info", false)) Log.addLogLevel("INFO");
-      if (Property.getProperty("+warn", false)) Log.addLogLevel("WARN");
-      if (Property.getProperty("+error", false)) Log.addLogLevel("ERROR");
       if (Property.getProperty("+calls", false)) Log.addLogLevel("CALLS");
       if (Property.getProperty("+time", false)) Log.addLogLevel("TIME");
       if (Property.getProperty("+trace", false)) Log.addLogLevel("TRACE");
       if (Property.getProperty("+dump", false)) Log.addLogLevel("DUMP");
-
-      // Given flag -info switches off Log.info messages:
-      if (Property.getProperty("info", false)) Log.removeLogLevel("INFO");
-      if (Property.getProperty("warn", false)) Log.removeLogLevel("WARN");
-      if (Property.getProperty("error", false)) Log.removeLogLevel("ERROR");
-      if (Property.getProperty("calls", false)) Log.removeLogLevel("CALLS");
-      if (Property.getProperty("time", false)) Log.removeLogLevel("TIME");
-      if (Property.getProperty("trace", false)) Log.removeLogLevel("TRACE");
-      if (Property.getProperty("dump", false)) Log.removeLogLevel("DUMP");
-
 
       // format: {0}:{1}:{2}:{3}    <timestamp>:<levelStr>:<instance>:<text>
       currentLogFormat = Property.getProperty("LogFormat", currentLogFormat);
@@ -261,6 +278,8 @@ public class Log
       String co = Property.getProperty("LogFormat.Country", (String)null);
       if (la != null && co != null) country = new Locale(la, co);
 
+      // Log.plain(ME, Property.toXml());
+
       String fileName = Property.getProperty("logFile", (String)null);
       if (fileName != null)
          Log.logToFile(fileName);
@@ -275,6 +294,7 @@ public class Log
    {
       int level = logLevelToBit(logLevel);
       LOGLEVEL = (LOGLEVEL | level);
+      // System.out.println("addLogLevel("+logLevel+"):" + bitToLogLevel(LOGLEVEL));
       setPreLogLevelCheck();
    }
 
@@ -287,6 +307,7 @@ public class Log
    {
       int level = logLevelToBit(logLevel);
       LOGLEVEL = (LOGLEVEL & ~level);
+      // System.out.println("removeLogLevel("+logLevel+"):" + bitToLogLevel(LOGLEVEL));
       setPreLogLevelCheck();
    }
 
@@ -469,7 +490,7 @@ public class Log
       if((LOGLEVEL & L_PANIC) != 0)
       {
          log((withXtermEscapeColor) ? panicE : panicX, L_PANIC, instance, text);
-         System.out.println(text);
+         System.err.println(text);
          numErrorInvocations++;
          // displayStatistics();
          exitLow(1);
