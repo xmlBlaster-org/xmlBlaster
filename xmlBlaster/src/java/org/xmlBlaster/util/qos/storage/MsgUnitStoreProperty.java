@@ -27,7 +27,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
    public MsgUnitStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("core");
-      relating = Constants.RELATING_TOPICCACHE;
+      relating = Constants.RELATING_MSGUNITSTORE;
       initialize();
    }
 
@@ -35,7 +35,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-      super.initialize(null);
+      super.initialize(Constants.RELATING_MSGUNITSTORE);
       //super.initialize("topic"); //--> topic.msgUnitStore.maxMsg
    }
 
@@ -49,7 +49,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
     * The tag name for configuration, here it is &lt;msgUnitStore ...>
     */
    public String getRootTagName() {
-      return "msgUnitStore";
+      return "persistence";
    }
 
    /** For testing: java org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty */

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xml.sax.Attributes;
 
 /**
- * Helper class holding callback queue properties.
+ * Helper class holding the client side queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
@@ -28,7 +28,7 @@ public class QueueProperty extends QueuePropertyBase
    public QueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
       setRelating(Constants.RELATING_CLIENT);
-      initialize();
+      super.initialize(Constants.RELATING_CLIENT);
    }
 
    /**
@@ -40,13 +40,6 @@ public class QueueProperty extends QueuePropertyBase
       if (getCurrentAddress() != null)
          buf.append(" ").append(getCurrentAddress().getSettings());
       return buf.toString();
-   }
-
-   /**
-    * Configure property settings
-    */
-   protected void initialize() {
-      super.initialize(""); // todo: change to "client" (all REQs and docu as well)
    }
 
    /**
@@ -85,7 +78,7 @@ public class QueueProperty extends QueuePropertyBase
    public final String usage() {
       String text = "";
       text += "Control client side fail save queue properties (message recorder):\n";
-      text += "   -queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "   -queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsg + "].\n";
       text += "                       0 switches recording of invocations off.\n";
       text += "                       -1 sets it to unlimited.\n";
       text += "   -queue.type         The queue plugin type [" + DEFAULT_type + "].\n";

@@ -30,8 +30,8 @@ public class CbQueueProperty extends QueuePropertyBase
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("dispatch");
-      initialize();
       setRelating(relating);
+      super.initialize(relating);
    }
 
    /**
@@ -43,13 +43,6 @@ public class CbQueueProperty extends QueuePropertyBase
       if (getCurrentCallbackAddress() != null)
          buf.append(" ").append(getCurrentCallbackAddress().getSettings());
       return buf.toString();
-   }
-
-   /**
-    * Configure property settings
-    */
-   protected void initialize() {
-      super.initialize("cb");
    }
 
    /**

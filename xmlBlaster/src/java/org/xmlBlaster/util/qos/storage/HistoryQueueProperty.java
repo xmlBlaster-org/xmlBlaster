@@ -45,7 +45,7 @@ public class HistoryQueueProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-      super.initialize("history");
+      super.initialize("history"); //related='history'--> -history.queue.maxMsg
    }
 
    public final boolean onOverflowDeadMessage() {
