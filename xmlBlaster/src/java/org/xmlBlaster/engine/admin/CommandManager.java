@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.admin;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RunlevelManager;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -148,8 +149,8 @@ public final class CommandManager implements I_RunlevelListener
     */
    public synchronized final MsgUnitRaw[] get(String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get(" + cmd + ")");
-      if (cmd == null || cmd.length() < 1)
-         throw new IllegalArgumentException("Please pass a command which is not null");
+      if (cmd == null || cmd.length() < 2)
+         throw new IllegalArgumentException("Please pass a command which is not null or too short");
       try {
          CommandWrapper w = new CommandWrapper(glob, cmd);
          String key = w.getThirdLevel();
@@ -158,7 +159,7 @@ public final class CommandManager implements I_RunlevelListener
          }
          Object obj = this.handlerMap.get(key);
          if (obj == null) {
-            throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
          MsgUnitRaw[] ret = handler.get(sessionId, w);
@@ -171,7 +172,7 @@ public final class CommandManager implements I_RunlevelListener
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw new XmlBlasterException(ME+".InternalError", e.toString());
+         throw XmlBlasterException.convert(glob, ME, "get("+cmd+")", e);
       }
    }
 
@@ -193,7 +194,7 @@ public final class CommandManager implements I_RunlevelListener
          }
          Object obj = this.handlerMap.get(key);
          if (obj == null) {
-            throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
          return new SetReturn(w, handler.set(sessionId, w));
@@ -203,7 +204,7 @@ public final class CommandManager implements I_RunlevelListener
       }
       catch (Throwable e) {
          e.printStackTrace();
-         throw new XmlBlasterException(ME+".InternalError", e.toString());
+         throw XmlBlasterException.convert(glob, ME, "set("+cmd+")", e);
       }
    }
 

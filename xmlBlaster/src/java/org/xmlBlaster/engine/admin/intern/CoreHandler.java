@@ -93,7 +93,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
 
       String client = cmd.getThirdLevel();
-      if (client == null || client.length() < 1)
+      if (client == null || client.length() < 2)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       if (client.startsWith("?")) {
@@ -208,6 +208,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     */
    private Object getInvoke(String property, Object impl, Class aInterface) throws XmlBlasterException {
       String methodName = null;
+      if (property == null || property.length() < 2)
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
+                   "Please pass a vaild command, aborted request.");
       try {
          Vector params = new Vector();
          Invoker invoker = new Invoker(impl, aInterface);
