@@ -58,25 +58,58 @@ void Property::initializeDefaultProperties()
       }
       else {
          // Windows: _WINDOWS
-         // HOMEPATH=\Documents and Settings\Marcel
-         char *pathP = getenv("HOMEPATH");
-         string path = (pathP != 0) ? string(pathP) : string("");
-         std::string::size_type pos = path.rfind(FILE_SEP);
-         if (pos != string::npos && pos < path.size()-1) {
-            setProperty("user.name", path.substr(pos+1));
+         // USERNAME=joe
+         string value = getenv("USERNAME");
+         if (value != "") {
+            setProperty("user.name", value, true);
+         }
+         else {
+            // HOMEPATH=\Documents and Settings\Marcel
+            char *pathP = getenv("HOMEPATH");
+            string path = (pathP != 0) ? string(pathP) : string("");
+            std::string::size_type pos = path.rfind(FILE_SEP);
+            if (pos != string::npos && pos < path.size()-1) {
+               setProperty("user.name", path.substr(pos+1));
+            }
          }
       }
    }
    
+   if (!propertyExists("java.io.tmpdir", false)) {
+      string value = getProperty("TMP", useEnv);
+      if (value != "") {
+         setProperty("java.io.tmpdir", value, true);
+      }
+   }
+
    // XMLBLASTER_HOME
 
    setProperty("file.separator", FILE_SEP, overwrite);
    setProperty("path.separator", PATH_SEP, overwrite);
 
-   // os.name = Linux, Windows, ...?
+   // _WINDOWS:
+   // COMPUTERNAME=myserver
+   // LOGONSERVER=\\myserver
+   // NUMBER_OF_PROCESSORS=1
+   // OS=Windows_NT
+   // PROCESSOR_ARCHITECTURE=x86
+   // PROCESSOR_IDENTIFIER=x86 Family 15 Model 2 Stepping 4, GenuineIntel
+   // PROCESSOR_LEVEL=15
+   // PROCESSOR_REVISION=0204
+   // USERDOMAIN=myserver
+   // USERNAME=joe
+   // USERPROFILE=C:\Documents and Settings\marcel
+   // VC7=1
+   // HOMEDRIVE=C:
+   // HOMEPATH=\Documents and Settings\marcel
+   // TMP=C:\DOCUME~1\marcel\LOCALS~1\Temp
+
+   // os.name = Linux
+   // os.name = "Windows XP"     os.version=5.1 (_WINDOWS)
    // line.separator = CRLF ...
-   // java.io.tmpdir = /tmp ...
+   // java.io.tmpdir = /tmp ...   C:\DOCUME~1\marcel\LOCALS~1\Temp\ == C:\Documents and Settings\marcel\Local Settings\Temp  (_WINDOWS)
    // user.dir = /home/xmlblast/test -> getcwd()
+   // sun.cpu.endian = little
 }
 
 /**
