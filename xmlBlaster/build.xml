@@ -66,7 +66,7 @@ Else add it manually.
    <property name="year" value="2002"/>
  
    <property name="build.compiler" value="classic"/>
-   <property name="debug" value="off"/>
+   <property name="debug" value="on"/>
    <property name="JVM.target" value="1.1" />
    <property name="optimize" value="off" />
    <property name="deprecation" value="off" />
@@ -152,6 +152,9 @@ Else add it manually.
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
       <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should user your own [false]"/>
+      <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
+      <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
+      <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
       <echo message=""/>
       <echo message=" See the comments inside the build.xml file for more details."/>
       <echo message="-------------------------------------------------------------"/>
@@ -159,8 +162,9 @@ Else add it manually.
       <echo message="Examples:"/>
       <echo message="   ${script} clean"/>
       <echo message="   ${script} all"/>
+      <echo message="   ${script} -Ddebug=off all"/>
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
-      <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true dist-client"/>
+      <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true -DADD_PROP=mystuff/xmlBlaster.properties  dist-client"/>
       <echo message=""/>
       <echo message=""/>
    </target>
@@ -491,22 +495,30 @@ Else add it manually.
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_XML_PARSER" value="false"/>
+      <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
+      <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
+      <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
+
       <switch value="${ADD_CORBA}">
          <case value="true">
             <echo message="Adding ${lib.dir}/jacorb.jar for CORBA support" />
             <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
          </case>
-         <default></default>
+         <default>
+            <echo message="ADD_CORBA=${ADD_CORBA}: No CORBA support added." />
+         </default>
       </switch>
       <switch value="${ADD_XMLRPC}">
          <case value="true">
             <echo message="Adding ${lib.dir}/xmlrpc.jar for XML-RPC support" />
             <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
          </case>
-         <default></default>
+         <default>
+            <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XML-RPC support added." />
+         </default>
       </switch>
       <switch value="${ADD_COLLECTION}">
          <case value="true">
@@ -527,10 +539,39 @@ Else add it manually.
             <echo message="ADD_XML_PARSER=${ADD_XML_PARSER}: No XML parser added, we assume you supply one yourself!" />
          </default>
       </switch>
+      <switch value="${ADD_PROP}">
+         <case value="false">
+            <echo message="Using default xmlBlaster.properties" />
+         </case>
+         <default>
+            <echo message="Using ${ADD_PROP} -> ${dist-client.dir}/classes/xmlBlaster.properties" />
+            <copy file="${ADD_PROP}" tofile="${dist-client.dir}/classes/xmlBlaster.properties" overwrite="yes"/>
+         </default>
+      </switch>
+      <switch value="${ADD_MANIFEST}">
+         <case value="false">
+            <echo message="Using default manifest.xmlBlaster" />
+            <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${dist-client.dir}/classes/manifest.xmlBlaster" overwrite="yes"/>
+         </case>
+         <default>
+            <echo message="Using ${ADD_MANIFEST}" />
+            <copy file="${ADD_MANIFEST}" tofile="${dist-client.dir}/classes/manifest.xmlBlaster" overwrite="yes"/>
+         </default>
+      </switch>
+      <switch value="${ADD_DIRECTORY}">
+         <case value="false">
+         </case>
+         <default>
+            <echo message="Adding ${ADD_DIRECTORY}" />
+            <copy todir="${dist-client.dir}/classes">
+               <fileset dir="${ADD_DIRECTORY}"/>
+            </copy>
+         </default>
+      </switch>
       
       <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
-      <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" basedir="${dist-client.dir}/classes"/>
-      <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete>
+      <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" manifest="${dist-client.dir}/classes/manifest.xmlBlaster" basedir="${dist-client.dir}/classes"/>
+      <!-- delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete -->
 
       <echo message="--------------------------------------------"/>
       <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
@@ -701,7 +742,7 @@ Else add it manually.
     <target name="clean" depends="prepare">
        <delete dir="${build.dir}"/>
        <delete dir=".c_dependency_cache"/>
-       <delete includeEmptyDirs="true">
+       <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
           <!-- fileset dir="${req.dir}" includes="*.class"/ -->
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
