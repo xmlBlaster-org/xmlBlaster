@@ -56,9 +56,9 @@
    &lt;!-- Force a subscription ID from client side -->
    &lt;subscribe id='_subId:1'/>
 
-   &lt;!-- Kill a MsgUnit even if there are pending updates or subscriptions (default: false) -->
-   &lt;erase forceDestroy='true'/>
-   
+   &lt;!-- Recoverable subscription after server crash / restart -->
+   &lt;persistent/>
+
    &lt;!-- Don't send me the xmlKey meta data on updates (default: true) -->
    &lt;meta>false&lt;/meta>
    
@@ -269,7 +269,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>

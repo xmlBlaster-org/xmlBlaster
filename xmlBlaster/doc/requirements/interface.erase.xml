@@ -34,6 +34,17 @@
          <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
          </tr>
       </table>
+      <br />
+
+      <p>
+      Here is an overview of all available <b>erase QoS</b>:
+      </p>
+      <pre>
+&lt;qos>
+   &lt;!-- Kill a topic even if there are pending updates or subscriptions (default: false) -->
+   &lt;erase forceDestroy='true'/>
+&lt;/qos>
+      </pre>
    </description>
 
 
@@ -175,7 +186,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
