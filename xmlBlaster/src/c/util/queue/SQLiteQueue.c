@@ -3,61 +3,49 @@ Name:      SQLiteQueue.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   A persistent queue implementation based on the SQLite relational database
+           Depends only on I_Queue.h and ../helper.c and ../helper.h (which includes basicDefs.h)
+           and can easily be used outside of xmlBlaster.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      04/2004
-Compile:   
- build c -> creates libxmlBlasterClientC.so
- export LD_LIBRARY_PATH=/opt/sqlite-bin/lib:/home/xmlblast/xmlBlaster/lib
- gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClientC -lpthread
- (use optionally  -ansi -pedantic)
+Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should be simple.
+           Needs pthread.h but not the pthread library
+
+            export LD_LIBRARY_PATH=/opt/sqlite-bin/lib
+            gcc -g -Wall -DQUEUE_MAIN=1 -I../../ -o SQLiteQueue SQLiteQueue.c ../helper.c -I/opt/sqlite-bin/include -L/opt/sqlite-bin/lib -lsqlite
+            (use optionally  -ansi -pedantic)
+
+           Compile inside xmlBlaster:
+            build -DXMLBLASTER_PERSISTENT_QUEUE=true c-delete c
+           expects xmlBlaster/src/c/util/queue/sqlite.h and xmlBlaster/lib/libsqlite.so
+
+Todo:      Tuning:
+            - Remove nodeId from SELECT statements as queueName is world wide unique already
+            - Add prio to PRIMARY KEY
+            - In persistentQueuePeekWithSamePriority() add queueName/nodeId to statement as it never changes
+
 See:       http://www.sqlite.org/
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
-#include <stdarg.h> /* vsnprintf */
 #include <string.h>
 #include <malloc.h>
-#if defined(_WINDOWS)
-#  include <Winsock2.h>         /* Sleep() */
-#  include <pthreads/pthread.h> /* Our pthreads.h: For timespec, for logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
-#else
-# include <unistd.h> /* sleep */
-# include <pthread.h>
-# define XB_USE_PTHREADS 1
-#endif
 #include "util/queue/I_Queue.h"
 #include "sqlite.h"
 
-#if defined(_WINDOWS)
-#  define SNPRINTF _snprintf
-#  define VSNPRINTF _vsnprintf
-#else
-#  define SNPRINTF snprintf
-#  define VSNPRINTF vsnprintf
-#endif
-#define _INLINE_FUNC
-
-static void persistentQueueInitialize(I_Queue *queueP,
-                                      const char *dbname,
-                                      const char *nodeId,
-                                      const char *queueName,
-                                      int32_t maxNumOfEntries,
-                                      int64_t maxNumOfBytes,
-                                      QueueException *exception);
-static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception);
-static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, QueueException *exception);
-static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queueEntryArr, QueueException *exception);
-static bool persistentQueueClear(I_Queue *queueP, QueueException *exception);
-static bool persistentQueueEmpty(I_Queue *queueP, QueueException *exception);
-static void persistentQueueShutdown(I_Queue *queueP, QueueException *exception);
-static bool checkArgs(I_Queue *queueP, const char *methodName, bool checkIsConnected, QueueException *exception);
-static char *strncpy0(char * const to, const char * const from, const size_t maxLen);
-static void initializeQueueException(QueueException *exception);
-static bool createTables(I_Queue *queueP, QueueException *exception);
-static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *comment, QueueException *exception);
-static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, QueueException *exception);
-static bool fillCache(I_Queue *queueP, QueueException *exception);
+static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
+static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
+static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
+static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
+static bool persistentQueueClear(I_Queue *queueP, ExceptionStruct *exception);
+static bool persistentQueueEmpty(I_Queue *queueP, ExceptionStruct *exception);
+static void persistentQueueShutdown(I_Queue *queueP, ExceptionStruct *exception);
+static bool checkArgs(I_Queue *queueP, const char *methodName, bool checkIsConnected, ExceptionStruct *exception);
+static _INLINE_FUNC void initializeExceptionStruct(ExceptionStruct *exception);
+static bool createTables(I_Queue *queueP, ExceptionStruct *exception);
+static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *comment, ExceptionStruct *exception);
+static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, ExceptionStruct *exception);
+static bool fillCache(I_Queue *queueP, ExceptionStruct *exception);
 
 /**
  * Called for each SQL result row and does the specific result parsing depending on the query. 
@@ -65,16 +53,19 @@ static bool fillCache(I_Queue *queueP, QueueException *exception);
  * @return true->to continue, false->to break execution or on error exception->errorCode is not null
  */
 typedef bool ( * ParseDataFp)(I_Queue *queueP, size_t currIndex, void *userP,
-                               const char **pazValue, const char **pazColName, QueueException *exception);
+                               const char **pazValue, const char **pazColName, ExceptionStruct *exception);
 static int32_t getResultRows(I_Queue *queueP, const char *methodName,
                              sqlite_vm *pVm, 
                              ParseDataFp parseDataFp, void *userP, bool finalize,
-                             QueueException *exception);
+                             ExceptionStruct *exception);
 
+/* Shortcut for:
+    if (queueP->log) queueP->log(queueP, LOG_TRACE, LOG_TRACE, __FILE__, "Persistent queue is created");
+   is
+    LOG __FILE__, "Persistent queue is created");
+*/
+#define LOG if (queueP->log) queueP->log(queueP, queueP->logLevel, LOG_TRACE, 
 
-static Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len);
-
-#define PREFIX_MAX 20
 #define DBNAME_MAX 128
 #define ID_MAX 256
 /**
@@ -82,16 +73,11 @@ static Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len);
  * @see http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html
  */
 typedef struct DbInfoStruct {
-   char dbname[DBNAME_MAX];      /** "xmlBlaster.db" */
-   char tablePrefix[PREFIX_MAX]; /** "XB_" */
-   char nodeId[ID_MAX];
-   char queueName[ID_MAX];
+   QueueProperties prop;         /** Meta information */
    int32_t numOfEntries;         /** Cache for current number of entries */
    int64_t numOfBytes;           /** Cache for current number of bytes */
-   int32_t maxNumOfEntries;
-   int64_t maxNumOfBytes;
-   sqlite *db;
-   sqlite_vm *pVm_put;
+   sqlite *db;                   /** Database handle for SQLite */
+   sqlite_vm *pVm_put;           /** SQLite virtual machine to hold a prepared query */
    sqlite_vm *pVm_peekWithSamePriority;
    sqlite_vm *pVm_fillCache;
 } DbInfo;
@@ -112,12 +98,13 @@ typedef struct {
  * NOTE: Our properties point on the passed argv memory, so you should
  * not free the original argv memory before you free XmlBlasterAccessUnparsed.
  * @param logFp Your logging implementation or NULL if no logging callbacks are desired
+ * @param logLevel Set to LOG_TRACE to receive any logging
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  *         usually by calling freeQueue().
  */
-Dll_Export I_Queue *createQueue(const char *dbname, const char *nodeId, const char *queueName,
-                                int32_t maxNumOfEntries, int64_t maxNumOfBytes,
-                                I_QueueLogging logFp, QueueException *exception)
+Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
+                                XmlBlasterLogging logFp, XMLBLASTER_LOG_LEVEL logLevel,
+                                ExceptionStruct *exception)
 {
    I_Queue *queueP = (I_Queue *)calloc(1, sizeof(I_Queue));
    if (queueP == 0) return queueP;
@@ -130,27 +117,28 @@ Dll_Export I_Queue *createQueue(const char *dbname, const char *nodeId, const ch
    queueP->empty = persistentQueueEmpty;
    queueP->shutdown = persistentQueueShutdown;
    queueP->log = logFp;
+   queueP->logLevel = logLevel;
    queueP->privateObject = calloc(1, sizeof(DbInfo));
    {
       DbInfo *dbInfo = (DbInfo *)queueP->privateObject;
       dbInfo->numOfEntries = -1;
       dbInfo->numOfBytes = -1;
    }
-   if (queueP->log) queueP->log(queueP, __FILE__, "Persistent queue is created");
-   queueP->initialize(queueP, dbname, nodeId, queueName, maxNumOfEntries, maxNumOfBytes, exception);
+   LOG __FILE__, "Persistent queue is created");
+   queueP->initialize(queueP, queueProperties, exception);
    return queueP;
 }
 
 /** Access the DB handle, queueP pointer is not checked */
-static DbInfo *getDbInfo(I_Queue *queueP) {
+static _INLINE_FUNC DbInfo *getDbInfo(I_Queue *queueP) {
    return (queueP==0) ? 0 : (DbInfo *)(queueP->privateObject);
 }
-static sqlite *getDb(I_Queue *queueP) {
+static _INLINE_FUNC sqlite *getDb(I_Queue *queueP) {
    return ((DbInfo *)(queueP->privateObject))->db;
 }
 /*
 static const char *getDbname(I_Queue *queueP) {
-   return ((DbInfo *)(queueP->privateObject))->dbname;
+   return ((DbInfo *)(queueP->privateObject))->prop.dbName;
 }
 static sqlite_vm *getVmPut(I_Queue *queueP) {
    return ((DbInfo *)(queueP->privateObject))->pVm_put;
@@ -170,7 +158,7 @@ Dll_Export void freeQueue(I_Queue *queueP)
       return;
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "freeQueue() called");
+   LOG __FILE__, "freeQueue() called");
 
    if (queueP->privateObject) {
       sqlite *db = getDb(queueP);
@@ -185,13 +173,7 @@ Dll_Export void freeQueue(I_Queue *queueP)
    queueP = 0;
 }
 
-static void persistentQueueInitialize(I_Queue *queueP,
-                                      const char *dbname,
-                                      const char *nodeId,
-                                      const char *queueName,
-                                      int32_t maxNumOfEntries,
-                                      int64_t maxNumOfBytes,
-                                      QueueException *exception)
+static void persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception)
 {
    char *errMsg = 0;
    bool retOk;
@@ -200,35 +182,38 @@ static void persistentQueueInitialize(I_Queue *queueP,
    DbInfo *dbInfo;
 
    if (checkArgs(queueP, "initialize", false, exception) == false ) return;
+   if (queueProperties == 0) {
+      strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Please provide a valid QueueProperties pointer to initialize()", __FILE__, __LINE__);
+      LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
+   }
 
    dbInfo = getDbInfo(queueP);
-   strncpy0(dbInfo->dbname, dbname, DBNAME_MAX);
-   strncpy0(dbInfo->tablePrefix, "XB_", PREFIX_MAX);
-   strncpy0(dbInfo->nodeId, nodeId, ID_MAX);
-   strncpy0(dbInfo->queueName, queueName, ID_MAX);
-   dbInfo->maxNumOfEntries = maxNumOfEntries;
-   dbInfo->maxNumOfBytes = maxNumOfBytes;
+   memcpy(&dbInfo->prop, queueProperties, sizeof(QueueProperties));
 
-   db = sqlite_open(dbInfo->dbname, OPEN_RW, &errMsg);
+   db = sqlite_open(dbInfo->prop.dbName, OPEN_RW, &errMsg);
    dbInfo->db = db;
 
    if (db==0) {
       queueP->isInitialized = false;
       if(queueP->log) {
-         if (errMsg)
-            queueP->log(queueP, __FILE__, "%s", errMsg);
-         else
-            queueP->log(queueP, __FILE__, "Unable to open database '%s'", dbname);
+         if (errMsg) {
+            LOG __FILE__, "%s", errMsg);
+         }
+         else {
+            LOG __FILE__, "Unable to open database '%s'", queueProperties->dbName);
+         }
       }
       else {
         if (errMsg)
            fprintf(stderr,"[%s] %s\n", __FILE__, errMsg);
         else
-           fprintf(stderr,"[%s] Unable to open database %s\n", __FILE__, dbname);
+           fprintf(stderr,"[%s] Unable to open database %s\n", __FILE__, queueProperties->dbName);
       }
-      strncpy0(exception->errorCode, "resource.db.unavailable", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Creating SQLiteQueue '%s' failed: %s", __FILE__, __LINE__, dbname, (errMsg==0)?"":errMsg);
+      strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] Creating SQLiteQueue '%s' failed: %s", __FILE__, __LINE__, queueProperties->dbName, (errMsg==0)?"":errMsg);
       if (errMsg != 0) sqlite_freemem(errMsg);
       return;
    }
@@ -239,22 +224,22 @@ static void persistentQueueInitialize(I_Queue *queueP,
 
    if (retOk) {
       char queryString[128+ID_MAX];
-      const char *tablePrefix = dbInfo->tablePrefix;
-      sprintf(queryString, "INSERT INTO %.20sNODES VALUES ('%.200s');", tablePrefix, dbInfo->nodeId);
+      const char *tablePrefix = dbInfo->prop.tablePrefix;
+      sprintf(queryString, "INSERT INTO %.20sNODES VALUES ('%.200s');", tablePrefix, dbInfo->prop.nodeId);
       retOk = execSilent(queueP, queryString, "Insert node", exception);
    }
 
    if (retOk) {
       char queryString[256+2*ID_MAX];
-      const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->tablePrefix;
+      const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->prop.tablePrefix;
       sprintf(queryString, "INSERT INTO %.20sQUEUES VALUES ('%s','%s',%d,%lld);",
-              tablePrefix, dbInfo->queueName, dbInfo->nodeId, dbInfo->maxNumOfEntries, dbInfo->maxNumOfBytes);
+              tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId, dbInfo->prop.maxNumOfEntries, dbInfo->prop.maxNumOfBytes);
       retOk = execSilent(queueP, queryString, "Insert queue", exception);
    }
 
    fillCache(queueP, exception);
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "initialize(%s) %s", dbname, retOk?"successful":"failed");
+   LOG __FILE__, "initialize(%s) %s", queueProperties->dbName, retOk?"successful":"failed");
 }
 
 /**
@@ -263,11 +248,11 @@ static void persistentQueueInitialize(I_Queue *queueP,
  * @param queueName "connection_clientJoe"
  * @return true on success
  */
-static bool createTables(I_Queue *queueP, QueueException *exception)
+static bool createTables(I_Queue *queueP, ExceptionStruct *exception)
 {
    char queryString[512];
    bool retOk;
-   const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->tablePrefix;
+   const char *tablePrefix = ((DbInfo *)(queueP->privateObject))->prop.tablePrefix;
 
    sprintf(queryString, "CREATE TABLE %.20sNODES (nodeId text , PRIMARY KEY (nodeId));", tablePrefix);  /* XB_NODES */
    retOk = execSilent(queueP, queryString, "Creating NODES table", exception);
@@ -279,6 +264,10 @@ static bool createTables(I_Queue *queueP, QueueException *exception)
    sprintf(queryString, "CREATE TABLE %.20sENTRIES (dataId bigint , nodeId text , queueName text , prio integer, flag text, durable char(1), byteSize bigint, blob bytea, PRIMARY KEY (dataId, queueName), FOREIGN KEY (queueName, nodeId) REFERENCES XB_QUEUES (queueName , nodeId));",
            tablePrefix);
    retOk = execSilent(queueP, queryString, "Creating ENTRIES table", exception);
+
+   sprintf(queryString, "CREATE INDEX %.20sENTRIES_IDX ON %.20sENTRIES (prio);",
+           tablePrefix, tablePrefix);
+   retOk = execSilent(queueP, queryString, "Creating PRIO index", exception);
    return retOk;
 }
 
@@ -289,7 +278,7 @@ static bool createTables(I_Queue *queueP, QueueException *exception)
  * @param comment For logging or exception text
  * @return true on success
  */
-static bool execSilent(I_Queue *queueP, const char *queryString, const char *comment, QueueException *exception)
+static bool execSilent(I_Queue *queueP, const char *queryString, const char *comment, ExceptionStruct *exception)
 {
    int rc = 0;
    char *errMsg = 0;
@@ -299,22 +288,22 @@ static bool execSilent(I_Queue *queueP, const char *queryString, const char *com
    rc = sqlite_exec(dbInfo->db, queryString, NULL, NULL, &errMsg);
    switch (rc) {
       case SQLITE_OK:
-         if (queueP->log) queueP->log(queueP, __FILE__, "SQL '%s' success", comment);
+         LOG __FILE__, "SQL '%s' success", comment);
          retOk = true;
          break;
       default:
          if (errMsg && strstr(errMsg, "already exists")) {
-            if (queueP->log) queueP->log(queueP, __FILE__, "OK, '%s' [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
+            LOG __FILE__, "OK, '%s' [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
             retOk = true;
          }
          else if (rc == SQLITE_CONSTRAINT && errMsg && strstr(errMsg, " not unique")) {
-            if (queueP->log) queueP->log(queueP, __FILE__, "OK, '%s' entry existed already [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
+            LOG __FILE__, "OK, '%s' entry existed already [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
             retOk = true;
          }
          else {
-            if (queueP->log) queueP->log(queueP, __FILE__, "SQL error '%s' [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
-            strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-            SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+            LOG __FILE__, "SQL error '%s' [%d]: %s %s", comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
+            strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+            SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                      "[%.100s:%d] SQL error '%s' [%d]: %s %s", __FILE__, __LINE__, comment, rc, sqlite_error_string(rc), (errMsg==0)?"":errMsg);
             retOk = false;
          }
@@ -345,7 +334,10 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
 }
 */
 
-static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception)
+/**
+ * @throws exception The exception is set to *exception->errorCode==0 on success, else to != 0
+ */
+static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception)
 {
    int rc = 0;
    bool stateOk = true;
@@ -355,23 +347,23 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
 
    dbInfo = getDbInfo(queueP);
 
-   if (dbInfo->numOfEntries >= dbInfo->maxNumOfEntries) {
-      strncpy0(exception->errorCode, "resource.overflow.queue.entries", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] The maximum number of entries of %d of a queue is exhausted", __FILE__, __LINE__, dbInfo->maxNumOfEntries);
+   if (dbInfo->numOfEntries >= dbInfo->prop.maxNumOfEntries) {
+      strncpy0(exception->errorCode, "resource.overflow.queue.entries", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] The maximum number of entries of %d of a queue is exhausted", __FILE__, __LINE__, dbInfo->prop.maxNumOfEntries);
       return;
    }
-   if (dbInfo->numOfBytes >= dbInfo->maxNumOfBytes) {
-      strncpy0(exception->errorCode, "resource.overflow.queue.bytes", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] The maximum size of %lld bytes of a queue is exhausted", __FILE__, __LINE__, dbInfo->maxNumOfBytes);
+   if (dbInfo->numOfBytes >= dbInfo->prop.maxNumOfBytes) {
+      strncpy0(exception->errorCode, "resource.overflow.queue.bytes", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
+               "[%.100s:%d] The maximum size of %lld bytes of a queue is exhausted", __FILE__, __LINE__, dbInfo->prop.maxNumOfBytes);
       return;
    }
 
 
    if (dbInfo->pVm_put == 0) {  /* Compile prepared query only once */
       char queryString[256];    /*INSERT INTO XB_ENTRIES VALUES ( 1081317015888000000, 'xmlBlaster_192_168_1_4_3412', 'topicStore_xmlBlaster_192_168_1_4_3412', 5, 'TOPIC_XML', 'T', 670, '\\254...')*/
-      sprintf(queryString, "INSERT INTO %.20sENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)", dbInfo->tablePrefix);
+      sprintf(queryString, "INSERT INTO %.20sENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)", dbInfo->prop.tablePrefix);
       stateOk = compilePreparedQuery(queueP, "put", &dbInfo->pVm_put, queryString, exception);
    }
 
@@ -382,10 +374,10 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
       rc = SQLITE_OK;
 
       sprintf(tmp, "%lld", queueEntry->uniqueId);
-      /*if (queueP->log) queueP->log(queueP, __FILE__, "put uniqueId as string '%s'", tmp);*/
+      /*LOG __FILE__, "put uniqueId as string '%s'", tmp);*/
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, tmp, len, true);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->nodeId, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->queueName, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->prop.nodeId, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, dbInfo->prop.queueName, len, false);
       sprintf(tmp, "%d", queueEntry->priority);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, tmp, len, true);
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, queueEntry->embeddedType, len, false);
@@ -403,9 +395,9 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
       }
 
       if (rc != SQLITE_OK) {
-         if (queueP->log) queueP->log(queueP, __FILE__, "put(%lld) SQL error: %d %s", queueEntry->uniqueId, rc, sqlite_error_string(rc));
-         strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-         SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+         LOG __FILE__, "put(%lld) SQL error: %d %s", queueEntry->uniqueId, rc, sqlite_error_string(rc));
+         strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+         SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                   "[%.100s:%d] put(%lld) SQL error: %d %s", __FILE__, __LINE__, queueEntry->uniqueId, rc, sqlite_error_string(rc));
          stateOk = false;
       }
@@ -421,7 +413,7 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
       dbInfo->numOfBytes += queueEntry->embeddedBlob.dataLen;
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "put(%lld) %s", queueEntry->uniqueId, stateOk ? "done" : "failed");
+   LOG __FILE__, "put(%lld) %s", queueEntry->uniqueId, stateOk ? "done" : "failed");
 }
 
 
@@ -434,9 +426,9 @@ static void persistentQueuePut(I_Queue *queueP, QueueEntry *queueEntry, QueueExc
  * @return false on error and exception->errorCode is not null
  */
 static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
-                    sqlite_vm **ppVm, const char *queryString, QueueException *exception)
+                    sqlite_vm **ppVm, const char *queryString, ExceptionStruct *exception)
 {
-   int iRetry, numRetry=10;
+   int iRetry, numRetry=100;
    char *errMsg = 0;
    int rc = 0;
    const char *pzTail = 0;   /* OUT: uncompiled tail of zSql */
@@ -449,27 +441,23 @@ static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
          switch (rc) {
             case SQLITE_BUSY:
                if (iRetry == (numRetry-1)) {
-                  strncpy0(exception->errorCode, "resource.db.block", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-                  SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+                  strncpy0(exception->errorCode, "resource.db.block", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+                  SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                            "[%.100s:%d] SQL error #%d in %s(): %s %s", __FILE__, __LINE__, rc, sqlite_error_string(rc), methodName, (errMsg==0)?"":errMsg);
                }
-               if (queueP->log) queueP->log(queueP, __FILE__, "%s() Sleeping as other thread holds DB %s", methodName, (errMsg==0)?"":errMsg);
+               LOG __FILE__, "%s() Sleeping as other thread holds DB %s", methodName, (errMsg==0)?"":errMsg);
                if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-					#ifdef _WINDOWS
-					   Sleep(10); /* milli */
-					#else
-	               sleep(1);
-					#endif
+               sleepMillis(10);
                break;
             case SQLITE_OK:
                iRetry = numRetry; /* We're done */
-               if (queueP->log) queueP->log(queueP, __FILE__, "%s() Pre-compiled prepared query '%s'", methodName, queryString);
+               LOG __FILE__, "%s() Pre-compiled prepared query '%s'", methodName, queryString);
                if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
                break;
             default:
-               if (queueP->log) queueP->log(queueP, __FILE__, "SQL error #%d %s in %s(): %s: %s", rc, sqlite_error_string(rc), methodName, (errMsg==0)?"":errMsg);
-               strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-               SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+               LOG __FILE__, "SQL error #%d %s in %s(): %s: %s", rc, sqlite_error_string(rc), methodName, (errMsg==0)?"":errMsg);
+               strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+               SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                         "[%.100s:%d] SQL error #%d %s in %s(): %s", __FILE__, __LINE__, rc, sqlite_error_string(rc), methodName, (errMsg==0)?"":errMsg);
                iRetry = numRetry; /* We're done */
                if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
@@ -489,7 +477,7 @@ static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
  * @return false on error and exception->errorCode is not null
  */
 static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
-                               const char **pazValue, const char **pazColName, QueueException *exception)
+                               const char **pazValue, const char **pazColName, ExceptionStruct *exception)
 {
    bool doContinue = true;
    int numAssigned;
@@ -522,20 +510,20 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
 
    numAssigned = sscanf(pazValue[0], "%lld", &queueEntry->uniqueId);  /* TODO: handle error */
    if (numAssigned != 1) {
-      if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[0]);
-      strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+      LOG __FILE__, "peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' to uniqueId, ignoring entry.", pazValue[0]);
+      strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] peekWithSamePriority() ERROR: Can't parse pazValue[0] '%.20s' col=%s to uniqueId, ignoring entry.", __FILE__, __LINE__, pazValue[0], pazColName[0]);
       doContinue = false;
       return doContinue;
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority(%lld) currIndex=%d", queueEntry->uniqueId, currIndex);
-   /* strncpy0(dbInfo->nodeId, pazValue[1], ID_MAX); TODO: assert() */
-   /* strncpy0(dbInfo->queueName, pazValue[2], ID_MAX); */
+   LOG __FILE__, "peekWithSamePriority(%lld) currIndex=%d", queueEntry->uniqueId, currIndex);
+   /* strncpy0(dbInfo->prop.nodeId, pazValue[1], ID_MAX); TODO: assert() */
+   /* strncpy0(dbInfo->prop.queueName, pazValue[2], ID_MAX); */
    numAssigned = sscanf(pazValue[3], "%hd", &queueEntry->priority);
    if (numAssigned != 1) {
-      if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority(%lld) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", queueEntry->uniqueId, pazValue[3]);
+      LOG __FILE__, "peekWithSamePriority(%lld) ERROR: Can't parse pazValue[3] '%.20s' to priority, setting it to NORM", queueEntry->uniqueId, pazValue[3]);
       queueEntry->priority = 4;
    }
    strncpy0(queueEntry->embeddedType, pazValue[4], QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
@@ -550,9 +538,9 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
    /* queueEntry->embeddedBlob.data = (char *)malloc(queueEntry->embeddedBlob.dataLen*sizeof(char)); */
    queueEntry->embeddedBlob.data = (char *)malloc(strlen(pazValue[7])*sizeof(char)); /* we spoil some 2 % */
    decodeSize = sqlite_decode_binary((const unsigned char *)pazValue[7], (unsigned char *)queueEntry->embeddedBlob.data);
-   if (decodeSize == -1 || decodeSize != queueEntry->embeddedBlob.dataLen) {
+   if (decodeSize == -1 || (size_t)decodeSize != queueEntry->embeddedBlob.dataLen) {
       *(queueEntry->embeddedBlob.data + strlen(pazValue[7]) - 1) = 0; 
-      if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority(%lld) ERROR: Returned blob encoded='%s', decodeSize=%d"
+      LOG __FILE__, "peekWithSamePriority(%lld) ERROR: Returned blob encoded='%s', decodeSize=%d"
                         " but expected decoded len=%d: '%s'",
                         queueEntry->uniqueId, pazValue[7], decodeSize, queueEntry->embeddedBlob.dataLen, queueEntry->embeddedBlob.data);
    }
@@ -580,12 +568,13 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
  *                 false to call  sqlite_reset to reuse the prepared query
  * @return < 0 on error and exception->errorCode is not null
  *         otherwise the number of successfully parsed rows is returned
+ * @todo For INSERT and DELETE return the number of touched entries !!!
  */
 static int32_t getResultRows(I_Queue *queueP, const char *methodName,
                              sqlite_vm *pVm, 
                              ParseDataFp parseDataFp, void *userP,
                              bool finalize,
-                             QueueException *exception)
+                             ExceptionStruct *exception)
 {
    char *errMsg = 0;
    int32_t currIndex = 0;
@@ -602,12 +591,8 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
             done = true;
          break;
          case SQLITE_BUSY:
-            if (queueP->log) queueP->log(queueP, __FILE__, "%s() Sleeping as other thread holds DB.", methodName);
-				#ifdef _WINDOWS
-				   Sleep(10); /* milli */
-				#else
-               sleep(1);
-				#endif
+            LOG __FILE__, "%s() Sleeping as other thread holds DB.", methodName);
+            sleepMillis(10);
          break;
          case SQLITE_ROW:
          {
@@ -630,31 +615,31 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
          }
          break;
          case SQLITE_ERROR:   /* If exists already */
-            if (queueP->log) queueP->log(queueP, __FILE__, "%s() SQL execution problem [sqlCode=%d], entry already exists", methodName, rc);
+            LOG __FILE__, "%s() SQL execution problem [sqlCode=%d], entry already exists", methodName, rc);
             done = true;
             stateOk = false;
          break;
          case SQLITE_MISUSE:
          default:
-            if (queueP->log) queueP->log(queueP, __FILE__, "%s() SQL execution problem [sqlCode=%d %s]", methodName, rc, sqlite_error_string(rc));
+            LOG __FILE__, "%s() SQL execution problem [sqlCode=%d %s]", methodName, rc, sqlite_error_string(rc));
             done = true;
             stateOk = false;
          break;
       }
    }
-   if (queueP->log) queueP->log(queueP, __FILE__, "%s() Processed %lu entries.", methodName, (unsigned long)currIndex);
+   LOG __FILE__, "%s() Processed %lu entries.", methodName, (unsigned long)currIndex);
 
    if (finalize) {
       sqlite_finalize(pVm, &errMsg);
       if (rc != SQLITE_OK && rc != SQLITE_DONE) {
-         if (queueP->log) queueP->log(queueP, __FILE__, "WARN: getResultRows() sqlCode=%d %s is not handled. %s", rc, sqlite_error_string(rc), errMsg==0?"":errMsg);
+         LOG __FILE__, "WARN: getResultRows() sqlCode=%d %s is not handled. %s", rc, sqlite_error_string(rc), errMsg==0?"":errMsg);
       }
       if (errMsg != 0) sqlite_freemem(errMsg);
    }
    else { /* Reset prepared statement */
       rc = sqlite_reset(pVm, &errMsg);
       if (rc == SQLITE_SCHEMA) {
-         if (queueP->log) queueP->log(queueP, __FILE__, "WARN: getResultRows() sqlCode=%d %s is not handled %s", rc, sqlite_error_string(rc), errMsg==0?"":errMsg);
+         LOG __FILE__, "WARN: getResultRows() sqlCode=%d %s is not handled %s", rc, sqlite_error_string(rc), errMsg==0?"":errMsg);
       }
       if (errMsg != 0) sqlite_freemem(errMsg);
    }
@@ -665,7 +650,7 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
 /**
  * Access queue entries without removing them. 
  */
-static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, QueueException *exception)
+static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception)
 {
    int rc = 0;
    bool stateOk = true;
@@ -674,7 +659,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
 
    if (checkArgs(queueP, "peekWithSamePriority", true, exception) == false ) return 0;
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority(maxNumOfEntries=%d, maxNumOfBytes=%lld) ...", (int)maxNumOfEntries, maxNumOfBytes);
+   LOG __FILE__, "peekWithSamePriority(maxNumOfEntries=%d, maxNumOfBytes=%lld) ...", (int)maxNumOfEntries, maxNumOfBytes);
 
    dbInfo = getDbInfo(queueP);
 
@@ -685,7 +670,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
            "SELECT * FROM %.20sENTRIES where queueName=? and nodeId=?"
            " and prio=(select max(prio) from %.20sENTRIES where queueName=?  AND nodeId=?)"
            " ORDER BY dataId ASC",
-           dbInfo->tablePrefix, dbInfo->tablePrefix);
+           dbInfo->prop.tablePrefix, dbInfo->prop.tablePrefix);
       stateOk = compilePreparedQuery(queueP, "peekWithSamePriority",
                     &dbInfo->pVm_peekWithSamePriority , queryString, exception);
    }
@@ -695,19 +680,19 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
       int len = -1; /* Calculated by sqlite_bind */
       rc = SQLITE_OK;
 
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->queueName, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->nodeId, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->queueName, len, false);
-      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->nodeId, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.queueName, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.nodeId, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.queueName, len, false);
+      if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_peekWithSamePriority, ++index, dbInfo->prop.nodeId, len, false);
 
       switch (rc) {
          case SQLITE_OK:
-            if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority() Bound to prepared statement [sqlCode=%d]", rc);
+            LOG __FILE__, "peekWithSamePriority() Bound to prepared statement [sqlCode=%d]", rc);
             break;
          default:
-            if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority() SQL error: %d %s", rc, sqlite_error_string(rc));
-            strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-            SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+            LOG __FILE__, "peekWithSamePriority() SQL error: %d %s", rc, sqlite_error_string(rc));
+            strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+            SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                      "[%.100s:%d] peekWithSamePriority() SQL error: %d %s", __FILE__, __LINE__, rc, sqlite_error_string(rc));
             stateOk = false;
             break;
@@ -734,7 +719,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
       }
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "peekWithSamePriority() %s", stateOk ? "done" : "failed");
+   LOG __FILE__, "peekWithSamePriority() %s", stateOk ? "done" : "failed");
    return queueEntryArr;
 }
 
@@ -742,7 +727,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
  * Removes the given entries from persistence. 
  * @return The number of removed entries
  */
-static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queueEntryArr, QueueException *exception)
+static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception)
 {
    bool stateOk = true;
    int64_t numOfBytes = 0;
@@ -752,20 +737,20 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
                  queueEntryArr->len == 0 || queueEntryArr->queueEntryArr == 0)
       return 0;
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "randomRemove(%d) ...", (int)queueEntryArr->len);
+   LOG __FILE__, "randomRemove(%d) ...", (int)queueEntryArr->len);
 
    dbInfo = getDbInfo(queueP);
 
    {
       size_t i;
       int qLen = 128 + 2 * ID_MAX + queueEntryArr->len * 24;
-      char *queryString = calloc(qLen, sizeof(char));
+      char *queryString = (char *)calloc(qLen, sizeof(char));
       char tmpStr[56];
       /*  DELETE FROM xb_entries WHERE queueName = 'connection_clientJoe' AND nodeId = 'clientJoe1081594557415' AND dataId in ( 1081492136876000000, 1081492136856000000 ); */
       sprintf(queryString, 
            "DELETE FROM %.20sENTRIES WHERE queueName='%s' AND nodeId='%s'"
            " AND dataId in ( ",
-           dbInfo->tablePrefix, dbInfo->queueName, dbInfo->nodeId);
+           dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
 
       for (i=0; i<queueEntryArr->len; i++) {
          sprintf(tmpStr, "%lld", queueEntryArr->queueEntryArr[i].uniqueId);
@@ -787,7 +772,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
 
    if (stateOk) {
       int countDeleted = sqlite_last_statement_changes(dbInfo->db);
-      if (countDeleted != queueEntryArr->len) {
+      if (countDeleted < 0 || (size_t)countDeleted != queueEntryArr->len) {
          fillCache(queueP, exception); /* calculate numOfBytes again */
       }
       else {
@@ -802,7 +787,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
 /**
  * Destroy all entries in queue. 
  */
-static bool persistentQueueClear(I_Queue *queueP, QueueException *exception)
+static bool persistentQueueClear(I_Queue *queueP, ExceptionStruct *exception)
 {
    int stateOk = true;
    char queryString[256];
@@ -811,7 +796,7 @@ static bool persistentQueueClear(I_Queue *queueP, QueueException *exception)
    if (checkArgs(queueP, "clear", true, exception) == false) return false;
    dbInfo = getDbInfo(queueP);
 
-   sprintf(queryString, "DELETE FROM %.20sENTRIES", dbInfo->tablePrefix);
+   sprintf(queryString, "DELETE FROM %.20sENTRIES", dbInfo->prop.tablePrefix);
    stateOk = compilePreparedQuery(queueP, "clear", &pVm, queryString, exception);
 
    if (stateOk) {
@@ -824,7 +809,7 @@ static bool persistentQueueClear(I_Queue *queueP, QueueException *exception)
       dbInfo->numOfBytes = 0;
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "clear() done");
+   LOG __FILE__, "clear() done");
    return stateOk;
 }
 
@@ -832,7 +817,7 @@ static bool persistentQueueClear(I_Queue *queueP, QueueException *exception)
  * Parse response of "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
  */
 static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
-                           const char **pazValue, const char **pazColName, QueueException *exception)
+                           const char **pazValue, const char **pazColName, ExceptionStruct *exception)
 {
    int64_t ival = 0;
    int numAssigned;
@@ -840,8 +825,8 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
 
    numAssigned = sscanf(pazValue[0], "%lld", &ival);
    if (numAssigned != 1) {
-      strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+      strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfEntries, ignoring entry.", __FILE__, __LINE__, pazColName[0], pazValue[0]);
       return false;
    }
@@ -849,8 +834,8 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
 
    numAssigned = sscanf(pazValue[1], "%lld", &dbInfo->numOfBytes);
    if (numAssigned != 1) {
-      strncpy0(exception->errorCode, "resource.db.unknown", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+      strncpy0(exception->errorCode, "resource.db.unknown", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] parseCacheInfo() ERROR: Can't parse %s='%.20s' to numOfBytes, ignoring entry.", __FILE__, __LINE__, pazColName[1], pazValue[0]);
       if (currIndex) {} /* Just to avoid compiler warning about unused variable */
       if (userP) {};
@@ -860,7 +845,7 @@ static bool parseCacheInfo(I_Queue *queueP, size_t currIndex, void *userP,
    return true;
 }
 
-static bool fillCache(I_Queue *queueP, QueueException *exception)
+static bool fillCache(I_Queue *queueP, ExceptionStruct *exception)
 {
    bool stateOk = true;
    DbInfo *dbInfo = getDbInfo(queueP);
@@ -868,7 +853,7 @@ static bool fillCache(I_Queue *queueP, QueueException *exception)
    char queryString[512]; /* "SELECT count(dataId) FROM XB_ENTRIES where queueName='connection_clientJoe' and nodeId='clientJoe1081594557415'" */
    sprintf(queryString, 
             "SELECT count(dataId), sum(byteSize) FROM %.20sENTRIES where queueName='%s' and nodeId='%s'",
-            dbInfo->tablePrefix, dbInfo->queueName, dbInfo->nodeId);
+            dbInfo->prop.tablePrefix, dbInfo->prop.queueName, dbInfo->prop.nodeId);
    stateOk = compilePreparedQuery(queueP, "fillCache",
                   &dbInfo->pVm_fillCache, queryString, exception);
 
@@ -879,11 +864,11 @@ static bool fillCache(I_Queue *queueP, QueueException *exception)
       stateOk = currIndex > 0;
    }
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "fillCache() numOfEntries=%d numOfBytes=%lld", dbInfo->numOfEntries, dbInfo->numOfBytes);
+   LOG __FILE__, "fillCache() numOfEntries=%d numOfBytes=%lld", dbInfo->numOfEntries, dbInfo->numOfBytes);
    return stateOk;
 }
 
-static bool persistentQueueEmpty(I_Queue *queueP, QueueException *exception)
+static bool persistentQueueEmpty(I_Queue *queueP, ExceptionStruct *exception)
 {
    DbInfo *dbInfo;
    if (checkArgs(queueP, "empty", true, exception) == false ) return true;
@@ -898,7 +883,7 @@ static bool persistentQueueEmpty(I_Queue *queueP, QueueException *exception)
  * Shutdown without destroying any entry. 
  * Clears all DB resources.
  */
-static void persistentQueueShutdown(I_Queue *queueP, QueueException *exception)
+static void persistentQueueShutdown(I_Queue *queueP, ExceptionStruct *exception)
 {
    if (checkArgs(queueP, "shutdown", false, exception) == false ) return;
    {
@@ -924,118 +909,9 @@ static void persistentQueueShutdown(I_Queue *queueP, QueueException *exception)
          }
          sqlite_close(dbInfo->db);
          dbInfo->db = 0;
-         if (queueP->log) queueP->log(queueP, __FILE__, "shutdown() done");
+         LOG __FILE__, "shutdown() done");
       }
    }
-}
-
-#ifdef _WINDOWS
-#  include <time.h>
-/*
-#  include <sys/types.h>
-#  include <sys/timeb.h>
-#  include <Windows.h>
-*/
-#else
-#  include <sys/time.h>       /* sleep with select(), gettimeofday() */
-#endif
-#define  NANO_SECS_PER_SECOND 1000000000LL
-static int64_t lastNanos=0;
-
-/**
- * Fills the given abstime with absolute time, using the given timeout relativeTimeFromNow in milliseconds
- * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
- * but patches are available at http://sourceforge.net/projects/high-res-timers
- * @param relativeTimeFromNow the relative time from now in milliseconds
- * @return true If implemented
- */
-static bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime)
-{
-# ifdef _WINDOWS
-   time_t t1;
-   struct tm *now;
-   
-   (void) time(&t1);
-   now = localtime(&t1);
-
-   abstime->tv_sec = t1;
-   abstime->tv_nsec = 0; /* TODO !!! How to get the more precise current time on Win? */
-
-   if (relativeTimeFromNow > 0) {
-      abstime->tv_sec += relativeTimeFromNow / 1000;
-      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
-   }
-   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
-      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
-      abstime->tv_sec += 1;
-   }
-   return true;
-# else /* LINUX, __sun */
-   struct timeval tv;
-
-   memset(abstime, 0, sizeof(struct timespec));
-
-   gettimeofday(&tv, 0);
-   abstime->tv_sec = tv.tv_sec;
-   abstime->tv_nsec = tv.tv_usec * 1000;  /* microseconds to nanoseconds */
-
-   if (relativeTimeFromNow > 0) {
-      abstime->tv_sec += relativeTimeFromNow / 1000;
-      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
-   }
-   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
-      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
-      abstime->tv_sec += 1;
-   }
-   return true;
-# endif
-# ifdef MORE_REALTIME
-   clock_gettime(CLOCK_REALTIME, abstime);
-
-   if (relativeTimeFromNow > 0) {
-      abstime->tv_sec += relativeTimeFromNow / 1000;
-      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
-   }
-   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
-      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
-      abstime->tv_sec += 1;
-   }
-   return true;
-# endif
-}
-
-/**
- * Create a timestamp in nano seconds elapsed since 1972. 
- * The timestamp is guaranteed to be ascending and unique.
- */
-Dll_Export int64_t getTimestamp() {
-   struct timespec abstime;
-   int64_t timestamp;
-
-   getAbsoluteTime(0L, &abstime);
-   
-   timestamp = (int64_t)abstime.tv_sec * NANO_SECS_PER_SECOND;
-   timestamp += abstime.tv_nsec;
-   if (timestamp <= lastNanos) {
-      timestamp = lastNanos + 1;
-   }
-   lastNanos = timestamp;
-   return timestamp;
-}
-
-/**
- * Guarantees a '\0' terminated string
- * @param to The destination string must be big enough
- * @param from The source to be copied
- * @param (maxLen-1) of 'to' will be filled with a '\0',
- *        so effectively only maxLen-1 from 'from' are copied.
- * @return The destination string 'to'
- */
-static char *strncpy0(char * const to, const char * const from, const size_t maxLen)
-{
-   char *ret=strncpy(to, from, maxLen-1);
-   *(to+maxLen-1) = '\0';
-   return ret;
 }
 
 /**
@@ -1125,32 +1001,6 @@ Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDu
 }
 
 /**
- * Allocates the string with malloc for you. 
- * NOTE: If your given blob or len is 0 an empty string of size 1 is returned
- * @return The string, never null.
- *         You need to free it with free()
- */
-static Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
-{
-   char *dest;
-   size_t i;
-   if (blob == 0 || len < 1) {
-      dest = (char *)malloc(1*sizeof(char));
-      if (dest == 0) return 0;
-      *dest = 0;
-      return dest;
-   }
-
-   dest = (char *)malloc((len+1)*sizeof(char));
-   if (dest == 0) return 0;
-   for (i=0; i<len; i++) {
-      dest[i] = (char)blob[i];
-   }
-   dest[len] = '\0';
-   return dest;
-}
-
-/**
  * NOTE: You need to free the returned pointer with free()!
  *
  * @return A ASCII XML formatted message or NULL if out of memory
@@ -1168,7 +1018,7 @@ Dll_Export char *queueEntryToXml(QueueEntry *queueEntry)
  *         in this case 'exception' is filled with detail informations
  */
 static bool checkArgs(I_Queue *queueP, const char *methodName,
-                      bool checkIsConnected, QueueException *exception)
+                      bool checkIsConnected, ExceptionStruct *exception)
 {
    if (queueP == 0) {
       if (exception == 0) {
@@ -1176,18 +1026,17 @@ static bool checkArgs(I_Queue *queueP, const char *methodName,
                   __FILE__, __LINE__, methodName);
       }
       else {
-         strncpy0(exception->errorCode, "resource.db.unavailable", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-         SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+         strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+         SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                   "[%.100s:%d] Please provide a valid I_Queue pointer to %.16s()",
                    __FILE__, __LINE__, methodName);
-         if (queueP->log) queueP->log(queueP, __FILE__, "%s: %s", exception->errorCode, exception->message);
+         LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
       }
       return false;
    }
 
    if (exception == 0) {
-      queueP->log(queueP,  __FILE__, "[%s:%d] Please provide valid exception pointer to %s()",
-                   __FILE__, __LINE__, methodName);
+      LOG __FILE__, "[%s:%d] Please provide valid exception pointer to %s()", __FILE__, __LINE__, methodName);
       return false;
    }
 
@@ -1195,26 +1044,26 @@ static bool checkArgs(I_Queue *queueP, const char *methodName,
       if (queueP->privateObject==0 ||
           ((DbInfo *)(queueP->privateObject))->db==0 ||
           !queueP->isInitialized) {
-         strncpy0(exception->errorCode, "resource.db.unavailable", I_QUEUE_EXCEPTION_ERRORCODE_LEN);
-         SNPRINTF(exception->message, I_QUEUE_EXCEPTION_MESSAGE_LEN,
+         strncpy0(exception->errorCode, "resource.db.unavailable", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+         SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                   "[%.100s:%d] Not connected to database, %s() failed",
                    __FILE__, __LINE__, methodName);
-         queueP->log(queueP, __FILE__, "%s: %s", exception->errorCode, exception->message);
+         LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
          return false;
       }
    }
 
-   initializeQueueException(exception);
+   initializeExceptionStruct(exception);
 
-   if (queueP->log) queueP->log(queueP, __FILE__, "%s() entering ...", methodName);
+   LOG __FILE__, "%s() entering ...", methodName);
 
    return true;
 }
 
 /**
- * Should be called on any QueueException before using it. 
+ * Should be called on any ExceptionStruct before using it. 
  */
-Dll_Export _INLINE_FUNC void initializeQueueException(QueueException *exception)
+Dll_Export _INLINE_FUNC void initializeExceptionStruct(ExceptionStruct *exception)
 {
    exception->remote = false;
    *exception->errorCode = (char)0;
@@ -1225,14 +1074,19 @@ Dll_Export _INLINE_FUNC void initializeQueueException(QueueException *exception)
 /*=================== TESTCODE =======================*/
 # ifdef QUEUE_MAIN
 #include <stdio.h>
-#include <stdarg.h>
-static void defaultLogging(I_Queue *queueP, const char *location, const char *fmt, ...);
 
 static void testRun(int argc, char **argv) {
-   QueueException exception;
+   ExceptionStruct exception;
    QueueEntryArr *entries = 0;
-   I_Queue *queueP = createQueue("xmlBlasterClient.db", "clientJoe1081594557415",
-                      "connection_clientJoe", 10000000l, 1000000000ll, defaultLogging, &exception);
+   QueueProperties queueProperties;
+   strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 10000000L;
+   queueProperties.maxNumOfBytes = 1000000000LL;
+
+   I_Queue *queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
    DbInfo *dbInfo = (DbInfo *)queueP->privateObject;
    if (argc || argv) {} /* to avoid compiler warning */
 
@@ -1242,7 +1096,7 @@ static void testRun(int argc, char **argv) {
       int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll };
       int16_t prioArr[] = { 5                    , 1                    , 5 };
       char *data[] =      { "Hello"              , " World"             , "!!!" };
-      int i;
+      size_t i;
       for (i=0; i<sizeof(idArr)/sizeof(int64_t); i++) {
          QueueEntry queueEntry;
          queueEntry.priority = prioArr[i];
@@ -1255,17 +1109,17 @@ static void testRun(int argc, char **argv) {
 
          queueP->put(queueP, &queueEntry, &exception);
          if (*exception.errorCode != 0) {
-            if (queueP->log) queueP->log(queueP, __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
+            LOG __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
          }
       }
    }
    
    entries = queueP->peekWithSamePriority(queueP, -1, 6, &exception);
    if (*exception.errorCode != 0) {
-      if (queueP->log) queueP->log(queueP, __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
+      LOG __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
    }
    if (entries != 0) {
-      int i;
+      size_t i;
       printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
       for (i=0; i<entries->len; i++) {
          QueueEntry *queueEntry = &entries->queueEntryArr[i];
@@ -1278,7 +1132,7 @@ static void testRun(int argc, char **argv) {
    printf("Queue numOfEntries=%d, numOfBytes=%lld, empty=%s\n", dbInfo->numOfEntries, dbInfo->numOfBytes, queueP->empty(queueP, &exception) ? "true" : "false");
    queueP->randomRemove(queueP, entries, &exception);
    if (*exception.errorCode != 0) {
-      if (queueP->log) queueP->log(queueP, __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
+      LOG __FILE__, "TEST FAILED: [%s] %s\n", exception.errorCode, exception.message);
    }
 
    freeQueueEntryArr(entries);
@@ -1297,75 +1151,6 @@ int main(int argc, char **argv) {
       testRun(argc, argv);
    }
    return 0;
-}
-
-#include <time.h>
-/**
- * Default logging output is handled by this method. 
- * The logging output is to console.
- * <p>
- * If you have your own logging device you need to implement this method
- * yourself and register it with 
- * </p>
- * <pre>
- * queueP->log = myLoggingHandler;
- * </pre>
- * @param location A string describing the code place
- * @param fmt The formatting string
- * @param ... Other variables to log, corresponds to 'fmt'
- */
-static void defaultLogging(I_Queue *queueP, const char *location, const char *fmt, ...)
-{
-   /* Guess we need no more than 200 bytes. */
-   int n, size = 200;
-   char *p = 0;
-   va_list ap;
-   char *stackTrace = 0;
-   if (queueP) {} /* to avoid compiler warning */
-
-   if ((p = (char *)malloc (size)) == 0)
-      return;
-
-   for (;;) {
-      /* Try to print in the allocated space. */
-      va_start(ap, fmt);
-      n = VSNPRINTF(p, size, fmt, ap);
-      va_end(ap);
-      /* If that worked, print the string to console. */
-      if (n > -1 && n < size) {
-         time_t t1;
-         char timeStr[128];
-         (void) time(&t1);
-#        if defined(_WINDOWS)
-            strcpy(timeStr, ctime(&t1));
-#        elif defined(__sun)
-            ctime_r(&t1, (char *)timeStr, 126);
-#        else
-            ctime_r(&t1, (char *)timeStr);
-#        endif
-         *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
-#        ifdef XB_USE_PTHREADS
-            printf("[%s %s thread0x%x] %s %s\n", timeStr, location,
-                                    (int)pthread_self(), p,
-                                    (stackTrace != 0) ? stackTrace : "");
-#        else
-            printf("[%s %s] %s %s\n", timeStr, location, p,
-                                    (stackTrace != 0) ? stackTrace : "");
-#        endif
-         free(p);
-         free(stackTrace);
-         return;
-      }
-      /* Else try again with more space. */
-      if (n > -1)    /* glibc 2.1 */
-         size = n+1; /* precisely what is needed */
-      else           /* glibc 2.0 */
-         size *= 2;  /* twice the old size */
-      if ((p = (char *)realloc (p, size)) == 0) {
-         free(stackTrace);
-         return;
-      }
-   }
 }
 #endif /*QUEUE_MAIN*/
 /*=================== TESTCODE =======================*/

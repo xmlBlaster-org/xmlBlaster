@@ -9,63 +9,38 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #ifndef I_QUEUE_I_Queue_h
 #define I_QUEUE_I_Queue_h
 
-#if defined(_WINDOWS)
-  typedef long long int64_t;
-  typedef int int32_t;
-  typedef short int16_t;
-#else
-# include<stdint.h>  /*-> C99:  uint64_t etc. */
+#include "util/helper.h" /* BlobHolder. basicDefs.h: for int64_t (C99), Dll_Export, bool etc. */
+
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
+extern "C" {
 #endif
-
-/**
- * Standard defines, copied from basicDefs.h
- * to avoid #include <basicDefs.h> with dependency on xmlBlaster
- */
-#define Dll_Export 
-
-#ifndef __cplusplus
-#  if !defined(__sun) && !defined(_WINDOWS)
-#    include <stdbool.h>
-#  endif
-#  ifndef __bool_true_false_are_defined
-#    define bool int
-#    define true 1
-#    define false 0
-#  endif
 #endif
-
-/**
- * Holds arbitrary raw data and its length
- */
-typedef struct BlobStruct {
-   size_t dataLen;
-   char *data;
-} BlobStruct;
-
-/**
- * Holds error text
- */
-#define I_QUEUE_EXCEPTION_ERRORCODE_LEN 56
-#define I_QUEUE_EXCEPTION_MESSAGE_LEN 1024
-typedef struct QueueException {
-   bool remote; /* true if exception is from remote */
-   char errorCode[I_QUEUE_EXCEPTION_ERRORCODE_LEN];
-   char message[I_QUEUE_EXCEPTION_MESSAGE_LEN];
-} QueueException;
-
 
 /*const int QUEUE_ENTRY_EMBEDDEDTYPE_LEN = 26;*/
 #define QUEUE_ENTRY_EMBEDDEDTYPE_LEN 28
 
+#define QUEUE_PREFIX_MAX 20
+#define QUEUE_DBNAME_MAX 256
+#define QUEUE_ID_MAX 256
+typedef struct {
+   char dbName[QUEUE_DBNAME_MAX];      /** "xmlBlaster.db" */
+   char nodeId[QUEUE_ID_MAX];          /** "/node/heron/client/joe" */
+   char queueName[QUEUE_ID_MAX];       /** "connection_client_joe" */
+   char tablePrefix[QUEUE_PREFIX_MAX]; /** "XB_" */
+   int32_t maxNumOfEntries;            /** 10000 */
+   int64_t maxNumOfBytes;              /** 10000000LL */
+} QueueProperties;
+
 /**
  * A stuct holding the necessary queue entry informations used by I_Queue. 
  */
-typedef struct QueueEntry {
+typedef struct {
    int64_t uniqueId;        /** The unique key, used for sorting, usually a time stamp [nano sec]. Is assumed to be ascending over time. */
    int16_t priority;        /** The priority of the queue entry, has higher sorting order than than the time stamp */
    bool isPersistent;       /** Mark an entry to be persistent, needed for cache implementations, 'T' is true, 'F' is false. 'F' in persistent queue is a swapped transient entry */
    char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN]; /** A string describing this entry, for example the format of the blob. */
-   BlobStruct embeddedBlob; /** blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
+   BlobHolder embeddedBlob; /** blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } QueueEntry;
 
 /**
@@ -80,20 +55,14 @@ struct I_QueueStruct;
 typedef struct I_QueueStruct I_Queue;
 
 /** Declare function pointers to use in struct to simulate object oriented access */
-typedef void  ( * I_QueueInitialize)(I_Queue *queueP,
-                                      const char *dbname,
-                                      const char *nodeId,
-                                      const char *queueName,
-                                      int32_t maxNumOfEntries,
-                                      int64_t maxNumOfBytes,
-                                      QueueException *exception);
-typedef void  ( * I_QueueShutdown)(I_Queue *queueP, QueueException *exception);
-typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception);
-typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, QueueException *exception);
-typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, QueueException *exception);
-typedef bool  ( * I_QueueClear)(I_Queue *queueP, QueueException *exception);
-typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, QueueException *exception);
-typedef void  ( * I_QueueLogging)(I_Queue *queueP, const char *location, const char *fmt, ...);
+typedef void  ( * I_QueueInitialize)(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
+typedef void  ( * I_QueueShutdown)(I_Queue *queueP, ExceptionStruct *exception);
+typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
+typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
+typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
+typedef bool  ( * I_QueueClear)(I_Queue *queueP, ExceptionStruct *exception);
+typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, ExceptionStruct *exception);
+/*typedef void  ( * I_QueueLogging)(I_Queue *queueP, const char *location, const char *fmt, ...);*/
 
 /**
  * Interface for a queue implementation. 
@@ -149,7 +118,15 @@ struct I_QueueStruct {
     */                                  
    I_QueueEmpty empty;
 
-   I_QueueLogging log;
+   /**
+    * Set the logLevel to LOG_TRACE to get logging output
+    */
+   XMLBLASTER_LOG_LEVEL logLevel;
+
+   /**
+    * Assign your logging function pointer to receive logging output
+    */
+   XmlBlasterLogging log;
 
   /* private: */
    I_QueueInitialize initialize;
@@ -161,22 +138,19 @@ struct I_QueueStruct {
  * Get an instance of a persistent queue and initialize it. 
  * NOTE: Every call creates a new and independent instance which shall
  * be destroyed by a call to freeQueue() when you are done
- * @param dbname The database name, for SQLite it is the file name on HD, "xmlBlasterClient.db"
- * @param nodeId The name space of this queue, "clientJoe1081594557415"
- * @param queueName The name of the queue, "connection_clientJoe"
- * @param maxNumOfEntries The max. accepted entries, 10000000l
- * @param maxNumOfBytes The max. accepted bytes, 1000000000ll
+ * @param queueProperties
+ *        dbName The database name, for SQLite it is the file name on HD, "xmlBlasterClient.db"
+ *        nodeId The name space of this queue, "clientJoe1081594557415"
+ *        queueName The name of the queue, "connection_clientJoe"
+ *        maxNumOfEntries The max. accepted entries, 10000000l
+ *        maxNumOfBytes The max. accepted bytes, 1000000000ll
  * @param exception
  * @return queueP The 'this' pointer
  */
-Dll_Export extern I_Queue *createQueue(
-                                      const char *dbname,
-                                      const char *nodeId,
-                                      const char *queueName,
-                                      int32_t maxNumOfEntries,
-                                      int64_t maxNumOfBytes,
-                                      I_QueueLogging logFp,
-                                      QueueException *exception);
+Dll_Export extern I_Queue *createQueue(const QueueProperties *queueProperties,
+                                      XmlBlasterLogging logFp,
+                                      XMLBLASTER_LOG_LEVEL logLevel,
+                                      ExceptionStruct *exception);
 /*Dll_Export extern I_Queue *createQueue(int argc, const char* const* argv, I_QueueLogging logFp);*/
 
 /**
@@ -191,6 +165,11 @@ extern Dll_Export void freeQueueEntry(QueueEntry *queueEntry);
 extern Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDumpLen);
 extern Dll_Export char *queueEntryToXml(QueueEntry *queueEntry);
 
-extern Dll_Export int64_t getTimestamp(void);
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP
+}
+#endif
+#endif
+
 #endif /* I_QUEUE_I_Queue_h */
 
