@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.7 2000/06/25 18:32:42 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.8 2000/06/27 14:50:46 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -16,7 +16,6 @@ import org.jutils.log.Log;
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateQoS;
 import java.io.*;
 
@@ -39,7 +38,7 @@ public class XmlDBAdapterWorker extends Thread {
    private String                cust;
    private byte[]                content;
    private String                qos;
-   private CorbaConnection       xmlBlaster = null;
+   private XmlDBAdapter          adapter = null;
 
    private XmlDocument           erorDocument = null;
 
@@ -51,17 +50,17 @@ public class XmlDBAdapterWorker extends Thread {
     * @param cust
     * @param content
     * @param qos
-    * @param xmlBlaster
+    * @param adapter
     *
     * @see
     */
    public XmlDBAdapterWorker(String[] args, String cust, byte[] content,
-                             String qos, CorbaConnection xmlBlaster) {
+                             String qos, XmlDBAdapter adapter) {
       this.args = args;
       this.cust = cust;
       this.content = content;
       this.qos = qos;
-      this.xmlBlaster = xmlBlaster;
+      this.adapter = adapter;
    }
 
    /**
@@ -235,7 +234,7 @@ public class XmlDBAdapterWorker extends Thread {
          doc.write(bais);
 
          MessageUnit mu = new MessageUnit(xmlKey, bais.toByteArray(), qos);
-         String      oid = xmlBlaster.publish(mu);
+         String      oid = adapter.publish(mu);
 
          System.out.println("Delivered Results...\n" + bais);
       }
@@ -282,8 +281,3 @@ public class XmlDBAdapterWorker extends Thread {
    }
 
 }
-
-
-
-/*--- formatting done in "xmlBlaster Convention" style on 02-21-2000 ---*/
-

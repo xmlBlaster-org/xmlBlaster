@@ -1,11 +1,9 @@
-/*--- formatted by Jindent 2.1, (www.c-lab.de/~jindent) ---*/
-
 /*
- * ------------------------------------------------------------------------------Name:      XmlDBAdapter.java
+ * Name:      XmlDBAdapter.java
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.9 2000/06/25 18:32:42 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.10 2000/06/27 14:50:46 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -14,6 +12,8 @@ import org.jutils.log.Log;
 
 import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.UpdateQoS;
 
@@ -69,7 +69,7 @@ public class XmlDBAdapter implements I_Callback {
       String               cust = updateQos.getSender();
       String               qos = updateQos.printOn().toString();
       XmlDBAdapterWorker   worker = new XmlDBAdapterWorker(args, cust,
-              content, qos, corbaConnection);
+              content, qos, this);
 
       worker.start();
    }
@@ -95,6 +95,11 @@ public class XmlDBAdapter implements I_Callback {
       catch (Exception e) {
          e.printStackTrace();
       }
+   }
+
+   public String publish(MessageUnit msgUnit) throws XmlBlasterException
+   {
+      return corbaConnection.publish(msgUnit);
    }
 
    /**
