@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.26 1999/11/30 09:30:29 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.27 1999/11/30 10:36:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -192,11 +192,16 @@ module serverIdl
        *                See xmlKey.dtd for a description
        * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
+       * @return oid    The oid of your subscribed Message<br>
+       *                If you subscribed using a query, the subscription ID of this<br>
+       *                query handling object is returned.<br>
+       *                You should use this oid if you wish to unSubscribe()<br>
+       *                If no match is found, an empty string "" is returned.
        *
        * @see addListener in Java event model
        * @see addObserver in Java observer pattern
        */
-      /*oneway*/ void subscribe(in XmlType xmlKey, in XmlType qos)
+      string subscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -277,7 +282,7 @@ module serverIdl
 
 
       /**
-       * Setting attributes for a client. 
+       * Setting attributes for a client.
        * <p>
        *
        * @param clientName  The client which shall be administered
