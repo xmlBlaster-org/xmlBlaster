@@ -237,8 +237,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          if (disconnectFirst) disconnect();
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
-            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i + " url=" + url + " user=" + user); // + " password=" + password);
             this.connections[i] = DriverManager.getConnection(url, user, password);
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i + " success");
             this.currentIndex = i;
          }
          oldStatus = this.status;
