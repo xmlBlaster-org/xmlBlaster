@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.4 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.5 2002/05/06 07:35:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -144,7 +144,7 @@ public class TestGetFilter extends TestCase
 
       try {
          GetQosWrapper qos = new GetQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assert("Expected one returned message", msgUnits!=null);
@@ -169,7 +169,7 @@ public class TestGetFilter extends TestCase
 
       try {
          GetQosWrapper qos = new GetQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assert("Expected one returned message", msgUnits!=null);
@@ -191,7 +191,7 @@ public class TestGetFilter extends TestCase
 
       try {
          GetQosWrapper qos = new GetQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
          assert("get() message should throw an XmlBlasterException, but it didn't happen", false);

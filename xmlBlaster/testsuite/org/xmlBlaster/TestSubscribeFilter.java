@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.8 2002/05/03 10:37:49 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.9 2002/05/06 07:34:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -107,7 +107,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       // Subscribe to a message with a supplied filter
       try {
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml());
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
