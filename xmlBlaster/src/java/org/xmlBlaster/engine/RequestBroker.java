@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.98 2002/02/08 00:48:15 goetzger Exp $
+Version:   $Id: RequestBroker.java,v 1.99 2002/02/16 18:42:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -34,7 +34,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.98 $
+ * @version $Revision: 1.99 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -470,8 +470,13 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       content = "" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
       updateInternalStateInfoHelper(clientInfo, oid, content);
 
-      oid = "__sys__UserList";
-      content = "";
+   }
+
+
+   private void updateInternalUserList(ClientInfo clientInfo) throws XmlBlasterException
+   {
+      String oid = "__sys__UserList";
+      String content = "";
       synchronized (loggedIn) {
          Enumeration e=loggedIn.elements();
          while(e.hasMoreElements()) {
@@ -1001,7 +1006,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.TRACE) Log.trace(ME, " client added:"+clientInfo.getLoginName());
       synchronized (loggedIn){
          loggedIn.put(clientInfo.getLoginName(), clientInfo);
-         updateInternalStateInfo(clientInfo);
+         updateInternalUserList(clientInfo);
       }
    }
 
@@ -1026,7 +1031,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.TRACE) Log.trace(ME, " client removed:"+clientInfo.getLoginName());
       synchronized (loggedIn) {
          loggedIn.remove(clientInfo.getLoginName());
-         updateInternalStateInfo(clientInfo);
+         updateInternalUserList(clientInfo);
       }
    }
 
