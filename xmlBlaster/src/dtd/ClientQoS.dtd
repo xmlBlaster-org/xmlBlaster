@@ -22,5 +22,5 @@
 
 <!ELEMENT offlineQeuing EMPTY>
 <!ATTLIST offlineQeuing timeout NUMBER #REQUIRED>
-<!ATTLIST offlineQeuing maxMsg NUMBER #REQUIRED>
+<!ATTLIST offlineQeuing maxEntries NUMBER #REQUIRED>
 <!ATTLIST offlineQeuing maxSize NUMBER #REQUIRED>

@@ -129,7 +129,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          ConnectQos loginQosW = new ConnectQos(glob); // "<qos></qos>"; During login this is manipulated (callback address added)
          // If we have many subs on one con, we must raise the max size of the callback queue!
          CbQueueProperty cbProp =loginQosW.getSessionCbQueueProperty();
-         cbProp.setMaxMsg(numSubscribers+1000);
+         cbProp.setMaxEntries(numSubscribers+1000);
          String passwd = "secret";
          oneConnection.login(oneName, passwd, null, this); // Login to xmlBlaster
       }
@@ -253,7 +253,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                      // If we have many subs on one con, we must raise the max size of the callback queue!
                      CbQueueProperty cbProp =loginQosW.getSessionCbQueueProperty();
                      // algo is maxSubPerCon*4
-                     cbProp.setMaxMsg(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
+                     cbProp.setMaxEntries(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
                      //cbProp.setMaxBytes(4000);
                      //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
                      //loginQosW.setSubjectQueueProperty(cbProp);

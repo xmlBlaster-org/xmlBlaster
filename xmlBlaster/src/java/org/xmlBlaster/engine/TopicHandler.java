@@ -246,10 +246,10 @@ public final class TopicHandler implements I_Timeout
       }
 
       if (true /*log.INFO*/) {
-         long maxMsgHistory = this.topicProperty.getHistoryQueueProperty().getMaxMsg();
-         String hist = (maxMsgHistory > 0) ? "history/maxMsg="+maxMsgHistory : "message history is switched off with queue/history/maxMsg=0";
-         long maxMsgStore = this.topicProperty.getMsgUnitStoreProperty().getMaxMsg();
-         String store = (maxMsgStore > 0) ? "persistence/msgUnitStore/maxMsg="+maxMsgStore : "message storage is switched off with persistence/msgUnitStore/maxMsg=0";
+         long maxEntriesHistory = this.topicProperty.getHistoryQueueProperty().getMaxEntries();
+         String hist = (maxEntriesHistory > 0) ? "history/maxEntries="+maxEntriesHistory : "message history is switched off with queue/history/maxEntries=0";
+         long maxEntriesStore = this.topicProperty.getMsgUnitStoreProperty().getMaxEntries();
+         String store = (maxEntriesStore > 0) ? "persistence/msgUnitStore/maxEntries="+maxEntriesStore : "message storage is switched off with persistence/msgUnitStore/maxEntries=0";
          log.info(ME, "New topic is ready, " + hist + ", " + store);
       }
    }
@@ -280,7 +280,7 @@ public final class TopicHandler implements I_Timeout
     * Should be invoked delayed as soon as TopicHandler instance is created an registered everywhere
     * as we ask the msgUnitStore for the real messages if some history entries existed. 
     * <p>
-    * NOTE: this.historyQueue can be null if maxMsgs=0 is configured
+    * NOTE: this.historyQueue can be null if maxEntriess=0 is configured
     * </p>
     * <p>
     * This history queue entries hold weak references to the msgUnitCache entries
@@ -290,7 +290,7 @@ public final class TopicHandler implements I_Timeout
       synchronized (this) {
          QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
          if (this.historyQueue == null) {
-            if (prop.getMaxMsg() > 0L) {
+            if (prop.getMaxEntries() > 0L) {
                String type = prop.getType();
                String version = prop.getVersion();
                StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
@@ -298,17 +298,17 @@ public final class TopicHandler implements I_Timeout
                this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
             }
             else {
-               if (log.TRACE) log.trace(ME, "History queuing of this topic is switched of with maxMsg=0");
+               if (log.TRACE) log.trace(ME, "History queuing of this topic is switched of with maxEntries=0");
             }
          }
          else {
-            if (prop.getMaxMsg() > 0L) {
+            if (prop.getMaxEntries() > 0L) {
                log.info(ME, "Reconfiguring history queue.");
                this.historyQueue.setProperties(prop);
             }
             else {
                log.warn(ME, "Destroying history queue with " + this.historyQueue.getNumOfEntries() +
-                            " entries because of new configuration with maxMsg=0");
+                            " entries because of new configuration with maxEntries=0");
                this.historyQueue.clear();
                this.historyQueue.shutdown();
                this.historyQueue = null;

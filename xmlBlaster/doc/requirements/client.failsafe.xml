@@ -368,7 +368,7 @@ try {
    addressProp.setDelay(4000L);      // retry connecting every 4 sec
    addressProp.setRetries(-1);       // -1 == forever
    addressProp.setPingInterval(0L);  // switched off
-   addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+   addressProp.setMaxEntries(1000);      // queue up to 1000 messages
    con.initFailSave(this);
 
    connectQos.setAddress(addressProp);
@@ -431,7 +431,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -c
       </p>
       <p>
       Example:
-      <pre>java HelloWorld4 -queue/callback/maxMsg 20000 -retries -1 -session.name joe/2</pre>
+      <pre>java HelloWorld4 -queue/callback/maxEntries 20000 -retries -1 -session.name joe/2</pre>
       </p>
       <table border="1">
          <tr>
@@ -466,6 +466,16 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -c
          </tr>
          
          <tr>
+            <td>queue/client/maxEntries</td>
+            <td>1000</td>
+            <td>The maximum allowed number of messages in the client side queue<br />
+                0 switches recording of invocations (tail back messages) off.<br />
+                -1 sets it to unlimited.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>cb.retries</td>
             <td>0</td>
             <td>How often the xmlBlaster server shall retry to reach our client side callback server
@@ -486,10 +496,9 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -c
          </tr>
 
          <tr>
-            <td>queue/callback/maxMsg</td>
+            <td>queue/callback/maxEntries</td>
             <td>1000</td>
             <td>The maximum allowed number of messages in the server side callback queue if this client<br />
-                0 switches recording of invocations (tail back messages) off.<br />
                 -1 sets it to unlimited.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -506,7 +515,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -c
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

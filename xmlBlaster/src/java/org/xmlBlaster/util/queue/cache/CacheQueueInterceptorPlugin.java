@@ -190,7 +190,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    private QueuePropertyBase createRamCopy(QueuePropertyBase queuePropertyBase) {
       QueuePropertyBase ramCopy = (QueuePropertyBase)queuePropertyBase.clone();
-      ramCopy.setMaxMsg(queuePropertyBase.getMaxMsgCache());
+      ramCopy.setMaxEntries(queuePropertyBase.getMaxEntriesCache());
       ramCopy.setMaxBytes(queuePropertyBase.getMaxBytesCache());
       return ramCopy;
    }
@@ -210,9 +210,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
 
       /* Do we need to protect against shrinking?
-      if (this.property != null && this.property.getMaxMsg() > newProp.getMaxMsg()) {
-         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxMsg() +
-                    " to " + newProp.getMaxMsg() + " is not supported, we ignore the new setting.");
+      if (this.property != null && this.property.getMaxEntries() > newProp.getMaxEntries()) {
+         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxEntries() +
+                    " to " + newProp.getMaxEntries() + " is not supported, we ignore the new setting.");
          return;
       }
       */
@@ -320,7 +320,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if (getNumOfEntries() > getMaxNumOfEntries()) { // Allow superload one time only
          String reason = "Queue overflow (number of entries), " + getNumOfEntries() +
                          " messages are in queue, try increasing '" +
-                         this.property.getPropName("maxMsg") + "' on client login.";
+                         this.property.getPropName("maxEntries") + "' on client login.";
          if (log.TRACE) log.trace(ME, reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }

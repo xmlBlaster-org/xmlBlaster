@@ -43,7 +43,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
       string ret;
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
-             string(" maxMsg=") + lexical_cast<string>(getMaxMsg());
+             string(" maxEntries=") + lexical_cast<string>(getMaxEntries());
       if (!addressArr_.empty())
          ret += string(" ") + getCurrentAddress().getSettings();
       return ret;
@@ -91,7 +91,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       string text = "";
       text += string("Control client side fail save queue properties (message recorder):\n");
-      text += string("   -queue.maxMsg       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxMsgDefault) + string("].\n");
+      text += string("   -queue/client/maxEntries The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("                       0 switches recording of invocations off.\n");
       text += string("                       -1 sets it to unlimited.\n");
       text += string("   -queue.type         The queue plugin type [") + DEFAULT_type + string("].\n");

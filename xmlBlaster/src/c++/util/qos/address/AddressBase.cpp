@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.10 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.11 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -49,7 +49,7 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
    // set the defaults here ...
    ME                   = "AddressBase";
    nodeId_              = "";
-   maxMsg_              = 0;
+   maxEntries_          = 0;
    address_             = "";
    hostname_            = "";
    isHardcodedHostname_ = false;

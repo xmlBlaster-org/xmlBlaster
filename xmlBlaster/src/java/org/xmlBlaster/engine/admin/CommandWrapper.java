@@ -20,7 +20,7 @@ import java.util.StringTokenizer;
  * <pre>
  *   /node/heron/?freeMem
  *   /node/heron/sysprop/?java.vm.version
- *   /node/heron/client/joe/ses17/?cb.queue.maxMsg
+ *   /node/heron/client/joe/ses17/?cb.queue.maxEntries
  * </pre>
  * <p />
  * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
@@ -49,7 +49,7 @@ public final class CommandWrapper
    String fourth = null;
    /** The fifth level -> "client/joe/ses17" or "client/joe/?maxSessions" */
    String fifth = null;
-   /** The sixth level -> "client/joe/ses17/?cb.queue.maxMsg" */
+   /** The sixth level -> "client/joe/ses17/?cb.queue.maxEntries" */
    String sixth = null;
 
    /** The rest of the command -> "?java.vm.version"*/
@@ -132,7 +132,7 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * @return "node"
     */
    public final String getRoot() {
@@ -140,7 +140,7 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * @return e.g. "heron"
     */
    public final String getClusterNodeId() {
@@ -148,7 +148,7 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * @return The third level of a command like "client", "sysprop", "topic", "?uptime"
     */
    public final String getThirdLevel() {
@@ -157,7 +157,7 @@ public final class CommandWrapper
 
    /**
     * <pre>
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * /node/heron/topic/?hello
     * </pre>
     * @return "joe" or "?hello" in the above example
@@ -167,7 +167,7 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * @return "ses17" in the above example
     */
    public final String getSessionIdLevel() {
@@ -175,7 +175,7 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
     * @return "ses17" in the above example
     */
    public final String getFifthLevel() {
@@ -183,8 +183,8 @@ public final class CommandWrapper
    }
 
    /**
-    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
-    * @return "?cb.queue.maxMsg" in the above example
+    * /node/heron/client/joe/ses17/?cb.queue.maxEntries
+    * @return "?cb.queue.maxEntries" in the above example
     */
    public final String getSessionAttrLevel() {
       return sixth;

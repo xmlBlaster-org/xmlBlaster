@@ -177,7 +177,7 @@ public class TestSessionReconnect extends TestCase
                topicProperty.setDestroyDelay(60000L);
                topicProperty.setCreateDomEntry(true);
                topicProperty.setReadonly(false);
-               topicProperty.getHistoryQueueProperty().setMaxMsg(numPub+5);
+               topicProperty.getHistoryQueueProperty().setMaxEntries(numPub+5);
                pq.setTopicProperty(topicProperty);
                log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
             }

@@ -107,35 +107,35 @@ public final class PropLong extends PropEntry implements java.io.Serializable, C
 
    /** java org.xmlBlaster.util.property.PropLong */
    public static void main(String[] args) {
-      PropLong maxMsg = new PropLong(123456L);
-      System.out.println(maxMsg.toXml());
+      PropLong maxEntries = new PropLong(123456L);
+      System.out.println(maxEntries.toXml());
 
       org.xmlBlaster.util.Global glob = new org.xmlBlaster.util.Global(args);
       String nodeId = null;
       String prefix = null;
       String className = null;
       String instanceName = null;
-      String propName = "maxMsg";
+      String propName = "maxEntries";
 
       try {
-         glob.getProperty().set("maxMsg", "444444");
-         glob.getProperty().set("persistence/msgUnitStore/maxMsg", "666666");
-         glob.getProperty().set("topic/hello/persistence/msgUnitStore/maxMsg", "777777"); // this should be ignored in current version
-         glob.getProperty().set("/node/heron/topic/hello/persistence/msgUnitStore/maxMsg", "999999");
+         glob.getProperty().set("maxEntries", "444444");
+         glob.getProperty().set("persistence/msgUnitStore/maxEntries", "666666");
+         glob.getProperty().set("topic/hello/persistence/msgUnitStore/maxEntries", "777777"); // this should be ignored in current version
+         glob.getProperty().set("/node/heron/topic/hello/persistence/msgUnitStore/maxEntries", "999999");
          //System.out.println(glob.getProperty().toXml());
 
 
          System.out.println("PropName=" + propName + ", used env name=" +
-             maxMsg.setFromEnv(glob, nodeId, prefix, className, instanceName, propName) +
-             ": " + maxMsg.toXml(""));
+             maxEntries.setFromEnv(glob, nodeId, prefix, className, instanceName, propName) +
+             ": " + maxEntries.toXml(""));
 
          nodeId = "heron";
          prefix = "topic/hello";
          className = "persistence";
          instanceName = "msgUnitStore";
          System.out.println("PropName=" + propName + ", used env name=" +
-             maxMsg.setFromEnv(glob, nodeId, prefix, className, instanceName, propName) +
-             ": " + maxMsg.toXml(""));
+             maxEntries.setFromEnv(glob, nodeId, prefix, className, instanceName, propName) +
+             ": " + maxEntries.toXml(""));
       }
       catch (Exception e) {
          System.out.println("ERROR: " + e.toString());

@@ -151,10 +151,10 @@ public class I_MapTest extends TestCase {
          // test initialize()
          prop1 = new MsgUnitStoreProperty(glob, "/node/test");
          int max = 12;
-         prop1.setMaxMsg(max);
-         prop1.setMaxMsgCache(max);
-         assertEquals(ME+": Wrong capacity", max, prop1.getMaxMsg());
-         assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
+         prop1.setMaxEntries(max);
+         prop1.setMaxEntriesCache(max);
+         assertEquals(ME+": Wrong capacity", max, prop1.getMaxEntries());
+         assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxEntriesCache());
          StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
 
          i_map.initialize(queueId, prop1);
@@ -162,8 +162,8 @@ public class I_MapTest extends TestCase {
 
          try {
             prop = new MsgUnitStoreProperty(glob, "/node/test");
-            prop.setMaxMsg(99);
-            prop.setMaxMsgCache(99);
+            prop.setMaxEntries(99);
+            prop.setMaxEntriesCache(99);
             i_map.setProperties(prop);
          }
          catch(XmlBlasterException e) {
@@ -175,9 +175,9 @@ public class I_MapTest extends TestCase {
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
 
-      long len = prop.getMaxMsg();
-      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), i_map.getMaxNumOfEntries());
-      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), ((QueuePropertyBase)i_map.getProperties()).getMaxMsg());
+      long len = prop.getMaxEntries();
+      assertEquals(ME+": Wrong capacity", prop.getMaxEntries(), i_map.getMaxNumOfEntries());
+      assertEquals(ME+": Wrong capacity", prop.getMaxEntries(), ((QueuePropertyBase)i_map.getProperties()).getMaxEntries());
       assertEquals(ME+": Wrong size", 0, i_map.getNumOfEntries());
 
       try {
@@ -471,8 +471,8 @@ public class I_MapTest extends TestCase {
          QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
          queueType = this.currMap.toString();
          StorageId queueId = new StorageId("msgUnitStore", "MapPlugin/getAllSwappedMsgs");
-         prop.setMaxMsg(10);      // Overall size (RAM or JDBC or CACHE)
-         prop.setMaxMsgCache(2);  // Is only interpreted for cache implementations (-> the size of the RAM map)
+         prop.setMaxEntries(10);      // Overall size (RAM or JDBC or CACHE)
+         prop.setMaxEntriesCache(2);  // Is only interpreted for cache implementations (-> the size of the RAM map)
          this.currMap.initialize(queueId, prop);
          this.currMap.clear();
          assertEquals(ME + "wrong size before starting ", 0, this.currMap.getNumOfEntries());
@@ -493,8 +493,8 @@ public class I_MapTest extends TestCase {
       System.out.println("***" + ME);
       
       QueuePropertyBase prop = (QueuePropertyBase)i_map.getProperties();
-      assertEquals(ME+": Wrong capacity", 10, prop.getMaxMsg());
-      assertEquals(ME+": Wrong cache capacity", 2, prop.getMaxMsgCache());
+      assertEquals(ME+": Wrong capacity", 10, prop.getMaxEntries());
+      assertEquals(ME+": Wrong cache capacity", 2, prop.getMaxEntriesCache());
       log.info(ME, "Current settings: " + prop.toXml());
 
       try {

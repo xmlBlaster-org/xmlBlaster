@@ -105,7 +105,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
          addressProp.setRetries(-1);       // -1 == forever
          addressProp.setPingInterval(-1L); // switched off
-         addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+         addressProp.setMaxEntries(1000);      // queue up to 1000 messages
          con.initFailSave(this);
 
          connectQos.setAddress(addressProp);

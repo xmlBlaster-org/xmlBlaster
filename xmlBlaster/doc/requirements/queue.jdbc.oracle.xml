@@ -24,7 +24,7 @@
        These are example QoS of subscribe() invocations:
        <pre>
 &lt;qos>
-   &lt;queue maxMsgCache='1000' maxBytesCache='4000'  maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxEntriesCache='1000' maxBytesCache='4000'  maxEntries='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
 &lt;/qos>
 </pre>
    </example>
@@ -49,35 +49,35 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxMsg</td>
+            <td>queue/maxEntries</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxBytes</td>
+            <td>queue/maxBytes</td>
             <td>10485760</td>
             <td>(10MB) specifies the maximum total size allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.url</td>
+            <td>queue/persistent/url</td>
             <td>jdbc:oracle:thin:@develop:1521:TEST</td>
             <td>the url which specifies where to find the DB.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
             <tr>
-            <td>queue.persistent.user</td>
+            <td>queue/persistent/user</td>
             <td>xmlblaster</td>
             <td>The db user under which to run</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.password</td>
+            <td>queue/persistent/password</td>
             <td>secret</td>
             <td>The password used together with the user 'xmlblaster'</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -100,7 +100,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

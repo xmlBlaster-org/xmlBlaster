@@ -468,8 +468,8 @@ int main(int args, char* argv[])
        <node id='heron'/>
     </route>
     <topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-       <queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
-       <queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
+       <queue relating='topic' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000000' onOverflow='deadMessage'/>
+       <queue relating='history' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000000' onOverflow='exception'/>
     </topic>
  </qos>
 

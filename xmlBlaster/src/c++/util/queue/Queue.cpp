@@ -66,7 +66,7 @@ void Queue::put(MsgQueueEntry *entry)
       throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_BYTES, ME + "::put", "client queue");
    }
 
-   if (storage_.size() >= (size_t)property_.getMaxMsg() ) {
+   if (storage_.size() >= (size_t)property_.getMaxEntries() ) {
       throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME + "::put", "client queue");
    }
    try {

@@ -169,7 +169,7 @@ public class QueueExtendedTest extends TestCase {
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "performancePut: number of queues: " + numOfQueues + ", number of messages per queue: " + numOfMsg + ", size of each message: " + sizeOfMsg);
 
-      prop.setMaxMsg(numOfMsg + 1);
+      prop.setMaxEntries(numOfMsg + 1);
 
       this.log.info(ME, "starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();
@@ -237,7 +237,7 @@ public class QueueExtendedTest extends TestCase {
       this.queues = new I_Queue[numOfQueues];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
 
-      prop.setMaxMsg(numOfMsg + 1);
+      prop.setMaxEntries(numOfMsg + 1);
 
       this.log.info(ME, "starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();

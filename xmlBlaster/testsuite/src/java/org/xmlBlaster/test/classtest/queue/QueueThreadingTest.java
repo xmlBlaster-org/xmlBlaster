@@ -186,7 +186,7 @@ public class QueueThreadingTest extends TestCase {
       int threadsPerQueue = 5;
       QueueThread[] queueThreads = new QueueThread[numOfQueues*threadsPerQueue];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      prop.setMaxMsg(numOfMsg*threadsPerQueue + 1);
+      prop.setMaxEntries(numOfMsg*threadsPerQueue + 1);
 
       this.log.info(ME, "starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();

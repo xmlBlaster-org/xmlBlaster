@@ -23,7 +23,7 @@ public class ClientQueueProperty extends QueuePropertyBase
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue/maxEntries and -queue/client/maxEntries[heron] will be searched
     */
    public ClientQueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
@@ -36,7 +36,7 @@ public class ClientQueueProperty extends QueuePropertyBase
     */
    public final String getSettings() {
       StringBuffer buf = new StringBuffer(256);
-      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxEntries=").append(getMaxEntries());
       if (getCurrentAddress() != null)
          buf.append(" ").append(getCurrentAddress().getSettings());
       return buf.toString();

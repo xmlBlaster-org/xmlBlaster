@@ -257,8 +257,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       TopicProperty topicProperty = new TopicProperty(glob);
       HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
-      historyQueueProperty.setMaxMsgCache(2);
-      historyQueueProperty.setMaxMsg(2);
+      historyQueueProperty.setMaxEntriesCache(2);
+      historyQueueProperty.setMaxEntries(2);
       topicProperty.setHistoryQueueProperty(historyQueueProperty);
       publishQos.setTopicProperty(topicProperty);
       this.publishQosForEvents = publishQos;

@@ -89,7 +89,7 @@ public class HelloWorldPublish
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
          boolean createDomEntry = glob.getProperty().get("createDomEntry", true);
-         long historyMaxMsg = glob.getProperty().get("queue/history/maxMsg", -1L);
+         long historyMaxMsg = glob.getProperty().get("queue/history/maxEntries", -1L);
          boolean forceQueuing = glob.getProperty().get("forceQueuing", true);
          boolean subscribeable = glob.getProperty().get("subscribeable", true);
          String destination = glob.getProperty().get("destination", (String)null);
@@ -123,7 +123,7 @@ public class HelloWorldPublish
          log.info(ME, "   -readonly       " + readonly);
          log.info(ME, "   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
          log.info(ME, "   -createDomEntry " + createDomEntry);
-         log.info(ME, "   -queue/history/maxMsg " + historyMaxMsg);
+         log.info(ME, "   -queue/history/maxEntries " + historyMaxMsg);
          log.info(ME, " PtP settings");
          log.info(ME, "   -subscribeable  " + subscribeable);
          log.info(ME, "   -forceQueuing   " + forceQueuing);
@@ -168,7 +168,7 @@ public class HelloWorldPublish
                topicProperty.setReadonly(readonly);
                if (historyMaxMsg >= 0L) {
                   HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
-                  prop.setMaxMsg(historyMaxMsg);
+                  prop.setMaxEntries(historyMaxMsg);
                   topicProperty.setHistoryQueueProperty(prop);
                }
                pq.setTopicProperty(topicProperty);

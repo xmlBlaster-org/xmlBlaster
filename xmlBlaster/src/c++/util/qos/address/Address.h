@@ -3,7 +3,7 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.2 2003/01/07 20:41:41 laghi Exp $
+Version:   $Id: Address.h,v 1.3 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -65,9 +65,9 @@ public:
     */
    Address& operator =(const AddressBase& addr);
 
-   void setMaxMsg(long maxMsg);
+   void setMaxEntries(long maxEntries);
 
-   long getMaxMsg() const;
+   long getMaxEntries() const;
 
    /** For logging only */
    string getSettings();

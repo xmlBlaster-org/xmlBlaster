@@ -18,7 +18,7 @@
       Following error handling is possible if the queue overflows:
       </p>
       <ul>
-         <li>ONOVERFLOW_EXCEPTION: This is the default behaviour, the recorder framewok throws an XmlBlasterExcption</li>
+         <li>ONOVERFLOW_EXCEPTION: This is the default behaviour, the recorder framework throws an XmlBlasterExcption</li>
          <li>ONOVERFLOW_DISCARD: In this mode messages are destroyed if the queue is full</li>
          <li>ONOVERFLOW_DISCARDOLDEST: The oldest message from the queue is destroyed to have space for a new one</li>
       </ul>
@@ -53,7 +53,7 @@ RecorderPlugin[FileRecorder][1.0]=
          </tr>
 
          <tr>
-            <td>queue.maxMsg</td>
+            <td>queue.maxEntries</td>
             <td>1000</td>
             <td>How many messages to tail back on client side if they can't be delivered to xmlBlaster.
                 -1 sets it to unlimited.
@@ -127,7 +127,7 @@ RecorderPlugin[FileRecorder][1.0]=
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="CLOSED">
       <name>xmlBlaster@marcelruff.info</name>
       <comment>

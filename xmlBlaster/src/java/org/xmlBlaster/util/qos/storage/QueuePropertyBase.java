@@ -40,13 +40,9 @@ public abstract class QueuePropertyBase implements Cloneable
    public static final String DEFAULT_version = "1.0";
    protected PropString version = new PropString(DEFAULT_version);
 
-   ///** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
-   //public static final long DEFAULT_maxMsgDefault = 1000L;
-   //protected long maxMsgDefault = DEFAULT_maxMsgDefault;
-
-   /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
-   public static final long DEFAULT_maxMsgCacheDefault = 1000L;
-   protected long maxMsgCacheDefault = DEFAULT_maxMsgCacheDefault;
+   /** The max setting allowed for queue maxEntriesCache is adjustable with property "queue.maxEntriesCache=1000" (1000 messages is default) */
+   public static final long DEFAULT_maxEntriesCacheDefault = 1000L;
+   protected long maxEntriesCacheDefault = DEFAULT_maxEntriesCacheDefault;
 
    /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (10 MBytes is default) */
    public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB
@@ -71,14 +67,14 @@ public abstract class QueuePropertyBase implements Cloneable
    /** The unique queue or storage name, e.g. "history" */
    protected String relating = Constants.RELATING_CALLBACK;
 
-   /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
-   public long DEFAULT_maxMsg = 1000L;
+   /** The max setting allowed for queue maxEntries is adjustable with property "queue.maxEntries=1000" (1000 messages is default) */
+   public long DEFAULT_maxEntries = 1000L;
    /** The max. capacity of the queue in number of entries */
-   protected PropLong maxMsg = new PropLong(DEFAULT_maxMsg);
+   protected PropLong maxEntries = new PropLong(DEFAULT_maxEntries);
    /** The max. capacity of the queue in Bytes */
    protected PropLong maxBytes = new PropLong(maxBytesDefault);
    /** The max. capacity of the cache of the queue in number of entries */
-   protected PropLong maxMsgCache = new PropLong(maxMsgCacheDefault);
+   protected PropLong maxEntriesCache = new PropLong(maxEntriesCacheDefault);
    /** The max. capacity of the queue in Bytes for the cache */
    protected PropLong maxBytesCache = new PropLong(c);
 
@@ -112,7 +108,7 @@ public abstract class QueuePropertyBase implements Cloneable
    /**
     * @param glob The global handle containing env informations
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched<br />
+    * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched<br />
     * The nodeId should be stripped from special characters (see glob.getStrippedId())
     * e.g. '/' or '[' is not allowed in the nodeId
     * @see Global#getStrippedId()
@@ -129,20 +125,7 @@ public abstract class QueuePropertyBase implements Cloneable
    }
 
    /**
-    * Show some important settings for logging
-    */
-    /*
-   public String getSettings()
-   {
-      StringBuffer buf = new StringBuffer(256);
-      buf.append("onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
-      if (getCurrentCallbackAddress() != null)
-         buf.append(" ").append(getCurrentCallbackAddress().getSettings());
-      return buf.toString();
-   }  */
-
-   /**
-    * @return The prefix (relating='') for properties e.g. "history" -> "-history.queue.maxMsg"
+    * @return The prefix (relating='') for properties e.g. "history" -> "-queue/history/maxEntries"
     */
    public String getPropertyPrefix() {
       return this.propertyPrefix;
@@ -160,8 +143,8 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property). 
-    * @param prop e.g. "maxMsg"
-    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    * @param prop e.g. "maxEntries"
+    * @return e.g. "-queue/history/maxEntries" or "-queue/history/maxEntriesCache"
     */
    public String getPropName(String token) {
       return "-" + getPrefix() + token;
@@ -194,8 +177,8 @@ public abstract class QueuePropertyBase implements Cloneable
       }
                                 
       // The newer way:
-      this.maxMsg.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsg");
-      this.maxMsgCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsgCache");
+      this.maxEntries.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxEntries");
+      this.maxEntriesCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxEntriesCache");
       this.maxBytes.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytes");
       this.maxBytesCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytesCache");
       this.type.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "type");
@@ -256,21 +239,21 @@ public abstract class QueuePropertyBase implements Cloneable
     * <br />
     * @return number of messages
     */
-   public final long getMaxMsg() {
-      return this.maxMsg.getValue();
+   public final long getMaxEntries() {
+      return this.maxEntries.getValue();
    }
 
    /**
     * Max number of messages for this queue.
     * <br />
-    * @param maxMsg
+    * @param maxEntries
     */
-   public final void setMaxMsg(long maxMsg) {
-      setMaxMsgUnchecked(maxMsg);
+   public final void setMaxEntries(long maxEntries) {
+      setMaxEntriesUnchecked(maxEntries);
       checkConsistency();
    }
-   private final void setMaxMsgUnchecked(long maxMsg) {
-      this.maxMsg.setValue(maxMsg);
+   private final void setMaxEntriesUnchecked(long maxEntries) {
+      this.maxEntries.setValue(maxEntries);
    }
 
    /**
@@ -314,21 +297,21 @@ public abstract class QueuePropertyBase implements Cloneable
     * <br />
     * @return number of messages
     */
-   public final long getMaxMsgCache() {
-      return this.maxMsgCache.getValue();
+   public final long getMaxEntriesCache() {
+      return this.maxEntriesCache.getValue();
    }
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
-    * @param maxMsgCache
+    * @param maxEntriesCache
     */
-   public final void setMaxMsgCache(long maxMsgCache) {
-      this.maxMsgCache.setValue(maxMsgCache);
+   public final void setMaxEntriesCache(long maxEntriesCache) {
+      this.maxEntriesCache.setValue(maxEntriesCache);
       checkConsistency();
    }
-   private final void setMaxMsgCacheUnchecked(long maxMsgCache) {
-      this.maxMsgCache.setValue(maxMsgCache);
+   private final void setMaxEntriesCacheUnchecked(long maxEntriesCache) {
+      this.maxEntriesCache.setValue(maxEntriesCache);
    }
 
    /**
@@ -543,12 +526,12 @@ public abstract class QueuePropertyBase implements Cloneable
             if (attrs.getQName(ii).equalsIgnoreCase("relating")) {
                setRelating(attrs.getValue(ii).trim());
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsg")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("maxEntries")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxMsgUnchecked(new Long(tmp).longValue());
+                  setMaxEntriesUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxMsg='" + tmp + "'>, expected a long, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxEntries='" + tmp + "'>, expected a long, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
@@ -557,12 +540,12 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
                setVersion(attrs.getValue(ii).trim());
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsgCache")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("maxEntriesCache")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxMsgCacheUnchecked(new Long(tmp).longValue());
+                  setMaxEntriesCacheUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxMsgCache='" + tmp + "'>, expected an long, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxEntriesCache='" + tmp + "'>, expected an long, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("maxBytes")) {
@@ -647,8 +630,8 @@ public abstract class QueuePropertyBase implements Cloneable
       String prefix = getPrefix();
       String text = "";
       text += "\n" + headerline + "\n";
-      text += "   -"+prefix+"maxMsg        The maximum allowed number of messages [" + this.maxMsg.getDefaultValue() + "].\n";
-      text += "   -"+prefix+"maxMsgCache   The maximum allowed number of messages in the cache [" + this.maxMsgCache.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxEntries        The maximum allowed number of messages [" + this.maxEntries.getDefaultValue() + "].\n";
+      text += "   -"+prefix+"maxEntriesCache   The maximum allowed number of messages in the cache [" + this.maxEntriesCache.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxBytes      The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxBytesCache The maximum size in bytes in the cache [" + this.maxBytesCache.getDefaultValue() + "].\n";
       text += "   -"+prefix+"onOverflow    What happens if storage is full [" + this.onOverflow.getDefaultValue() + "]\n";
@@ -663,9 +646,9 @@ public abstract class QueuePropertyBase implements Cloneable
     * Should be called after parsing
     */
    public final void checkConsistency() { // throws XmlBlasterException {
-      if (getMaxMsgCache() > getMaxMsg()) {
-         log.warn(ME, "maxMsgCache=" + getMaxMsgCache() + " is bigger than maxMsg=" + getMaxMsg() + ", we reduce maxMsgCache to maxMsg and continue.");
-         this.maxMsgCache.setValue(getMaxMsg());
+      if (getMaxEntriesCache() > getMaxEntries()) {
+         log.warn(ME, "maxEntriesCache=" + getMaxEntriesCache() + " is bigger than maxEntries=" + getMaxEntries() + ", we reduce maxEntriesCache to maxEntries and continue.");
+         this.maxEntriesCache.setValue(getMaxEntries());
       }
       if (getMaxBytesCache() > getMaxBytes()) {
          log.warn(ME, "maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
@@ -698,10 +681,10 @@ public abstract class QueuePropertyBase implements Cloneable
          sb.append(" type='").append(getType()).append("'");
       if (this.version.isModified())
          sb.append(" version='").append(getVersion()).append("'");
-      if (this.maxMsg.isModified())
-         sb.append(" maxMsg='").append(getMaxMsg()).append("'");
-      if (this.maxMsgCache.isModified())
-         sb.append(" maxMsgCache='").append(getMaxMsgCache()).append("'");
+      if (this.maxEntries.isModified())
+         sb.append(" maxEntries='").append(getMaxEntries()).append("'");
+      if (this.maxEntriesCache.isModified())
+         sb.append(" maxEntriesCache='").append(getMaxEntriesCache()).append("'");
       if (this.maxBytes.isModified())
          sb.append(" maxBytes='").append(getMaxBytes()).append("'");
       if (this.maxBytesCache.isModified())
@@ -752,8 +735,8 @@ public abstract class QueuePropertyBase implements Cloneable
       try {
          newOne = (QueuePropertyBase)super.clone();
          synchronized(this) {
-            newOne.maxMsg = (PropLong)this.maxMsg.clone();
-            newOne.maxMsgCache = (PropLong)this.maxMsgCache.clone();
+            newOne.maxEntries = (PropLong)this.maxEntries.clone();
+            newOne.maxEntriesCache = (PropLong)this.maxEntriesCache.clone();
             newOne.maxBytes = (PropLong)this.maxBytes.clone();
             newOne.maxBytesCache = (PropLong)this.maxBytesCache.clone();
             newOne.type = (PropString)this.type.clone();

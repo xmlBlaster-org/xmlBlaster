@@ -35,17 +35,17 @@ public class ClientTableObserver implements Observer {
      */
     public ClientTableObserver( ClientTableSubject clientTableSubject,
                                 AgentXSession session ) {
-	this.clientTableSubject = clientTableSubject;
-	this.session = session;
-	clientTableSubject.addObserver( this );
-	clientTable = new ClientTable();
-	session.addGroup(clientTable);
-	clientHashtable = new Hashtable();
-	refCounts = new Hashtable();
-	indexSet = new BitSet();
-	for (int i = 1; i <= MAXINDX; i++) {
-	    indexSet.set(i);
-	}
+        this.clientTableSubject = clientTableSubject;
+        this.session = session;
+        clientTableSubject.addObserver( this );
+        clientTable = new ClientTable();
+        session.addGroup(clientTable);
+        clientHashtable = new Hashtable();
+        refCounts = new Hashtable();
+        indexSet = new BitSet();
+        for (int i = 1; i <= MAXINDX; i++) {
+            indexSet.set(i);
+        }
     }
 
     /**
@@ -55,29 +55,29 @@ public class ClientTableObserver implements Observer {
      * -1, if clientIndex identifies no client in the client table.
      */
     public int increment(Integer clientIndex) {
-	// find clientName with clientIndex
-	Enumeration e = clientHashtable.keys();
-	String clientName = (String)e.nextElement();
-	while ((clientHashtable.get(clientName) != clientIndex) && e.hasMoreElements()) {
-	    clientName = (String)e.nextElement();
-	}
+        // find clientName with clientIndex
+        Enumeration e = clientHashtable.keys();
+        String clientName = (String)e.nextElement();
+        while ((clientHashtable.get(clientName) != clientIndex) && e.hasMoreElements()) {
+            clientName = (String)e.nextElement();
+        }
 
-	if (clientHashtable.get(clientName) != clientIndex) {
-	    return -1;
-	}
+        if (clientHashtable.get(clientName) != clientIndex) {
+            return -1;
+        }
 
-	// increment refsCount of clientName  
-	Integer rc = (Integer)refCounts.get(clientName);
-	if (rc != null) {
+        // increment refsCount of clientName  
+        Integer rc = (Integer)refCounts.get(clientName);
+        if (rc != null) {
             refCounts.put(clientName, new Integer(rc.intValue() + 1));
             System.out.println("increment, " + clientName + ", " + ((Integer)refCounts.get(clientName)).intValue());
             return rc.intValue() + 1;
-	}
-	else {
+        }
+        else {
             refCounts.put(clientName, new Integer(1));
             System.out.println("increment, " + clientName + ", 1");
             return 1;
-	}
+        }
     }
 
     /**
@@ -88,67 +88,67 @@ public class ClientTableObserver implements Observer {
      * -1, if clientIndex identifies no client in the client table.
      */
     public int decrement(Integer clientIndex) {
-	// find clientName with clientIndex
-	Enumeration e = clientHashtable.keys();
-	String clientName = (String)e.nextElement();
-	while ((clientHashtable.get(clientName) != clientIndex) && e.hasMoreElements()) {
-	    clientName = (String)e.nextElement();
-	}
+        // find clientName with clientIndex
+        Enumeration e = clientHashtable.keys();
+        String clientName = (String)e.nextElement();
+        while ((clientHashtable.get(clientName) != clientIndex) && e.hasMoreElements()) {
+            clientName = (String)e.nextElement();
+        }
 
-	if (clientHashtable.get(clientName) != clientIndex) {
-	    return -1;
+        if (clientHashtable.get(clientName) != clientIndex) {
+            return -1;
         } 
 
-	Integer rc = (Integer)refCounts.get(clientName);
-	if (rc == null) {
-	    return -1;
-	}
+        Integer rc = (Integer)refCounts.get(clientName);
+        if (rc == null) {
+            return -1;
+        }
 
-	if (rc.intValue() > 1) {
+        if (rc.intValue() > 1) {
             refCounts.put(clientName, new Integer(rc.intValue() - 1));
             return rc.intValue() - 1;
-	}
-	else {
-	    refCounts.remove(clientName);
+        }
+        else {
+            refCounts.remove(clientName);
             return 0;
-	}
+        }
     }
 
     /**
      * For each client table entry sendTrap
-     * checks trap condition clientQueueMaxMsgs * clientQueueThreshold < clientQueueNumMsgs.
+     * checks trap condition clientQueueMaxEntries * clientQueueThreshold < clientQueueNumEntries.
      * Sends a ClientQueueThresholdOverflow trap if the condition is fulfilled.
      * Checks trap condition maxSessions * sessionThreshold < numSessions.
      * Sends a SessionTableThresholdOverflow trap if the condition is fulfilled.
      * @param AgentXSession between master agent and subagent.
      */
     public void sendTrap(AgentXSession session) {
-	ClientQueueThresholdOverflow clientQueueNotify;
-	SessionTableThresholdOverflow sessionTableNotify;
-	long clientQueueNumMsgs;
-	long clientQueueMaxMsgs;
-	long clientQueueThreshold;
-	long numSessions;
-	long maxSessions;
-	long sessionThreshold;
-	for (Enumeration ct=clientTable.elements(); ct.hasMoreElements();) {
+        ClientQueueThresholdOverflow clientQueueNotify;
+        SessionTableThresholdOverflow sessionTableNotify;
+        long clientQueueNumEntries;
+        long clientQueueMaxEntries;
+        long clientQueueThreshold;
+        long numSessions;
+        long maxSessions;
+        long sessionThreshold;
+        for (Enumeration ct=clientTable.elements(); ct.hasMoreElements();) {
             clientEntryImpl = (ClientEntryImpl)ct.nextElement();
 
             // clientQueueThresholdOverflow trap
-            clientQueueNumMsgs = clientEntryImpl.get_clientQueueNumMsgs();
-            clientQueueMaxMsgs = clientEntryImpl.get_clientQueueMaxMsgs();
+            clientQueueNumEntries = clientEntryImpl.get_clientQueueNumEntries();
+            clientQueueMaxEntries = clientEntryImpl.get_clientQueueMaxEntries();
             clientQueueThreshold = clientEntryImpl.get_clientQueueThreshold();
-            System.out.println("clientQueueMaxMsgs: " + clientQueueMaxMsgs + 
+            System.out.println("clientQueueMaxEntries: " + clientQueueMaxEntries + 
                                ", clientQueueThreshold: " + clientQueueThreshold + 
-                               ", clientQueueNumMsgs: " + clientQueueNumMsgs);
-            if (clientQueueMaxMsgs * clientQueueThreshold < clientQueueNumMsgs) {
-		try {
-		    clientQueueNotify = new ClientQueueThresholdOverflow(clientEntryImpl, clientEntryImpl,
-									 clientEntryImpl, clientEntryImpl);
-		    session.notify(clientQueueNotify);
-		} catch (Exception e) {
-		    System.err.println(e);
-		}
+                               ", clientQueueNumEntries: " + clientQueueNumEntries);
+            if (clientQueueMaxEntries * clientQueueThreshold < clientQueueNumEntries) {
+                try {
+                    clientQueueNotify = new ClientQueueThresholdOverflow(clientEntryImpl, clientEntryImpl,
+                                                                         clientEntryImpl, clientEntryImpl);
+                    session.notify(clientQueueNotify);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
             }
 
             // sessionTableThresholdOverflow trap
@@ -159,13 +159,13 @@ public class ClientTableObserver implements Observer {
                                ", sessionThreshold: " + sessionThreshold +
                                ", numSessions: " + numSessions);
             if (maxSessions * sessionThreshold < numSessions) {
-		try {
-		    sessionTableNotify = new SessionTableThresholdOverflow(clientEntryImpl, clientEntryImpl,
-									   clientEntryImpl, clientEntryImpl);
-		    session.notify(sessionTableNotify);
-		} catch (Exception e) {
-		    System.err.println(e);
-		}
+                try {
+                    sessionTableNotify = new SessionTableThresholdOverflow(clientEntryImpl, clientEntryImpl,
+                                                                           clientEntryImpl, clientEntryImpl);
+                    session.notify(sessionTableNotify);
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
             }
          } // end for
     }
@@ -176,7 +176,7 @@ public class ClientTableObserver implements Observer {
      * @return Index to clientTable.
      */
     public Integer getIndex(String key) {
-	return (Integer)clientHashtable.get(key);
+        return (Integer)clientHashtable.get(key);
     }
 
     /**
@@ -187,88 +187,88 @@ public class ClientTableObserver implements Observer {
      * @param ClientTableSubject which calls update.
      */
     public void update( Subject o ) {
-	String clientName;
-	String nodeName;
-	switch(clientTableSubject.opCode) {
-	    case ClientTableSubject.INSERT:   
-		if( o == clientTableSubject ) {
-		    clientName = clientTableSubject.clientEntryImplPeer.get_clientName();
-		    nodeName = clientTableSubject.nodeName;
-		    if (clientHashtable.containsKey(nodeName + clientName)) {
-			System.out.println("A node/client  " + nodeName + clientName + " already exists.");
-		    }
-		    else {
-			System.out.println("Insert node/client " + nodeName + clientName);
-		        // new clientIndex
-			int clientIndex = 1;
-			while (clientIndex <= MAXINDX && !indexSet.get(clientIndex)) {
-			    clientIndex++;
-			}
+        String clientName;
+        String nodeName;
+        switch(clientTableSubject.opCode) {
+            case ClientTableSubject.INSERT:   
+                if( o == clientTableSubject ) {
+                    clientName = clientTableSubject.clientEntryImplPeer.get_clientName();
+                    nodeName = clientTableSubject.nodeName;
+                    if (clientHashtable.containsKey(nodeName + clientName)) {
+                        System.out.println("A node/client  " + nodeName + clientName + " already exists.");
+                    }
+                    else {
+                        System.out.println("Insert node/client " + nodeName + clientName);
+                        // new clientIndex
+                        int clientIndex = 1;
+                        while (clientIndex <= MAXINDX && !indexSet.get(clientIndex)) {
+                            clientIndex++;
+                        }
 
-			if (clientIndex > MAXINDX) {
-			    System.out.println("Error: clientIndex > " + MAXINDX);
-			}
-			else {
-			    // remove clientIndex from indexSet
-			    indexSet.clear(clientIndex);
+                        if (clientIndex > MAXINDX) {
+                            System.out.println("Error: clientIndex > " + MAXINDX);
+                        }
+                        else {
+                            // remove clientIndex from indexSet
+                            indexSet.clear(clientIndex);
 
                             // insert nodeName + clientName in clientHashtable
-			    clientHashtable.put(nodeName + clientName, new Integer(clientIndex));
+                            clientHashtable.put(nodeName + clientName, new Integer(clientIndex));
   
                             // insert new clientEntry in clientTable
-			    clientEntryImpl = new ClientEntryImpl(clientTableSubject.nodeIndex.intValue(),
-								  clientIndex,
-								  clientTableSubject.clientEntryImplPeer);
-			    clientTable.addEntry(clientEntryImpl);
+                            clientEntryImpl = new ClientEntryImpl(clientTableSubject.nodeIndex.intValue(),
+                                                                  clientIndex,
+                                                                  clientTableSubject.clientEntryImplPeer);
+                            clientTable.addEntry(clientEntryImpl);
 
                             // increment node table reference count
-			    clientTableSubject.nodeTableObserver.increment(clientTableSubject.nodeIndex);
-			} // end else
-		    } // end else
-		} // end if
-		break;
+                            clientTableSubject.nodeTableObserver.increment(clientTableSubject.nodeIndex);
+                        } // end else
+                    } // end else
+                } // end if
+                break;
          
-	    case ClientTableSubject.REMOVE:
-		if( o == clientTableSubject ) {
-		    System.out.println("Remove a client table entry.");
-		    clientName = clientTableSubject.clientEntryImplPeer.get_clientName();
-		    nodeName = clientTableSubject.nodeName;
-		    if (!clientHashtable.containsKey(nodeName + clientName)) {
-			System.out.println("A node/client " + nodeName + clientName + " does not exist.");
-		    }
-		    else {
-			System.out.println("Remove node/client " + nodeName + clientName);
+            case ClientTableSubject.REMOVE:
+                if( o == clientTableSubject ) {
+                    System.out.println("Remove a client table entry.");
+                    clientName = clientTableSubject.clientEntryImplPeer.get_clientName();
+                    nodeName = clientTableSubject.nodeName;
+                    if (!clientHashtable.containsKey(nodeName + clientName)) {
+                        System.out.println("A node/client " + nodeName + clientName + " does not exist.");
+                    }
+                    else {
+                        System.out.println("Remove node/client " + nodeName + clientName);
 
                         // is client referenced by other session table entries
-			if (refCounts.get(nodeName + clientName) != null) {
-			    System.out.println("node/client " + nodeName + clientName + " is referenced by ...");
-			    break;
-			}
+                        if (refCounts.get(nodeName + clientName) != null) {
+                            System.out.println("node/client " + nodeName + clientName + " is referenced by ...");
+                            break;
+                        }
 
                         // remove node from clientHashtable
-			int remInd = ((Integer)clientHashtable.get(nodeName + clientName)).intValue();
-			clientHashtable.remove(nodeName + clientName);
+                        int remInd = ((Integer)clientHashtable.get(nodeName + clientName)).intValue();
+                        clientHashtable.remove(nodeName + clientName);
 
                         // remove client from clientTable
-			for (Enumeration ct=clientTable.elements(); ct.hasMoreElements();) {
-			    clientEntryImpl = (ClientEntryImpl)ct.nextElement();
-			    long nodeIndex = clientEntryImpl.nodeIndex;
-			    long clientIndex = clientEntryImpl.clientIndex;
-			    if ((clientIndex == remInd) && (nodeIndex == clientTableSubject.nodeIndex.intValue())) {
-				clientTable.removeEntry(clientEntryImpl);
+                        for (Enumeration ct=clientTable.elements(); ct.hasMoreElements();) {
+                            clientEntryImpl = (ClientEntryImpl)ct.nextElement();
+                            long nodeIndex = clientEntryImpl.nodeIndex;
+                            long clientIndex = clientEntryImpl.clientIndex;
+                            if ((clientIndex == remInd) && (nodeIndex == clientTableSubject.nodeIndex.intValue())) {
+                                clientTable.removeEntry(clientEntryImpl);
                           
                                 // decrement node table reference count
-				clientTableSubject.nodeTableObserver.decrement(clientTableSubject.nodeIndex);
-				break;
-			    } // end if
-			} // end for
+                                clientTableSubject.nodeTableObserver.decrement(clientTableSubject.nodeIndex);
+                                break;
+                            } // end if
+                        } // end for
                     } // end else
-		} // end if
-		break;
+                } // end if
+                break;
 
-	    default:
-		System.out.println("Unknown table operation code: " + clientTableSubject.opCode);
-		break;
+            default:
+                System.out.println("Unknown table operation code: " + clientTableSubject.opCode);
+                break;
         } // end switch   
     }
 }

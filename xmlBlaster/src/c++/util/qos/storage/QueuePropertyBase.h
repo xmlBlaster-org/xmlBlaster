@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.10 2003/01/24 21:45:54 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.11 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -29,8 +29,8 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-extern Dll_Export  const long DEFAULT_maxMsgDefault;
-extern Dll_Export  const long DEFAULT_maxMsgCacheDefault;
+extern Dll_Export  const long DEFAULT_maxEntriesDefault;
+extern Dll_Export  const long DEFAULT_maxEntriesCacheDefault;
 extern Dll_Export  const long DEFAULT_bytesDefault;
 extern Dll_Export  const long DEFAULT_bytesCacheDefault;
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
@@ -68,16 +68,16 @@ protected:
    /** The queue plugin version "1.0" or similar */
    string version_;
 
-   /** The max setting allowed for queue maxMsg is adjustable with property "queue.maxMsg=1000" (1000 messages is default) */
-   long maxMsgDefault_;
+   /** The max setting allowed for queue maxEntries is adjustable with property "queue/maxEntries=1000" (1000 messages is default) */
+   long maxEntriesDefault_;
 
-   /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
-   long maxMsgCacheDefault_;
+   /** The max setting allowed for queue maxEntriesCache is adjustable with property "queue/maxEntriesCache=1000" (1000 messages is default) */
+   long maxEntriesCacheDefault_;
 
-   /** The max setting allowed for queue maxBytes in Bytes is adjustable with property "queue.maxBytes=4194304" (4 MBytes is default) */
+   /** The max setting allowed for queue maxBytes in Bytes is adjustable with property "queue/maxBytes=4194304" (4 MBytes is default) */
    long maxBytesDefault_;
 
-   /** The max setting allowed for queue maxBytesCache in Bytes is adjustable with property "queue.maxBytesCache=4000" (4 MBytes is default) */
+   /** The max setting allowed for queue maxBytesCache in Bytes is adjustable with property "queue/maxBytesCache=4000" (4 MBytes is default) */
    long maxBytesCacheDefault_;
 
    /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
@@ -92,11 +92,11 @@ protected:
    /** Span of life of this queue in milliseconds */
    Timestamp expires_; // = DEFAULT_expires;
    /** The max. capacity of the queue in number of entries */
-   long maxMsg_;
+   long maxEntries_;
    /** The max. capacity of the queue in Bytes */
    long maxBytes_;
    /** The max. capacity of the cache of the queue in number of entries */
-   long maxMsgCache_;
+   long maxEntriesCache_;
 
    /** The settings for the storeSwapLevel */
    long storeSwapLevel_;
@@ -133,16 +133,16 @@ protected:
    {
       type_                 = prop.type_;
       version_              = prop.version_;
-      maxMsgDefault_        = prop.maxMsgDefault_;
-      maxMsgCacheDefault_   = prop.maxMsgCacheDefault_;
+      maxEntriesDefault_    = prop.maxEntriesDefault_;
+      maxEntriesCacheDefault_= prop.maxEntriesCacheDefault_;
       maxBytesDefault_      = prop.maxBytesDefault_;
       maxBytesCacheDefault_ = prop.maxBytesCacheDefault_;
       minExpires_           = prop.maxExpires_;
       relating_             = prop.relating_;
       expires_              = prop.expires_;
-      maxMsg_               = prop.maxMsg_;
+      maxEntries_           = prop.maxEntries_;
       maxBytes_             = prop.maxBytes_;
-      maxMsgCache_          = prop.maxMsgCache_;
+      maxEntriesCache_      = prop.maxEntriesCache_;
       storeSwapLevel_       = prop.storeSwapLevel_;
       storeSwapBytes_       = prop.storeSwapBytes_;
       reloadSwapLevel_      = prop.reloadSwapLevel_;
@@ -185,7 +185,7 @@ public:
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
    QueuePropertyBase(Global& global, const string& nodeId);
 
@@ -225,14 +225,14 @@ public:
     * <br />
     * @return number of messages
     */
-   long getMaxMsg() const;
+   long getMaxEntries() const;
 
    /**
     * Max number of messages for this queue.
     * <br />
-    * @param maxMsg
+    * @param maxEntries
     */
-   void setMaxMsg(long maxMsg);
+   void setMaxEntries(long maxEntries);
 
    /**
     * The plugin type. 
@@ -267,14 +267,14 @@ public:
     * <br />
     * @return number of messages
     */
-   long getMaxMsgCache() const;
+   long getMaxEntriesCache() const;
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
-    * @param maxMsg
+    * @param maxEntries
     */
-   void setMaxMsgCache(long maxMsgCache);
+   void setMaxEntriesCache(long maxEntriesCache);
 
    /**
     * Max message queue size.
@@ -432,8 +432,8 @@ public:
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
-    * @param prop e.g. "maxMsg"
-    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    * @param prop e.g. "maxEntries"
+    * @return e.g. "-queue/history/maxEntries" or "-queue/history/maxEntriesCache"
     */
    string getPropName(const string& token);
 

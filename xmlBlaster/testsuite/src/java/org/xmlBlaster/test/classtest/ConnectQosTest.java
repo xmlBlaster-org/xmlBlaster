@@ -64,7 +64,7 @@ public class ConnectQosTest extends TestCase {
          "   <clusterNode>true</clusterNode>\n" +
          "   <duplicateUpdates>false</duplicateUpdates>\n" +
          "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='27' clearSessions='true' sessionId='xyz'/>\n" +
-         "   <queue relating='subject' type='XY' version='7.0' maxMsg='1009' maxBytes='4009' maxMsgCache='509' maxBytesCache='777' storeSwapLevel='20009' storeSwapBytes='10000' reloadSwapLevel='20000' reloadSwapBytes='30000' onOverflow='deadMessage'>\n" +
+         "   <queue relating='subject' type='XY' version='7.0' maxEntries='1009' maxBytes='4009' maxEntriesCache='509' maxBytesCache='777' storeSwapLevel='20009' storeSwapBytes='10000' reloadSwapLevel='20000' reloadSwapBytes='30000' onOverflow='deadMessage'>\n" +
          "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
          "         <ptp>true</ptp>\n" +
          "         IOR:00011200070009990000....\n" +
@@ -81,7 +81,7 @@ public class ConnectQosTest extends TestCase {
          "      <ptp>false</ptp>\n" +
          "   </callback>\n" +
          */
-         "   <queue relating='callback' maxMsg='1600' maxBytes='2000'>\n" +
+         "   <queue relating='callback' maxEntries='1600' maxBytes='2000'>\n" +
          "      <callback type='XML-RPC'>\n" +
          "         <ptp>true</ptp>\n" +
          "         http:/www.mars.universe:8080/RPC2\n" +
@@ -121,11 +121,11 @@ public class ConnectQosTest extends TestCase {
 
          {
             CbQueueProperty prop = qos.getSubjectQueueProperty();
-            assertEquals("", 1009L, prop.getMaxMsg());
+            assertEquals("", 1009L, prop.getMaxEntries());
             assertEquals("", "XY", prop.getType());
             assertEquals("", "7.0", prop.getVersion());
             assertEquals("", 4009L, prop.getMaxBytes());
-            assertEquals("", 509L, prop.getMaxMsgCache());
+            assertEquals("", 509L, prop.getMaxEntriesCache());
             assertEquals("", 777L, prop.getMaxBytesCache());
             /* Currently deactivated in code
             assertEquals("", 20009L, prop.getStoreSwapLevel());
@@ -140,7 +140,7 @@ public class ConnectQosTest extends TestCase {
 
          {
             CbQueueProperty prop = qos.getSessionCbQueueProperty();
-            assertEquals("", 1600L, prop.getMaxMsg());
+            assertEquals("", 1600L, prop.getMaxEntries());
          }
          
          // TODO: check all methods !!!

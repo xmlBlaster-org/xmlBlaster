@@ -54,14 +54,14 @@ import java.io.Serializable;
  *   &lt;duplicateUpdates>true&lt;/duplicateUpdates>
  *
  *   &lt;!-- The client side queue (is ignored on server side): -->
- *   &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
+ *   &lt;queue relating='client' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='exception'>
  *      &lt;address type='IOR'>
  *         IOR:10000010033200000099000010....
  *      &lt;/address>
  *   &lt;queue>
  *
  *   &lt;!-- Configures the server side callback queue: -->
- *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *   &lt;queue relating='callback' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>
  *      &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *         IOR:10000010033200000099000010....
  *         &lt;burstMode collectTime='400' />
@@ -93,7 +93,7 @@ import java.io.Serializable;
  *   &lt;reconnected>false&lt;/reconnected>  &lt;!-- Has the client reconnected to an existing session? -->
  *
  *   &lt;!-- The server side callback queue: -->
- *   &lt;queue relating='callback' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+ *   &lt;queue relating='callback' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>
  *      &lt;callback type='XML-RPC' hostname='192.168.1.4' sessionId='4e56890ghdFzj0'>
  *         http://192.168.1.4:8081/
  *         &lt;burstMode collectTime='400' />

@@ -76,8 +76,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if ((numOfEntries + getNumOfEntries()) > getMaxNumOfEntries())
          return "Queue overflow (number of entries), " + getNumOfEntries() +
                 " entries are in queue, try increasing property '" +
-                this.property.getPropName("maxMsg") + "' and '" +
-                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
+                this.property.getPropName("maxEntries") + "' and '" +
+                this.property.getPropName("maxEntriesCache") + "', current settings are" + toXml("");
 
       if ((sizeInBytes + getNumOfBytes()) > getMaxNumOfBytes())
          return "Queue overflow, " + getMaxNumOfBytes() +
@@ -123,7 +123,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 //            this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
             String nodeId = this.glob.getStrippedId();
             this.manager.addNode(nodeId);
-            this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxMsg());
+            this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxEntries());
 
             this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
             this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
@@ -157,9 +157,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       // sync necessary?
 
       /* Protect against shrinking ??
-      if (this.property != null && this.property.getMaxMsg() > newProp.getMaxMsg()) {
-         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxMsg() +
-                    " to " + newProp.getMaxMsg() + " is not supported, we ignore the new setting.");
+      if (this.property != null && this.property.getMaxEntries() > newProp.getMaxEntries()) {
+         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxEntries() +
+                    " to " + newProp.getMaxEntries() + " is not supported, we ignore the new setting.");
          return;
       }
       */
@@ -780,7 +780,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#getMaxNumOfEntries()
     */
    public long getMaxNumOfEntries() {
-      return this.property.getMaxMsg();
+      return this.property.getMaxEntries();
    }
 
 

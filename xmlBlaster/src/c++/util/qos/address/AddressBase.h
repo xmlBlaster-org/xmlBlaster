@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.8 2003/02/13 18:59:28 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.9 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -69,7 +69,7 @@ protected:
    string nodeId_;
 
    /** TODO: Move this attribute to CbQueueProperty.java */
-   long maxMsg_; // only used in Address
+   long maxEntries_; // only used in Address
 
    /** The unique address, e.g. the CORBA IOR string */
    mutable string address_;
@@ -162,7 +162,7 @@ protected:
       useForSubjectQueue_  = addr.useForSubjectQueue_;
       dispatchPlugin_      = addr.dispatchPlugin_;
       nodeId_              = addr.nodeId_;
-      maxMsg_              = addr.maxMsg_;
+      maxEntries_              = addr.maxEntries_;
       defaultPingInterval_ = addr.defaultPingInterval_;
       defaultRetries_      = addr.defaultRetries_;
       defaultDelay_        = addr.defaultDelay_;

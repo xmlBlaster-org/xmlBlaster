@@ -229,7 +229,7 @@ java HelloWorld3
    -dispatch/callback/pingInterval 20000
 
 Old style:
- java HelloWorld3 -queue.maxMsg 200
+ java HelloWorld3 -queue.maxEntries 200
                   -pingInterval 10000
                   -ior??
                   -cb.pingInterval 20000
@@ -748,7 +748,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.47 $</revision>
+   <revision>$Revision: 1.48 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -169,7 +169,7 @@ public class JdbcQueueTest extends TestCase {
       throws XmlBlasterException {
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      prop.setMaxMsg(10000);
+      prop.setMaxEntries(10000);
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "putWithBreak");
       queue.initialize(queueId, prop);
       queue.clear();
@@ -213,7 +213,7 @@ public class JdbcQueueTest extends TestCase {
       // set up the queues ....
       this.log.info(ME, "initialEntries test starts");
       QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      cbProp.setMaxMsg(10000L);
+      cbProp.setMaxEntries(10000L);
       cbProp.setMaxBytes(200000L);
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "initialEntries");
 

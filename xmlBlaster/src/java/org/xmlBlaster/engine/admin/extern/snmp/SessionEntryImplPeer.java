@@ -10,31 +10,31 @@ public class SessionEntryImplPeer
 {
 
     private String sessionName;
-    private long cbQueueMaxMsgs;
+    private long cbQueueMaxEntries;
     private long cbQueueThreshold;
     private int clearCbQueue;
     private int closeSession;
-    private long cbQueueNumMsgs;
+    private long cbQueueNumEntries;
 
     /**
      * Initializes SessionEntry mib variables.
      * @param SessionName name of a session.
-     * @param CbQueueMaxMsgs maximum number of messages in cbQueue.
+     * @param CbQueueMaxEntries maximum number of messages in cbQueue.
      * @param CbQueueThreshold threshold number of messages in callback queue.
      * @param ClearCbQueue if > 0, the callback queue must be cleared.
      * @param CloseSession if > 0, the session is closed.
      */
     public SessionEntryImplPeer(String sessionName,
-				long cbQueueMaxMsgs,
-				long cbQueueThreshold,
-				int clearCbQueue,
+                                long cbQueueMaxEntries,
+                                long cbQueueThreshold,
+                                int clearCbQueue,
                                 int closeSession)
     {
         this.sessionName = sessionName;
-        this.cbQueueMaxMsgs = cbQueueMaxMsgs;
+        this.cbQueueMaxEntries = cbQueueMaxEntries;
         this.cbQueueThreshold = cbQueueThreshold;
-	this.clearCbQueue = clearCbQueue;
-	this.closeSession = closeSession;
+        this.clearCbQueue = clearCbQueue;
+        this.closeSession = closeSession;
     }
 
     /**
@@ -47,21 +47,21 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * Gets cbQueueNumMsgs from xmlBlaster application.
-     * @return CbQueueNumMsgs actual number of messages in the callback queue.
+     * Gets cbQueueNumEntries from xmlBlaster application.
+     * @return CbQueueNumEntries actual number of messages in the callback queue.
      */
-    public long get_cbQueueNumMsgs()
+    public long get_cbQueueNumEntries()
     {
-        return cbQueueNumMsgs;
+        return cbQueueNumEntries;
     }
 
     /**
-     * Gets cbQueueMaxMsgs from xmlBlaster application.
-     * @return CbQueueMaxMsgs maximum number of messages in the callback queue.
+     * Gets cbQueueMaxEntries from xmlBlaster application.
+     * @return CbQueueMaxEntries maximum number of messages in the callback queue.
      */
-    public long get_cbQueueMaxMsgs()
+    public long get_cbQueueMaxEntries()
     {
-        return cbQueueMaxMsgs;
+        return cbQueueMaxEntries;
     }
 
     /**

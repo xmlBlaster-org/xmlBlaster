@@ -195,21 +195,21 @@ QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlu
 # The property with appended 'Cache' is in RAM, the second property is swap space on harddisk
 
 # How many history messages of same key oid (topic) to hold in xmlBlaster (holds references only)
-queue/history/maxMsgCache = 10
-queue/history/maxMsg = ${queue/history/maxMsgCache}
+queue/history/maxEntriesCache = 10
+queue/history/maxEntries = ${queue/history/maxEntriesCache}
 
 # How big is a callback queue for each client (holds references only)
-queue/callback/maxMsgCache = 1000
-queue/callback/maxMsg = ${queue/callback/maxMsgCache}
+queue/callback/maxEntriesCache = 1000
+queue/callback/maxEntries = ${queue/callback/maxEntriesCache}
 
 # How big is the topic cache for messages of same oid (here your message content occupies the memory)
-persistence/msgUnitStore/maxMsgCache = 10000
-persistence/msgUnitStore/maxMsg = 100000000
+persistence/msgUnitStore/maxEntriesCache = 10000
+persistence/msgUnitStore/maxEntries = 100000000
 
 
 # Tail back queue on client side (contains the real data of all message types)
-queue/client/maxMsgCache = 1000
-queue/client/maxMsg = 10000000
+queue/client/maxEntriesCache = 1000
+queue/client/maxEntries = 10000000
 #------------------------------------------------------------------------------
 
 

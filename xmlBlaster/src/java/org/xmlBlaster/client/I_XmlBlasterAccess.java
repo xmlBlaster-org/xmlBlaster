@@ -67,7 +67,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  Address addr = new Address(glob);
     *  addr.setDelay(2000L);
     *  addr.setRetries(-1);
-    *  addr.setMaxMsg(2000);
+    *  addr.setMaxEntries(2000);
     *  addr.setPingInterval(5000L);
     *  qos.addAddress(addr);
     *

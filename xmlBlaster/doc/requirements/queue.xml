@@ -35,7 +35,7 @@
        These are example QoS of subscribe() invocations:
        <pre>
 &lt;qos>
-   &lt;queue maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxEntries='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
 &lt;/qos>
        </pre>
    </example>
@@ -70,14 +70,14 @@
          </tr>
 
          <tr>
-            <td>queue.maxMsg</td>
+            <td>queue/maxEntries</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in this queue (if it is a persistent queue)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxMsgCache</td>
+            <td>queue/maxEntriesCache</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in this queue (if the queue is a memory based queue like RAM queues)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -85,14 +85,14 @@
          </tr>
 
          <tr>
-            <td>queue.maxBytes</td>
+            <td>queue/maxBytes</td>
             <td>10485760</td>
             <td>(10 MB) specifies the maximum total size in Bytes allowed for this queue (if it is a persistent queue)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxBytesCache</td>
+            <td>queue/maxBytesCache</td>
             <td>2097152</td>
             <td>(2MB) specifies the maximum total size allowed in this queue (if the queue is a memory based queue like RAM queues)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -114,7 +114,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 15</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

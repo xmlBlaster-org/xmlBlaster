@@ -156,8 +156,8 @@ public class CacheQueueTest extends TestCase {
 
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      prop.setMaxMsg(20L);
-      prop.setMaxMsgCache(10L);
+      prop.setMaxEntries(20L);
+      prop.setMaxEntriesCache(10L);
       prop.setMaxBytes(500L);
       prop.setMaxBytesCache(200L);
 
@@ -224,8 +224,8 @@ public class CacheQueueTest extends TestCase {
                log.info(ME, "**** TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is]);
                // a new queue each time here ...
                QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-               prop.setMaxMsg(2000L);
-               prop.setMaxMsgCache(1000L);
+               prop.setMaxEntries(2000L);
+               prop.setMaxEntriesCache(1000L);
                prop.setMaxBytes(maxNumOfBytes[is]);
                prop.setMaxBytesCache(maxNumOfBytesCache[ic]);
                StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);

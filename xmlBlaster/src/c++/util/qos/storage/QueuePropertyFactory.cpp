@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.8 2003/02/19 08:54:00 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.9 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -103,8 +103,8 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
              // do nothing since it is already done as the first thing
              // but leave it to avoid warnings
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsg")) {
-               prop_.setMaxMsg(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxEntries")) {
+               prop_.setMaxEntries(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
                prop_.setType(SaxHandlerBase::getStringValue(attrs.getValue(i)));
@@ -112,10 +112,10 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "version")) {
                prop_.setVersion(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgCache")) {
-               prop_.setMaxMsgCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxEntriesCache")) {
+               prop_.setMaxEntriesCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgBytes")) {
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxEntriesBytes")) {
                prop_.setMaxBytes(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxBytesCache")) {

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.14 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.15 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -24,8 +24,8 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-const long DEFAULT_maxMsgDefault = 1000L;
-const long DEFAULT_maxMsgCacheDefault = 1000L;
+const long DEFAULT_maxEntriesDefault = 1000L;
+const long DEFAULT_maxEntriesCacheDefault = 1000L;
 const long DEFAULT_bytesDefault = 10485760L; // 10 MB
 const long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
 /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
@@ -70,10 +70,10 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    if (log_.trace()) log_.trace(ME, "::initialize: expires for the specific node set");
 
    // prefix is e.g. "queue/history/" or "persistence/topicStore/"
-   setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxMsg OK");
-   setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
-   if (log_.trace()) log_.trace(ME, "::initialize: setMaxMsgCache OK");
+   setMaxEntries(global_.getProperty().getLongProperty(prefix+"maxEntries", DEFAULT_maxEntriesDefault));
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntries OK");
+   setMaxEntriesCache(global_.getProperty().getLongProperty(prefix+"maxEntriesCache", DEFAULT_maxEntriesCacheDefault));
+   if (log_.trace()) log_.trace(ME, "::initialize: setMaxEntriesCache OK");
    setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
    if (log_.trace()) log_.trace(ME, "::initialize: setMaxBytes OK");
    setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
@@ -95,8 +95,8 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    if (log_.trace()) log_.trace(ME, "::initialize: going to set specific node properties");
 
    if (nodeId_ != "") {
-      setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg["+nodeId_+"]", getMaxMsg()));
-      setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache["+nodeId_+"]", getMaxMsgCache()));
+      setMaxEntries(global_.getProperty().getLongProperty(prefix+"maxEntries["+nodeId_+"]", getMaxEntries()));
+      setMaxEntriesCache(global_.getProperty().getLongProperty(prefix+"maxEntriesCache["+nodeId_+"]", getMaxEntriesCache()));
       setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes["+nodeId_+"]", getMaxBytes()));
       setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache["+nodeId_+"]", getMaxBytesCache()));
       setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel["+nodeId_+"]", getStoreSwapLevel()));
@@ -229,19 +229,19 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
     * <br />
     * @return number of messages
     */
-   long QueuePropertyBase::getMaxMsg() const
+   long QueuePropertyBase::getMaxEntries() const
    {
-      return maxMsg_;
+      return maxEntries_;
    }
 
    /**
     * Max number of messages for this queue.
     * <br />
-    * @param maxMsg
+    * @param maxEntries
     */
-   void QueuePropertyBase::setMaxMsg(long maxMsg)
+   void QueuePropertyBase::setMaxEntries(long maxEntries)
    {
-      maxMsg_ = maxMsg;
+      maxEntries_ = maxEntries;
    }
 
 
@@ -290,19 +290,19 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
     * <br />
     * @return number of messages
     */
-   long QueuePropertyBase::getMaxMsgCache() const
+   long QueuePropertyBase::getMaxEntriesCache() const
    {
-      return maxMsgCache_;
+      return maxEntriesCache_;
    }
 
    /**
     * Max number of messages for the cache of this queue.
     * <br />
-    * @param maxMsg
+    * @param maxEntries
     */
-   void QueuePropertyBase::setMaxMsgCache(long maxMsgCache)
+   void QueuePropertyBase::setMaxEntriesCache(long maxEntriesCache)
    {
-      maxMsgCache_ = maxMsgCache;
+      maxEntriesCache_ = maxEntriesCache;
    }
 
 
@@ -534,10 +534,10 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
          ret += string("' type='") + getType();
       if (DEFAULT_version != getVersion())
          ret += string("' version='") + getVersion();
-      if (DEFAULT_maxMsgDefault != getMaxMsg())
-         ret += string("' maxMsg='") + lexical_cast<string>(getMaxMsg());
-      if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
-         ret += string("' maxMsgCache='") + lexical_cast<string>(getMaxMsgCache());
+      if (DEFAULT_maxEntriesDefault != getMaxEntries())
+         ret += string("' maxEntries='") + lexical_cast<string>(getMaxEntries());
+      if (DEFAULT_maxEntriesCacheDefault != getMaxEntriesCache())
+         ret += string("' maxEntriesCache='") + lexical_cast<string>(getMaxEntriesCache());
       if (DEFAULT_bytesDefault != getMaxBytes())
          ret += string("' maxBytes='") + lexical_cast<string>(getMaxBytes());
       if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
@@ -610,8 +610,8 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
    /**
     * Helper for logging output, creates the property key for configuration (the command line property).
-    * @param prop e.g. "maxMsg"
-    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache" or "-persistence.maxMsg"
+    * @param prop e.g. "maxEntries"
+    * @return e.g. "-history.queue.maxEntries" or "-history.queue.maxEntriesCache" or "-persistence.maxEntries"
     */
    string QueuePropertyBase::getPropName(const string& token)
    {

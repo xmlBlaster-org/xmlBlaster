@@ -214,7 +214,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    private QueuePropertyBase createRamCopy(QueuePropertyBase queuePropertyBase) {
       QueuePropertyBase ramCopy = (QueuePropertyBase)queuePropertyBase.clone();
-      ramCopy.setMaxMsg(queuePropertyBase.getMaxMsgCache());
+      ramCopy.setMaxEntries(queuePropertyBase.getMaxEntriesCache());
       ramCopy.setMaxBytes(queuePropertyBase.getMaxBytesCache());
       return ramCopy;
    }
@@ -234,9 +234,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
 
       /* Do we need to protect against shrinking?
-      if (this.property != null && this.property.getMaxMsg() > newProp.getMaxMsg()) {
-         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxMsg() +
-                    " to " + newProp.getMaxMsg() + " is not supported, we ignore the new setting.");
+      if (this.property != null && this.property.getMaxEntries() > newProp.getMaxEntries()) {
+         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxEntries() +
+                    " to " + newProp.getMaxEntries() + " is not supported, we ignore the new setting.");
          return;
       }
       */
@@ -357,8 +357,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME,
                 "Queue overflow (number of entries), " + getNumOfEntries() +
                 " entries are in queue, try increasing property '" +
-                this.property.getPropName("maxMsg") + "' and '" +
-                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml(""));
+                this.property.getPropName("maxEntries") + "' and '" +
+                this.property.getPropName("maxEntriesCache") + "', current settings are" + toXml(""));
 
       if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,

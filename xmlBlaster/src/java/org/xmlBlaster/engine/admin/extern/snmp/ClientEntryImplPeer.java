@@ -11,12 +11,12 @@ public class ClientEntryImplPeer
     private String clientName;
     private int peerType;
     private int connectionState;
-    private long clientQueueMaxMsgs;
+    private long clientQueueMaxEntries;
     private long clientQueueThreshold;
     private int clearClientQueue;
     private long maxSessions;
     private long sessionThreshold;
-    private long clientQueueNumMsgs;
+    private long clientQueueNumEntries;
     private long numSessions;
     private long clientUptime;
     private long clientDowntime;
@@ -26,25 +26,25 @@ public class ClientEntryImplPeer
      * @param ClientName name of client.
      * @param PeerType client or mom.
      * @param ConnectionState up or down. 
-     * @param ClientQueueMaxMsgs maximum number of messages in ptp client queue.
+     * @param ClientQueueMaxEntries maximum number of messages in ptp client queue.
      * @param ClientQueueThreshold threshold number of messages in ptp client queue.
      * @param ClearClientQueue for values > 0, the client queue must be cleared.
      * @param MaxSessions maximum number of client sessions.
      * @param SessionThreshold threshold number of client sessions.
      */
     public ClientEntryImplPeer(String clientName,
-			       int peerType,
-			       int connectionState,
-			       long clientQueueMaxMsgs,
-			       long clientQueueThreshold,
-			       int clearClientQueue,
-			       long maxSessions,
+                               int peerType,
+                               int connectionState,
+                               long clientQueueMaxEntries,
+                               long clientQueueThreshold,
+                               int clearClientQueue,
+                               long maxSessions,
                                long sessionThreshold)
     {
         this.clientName = clientName;
         this.peerType = peerType;
         this.connectionState = connectionState;
-        this.clientQueueMaxMsgs = clientQueueMaxMsgs;
+        this.clientQueueMaxEntries = clientQueueMaxEntries;
         this.clientQueueThreshold = clientQueueThreshold;
         this.clearClientQueue = clearClientQueue;
         this.maxSessions = maxSessions;
@@ -79,23 +79,23 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * Gets clientQueueNumMsgs from xmlBlaster application.
-     * @return ClientQueueNumMsgs actual number of messages in the
+     * Gets clientQueueNumEntries from xmlBlaster application.
+     * @return ClientQueueNumEntries actual number of messages in the
      * point to point client queue.
      */
-    public long get_clientQueueNumMsgs()
+    public long get_clientQueueNumEntries()
     {
-        return clientQueueNumMsgs;
+        return clientQueueNumEntries;
     }
 
     /**
-     * Gets clientQueueMaxMsgs from xmlBlaster application.
-     * @return ClientQueueMaxMsgs maximum number of messages in the
+     * Gets clientQueueMaxEntries from xmlBlaster application.
+     * @return ClientQueueMaxEntries maximum number of messages in the
      * point to point client queue.
      */
-    public long get_clientQueueMaxMsgs()
+    public long get_clientQueueMaxEntries()
     {
-        return clientQueueMaxMsgs;
+        return clientQueueMaxEntries;
     }
 
     /**

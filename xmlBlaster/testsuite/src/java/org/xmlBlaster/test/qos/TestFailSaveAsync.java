@@ -71,7 +71,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    private boolean allTailbackAreFlushed;
 
    /** TEST: Sendin 0-19 directly, sending 20-39 to recorder (no connection), sending 40-100 directly */
-   private final int maxMsg = 100;
+   private final int maxEntries = 100;
    private final int failMsg = 20;
    private final int reconnectMsg = 40;
 
@@ -128,7 +128,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          addressProp.setDelay(400L);          // retry connecting every 400 milli sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(400L);   // ping every 400 milli second
-         addressProp.setMaxMsg(10000);        // queue up to 10000 messages
+         addressProp.setMaxEntries(10000);        // queue up to 10000 messages
          con.initFailSave(this);
 
          connectQos.setAddress(addressProp);
@@ -178,10 +178,10 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
             log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
             
             if (defaultPlugin.getValue().startsWith("RAM"))
-               assertEquals("Wrong number of message erased", (maxMsg-failMsg), arr.length);
+               assertEquals("Wrong number of message erased", (maxEntries-failMsg), arr.length);
                // expect 80 to delete as the first 20 are lost when server 'crashed'
             else
-               assertEquals("Wrong number of message erased", maxMsg, arr.length);
+               assertEquals("Wrong number of message erased", maxEntries, arr.length);
          } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.getMessage(), false); }
 
          con.disconnect(null);
@@ -247,7 +247,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    public void testFailSave() {
       subscribe();
 
-      for (int ii=0; ii<maxMsg; ii++) {
+      for (int ii=0; ii<maxEntries; ii++) {
          if (ii==failMsg) {
             EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
             Util.delay(600L);    // Wait some time, ping should activate login polling
@@ -261,15 +261,15 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
                   break;
                Util.delay(10L); // Wait some time, to allow the login poller to reconnect
             }
-            log.info(ME, "Reconnected, sending message " + ii + " - " + (maxMsg-1));
+            log.info(ME, "Reconnected, sending message " + ii + " - " + (maxEntries-1));
          }
 
          publish(ii);
       }
 
       int numFailsave = reconnectMsg-failMsg;  // 20
-      int numPublish = maxMsg-numFailsave;     // 80
-      waitOnUpdate(16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate)), maxMsg);
+      int numPublish = maxEntries-numFailsave;     // 80
+      waitOnUpdate(16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate)), maxEntries);
    }
 
    /**

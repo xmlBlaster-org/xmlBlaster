@@ -37,7 +37,7 @@
       </p>
        <pre>    
 &lt;qos>
-   &lt;queue maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxEntries='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
 &lt;/qos>
        </pre>
    </example>
@@ -62,14 +62,14 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxMsg</td>
+            <td>queue/maxEntries</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxBytes</td>
+            <td>queue/maxBytes</td>
             <td>10485760</td>
             <td>(10MB) specifies the maximum total size allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -83,28 +83,28 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.connectionPoolSize</td>
+            <td>queue/persistent/connectionPoolSize</td>
             <td>1</td>
             <td>the number of connections to the DB (tests showed that a low number gives the best performance).</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.connectionBusyTimeout</td>
+            <td>queue/persistent/connectionBusyTimeout</td>
             <td>90000</td>
             <td>The time to wait in milliseconds until to timeout when waiting for a connection to the DB.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.maxWaitingThreads</td>
+            <td>queue/persistent/maxWaitingThreads</td>
             <td>300</td>
             <td>The maximum number of threads waiting for a connection to the DB.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.tablePrefix</td>
+            <td>queue/persistent/tablePrefix</td>
             <td>xmlBlaster</td>
             <td>The prefix to use in the tablenames. All tables used will start with the uppercase of the text specified here. Do not choose 
             names which are too long since many DB have a limited tablename length.</td>
@@ -112,14 +112,14 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.tableAllocationIncrement</td>
+            <td>queue/persistent/tableAllocationIncrement</td>
             <td>2</td>
             <td>The number of tables to add if there are no free tables available to associate to a queue.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.maxStatementLength</td>
+            <td>queue/persistent/maxStatementLength</td>
             <td>2048</td>
             <td>The maximum SQL statement length supported by this JDBC driver.
             If the JDBC meta data delivers this information this property is ignored.</td>
@@ -145,7 +145,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 16</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

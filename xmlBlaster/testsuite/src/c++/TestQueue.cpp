@@ -199,7 +199,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test checks that an excess of entries really throws an exception");
       QueueProperty prop(global_, "");
-      prop.setMaxMsg(10);
+      prop.setMaxEntries(10);
       queue_ = new MsgQueue(global_, prop);
       ConnectQos connQos(global_);
       int i=0;

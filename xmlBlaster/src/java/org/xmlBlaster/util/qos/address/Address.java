@@ -31,7 +31,7 @@ public class Address extends AddressBase
    private String nodeId = null;
 
    /** TODO: Move this attribute to CbQueueProperty.java */
-   private long maxMsg;
+   private long maxEntries;
 
    /**
     */
@@ -49,12 +49,12 @@ public class Address extends AddressBase
       setType(type);
    }
 
-   public void setMaxMsg(long maxMsg) {
-      this.maxMsg = maxMsg;
+   public void setMaxEntries(long maxEntries) {
+      this.maxEntries = maxEntries;
    }
 
-   //public long getMaxMsg() {
-   //   return this.maxMsg;
+   //public long getMaxEntries() {
+   //   return this.maxEntries;
    //}
 
    /**
@@ -113,15 +113,6 @@ public class Address extends AddressBase
          setSecretSessionId(glob.getProperty().get("sessionId["+nodeId+"]", getSecretSessionId()));
          setDispatchPlugin(glob.getProperty().get("DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
       }
-
-      // TODO: This is handled in QueueProperty.java already ->
-      /*
-      long maxMsg = glob.getProperty().get("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault);
-      setMaxMsg(maxMsg);
-      if (nodeId != null) {
-         setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
-      }
-      */
    }
 
    /** How often to retry if connection fails: defaults to -1 (retry forever), 0 switches failsafe mode off */
@@ -154,7 +145,6 @@ public class Address extends AddressBase
    {
       String text = "";
       text += "Control fail save connection to xmlBlaster server:\n";
-      // is in QueueProperty.java: text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxMsgDefault + "].\n";
     //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
     //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";

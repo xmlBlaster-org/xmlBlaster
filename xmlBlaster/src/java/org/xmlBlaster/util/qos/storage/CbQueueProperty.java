@@ -41,7 +41,7 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public final String getSettings() {
       StringBuffer buf = new StringBuffer(256);
-      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxEntries=").append(getMaxEntries());
       if (getCurrentCallbackAddress() != null)
          buf.append(" ").append(getCurrentCallbackAddress().getSettings());
       return buf.toString();

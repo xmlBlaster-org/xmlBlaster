@@ -62,7 +62,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
       this.ME = "MapPlugin-" + mapId;
 
-      if (property.getMaxMsg() > Integer.MAX_VALUE) throw new XmlBlasterException(ME, "initialize: The maximum number of messages is too big");
+      if (property.getMaxEntries() > Integer.MAX_VALUE) throw new XmlBlasterException(ME, "initialize: The maximum number of messages is too big");
       
       this.storage = new TreeMap(); // Note: A HashMap works fine as well, but then there is no sorting with getAll() -> do we need it?
       this.isShutdown = false;
@@ -123,9 +123,9 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       }
       if (log.CALL) log.call(ME, "put(" + entry.getLogId() + ")");
 
-      if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
-         String reason = "Message store overflow, number of entries=" + property.getMaxMsg() +
-                         ", try increasing '" + this.property.getPropName("maxMsg") + "' on client login.";
+      if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
+         String reason = "Message store overflow, number of entries=" + property.getMaxEntries() +
+                         ", try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
          if (log.TRACE) log.trace(ME, reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -206,7 +206,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    public long getMaxNumOfEntries() {
-      return property.getMaxMsg();
+      return property.getMaxEntries();
    }
 
    /**i

@@ -23,13 +23,13 @@ public class HistoryQueueProperty extends QueuePropertyBase
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue/history/maxMsg and -/node/heron/queue/history/maxMsg will be searched
+    * e.g. -queue/history/maxEntries and -/node/heron/queue/history/maxEntries will be searched
     */
    public HistoryQueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("core");
       setRelating(Constants.RELATING_HISTORY);
-      super.initialize(Constants.RELATING_HISTORY); //related='history'--> -queue/history/maxMsg
+      super.initialize(Constants.RELATING_HISTORY); //related='history'--> -queue/history/maxEntries
    }
 
    /**
@@ -37,7 +37,7 @@ public class HistoryQueueProperty extends QueuePropertyBase
     */
    public final String getSettings() {
       StringBuffer buf = new StringBuffer(256);
-      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxEntries=").append(getMaxEntries());
       return buf.toString();
    }
 

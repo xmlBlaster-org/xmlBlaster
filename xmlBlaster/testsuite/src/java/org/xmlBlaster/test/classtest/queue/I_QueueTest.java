@@ -147,10 +147,10 @@ public class I_QueueTest extends TestCase {
          // test initialize()
          prop1 = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          int max = 12;
-         prop1.setMaxMsg(max);
-         prop1.setMaxMsgCache(max);
-         assertEquals(ME+": Wrong capacity", max, prop1.getMaxMsg());
-         assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxMsgCache());
+         prop1.setMaxEntries(max);
+         prop1.setMaxEntriesCache(max);
+         assertEquals(ME+": Wrong capacity", max, prop1.getMaxEntries());
+         assertEquals(ME+": Wrong cache capacity", max, prop1.getMaxEntriesCache());
          //PluginInfo pluginInfo = new PluginInfo(glob, null, "");
          //queue.init(glob, pluginInfo);     // Init from pluginloader is first
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
@@ -159,8 +159,8 @@ public class I_QueueTest extends TestCase {
 
          try {
             prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, "/node/test");
-            prop.setMaxMsg(99);
-            prop.setMaxMsgCache(99);
+            prop.setMaxEntries(99);
+            prop.setMaxEntriesCache(99);
             queue.setProperties(prop);
          }
          catch(XmlBlasterException e) {
@@ -172,9 +172,9 @@ public class I_QueueTest extends TestCase {
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
 
-      long len = prop.getMaxMsg();
-      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), queue.getMaxNumOfEntries());
-      assertEquals(ME+": Wrong capacity", prop.getMaxMsg(), ((QueuePropertyBase)queue.getProperties()).getMaxMsg());
+      long len = prop.getMaxEntries();
+      assertEquals(ME+": Wrong capacity", prop.getMaxEntries(), queue.getMaxNumOfEntries());
+      assertEquals(ME+": Wrong capacity", prop.getMaxEntries(), ((QueuePropertyBase)queue.getProperties()).getMaxEntries());
       assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
 
       try {
@@ -216,8 +216,8 @@ public class I_QueueTest extends TestCase {
       try {
          QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
          int max = 1;
-         prop.setMaxMsg(max);
-         prop.setMaxMsgCache(max);
+         prop.setMaxEntries(max);
+         prop.setMaxEntriesCache(max);
          queueType = this.queue.toString();
          StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/size1");
          this.queue.initialize(queueId, prop);
@@ -238,7 +238,7 @@ public class I_QueueTest extends TestCase {
       queue = queue;
       ME = "I_QueueTest.size1(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
-      int maxMsg = (int)queue.getMaxNumOfEntries();
+      int maxEntries = (int)queue.getMaxNumOfEntries();
       try {
          //========== Test 1: put(I_QueueEntry[])
          int numLoop = 10;
@@ -264,21 +264,21 @@ public class I_QueueTest extends TestCase {
             DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
             try {
                queue.put(queueEntry, false);
-               if (ii > maxMsg) { // queue allows on overload
-                  fail("Didn't expect more than " + maxMsg + " entries" + queue.toXml(""));
+               if (ii > maxEntries) { // queue allows on overload
+                  fail("Didn't expect more than " + maxEntries + " entries" + queue.toXml(""));
                }
                else
                   list.add(queueEntry);
             }
             catch (XmlBlasterException e) {
-               if (ii <= maxMsg) {
+               if (ii <= maxEntries) {
                   fail("Didn't expect exception" + e.getMessage());
                }
             }
          }
 
          // The queues allow temporary oversize (one extra put())
-         assertEquals(ME+": Wrong total size " + queue.toXml(""), maxMsg+1, queue.getNumOfEntries());
+         assertEquals(ME+": Wrong total size " + queue.toXml(""), maxEntries+1, queue.getNumOfEntries());
          this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
          log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 

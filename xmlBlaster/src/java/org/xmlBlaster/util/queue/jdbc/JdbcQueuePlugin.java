@@ -77,8 +77,8 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       if ((numOfEntries + getNumOfEntries()) > getMaxNumOfEntries())
          return "Queue overflow (number of entries), " + getNumOfEntries() +
                 " entries are in queue, try increasing property '" +
-                this.property.getPropName("maxMsg") + "' and '" +
-                this.property.getPropName("maxMsgCache") + "', current settings are" + toXml("");
+                this.property.getPropName("maxEntries") + "' and '" +
+                this.property.getPropName("maxEntriesCache") + "', current settings are" + toXml("");
 
       if ((sizeInBytes + getNumOfBytes()) > getMaxNumOfBytes())
          return "Queue overflow, " + getMaxNumOfBytes() +
@@ -163,9 +163,9 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       // sync necessary?
 
       /* Protect against shrinking ??
-      if (this.property != null && this.property.getMaxMsg() > newProp.getMaxMsg()) {
-         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxMsg() +
-                    " to " + newProp.getMaxMsg() + " is not supported, we ignore the new setting.");
+      if (this.property != null && this.property.getMaxEntries() > newProp.getMaxEntries()) {
+         log.warn(ME, "Reconfigure of a RamQueuePlugin - getMaxNumOfEntries from " + this.property.getMaxEntries() +
+                    " to " + newProp.getMaxEntries() + " is not supported, we ignore the new setting.");
          return;
       }
       */
@@ -785,7 +785,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
     * @see I_Queue#getMaxNumOfEntries()
     */
    public long getMaxNumOfEntries() {
-      return this.property.getMaxMsg();
+      return this.property.getMaxEntries();
    }
 
 

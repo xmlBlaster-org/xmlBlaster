@@ -28,7 +28,7 @@ public:
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue/history/maxEntries and -queue/history/maxEntries[heron] will be searched
     */
    HistoryQueueProperty(Global& global, const string& nodeId);
 

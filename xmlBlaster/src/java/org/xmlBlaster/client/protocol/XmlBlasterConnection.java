@@ -504,7 +504,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *  addressProp.setDelay(4000L);      // retry connecting every 4 sec
     *  addressProp.setRetries(-1);       // -1 == forever
     *  addressProp.setPingInterval(0L);  // switched off
-    *  addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+    *  addressProp.setMaxEntries(1000);      // queue up to 1000 messages
     *
     *  con.initFailSave(this);           // We want to be informed about problems (interface I_ConnectionProblems)
     *
@@ -519,7 +519,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.clientProblemCallback = connCallback;
       this.addressFailSaveSettings.setDelay(retryInterval);
       this.addressFailSaveSettings.setRetries(retries);
-      this.addressFailSaveSettings.setMaxMsg(maxInvocations);
+      this.addressFailSaveSettings.setMaxEntries(maxInvocations);
       this.addressFailSaveSettings.setPingInterval(pingInterval);
    }
 
@@ -746,7 +746,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          address.setDelay(addressFailSaveSettings.getDelay());
          address.setRetries(addressFailSaveSettings.getRetries());
          address.setPingInterval(addressFailSaveSettings.getPingInterval());
-         //address.setMaxMsg(addressFailSaveSettings.getMaxMsg());
+         //address.setMaxEntries(addressFailSaveSettings.getMaxEntries());
       }
 
       initDriver(address);
@@ -806,13 +806,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Start the message recording framework.
     * <p />
-    * Only if -queue.maxMsg != 0     ( a value < 0 is unlimited)
+    * Only if -queue.maxEntries != 0     ( a value < 0 is unlimited)
     * <p />
     */
    private void initFailSave() {
       try {
          if (this.clientProblemCallback != null && this.recorder==null &&
-             connectQos.getClientQueueProperty().getMaxMsg() != 0) { // fail save mode (RamRecorder or FileRecorder):
+             connectQos.getClientQueueProperty().getMaxEntries() != 0) { // fail save mode (RamRecorder or FileRecorder):
 
             String type = glob.getProperty().get("recorder.type", (String)null);
             type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
@@ -821,7 +821,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             version = glob.getProperty().get("recorder.version["+getServerNodeId()+"]", version);
 
             this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, createRecorderFileName(),
-                            connectQos.getClientQueueProperty().getMaxMsg(), this, null);
+                            connectQos.getClientQueueProperty().getMaxEntries(), this, null);
 
             String mode = glob.getProperty().get("recorder.mode", (String)null);
             mode = glob.getProperty().get("recorder.mode["+getServerNodeId()+"]", mode);

@@ -165,8 +165,8 @@ public class MsgQosFactoryTest extends TestCase {
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
             "   <topic readonly='true' destroyDelay='120000' createDomEntry='true'>\n" +
-            "      <persistence relating='msgUnitStore' type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
-            "      <queue relating='history' type='HI' version='2.0' maxMsg='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
+            "      <persistence relating='msgUnitStore' type='TO' version='3.0' maxEntries='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
+            "      <queue relating='history' type='HI' version='2.0' maxEntries='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
             "   </topic>\n" +
             "</qos>\n";
 
@@ -223,7 +223,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "msgUnitStore", cache.getRelating());
          assertEquals("", "TO", cache.getType());
          assertEquals("", "3.0", cache.getVersion());
-         assertEquals("", 4L, cache.getMaxMsg());
+         assertEquals("", 4L, cache.getMaxEntries());
          assertEquals("", 40L, cache.getMaxBytes());
          assertEquals("", "deadMessage", cache.getOnOverflow());
 
@@ -232,7 +232,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "history", hist.getRelating());
          assertEquals("", "HI", hist.getType());
          assertEquals("", "2.0", hist.getVersion());
-         assertEquals("", 3L, hist.getMaxMsg());
+         assertEquals("", 3L, hist.getMaxEntries());
          assertEquals("", 30L, hist.getMaxBytes());
          assertEquals("", "deadMessage", hist.getOnOverflow());
       }

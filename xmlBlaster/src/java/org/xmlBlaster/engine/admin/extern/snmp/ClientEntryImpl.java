@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ClientEntryImpl.java,v 1.4 2002/07/19 11:08:57 udo Exp $
+ * $Id: ClientEntryImpl.java,v 1.5 2003/03/25 07:48:19 ruff Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -36,14 +36,14 @@ public class ClientEntryImpl extends ClientEntry
      * @param ClientEntryImplPeer implements ClientEntryImpl methods.    
      */
     public ClientEntryImpl(long nodeIndex,
-			   long clientIndex,
+                           long clientIndex,
                            ClientEntryImplPeer clientEntryImplPeer)
     {
         super(nodeIndex, clientIndex);
         clientName = clientEntryImplPeer.get_clientName().getBytes();
         peerType = clientEntryImplPeer.get_peerType();
         connectionState = clientEntryImplPeer.get_connectionState();
-        clientQueueMaxMsgs = clientEntryImplPeer.get_clientQueueMaxMsgs();
+        clientQueueMaxEntries = clientEntryImplPeer.get_clientQueueMaxEntries();
         clientQueueThreshold = clientEntryImplPeer.get_clientQueueThreshold();
         clearClientQueue = clientEntryImplPeer.get_clearClientQueue();
         maxSessions = clientEntryImplPeer.get_maxSessions();
@@ -82,46 +82,46 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * Forwards the call to clientEntryImplPeer.get_clientQueueNumMsgs().
-     * @return ClientQueueNumMsgs actual number of messages in the
+     * Forwards the call to clientEntryImplPeer.get_clientQueueNumEntries().
+     * @return ClientQueueNumEntries actual number of messages in the
      * point to point client queue.
      */
-    public long get_clientQueueNumMsgs()
+    public long get_clientQueueNumEntries()
     {
-        // clientQueueNumMsgs = clientEntryImplPeer.get_clientQueueNumMsgs();
-        return clientQueueNumMsgs;
+        // clientQueueNumEntries = clientEntryImplPeer.get_clientQueueNumEntries();
+        return clientQueueNumEntries;
     }
 
     /**
-     * Forwards the call to clientEntryImplPeer.get_clientQueueMaxMsgs().
+     * Forwards the call to clientEntryImplPeer.get_clientQueueMaxEntries().
      * 
-     * @return ClientQueueMaxMsgs maximum number of messages in the
+     * @return ClientQueueMaxEntries maximum number of messages in the
      * point to point client queue.
      */
-    public long get_clientQueueMaxMsgs()
+    public long get_clientQueueMaxEntries()
     {
-        // clientQueueMaxMsgs = clientEntryImplPeer.get_clientQueueMaxMsgs();
-        return clientQueueMaxMsgs;
+        // clientQueueMaxEntries = clientEntryImplPeer.get_clientQueueMaxEntries();
+        return clientQueueMaxEntries;
     }
 
     /**
-     * Implements the snmp set command for the mib object clientQueueMaxMsgs.
+     * Implements the snmp set command for the mib object clientQueueMaxEntries.
      *
      * @param AgentXSetPhase 
      * @param Value to be set.
      * @return AgentXResponsePDU.PROCESSING_ERROR
      */
-    public int set_clientQueueMaxMsgs(AgentXSetPhase phase, long value)
+    public int set_clientQueueMaxEntries(AgentXSetPhase phase, long value)
     {
         switch (phase.getPhase()) {
         case AgentXSetPhase.TEST_SET:
             break;
         case AgentXSetPhase.COMMIT:
-            undo_clientQueueMaxMsgs = clientQueueMaxMsgs;
-            clientQueueMaxMsgs = value;
+            undo_clientQueueMaxEntries = clientQueueMaxEntries;
+            clientQueueMaxEntries = value;
             break;
         case AgentXSetPhase.UNDO:
-            clientQueueMaxMsgs = undo_clientQueueMaxMsgs;
+            clientQueueMaxEntries = undo_clientQueueMaxEntries;
             break;
         case AgentXSetPhase.CLEANUP:
             break;

@@ -657,7 +657,7 @@ Changes for 0.79f [Jun, 17 2002]
       -client.failSave.retryInterval   ->  -delay
       -client.failSave.pingInterval    ->  -pingInterval
       -client.failSave.retries         ->  -retries
-      -client.failSave.maxInvocations  ->  -queue.maxMsg
+      -client.failSave.maxInvocations  ->  -queue/maxEntries
       -client.publishOneway.collectTime->  -burstMode.collectTimeOneway
 
     * Incompatible change:

@@ -115,7 +115,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <filter type='ContentLenFilter' version='1.0'>
             800                   <!-- Demo Plugin limiting the max. update message content length to 800 bytes -->
          </filter>
-         <queue relating='subject' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
+         <queue relating='subject' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>
             <!-- Qualifies the session based queue, with a maximum of 1000 messages
                  or 4000 KBytes of capacity, whichever is reached first.
                  If exceeded a dead letter is published -->
@@ -217,12 +217,12 @@ xml version='1.0' encoding='ISO-8859-1' ?>
             192.168.1.2:33301
          </callback>
 
-         <queue relating='callback' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
+         <queue relating='callback' maxEntries='1000' maxBytes='4000000' onOverflow='deadMessage'/>
             <!-- Qualifies the session based queue, with a maximum of 1000 messages
                  or 4000 KBytes of capacity, whichever is reached first.
                  If exceeded a dead letter is published -->
 
-         <queue relating='subject' maxMsg='1600' maxBytes='2000000' expires='360000000' onOverflow='deadMessage' onFailure='deadMessage'/>
+         <queue relating='subject' maxEntries='1600' maxBytes='2000000' expires='360000000' onOverflow='deadMessage' onFailure='deadMessage'/>
             <!-- The login name based queue expires after given milliseconds.
                  If exceeded the oldest message(s) is discarded -->
             <callback type='EMAIL'>

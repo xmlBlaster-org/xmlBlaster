@@ -45,7 +45,7 @@ createdb test
        These are example QoS of subscribe() invocations:
        <pre>
 &lt;qos>
-   &lt;queue maxMsgCache='1000' maxBytesCache='4000'  maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxEntriesCache='1000' maxBytesCache='4000'  maxEntries='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
    &lt;/queue>
        </pre>
    </example>
@@ -70,35 +70,35 @@ createdb test
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxMsg</td>
+            <td>queue/maxEntries</td>
             <td>1000</td>
             <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxBytes</td>
+            <td>queue/maxBytes</td>
             <td>2097152</td>
             <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.url</td>
+            <td>queue/persistent/url</td>
             <td>jdbc:postgresql://localhost/test</td>
             <td>the url which specifies where to find the DB. Here postgresql is the db vendor name, localhost the hostname and test the db name.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
             <tr>
-            <td>queue.persistent.user</td>
+            <td>queue/persistent/user</td>
             <td>postgres</td>
             <td>The db user under which to run</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.password</td>
+            <td>queue/persistent/password</td>
             <td></td>
             <td>The unencrypted password. For the user 'postgres' the password is an empty string</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -121,7 +121,7 @@ createdb test
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

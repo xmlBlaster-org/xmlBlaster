@@ -59,7 +59,7 @@ public class HelloWorld6
          address.setDelay(4000L);      // retry connecting every 4 sec
          address.setRetries(-1);       // -1 == forever
          address.setPingInterval(0L);  // switched off
-         address.setMaxMsg(1000);      // queue up to 1000 messages
+         address.setMaxEntries(1000);      // queue up to 1000 messages
          qos.setAddress(address);
 
          CallbackAddress cbAddress = new CallbackAddress(glob);

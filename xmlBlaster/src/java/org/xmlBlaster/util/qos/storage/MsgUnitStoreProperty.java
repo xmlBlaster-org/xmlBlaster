@@ -35,8 +35,8 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
 
       super.initialize(Constants.RELATING_MSGUNITSTORE);
       
-      //super.maxMsgCache.setDefaultValue(2000);
-      super.maxMsg.setDefaultValue(Integer.MAX_VALUE);
+      //super.maxEntriesCache.setDefaultValue(2000);
+      super.maxEntries.setDefaultValue(Integer.MAX_VALUE);
       //super.maxBytesCache.setDefaultValue(Integer.MAX_VALUE);
       super.maxBytes.setDefaultValue(Integer.MAX_VALUE);
    }

@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.42 2003/03/24 23:22:43 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.43 2003/03/25 07:48:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -1239,7 +1239,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <clusterNode>true</clusterNode>\n" +
             "   <duplicateUpdates>false</duplicateUpdates>\n" +
             "   <session timeout='3600000' maxSessions='20' clearSessions='false' sessionId='wvt57gj'/>\n" +
-            "   <queue relating='callback' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
+            "   <queue relating='callback' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
             "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
             "         <ptp>true</ptp>\n" +
             "         IOR:00011200070009990000....\n" +
@@ -1258,8 +1258,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      <ptp>true</ptp>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
-            "   <queue relating='callback' maxMsg='1600' maxBytes='2000'/>\n" +
-            "   <queue relating='client' maxMsg='9600' maxBytes='92000' expires='960000000'>\n" +
+            "   <queue relating='callback' maxEntries='1600' maxBytes='2000'/>\n" +
+            "   <queue relating='client' maxEntries='9600' maxBytes='92000' expires='960000000'>\n" +
             "      <address type='IOR' sessionId='clientAAXX' pingInterval='99000' retries='9' delay='90000'>\n" +
             "         IOR:00011200070009990000....\n" +
             "         <compress type='gzip' minSize='1000' />\n" +

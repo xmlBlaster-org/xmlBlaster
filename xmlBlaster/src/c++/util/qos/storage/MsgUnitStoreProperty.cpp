@@ -56,8 +56,8 @@ string MsgUnitStoreProperty::usage()
 {
    string text;
    text += "Control the MsgUnit storage properties:\n";
-   text += "   -persistence.maxMsg       The maximum allowed number of messages in this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
-   text += "   -persistence.maxMsgCache  The maximum allowed number of messages in the cache of this storage [" + lexical_cast<string>(DEFAULT_maxMsgDefault) + "].\n";
+   text += "   -persistence/maxEntries       The maximum allowed number of messages in this storage [" + lexical_cast<string>(DEFAULT_maxEntriesDefault) + "].\n";
+   text += "   -persistence/maxEntriesCache  The maximum allowed number of messages in the cache of this storage [" + lexical_cast<string>(DEFAULT_maxEntriesDefault) + "].\n";
    text += "   -persistence.maxBytes      The maximum size in bytes of this storage [" + lexical_cast<string>(DEFAULT_bytesDefault) + "].\n";
    text += "   -persistence.maxBytesCache The maximum size in bytes in the cache of this storage [" + lexical_cast<string>(DEFAULT_bytesCacheDefault) + "].\n";
  //text += "   -persistence.expires  If not otherwise noted a storage dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";

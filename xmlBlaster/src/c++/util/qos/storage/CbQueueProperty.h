@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.6 2003/01/21 22:43:17 laghi Exp $
+Version:   $Id: CbQueueProperty.h,v 1.7 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -37,7 +37,7 @@ protected:
    /**
     * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -queue/maxEntries and -queue/maxEntries[heron] will be searched
     */
 public:
    CbQueueProperty(Global& global, const string& relating, const string& nodeId);

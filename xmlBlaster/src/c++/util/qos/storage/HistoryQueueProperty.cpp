@@ -45,7 +45,7 @@ HistoryQueueProperty& HistoryQueueProperty::operator =(const QueuePropertyBase& 
 string HistoryQueueProperty::getSettings()
 {
    string ret;
-   ret += "type=" + getType() + " onOverflow=" + getOnOverflow() + " onFailure=" + getOnFailure() + " maxMsg=" + lexical_cast<string>(getMaxMsg());
+   ret += "type=" + getType() + " onOverflow=" + getOnOverflow() + " onFailure=" + getOnFailure() + " maxEntries=" + lexical_cast<string>(getMaxEntries());
    return ret;
 }
 

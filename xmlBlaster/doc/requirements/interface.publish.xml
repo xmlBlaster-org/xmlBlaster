@@ -129,8 +129,8 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 
    &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
-      &lt;persistence relating='msgUnitStore' maxMsg='1000' maxBytes='4000'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'/>
+      &lt;persistence relating='msgUnitStore' maxEntries='1000' maxBytes='4000'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
@@ -183,9 +183,9 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 
    &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000'
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxEntries='1000'
                       maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000'
+      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000'
                       maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
@@ -229,9 +229,9 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 
    &lt;!-- Configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000'
                        onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000'
+      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000'
                        maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>

@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: SessionEntryImpl.java,v 1.5 2002/07/19 11:08:57 udo Exp $
+ * $Id: SessionEntryImpl.java,v 1.6 2003/03/25 07:48:19 ruff Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -37,17 +37,17 @@ public class SessionEntryImpl extends SessionEntry
      * @param SessionEntryImplPeer implements SessionEntryImpl methods.
      */
     public SessionEntryImpl(long nodeIndex,
-			    long clientIndex,
-			    long sessionIndex,
-			    SessionEntryImplPeer sessionEntryImplPeer)
+                            long clientIndex,
+                            long sessionIndex,
+                            SessionEntryImplPeer sessionEntryImplPeer)
     {
         super(nodeIndex, clientIndex, sessionIndex);
 
         sessionName = sessionEntryImplPeer.get_sessionName().getBytes();
-        cbQueueMaxMsgs = sessionEntryImplPeer.get_cbQueueMaxMsgs();
+        cbQueueMaxEntries = sessionEntryImplPeer.get_cbQueueMaxEntries();
         cbQueueThreshold = sessionEntryImplPeer.get_cbQueueThreshold();
-	clearCbQueue = get_clearCbQueue();
-	closeSession = sessionEntryImplPeer.get_closeSession();
+        clearCbQueue = get_clearCbQueue();
+        closeSession = sessionEntryImplPeer.get_closeSession();
         this.sessionEntryImplPeer = sessionEntryImplPeer;
     }
 
@@ -62,42 +62,42 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * Forwards the call to sessionEntryImplPeer.get_cbQueueNumMsgs().
-     * @return CbQueueNumMsgs actual number of messages in the callback queue.
+     * Forwards the call to sessionEntryImplPeer.get_cbQueueNumEntries().
+     * @return CbQueueNumEntries actual number of messages in the callback queue.
      */
-    public long get_cbQueueNumMsgs()
+    public long get_cbQueueNumEntries()
     {
-        // cbQueueNumMsgs = sessionEntryImplPeer.get_cbQueueNumMsgs();
-        return cbQueueNumMsgs;
+        // cbQueueNumEntries = sessionEntryImplPeer.get_cbQueueNumEntries();
+        return cbQueueNumEntries;
     }
 
     /**
-     * Forwards the call to sessionEntryImplPeer.get_cbQueueMaxMsgs().
-     * @return CbQueueMaxMsgs maximum number of messages in the callback queue.
+     * Forwards the call to sessionEntryImplPeer.get_cbQueueMaxEntries().
+     * @return CbQueueMaxEntries maximum number of messages in the callback queue.
      */
-    public long get_cbQueueMaxMsgs()
+    public long get_cbQueueMaxEntries()
     {
-        // cbQueueMaxMsgs = sessionEntryImplPeer.get_cbQueueMaxMsgs();
-        return cbQueueMaxMsgs;
+        // cbQueueMaxEntries = sessionEntryImplPeer.get_cbQueueMaxEntries();
+        return cbQueueMaxEntries;
     }
 
     /**
-     * Implements the snmp set command for the mib object cbQueueMaxMsgs.
+     * Implements the snmp set command for the mib object cbQueueMaxEntries.
      * @param AgentXSetPhase
-     * @param Value is the new value of cbQueueMaxMsgs.
+     * @param Value is the new value of cbQueueMaxEntries.
      * @return AgentXResponsePDU.PROCESSING_ERROR
      */
-    public int set_cbQueueMaxMsgs(AgentXSetPhase phase, long value)
+    public int set_cbQueueMaxEntries(AgentXSetPhase phase, long value)
     {
         switch (phase.getPhase()) {
         case AgentXSetPhase.TEST_SET:
             break;
         case AgentXSetPhase.COMMIT:
-            undo_cbQueueMaxMsgs = cbQueueMaxMsgs;
-            cbQueueMaxMsgs = value;
+            undo_cbQueueMaxEntries = cbQueueMaxEntries;
+            cbQueueMaxEntries = value;
             break;
         case AgentXSetPhase.UNDO:
-            cbQueueMaxMsgs = undo_cbQueueMaxMsgs;
+            cbQueueMaxEntries = undo_cbQueueMaxEntries;
             break;
         case AgentXSetPhase.CLEANUP:
             break;
@@ -151,11 +151,11 @@ public class SessionEntryImpl extends SessionEntry
      */
     public int get_clearCbQueue()
     {
-        if (get_cbQueueNumMsgs() > 0) {
-	    clearCbQueue = 0;
+        if (get_cbQueueNumEntries() > 0) {
+            clearCbQueue = 0;
         }
         else {
-	    clearCbQueue = 1;
+            clearCbQueue = 1;
         }
         return clearCbQueue;
     }

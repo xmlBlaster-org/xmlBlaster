@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.5 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: Address.cpp,v 1.6 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -65,11 +65,11 @@ inline void Address::initialize()
    }
 
    // TODO: This is handled in QueueProperty.java already ->
-   //      long maxMsg = global_.getProperty().getLongProperty("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault);
-   long maxMsg = global_.getProperty().getLongProperty("queue.maxMsg", 10000l);
-   setMaxMsg(maxMsg);
+   //      long maxEntries = global_.getProperty().getLongProperty("queue.maxEntries", CbQueueProperty.DEFAULT_maxEntriesDefault);
+   long maxEntries = global_.getProperty().getLongProperty("queue/maxEntries", 10000l);
+   setMaxEntries(maxEntries);
    if (nodeId_ != "") {
-      setMaxMsg(global_.getProperty().getLongProperty("queue.maxMsg["+nodeId_+"]", getMaxMsg()));
+      setMaxEntries(global_.getProperty().getLongProperty("queue/maxEntries["+nodeId_+"]", getMaxEntries()));
    }
 }
 
@@ -99,14 +99,14 @@ Address& Address::operator =(const AddressBase& addr)
 }
 
 
-void Address::setMaxMsg(long maxMsg)
+void Address::setMaxEntries(long maxEntries)
 {
-   maxMsg_ = maxMsg;
+   maxEntries_ = maxEntries;
 }
 
-long Address::getMaxMsg() const
+long Address::getMaxEntries() const
 {
-   return maxMsg_;
+   return maxEntries_;
 }
 
 /** For logging only */
@@ -117,7 +117,7 @@ string Address::getSettings()
    if (getDelay() > 0)
       ret += string(" delay=") + lexical_cast<string>(getDelay()) +
              string(" retries=") + lexical_cast<string>(getRetries()) +
-             string(" maxMsg=") + lexical_cast<string>(getMaxMsg()) +
+             string(" maxEntries=") + lexical_cast<string>(getMaxEntries()) +
              string(" pingInterval=") + lexical_cast<string>(getPingInterval());
    return ret;
 }
@@ -135,7 +135,7 @@ string Address::usage()
 {
    string text = "";
    text += string("Control fail save connection to xmlBlaster server:\n");
-   // is in QueueProperty.java: text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxMsgDefault + "].\n";
+   // is in QueueProperty.java: text += "   -queue.maxEntries       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxEntriesDefault + "].\n";
    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
    text += string("   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + lexical_cast<string>(DEFAULT_collectTime) + "].\n");

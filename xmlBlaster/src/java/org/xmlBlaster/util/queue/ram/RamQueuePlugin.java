@@ -79,8 +79,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
 
       this.ME = "RamQueuePlugin-" + storageId.getId();
 
-      long maxMsg = property.getMaxMsg();
-      if (maxMsg > Integer.MAX_VALUE)
+      long maxEntries = property.getMaxEntries();
+      if (maxEntries > Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "initialize: The maximum number of messages is too big");
       this.comparator = new MsgComparator();
       this.storage = new TreeSet(this.comparator);
@@ -389,7 +389,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#getMaxNumOfEntries()
     */
    public long getMaxNumOfEntries() {
-      return property.getMaxMsg();
+      return property.getMaxEntries();
    }
 
    /**
@@ -586,10 +586,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             return;
       }
 
-      if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
-         String reason = "Queue overflow (number of entries), " + property.getMaxMsg() +
+      if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
+         String reason = "Queue overflow (number of entries), " + property.getMaxEntries() +
                          " messages are in queue, try increasing '" +
-                         this.property.getPropName("maxMsg") + "' on client login.";
+                         this.property.getPropName("maxEntries") + "' on client login.";
          if (log.TRACE) log.trace(ME, reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -646,9 +646,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             return;
       }
 
-      if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
-         String reason = "Queue overflow (num of entries), " + property.getMaxMsg() +
-                  " messages are in queue, try increasing '" + this.property.getPropName("maxMsg") + "' on client login.";
+      if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
+         String reason = "Queue overflow (num of entries), " + property.getMaxEntries() +
+                  " messages are in queue, try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
          if (log.TRACE) log.trace(ME, reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }

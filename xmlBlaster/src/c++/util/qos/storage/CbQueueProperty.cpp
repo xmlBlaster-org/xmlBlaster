@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.7 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.8 2003/03/25 07:48:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -54,7 +54,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
       string ret;
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
-             string(" maxMsg=") + lexical_cast<string>(getMaxMsg());
+             string(" maxEntries=") + lexical_cast<string>(getMaxEntries());
       if (!addressArr_.empty())
          ret += string(" ") + getCurrentCallbackAddress().getSettings();
       return ret;
@@ -156,8 +156,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       string text;
       text += string("Control the callback queue properties:\n");
-      text += string("   -cb.queue.maxMsg       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxMsgDefault) + string("].\n");
-      text += string("   -cb.queue.maxMsgCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<string>(DEFAULT_maxMsgDefault) + string("].\n");
+      text += string("   -queue/callback/maxEntries       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
+      text += string("   -queue/callback/maxEntriesCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<string>(DEFAULT_maxEntriesDefault) + string("].\n");
       text += string("   -cb.queue.maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
       text += string("   -cb.queue.maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
     //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
