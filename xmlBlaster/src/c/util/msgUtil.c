@@ -36,9 +36,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.14 2003/10/12 09:55:58 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.15 2003/10/29 21:06:25 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.14 2003/10/12 09:55:58 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.15 2003/10/29 21:06:25 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -553,8 +553,10 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
 
 
 #ifndef _WINDOWS   /* Windows does not support the reentrant ..._r() functions */
-#  ifdef __sun
+#  if defined(__sun)
 #    define HAVE_FUNC_GETHOSTBYNAME_R_5 /* SUN */
+#  elif defined(__alpha)
+#    define HAVE_FUNC_GETHOSTBYNAME_R_3 /* OSF1 V5.1 1885 alpha */
 #  else
 #    define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
 #  endif
