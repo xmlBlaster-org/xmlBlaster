@@ -281,6 +281,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          Iterator iter = this.newAdded[this.publishIndex].iterator();
          while (iter.hasNext()) {
             Figure fig = (Figure)iter.next();
+            if (fig instanceof Drawing) continue;
             String uniqueId = (String)this.figureTimestampTable.get(fig);
             this.log.info(ME, "timeout: newAdded: " + fig + " " + uniqueId);
             tmpAdded.put(uniqueId, fig);
@@ -292,6 +293,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          Iterator iter = this.newChanged[this.publishIndex].iterator();
          while (iter.hasNext()) {
             Figure fig = (Figure)iter.next();
+				if (fig instanceof Drawing) continue;
             String uniqueId = (String)this.figureTimestampTable.get(fig);
             this.log.info(ME, "timeout: newChanged: " + fig + " " + uniqueId);
             tmpChanged.put(uniqueId, fig);
@@ -302,6 +304,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          Iterator iter = this.newRemoved[this.publishIndex].iterator();
          while (iter.hasNext()) {
             Figure fig = (Figure)iter.next();
+				if (fig instanceof Drawing) continue;
             String uniqueId = (String)this.figureTimestampTable.get(fig);
             this.log.info(ME, "timeout: newRemoved: " + fig + " " + uniqueId);
             if (uniqueId != null ) {
