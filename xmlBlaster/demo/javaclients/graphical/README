@@ -1,12 +1,17 @@
+#
+# Demo for xmlBlaster with a graphical chat client
+# xmlBlaster/demo/javaclients/graphical/README
+#
+
 
 1) start an xmlBlaster instance:
 java org.xmlBlaster.Main
 
 2) in another terminal start the demo:
-javaclients.graphical.GraphicChat -publishDelay 100
+java javaclients.graphical.GraphicChat -publishDelay 100
 
 3) in another terminal start a second instance of the demo:
-javaclients.graphical.GraphicChat -publishDelay 100
+java javaclients.graphical.GraphicChat -publishDelay 100
 
 In both instances choose "new" in the "file" menu. Alternatively you 
 choose 
