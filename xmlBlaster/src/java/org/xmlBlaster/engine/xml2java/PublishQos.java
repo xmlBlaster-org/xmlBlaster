@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.2 2002/03/13 16:41:21 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.3 2002/04/19 11:02:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -14,6 +14,8 @@ import org.xmlBlaster.util.RcvTimestamp;
 
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.cluster.NodeId;
+import org.xmlBlaster.engine.cluster.RouteInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 
@@ -88,6 +90,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private boolean inIsVolatile = false; // parsing inside <isVolatile> ?
    private boolean inIsDurable = false; // parsing inside <isDurable> ?
    private boolean inReadonly = false; // parsing inside <readonly> ?
+   private boolean inRoute = false; // parsing inside <route> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
@@ -138,6 +141,12 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    protected Vector destinationVec = null;
    protected Destination destination = null;
+
+   /**
+    * Vector containing RouteInfo objects
+    */
+   protected Vector routeNodeVec = null;
+   private RouteInfo routeInfo = null;
 
    public long size = 0L;
 
@@ -279,6 +288,28 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public final void setSender(String sender)
    {
       this.sender = sender;
+   }
+
+   /**
+    * Adds a new route hop to the QoS of this message. 
+    * The added routeInfo is assumed to be one statum closer to the master
+    * So we will rearrange the statum here
+    */
+   public final void addRouteInfo(RouteInfo routeInfo)
+   {
+      if (routeInfo == null) {
+         Log.error(ME, "Adding null routeInfo");
+         return;
+      }
+      if (routeNodeVec == null)
+         routeNodeVec = new Vector(12);
+      routeNodeVec.addElement(routeInfo);
+
+      // Set stratum to new values
+      for (int ii=0; ii<routeNodeVec.size(); ii++) {
+         RouteInfo ri = (RouteInfo)routeNodeVec.elementAt(ii);
+         ri.setStratum(routeNodeVec.size()-ii-1);
+      }
    }
 
 
@@ -519,6 +550,53 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("route")) {
+         if (!inQos)
+            return;
+         inRoute = true;
+         return;
+      }
+      if (name.equalsIgnoreCase("node")) {
+         if (!inRoute) {
+            Log.error(ME, "Ignoring <node>, it is not inside <route>");
+            return;
+         }
+
+         if (attrs != null) {
+
+            String id = attrs.getValue("id");
+            if (id == null || id.length() < 1) {
+               Log.error(ME, "QoS <route><node> misses id attribute, ignoring node");
+               return;
+            }
+            NodeId nodeId = new NodeId(id);
+
+            int stratum = 0;
+            String tmp = attrs.getValue("stratum");
+            if (tmp != null) {
+               try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid stratum =" + tmp); };
+            }
+            else {
+               Log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0");
+            }
+
+            Timestamp timestamp = null;
+            tmp = attrs.getValue("timestamp");
+            if (tmp != null) {
+               try { timestamp = new Timestamp(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid route Timestamp - nanos =" + tmp); };
+            }
+            else {
+               Log.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
+               timestamp = new Timestamp(0L);
+            }
+
+            if (Log.TRACE) Log.trace(ME, "Found node tag");
+
+            routeInfo = new RouteInfo(nodeId, stratum, timestamp);
+         }
+         return;
+      }
+
       // deprecated
       if (name.equalsIgnoreCase("forceQueuing")) {
          if (!inDestination)
@@ -603,6 +681,12 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
 
       if(name.equalsIgnoreCase("expiration")) {
+         inRoute = false;
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("expiration")) {
          inExpiration = false;
          character.setLength(0);
          return;
@@ -650,6 +734,18 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (tmp.length() > 0)
             readonly = new Boolean(tmp).booleanValue();
          // if (Log.TRACE) Log.trace(ME, "Found readonly = " + readonly);
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("node")) {
+         addRouteInfo(routeInfo);
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("route")) {
+         inRoute = false;
          character.setLength(0);
          return;
       }
@@ -720,6 +816,15 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (readonly())
          sb.append(offset).append("   <readonly/>");
 
+      if (routeNodeVec != null) {
+         sb.append(offset).append("   <route>");
+         for (int ii=0; ii<routeNodeVec.size(); ii++) {
+            RouteInfo routeInfo = (RouteInfo)routeNodeVec.elementAt(ii);
+            sb.append(routeInfo.toXml(extraOffset + "   "));
+         }
+         sb.append(offset).append("   </route>");
+      }
+
       sb.append(offset).append("</qos>\n");
 
       return sb.toString();
@@ -760,11 +865,17 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      Empty\n" +
             "   </defaultContent>\n" +
             */
+            "   <route>\n" +
+            "      <node id='bilbo' stratum='2' timestamp='9408630500'/>\n" +
+            "      <node id='frodo' stratum='1' timestamp='9408630538'/>\n" +
+            "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
+            "   </route>\n" +
             "</qos>\n";
 
          {
             System.out.println("\nFull Message from client ...");
             PublishQos qos = new PublishQos(xml);
+            qos.addRouteInfo(new RouteInfo(new NodeId("master"), 0, new Timestamp(9408630587L)));
             System.out.println(qos.toXml());
          }
  
