@@ -515,7 +515,7 @@ public abstract class AddressBase
 
    /**
     * BurstMode: The time span to collect messages before sending. 
-    * @return The time to collect in milliseconds
+    * @return The time to collect in milliseconds (default is 0 == switched off)
     */
    public final long getCollectTime() {
       return this.collectTime.getValue();
