@@ -16,6 +16,9 @@
 # NOTE: If you want to use the naming service, you need to use jaco,
 #       which sets the -Xbootclasspath
 #       since otherwise the wrong NamingContext from JDK is used.
+#
+# NOTE: If you use the RMI server, you should adjust the security policy
+#       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
 
-java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton "$@"
+java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy "$@"
 
