@@ -22,7 +22,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-
+                                                         
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -48,8 +48,7 @@ import javax.management.*;
 public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback {
 
   private String ME = "XmlBlasterConnector";
-  private I_XmlBlasterAccess returnCon;
-  private I_XmlBlasterAccess invokeCon;
+  private I_XmlBlasterAccess xmlBlasterAccess;
   private MBeanServer server = null;
   private SerializeHelper serHelp;
   private LogChannel log;
@@ -63,7 +62,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
   public static int SENDING = 1000;
   public static int FINISHED = 1;
 
-  public boolean jmxInterfaceAlive=false;
+  public boolean jmxInterfaceAlive = false;
 
   public XmlBlasterConnector() {
     this.glob = new Global();
@@ -71,12 +70,15 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
     serHelp = new SerializeHelper(glob);
   }
 
+  /* THIS SHOULD NOT BE USED SINCE THE Global SHOULD NOT BE PASSED FROM THE SERVER 
   public XmlBlasterConnector(Global glob) {
     if (this.glob == null) this.glob = new Global();
     this.log = this.glob.getLog("jmx");
     serHelp = new SerializeHelper(glob);
 
   }
+  */
+
 /**
  * Starts the connector - starts an embedded xmlBlaster that listens on port 3424
  * Subscribes to topic where MethodInvocations are placed
@@ -120,6 +122,10 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
       prop.setProperty("plugin/rmi/registryPort","1122");
       prop.setProperty("cluster","false");
 
+//      prop.setProperty("trace", "true");
+//      prop.setProperty("call", "true");
+//      prop.setProperty("dump", "true");
+
       localServerGlob.init(prop);
       embeddedXmlBlaster = EmbeddedXmlBlaster.startXmlBlaster(localServerGlob);
       glob.init(prop);
@@ -129,12 +135,11 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
       addr.setBootstrapPort(port);
 
       glob.setBootstrapAddress(addr);
-      returnCon = glob.getXmlBlasterAccess();
-      invokeCon = glob.getXmlBlasterAccess();
+      this.xmlBlasterAccess = glob.getXmlBlasterAccess();
 
       log.info(ME,"Connecting to embedded xmlBlaster on port "+ port);
 
-      if (invokeCon != null) jmxInterfaceAlive=true;
+      if (this.xmlBlasterAccess != null) jmxInterfaceAlive=true;
       log.info(ME, "Registered new xmlBlasterConnector, running on "+glob.getBootstrapAddress().getBootstrapUrl());
       log.info(ME,"registering new topic \"xmlBlasterMBeans\"");
       SubscribeKey subKey = new SubscribeKey(this.glob, "xmlBlasterMBeans_Invoke");
@@ -143,9 +148,9 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
       sQos.setWantLocal(false);
       ConnectQos qos = new ConnectQos(glob, "InternalConnector", "connector");
 
-      ConnectReturnQos rQos = invokeCon.connect(qos, this);
+      ConnectReturnQos rQos = this.xmlBlasterAccess.connect(qos, this);
       log.info(ME,"Connect: " + rQos.toString());
-      invokeCon.subscribe(subKey, sQos);
+      this.xmlBlasterAccess.subscribe(subKey, sQos);
       log.info(ME,"internal JMX Connector ready and waiting...");
     }
     catch (Exception ex) {
@@ -219,7 +224,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
       log.info(ME,"Trying to connect as internal user");
       ConnectQos qos = new ConnectQos(glob, "InternalConnector", "connector");
       log.info(ME,"Trying to republish MethodInvocationObject again...");
-      PublishReturnQos rqos = returnCon.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Return'/>", serHelp.serializeObject(mi),"<qos/>"));
+      PublishReturnQos rqos = this.xmlBlasterAccess.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Return'/>", serHelp.serializeObject(mi),"<qos/>"));
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -235,7 +240,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
     Object[] params = mi.getParams();
       try {
         server.removeNotificationListener((ObjectName)params[0],
-            new NotifListener(this, returnCon, glob));
+            new NotifListener(this, this.xmlBlasterAccess, glob));
       }
       catch (Exception ex) {
         log.error(ME,"Error when disabling serversided Notification for MBean " + ex);
@@ -253,7 +258,7 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
 
       try {
         server.addNotificationListener((ObjectName)params[0],
-            new NotifListener(this, returnCon, glob),
+            new NotifListener(this, this.xmlBlasterAccess, glob),
                                        (javax.management.NotificationFilter)params[2],
                                        null);
       }

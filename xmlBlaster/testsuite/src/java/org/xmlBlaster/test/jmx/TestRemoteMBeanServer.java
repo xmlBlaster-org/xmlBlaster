@@ -75,7 +75,7 @@ public class TestRemoteMBeanServer extends TestCase{
   public void testRemoteMBeanServer() {
     log.info(ME,"creating server on localhost");
     try {
-      server = ConnectorFactory.createAsyncConnector("xmlblaster", "localhost");
+      server = ConnectorFactory.getInstance(this.glob).getMBeanServer("localhost");
     }
     catch (ConnectorException ex) {
       assertTrue("Error connecting to server! " + ex.toString(), false);

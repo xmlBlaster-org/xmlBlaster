@@ -30,16 +30,19 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
   private SubscribeKey subsKey = null;
   private final Global global;
   private LogChannel log;
-  private I_XmlBlasterAccess returnCon;
-  private I_XmlBlasterAccess invokeCon;
+  private I_XmlBlasterAccess xmlBlasterAccess;
   private String ME = "XmlBlasterInvocationHandler";
   private static int port = 3424;
 
   private Map callbackBuffer = Collections.synchronizedMap(new HashMap());
 
-  public XmlBlasterInvocationHandler(String serverName) {
-    this.global = new Global().instance();
+  public XmlBlasterInvocationHandler(String serverName, Global global) {
+    this.global = global;
+//    this.global = Global.instance();
     this.log = this.global.getLog("jmx");
+    if (this.log.CALL) 
+       this.log.error(ME, "Constructor for '" + serverName + "'");
+
     log.info(ME,"XmlBlasterInvocationHandler called");
 
     try {
@@ -50,17 +53,18 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
       prop.setProperty("bootstrapPort","3424");
 
       global.init(prop);
-      invokeCon = global.getXmlBlasterAccess();
-      returnCon = global.getXmlBlasterAccess();
+      this.xmlBlasterAccess = global.getXmlBlasterAccess();
 
-      log.info(ME,"Connecting to embedded xmlBlaster on port "+ port +" Adresse " + addr.getBootstrapUrl());
-      ConnectQos qos = new ConnectQos(global, "InternalConnector", "connector");
-      returnCon.connect(qos, this);
+      log.info(ME,"Connecting to embedded xmlBlaster on port "+ port +" Address " + addr.getBootstrapUrl());
+      if (!this.xmlBlasterAccess.isConnected()) {
+         ConnectQos qos = new ConnectQos(this.global, "InternalConnector", "connector");
+         this.xmlBlasterAccess.connect(qos, this);
+      }
       SubscribeKey subKey = new SubscribeKey(this.global, "xmlBlasterMBeans_Return");
 
       SubscribeQos sQos = new SubscribeQos(this.global);
       sQos.setWantLocal(false);
-      returnCon.subscribe(subKey, sQos);
+      this.xmlBlasterAccess.subscribe(subKey, sQos);
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -77,41 +81,44 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
    */
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
-    log.info(ME,"Invoke() within XmlBlasterInvocationHandler called - Method called: " + method);
+    log.info(ME,"invoke: within XmlBlasterInvocationHandler called - Method called: " + method);
     MethodInvocation mi = new MethodInvocation(method);
     mi.setParams(args);
 
     String ID = "" + messageID++;
     mi.setId(ID);
-    log.info(ME,"Put MethodInvocation-ID into callback-buffer in order to rematch again! " + mi.getId() );
+    log.info(ME,"invoke: Put MethodInvocation-ID into callback-buffer in order to rematch again '" + mi.getId() + "' and method '" + method.getName() + "'");
     Callback cb = new XmlBlasterCallback(ID, mi);
     callbackBuffer.put(ID, cb);
 
     if (method.getName().equals("close")) {
+      if (this.log.DUMP) {
+         this.log.dump(ME, "invoke 'close': ");
+         Thread.currentThread().dumpStack();
+      }
       close();
       return null;
-    }
+    }              
 
-    ser = new SerializeHelper(new Global());
-    PublishReturnQos rqos = invokeCon.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Invoke'/>",ser.serializeObject(mi),"<qos/>"));
-    log.info(ME,"Returning callback-object: " + cb);
+    ser = new SerializeHelper(this.global);
+    PublishReturnQos rqos = this.xmlBlasterAccess.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Invoke'/>",ser.serializeObject(mi),"<qos/>"));
+    log.info(ME,"invoke: Returning callback-object: " + cb);
     return cb;
   }
 
 
-  private void close() {
-    invokeCon.disconnect(new DisconnectQos());
-    returnCon.disconnect(new DisconnectQos());
-    log.info(ME,"Disconnecting from xmlBlaster....");
+  synchronized private void close() {
+//   this.xmlBlasterAccess.disconnect(new DisconnectQos());
+    log.error(ME,"Disconnecting from xmlBlaster.... (not really disconnecting)");
   }
 
 /**
  * Update invoked, when Message on subscribed Topic is received.
  * Most probably it is the returning Object from a recent MethodInvocation
  */
-  public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
+  synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-    System.out.println("\nReceived asynchronous message in \"update()\" clientSide '" +
+    if (this.log.TRACE) this.log.trace(ME, "update: Received asynchronous message in \"update()\" clientSide '" +
                        updateKey.getOid() + "' state=" + updateQos.getState() + " from xmlBlaster - extracting MethodInvocation...");
 
     //get MI from byteArray
@@ -119,16 +126,19 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
     SerializeHelper serHelp = new SerializeHelper(global);
     try {
       mi = (MethodInvocation) serHelp.deserializeObject(content);
-      log.info(ME,"Method received: " + mi.getMethodName());
+      log.info(ME,"update: Method received: " + mi.getMethodName());
     }
     catch (Exception ex) {
-      log.error(ME,"Error when trying to expand MethodInvocationObject " + ex.toString());
+      log.error(ME,"update: Error when trying to expand MethodInvocationObject " + ex.toString());
       ex.printStackTrace();
     }
     String ID = mi.getId();
-    log.info(ME," ID from MethodInvocation that maps callback-buffer: " + ID);
+    log.info(ME, " update: ID from MethodInvocation that maps callback-buffer: " + ID);
     XmlBlasterCallback cb = (XmlBlasterCallback) callbackBuffer.get(ID);
-//    log.info(ME," Whats in Received Object?? - " + mi.getReturnValue());
+    if (this.log.TRACE) {
+       this.log.trace(ME," update: Whats in Received Object?? - " + mi.getReturnValue());
+       this.log.trace(ME, "update: the callback with ID '" + ID + "' is '" + cb + "'");
+    }
     if (cb != null ) cb.setMethodInvocation(mi);
     return "";
    }

@@ -41,8 +41,9 @@ public class DataModel {
   public DataModel(Global glob) throws Exception {
     xmlUtil = new XmlUtil();
     //get Globals and Log
-    if (glob == null) glob = new Global().instance();
-    log = glob.getLog("jmxGUI");
+//    if (glob == null) glob = Global.instance();
+    this.glob = glob;
+    log = this.glob.getLog("jmxGUI");
     log.info(ME, "building new tree...");
     addServerNodes();
     buildTree();
@@ -57,7 +58,7 @@ public class DataModel {
     vSubNodes = new Vector();
     log.info(ME,"Trying to retrieve config from file");
     try {
-      config = xmlUtil.loadConfig("config.xml");
+      config = xmlUtil.loadConfig();
     }
     catch (Exception ex) {
       log.error(ME,"Error when loading plugin config " + ex.toString());
@@ -92,7 +93,6 @@ public class DataModel {
 
 
   public DefaultMutableTreeNode addServerNodes() throws Exception {
-
       Object[] nodes = new Object[5];
       BasicNode rootNode = new BasicNode(null, "xmlBlaster");
       rootNode.setExpandedIcon(loadIcon("globe.gif"));
@@ -102,7 +102,11 @@ public class DataModel {
       parent = top;
       nodes[0] = top;
       DefaultMutableTreeNode node = null;
-      String[] servers = ConnectorFactory.getMBeanServerList();
+      
+      ConnectorFactory connectorFactory = ConnectorFactory.getInstance(this.glob);
+      connectorFactory.getMBeanServer("127.0.0.1");
+      String[] servers = connectorFactory.getMBeanServerList();
+      
       if (servers == null) throw new Exception("could not connect to any host! ");
       for (int i=0; i<servers.length; i++) {
         BasicNode bNode = new BasicNode(null, servers[i]);

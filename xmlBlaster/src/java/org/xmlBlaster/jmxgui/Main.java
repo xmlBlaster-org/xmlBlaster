@@ -14,13 +14,10 @@ import org.xmlBlaster.util.Global;
  */
 public class Main {
 
-
   public static void main(String[] args) {
     //get Globals and Log
-    Global glob = null;
-    LogChannel log = null;
-    if (glob == null) glob = new Global().instance();
-    log = glob.getLog("jmxGUI");
+    Global glob = new Global(args);
+    LogChannel log = glob.getLog("jmxGUI");
     // currently commented out due to a deadlock ...
 //    SplashWindow sw = new SplashWindow("tims_rainbowfish.gif",null, 5000);
     MainFrame f = new MainFrame(glob);

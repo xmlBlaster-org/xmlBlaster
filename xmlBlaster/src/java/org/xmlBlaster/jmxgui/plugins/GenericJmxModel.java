@@ -20,16 +20,16 @@ import java.rmi.*;
  */
 public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
   protected Vector vecMBeans;
-  protected ConnectorClient cc = null;
+  protected ConnectorClient connectorClient = null;
   protected AsyncMBeanServer aServer = null;
   protected ObjectName RequestBroker = null;
   private HashMap hmtable = new HashMap();
   private String objectName ="";
   private String className="";
 
-  public GenericJmxModel(ConnectorClient cc, String objectName, String className) {
+  public GenericJmxModel(ConnectorClient connectorClient, String objectName, String className) {
     this.objectName = objectName;
-    this.cc = cc;
+    this.connectorClient = connectorClient;
     this.className = className;
     loadData();
   }
@@ -37,7 +37,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
   public void loadData() {
     try {
       ObjectName name = new ObjectName(objectName);
-      boolean isLoaded = ((Boolean) (cc.getServer().isRegistered(name).get())).booleanValue();
+      boolean isLoaded = ((Boolean) (connectorClient.getServer().isRegistered(name).get())).booleanValue();
       if (!isLoaded) {
         loadMBean(objectName, className);
       }
@@ -62,7 +62,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
   public void exploreMBeans() {
     vecMBeans = new Vector();
     try {
-      aServer= cc.getServer();
+      aServer= connectorClient.getServer();
     }
     catch (ConnectorException ex) {
       ex.printStackTrace();
@@ -73,7 +73,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
     }
     catch (MalformedObjectNameException ex) {
     }
-    MBeanAttributeInfo[] attrInfo = cc.exploreMBeansByObjectName(objectName);
+    MBeanAttributeInfo[] attrInfo = connectorClient.exploreMBeansByObjectName(objectName);
     for (int i =0; i<attrInfo.length; i++) {
       vecMBeans.addElement(attrInfo[i].getName());
     }
@@ -81,7 +81,7 @@ public class GenericJmxModel extends javax.swing.table.AbstractTableModel{
 
   public void loadMBean(String myObjectName, String className) {
     try {
-      AsyncMBeanServer server = cc.getServer();
+      AsyncMBeanServer server = connectorClient.getServer();
       server.createMBean(className, new ObjectName(myObjectName));
     }
     catch (Exception ex) {

@@ -140,7 +140,7 @@ public class JmxWrapper
 
        //start xmlBlaster-Connector:
        ObjectName xmlBlasterConnector_name = new ObjectName("Adaptor:transport=xmlBlaster,port=3424");
-       mbeanServer.createMBean("org.xmlBlaster.util.admin.extern.XmlBlasterConnector",xmlBlasterConnector_name,null);
+       mbeanServer.createMBean("org.xmlBlaster.util.admin.extern.XmlBlasterConnector", xmlBlasterConnector_name, null);
        //start internal xmlBlasterInstance
        log.info(ME,"Trying to start internal xmlBlaster - with own MBeanServer as Parameter");
       try {

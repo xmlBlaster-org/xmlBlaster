@@ -38,8 +38,7 @@ public class MainFrame extends JFrame {
   private GridBagLayout gbl = new GridBagLayout();
 
   public MainFrame(Global glob) {
-
-    if (glob == null) glob = new Global().instance();
+    this.glob = glob;
     log = glob.getLog("jmxGUI");
     try {
       jbInit();
@@ -151,6 +150,7 @@ public class MainFrame extends JFrame {
       m_tree.setAutoscrolls(true);
       m_tree.setScrollsOnExpand(true);
       s.getViewport().add(m_tree);
+      
       PanelLeft.add(s, BorderLayout.CENTER);
       this.setResizable(true);
 

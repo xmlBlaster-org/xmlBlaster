@@ -35,7 +35,7 @@ public class ComponentController {
     xmlUtil = new XmlUtil();
     log = glob.getLog("jmxGUI");
     hObjects = new Hashtable();
-    Document doc = xmlUtil.loadConfig("config.xml");
+    Document doc = xmlUtil.loadConfig();
     buildDOM(doc);
   }
 

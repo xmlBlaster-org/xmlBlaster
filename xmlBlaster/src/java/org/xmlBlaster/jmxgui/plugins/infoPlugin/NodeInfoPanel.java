@@ -30,7 +30,7 @@ public class NodeInfoPanel extends JmxPlugin implements TableModelListener {
   private String MBean = "xmlBlaster:name=requestBroker";
   private String MBeanClass = "org.xmlBlaster.engine.RequestBroker";
   private JTable jTable;
-  private ConnectorClient cc;
+  private ConnectorClient connectorClient;
   private JButton button = null;
   private Global glob;
   private GenericJmxModel model2;
@@ -44,13 +44,11 @@ public class NodeInfoPanel extends JmxPlugin implements TableModelListener {
   }
 
   public NodeInfoPanel() {
-    ConnectorClient cc = new ConnectorClient(null, serverName);
-    this.cc = cc;
-
+    this.connectorClient = new ConnectorClient(null, serverName);
 
     try {
-      AsyncMBeanServer server = cc.getServer();
-      model2 = new GenericJmxModel(cc, MBean, MBeanClass);
+      AsyncMBeanServer server = connectorClient.getServer();
+      model2 = new GenericJmxModel(connectorClient, MBean, MBeanClass);
       model2.addTableModelListener(this);
       jTable = new JTable(model2);
       jTable.setAutoscrolls(true);
@@ -79,7 +77,7 @@ public class NodeInfoPanel extends JmxPlugin implements TableModelListener {
   }
 
   public void finalize() {
-    cc.logout();
+//    connectorClient.logout();
   }
 
   public void update() {

@@ -19,31 +19,19 @@ import java.sql.ResultSet;
 import java.sql.BatchUpdateException;
 
 import java.util.Hashtable;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
-import org.xmlBlaster.util.Timestamp;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.WeakHashMap;
-import java.util.StringTokenizer;
-import java.util.Iterator;
-import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Delegate class which takes care of SQL specific stuff for the JdbcQueuePlugin
@@ -113,6 +101,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private int queueCounter = 0;
 
    /**
+    * tells wether the used database supports batch updates or not.
+    */
+        private boolean supportsBatch = true;
+
+   /**
     * @param JdbcConnectionPool the pool to be used for the connections to
     *        the database. IMPORTANT: The pool must have been previously
     *        initialized.
@@ -145,6 +138,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (!conn.getMetaData().supportsTransactions()) {
             String dbName = conn.getMetaData().getDatabaseProductName();
             this.log.error(ME, "the database '" + dbName + "' does not support transactions, unpredicted results may happen");
+         }
+
+         if (!conn.getMetaData().supportsBatchUpdates()) {
+            String dbName = conn.getMetaData().getDatabaseProductName();
+            this.supportsBatch = false;
+            this.log.trace(ME, "the database '" + dbName + "' does not support batch mode. No problem I will work whitout it");
          }
       }
       catch (XmlBlasterException ex) {
@@ -921,6 +920,48 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
 
+   private int[] addEntriesSingleMode(Connection conn, String queueName, String nodeId, I_Entry[] entries)
+      throws XmlBlasterException {
+      // entries, conn
+      int i = 0;
+      int[] ret = new int[entries.length];
+      try {
+         if (this.log.TRACE) this.log.trace(ME, "addEntries adding each entry in single mode since an exception occured when using 'batch mode'");
+         for (i=0; i < entries.length; i++) {
+            if (addSingleEntry(queueName, nodeId, entries[i], conn)) ret[i] = 1; 
+            else ret[i] = 0;
+            if (this.log.TRACE) this.log.trace(ME, "addEntries adding entry '" + i + "' in single mode succeeded");
+         }
+         if (!conn.getAutoCommit()) conn.commit();
+         return ret;
+      }
+      catch (XmlBlasterException ex1) {
+         // conn.rollback();
+         try {
+            for (int ii=0; ii < i; ii++) {
+               if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
+            }
+         }
+         catch (Throwable ex2) {
+            this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+         }
+         throw ex1;
+      }
+      catch (Throwable ex1) {
+         // conn.rollback();
+         try {
+            for (int ii=0; ii < i; ii++) {
+               if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
+            }
+         }
+         catch (Throwable ex2) {
+            this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+         }
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntries", "", ex1); 
+      }
+   }
+
+
    /**
     *
     * Adds several rows to the specified queue table in batch mode to improve performance
@@ -947,6 +988,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          conn = this.pool.getConnection();
          if (conn.getAutoCommit()) conn.setAutoCommit(false);
+
+         if (!this.supportsBatch)
+            return addEntriesSingleMode(conn, queueName, nodeId, entries);
+
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), req);
 
@@ -977,9 +1022,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          int[] ret = preStatement.executeBatch();
          if (!conn.getAutoCommit()) conn.commit();
          return ret;
-      }
+       }
       catch (Throwable ex) {
-         int i = 0;
          try {
             if (!conn.getAutoCommit()) {
                conn.rollback(); // rollback the original request ...
@@ -993,42 +1037,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
          else { // check if the exception was due to an already existing entry by re
-
-            int[] ret = new int[entries.length];
-            try {
-               if (this.log.TRACE) this.log.trace(ME, "addEntries adding each entry in single mode since an exception occured when using 'batch mode'");
-               for (i=0; i < entries.length; i++) {
-                  if (addSingleEntry(queueName, nodeId, entries[i], conn)) ret[i] = 1; 
-                  else ret[i] = 0;
-                  if (this.log.TRACE) this.log.trace(ME, "addEntries adding entry '" + i + "' in single mode succeeded");
-               }
-               if (!conn.getAutoCommit()) conn.commit();
-               return ret;
-            }
-            catch (XmlBlasterException ex1) {
-               // conn.rollback();
-               try {
-                  for (int ii=0; ii < i; ii++) {
-                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
-                  }
-               }
-               catch (Throwable ex2) {
-                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
-               }
-               throw ex1;
-            }
-            catch (Throwable ex1) {
-               // conn.rollback();
-               try {
-                  for (int ii=0; ii < i; ii++) {
-                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
-                  }
-               }
-               catch (Throwable ex2) {
-                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
-               }
-               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntries", "", ex1); 
-            }
+            return addEntriesSingleMode(conn, queueName, nodeId, entries);
          }
       }
       finally {

@@ -35,15 +35,18 @@ public class XmlUtil {
   private DocumentBuilder docBuilder = null;
 
   /**
-   * Loads configurationfile from local ressourcepath.
+   * Loads the configuration file.
    * Parses the configfile into a Document
    * @param filename file where to find configuration
    * @return
    */
-  public Document loadConfig (String filename) {
-    log.info(ME,"loading config from file " + filename);
+  public Document loadConfig () {
+  	String filename = "jmxgui.xml";
+  	String propertyName = "jmxgui.config";
+    log.info(ME,"loading config from file '" + filename + "' or property '" + propertyName + "'");
+    
     java.net.URL oUrl = null;
-    oUrl = this.getClass().getResource(filename);
+    oUrl = (new FileLocator(this.glob)).findFileInXmlBlasterSearchPath(propertyName, filename);
 
     Document doc = null;
     try {

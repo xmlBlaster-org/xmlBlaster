@@ -24,22 +24,28 @@ public class ConnectorClient {
   private LogChannel log = null;
   private Global glob = null;
   private static AsyncMBeanServer aServer = null;
-  final String ME = "ConnectorClient";
+  private final static String ME = "ConnectorClient";
+  private ConnectorFactory connectorFactory;
 
   public ConnectorClient(Global glob, String serverName) {
-    if (glob == null) glob = new Global().instance();
-    log = glob.getLog("jmxGUI");
+    this.glob = glob;
+    // should we allow to pass null here for the global ? 
+    // If yes, then we should have a clear separation of the non-xmlBlaster code
+    if (this.glob == null) this.glob = Global.instance();
+
+    log = this.glob.getLog("jmxGUI");
     //trying to establish connection to JmxServer
     log.info(ME,"New Connector client - trying to establish connection to JmxServer....");
-    if (aServer == null) {
-      try {
-        aServer = ConnectorFactory.createAsyncConnector("xmlBlaster", serverName);
-      }
-      catch (ConnectorException ex) {
-        log.error(ME,"Error when creating AsyncMBeanServerInstance " + ex.toString());
-        ex.printStackTrace();
-      }
+    try {
+      this.connectorFactory = ConnectorFactory.getInstance(this.glob);
+//      aServer = connectorFactory.createAsyncConnector("xmlBlaster", serverName);
+        aServer = connectorFactory.getMBeanServer(serverName);
     }
+    catch (ConnectorException ex) {
+      log.error(ME,"Error when creating AsyncMBeanServerInstance " + ex.toString());
+      ex.printStackTrace();
+    }
+
 //    if ( aServer != null ) {log.info(ME,"Asynchron MBeanServer available: " + aServer.getDefaultDomain());}
 //    else {log.error(ME,"Error when creating AsyncMBeanServerInstance - Reference to Object Null");}
   }
@@ -62,13 +68,15 @@ public class ConnectorClient {
  * JMX-implementation not working correctly
  */
   public String[] getServerList() {
-    return ConnectorFactory.getMBeanServerList();
+    return this.connectorFactory.getMBeanServerList();
   }
 
   /**
    * logout from Server
    */
   public void logout() {
+    if (this.log.CALL) this.log.call(ME, "logout");
+    if (this.log.DUMP) Thread.currentThread().dumpStack();
     aServer.close();
   }
 
@@ -79,6 +87,7 @@ public class ConnectorClient {
    * @return Array of MBeanAttributeInfo
    */
   public MBeanAttributeInfo[] exploreMBeansByObjectName(String name) {
+    if (this.log.CALL) this.log.call(ME, "exploreMBeansByObjectName '" + name + "'");
     MBeanInfo mbInfo = getMBeanInfo(name);
     return mbInfo.getAttributes();
 
@@ -90,6 +99,7 @@ public class ConnectorClient {
    * @return MBeanInfo
    */
   private MBeanInfo getMBeanInfo(String name) {
+    if (this.log.CALL) this.log.call(ME, "getMBeanInfo '" + name + "'");
     MBeanInfo mbInfo = null;
     ObjectName RequestBroker = null;
     if (aServer != null ) {
@@ -112,6 +122,7 @@ public class ConnectorClient {
    * @return Array of MBeanOperationInfo
    */
   public MBeanOperationInfo[] exploreMBeanOperationsByObjectName(String name) {
+    if (this.log.CALL) this.log.call(ME, "exploreMBeanOperationsByObjectName '" + name + "'");
     MBeanInfo mbInfo = getMBeanInfo(name);
     return mbInfo.getOperations();
   }
