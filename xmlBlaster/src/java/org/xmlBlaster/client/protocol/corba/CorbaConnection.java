@@ -488,7 +488,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
             String tmp = authServer.connect(connectQos.toXml());
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
-            sessionId = this.connectReturnQos.getSessionId();
+            sessionId = this.connectReturnQos.getSecretSessionId();
             String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
 
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));

@@ -131,7 +131,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
     * Todo: 
    public void toAlive(ConnectReturnQos ret) {
       this.connectReturnQos = ret;
-      this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
+      this.connectQos.setSecretSessionId(this.connectReturnQos.getSecretSessionId());
       this.connectQos.setPublicSessionId(this.connectReturnQos.getSessionName());
          if (isReconnectPolling)
             clientProblemCallback.reConnected();
@@ -153,7 +153,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
       addr.setAddress(this.cbServer.getCbAddress());
       addr.setType(this.cbServer.getCbProtocol());
       //addr.setVersion(this.cbServer.getVersion());
-      //addr.setSessionId(cbSessionId);
+      //addr.setSecretSessionId(cbSessionId);
       prop.setCallbackAddress(addr);
 
       log.info(ME, "Callback settings: " + prop.getSettings());

@@ -183,7 +183,7 @@ public class SoapConnection implements I_XmlBlasterConnection
             sessionId = null;
             String tmp = (String)getSoapClient().execute("authenticate.connect", args);
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
-            this.sessionId = connectReturnQos.getSessionId();
+            this.sessionId = connectReturnQos.getSecretSessionId();
          }
          else
          {

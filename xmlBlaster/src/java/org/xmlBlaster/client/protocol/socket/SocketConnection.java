@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.40 2003/01/05 23:03:55 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.41 2003/01/18 16:57:23 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -296,7 +296,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             parser.addQos(loginQos.toXml());
             String resp = (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
             this.connectReturnQos = new ConnectReturnQos(glob, resp);
-            this.sessionId = this.connectReturnQos.getSessionId();
+            this.sessionId = this.connectReturnQos.getSecretSessionId();
          }
          else {
             throw new XmlBlasterException(ME, "login() is not supported, please use connect()");

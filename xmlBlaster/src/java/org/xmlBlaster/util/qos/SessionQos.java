@@ -21,7 +21,7 @@ import org.xmlBlaster.util.property.PropBoolean;
 /**
  * This class encapsulates the qos of session attributes of a login() or connect(). 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
- * @see org.xmlBlaster.util.qos.ConnectQosFactory
+ * @see org.xmlBlaster.util.qos.ConnectQosSaxFactory
  * @see org.xmlBlaster.test.classtest.ConnectQosTest
  */
 public final class SessionQos implements java.io.Serializable, Cloneable
@@ -90,13 +90,13 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
-      setSessionId(glob.getProperty().get("session.sessionId", (String)null));
+      setSecretSessionId(glob.getProperty().get("session.secretSessionId", (String)null));
       if (nodeId != null) {
          sessionNameStr = glob.getProperty().get("session.name["+nodeId+"]", sessionNameStr);
          setSessionTimeout(glob.getProperty().get("session.timeout["+nodeId+"]", getSessionTimeout()));
          setMaxSessions(glob.getProperty().get("session.maxSessions["+nodeId+"]", getMaxSessions()));
          clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
-         setSessionId(glob.getProperty().get("session.sessionId["+nodeId+"]", getSessionId()));
+         setSecretSessionId(glob.getProperty().get("session.secretSessionId["+nodeId+"]", getSecretSessionId()));
       }
 
       this.sessionName = new SessionName(glob, sessionNameStr);
@@ -170,7 +170,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     * This is used server side only.
     * @param id The unique and secret sessionId
     */
-   public void setSessionId(String id) {
+   public void setSecretSessionId(String id) {
       if(id==null || id.equals("")) id = null;
       this.sessionId = id;
    }
@@ -180,7 +180,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     * <p />
     * @return The unique, secret sessionId
     */
-   public final String getSessionId() {
+   public final String getSecretSessionId() {
       return this.sessionId;
    }
 
@@ -300,7 +300,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
       text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
       text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
-      text += "   -session.sessionId  The secret sessionId []\n";
+      text += "   -session.secretSessionId The secret sessionId []\n";
       text += "\n";
       return text;
    }

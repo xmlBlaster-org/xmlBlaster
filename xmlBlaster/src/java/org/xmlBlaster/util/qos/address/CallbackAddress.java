@@ -89,7 +89,7 @@ public class CallbackAddress extends AddressBase
       setCompressType(glob.getProperty().get("cb.compress.type", DEFAULT_compressType));
       setMinSize(glob.getProperty().get("cb.compress.minSize", DEFAULT_minSize));
       setPtpAllowed(glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed));
-      setSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
+      setSecretSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
       setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
       if (nodeId != null) {
          setPort(glob.getProperty().get("cb.port["+nodeId+"]", getPort()));
@@ -104,7 +104,7 @@ public class CallbackAddress extends AddressBase
          setCompressType(glob.getProperty().get("cb.compress.type["+nodeId+"]", compressType));
          setMinSize(glob.getProperty().get("cb.compress.minSize["+nodeId+"]", minSize));
          setPtpAllowed(glob.getProperty().get("cb.ptpAllowed["+nodeId+"]", ptpAllowed));
-         setSessionId(glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId));
+         setSecretSessionId(glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId));
          setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
       }
    }
@@ -164,7 +164,7 @@ public class CallbackAddress extends AddressBase
             a.setRetries(17);
             a.setDelay(7890L);
             a.setOneway(true);
-            a.setSessionId("0x4546hwi89");
+            a.setSecretSessionId("0x4546hwi89");
             System.out.println(a.toXml());
          }
          {

@@ -119,7 +119,9 @@ abstract public class DeliveryConnectionsHandler
                }
             }
             if (!found) {
-               ((DeliveryConnection)tmpList.get(ii)).shutdown();
+               DeliveryConnection con = (DeliveryConnection)tmpList.get(ii);
+               log.info(ME, "Shutting down callback connection '" + con.getName() + "' because of new configuration.");
+               con.shutdown();
             }
          }
 
@@ -320,7 +322,7 @@ abstract public class DeliveryConnectionsHandler
             isDead() ? ErrorCode.COMMUNICATION_NOCONNECTION_DEAD : ErrorCode.COMMUNICATION_NOCONNECTION,
             ME, 
             "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
-            "' to client [" + cons[0].getAddress().getSessionId() + "] from [" + msgArr[0].getSender() +
+            "' to client [" + cons[0].getAddress().getSecretSessionId() + "] from [" + msgArr[0].getSender() +
             "] failed, no callback connection is alive");
 
       throw ex;

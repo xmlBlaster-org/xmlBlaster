@@ -766,7 +766,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             addr.setAddress(this.cbServer.getCbAddress());
          }
          if (cbSessionId != null)
-            addr.setSessionId(cbSessionId);
+            addr.setSecretSessionId(cbSessionId);
 
          prop.setCallbackAddress(addr);
          log.info(ME, "Callback settings: " + prop.getSettings());
@@ -948,7 +948,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          if (this.connectReturnQos != null) {
             // Remember sessionId for reconnects ...
-            this.connectQos.getSessionQos().setSessionId(this.connectReturnQos.getSessionId());
+            this.connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
             this.connectQos.getSessionQos().setSessionName(this.connectReturnQos.getSessionName());
          }
 

@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.29 2003/01/05 23:03:53 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.30 2003/01/18 16:57:21 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -259,7 +259,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          if (passwd == null) {
             String tmp = authServer.connect(loginQos.toXml());
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
-            this.sessionId = this.connectReturnQos.getSessionId();
+            this.sessionId = this.connectReturnQos.getSecretSessionId();
          }
          else {
             log.error(ME, "NOT IMPLEMENTED");

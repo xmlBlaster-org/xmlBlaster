@@ -220,7 +220,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             this.sessionId = null;
             String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
             this.connectReturnQos = new ConnectReturnQos(glob, tmp);
-            this.sessionId = connectReturnQos.getSessionId();
+            this.sessionId = connectReturnQos.getSecretSessionId();
          }
          else
          {

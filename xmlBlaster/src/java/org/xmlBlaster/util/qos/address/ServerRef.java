@@ -55,7 +55,7 @@ public class ServerRef
     * @return e.g. "IOR:00001100022...."
     */
    public final String getAddress() {
-      return address;
+      return this.address;
    }
 
    /**
@@ -63,7 +63,11 @@ public class ServerRef
     * @return e.g. "EMAIL" or "IOR"
     */
    public final String getType() {
-      return type;
+      return this.type;
+   }
+
+   public final boolean equals(ServerRef other) {
+      return this.type.equals(other.getType()) && this.address.equals(other.getAddress());
    }
 
    /**

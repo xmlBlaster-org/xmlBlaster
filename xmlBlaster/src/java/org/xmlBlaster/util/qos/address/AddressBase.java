@@ -429,12 +429,12 @@ public abstract class AddressBase
     * The identifier sent to the callback client, the client can decide if he trusts this invocation
     * @return never null
     */
-   public final String getSessionId() {
+   public final String getSecretSessionId() {
       return sessionId;
    }
 
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
-   public void setSessionId(String sessionId) {
+   public void setSecretSessionId(String sessionId) {
       this.sessionId = sessionId;
    }
 
@@ -526,7 +526,7 @@ public abstract class AddressBase
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("sessionId") ) {
-                  setSessionId(attrs.getValue(i).trim());
+                  setSecretSessionId(attrs.getValue(i).trim());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("pingInterval") ) {
                   String ll = attrs.getValue(i).trim();
@@ -570,7 +570,7 @@ public abstract class AddressBase
             log.error(ME, "Missing '" + rootTag + "' attribute 'type' in QoS");
             setType("IOR");
          }
-         if (getSessionId() == null) {
+         if (getSecretSessionId() == null) {
             log.warn(ME, "Missing '" + rootTag + "' attribute 'sessionId' QoS");
          }
          return;
@@ -686,8 +686,8 @@ public abstract class AddressBase
           sb.append(" hostname='").append(getHostname()).append("'");
       if (DEFAULT_port != getPort())
           sb.append(" port='").append(getPort()).append("'");
-      if (!DEFAULT_sessionId.equals(getSessionId()))
-          sb.append(" sessionId='").append(getSessionId()).append("'");
+      if (!DEFAULT_sessionId.equals(getSecretSessionId()))
+          sb.append(" sessionId='").append(getSecretSessionId()).append("'");
       if (getDefaultPingInterval() != getPingInterval())
           sb.append(" pingInterval='").append(getPingInterval()).append("'");
       if (getDefaultRetries() != getRetries())
