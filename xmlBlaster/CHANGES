@@ -2,6 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for xxx [xxx, xx 2003]
 ================================
+ o Bugfix of deadlock in JDBC protocol driver which used
+   the buggy org.jutils.time.Timeout
+   Ported org.jutils.pool to org.xmlBlaster.util.pool
+ 
+ o Administrative access to subscriptions of clients, e.g. with telnet:
+    get client/joe/-2/?subscribeList
+
  o multiSubscribe QoS support added, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
@@ -10,6 +17,7 @@ Changes for xxx [xxx, xx 2003]
 
 Changes for 0.843 [Mar, 10 2003]
 ================================
+ 
  o Bugfix in client.key.GetKey.java constructor
 
  o Administrative interface: Renamed getMsgList() to getTopicList()
