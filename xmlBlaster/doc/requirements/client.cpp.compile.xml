@@ -42,6 +42,10 @@
      <p/>
 
      <h2>The C++ threading abstraction library</h2>
+        <b>Note: The omnithread library is included in the xmlBlaster distribution
+        and is automatically compiled with our build.bat task. For details how
+        to switch the threading library please read the next paragraphs.
+        </b>
         <p>In order to have multi threading support on all different operating systems
         we can link with the <b><a href="http://www.boost.org" target="others">boost</a> C++ multi threading
         library</b> or with the <b><a href="http://omniorb.sourceforge.net/" target="others">omniORB - omnithreads</a></b>
@@ -233,6 +237,6 @@ build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
 </requirement>
 
