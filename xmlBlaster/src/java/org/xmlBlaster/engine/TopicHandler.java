@@ -77,8 +77,6 @@ public final class TopicHandler implements I_Timeout
    /** The broker which manages me */
    private final RequestBroker requestBroker;
 
-   private MsgUnitWrapper tmpVolatileMsgUnitWrapper;
-
    private TopicEntry topicEntry; // persistence storage entry
 
    // Default is that a single client can subscribe the same message multiple times
@@ -139,6 +137,8 @@ public final class TopicHandler implements I_Timeout
    private final static int SOFT_ERASED = 3;
    private final static int DEAD = 4;
    private int state = UNDEF;
+
+   private final Object ADMIN_MONITOR = new Object();
 
 
    /**
@@ -214,10 +214,16 @@ public final class TopicHandler implements I_Timeout
    /**
     * Initialize the messageUnit cache and the history queue for this topic
     */
-   private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos) throws XmlBlasterException {
+   private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos,
+                             PublishQosServer publishQosServer) throws XmlBlasterException {
       if (!isUnconfigured()) {
          log.error(ME, "Sorry, reconfiguring TopicHandler is not yet supported, we ignore the request");
          return;
+      }
+
+      if (publishQosServer.getTopicEntry() != null) {
+         this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
+         if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
       }
 
       if (this.msgKeyData == null) {
@@ -234,14 +240,12 @@ public final class TopicHandler implements I_Timeout
       // Todo: this needs to be done after TopicHandler is created
       startupHistoryQueue();
 
-      synchronized (this) {
-         if (isUnconfigured()) { // Startup of topic
-            if (!hasCacheEntries() && !hasSubscribers()) {
-               toUnreferenced();
-            }
-            else {
-               toAlive();
-            }
+      if (isUnconfigured()) { // Startup of topic
+         if (!hasCacheEntries() && !hasSubscribers()) {
+            toUnreferenced();
+         }
+         else {
+            toAlive();
          }
       }
 
@@ -459,34 +463,47 @@ public final class TopicHandler implements I_Timeout
       //   this.msgKeyData = msgKeyData;
       //}
 
-      if (isUnconfigured() || msgQosData.isAdministrative()) {
-         if (publishQosServer.getTopicEntry() != null) {
-            this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
-            if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
-         }
-
-         administrativeInitialize(msgKeyData, msgQosData);
-         if (msgQosData.isAdministrative()) {
+      if (msgQosData.isAdministrative()) {
+         synchronized (this.ADMIN_MONITOR) {
+            administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
             if (this.handlerIsNewCreated) {
+               this.handlerIsNewCreated = false;
                // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
                glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
-               this.handlerIsNewCreated = false;
             }
             if (msgQosData.isFromPersistenceStore()) {
                log.info(ME, "Topic is successfully recovered from persistency to state " + getStateStr() +
-                       //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
-                       " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
+                        //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
+                        " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
             }
             else {
                log.info(ME, "Topic is successfully configured by administrative message.");
             }
             publishReturnQos.getData().setStateInfo("Administrative configuration request handled");
             return publishReturnQos;
+         } // synchronized
+      }
+
+      if (isUnconfigured()) {
+         synchronized (this) {
+            if (isUnconfigured()) {
+              administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+            }
          }
       }
 
       if (!isAlive()) {
          toAlive();
+      }
+
+      if (this.handlerIsNewCreated) {
+         synchronized (this.ADMIN_MONITOR) {
+            if (this.handlerIsNewCreated) {
+               // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
+               glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+               this.handlerIsNewCreated = false;
+            }
+         }
       }
 
       int initialCounter = 0; // Force referenceCount until update queues are filled (volatile messages)
@@ -562,14 +579,6 @@ public final class TopicHandler implements I_Timeout
          if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
          if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
             invokeCallback(publisherSessionInfo, msgUnitWrapper);
-         }
-
-         if (this.handlerIsNewCreated) {
-            // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
-            this.tmpVolatileMsgUnitWrapper = msgUnitWrapper;
-            glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
-            this.tmpVolatileMsgUnitWrapper = null;
-            this.handlerIsNewCreated = false;
          }
       }
       finally {
@@ -780,9 +789,7 @@ public final class TopicHandler implements I_Timeout
 
       if (queryQos.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
-         if (this.tmpVolatileMsgUnitWrapper != null)
-            wrappers = new MsgUnitWrapper[] { this.tmpVolatileMsgUnitWrapper };
-         else if (hasHistoryEntries())
+         if (hasHistoryEntries())
             wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries(), false);
 
          if (wrappers != null && wrappers.length > 0) {
@@ -913,6 +920,9 @@ public final class TopicHandler implements I_Timeout
          if (!sub.getQueryQosData().getWantLocal() && 
               sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender()))
             continue;
+         if (!sub.getQueryQosData().getWantNotify() && msgUnitWrapper.getMsgQosData().isErased()) {
+            continue;
+         }
          MsgUnitWrapper[] msgUnitWrapperArr = { msgUnitWrapper };
          if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapperArr) == 0) {
             if (removeSet == null) removeSet = new HashSet();
