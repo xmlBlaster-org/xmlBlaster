@@ -104,7 +104,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
             if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
             long removed = (msgQueue == null) ? 0 : msgQueue.removeRandom(msgQueueEntries);
             if (removed != msgQueueEntries.length) {
-               log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ", exception comes from mime access plugin: " + message);
+               log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
                return;  // Seems to come from mime access plugin as the message where not in the queue
             }
          }
@@ -231,11 +231,13 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.getMessage());
+         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.getMessage() +
+                       ((sessionInfo.getDeliveryManager() != null) ? sessionInfo.getDeliveryManager().toXml("") : ""));
          return entries;
       }
       catch (Throwable e) {
-         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString());
+         log.warn(ME, "Couldn't stuff " + entries.length + " messages back to subject queue of " + sessionInfo.getId() + ": " + e.toString() +
+                 ((sessionInfo.getDeliveryManager() != null) ? sessionInfo.getDeliveryManager().toXml("") : ""));
          return entries;
       }
    }
