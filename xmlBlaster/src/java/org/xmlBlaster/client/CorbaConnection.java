@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.36 2000/03/01 18:59:27 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.37 2000/03/02 11:22:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -57,7 +57,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -71,7 +71,7 @@ public class CorbaConnection implements ServerOperations
    protected BlasterCallback callback = null;
    protected String loginName = null;
    private String passwd = null;
-   protected String qos = null;
+   protected String loginQos = null;
 
    /** queue all the messages, and play them back through interface ServerOperations */
    private InvocationRecorder recorder = null;
@@ -447,7 +447,7 @@ public class CorbaConnection implements ServerOperations
       this.callback = callback;
       this.loginName = loginName;
       this.passwd = passwd;
-      this.qos = qos;
+      this.loginQos = qos;
 
       loginRaw();
       return xmlBlaster;
@@ -464,7 +464,7 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
       try {
-         xmlBlaster = getAuthenticationService().login(loginName, passwd, callback, qos);
+         xmlBlaster = getAuthenticationService().login(loginName, passwd, callback, loginQos);
          numLogins++;
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
       } catch(XmlBlasterException e) {
@@ -716,7 +716,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
+   public final String publish(MessageUnit msgUnit, String qos) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.5 2000/02/29 16:54:20 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.6 2000/03/02 11:22:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -247,7 +247,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void ping()
    {
-      if (Log.CALLS) Log.calls(ME, "Entering ping() ...");
+      // if (Log.CALLS) Log.calls(ME, "Entering ping() ...");
    }
 }
 
