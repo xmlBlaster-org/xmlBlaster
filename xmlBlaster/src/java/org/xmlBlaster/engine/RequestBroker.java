@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.61 2000/03/18 19:46:22 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.62 2000/03/18 21:18:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.61 $
+ * @version $Revision: 1.62 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -380,7 +380,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
 
       else if (xmlKey.isExact()) { // subscription with a given oid
-         if (Log.TRACE) Log.trace(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
+         if (Log.TRACE) Log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + xmlKey.getUniqueKey() + "'");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
          xmlKeyVec = new Vector();
          /* if (xmlKeyExact != null) */

@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.4 2000/03/18 20:33:23 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.5 2000/03/18 21:18:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -68,7 +68,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       try {
          cb.update(updateMsgArr, qarr);
       } catch (Exception e) {
-         throw new XmlBlasterException("CallbackFailed", "Callback to client " + clientInfo.getLoginName() + " failed, reason=" + e.toString());
+         throw new XmlBlasterException("CallbackFailed", "CORBA Callback of message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client [" + clientInfo.getLoginName() + "] failed, reason=" + e.toString());
       }
    }
 

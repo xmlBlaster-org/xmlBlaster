@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.27 2000/03/18 20:33:23 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.28 2000/03/18 21:18:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -31,7 +31,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -106,7 +106,7 @@ public class ClientInfo
             getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
             sentMessages++;
          } catch(XmlBlasterException e) {
-            Log.error(ME, "Callback failed, going to queue the message ...");
+            Log.error(ME, "Callback failed, " + e.reason + ". Trying to queue the message ...");
             queueMessage(msgUnitWrapper, destination);
             Log.error(ME, "TODO: Should the receiver be auto logged out if his callback is broken???"); // !!!
             throw e;
@@ -116,22 +116,22 @@ public class ClientInfo
          queueMessage(msgUnitWrapper, destination);
    }
 
-         
+
    /**
-    * PtP mode: If the qos is set to forceQueuing the message is queued. 
+    * PtP mode: If the qos is set to forceQueuing the message is queued.
     * @param msgUnitWrapper Wraps the msgUnit with some more infos
     * @param destination The Destination object of the receiver
     */
    final void queueMessage(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (destination == null) {
-         Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
-         throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "'");
+         Log.error(ME+".Internal", "Destination is missing, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "', message is lost.");
+         throw new XmlBlasterException(ME+".Internal", "Destination is missing, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "', message is lost.");
       }
 
       if (!destination.forceQueuing()) {
-         Log.warning(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
-         throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + msgUnitWrapper.getUniqueKey() + "'");
+         Log.warning(ME+".NotLoggedIn", "Can't deliver message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client '" + getLoginName() + "', <ForceQueing> is not set, message is lost.");
+         throw new XmlBlasterException(ME+".NotLoggedIn", "Can't deliver message '" + msgUnitWrapper.getXmlKey().getUniqueKey() + "' to client '" + getLoginName() + "', <ForceQueing> is not set, message is lost.");
       }
 
       if (messageQueue == null) {
@@ -155,8 +155,8 @@ public class ClientInfo
          sentMessages++;
       }
       else {
-         Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
-         throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
+         Log.error(ME+".Internal", "Client [" + getLoginName() + "] is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
+         throw new XmlBlasterException(ME+".Internal", "Client [" + getLoginName() + "] is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
       }
    }
 
