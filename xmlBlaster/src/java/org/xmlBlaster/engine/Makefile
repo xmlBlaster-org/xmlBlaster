@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = helper xml2java xmldb
+SUB_DIRS = helper xml2java persistence
 LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
