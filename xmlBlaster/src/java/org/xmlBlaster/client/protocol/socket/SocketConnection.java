@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.35 2002/09/15 17:05:42 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.36 2002/09/15 18:53:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -198,7 +198,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
          String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
-         //log.error(ME+".constructor", e.toString());
          throw new ConnectionException(ME, str);
       }
    }
@@ -312,8 +311,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         e.printStackTrace();
-         //log.error(ME+".constructor", e.toString());
+         if (log.TRACE) log.trace(ME+".loginRaw", e.toString());
          throw new XmlBlasterException(ME, e.toString());
       }
    }
@@ -358,7 +356,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          getCbReceiver().execute(parser, ONEWAY);
          shutdown(); // the callback server
-         init();
+         sessionId = null;
          return true;
       }
       catch (XmlBlasterException e) {
