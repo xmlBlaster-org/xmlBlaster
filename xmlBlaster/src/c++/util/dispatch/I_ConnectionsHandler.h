@@ -45,6 +45,9 @@ public:
    virtual MsgQueue* getQueue() = 0;
 
    virtual bool isFailsafe() const = 0;
+
+   virtual bool isConnected() const = 0;
+
 };
 
 

@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.5 2003/01/18 17:14:39 ruff Exp $
+Version:   $Id: AddressBase.h,v 1.6 2003/01/24 21:45:54 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -72,9 +72,9 @@ protected:
    long maxMsg_; // only used in Address
 
    /** The unique address, e.g. the CORBA IOR string */
-   string address_;
+   mutable string address_;
 
-   string hostname_;
+   mutable string hostname_;
    bool isHardcodedHostname_; // = false; // set to true if setHostname() was explicitly called by user
 
    /** The unique protocol type, e.g. "IOR" */
@@ -233,7 +233,7 @@ public:
    /**
     * @return The Hostname, IP or "" if not known
     */
-   string getHostname();
+   string getHostname() const;
 
    /**
     * Set the bootstrapping port. 
@@ -254,7 +254,7 @@ public:
     * Returns the address.
     * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
     */
-   string getAddress();
+   string getAddress() const;
 
    /**
     * Returns the protocol type.
@@ -388,7 +388,7 @@ public:
     * Note: This value is only used if compressType is set to a supported value
     * @return size in bytes
     */
-   long getMinSize();
+   long getMinSize() const;
 
    /** 
     * Messages bigger this size in bytes are compressed. 
@@ -427,7 +427,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset = "");
+   string toXml(const string& extraOffset = "") const;
 };
 
 }}}}}

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.9 2003/01/17 13:07:21 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.10 2003/01/24 21:45:54 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -412,7 +412,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 
    /**
     * returns the global object

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.11 2003/01/24 01:29:06 johnson Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.12 2003/01/24 21:45:54 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -523,7 +523,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string QueuePropertyBase::toXml(const string& extraOffset)
+   string QueuePropertyBase::toXml(const string& extraOffset) const
    {
       string offset = "\n   ";
       string ret;
@@ -555,7 +555,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
       if (!addressArr_.empty()) {
          ret += string("'>");
-         AddressVector::iterator iter = addressArr_.begin();
+         AddressVector::const_iterator iter = addressArr_.begin();
          while (iter != addressArr_.end()) {
             ret += (*iter).toXml(extraOffset + "   ");
             iter++;

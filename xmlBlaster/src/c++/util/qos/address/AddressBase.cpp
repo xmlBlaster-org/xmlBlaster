@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.5 2003/01/24 01:29:06 johnson Exp $
+Version:   $Id: AddressBase.cpp,v 1.6 2003/01/24 21:45:53 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -153,7 +153,7 @@ bool AddressBase::isHardcodedHostname()
    return isHardcodedHostname_;
 }
 
-/**
+/**		
  * Check if a hostname is set already
  */
 bool AddressBase::hasHostname() {
@@ -163,7 +163,7 @@ bool AddressBase::hasHostname() {
 /**
  * @return The Hostname, IP or "" if not known
  */
-string AddressBase::getHostname()
+string AddressBase::getHostname() const
 {
    if (hostname_ == "") {
       hostname_ = global_.getBootstrapHostname();
@@ -201,7 +201,7 @@ void AddressBase::setAddress(const string& address)
  * Returns the address.
  * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
  */
-string AddressBase::getAddress()
+string AddressBase::getAddress() const
 {
    if (address_ == "") {
       address_ = "http://" + getHostname();
@@ -422,7 +422,7 @@ string AddressBase::getCompressType() const
  * Note: This value is only used if compressType is set to a supported value
  * @return size in bytes
  */
-long AddressBase::getMinSize()
+long AddressBase::getMinSize() const
 {
    return minSize_;
 }
@@ -474,7 +474,7 @@ string AddressBase::getDispatchPlugin() const
  * @param extraOffset indenting of tags for nice output
  * @return The xml representation
  */
-string AddressBase::toXml(const string& extraOffset)
+string AddressBase::toXml(const string& extraOffset) const
 {
    if (log_.CALL) log_.call(ME, "::toXml");
    string ret;

@@ -228,6 +228,8 @@ public:
     */
    long flushQueue();
 
+   bool isConnected() const;
+
 };
 
 }}} // namespaces

@@ -83,7 +83,8 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    PublishQos qos(global_);
    MessageUnit msgUnit(key, "", qos);
 
-   if (!externalAccess_) {
+//   if (!externalAccess_ || !externalAccess_->isConnected()) {
+   if (true) {
       XmlBlasterAccess conn(global_, "embedded");
       try {
          SessionQos sessionQos(global_);

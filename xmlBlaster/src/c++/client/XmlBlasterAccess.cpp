@@ -36,12 +36,22 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
-   CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
-   CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
-   global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
-   if (connection_) connection_->shutdown();
-   delete connection_;
+   if (cbServer_) {
+      CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+      CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
+      global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
+      cbServer_ = NULL;
+   }
+   if (connection_) {
+      connection_->shutdown();
+      delete connection_;
+      connection_ = NULL;
+   }
+   deliveryManager_    = NULL;
+   updateClient_       = NULL;
+   connectionProblems_ = NULL;
 }
+
 
 ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
 {
@@ -52,20 +62,20 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    ME = string("XmlBlasterAccess-") + getId();
    string typeVersion = global_.getProperty().getStringProperty("queue.defaultPlugin", "CACHE,1.0");
    string queueId = string("client:") + getId();
-//   if (clientAddr != NULL) { // Start a default callback server using same protocol
-      updateClient_ = clientAddr;
-      createDefaultCbServer();
-//   }
+   updateClient_ = clientAddr;
+   if (!cbServer_) createDefaultCbServer();
 
    // currently the simple version will do it ...
-   deliveryManager_ = &(global_.getDeliveryManager());
+   if (!deliveryManager_) deliveryManager_ = &(global_.getDeliveryManager());
 
 /*
    string type = connectQos_.getServerRef().getType();
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
 */
-   connection_ = deliveryManager_->getConnectionsHandler(instanceName_);
+   if (!connection_) {
+      connection_ = deliveryManager_->getConnectionsHandler(instanceName_);
+   }
 
    if (connectionProblems_) {
       connection_->initFailsafe(connectionProblems_);
@@ -304,6 +314,13 @@ long XmlBlasterAccess::flushQueue()
    return connection_->flushQueue();
 }
 
+
+bool XmlBlasterAccess::isConnected() const
+{
+   if (!connection_) return false;
+   return connection_->isConnected();
+}
+ 
 
 }}} // namespaces
 

@@ -124,7 +124,7 @@ public:
    /** returns the first found server reference */
    ServerRef getServerRef() const;
 
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 
    // methods for queues and addresses ...
    void setAddress(const Address& address);

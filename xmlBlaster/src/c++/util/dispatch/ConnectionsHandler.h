@@ -44,6 +44,7 @@ private:
    enum States             status_;
    Global&                 global_;
    Log&                    log_;
+   Mutex                   connectMutex_;
    Mutex                   publishMutex_;
    int                     retries_;
    int                     currentRetry_;
@@ -58,7 +59,6 @@ private:
    MsgQueue*               adminQueue_;
    string                  lastSessionId_;
    const string            instanceName_;
-   bool                    hasConnected_; // there can be a maximum of one ConnectQueueEntry in the queue, otherwise session leak.
 
 public:
    ConnectionsHandler(Global& global, const string& instanceName);
@@ -137,6 +137,9 @@ public:
    MsgQueue* getQueue();
 
    bool isFailsafe() const;
+
+
+   bool isConnected() const;
 
 protected:
    /** only used inside the class to avoid deadlock */

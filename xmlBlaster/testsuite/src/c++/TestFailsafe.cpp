@@ -73,6 +73,7 @@ public:
 
    void setUp()
    {
+      TestSuite::setUp();
       try {   
          connection_.initFailsafe(this);
 
@@ -102,25 +103,92 @@ public:
 
    void testReconnect()
    {
-      DisconnectQos disconnectQos(global_);
-      connection_.disconnect(disconnectQos);
+      log_.info(ME, "testReconnect START");
+      tearDown();
+      // DisconnectQos disconnectQos(global_);
+      // connection_.disconnect(disconnectQos);
       Thread::sleep(500);
-      string origSessionId = connRetQos_->getSessionQos().getSecretSessionId();
-      log_.info(ME, string("original session Id: '") + origSessionId + "'");
-      ConnectReturnQos tmp = connection_.connect(*connQos_, this);
-      Thread::sleep(500);
-      string currentSessionId = tmp.getSessionQos().getSecretSessionId();
-      log_.info(ME, string("session Id after reconnection: '") + currentSessionId + "'");
-      connection_.disconnect(disconnectQos);
+      stopEmbeddedServer();
+      Thread::sleepSecs(2);
 
-      Thread::sleep(500);
-      SessionQos sessionQos = connQos_->getSessionQos();
-      sessionQos.setSecretSessionId(connRetQos_->getSessionQos().getSecretSessionId());
-      connQos_->setSessionQos(sessionQos);
-      tmp = connection_.connect(*connQos_, this);
-      log_.info(ME, string("connect qos for second reconnection: ") + connQos_->toXml());
-      currentSessionId = tmp.getSessionQos().getSecretSessionId();
-      log_.info(ME, string("session Id after second reconnection: '") + currentSessionId + "'");
+      log_.info(ME, "the communication is now down: ready to start the tests");
+      ConnectQos connQos(global_);
+      SessionQos sessionQos(global_,"client/Fritz/-2");
+      connQos.setSessionQos(sessionQos);
+      bool wentInException = false;
+      try {
+         connection_.connect(connQos, this);
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, true, wentInException, "reconnecting when communication down and not giving positive publicSessionId: exception must be thrown");
+
+      sessionQos = SessionQos(global_,"client/Fritz/-1");
+      connQos.setSessionQos(sessionQos);
+      wentInException = false;
+      try {
+         connection_.connect(connQos, this);
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, true, wentInException, "reconnecting for the second time when communication down and not giving positive publicSessionId: exception must be thrown (again)");
+
+      sessionQos = SessionQos(global_,"client/Fritz/7");
+      connQos.setSessionQos(sessionQos);
+      wentInException = false;
+      try {
+         ConnectReturnQos retQos = connection_.connect(connQos, this);
+         string name = retQos.getSessionQos().getRelativeName();
+         assertEquals(log_, ME, "client/Fritz/7", name, "checking that return qos has the correct sessionId");
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, false, wentInException, "reconnecting when communication down and giving positive publicSessionId: no exception expected");
+
+      sessionQos = SessionQos(global_,"client/Fritz/2");
+      connQos.setSessionQos(sessionQos);
+      wentInException = false;
+      try {
+         connection_.connect(connQos, this);
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, false, wentInException, "reconnecting second time when communication down and giving positive publicSessionId: no exception expected but a warning should have come");
+
+
+      DisconnectQos discQos(global_);
+      wentInException = false;
+      try {
+         connection_.disconnect(discQos);
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, true, wentInException, "disconnecting when no communication should give an exception");
+
+      // and now we are reconnecting ...
+      startEmbeddedServer();
+      Thread::sleepSecs(5);
+
+      // making  a subscription now should work ...
+      SubscribeKey subKey(global_);
+      subKey.setOid("TestRecconnect");
+      SubscribeQos subQos(global_);
+      wentInException = false;
+      try {
+         connection_.subscribe(subKey, subQos);
+      }
+      catch (XmlBlasterException &ex) {
+         wentInException = true;
+      }   
+      assertEquals(log_, ME, false, wentInException, "subscribing when communication should not give an exception");
+
+      setUp();
+      log_.info(ME, "testReconnect END");
    }
 
 
@@ -186,6 +254,7 @@ public:
          log_.error(ME, string("exception occurred in tearDown. ") + ex.toXml());
          assert(0);
       }
+      TestSuite::tearDown();
    }
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
@@ -224,8 +293,9 @@ int main(int args, char ** argv)
    try {
       TestFailsafe testFailsafe(args, argv);
       testFailsafe.setUp();
-      // testFailsafe.testReconnect();
-      testFailsafe.testFailsafe();
+      testFailsafe.testReconnect();
+      
+      // testFailsafe.testFailsafe();
       testFailsafe.tearDown();
    }
    catch (XmlBlasterException& ex) {

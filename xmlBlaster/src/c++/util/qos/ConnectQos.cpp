@@ -195,7 +195,7 @@ CbQueueProperty ConnectQosData::getSessionCbQueueProperty() const
  * @param extraOffset indenting of tags for nice output
  * @return internal state of the RequestBroker as a XML ASCII string
  */
-string ConnectQosData::toXml(const string& extraOffset)
+string ConnectQosData::toXml(const string& extraOffset) const
 {
    string offset = "\n" + extraOffset;
    string ret;
@@ -214,7 +214,7 @@ string ConnectQosData::toXml(const string& extraOffset)
       ret += sessionQos_.toXml(extraOffset);
 
       {  // client queue properties 
-         vector<QueueProperty>::iterator
+         vector<QueueProperty>::const_iterator
             iter = clientQueueProperties_.begin();
          while (iter != clientQueueProperties_.end()) {
             ret += (*iter).toXml(extraOffset);
@@ -225,7 +225,7 @@ string ConnectQosData::toXml(const string& extraOffset)
       ret += sessionCbQueueProperty_.toXml(extraOffset);
 
       {  //serverReferences
-         vector<ServerRef>::iterator
+         vector<ServerRef>::const_iterator
             iter = serverReferences_.begin();
          while (iter != serverReferences_.end()) {
             ret += (*iter).toXml(extraOffset);

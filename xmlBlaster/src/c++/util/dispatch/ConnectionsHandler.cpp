@@ -23,6 +23,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
      status_(START), 
      global_(global), 
      log_(global.getLog("dispatch")),
+     connectMutex_(),
      publishMutex_(),
      instanceName_(instanceName)
 {
@@ -38,11 +39,11 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
    timestamp_          = 0;
    pingIsStarted_      = false;
    lastSessionId_      = "";
-   hasConnected_       = false;
 }
 
 ConnectionsHandler::~ConnectionsHandler()
 {
+   Lock lock(connectMutex_);
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
@@ -51,12 +52,10 @@ ConnectionsHandler::~ConnectionsHandler()
    }
 
    if (timestamp_ != 0) {
-//      Lock lock(connectionMutex_);
       global_.getPingTimer().removeTimeoutListener(timestamp_);
       timestamp_ = 0;
    }
    if ( queue_ ) {
-//      Lock lock(connectionMutex_);
       delete queue_;
       queue_ = NULL;
    }
@@ -70,14 +69,14 @@ ConnectionsHandler::~ConnectionsHandler()
 
 ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 {
-//   Lock lock(connectionMutex_);
-   if (hasConnected_) {
+   if (log_.CALL) log_.call(ME, string("::connect status is '") + lexical_cast<string>(status_) + "'");
+   if (log_.DUMP) log_.dump(ME, string("::connect, the qos is: ") + qos.toXml());
+   Lock lock(connectMutex_);
+   if (isConnected()) {
       log_.warn(ME, "connect: you are already connected");
       return *connectReturnQos_;
    }
 
-   hasConnected_ = true;
-   if (log_.CALL) log_.call(ME, "::connect");
    if (connectQos_) {
       delete connectQos_;
       connectQos_ = NULL;
@@ -104,10 +103,9 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
    }
    catch (XmlBlasterException &ex) {
+      if (log_.TRACE) log_.trace(ME, "exception occured when connecting");
       if ( ex.isCommunication() ) return queueConnect();
-      hasConnected_ = false; // since it was not able to connect ...
-      throw ex;
-   }
+   }																																			
    
    lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
    log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
@@ -127,14 +125,15 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    if (connectionProblems_) connectionProblems_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
+   if (log_.DUMP) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
    return *connectReturnQos_;
 }
 
 bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
 {
+   Lock lock(connectMutex_);
    if (log_.CALL) log_.call(ME, "disconnect");
-
-//   Lock lock(connectionMutex_);
+   if (log_.DUMP) log_.dump(ME, string("::disconnect, the qos is: ") + qos.toXml());
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "disconnect");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "disconnect");
@@ -143,10 +142,9 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
       return false;
    }
 
-   return connection_->disconnect(qos);
+   bool ret = connection_->disconnect(qos);
    status_ = DEAD;
-   hasConnected_ = false;
-   return true;
+   return ret;
 }
 
 string ConnectionsHandler::getProtocol()
@@ -190,30 +188,14 @@ string ConnectionsHandler::ping(const string& qos)
 SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
    if (log_.CALL) log_.call(ME, "subscribe");
+   if (log_.DUMP) log_.dump(ME, string("::subscribe, the key is: ") + key.toXml());
+   if (log_.DUMP) log_.dump(ME, string("::subscribe, the qos is: ") + qos.toXml());
 
 //   Lock lock(connectionMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "subscribe");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "subscribe");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "subscribe");
-/*
-   int i = 0;
-   while (i < retries_ || retries_ < 0) {
-      try {
-         SubscribeReturnQos ret = connection_->subscribe(key, qos);
-         SubscribeQueueEntry entry(global_, key, qos);
-         adminQueue_->put(entry);
-         return ret;
-      }
-      catch (XmlBlasterException &ex) {
-         i++;
-         log_.warn(ME, string("subscribe: exception on trial ") + lexical_cast<string>(i) + " of " + lexical_cast<string>(retries_));
-         Thread::sleep(connectQos_->getAddress().getDelay());
-      }
-   }
-   if (status_ == CONNECTED) status_ = DEAD;
-   throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "subscribe");
-*/
    try {
       SubscribeReturnQos ret = connection_->subscribe(key, qos);
       SubscribeQueueEntry entry(global_, key, qos);
@@ -230,9 +212,8 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
 vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos)
 {
    if (log_.CALL) log_.call(ME, "get");
-
-//   Lock lock(connectionMutex_);
-
+   if (log_.DUMP) log_.dump(ME, string("::get, the key is: ") + key.toXml());
+   if (log_.DUMP) log_.dump(ME, string("::get, the qos is: ") + qos.toXml());
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "get");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "get");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "get");
@@ -250,9 +231,8 @@ vector<UnSubscribeReturnQos>
    ConnectionsHandler::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
    if (log_.CALL) log_.call(ME, "unSubscribe");
-
-//   Lock lock(connectionMutex_);
-
+   if (log_.DUMP) log_.dump(ME, string("::unSubscribe, the key is: ") + key.toXml());
+   if (log_.DUMP) log_.dump(ME, string("::unSubscribe, the qos is: ") + qos.toXml());
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "unSubscribe");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "unSubscribe");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "unSubscribe");
@@ -272,6 +252,7 @@ vector<UnSubscribeReturnQos>
 PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 {
    if (log_.CALL) log_.call(ME, "publish");
+   if (log_.DUMP) log_.dump(ME, string("::publish, the msgUnit is: ") + msgUnit.toXml());
    Lock lock(publishMutex_);
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publish");
    if (status_ == POLLING) return queuePublish(msgUnit);
@@ -366,8 +347,8 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
 vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const EraseQos& qos)
 {
    if (log_.CALL) log_.call(ME, "erase");
-
-//   Lock lock(connectionMutex_);
+   if (log_.DUMP) log_.dump(ME, string("::erase, the key is: ") + key.toXml());
+   if (log_.DUMP) log_.dump(ME, string("::erase, the qos is: ") + qos.toXml());
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "erase");
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "erase");
@@ -396,7 +377,6 @@ void ConnectionsHandler::toPollingOrDead()
       status_ = DEAD;
       connection_->shutdown();
       if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
-      hasConnected_ = false;
       return;
    }
 
@@ -523,13 +503,15 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 
 ConnectReturnQos& ConnectionsHandler::queueConnect()
 {
-   if (connectQos_->getSessionQos().getPubSessionId() <= 0) {
-      hasConnected_ = false;
+   if (log_.CALL) log_.call(ME, string("::queueConnect with sessionQos: '") + connectQos_->getSessionQos().getAbsoluteName() + "'");
+   long tmp = connectQos_->getSessionQos().getPubSessionId(); 
+   if ( tmp <= 0) {
+      if (log_.TRACE) log_.trace(ME, string("::queueConnect, the public session id is '") + lexical_cast<string>(tmp));
       throw XmlBlasterException(USER_CONNECT, ME + "::queueConnect", "queueing connection request not possible because you did not specify a positive public sessionId");
    }
 
    if (!queue_) {
-      log_.info(ME, "created a client queue");
+      log_.info(ME, "::queueConnect: created a client queue");
       queue_ = new MsgQueue(global_, connectQos_->getClientQueueProperty());
    }
    if (log_.TRACE) 
@@ -600,7 +582,6 @@ bool ConnectionsHandler::isFailsafe() const
    return connectQos_->getAddress().getDelay() > 0;
 }
 
-
 bool ConnectionsHandler::startPinger()
 {
    log_.call(ME, "startPinger");
@@ -626,6 +607,11 @@ bool ConnectionsHandler::startPinger()
    return true;
 }
 
+
+bool ConnectionsHandler::isConnected() const
+{
+   return status_ == CONNECTED || status_ == POLLING;
+}
 
 }}}} // namespaces
 
