@@ -12,6 +12,7 @@ import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.property.PropLong;
+import org.xmlBlaster.util.property.PropString;
 
 
 /**
@@ -62,11 +63,15 @@ public final class TopicProperty implements java.io.Serializable
 
    private PropBoolean createDomEntry = new PropBoolean(true);
 
+   private PropString msgDistributor = new PropString("undef,1.0");
+
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
     */
    public TopicProperty(Global glob) {
       setGlobal(glob);
+      if (this.glob.isServer()) 
+         this.msgDistributor.setFromEnv(this.glob, null, "MsgDistributorPlugin/defaultPlugin");
    }
 
    /*
@@ -170,6 +175,30 @@ public final class TopicProperty implements java.io.Serializable
    }
 
    /**
+    * Tells the server which plugin to use (if any) for the distribution of the
+    * message entries for this topic 
+    * @param type the type of the plugin to use (default "undef") 
+    * @param version the version of the plugin to use (default "1.0")
+    * @see org.xmlBlaster.engine.distributor.I_MsgDistributor
+    */
+   public void setMsgDistributor(String typeVersion) {
+      if (typeVersion == null) typeVersion = "undef,1.0";
+      this.msgDistributor.setValue(typeVersion);
+   }
+
+   /**
+    * 
+    * @return the comma separated type and version like "undef,1.0"
+    */
+   public String getMsgDistributor() {
+      return this.msgDistributor.getValue();
+   }
+
+   public boolean isMsgDistributorModified() {
+      return this.msgDistributor.isModified();
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of the message QoS as a XML ASCII string
@@ -201,6 +230,10 @@ public final class TopicProperty implements java.io.Serializable
       }
       sb.append(">");
       //private String subscriptionId;
+
+      if (this.msgDistributor.isModified()) {
+         sb.append(offset + "  ").append("<msgDistributor typeVersion='").append(this.msgDistributor.getValue()).append("'/>");
+      }
 
       if (hasMsgUnitStoreProperty()) {
          sb.append(getMsgUnitStoreProperty().toXml(extraOffset+Constants.INDENT));

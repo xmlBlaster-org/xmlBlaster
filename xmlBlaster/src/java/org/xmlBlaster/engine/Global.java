@@ -8,20 +8,20 @@ package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.CbProtocolManager;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
+import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
@@ -34,7 +34,6 @@ import org.xmlBlaster.engine.runlevel.PluginHolder;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
 
 import java.util.*;
-import java.io.IOException;
 import org.jutils.init.Property;
 
 /**
@@ -72,6 +71,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private MsgFileDumper msgFileDumper;
 
    private PluginHolder pluginHolder;
+
+   private MsgDistributorPluginManager msgDistributorPluginManager;
 
    public void finalize() {
       if (log.TRACE) log.trace(ME, "Entering finalize");
@@ -211,8 +212,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          if (!useCluster())
             return null;
          log.error(ME, "Internal problem: please intialize ClusterManager first");
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Internal problem: please intialize ClusterManager first - Please ask on mailing list for support");
+         Thread.dumpStack();
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Internal problem: please intialize ClusterManager first - Please ask on mailing list for support");
       }
       return this.clusterManager;
    }
@@ -456,8 +457,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          if (!useAdminManager())
             return null;
          log.error(ME, "Internal problem: please intialize CommandManager first");
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Internal problem: please intialize CommandManager first - Please ask on mailing list for support");
+         Thread.dumpStack();
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "please intialize CommandManager first - Please ask on mailing list for support");
       }
       return this.commandManager;
    }
@@ -518,7 +519,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (this.momClientGateway == null) return false;
       if (xmlKey == null) {
          log.error(ME, "Illegal null argument in isAdministrationCommand()");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return false;
       }
       return xmlKey.isAdministrative();
@@ -547,6 +548,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public I_Authenticate getAuthenticate() {
       return this.authenticate;
+   }
+
+   public final MsgDistributorPluginManager getMsgDistributorPluginManager() {
+      if (this.msgDistributorPluginManager == null) {
+         synchronized (MsgDistributorPluginManager.class) {
+            if (this.msgDistributorPluginManager == null)
+               this.msgDistributorPluginManager = new MsgDistributorPluginManager(this);
+         }
+      }
+      return this.msgDistributorPluginManager;
    }
 
    public void setRequestBroker(RequestBroker requestBroker) {

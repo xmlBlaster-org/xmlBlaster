@@ -560,6 +560,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          character.setLength(0);
          return;
       }
+      
+      if (name.equalsIgnoreCase("msgDistributor")) {
+         if (!this.inTopic) return;
+         String typeVersion = attrs.getValue("typeVersion");
+         this.msgQosData.getTopicProperty().setMsgDistributor(typeVersion);
+         character.setLength(0);
+         return;
+      }
    }
 
    /**

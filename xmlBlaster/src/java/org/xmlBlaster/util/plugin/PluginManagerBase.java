@@ -13,10 +13,6 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 
 import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.net.URL;
 import java.net.URLClassLoader;
 /**
  * Base class to load plugins.
