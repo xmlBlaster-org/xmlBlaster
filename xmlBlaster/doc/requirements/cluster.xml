@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='cluster' type='NEW' prio='MEDIUM' status="OPEN">
+   <topic>Multiple xmlBlaster instances can build a cluster following the master/slave ticket paradigm</topic>
+   <description>
+      <p>
+      Clustering in our sense covers the following topics:
+      <ul>
+      <li>Load balancing (Scalability):<br />
+      An xmlBlaster server instance allows to have any number of slave xmlBlaster clients
+      for specific message types. This slaves can have further slaves again.
+      This allows distributing messages to an almost unlimited number of clients.
+      </li>
+      <li>Failover (Availability):<br />
+      An xmlBlaster slave may adopt the master role for selective message types
+      if the current xmlBlaster master fails.
+      </li>
+      <li>Logical separation based on cluster topics:<br />
+      One xmlBlaster instance can be the master for selective messages (e.g. for
+      stock exchange messages) and be slave for other messages (e.g. for 
+      air traffic radar tracks) simultaneously. Consequently a client interested
+      in all informations only needs to connect to one xmlBlaster server.
+      </li>
+      </ul>
+      </p>
+
+      <h3>
+      Implementation overview:
+      </h3>
+      <p>
+      If multiple xmlBlaster servers are running, every message is assigned to exactly one
+      master server. The different xmlBlaster servers login to each other like other clients
+      and act as slave to messages which they are not master from.
+      </p>
+      <p>
+      This login is done in 'lazy' mode. As soon as a client requests a message
+      for which the local server is not master, this server does a login to the master
+      and subscribes the message from there. The message is than cached locally and further
+      local requests from clients are handled locally.
+      An adjustable expire date clears the cached message.
+      </p>
+      <p>
+      If a message is published from a data source to a slave server, the message is routed directly
+      to the master server (which may be a slave as well, forwarding the message to the real master).
+      If the master server is currently offline, it is queued
+      for this 'client' until it logs in.
+      </p>
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 04 03</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
