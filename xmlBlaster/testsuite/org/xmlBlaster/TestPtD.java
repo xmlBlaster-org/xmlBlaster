@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.29 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.30 2002/06/27 12:54:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,7 +37,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPtD
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPtD
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPtD
  * </pre>
  */
 public class TestPtD extends TestCase implements I_Callback
@@ -86,13 +86,13 @@ public class TestPtD extends TestCase implements I_Callback
          String passwd = "secret";
 
          receiverConnection = new XmlBlasterConnection(glob);
-         receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
+         receiverConnection.connect(new ConnectQos(glob, receiverName, passwd), this);
 
          receiver2Connection = new XmlBlasterConnection();
-         receiver2Connection.login(receiver2Name, passwd, new ConnectQos(glob), this);
+         receiver2Connection.connect(new ConnectQos(glob, receiver2Name, passwd), this);
 
          senderConnection = new XmlBlasterConnection();
-         senderConnection.login(senderName, passwd, new ConnectQos(glob), this);
+         senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -109,9 +109,9 @@ public class TestPtD extends TestCase implements I_Callback
    protected void tearDown()
    {
       Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
-      receiverConnection.logout();
-      receiver2Connection.logout();
-      senderConnection.logout();
+      receiverConnection.disconnect(null);
+      receiver2Connection.disconnect(null);
+      senderConnection.disconnect(null);
    }
 
 
