@@ -1,24 +1,20 @@
 /*------------------------------------------------------------------------------
-Name:      Queue.h
+Name:      I_Queue.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 /**
- * Class embedding messages or information to be stored on the client queues
- * Note that all content is copied when passed to the constructors.
- * This way this queue entry is the owner of the content (and therefore will
- * delete it when its destructor is called).
+ * Interface for queue implementations (RAM, JDBC or CACHE). 
  *
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:xmlblast@marcelruff.info'>Marcel Ruff</a>
  */
-
-#ifndef _UTIL_QUEUE_QUEUE_H
-#define _UTIL_QUEUE_QUEUE_H
+#ifndef _UTIL_QUEUE_I_QUEUE_H
+#define _UTIL_QUEUE_I_QUEUE_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
-#include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Log.h>
@@ -29,25 +25,10 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 typedef ReferenceHolder<MsgQueueEntry>      EntryType;
 typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
-class Dll_Export Queue : public I_Queue
+class Dll_Export I_Queue
 {
-protected:
-   std::string        ME;
-   org::xmlBlaster::util::Global&       global_;
-   org::xmlBlaster::util::I_Log&          log_;
-   org::xmlBlaster::util::qos::storage::ClientQueueProperty property_;
-   StorageType   storage_;
-   long          numOfBytes_;
-   org::xmlBlaster::util::thread::Mutex accessMutex_;
-
 public:
-   Queue(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::storage::ClientQueueProperty& property);
-
-   Queue(const Queue& queue);
-
-   Queue& operator =(const Queue& queue);
-   
-   virtual ~Queue();
+   virtual ~I_Queue() {};
     
    /**
     * puts a new entry into the queue. 
@@ -56,7 +37,7 @@ public:
     * reference to it has been removed from the queue (which normally happens on a remove or when destroying
     * the queue.
     */
-   void put(MsgQueueEntry *entry);
+   virtual void put(MsgQueueEntry *entry) = 0;
 
    /**
     * Returns the entries with the highest priority in the queue. If 'maxNumOfEntries' is positive,
@@ -64,24 +45,23 @@ public:
     * which fit into the range specified are returned. If there are no such entries, an empty std::vector is
     * returned.
     */
-   std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const;
+   virtual std::vector<EntryType> peekWithSamePriority(long maxNumOfEntries=-1, long maxNumOfBytes=-1) const = 0;
 
    /**
     * Deletes the entries specified in the std::vector in the argument list. If this std::vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   long randomRemove(std::vector<EntryType>::const_iterator start, std::vector<EntryType>::const_iterator end);
+   virtual long randomRemove(std::vector<EntryType>::const_iterator start, std::vector<EntryType>::const_iterator end) = 0;
 
    /**
     * Clears (removes all entries) this queue
     */
-    void clear();
+   virtual void clear() = 0;
 
     /**
      * returns true if the queue is empty, false otherwise
      */                                  
-     bool empty() const;
-
+   virtual bool empty() const = 0;
 };
 
 }}}} // namespace
