@@ -1,6 +1,13 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 
+Changes for 0.x []
+==================
+
+ o C++ client library
+   - Introduced abstract queue interface (I_Queue) and queue factory
+     to be able to add arbitrary queue implementations as plugins.
+
 Changes for 0.901 [2004-04-27]
 ==============================
 
