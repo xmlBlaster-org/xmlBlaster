@@ -478,7 +478,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
             String type = getPropertyType(value);
             sb.append(offset).append(" <clientProperty name='").append((String)keys[i]);
             if (type != null) sb.append("' type='").append(type);
-            sb.append("'>").append(value).append("'></clientProperty>");
+            sb.append("'>").append(value).append("</clientProperty>");
          }
          return sb.toString();
       }

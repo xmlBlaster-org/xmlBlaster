@@ -9,8 +9,6 @@ import javax.jms.JMSException;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-
 /**
  * XBTopicSubscriber
  *
@@ -21,15 +19,15 @@ public class XBTopicSubscriber extends XBMessageConsumer implements TopicSubscri
 
    private final static String ME = "XBTopicSubscriber";
 
-   XBTopicSubscriber(I_XmlBlasterAccess access, Topic topic, String msgSelector, boolean noLocal, int ackMode, boolean durable) {
-      super(access, topic, msgSelector, noLocal, ackMode, durable);
+   XBTopicSubscriber(XBSession session, String msgSelector) {
+      super(session, msgSelector);
    }
 
    public boolean getNoLocal() throws JMSException {
-      return this.noLocal;
+      return this.session.noLocal;
    }
 
    public Topic getTopic() throws JMSException {
-      return (Topic)this.destination;
+      return (Topic)this.session.destination;
    }
 }

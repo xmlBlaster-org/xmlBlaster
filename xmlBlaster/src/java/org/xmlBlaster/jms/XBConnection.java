@@ -78,10 +78,10 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public ConnectionConsumer createConnectionConsumer(
-      Destination arg0,
-      String arg1,
-      ServerSessionPool arg2,
-      int arg3)
+      Destination destination,
+      String msgSelector,
+      ServerSessionPool serverSessionPool,
+      int maxMessages)
       throws JMSException {
       // TODO Auto-generated method stub
       throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
@@ -90,39 +90,29 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
    /* (non-Javadoc)
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
-   public ConnectionConsumer createConnectionConsumer(
-      Topic arg0,
-      String arg1,
-      ServerSessionPool arg2,
-      int arg3)
+   public ConnectionConsumer createConnectionConsumer(Topic topic, String msgSelector, ServerSessionPool serverSessionPool, int maxMessages)
       throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
+      return createConnectionConsumer((Destination)topic, msgSelector, serverSessionPool, maxMessages);
    }
 
 
    /* (non-Javadoc)
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
-   public ConnectionConsumer createConnectionConsumer(
-      Queue arg0,
-      String arg1,
-      ServerSessionPool arg2,
-      int arg3)
+   public ConnectionConsumer createConnectionConsumer(Queue queue, String msgSelector, ServerSessionPool serverSessionPool, int maxMessages)
       throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
+      return createConnectionConsumer((Destination)queue, msgSelector, serverSessionPool, maxMessages);
    }
 
    /* (non-Javadoc)
     * @see javax.jms.TopicConnection#createDurableConnectionConsumer(javax.jms.Topic, java.lang.String, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public ConnectionConsumer createDurableConnectionConsumer(
-      Topic arg0,
-      String arg1,
-      String arg2,
-      ServerSessionPool arg3,
-      int arg4)
+      Topic topic,
+      String subscriptionName,
+      String msgSelector,
+      ServerSessionPool serverSessionPool,
+      int maxMessages)
       throws JMSException {
       // TODO Auto-generated method stub
       throw new JMSException(ME + " 'createDurableConnectionConsumer' not implemented yet");

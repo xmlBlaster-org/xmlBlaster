@@ -5,27 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.Topic;
-import javax.jms.TopicSession;
 import javax.jms.MessageConsumer;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * XBMessageConsumer
@@ -33,42 +19,14 @@ import org.xmlBlaster.util.enum.ErrorCode;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBMessageConsumer implements MessageConsumer, I_Callback {
-
-   private class UpdateThread extends Thread {
-      
-      private XBMessage msg;
-      private XBMessageConsumer parent;
-      
-      UpdateThread(XBMessageConsumer parent, XBMessage msg) {
-         super("update-thread");
-         // setDaemon(true);
-         this.parent = parent;
-         this.msg = msg;
-      }
-      
-      public void run() {
-         if (this.msg != null) {
-            // synchronized(this.msg) {
-               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "start");
-               this.parent.msgListener.onMessage(this.msg);
-               if (this.parent.log.CALL) this.parent.log.call("UpdateThread.run()", "end");
-            // }
-         }
-      }
-   }
+public class XBMessageConsumer implements MessageConsumer, MessageListener {
 
    private final static String ME = "XBMessageConsumer";
    protected Global global;
    protected LogChannel log;
-   protected I_XmlBlasterAccess access;
-   protected Destination destination;
-   protected boolean noLocal;
    protected String msgSelector;
    protected MessageListener msgListener;
-   protected SubscribeReturnQos subscribeReturnQos;
-   protected int ackMode;
-   protected boolean durable;
+   protected XBSession session;
 
    /**
     * 
@@ -79,111 +37,15 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
     * @param ackMode the acknowledge mode to use
     * @param durable true if durable subscription (in jms terms) or false if transient
     */
-   XBMessageConsumer(I_XmlBlasterAccess access, Destination destination, String msgSelector, boolean noLocal, int ackMode, boolean durable) {
-      this.access = access;
-      this.global = access.getGlobal();
+   XBMessageConsumer(XBSession session, String msgSelector) {
+      this.session = session;
+      this.global = this.session.global;
       this.log = this.global.getLog("jms");
-      this.destination = destination;
-      this.noLocal = noLocal;
       this.msgSelector = msgSelector;
-      this.ackMode = ackMode;
-      this.durable = durable;
    }
 
-
-   private void subscribe() throws JMSException {
-      String oid = null;
-      if (this.destination instanceof Topic) 
-         oid = ((Topic)this.destination).getTopicName();
-      SubscribeKey key = new SubscribeKey(this.global, oid); 
-      SubscribeQos qos = new SubscribeQos(this.global);
-      qos.setWantInitialUpdate(false);
-      qos.setWantLocal(!this.noLocal);
-      qos.setPersistent(this.durable);
-      try {
-         this.subscribeReturnQos = this.access.subscribe(key, qos, this);
-      }
-      catch (XmlBlasterException ex) {
-         throw XBConnectionFactory.convert(ex, ME + ".subscribe: ");
-      }
-   }
-
-   synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
-      try {
-         if (this.msgListener != null) {
-            int type = XBMessage.STREAM;
-            try {
-               String val = (String)updateQos.getData().getClientProperties().get("jmsMessageType");
-               if (val != null) type = Integer.parseInt(val);
-            }
-            catch (Exception e) {
-            }
-            
-            XBMessage msg = null;
-            switch (type) {
-               case XBMessage.TEXT: msg = new XBTextMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.BYTES: msg = new XBBytesMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.OBJECT: msg = new XBObjectMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               case XBMessage.MAP: msg = new XBMapMessage(this.global, updateKey.getData(), content, updateQos.getData()); break;
-               default: msg = new XBStreamMessage(this.global, updateKey.getData(), content, updateQos.getData());
-            }
-            
-            if (msg != null) {
-               if (ackMode == TopicSession.AUTO_ACKNOWLEDGE) {
-                  if (this.log.TRACE) this.log.trace(ME, "update: ack mode: AUTO");
-                  this.msgListener.onMessage(msg);
-                  if (this.log.CALL) this.log.call(ME, "update stop");
-                  return "OK";
-               }
-               else { // start an own thread
-                  if (this.log.TRACE) {
-                     if (ackMode == TopicSession.CLIENT_ACKNOWLEDGE) this.log.trace(ME, "update: ack mode: CLIENT");
-                     else this.log.trace(ME, "update: ack mode: DUPL");
-                  } 
-                  UpdateThread thread = new UpdateThread(this, msg);
-                  synchronized (msg) {
-                     if (this.log.TRACE) this.log.trace(ME, "update: starting the thread");
-                     thread.start();
-                     if (this.log.TRACE) this.log.trace(ME, "update: thread started");
-                     msg.wait(); // should it wait until a given timeout ?
-                     if (this.ackMode == TopicSession.DUPS_OK_ACKNOWLEDGE || msg.isAcknowledged()) {
-                        if (this.log.CALL) this.log.call(ME, "update stop");
-                        return "OK";
-                     } 
-                     throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the acknowledge mode has not been invoked");         
-                  }
-               }
-            }
-            else {
-               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message was null");         
-            }
-         }
-         else {
-            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message listener has not been assigned yet");         
-         }
-      }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update");         
-      }
-   }
-
-
-   synchronized public void close() throws JMSException {
-      if (this.subscribeReturnQos != null) {
-         String oid = null;
-         if (this.destination instanceof Topic) 
-            oid = ((Topic)this.destination).getTopicName();
-         UnSubscribeKey key = new UnSubscribeKey(this.global, oid);
-         UnSubscribeQos qos = new UnSubscribeQos(this.global);
-         try {
-            this.access.unSubscribe(key, qos);
-         }
-         catch (XmlBlasterException ex) {
-            throw XBConnectionFactory.convert(ex, ME + ".close(): ");
-         }
-      }
+   public void close() throws JMSException {
+      if (this.session != null) this.session.close();
    }
 
    public MessageListener getMessageListener() throws JMSException {
@@ -220,9 +82,15 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
 
    synchronized public void setMessageListener(MessageListener msgListener) throws JMSException {
       if (this.msgListener == null) {
-         subscribe();
+         this.msgListener = msgListener;
+         if (this.session != null) this.session.setMessageListener(this);
       }
-      this.msgListener = msgListener;
+      else this.msgListener = msgListener;
+   }
+
+   public void onMessage(Message msg) {
+      if (this.msgListener != null) this.msgListener.onMessage(msg);
+      // TODO the other stuff like notify receiveNoWait or receive ...
    }
 
 }

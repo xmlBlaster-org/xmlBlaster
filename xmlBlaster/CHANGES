@@ -1,4 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+ 
+ o Added type to client properties in qos
 
 Changes for 0.85c (beta) [2003-10-05]
 =====================================

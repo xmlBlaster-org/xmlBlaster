@@ -35,6 +35,7 @@ public class XBTopicPublisher extends XBMessageProducer implements TopicPublishe
    public void publish(Message message) throws JMSException {
       if (message instanceof XBMessage) {
          XBMessage msg = (XBMessage)message;
+/*
          if (!msg.isDeliveryModeSet()) {
             msg.setJMSDeliveryMode(this.deliveryMode, false);
          }
@@ -49,7 +50,7 @@ public class XBTopicPublisher extends XBMessageProducer implements TopicPublishe
                throw new JMSException(ME + ".publish of message needs a destination topic to be set", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
             msg.setJMSDestination(this.destination, false);
          }
-         
+         */
          try {
             this.publishReturnQos = this.access.publish(msg.getMsgUnit()); // what to do whith the publish return qos ?
          }

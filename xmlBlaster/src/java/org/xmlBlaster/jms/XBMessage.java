@@ -7,6 +7,7 @@ package org.xmlBlaster.jms;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -27,7 +28,9 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
- * XBMessage
+ * XBMessage.
+ * 
+ * Implementation details about how 
  *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
@@ -48,10 +51,10 @@ public class XBMessage implements Message {
    protected MsgKeyData key;
    protected byte[] content;
    protected int type;
-   protected boolean deliveryModeSet, prioritySet, timeToLiveSet, destinationSet;
    protected boolean acknowledged;
    protected boolean readOnly;
    protected boolean writeOnly;
+   protected Hashtable extraHeader; 
    private boolean propertyReadOnly;
    
    public XBMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
@@ -60,6 +63,8 @@ public class XBMessage implements Message {
       this.qos = qos;
       this.content = content;
       this.key = key;
+      this.extraHeader = new Hashtable();
+      importExtraHeader();
       if (this.qos == null) this.qos = new MsgQosData(this.global, MethodName.PUBLISH);
       if (this.key == null) this.key = new MsgKeyData(this.global);
       this.type = type;
@@ -69,6 +74,33 @@ public class XBMessage implements Message {
          this.readOnly = true;
          this.propertyReadOnly = true;
       } 
+   }
+
+   /**
+    * Imports the extra header properties from the qos
+    */
+   private void importExtraHeader() {
+      if (this.qos != null) { 
+         String[] keys = (String[])this.qos.getClientProperties().keySet().toArray(new String[this.qos.getClientProperties().size()]);
+         for (int i=0; i < keys.length; i++) {
+            if (keys[i].startsWith("jms/")) {
+               this.extraHeader.put(keys[i].substring("jms/".length()), this.qos.getClientProperties().get(keys[i]));
+            }
+         }
+      }
+   }
+
+   /**
+    * Puts the extra header properties into the qos
+    */
+   private void exportExtraHeader() {
+      if (this.qos != null) { 
+         Enumeration enum = this.extraHeader.keys();
+         while (enum.hasMoreElements()) {
+            String key = (String)enum.nextElement();
+            this.qos.setClientProperty("jms/" + key, this.extraHeader.get(key));
+         }
+      }
    }
 
    boolean isAcknowledged() {
@@ -108,10 +140,7 @@ public class XBMessage implements Message {
 
    public void clearProperties() throws JMSException {
       this.qos = new MsgQosData(this.global, this.qos.getMethod());
-      this.deliveryModeSet = false;
-      this.prioritySet = false;
-      this.timeToLiveSet = false;
-      this.qos.setClientProperty("jmsMessageType", "" + this.type);
+      this.extraHeader.clear();
       this.propertyReadOnly = false;
    }
 
@@ -176,8 +205,11 @@ public class XBMessage implements Message {
       return this.qos.getRemainingLife();
    }
 
+   /**
+    * xmlBlaster specific messageId is our unique timestamp
+    */
    public String getJMSMessageID() throws JMSException {
-      return (String)this.qos.getClientProperties().get("messageId");
+      return "ID:" + this.qos.getRcvTimestamp();
    }
 
    public int getJMSPriority() throws JMSException {
@@ -196,12 +228,9 @@ public class XBMessage implements Message {
       return this.qos.getRcvTimestamp().getMillis();
    }
 
-   /**
-    * The JMSType for xmlBlaster is the mime type
-    */
    public String getJMSType() throws JMSException {
-      // return (String)qos.getClientProperties().get("jmsType");
-      return this.key.getContentMime();
+      return (String)qos.getClientProperties().get("JMSType");
+      // return this.key.getContentMime();
    }
 
    public long getLongProperty(String key) throws JMSException {
@@ -276,78 +305,72 @@ public class XBMessage implements Message {
       setJMSCorrelationID(new String(correlationId));
    }
 
+   /**
+    * This method is invoked by the send method
+    */
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException {
-      setJMSDeliveryMode(deliveryMode, true);
-   }   
-
-   void setJMSDeliveryMode(int deliveryMode, boolean mark) throws JMSException {
       if (deliveryMode == DeliveryMode.PERSISTENT) { 
          this.qos.setPersistent(true);
-         if (mark) this.deliveryModeSet = true;
       }
       else if (deliveryMode == DeliveryMode.NON_PERSISTENT) { 
          this.qos.setPersistent(false);
-         if (mark) this.deliveryModeSet = true;
       }
       else 
          throw new JMSException("setJMSDeliveryMode('" + deliveryMode +"'): delivery mode is invalid", ErrorCode.USER_CONFIGURATION.getErrorCode());
    }
 
+   /**
+    * This method is invoked by the send method
+    */
    public void setJMSDestination(Destination destination) throws JMSException {
-      setJMSDestination(destination, true);
-   }
-
-   void setJMSDestination(Destination destination, boolean mark) throws JMSException {
       if (destination instanceof Topic) {
          String txt = ((Topic)destination).getTopicName();
          this.key.setOid(txt);
-         if (mark) this.destinationSet = true;
       }
       else if (destination instanceof Queue) {
          String txt = ((Queue)destination).getQueueName();
          org.xmlBlaster.util.qos.address.Destination
            dst = new org.xmlBlaster.util.qos.address.Destination(new SessionName(this.global, txt));
          this.qos.addDestination(dst);
-         if (mark) this.destinationSet = true;
       }
       else {
          throw new JMSException(ME + ".setJMSDestination: unallowed destination type (must be either topic or queue) but is '" + destination.getClass().getName(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());         
       }
    }
 
+   /**
+    * This method is invoked by the send method
+    */
    public void setJMSExpiration(long lifeTime) throws JMSException {
-      setJMSExpiration(lifeTime, true);
-   }
-
-   void setJMSExpiration(long lifeTime, boolean mark) throws JMSException {
       this.qos.setLifeTime(lifeTime);
-      if (mark) this.timeToLiveSet = true;
    }
 
+   /**
+    * This is overwritten when invoking the getter
+    * This method is invoked by the send method
+    */
    public void setJMSMessageID(String messageId) throws JMSException {
-      this.qos.setClientProperty("messageId", messageId);
+      this.qos.setClientProperty("JMSMessageID", messageId);
    }
 
+   /**
+    * This method is invoked by the send method
+    */
    public void setJMSPriority(int priority) throws JMSException {
-      setJMSPriority(priority, true);
-   }
-
-   void setJMSPriority(int priority, boolean mark) throws JMSException {
       try {
          this.qos.setPriority(PriorityEnum.toPriorityEnum(priority));
-         if (mark) this.prioritySet = true;
       }
       catch (IllegalArgumentException ex) {
          throw new JMSException(ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());       
       }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Message#setJMSRedelivered(boolean)
+   /**
+    * Only useful for interprovider operations, otherwise ignored
+    * This method is normally invoked by the provider
     */
-   public void setJMSRedelivered(boolean arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + ".setJMSRedelivered not implemented yet");       
+   public void setJMSRedelivered(boolean redelivered) throws JMSException {
+      this.qos.setClientProperty("JMSRedelivered", redelivered);
    }
 
    public void setJMSReplyTo(Destination sender) throws JMSException {
@@ -365,13 +388,17 @@ public class XBMessage implements Message {
       }
    }
 
+   /**
+    * This method is invoked by the send method
+    */
    public void setJMSTimestamp(long timestamp) throws JMSException {
       // not processed by xmlBlaster, only transported for jms purposes (we have an own set on server side)
       this.qos.setClientProperty("jmsTimestamp", "" + timestamp);
    }
 
-   public void setJMSType(String contentMime) throws JMSException {
-      this.key.setContentMime(contentMime);
+   public void setJMSType(String jmsType) throws JMSException {
+      // this.key.setContentMime(jmsType);
+      this.qos.setClientProperty("JMSType", jmsType);
    }
 
    public void setLongProperty(String key, long value) throws JMSException {
@@ -403,25 +430,9 @@ public class XBMessage implements Message {
    }
 
    // own package protected helper methods
-
    MsgUnit getMsgUnit() {
+      exportExtraHeader();
       return new MsgUnit(this.key, this.content, this.qos);
    }
-
-   boolean isDeliveryModeSet() {
-      return this.deliveryModeSet;
-   }
-
-   boolean isPrioritySet() {
-      return this.prioritySet;
-   }
-
-   boolean isTimeToLiveSet() {
-      return this.timeToLiveSet;
-   }
-
-   boolean isDestinationSet() {
-      return this.destinationSet;
-   }   
 
 }
