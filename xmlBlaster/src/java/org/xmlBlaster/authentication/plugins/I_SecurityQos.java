@@ -1,4 +1,5 @@
 package org.xmlBlaster.authentication.plugins;
+import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * A client helper.
@@ -7,6 +8,12 @@ package org.xmlBlaster.authentication.plugins;
  * transparently from the authentication method
  */
 public interface I_SecurityQos {
+
+   /**
+    * Parse the given xml string which contains the userId and credentials. 
+    * Should be able to parse with or without surrounding &lt;security> tag
+    */
+   public void parse(String xml) throws XmlBlasterException;
 
    /**
     * Set the userId for the login.

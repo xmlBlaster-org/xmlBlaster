@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.14 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.15 2001/09/05 10:05:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -15,7 +15,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
-import org.xmlBlaster.authentication.ClientQoS;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.client.LogoutQosWrapper;
 import org.xmlBlaster.engine.xml2java.*;
@@ -140,7 +140,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       try {
          // Extend qos to contain security credentials ...
-         ClientQoS loginQos = new ClientQoS(qos_literal);
+         ConnectQos loginQos = new ConnectQos(qos_literal);
          loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
 
          // No login using the connect() method ...
@@ -153,39 +153,6 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster =
                             ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          return xmlBlaster;
-
-      /*
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-
-      String sessionId;
-      org.omg.CORBA.Object certificatedServerRef = null;
-      try {
-         // set up a association between the new created object reference (oid is sufficient)
-         // and the callback object reference
-         certificatedServerRef = xmlBlasterPOA.create_reference(ServerHelper.id());
-         sessionId = getSessionId(certificatedServerRef);
-         // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
-         Log.info(ME, "Trying login for " + loginName);
-      } catch (Exception e) {
-         e.printStackTrace();
-         Log.error(ME+".Corba", e.toString());
-         throw new XmlBlasterException("LoginFailed.Corba", "login failed: " + e.toString());
-      }
-
-      try {
-         String tmpSessionId = authenticate.login(loginName, passwd, qos_literal, sessionId);
-         if (tmpSessionId == null || !tmpSessionId.equals(sessionId)) {
-            Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
-            throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
-         }
-
-         org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
-         ClientQoS xmlQoS = new ClientQoS(qos_literal);
-
-         if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
-
-         return xmlBlaster;
-         */
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
@@ -200,13 +167,13 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public String connect(String qos_literal) throws XmlBlasterException
    {
       try {
-         return connect(new ClientQoS(qos_literal)).toXml();
+         return connect(new ConnectQos(qos_literal)).toXml();
       } catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
    }
 
-   private LoginReturnQoS connect(ClientQoS loginQos) throws XmlBlasterException
+   private LoginReturnQoS connect(ConnectQos loginQos) throws XmlBlasterException
    {
       LoginReturnQoS returnQos = null;
       String sessionId = null;

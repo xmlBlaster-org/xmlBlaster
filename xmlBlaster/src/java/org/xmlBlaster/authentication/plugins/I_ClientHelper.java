@@ -18,7 +18,18 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * For every plugin type you need, you need on instance of this class.
  */
 public interface I_ClientHelper {
+
    //public void init(String[] param) throws XmlBlasterException;
+
+   /**
+    * @return The plugin type, e.g. "simple"
+    */
+   public String getType();
+
+   /**
+    * @return The plugin version, e.g. "1.0"
+    */
+   public String getVersion();
 
    /**
     * Access a helper class to generate the xml string for authentication.
@@ -29,6 +40,7 @@ public interface I_ClientHelper {
     * login name and password).
     */
    public I_SecurityQos getSecurityQos();
+   
    public void setSessionData(String sessionData);
 
    // --- message handling ----------------------------------------------------

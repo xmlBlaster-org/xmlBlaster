@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.5 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.6 2001/09/05 10:05:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 import org.xmlBlaster.client.LogoutQosWrapper;
-import org.xmlBlaster.authentication.ClientQoS;
+import org.xmlBlaster.util.ConnectQos;
 
 
 
@@ -83,10 +83,9 @@ public class NativeDriver implements I_Driver
       String passwd = XmlBlasterProperty.get("NativeDemo.password", "secret");
       // "NativeDemo" below is the 'callback protocol type', which results in instantiation of given the class:
       CallbackAddress callback = new CallbackAddress("NativeDemo", "org.xmlBlaster.protocol.nativ.CallbackNativeDriver");
-      LoginQosWrapper loginQos = new LoginQosWrapper(null,null,loginName,passwd);
-      loginQos.addCallbackAddress(callback);
-      ClientQoS clientQos = new ClientQoS(loginQos.toXml());
-      LoginReturnQoS retQos = authenticate.connect(clientQos);
+      ConnectQos connectQos = new ConnectQos(null,null,loginName,passwd);
+      connectQos.addCallbackAddress(callback);
+      LoginReturnQoS retQos = authenticate.connect(connectQos);
       sessionId = retQos.getSessionId();
 
       // ----------------------------------------------------

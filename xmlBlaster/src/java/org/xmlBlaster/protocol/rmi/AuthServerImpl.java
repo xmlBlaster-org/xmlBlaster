@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.10 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.11 2001/09/05 10:05:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -13,7 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.ClientQoS;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 import org.xmlBlaster.client.LogoutQosWrapper;
 
@@ -67,10 +67,10 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
          // Extend qos to contain security credentials ...
-         ClientQoS loginQos = new ClientQoS(qos_literal);
-         loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+         ConnectQos connectQos = new ConnectQos(qos_literal);
+         connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
 
-         LoginReturnQoS returnQos = authenticate.connect(loginQos);
+         LoginReturnQoS returnQos = authenticate.connect(connectQos);
          if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
          return returnQos.getSessionId();
       }
@@ -93,12 +93,12 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       String returnValue = null;
-      ClientQoS loginQos = new ClientQoS(qos_literal);
+      ConnectQos connectQos = new ConnectQos(qos_literal);
       if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         LoginReturnQoS qos = authenticate.connect(loginQos);
+         LoginReturnQoS qos = authenticate.connect(connectQos);
          returnValue = qos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }

@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.12 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.13 2001/09/05 10:05:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -17,9 +17,8 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
-import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.LogoutQosWrapper;
-import org.xmlBlaster.authentication.ClientQoS;
+import org.xmlBlaster.util.ConnectQos;
 
 import java.util.StringTokenizer;
 
@@ -96,11 +95,21 @@ public class JdbcDriver implements I_Driver, I_Publish
       // login and get a session id ...
       String loginName = XmlBlasterProperty.get("JdbcDriver.loginName", "__sys__jdbc");
       String passwd = XmlBlasterProperty.get("JdbcDriver.password", "secret");
+
+      if (loginName==null || passwd==null) {
+         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for connect()");
+         throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for connect()");
+      }
+
       // "JDBC" below is the 'callback protocol type', which results in instantiation of the given class:
       CallbackAddress callback = new CallbackAddress("JDBC", "org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
-      LoginQosWrapper loginQos = new LoginQosWrapper(callback);
-      sessionId = login(loginName, passwd, loginQos.toXml());
 
+      ConnectQos connectQos = new ConnectQos(callback);
+      connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+
+      LoginReturnQoS qos = authenticate.connect(connectQos);
+      sessionId = qos.getSessionId();
+      
       Log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
    }
 
@@ -132,33 +141,6 @@ public class JdbcDriver implements I_Driver, I_Publish
       text += "                            oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
       text += "\n";
       return text;
-   }
-
-
-   /**
-    * Does a login, returns a valid session id.
-    * <p />
-    * @param loginName The unique login name
-    * @param password
-    * @param qos_literal The login quality of service "<qos></qos>"
-    * @return sessionId The unique ID for this client
-    * @exception XmlBlasterException If user is unknown
-    */
-   private String login(String loginName, String password, String qos_literal) throws XmlBlasterException
-   {
-      if (loginName==null || password==null || qos_literal==null) {
-         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
-         throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
-      }
-
-      ClientQoS loginQos = new ClientQoS(qos_literal);
-      loginQos.setSecurityPluginData("simple", "1.0", loginName, password);
-
-      LoginReturnQoS qos = authenticate.connect(loginQos);
-      String tmpSessionId = qos.getSessionId();
-      
-      if (Log.TRACE) Log.trace(ME, "login for '" + loginName + "' successful.");
-      return tmpSessionId;
    }
 
 

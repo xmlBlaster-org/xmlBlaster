@@ -21,6 +21,16 @@ public class ClientHelper implements I_ClientHelper {
    public ClientHelper() {
    }
 
+   public String getType()
+   {
+      return "gui";
+   }
+
+   public String getVersion()
+   {
+      return "1.0";
+   }
+
    /*
     * Called by the PluginLoader.
     * <p/>

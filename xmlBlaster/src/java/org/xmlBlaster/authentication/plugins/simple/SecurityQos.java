@@ -1,10 +1,7 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xmlBlaster.util.Log;
-import java.io.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xml.sax.Attributes;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -25,9 +22,9 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private static String ME = "SecurityQos-simple";
 
    // helper flags for SAX parsing
-   private boolean inSecurityService = false;
-   private boolean inUser = false;
-   private boolean inPasswd = false;
+   private transient boolean inSecurityService = false;
+   private transient boolean inUser = false;
+   private transient boolean inPasswd = false;
 
    private String type = "simple";
    private String version = "1.0";
@@ -38,8 +35,13 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    {
    }
 
-   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException {
+   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException
+   {
+      parse(xmlQoS_literal);
+   }
 
+   public void parse(String xmlQoS_literal) throws XmlBlasterException
+   {
       // Strip CDATA tags that we are able to parse it:
       xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
       xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
@@ -196,7 +198,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public static void main(String[] args)
    {
       try {
-         XmlBlasterProperty.init(args);
+         org.xmlBlaster.util.XmlBlasterProperty.init(args);
          String xml =
             "<securityService type=\"simple\" version=\"1.0\">\n" +
             "   <![CDATA[\n" +

@@ -3,11 +3,12 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.15 2001/08/19 23:07:53 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.16 2001/09/05 10:05:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -23,7 +24,7 @@ public class AuthenticationInfo
    private String sessionId;
    private String loginName;
    private String passwd;
-   private ClientQoS clientQoS;
+   private ConnectQos connectQos;
    private String callbackAddr=null;
 
 
@@ -33,15 +34,15 @@ public class AuthenticationInfo
     * @param sessionId   The POA active object map id (AOM)
     * @param loginName   The unique login name of the client
     * @param passwd      Very secret
-    * @param clientQoS   The login quality of service
+    * @param connectQos   The login quality of service
     */
    public AuthenticationInfo(String sessionId, String loginName, String passwd,
-                             ClientQoS clientQoS)
+                             ConnectQos connectQos)
    {
       this.sessionId = sessionId;
       this.loginName = loginName;
       this.passwd = passwd;
-      this.clientQoS = clientQoS;
+      this.connectQos = connectQos;
       if (Log.CALL) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
    }
 
@@ -55,7 +56,7 @@ public class AuthenticationInfo
     */
    public final CallbackAddress[] getCallbackAddresses() throws XmlBlasterException
    {
-      return clientQoS.getCallbackAddresses();
+      return connectQos.getCallbackAddresses();
    }
 
 

@@ -1,6 +1,11 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
+import org.xml.sax.Attributes;
+import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.jutils.text.StringHelper;
 
 /**
  * Helper class for Java clients. 
@@ -17,8 +22,16 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  *    &lt;/securityService>
  * </pre>
  */
-public class SecurityQos implements I_SecurityQos {
-   private String mechanism = "gui";
+public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
+{
+   private static String ME = "SecurityQos-gui";
+
+   // helper flags for SAX parsing
+   private transient boolean inSecurityService = false;
+   private transient boolean inUser = false;
+   private transient boolean inPasswd = false;
+
+   private String type = "gui";
    private String version = "1.0";
    private String user = "";
    private String passwd = "";
@@ -33,6 +46,17 @@ public class SecurityQos implements I_SecurityQos {
       this.passwd = password;
    }
 
+   public void parse(String xmlQoS_literal) throws XmlBlasterException
+   {
+      // Strip CDATA tags that we are able to parse it:
+      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
+      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
+
+      if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
+      init(xmlQoS_literal);
+      if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
+   }
+
    public void setUserId(String userId)
    {
       this.user = userId;
@@ -45,7 +69,7 @@ public class SecurityQos implements I_SecurityQos {
 
    public String getPluginType()
    {
-      return mechanism;
+      return type;
    }
 
    public String getPluginVersion()
@@ -63,6 +87,80 @@ public class SecurityQos implements I_SecurityQos {
       return null;
    }
 
+   /**
+    * Start element, event from SAX parser.
+    * <p />
+    * @param name Tag name
+    * @param attrs the attributes of the tag
+    */
+   public void startElement(String uri, String localName, String name, Attributes attrs)
+   {
+      if (name.equalsIgnoreCase("securityService")) {
+         inSecurityService = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            int ii=0;
+            for (ii = 0; ii < len; ii++) {
+               if (attrs.getQName(ii).equalsIgnoreCase("type")) {
+                  type = attrs.getValue(ii).trim();
+               }
+               else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
+                  version = attrs.getValue(ii).trim();
+               }
+            }
+         }
+         character.setLength(0);
+
+         return;
+      }
+
+      if (name.equalsIgnoreCase("user")) {
+         inUser = true;
+         character.setLength(0);
+
+         return;
+      }
+
+      if (name.equalsIgnoreCase("passwd")) {
+         inPasswd = true;
+         character.setLength(0);
+
+         return;
+      }
+
+   }
+
+   /**
+    * End element, event from SAX parser.
+    * <p />
+    * @param name Tag name
+    */
+   public void endElement(String uri, String localName, String name)
+   {
+      if (name.equalsIgnoreCase("user")) {
+         inUser = false;
+         user = character.toString().trim();
+         character.setLength(0);
+
+         return;
+      }
+
+      if (name.equalsIgnoreCase("passwd")) {
+         inPasswd = false;
+         passwd = character.toString().trim();
+         character.setLength(0);
+
+         return;
+      }
+
+      if (name.equalsIgnoreCase("securityService")) {
+         inSecurityService = false;
+         character.setLength(0);
+
+         return;
+      }
+   }
+
    public String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
@@ -73,7 +171,7 @@ public class SecurityQos implements I_SecurityQos {
       if(passwd==null) passwd="";
       if(user==null) user="";
 
-      sb.append(offset+"<securityService type=\""+mechanism+"\" version=\""+version+"\">");
+      sb.append(offset+"<securityService type=\""+type+"\" version=\""+version+"\">");
       // The XmlRpc driver does not like it.
       sb.append(offset+"   <![CDATA[");
       sb.append(offset+"      <user>"+user+"</user>");
