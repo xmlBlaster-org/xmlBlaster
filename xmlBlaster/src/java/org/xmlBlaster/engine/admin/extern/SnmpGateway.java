@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
-import org.xmlBlaster.engine.admin.extern.snmp.*;
+//import org.xmlBlaster.engine.admin.extern.snmp.*;
 
 import java.io.*;
 import java.util.Vector;
@@ -62,6 +62,11 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       this.log = this.glob.getLog("admin");
       this.ME = "SnmpGateway" + this.glob.getLogPraefixDashed();
       this.manager = commandManager;
+
+      boolean useSnmp = glob.getProperty().get("admin.snmp", true);
+      useSnmp = glob.getProperty().get("admin.snmp[" + glob.getId() + "]", useSnmp);
+      if (!useSnmp) return false;
+
       boolean ret = initSubagent();
       log.trace(ME, "Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
       return ret;
@@ -121,6 +126,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    }
 
    private void initMib() {
+      /*
       NodeScalarImpl nodeScalarImpl;
       NodeEntryImpl nodeEntryImpl;
       NodeTable nodeTable;
@@ -128,6 +134,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       NodeTableObserver nodeTableObserver;
       ConnectionTableSubject connectionTableSubject;
       ConnectionTableObserver connectionTableObserver;
+      */
 
       /*
       nodeScalarImpl = new NodeScalarImpl();
