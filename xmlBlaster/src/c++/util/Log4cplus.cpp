@@ -148,6 +148,9 @@ namespace util {
          delete log;
       }
       logMap_.clear();
+
+      //Logger::getDefaultHierarchy().shutdown();
+      Logger::shutdown();
    }
 
    /**
