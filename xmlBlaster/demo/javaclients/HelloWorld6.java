@@ -53,12 +53,13 @@ public class HelloWorld6
          con = glob.getXmlBlasterAccess();
 
          /*
-         // Change protocol and server lookup:
+         // Change hard-coded the protocol and server lookup:
          String[] args = { "-protocol", "SOCKET",
-                           "-dispatch/connection/plugin/socket/hostname", "myHost.com",
-                           "-dispatch/connection/plugin/socket/port", "7666",
-                           "-dispatch/connection/plugin/socket/localHostname", "myHost.com",
-                           "-dispatch/connection/plugin/socket/localPort", "8888" };
+                           "-dispatch/connection/plugin/socket/hostname", "server.xmlBlaster.org",
+                           "-dispatch/connection/plugin/socket/port", "9455",
+                           //"-dispatch/connection/plugin/socket/localHostname", "myHost.com",
+                           //"-dispatch/connection/plugin/socket/localPort", "8888"
+                         };
          glob.init(args);
          */
 
@@ -71,7 +72,14 @@ public class HelloWorld6
          address.setDelay(4000L);      // retry connecting every 4 sec
          address.setRetries(-1);       // -1 == forever
          address.setPingInterval(0L);  // switched off
-         //address.setType("IOR");       // force CORBA (which is default)
+         
+         // Example how to hardcode a XmlRpc server:
+         //address.setType("XMLRPC");    // force SOCKET protocol
+         //address.setRawAddress("http://noty:9456/"); // Address to find the server
+         
+         // Example how to hardcode a SOCKET server:
+         //address.setType("SOCKET");    // force SOCKET protocol
+         //address.setRawAddress("socket://noty:9988"); // Address to find the server
 
          prop.setAddress(address);
          connectQos.addClientQueueProperty(prop);
@@ -80,6 +88,10 @@ public class HelloWorld6
          cbAddress.setDelay(4000L);      // retry connecting every 4 sec
          cbAddress.setRetries(-1);       // -1 == forever
          cbAddress.setPingInterval(4000L); // ping every 4 seconds
+
+         // Example how to hardcode a SOCKET server:
+         //cbAddress.setType("SOCKET");    // force SOCKET protocol for callback
+
          connectQos.addCallbackAddress(cbAddress);
 
          connectQos.addClientQueueProperty(prop);
