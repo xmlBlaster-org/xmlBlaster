@@ -2,6 +2,15 @@ http://www.xmlBlaster.org
 
 For installation see INSTALL file
 
+The query language for xmlBlaster is XPath.
+For detailed information about XPath refer to the following URL
+
+  XPath: http://www.w3.org/TR/xpath
+
+You find examples for XPath (to play with) in the following file:
+
+  xmlBlaster/testsuite/data/xml/Agent.xml
+
 
 ruff@swand.lake.de
 Manuel.Kron@gmx.net
