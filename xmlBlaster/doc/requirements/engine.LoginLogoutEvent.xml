@@ -5,31 +5,42 @@
    <topic>Clients can be notified about other clients login or logout events</topic>
    <description>
       There are two internal messages which hold login and logout events. 
-      You can subscribe to "__sys__Login" to be notified when a new client logs in,
-      and to "__sys__Logout" to be notified when a client logs out.
-      The message content contains the unique login name of this client.
+      You can subscribe to "<tt>__sys__Login</tt>" to be notified when a new client logs in,
+      and to "<tt>__sys__Logout</tt>" to be notified when a client logs out.
+      The message content contains the login name of this client.
       <p>
-         The public Session Id is passed in the client properties with the key "__sessionId".
-	 It is of type 'long'.
+         The public Session Id is passed in the client properties with the key "<tt>__publicSessionId</tt>",
+         it is of type <tt>long</tt>. Further the absolute, cluster wide unique name is available
+         with the key "<tt>__absoluteName</tt>", it is of type <tt>String</tt>.
       </p>
    </description>
-   <example lang="Java">
-      <![CDATA[
-      // subscribe on login events:
-      String xmlKey = "<key oid='__sys__Login' queryType='EXACT'></key>";
-      String qos = "<qos></qos>";
-      try {
-         xmlBlaster.subscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-      }
+   <example lang="Java" type="HTML">
+   <p>The following Java code snippet shows the access to the client login events:</p>
+<pre>
+// subscribe on login events:
+String xmlKey = "&lt;key oid='__sys__Login' queryType='EXACT'>&lt;/key>";
+String qos = "&lt;qos>&lt;/qos>";
+try {
+   xmlBlaster.subscribe(xmlKey, qos);
+} catch(XmlBlasterException e) {
+}
 
-      ...
+...
 
-      // in the update() method you receive a message on client login:
-      String loginName = new String(content);
-      long sessionId = updateQos.getClientProperty("__sessionId", 0L);
-      System.out.println("Client " + loginName + " logged in with session " + sessionId);
-      ]]>
+// in the update() method you receive a message on client login:
+// Example for a client session "/node/heron/client/joe/2":
+
+// Access "joe"
+String loginName = new String(content);
+
+// Access "2"
+long publicSessionId = updateQos.getClientProperty("__publicSessionId", 0L);
+System.out.println("Client " + loginName + " logged in with session " + publicSessionId);
+
+// Access "/node/heron/client/joe/2"
+String absoluteName = updateQos.getClientProperty("__absoluteName", "");
+System.out.println("Client is '" + absoluteName + "'");
+</pre>
    </example>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 03 25</date>
