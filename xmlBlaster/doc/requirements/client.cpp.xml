@@ -238,7 +238,7 @@ int main(int args, char ** argv)
        <tr>
        <td>1</td>
        <td>WindowsXP</td>
-       <td>VC++ 7</td>
+       <td>VC++ 7 (Jan.2003) and VC++ STL</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
        <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE/TAO 1.2.2 or ACE 5.3/TAO 1.3</a></td>
@@ -251,7 +251,7 @@ int main(int args, char ** argv)
        <tr>
        <td>2</td>
        <td>WindowsXP</td>
-       <td>VC++ 7</td>
+       <td>VC++ 7 (Jan.2003) and VC++ STL</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
        <td>CORBA: <a href="http://www.mico.org" target="others">mico 2.3.8</a></td>
@@ -389,6 +389,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
 </requirement>
 
