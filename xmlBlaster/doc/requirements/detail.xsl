@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.16 2002/05/27 10:34:45 ruff Exp $
+Version:   $Id: detail.xsl,v 1.17 2002/05/28 06:56:34 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -33,7 +33,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/05/27 10:34:45 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/05/28 06:56:34 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -185,8 +185,15 @@ Author:    ruff@swand.lake.de
                   <td class="reqId">See Testcase Code</td>
                     <td>
                   <a>
-                     <xsl:attribute name="href">../../<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
-                     <xsl:value-of select="."/>
+                    <xsl:choose>
+                    <xsl:when test="starts-with(.,'testsuite.org.xmlBlaster')">
+                      <xsl:attribute name="href">../../<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:attribute name="href">../../testsuite/org/xmlBlaster/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
+                    </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:value-of select="."/>
                   </a>
                   </td>
                </xsl:if>
