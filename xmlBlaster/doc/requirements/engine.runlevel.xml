@@ -1,17 +1,16 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.runlevel' type='NEW' prio='MEDIUM' status="CLOSED">
+<requirement id='engine.runlevel' type='NEW' prio='HIGH' status="INWORK">
    <topic>XmlBlaster supports different run levels</topic>
+   
    <description>
      <p>
      An xmlBlaster server instance has different states, we call it <i>run levels</i> as a gesture of honor
      to the UNIX run levels.<br />
      The run level 0 is a stopped xmlBlaster, the run level 9 is a fully operational run level.
      </p>
-     <p>
      Here is a description of the different run levels:
-     </p>
       <table border="1">
          <tr>
             <th>Level</th>
@@ -50,44 +49,185 @@
      <p>
      Administration features:
      </p>
+     <p>
      <ul>
        <li>Administer run level changes:<br />
        The internal command manager supports the attribute <i>getRunlevel()</i> and <i>setRunlevel()</i>
        allowing to monitor or change the run level via SNMP, telnet or other supported administration
        protocols (see requirement admin below).
        </li>
-       <li>Every run level has a PRE and POST event fired:<br />
-       The steps between the major run levels are pre and post events, they are not recorded as a stable
-       run level but just as a transition.<br />
-       For example the STANDBY run level has following pre/post events:
-       <ul>
-         <li>RUNLEVEL_STANDBY_PRE=2 This step fires a PRE-STANDBY event but is not a possible run level itself</li>
-         <li>RUNLEVEL_STANDBY=3  This is a possible run level</li>
-         <li>RUNLEVEL_STANDBY_POST=4 This step fires a POST-STANDBY event but is not a possible run level itself</li>
-       </ul>
-       The listeners can use these pre/post events to prepare the transition or do some logging or whatever
-       they wish.
+       <li>Configure the plugins:<br />
+       An xml file describes the plugin configuration. It defines among other things startup and shutdown
+       sequence, classname and plugin specific attributes. This file describes both plugins loaded
+       by the runlevel manager (further called static plugins) and plugins which are loaded on client demand 
+       (further called dynamic plugins). The default name for this file is xmlBlaster.plugins.xml.
        </li>
      </ul>
-
-     <p>
-     Implementation features:
      </p>
+     The xmlBlaster.plugins.xml file is searched in the following locations and the given order:
+     <table border="1">
+       <tr>
+         <th>Command line parameter '-pluginsFile'</th>
+         <th>-pluginsFile /tmp/xmlBlaster.plugins.xml</th>
+       </tr>
+       <tr>
+         <th>Local directory</th>
+         <th>.</th>
+       </tr>
+       <tr>
+         <th>$PROJECT_HOME</th>
+         <th>java -DPROJECT_HOME=/opt/xmlBlaster ...</th>
+       </tr>
+       <tr>
+         <th>$HOME</th>
+         <th>user.home</th>
+       </tr>
+       <tr>
+         <th>java.ext.dirs</th>
+         <th>/opt/jdk1.2.2/jre/lib/ext</th>
+       </tr>
+       <tr>
+         <th>java.home</th>
+         <th>/opt/jdk1.2.2/jre/lib</th>
+       </tr>
+     </table>
+
+<pre>
+<![CDATA[
+<xmlBlaster>
+   <!-- A typical plugin which is loaded by client request -->
+   <plugin id='dispatch:priority'
+           className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+           jar='/tmp/my.jar'>
+      <attribute id='config'>
+         &lt;![CDATA[
+         <msgDispatch defaultStatus='64k' defaultAction='send'>
+         <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'>
+            <action do='send'  ifPriority='7-9'/>
+            <action do='queue'  ifPriority='2-6'/>
+         </onStatus>
+         <onStatus oid='_bandwidth.status' content='2M'>
+            <action do='send'  ifPriority='0-9'/>
+         </onStatus>
+         </msgDispatch>
+         ]]&gt;
+      </attribute>
+   </plugin>
+
+   <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+      <attribute id='transientQueue'>queue:RAM</attribute>
+      <attribute id='persistentQueue'>queue:JDBC</attribute>
+   </plugin>
+   
+   <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
+
+   <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+      <attribute id='transientQueue'>storage:RAM</attribute>
+      <attribute id='persistentQueue'>storage:JDBC</attribute>
+   </plugin>
+   
+   <plugin id='storage:RAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
+   
+   <!-- and here the declarations which are specific to the given nodes -->
+   <node id='heron'>
+      <plugin id='protocol:SOCKET:admin' 
+              className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <attribute id='port'>69000</attribute>
+      </plugin>
+     
+      <!-- /node/heron/plugin/protocol:SOCKET:users/attribute/port=6901 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/onStartupRunlevel=3 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/sequence=5 -->
+      <plugin id='protocol:SOCKET:users' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <attribute id='port'>6901</attribute>
+         <action do='LOAD' onStartupRunlevel='3' sequence='5' onFail='RESOURCE_CONFIGURATION_PLUGINFAILED'/>
+         <action do='STOP' onShutdownRunlevel='2' sequence='4'/>
+      </plugin>
+     
+      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+     
+      <plugin id='storage:JDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+    </node> <!-- heron -->
+ 
+    <node id='avalon'>
+       ...
+      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+	 <attribute id='tableNamePrefix'>AVALON_</attribute>
+      </plugin>
+      ...
+    </node>
+</xmlBlaster>
+]]>
+
+     </pre>								 
+     <p>
+     If a plugin is defined directly under the <i>xmlBlaster</i> tag, then its definition affects all nodes.
+     Definitions under a specific node are stronger (i.e. they will overwrite any definition found under 
+     xmlBlaster and affect only the node under which they are defined.
+     </p>
+     The plugin element:<br />
+     The plugin tag has the following attributes:
      <ul>
-       <li>How to implement run level changes:<br />
-         The various plugin manager gets informed about run level changes if they
-         have subscribed to run level events.<br /> The event contains
-         the current run level and the destination run level, the manager
-         decides autonomous what to do with this change, usually starting or
-         stopping its plugins.
+        <li><b>id</b> (mandatory) which is the name uniquely identifying this plugin configuration. The 
+     	    structure used to identify the plugins is type:name:subname:... where type and name are mandatory 
+	    while subname is optional. Examples of such names are queue:JDBC or queue:JDBC:test
+	</li>
+        <li><b>className</b> (mandatory) the full name of the java class implementing the plugin.</li>
+	<li><b>jar</b> (optional) the comma separated list of jar files on which to search for the class
+	    to be loaded.
+	</li>
+     </ul>
+     Besides the attributes, the plugin element has the following subtags:
+     <ul>
+       <li><b>attribute</b> configuration parameters to be passed to the plugin (0 to n times)</li>
+       <li><b>action</b> the action to be undertaken on the specified circumstances</li>
+     </ul>
+     The <i>action</i> subelement: <br />
+     <ul>
+       <li><b><i>do</i></b> attribute describing what to do on the specified event. It can be <b>LOAD</b> 
+           (which means load the plugin) or <b>STOP</b> (which means shutdown the plugin). 
        </li>
-       <li>Increments of run level changes:<br />
-       The run levels are changed step by step, e.g. to change from level 9
-       to level 3 six events are fired.
+       <li>The event is specified by the attributes <b><i>onStartupRunLevel</i></b> (which is fired if 
+           the run level change is incrementing) or <b><i>onShutdownRunLevel</i></b> (which is fired by 
+	   decrementing run level changes). The values of these attributes is an integer which corresponds 
+	   to the run level on which they have to be activated respectively deactivated. If these attributes
+	   are omitted, then the run level manager will not load (respectively unload) the plugin. The 
+	   plugins are loaded on client request (dynamically). It is allowed to define both attributes in the
+	   same <i>action</i> tag but we don't recommended it. It would mean that the same action is done
+	   both on increasing run level changes and in decreasing ones.
+       </li>
+       <li>The <b><i>sequence</i></b> attribute is an integer defining the sequence number within the 
+           specified run level, on which do undertaken the specified action. If omitted it will implicitly 
+	   be 0, that is, the first action on the given run level to be undertaken. If several plugins share 
+	   the same sequence within the same run level, the sequence between them is unspecified. A 0 means
+	   it is the chronologically first action to be undertaken both on increasing changes and on 
+	   decreasing ones.
+       </li>
+       <li>the <b><i>onFail</i></b> attribute defines which exception to throw if the specified action fails,
+           i.e. if an exception is thrown and the plugin could not be loaded. The value of this attribute is
+	   the error code of the exeption to be thrown. If nothing (or empty) is specified, then the exeption
+	   is catched, a warn or error is logged (error if runtime exception or xmlBlaster internal error)
+	   and the normal flow of the program is continued.
        </li>
      </ul>
    </description>
-
 
    <example lang="any" type="HTML">
    <p>
@@ -140,7 +280,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

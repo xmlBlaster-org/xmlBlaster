@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 
-<requirement id='queue.jdbc.commontable' type='NEW' prio='HIGH' status='OPEN'>
+<requirement id='queue.jdbc.commontable' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>
      JDBC Plugin which stores all queues on a common table.
    </topic>
@@ -193,7 +193,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2003 01 28</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
