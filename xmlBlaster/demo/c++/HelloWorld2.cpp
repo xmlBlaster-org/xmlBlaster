@@ -72,6 +72,7 @@ public:
 
    void execute()
    {
+      long sleepMillis = global_.getProperty().get("sleep", 1000L);
       try {
          XmlBlasterAccess con(global_);
          con.initFailsafe(this);
@@ -111,7 +112,8 @@ public:
          PublishReturnQos pubRetQos = con.publish(msgUnit);
          log_.info(ME, "successfully published to xmlBlaster. Return qos: " + pubRetQos.toXml());
          try {
-            org::xmlBlaster::util::thread::Thread::sleepSecs(1);
+            log_.info(ME, "Sleeping now for " + lexical_cast<string>(sleepMillis) + " msec ...");
+            org::xmlBlaster::util::thread::Thread::sleep(sleepMillis);
          }
          catch(const XmlBlasterException &e) {
             log_.error(ME, e.toXml());
