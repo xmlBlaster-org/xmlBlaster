@@ -17,6 +17,7 @@
             <td valign="top"><p /><br />
                Holding HTTP Connection.<br />
                <font size='-2'>Please do not close.</font><p />
+               <!-- This top.close() crashes sometimes the whole netscape ?! -->
                <a href="javascript:top.closeLogWindow(); top.close();"><font>Disconnect</font></a>
                <script language="JavaScript1.2">
                   if (top.Log.TRACE == false) {
