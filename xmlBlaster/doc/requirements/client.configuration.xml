@@ -7,11 +7,11 @@
 
      <p>If you want to use the default behavior of xmlBlaster clients  you don't need to bother about 
         configuration parameters. For many usages however it is necessary to modify some of the
-	parameters. These can be specified in the following ways:
-	<ul>
+        parameters. These can be specified in the following ways:
+        <ul>
           <li>a configuration file (normally xmlBlaster.properties)</li>
-	  <li>on the command line</li>
-	  <li>via setter methods in the code</li>
+          <li>on the command line</li>
+          <li>via setter methods in the code</li>
         </ul>
      </p>
 
@@ -20,19 +20,19 @@
      </p>
 
      <p><b>Configuration File</b><br/>
-	The search path and sequence is described in the <a href='./util.property.html'>util.property 
+        The search path and sequence is described in the <a href='./util.property.html'>util.property 
         requirement</a>. For tips and syntax inside the configuration file have a look at the requirement
-	<a href='./util.property.env.html'>util.property.env</a>
+        <a href='./util.property.env.html'>util.property.env</a>
      </p>
 
      <p><b>Command Line</b><br/> 
         on the command line you can assign values to configuration parameters by prepending a - sign to
-	the name of the parameter, then a space and then the value to be assigned. For example the 
-	following is correct syntax:
-	<pre>
+        the name of the parameter, then a space and then the value to be assigned. For example the 
+        following is correct syntax:
+        <pre>
 java HelloWorld2 -dispatch/clientSide/pingInterval 1000
-	</pre>					  
-	<b>For a list of all available command line parameters invoke -help on the command line:</b>
+        </pre>                                    
+        <b>For a list of all available command line parameters invoke -help on the command line:</b>
        <pre>
 java HelloWorld2 -help
        </pre>
@@ -40,7 +40,7 @@ java HelloWorld2 -help
 
      <p><b>Setter Methods</b><br/>
         A further alternative (and the strongest one) to assign values to the configuration parameters,
-	is to explicitly set them in the client code you write yourself. Here follows a simple example:
+        is to explicitly set them in the client code you write yourself. Here follows a simple example:
         <pre>
       ...
    ConnectQos qos = new ConnectQos(glob);
@@ -49,9 +49,9 @@ java HelloWorld2 -help
    address.setRetries(-1);       // -1 == forever
    address.setPingInterval(0L);  // switched off
       ...
-	</pre>
+        </pre>
         For a more detailed example have a look at the code for 
-	<a href='http://www.xmlblaster.org/xmlBlaster/demo/javaclients/HelloWorld6.java.html'>HelloWorld6</a>.
+        <a href='http://www.xmlblaster.org/xmlBlaster/demo/javaclients/HelloWorld6.java.html'>HelloWorld6</a>.
      </p>
      <p>The following is a list of groups of properties used to configure xmlBlaster clients. <i><b>We
      are changing the syntax for the properties from the original "dot and bracket" syntax like
@@ -95,7 +95,7 @@ java HelloWorld2 -help
      The following parameters control the client side dispatch configuration
      <center>
      <table border="1">
-       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr><th>Command line</th><th>Comment and [default]</th></tr>
        <tr>
          <td>-dispatch/clientSide/burstMode/collectTimeOneway</td>
          <td>Number of milliseconds we shall collect oneway publish messages [0].
@@ -103,16 +103,16 @@ java HelloWorld2 -help
        </tr>
        <tr>
          <td>-dispatch/clientSide/pingInterval</td>
-	 <td>Pinging every given milliseconds [10000]</td>
+         <td>Pinging every given milliseconds [10000]</td>
        </tr>
        <tr>
          <td>-dispatch/clientSide/retries</td>
-	 <td>How often to retry if connection fails (-1 is forever) [-1]</td>
+         <td>How often to retry if connection fails (-1 is forever) [-1]</td>
        </tr>
        <tr>
          <td>-dispatch/clientSide/delay</td>
-	 <td>Delay between connection retries in milliseconds [5000] A delay value > 0 
-	    switches fails save mode on, 0 switches it off</td>
+         <td>Delay between connection retries in milliseconds [5000] A delay value > 0 
+            switches fails save mode on, 0 switches it off</td>
       </tr>
     </table>
     </center>
@@ -124,48 +124,48 @@ java HelloWorld2 -help
      sense to configure these if you have assigned a callback to this session.
     <center>
      <table border="1">
-       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr><th>Command line</th><th>Comment and [default]</th></tr>
        <tr>
          <td>-dispatch/callback/sessionId</td>
          <td>The session ID which is passed to our callback server update() method.</td>
        </tr>
        <tr>
          <td>-dispatch/callback/burstMode/collectTime</td>
-	 <td>Number of milliseconds xmlBlaster shall collect callback messages [0].
-	    The burst mode allows performance tuning, try set it to 200.
-	 </td>
+         <td>Number of milliseconds xmlBlaster shall collect callback messages [0].
+            The burst mode allows performance tuning, try set it to 200.
+         </td>
        </tr>
        <tr>
          <td>-dispatch/callback/oneway</td>
-	 <td>Shall the update() messages be send oneway (no application level ACK) [false]</td>
+         <td>Shall the update() messages be send oneway (no application level ACK) [false]</td>
        </tr>
        <tr>
          <td>-dispatch/callback/pingInterval</td>
-	 <td>Pinging every given milliseconds [10000]</td>
+         <td>Pinging every given milliseconds [10000]</td>
       </tr>
        <tr>
          <td>-dispatch/callback/retries</td>
-	 <td>How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [-1]</td>
+         <td>How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [-1]</td>
       </tr>
        <tr>
          <td>-dispatch/callback/delay</td>
-	 <td>Delay between callback retries in milliseconds [5000]</td>
+         <td>Delay between callback retries in milliseconds [5000]</td>
       </tr>
        <tr>
          <td>-dispatch/callback/compress/type</td>
-	 <td>With which format message be compressed on callback []</td>
+         <td>With which format message be compressed on callback []</td>
       </tr>
        <tr>
          <td>-dispatch/callback/compress/minSize</td>
-	 <td>Messages bigger this size in bytes are compressed [0]</td>
+         <td>Messages bigger this size in bytes are compressed [0]</td>
       </tr>
        <tr>
          <td>-dispatch/callback/ptpAllowed</td>
-	 <td>PtP messages wanted? false prevents spamming [true]</td>
+         <td>PtP messages wanted? false prevents spamming [true]</td>
       </tr>
        <tr>
          <td>-dispatch/callback/protocol</td>
-	 <td>You can choose another protocol for the callback server [defaults to -client.protocol]</td>
+         <td>You can choose another protocol for the callback server [defaults to -client.protocol]</td>
       </tr>
     </table>
     </center>
@@ -174,7 +174,7 @@ java HelloWorld2 -help
      <p><b>Queue Client Side Storage Properties</b><br/>
      <center>
      <table border="1">
-       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr><th>Command line</th><th>Comment and [default]</th></tr>
        <tr><td>-queue/clientSide/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
        <tr><td>-queue/clientSide/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
        <tr><td>-queue/clientSide/maxBytes</td><td>The maximum size in bytes of the storage [10485760].</td></tr>
@@ -192,7 +192,7 @@ java HelloWorld2 -help
      <p><b>Queue Callback Storage Properties</b><br/>
      <center>
      <table border="1">
-       <tr><th>Command line</th><th>comment and [default]</th></tr>
+       <tr><th>Command line</th><th>Comment and [default]</th></tr>
 
        <tr><td>-queue/callback/maxEntries</td><td>The maximum allowed number of messages [1000].</td></tr>
        <tr><td>-queue/callback/maxEntriesCache</td><td>The maximum allowed number of messages in the cache [1000].</td></tr>
@@ -234,7 +234,7 @@ java HelloWorld2 -help
               className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
-	 <attribute id='password'>secret</attribute>
+         <attribute id='password'>secret</attribute>
          <attribute id='connectionBusyTimeout'>90000</attribute>
          <attribute id='maxWaitingThreads'>300</attribute>
       </plugin>
@@ -254,8 +254,8 @@ java HelloWorld2 -help
                <plugin refid='dispatch:priority'/>
                <burstMode collectTime='400' />
                <compress type='gzip' minSize='3000'/>
-	       <ptp>true</ptp>
-	       <plugin refid='queue:CACHE'>
+               <ptp>true</ptp>
+               <plugin refid='queue:CACHE'>
                   <attribute id='numEntries'>7</attribute>
                   <attribute id='numBytes'>90023</attribute>
                   <attribute id='onOverflow'>DEAD_MESSAGE</attribute>
@@ -275,25 +275,25 @@ java HelloWorld2 -help
                <plugin refid='queue:CACHE'>
                   <attribute id='maxEntries'>200</attribute>
                   <attribute id='entry'>
-		     <attribute id='id'>1046976320188000000></attribute>
-		     <attribute id='type'>publish'</attribute>
+                     <attribute id='id'>1046976320188000000></attribute>
+                     <attribute id='type'>publish'</attribute>
                         <!-- client side queued entries -->
                      <attribute id='key'>
-		       <attribute id='oid'>hello</attribute>
-		       <attribute id='contentMime'>text/plain</attribute>
-		     </attribute>
-		     <attribute id='content'>Salute</attribute>
-		     <attribute id='qos'>
-		       <attribute id='persistent' />
-		       <attribute id='sender'>/node/heron/client/joe</attribute>
-		       <attribute id='expiration'>
-		          <attribute id='lifeTime'>-1</attribute>
-		       </attribute>
-		     </attribute>
-		  </attribute>
+                       <attribute id='oid'>hello</attribute>
+                       <attribute id='contentMime'>text/plain</attribute>
+                     </attribute>
+                     <attribute id='content'>Salute</attribute>
+                     <attribute id='qos'>
+                       <attribute id='persistent' />
+                       <attribute id='sender'>/node/heron/client/joe</attribute>
+                       <attribute id='expiration'>
+                          <attribute id='lifeTime'>-1</attribute>
+                       </attribute>
+                     </attribute>
+                  </attribute>
                </plugin>
                
-	       <plugin id='protocol:XML-RPC:clientSide'
+               <plugin id='protocol:XML-RPC:clientSide'
                           className='org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection'>
                   <attribute id='hostname'>server.mycomp.com</attribute>
                   <attribute id='port'>6901</attribute>
@@ -305,30 +305,6 @@ java HelloWorld2 -help
                <attribute id='hostname'>client.mycomp.com</attribute>
                <attribute id='port'>8080</attribute>
             </plugin>
-
-<!-- command line (or telnet) example -->
-<!--
-java HelloWorld3
-
-   -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue:CACHE/attribute/maxEntries 200
-   -dispatch/clientSide/queue:CACHE/maxEntries 200
-   -dispatch/clientSide/queue//maxEntries 200
-   -queue/clientSide/maxEntries 200
-   -queue//maxEntries 200
-
-   -dispatch/clientSide/pingInterval 10000
-
-   -dispatch/callback/address/callback/  http://x.y.com:8089
-   -dispatch/callback/address//  http://x.y.com:8089
-
-   -dispatch/callback/pingInterval 20000
-
-Old style:
- java HelloWorld3 -queue/maxEntries 200
-                  -pingInterval 10000
-                  -ior??
-                  -dispatch/callback/pingInterval 20000
--->
 
          </session> <!-- -3 -->
 
@@ -368,7 +344,7 @@ Old style:
       <pre>
     java HelloWorld2 -maxEntries 100                        \
                      -dispatch/callback/pingInterval 20000  \
-		     -dispatch/clientSide/pingInterval 20000
+                     -dispatch/clientSide/pingInterval 20000
       </pre>
 
       </p>
@@ -392,6 +368,6 @@ Old style:
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 </requirement>
 
