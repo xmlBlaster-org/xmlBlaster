@@ -250,3 +250,10 @@ only the SNMP subagent module jax.jar is GPL only!
    ftp://ftp.ibr.cs.tu-bs.de/pub/local/jasmin/
    http://www.ibr.cs.tu-bs.de/projects/jasmin/jax.html
   
+
+23) tinySQL.jar
+===============
+   Small JDBC driver for dBase files, release 2002/04/08 00:59:10
+   http://www.jepstone.net/tinySQL/
+   It is delivered with xmlBlaster to allow regression tests of our JDBC plugin
+	See http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
