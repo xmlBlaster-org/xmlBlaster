@@ -99,6 +99,7 @@ if [ -d ${JacORB_HOME} ] ; then
    fi
    CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
+   CLASSPATH=${CLASSPATH}:${JacORB_HOME}
    export CLASSPATH
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
