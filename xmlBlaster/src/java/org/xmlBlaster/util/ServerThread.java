@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.3 2001/12/11 10:39:37 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.4 2002/04/26 08:41:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -44,8 +44,10 @@ public class ServerThread extends Thread
       args[3] = "false";
       ServerThread serverThread = new ServerThread(args);
       serverThread.start();
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {} // Wait some time
-      Log.info(ME, "Server is up!");
+      while(!serverThread.isReady()) {
+         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+      }
+      Log.info(ME, "Server is up and ready");
       return serverThread;
    }
 
@@ -68,8 +70,10 @@ public class ServerThread extends Thread
       args2[args.length+1] = "false";
       ServerThread serverThread = new ServerThread(args2);
       serverThread.start();
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {} // Wait some time
-      Log.info(ME, "Server is up!");
+      while(!serverThread.isReady()) {
+         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+      }
+      Log.info(ME, "Server is up and ready.");
       return serverThread;
    }
 
@@ -91,6 +95,13 @@ public class ServerThread extends Thread
     */
    private ServerThread(String[] args) { this.args = args; }
 
+   /**
+    * @return true if xmlBlaster has started and is ready for requests
+    */
+   private boolean isReady() {
+      return xmlBlasterMain != null;
+   }
+
 
    /*
     * Start the server
@@ -99,7 +110,7 @@ public class ServerThread extends Thread
       Log.info(ME, "Starting a xmlBlaster server instance for testing ...");
       xmlBlasterMain = new org.xmlBlaster.Main(args);
       while(!stopServer) {
-         try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
       }
       xmlBlasterMain.shutdown();
       stopServer = false;
