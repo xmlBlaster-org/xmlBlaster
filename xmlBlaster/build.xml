@@ -2371,7 +2371,7 @@ TODO
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
 
       <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
-      <cc debug="${cpp.debug}" link="${CPP_LINK}"
+      <cc debug="${cpp.debug}" outtype="${CPP_LINK}"
           outfile="${lib.dir}/${cpp.lib.name}" objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
          <compiler refid="icc"/>
@@ -2572,7 +2572,7 @@ TODO
       <echo message="Compiling of C++ test client '${compileCppSourcePath}/bin/${exeName}' ..."/>
       <mkdir dir="${cpp.obj.dir}"/>
       <mkdir dir="${compileCppSourcePath}/bin"/>
-      <cc debug="${cpp.debug}" link="executable"
+      <cc debug="${cpp.debug}" outtype="executable"
           outfile="${compileCppSourcePath}/bin/${exeName}"
           objdir="${cpp.obj.dir}"
           multithreaded="true" exceptions="true">
@@ -2827,7 +2827,7 @@ TODO
 
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}"
-          link="${C_LINK}"
+          outtype="${C_LINK}"
           outfile="${lib.dir}/${c.lib.name}"
           objdir="${c.obj.dir}"
           multithreaded="true">
@@ -2937,7 +2937,7 @@ TODO
       <echo message="Compiling of C test client '${compileCSourcePath}/bin/${exeName}' to '${compileCSourcePath}/bin/${exeName}'"/>
       <mkdir dir="${c.obj.dir}"/>
       <mkdir dir="${compileCSourcePath}/bin"/>
-      <cc debug="${c.debug}" link="executable"
+      <cc debug="${c.debug}" outtype="executable"
           outfile="${compileCSourcePath}/bin/${exeName}"
           objdir="${c.obj.dir}"
           multithreaded="true" exceptions="true">
