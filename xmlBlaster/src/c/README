@@ -159,8 +159,6 @@ o Add extended property support (parsing command line and getenv())
 
 o XML parsing with expat
 
-o Add ant task c-lib
-
 o Add some demo in xmlBlaster/demo/c
 
 o Add testsuite (with ant)
