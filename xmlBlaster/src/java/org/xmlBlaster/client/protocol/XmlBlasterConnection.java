@@ -821,6 +821,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *      System.out.println(e.reason);
     *   }
     * </pre>
+    * Note that on logout we automatically unSubscribe() this subscription
+    * if not done before.
+    * @param cb      Your callback handling implementation
     * @return oid    The oid of your subscribed Message<br>
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
