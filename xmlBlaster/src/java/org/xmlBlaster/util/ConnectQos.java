@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.19 2002/05/30 16:19:25 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.20 2002/06/02 21:19:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -40,7 +40,7 @@ import java.io.Serializable;
  *          &lt;passwd>secret&lt;/passwd>
  *          ]]>
  *        &lt;/securityService>
- *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'>
+ *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0' publicSessionId='9'>
  *        &lt;/session>
  *        &lt;ptp>true&lt;/ptp>
  *        &lt;queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
@@ -83,6 +83,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    /** Passing own sessionId is not yet supported */
    protected String sessionId = null;
+   /** This is the not secret unique session ID which allows
+       to address a specific session of a user with PtP message replies
+   */
+   protected String publicSessionId = null; 
 
    protected transient PluginLoader pMgr;
    protected I_ClientPlugin plugin;
@@ -489,6 +493,28 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
+    * Set our session identifier which can be used with PtP messages. 
+    * <p />
+    * @param id The unique publicSessionId (unique in this JVM)
+    */
+   public void setPublicSessionId(String id)
+   {
+      if(id==null || id.equals("")) id = null;
+      publicSessionId = id;
+   }
+
+   /**
+    * Get our public session identifier. 
+    * <p />
+    * It is unique in this JVM
+    * @return The unique publicSessionId (null if not known)
+    */
+   public final String getPublicSessionId()
+   {
+      return publicSessionId;
+   }
+
+   /**
     * Accessing the ServerRef addresses of the xmlBlaster server
     * this may be a CORBA-IOR or email or URL ...
     * <p />
@@ -769,6 +795,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                   this.maxSessions = (new Integer(attrs.getValue(ii).trim())).intValue();
                else if (attrs.getQName(ii).equalsIgnoreCase("clearSessions"))
                   this.clearSessions = (new Boolean(attrs.getValue(ii).trim())).booleanValue();
+               else if (attrs.getQName(ii).equalsIgnoreCase("publicSessionId"))
+                  this.publicSessionId = attrs.getValue(ii).trim();
                else
                   Log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
@@ -876,13 +904,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          inSession = false;
       }
 
-      if (name.equalsIgnoreCase("sessionId")) {
-         if (inSession) {
-            inSessionId = false;
-            setSessionId(character.toString().trim());
-         }
-      }
-
       if (inSecurityService) {
          character.append("</"+name+">");
       }
@@ -942,6 +963,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append(offset).append("<session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
       sb.append("' clearSessions='").append(clearSessions());
+      if (getPublicSessionId() != null)
+         sb.append("' publicSessionId='").append(getPublicSessionId());
       if(sessionId!=null) {
          sb.append("'>");
          sb.append(offset).append("   <sessionId>").append(sessionId).append("</sessionId>");
