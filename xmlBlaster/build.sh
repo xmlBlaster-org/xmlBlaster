@@ -1,6 +1,11 @@
 #!/bin/sh
 
-JAVA_HOME=/usr/jdk1.2.2
+#Set this in your environment:
+#JAVA_HOME=/usr/jdk1.2.2
+if [ ${JAVA_HOME:=""} = "" ] ; then
+   echo "ERROR: Please set the environment variable JAVA_HOME"
+   exit
+fi
 
 CLASSPATH=lib/ant.jar:lib/xml.jar:lib/idl.jar:lib/jacorb.jar:lib/omquery.jar:lib/xtdash.jar:lib/servlet-2.0.jar:lib/test.jar:$JAVA_HOME/lib/tools.jar
 
