@@ -41,12 +41,18 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.I_Timeout;
 
 import java.applet.Applet;
 
 import java.util.HashMap;
+import java.util.Vector;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Collections;
 
 
 /**
@@ -100,7 +106,7 @@ import java.util.Iterator;
  *
  * @author $Author: ruff $
  */
-public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer
+public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder, I_CallbackServer, I_Timeout
 {
    private String ME = "XmlBlasterConnection";
    protected Global glob = null;
@@ -157,6 +163,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        The key is the subscription ID */
    private final HashMap callbackMap = new HashMap();
 
+   /** Number of milliseconds xmlBlaster shall collect before publishOneway, 0 switched this feature off */
+   private long publishOnewayCollectTime = 0L;
+   /** Contains all collected (and not yet exported) messages */
+   private Vector publishOnewayBurstModeVec = null;
+   private Timeout publishOnewayTimer;
+   private Timestamp publishOnewayTimerKey = null;
+
    /**
     * Client access to xmlBlaster for client applications.
     * <p />
@@ -175,6 +188,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(null);
       initDriver(null);
       initFailSave(null);
+      initBurstMode();
    }
 
    /**
@@ -202,6 +216,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initDriver(null);
       initFailSave(null);
+      initBurstMode();
    }
 
    public XmlBlasterConnection(Global glob) throws XmlBlasterException
@@ -209,6 +224,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.glob = glob;
       initDriver(null);
       initFailSave(null);
+      initBurstMode();
    }
 
    /**
@@ -223,6 +239,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initDriver(driverType);
       initFailSave(null);
+      initBurstMode();
    }
 
    public XmlBlasterConnection(String[] args, String driverType, String driverClassName) throws XmlBlasterException
@@ -230,6 +247,19 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initDriver(driverType, driverClassName);
       initFailSave(null);
+      initBurstMode();
+   }
+
+   /**
+    * Initialize client side burst mode. 
+    */
+   private void initBurstMode()
+   {
+      this.publishOnewayCollectTime = XmlBlasterProperty.get("client.publishOneway.collectTime", 0L);
+      if (this.publishOnewayCollectTime > 0L) {
+         this.publishOnewayBurstModeVec = new Vector(1000);
+         this.publishOnewayTimer = new Timeout("PublishOnewayTimer");
+      }
    }
 
    private void initArgs(String[] args)
@@ -950,13 +980,33 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Shut down the callback server.
     * Is called by logout() automatically.
+    * If burst mode messages are in the queue, they are flushed
     *
     * @return true CB server successfully shut down
     *         false failure on shutdown
     */
-   public synchronized boolean shutdown()
+   public boolean shutdown()
+   {
+      return shutdown(true);
+   }
+
+   /**
+    * Shut down the callback server.
+    * Is called by logout() automatically.
+    *
+    * @param flush true: If burst mode messages are in the queue, they are flushed
+    *              false: Unsent messages are lost
+    * @return true CB server successfully shut down
+    *         false failure on shutdown
+    */
+   public synchronized boolean shutdown(boolean flush)
    {
       try {
+         if (this.publishOnewayTimer != null) {
+            if (flush) {
+               flushPublishOnewaySet();
+            }
+         }
          return driver.shutdown();
       } catch(Exception e) {
          Log.warn(ME, e.toString());
@@ -1203,19 +1253,73 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
+    * We are notified about the burst mode timeout through this method.
+    * @param userData You get bounced back your userData which you passed
+    *                 with Timeout.addTimeoutListener()
+    */
+   public final void timeout(Object userData)
+   {
+      synchronized(this.publishOnewayTimer) {
+         this.publishOnewayTimerKey = null;
+         flushPublishOnewaySet();
+      }
+   }
+
+   /**
+    * Flush tailed back burst mode messages to xmlBlaster. 
+    */
+   public final void flushPublishOnewaySet()
+   {
+      synchronized(this.publishOnewayTimer) { // sync to allow outside caller
+         if (this.publishOnewayTimerKey != null) {
+            this.publishOnewayTimer.removeTimeoutListener(this.publishOnewayTimerKey);
+            this.publishOnewayTimerKey = null;
+         }
+         MessageUnit[] msgUnitArr = new MessageUnit[this.publishOnewayBurstModeVec.size()];
+         Iterator it = this.publishOnewayBurstModeVec.iterator();
+         for (int i=0; it.hasNext(); i++) {
+            msgUnitArr[i] = (MessageUnit)it.next();
+         }
+         this.publishOnewayBurstModeVec.clear();
+         Log.info(ME+".flushPublishOnewaySet()", "Burst mode timeout after " + this.publishOnewayCollectTime + " millis occurred, publishing " + msgUnitArr.length + " oneway messages ...");
+         publishOneway(msgUnitArr, true);
+      }
+   }
+
+   /**
     * @see xmlBlaster.idl
     */
    public void publishOneway(MessageUnit [] msgUnitArr)
    {
+      publishOneway(msgUnitArr, false);
+   }
+
+   /**
+    * @see xmlBlaster.idl
+    */
+   private void publishOneway(MessageUnit [] msgUnitArr, boolean flushBurstMode)
+   {
       if (Log.CALL) Log.call(ME, "publishOneway() ...");
       try {
+         if (this.publishOnewayCollectTime > 0L && !flushBurstMode) {
+            synchronized(this.publishOnewayTimer) {
+               //Log.info(ME, "publishOneway() adding set ...");
+               for (int ii = 0; ii<msgUnitArr.length; ii++) {
+                  this.publishOnewayBurstModeVec.addElement(msgUnitArr[ii].getClone());
+               }
+               if (this.publishOnewayTimerKey == null) {
+                  if (Log.TRACE) Log.trace(ME, "Spanning timer = " +  this.publishOnewayCollectTime);
+                  this.publishOnewayTimerKey = this.publishOnewayTimer.addTimeoutListener(this, this.publishOnewayCollectTime, null);
+               }
+               return;
+            }
+         }
+
+         MessageUnit[] mu = msgUnitArr;
          if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
-            MessageUnit mu[] = exportAll(msgUnitArr);
-            driver.publishOneway(mu);
+            mu = exportAll(msgUnitArr);
          }
-         else { // security plugin not available
-            driver.publishOneway(msgUnitArr);
-         }
+         driver.publishOneway(mu);
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e.reason);
       } catch(ConnectionException e) {
@@ -1574,6 +1678,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -client.failSave.pingInterval    How many milli seconds sleeping between the pings [10 * 1000]\n";
       text += "   -client.failSave.retries         Number of retries if connection cannot directly be established [-1] (-1 is forever)\n";
       text += "   -client.failSave.maxInvocations  How many messages shall we queue max (using the InvocationRecorder) [10000]\n";
+      text += "\n";
+      text += "Client side burst mode:\n";
+      //text += "   -client.publish.collectTime       Number of milliseconds xmlBlaster shall collect before publishing [0]\n";
+      text += "   -client.publishOneway.collectTime Number of milliseconds xmlBlaster shall collect before publishOneway  [0]\n";
       Log.plain(text);
       Log.plain(SocketConnection.usage());
       Log.plain(CorbaConnection.usage());
