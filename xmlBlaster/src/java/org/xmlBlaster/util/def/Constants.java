@@ -149,6 +149,8 @@ public class Constants
    /** If callback fails more often than is configured the login session is destroyed */
    public final static String ONEXHAUST_KILL_SESSION = "killSession";
 
+   /** ClientProperty of QoS for messages from persistent store */
+   public final static String PERSISTENCE_ID = "__persistenceId";
 
    /** Prefix to create a sessionId */
    public final static String SESSIONID_PREFIX = "sessionId:";
@@ -159,8 +161,10 @@ public class Constants
      */
    public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
 
+   public final static String INTERNAL_LOGINNAME_PREFIX_FOR_PLUGINS = "_";
    public final static String INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
    public final static String INTERNAL_OID_ADMIN_CMD = "__cmd:";
+   public final static String INTERNAL_LOGINNAME_PREFIX_FOR_CORE = "__";
    public final static String INTERNAL_OID_PREFIX_FOR_CORE = "__";
    public final static String INTERNAL_OID_PREFIX = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
    public final static String INTERNAL_OID_CLUSTER_PREFIX = INTERNAL_OID_PREFIX +"cluster";  // "__sys__cluster"
