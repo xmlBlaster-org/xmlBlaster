@@ -461,6 +461,9 @@ public abstract class Executor implements ExecutorBase
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
+         if (startSignal != null) {
+            synchronized (latchSet) { latchSet.remove(startSignal); }
+         }
          String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
       }
@@ -510,7 +513,7 @@ public abstract class Executor implements ExecutorBase
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log != null && log.TRACE && latchSet.size()>0) log.trace(ME, "Freeing " + ((latchSet==null) ? 0 : latchSet.size()) + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (log != null && log.TRACE && latchSet!=null && latchSet.size()>0) log.trace(ME, "Freeing " + latchSet.size()) + " pending threads (waiting on responses) from their ugly blocking situation");
       if (latchSet != null) {
          while (true) {
             Latch l = null;
