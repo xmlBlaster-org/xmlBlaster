@@ -415,7 +415,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    /**
     * The factory creating queue or msgUnitStore entries from persistent store.
     * Is derived from util.Global
-    * @param name A name identifying this plugin.
     */
    public I_EntryFactory getEntryFactory() {
       if (this.entryFactory != null) return this.entryFactory;
