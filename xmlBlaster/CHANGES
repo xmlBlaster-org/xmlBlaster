@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.x
 ===============
+ o #13263 build.xml for C/C++:
+   Added CFLAGS and LDFLAGS so one can configure C/C++ compilation and linkage
+   Remove /usr/lib path for library as it is default and prevented a /usr/lib64 path on 64 bit machines
+
  o #13257 Setting duplicateUpdates to deprecated, please use 'multiSubscribe'
    as described in requirement
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
