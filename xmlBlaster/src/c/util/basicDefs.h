@@ -41,7 +41,15 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  define VSNPRINTF vsnprintf    /* stdarg.h */
 #endif
 
-/* #include<stdint.h>  -> C99:  uint64_t etc. */
+#ifdef XB_FUTURE___
+#if defined(_WINDOWS)
+  typedef long long int64_t;
+  typedef int int32_t;
+  typedef short int16_t;
+#else
+# include<stdint.h>  /*-> C99:  uint64_t etc. */
+#endif
+#endif /* XB_FUTURE___ */
 
 #ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
 #ifndef __USE_BSD /* gcc -ansi on Linux: */
