@@ -34,13 +34,14 @@ SessionQosData::SessionQosData(Global& global, const string& absoluteName)
    if (clusterNodeId_ == "")
       clusterNodeId_ = global_.getProperty().getStringProperty("HOSTNAME", "unknown");
 
+   /*
    subjectId_ = global_.getProperty().getStringProperty("session.subjectId", "");
    if (subjectId_ == "")
       subjectId_ = global_.getProperty().getStringProperty("user", "");
    if (subjectId_ == "")
       subjectId_ = global_.getProperty().getStringProperty("USER", "unknown");
-
-   pubSessionId_ = global_.getProperty().getStringProperty("session.pubSessionId", "1");
+   pubSessionId_ = global_.getProperty().getLongProperty("session.pubSessionId", "1");
+   */
 
    string name = global_.getProperty().getStringProperty("session.name", "");
    if (name != "") setAbsoluteName(name);
@@ -90,12 +91,12 @@ void SessionQosData::setAbsoluteName(const string& name)
 
    setClusterNodeId(clusterNode);
    setSubjectId(subjectId);
-   setPubSessionId(pubSessionId);
+   setPubSessionId(lexical_cast<long>(pubSessionId));
 }
 
 string SessionQosData::getRelativeName() const
 {
-   return string("client/") + subjectId_ + string("/") + pubSessionId_;
+   return string("client/") + subjectId_ + string("/") + lexical_cast<string>(pubSessionId_);
 }
 
 string SessionQosData::getAbsoluteName() const
@@ -123,12 +124,12 @@ void SessionQosData::setSubjectId(const string& subjectId)
     subjectId_ = subjectId;
 }
 
-string SessionQosData::getPubSessionId() const
+long SessionQosData::getPubSessionId() const
 {
    return pubSessionId_;
 }
 
-void SessionQosData::setPubSessionId(const string& pubSessionId)
+void SessionQosData::setPubSessionId(const long pubSessionId)
 {
    pubSessionId_ = pubSessionId;
 }
@@ -176,20 +177,21 @@ void SessionQosData::setSessionId(const string& sessionId)
 string SessionQosData::toXml(const string& extraOffset, bool isClient) const
 {
    string offset = extraOffset; // currently unused.
-   string ret = string("<session timeout='") + lexical_cast<string>(getTimeout()) +
-                string("' maxSessions='") + lexical_cast<string>(getMaxSessions()) +
-                string("' clearSessions='") + Global::getBoolAsString(clearSessions_);
+   string ret = string("<session");
+
+   if (isClient)
+      ret += string(" name='")  + getRelativeName() + string("'");
+   else
+      ret += string(" name='")  + getAbsoluteName() + string("'");
+
+   ret += string(" timeout='") + lexical_cast<string>(getTimeout()) + string("'") + 
+          string(" maxSessions='") + lexical_cast<string>(getMaxSessions()) + string("'") +
+          string(" clearSessions='") + Global::getBoolAsString(clearSessions_) + string("'");
+   
    if (!sessionId_.empty()) {
-      ret += string("' sessionId='") + sessionId_;
+      ret += string(" sessionId='") + sessionId_ + string("'");
    }
-   if (!pubSessionId_.empty()) {
-      ret += string("' publicSessionId='") + pubSessionId_;
-   }
-                
-   if (isClient) ret += string("' name='")  + getRelativeName() + "'>\n";
-   else ret += string("' name='")  + getAbsoluteName() + "'>\n";
-   ret += string("  <sessionId>") + getSessionId() + string("</sessionId>\n");
-   ret += string("</session>\n");
+   ret += string("/>\n");
    return ret;
 }
 
@@ -238,7 +240,10 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
       // get all attributes which are needed ...
       int len = attrs.getLength();
       for (int i = 0; i < len; i++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(i), "timeout")) {
+         if (SaxHandlerBase::caseCompare(attrs.getName(i), "name")) {
+            sessionQos_->setAbsoluteName(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         }
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "timeout")) {
             sessionQos_->timeout_ = SaxHandlerBase::getLongValue(attrs.getValue(i));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxSessions")) {
@@ -249,14 +254,11 @@ void SessionQosFactory::startElement(const XMLCh* const name, AttributeList& att
             if (help == "true") sessionQos_->clearSessions_ = true;
             else sessionQos_->clearSessions_ = false;
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "name")) {
-            sessionQos_->setAbsoluteName(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
+            sessionQos_->sessionId_ = SaxHandlerBase::getStringValue(attrs.getValue(i));
          }
       }
       return;
-   }
-   if (SaxHandlerBase::caseCompare(name, "sessionId")) {
-      character_.erase();
    }
 }
 
@@ -266,9 +268,6 @@ void SessionQosFactory::endElement(const XMLCh* const name) {
 
    if (SaxHandlerBase::caseCompare(name, "session")) {
       return;
-   }
-   if (SaxHandlerBase::caseCompare(name, "sessionId")) {
-      sessionQos_->sessionId_ = character_;
    }
 }
 
@@ -311,11 +310,8 @@ int main(int args, char* argv[])
     {
        XMLPlatformUtils::Initialize();
 
-       string qos = "<session timeout='86400000' maxSessions='10' \n" +
-             string("         clearSessions='false'\n") +
-             string("         name='/node/http:/client/ticheta/-3'>\n") +
-             string("   <sessionId>IIOP:01110728321B0222011028</sessionId>\n") +
-             string("</session>\n");
+       string qos = "<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n" +
+             string("         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n") +
 
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);
@@ -335,9 +331,6 @@ int main(int args, char* argv[])
        cout << data2.getPubSessionId() << endl;
        cout << data2.getSubjectId() << endl;
        cout << data2.getClusterNodeId() << endl << endl;
-
-
-
     }
     catch(const XMLException& toCatch)
     {

@@ -36,7 +36,7 @@ private:
    string      sessionId_;
    string      clusterNodeId_;
    string      subjectId_;
-   string      pubSessionId_;
+   long        pubSessionId_;
    Global&     global_;
 
    friend class SessionQosFactory;
@@ -77,8 +77,8 @@ public:
    void setClusterNodeId(const string& clusterNodeId);
    string getSubjectId() const;
    void setSubjectId(const string& subjectId);
-   string getPubSessionId() const;
-   void setPubSessionId(const string& pubSessionId);
+   long getPubSessionId() const;
+   void setPubSessionId(const long pubSessionId);
 
    string getSessionId() const;
    void setSessionId(const string& sessionId);

@@ -263,9 +263,7 @@ int main(int args, char* argv[])
        string("     <passwd>secret</passwd>\n") +
        string("     ]]>\n") +
        string("   </securityService>\n") +
-       string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'>\n") +
-       string("      <sessionId>4e56890ghdFzj0</sessionId>\n") +
-       string("   </session>\n") +
+       string("   <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>\n") +
        string("   <ptp>true</ptp>\n") +
        string("   <!-- The client side queue: -->\n") +
        string("   <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>\n") +

@@ -38,13 +38,13 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
  *    <ptp>true</ptp>
  *    <!-- The client side queue: -->
  *    <queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
- *       <address type='IOR' sessionId='4e56890ghdFzj0'>
+ *       <address type='IOR' sessionId='secretTokenForUpdateCheckOnClientSide'>
  *          IOR:10000010033200000099000010....
  *       </address>
  *    </queue>
  *    <!-- The server side callback queue: -->
  *    <queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
- *       <callback type='IOR' sessionId='4e56890ghdFzj0'>
+ *       <callback type='IOR' sessionId='secretTokenForUpdateCheckOnClientSide'>
  *          IOR:10000010033200000099000010....
  *          <burstMode collectTime='400' />
  *       </callback>
