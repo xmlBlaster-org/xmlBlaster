@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.context;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import java.util.ArrayList;
 
 /**
@@ -30,6 +31,9 @@ public final class ContextNode
    private ContextNode parent;
    private ArrayList childs;
 
+   //Placeholder for top level node
+   public final static ContextNode ROOT_NODE = (ContextNode)null; // new ContextNode(null, "/xmlBlaster", "", (ContextNode)null);
+
    /**
     * @param className The tag name like 'node' or 'client'
     * @param instanceName The instance like 'heron' or 'joe'
@@ -43,6 +47,10 @@ public final class ContextNode
 
    public String getClassName() {
       return this.className;
+   }
+
+   public void setInstanceName(String instanceName) {
+      this.instanceName = instanceName;
    }
 
    public String getInstanceName() {
@@ -79,7 +87,7 @@ public final class ContextNode
     */
    public String getAbsoluteName() {
       StringBuffer sb = new StringBuffer(256);
-      if (this.parent == null) {
+      if (this.parent == ROOT_NODE) {
          return sb.append(ROOT_MARKER_TAG).append(SEP).append(this.className).append(SEP).append(this.instanceName).toString();
       }
       return sb.append(this.parent.getAbsoluteName()).append(SEP).append(this.className).append(SEP).append(this.instanceName).toString();
@@ -88,14 +96,14 @@ public final class ContextNode
    /**
     * Access the absolute name in standard notation
     * @param schema Currently only "xpath"
-    * @return e.g. "/xmlBlaster/node[@id='heron']/client[@id='joe']/session[@id='2']", never null
+    * @return e.g. "xpath:/xmlBlaster/node[@id='heron']/client[@id='joe']/session[@id='2']", never null
     */
    public String getAbsoluteName(String schema) {
       StringBuffer sb = new StringBuffer(256);
-      if (this.parent == null) {
-         return sb.append(ROOT_MARKER_TAG).append(SEP).append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
+      if (this.parent == ROOT_NODE) {
+         return sb.append(schema).append(":").append(ROOT_MARKER_TAG).append(SEP).append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
       }
-      return sb.append(this.parent.getAbsoluteName()).append(SEP).append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
+      return sb.append(this.parent.getAbsoluteName(schema)).append(SEP).append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
    }
 
    /**
@@ -115,11 +123,11 @@ public final class ContextNode
 
    /**
     * @param schema Currently only "xpath"
-    * @return e.g. "client[@id='joe']", never null
+    * @return e.g. "xpath:client[@id='joe']", never null
     */
    public String getRelativeName(String schema) {
       StringBuffer sb = new StringBuffer(256);
-      return sb.append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
+      return sb.append(schema).append(":").append(this.className).append("[@id='").append(this.instanceName).append("']").toString();
    }
 
    /**
@@ -131,6 +139,30 @@ public final class ContextNode
 
    public boolean equalsAbsolute(ContextNode contextNode) {
       return getAbsoluteName().equals(contextNode.getAbsoluteName());
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML dump of ContextNode
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML dump of ContextNode
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(256);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      sb.append(offset).append("<ContextNode class='").append(this.className).append("' instance='").append(this.instanceName).append("'/>");
+      return sb.toString();
    }
 
    /**
