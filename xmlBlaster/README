@@ -1,5 +1,10 @@
- http://www.xmlBlaster.org
- -------------------------
+#################################################################
+#                                                               #
+#                        xmlBlaster                             #
+#           Free Message Oriented Middleware (MOM)					 #
+#                 http://www.xmlBlaster.org                     #
+#                                                               #  
+#################################################################
 
 For installation see INSTALL file.
 

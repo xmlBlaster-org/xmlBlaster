@@ -1,6 +1,8 @@
 #################################################################
 #                                                               #
-#                     xmlBlaster 0.71 Millenium Edition         #
+#             xmlBlaster 0.71 Millenium Edition                 #
+#           Free Message Oriented Middleware (MOM)              #
+#                 http://www.xmlBlaster.org                     #
 #                                                               #  
 #################################################################
 
@@ -304,4 +306,4 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
 
 -------------------------------------------------------------------------
-Manuel + Marcel, December 1999
+Manuel + Marcel, Jan. 2000
