@@ -132,7 +132,7 @@ public class ClassLoaderFactory {
       for (int i=0; i<urls.length; i++) {
          String xmlBlasterJar = (String)classPath.get(0);
          if( urls[i].getFile().indexOf(xmlBlasterJar) < 0 ) {
-            classPath.add(urls[i].toString());
+            classPath.add(urls[i].getFile());
          }
       }
 
@@ -145,7 +145,7 @@ public class ClassLoaderFactory {
          }
          log.trace(ME, text);
       }
-      return new XmlBlasterClassLoader(glob, stringToUrl(classPath) );
+      return new XmlBlasterClassLoader(stringToUrl(classPath) );
    }
    /**
     * Retrievs the base path for the object related classpath.

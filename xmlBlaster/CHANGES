@@ -38,6 +38,12 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - New ClassLoader 'XmlBlasterClassloader', which isolates the xmlBlaster from
+    user environment.
+    This feature is usable by integrating the org.xmlBlaster.util.ServerThread
+    in another application.
+  
+  
   - Fixed memory leaks
     * For unsuscessful logins
     * Removed allocation of SubjectInfo in htpasswd

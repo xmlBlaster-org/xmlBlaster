@@ -3,10 +3,10 @@
 
 <requirement id='util.ClassLoaderFactory' type='NEW' prio='LOW' status='INWORK'>
 
-   <topic>XmlBlaster provides a ClassLoaderFactory to create instances of XmlBlasterClassLoader.</topic>
+   <topic>XmlBlaster provides a ClassLoaderFactory to create instances of xmlBlaster specific classloaders.</topic>
 
    <description>
-      <p>The ClassLoaderFactory creates instances of XmlBlasterClassLoader on demand.
+      <p>The ClassLoaderFactory creates instances of XmlBlasterClassLoader or PluginClassLoader on demand.
       </p>
 
       <p>
@@ -20,15 +20,6 @@
       <p>The created ClassLoaders are derivations of URLClassLoader.
       </p>
 
-      <p>
-      The system classpath and the environmental classpath will be scanned for the location of the
-      Main-jar file to determine the basepath. The packagename of the plugin to load will gives the
-      librarypath. The concatenation of the basepath and the librarypath give the basedirectory
-      where to look for the optional third party libraries.
-      </p>
-
-      <p>Only .jar-files will be added to the classpath.
-      </p>
    </description>
 
    <example lang='any' type='HTML'>
@@ -84,13 +75,15 @@
    </p>
    </todo>
 
-   <see type="REQ">util.XmlBlasterClassLoader</see>
-   <see type="API">org.xmlBlaster.util.ClassLoaderFactory</see>
-   <see type="API">org.xmlBlaster.util.XmlBlasterClassLoader</see>
+   <see type="REQ">util.classloader.XmlBlasterClassLoader</see>
+   <see type="REQ">util.classloader.PluginClassLoader</see>
+   <see type="API">org.xmlBlaster.util.classloader.ClassLoaderFactory</see>
+   <see type="API">org.xmlBlaster.util.classloader.XmlBlasterClassLoader</see>
+   <see type="API">org.xmlBlaster.util.classloader.PluginClassLoader</see>
 
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="OPEN">
       <name></name>
