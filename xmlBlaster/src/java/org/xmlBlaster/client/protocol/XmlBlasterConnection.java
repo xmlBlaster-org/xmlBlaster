@@ -746,9 +746,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          CbQueueProperty prop = givenProp; // Use user supplied property if != null
          if (prop == null)
-            prop = connectQos.getCbQueueProperty(); // Creates a default property for us if none is available
+            prop = connectQos.getSessionCbQueueProperty(); // Creates a default property for us if none is available
          else
-            connectQos.addCbQueueProperty(prop);
+            connectQos.setSessionCbQueueProperty(prop);
 
          CallbackAddress addr = null;
          if (cbAddr != null) {
