@@ -7,11 +7,16 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.cluster.NodeId;
 
 import java.util.Map;
@@ -19,41 +24,55 @@ import java.util.TreeMap;
 import java.util.Iterator;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  * This class holds the address informations about an
  * xmlBlaster server instance (=cluster node). 
+ * It is created by the NodeParser from xml markup of by
+ * the ClusterManager (via ClusterNode) for our local node.
  */
 public final class NodeInfo
 {
    private final String ME;
-   private final Global glob;
+   /** 
+    * This util global instance is used for I_XmlBlasterAccess, it
+    * uses the specific settings from NodeInfo to connect to the remote node
+    */
+   private final org.xmlBlaster.util.Global remoteGlob;
+   private final LogChannel log;
 
    private NodeId nodeId;
+   private long counter = 0L;
 
-   private String defaultType;
+   private ConnectQosSaxFactory connectQosSaxFactory;
+   private ConnectQosData connectQosData;
+
+   /** @deprecated We now use ConnectQos */
    private Address tmpAddress = null; // Helper for SAX parsing
-   private Map addressMap = null;
-
+   /** @deprecated We now use ConnectQos */
    private CallbackAddress tmpCbAddress = null; // Helper for SAX parsing
-   private Map cbAddressMap = null;
-
-   private Map backupnodeMap = null;
 
    private boolean nameService = false;
 
+   private boolean inConnectQos = false;  // parsing inside <connect><qos> ?
+   private boolean inInfo = false;
    private boolean inAddress = false; // parsing inside <address> ?
    private boolean inCallback = false; // parsing inside <callback> ?
-   private boolean inBackupnode = false; // parsing inside <backupnode> ?
+
+   /** A unique created session id delivered on callback in update() method */
+   private String cbSessionId = null;
 
    /**
-    * Holds the addresses of a node. 
-    * @param glob The global specific to this node instance. 
+    * Holds the ConnectQos of a node. 
+    * @param remoteGlob The global specific to this node instance. 
     */
-   public NodeInfo(Global glob, NodeId nodeId) {
-      this.glob = glob;
+   public NodeInfo(Global remoteGlob, NodeId nodeId) throws XmlBlasterException {
+      this.remoteGlob = remoteGlob;
+      this.log = this.remoteGlob.getLog("cluster");
       this.setNodeId(nodeId);
       this.ME = "NodeInfo." + getId();
+      this.connectQosData = new ConnectQosData(this.remoteGlob, this.nodeId);
    }
 
    /**
@@ -71,6 +90,23 @@ public final class NodeInfo
    }
 
    /**
+    * @return The connection configuration for the remote cluster node, never null
+    */   
+   ConnectQosData getConnectQosData() {
+      /*
+      if (this.connectQosData == null) {
+         synchronized (this) {
+            if (this.connectQosData == null) {
+               this.connectQosData = new ConnectQosData(this.remoteGlob, this.nodeId);
+            }
+         }
+      }
+      */
+      return this.connectQosData;
+   }
+
+   /**
+    * TODO: !!!! is this needed?
     * @param The unique name of the managed xmlBlaster instance
     */
    public void setNodeId(NodeId nodeId) {
@@ -79,29 +115,18 @@ public final class NodeInfo
    }
 
    /**
-    * Access the currently used address to access the node
-    * @return null if not specified
+    * The expected callback sessionId which used to authenticate the update() call
     */
-   public Address getAddress() {
-      if (addressMap == null) return null;
+   String getCbSessionId() {
+      return (this.cbSessionId == null) ? "" : this.cbSessionId;
+   }
 
-      // Try to find a protocol address as configured for clients
-      if (this.defaultType == null) {
-         Address def = new Address(glob);
-         this.defaultType = def.getType();
-      }
-      if (this.defaultType != null) {
-         Iterator it = addressMap.values().iterator();
-         while (it.hasNext()) {
-            Address tmp = (Address)it.next();
-            if (this.defaultType.equals(tmp.getType())) {
-               return tmp;
-            }
-         }
-      }
-
-      // Use the default address
-      return (Address)addressMap.values().iterator().next();
+   /**
+    * Access the currently used address to access the node
+    * @return null if not specified  !!!!!! TODO: Changed to throws IllegalArgumentException
+    */
+   private Address getAddress() {
+      return getConnectQosData().getAddress();
    }
 
    /**
@@ -110,56 +135,30 @@ public final class NodeInfo
     * The map is sorted with the same sequence as the given XML sequence
     */
    public void addAddress(Address address){
-      if (addressMap == null) addressMap = new TreeMap();
-      this.addressMap.put(""+addressMap.size(), address);
-   }
-
-   /**
-    * Access all addresses of a node, please handle as readonly. 
-    */
-   public final Map getAddressMap() {
-      return addressMap;
+      // All local plugin configurations are added here if this is the local node
+      getConnectQosData().addAddress(address);
    }
 
    /**
     * Does the given address belong to this node?
     */
    public boolean contains(Address other) {
-      if (addressMap == null || addressMap.size() == 0)
-         return false;
-      Iterator it = addressMap.values().iterator();
-      while (it.hasNext()) {
-         Address aa = (Address)it.next();
-         if (aa.isSameAddress(other))
-            return true;
-      }
-      return false;
+      return getConnectQosData().contains(other);
    }
 
    /**
     * Access the currently used callback address for this node
     * @return Never null, returns a default if none specified
     */
-   public CallbackAddress getCbAddress() {
-      if (cbAddressMap == null) {
-         addCbAddress(new CallbackAddress(glob));
-      }
-      return (CallbackAddress)cbAddressMap.values().iterator().next();
-   }
-
-   /**
-    * Currently not used. 
-    */
-   public Map getCbAddressMap() {
-      return cbAddressMap;
+   private CallbackAddress getCbAddress() {
+      return getConnectQosData().getCurrentCallbackAddress();
    }
 
    /**
     * Add another callback address for this cluster node. 
     */
    public void addCbAddress(CallbackAddress cbAddress) {
-      if (cbAddressMap == null) cbAddressMap = new TreeMap();
-      this.cbAddressMap.put(cbAddress.getRawAddress(), cbAddress);
+      getConnectQosData().addCallbackAddress(cbAddress);
    }
 
    /**
@@ -181,29 +180,69 @@ public final class NodeInfo
    }
 
    /**
-    * If this node is not accessible, we can use its backup nodes. 
-    * @return a Map containing NodeId objects
+    * Force some cluster specific connection settings. 
     */
-   public Map getBackupnodeMap() {
-      return backupnodeMap;
-   }
+   private void postInitialize() throws XmlBlasterException
+   {
+      ConnectQosData data = getConnectQosData();
+      
+      data.setClusterNode(true);
+      this.remoteGlob.setBootstrapAddress(getAddress());
 
-   /**
-    * Set backup nodes. 
-    */
-   public void addBackupnode(NodeId backupId) {
-      if (backupnodeMap == null) backupnodeMap = new TreeMap();
-      backupnodeMap.put(backupId.getId(), backupId);
+      // Shall we allow a configurable user name for cluster slave logins?
+      data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
+      // The password is from the environment -passwd or more specific -passwd[heron]
+      // Or from the XML securityQos
+
+      // Create a secret callback session id to be able to authenticate update() calls
+      CallbackAddress callback = data.getCurrentCallbackAddress();
+      if (callback != null) {
+         if (callback.getSecretSessionId().equals(AddressBase.DEFAULT_sessionId))
+            callback.setSecretSessionId(createCbSessionId());
+         this.cbSessionId = callback.getSecretSessionId();
+      }
+      else {
+         log.error(ME, "Internal problem: Expected a callback address setup but none was delivered");
+      }
+
+      // As we forward many subscribes probably accessing the
+      // same message but only want one update.
+      // We cache this update and distribute to all our clients:
+      data.setDuplicateUpdates(false);
+
+      data.getSessionQos().setSessionTimeout(0L); // session lasts forever
+      data.getSessionQos().clearSessions(true);   // We only login once, kill other (older) sessions of myself!
    }
 
    /**
     * Called for SAX master start tag
     * @return true if ok, false on error
     */
-   public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
-      // glob.getLog("cluster").info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
+   public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) 
+   {
+      // log.info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
 
-      if (name.equalsIgnoreCase("info")) {
+      if (name.equalsIgnoreCase("connect")) {
+         inConnectQos = true;
+         this.connectQosSaxFactory = new ConnectQosSaxFactory(this.remoteGlob);
+         this.connectQosSaxFactory.setConnectQosData(getConnectQosData());
+         return true;
+      }
+
+      if (inConnectQos) {
+         this.connectQosSaxFactory.startElement(uri, localName, name, character, attrs);
+         return true;
+      }
+
+      //========= The rest is deprecated:
+
+      /*
+         "info" is deprecated as it only contains address specific informations
+         New is "connect" -> now we can specify all connection details
+      */
+      if (!inConnectQos && name.equalsIgnoreCase("info")) {
+         inInfo = true;
+         //this.connectQosData = new ConnectQosData(this.remoteGlob, this.nodeId);
          return true;
       }
 
@@ -212,34 +251,18 @@ public final class NodeInfo
          tmpAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }
-      if (name.equalsIgnoreCase("address")) {
+      if (inInfo && name.equalsIgnoreCase("address")) {
          inAddress = true;
          String type = (attrs != null) ? attrs.getValue("type") : null;
-         tmpAddress = new Address(glob, type, getId());
+         tmpAddress = new Address(this.remoteGlob, type, getId());
          tmpAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }
 
-      if (name.equalsIgnoreCase("callback")) {
+      if (inInfo && name.equalsIgnoreCase("callback")) {
          inCallback = true;
-         tmpCbAddress = new CallbackAddress(glob);
+         tmpCbAddress = new CallbackAddress(this.remoteGlob);
          tmpCbAddress.startElement(uri, localName, name, character, attrs);
-         return true;
-      }
-
-      if (name.equalsIgnoreCase("backupnode")) {
-         inBackupnode = true;
-         return true;
-      }
-      if (inBackupnode && name.equalsIgnoreCase("clusternode")) {
-         if (attrs != null) {
-            String tmp = attrs.getValue("id");
-            if (tmp == null) {
-               glob.getLog("cluster").error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
-               throw new RuntimeException("NodeParser: <backupnode><clusternode> attribute 'id' is missing, ignoring message");
-            }
-            addBackupnode(new NodeId(tmp.trim()));
-         }
          return true;
       }
 
@@ -249,33 +272,86 @@ public final class NodeInfo
    /**
     * Handle SAX parsed end element
     */
-   public final void endElement(String uri, String localName, String name, StringBuffer character) {
-      if (inAddress) { // delegate address internal tags
-         tmpAddress.endElement(uri, localName, name, character);
-         if (name.equalsIgnoreCase("address")) {
-            inAddress = false;
-            addAddress(tmpAddress);
-         }
-         return;
-      }
+   public final void endElement(String uri, String localName, String name, StringBuffer character)
+      throws SAXException {
 
-      if (inCallback) { // delegate address internal tags
-         tmpCbAddress.endElement(uri, localName, name, character);
-         if (name.equalsIgnoreCase("callback")) {
-            inCallback = false;
-            addCbAddress(tmpCbAddress);
+      try {
+         if (inConnectQos) { // delegate to connectQosSaxFactory ...
+            if (name.equalsIgnoreCase("connect")) {
+               inConnectQos = false;
+               character.setLength(0);
+               this.connectQosData = this.connectQosSaxFactory.getConnectQosData();
+               this.connectQosSaxFactory = null;
+               postInitialize();
+            }
+            else {
+               this.connectQosSaxFactory.endElement(uri, localName, name, character);
+            }
+            return;
          }
-         return;
-      }
 
-      if (name.equalsIgnoreCase("backupnode")) {
-         inBackupnode = false;
+         //======== all the rest is deprecated:
+
+         if (inInfo && inAddress) { // delegate address internal tags
+            tmpAddress.endElement(uri, localName, name, character);
+            if (name.equalsIgnoreCase("address")) {
+               inAddress = false;
+               addAddress(tmpAddress);
+            }
+            return;
+         }
+
+         if (inInfo && inCallback) { // delegate address internal tags
+            tmpCbAddress.endElement(uri, localName, name, character);
+            if (name.equalsIgnoreCase("callback")) {
+               inCallback = false;
+               addCbAddress(tmpCbAddress);
+            }
+            return;
+         }
+
+         if (inInfo && name.equalsIgnoreCase("info")) {
+            ConnectQosData data = getConnectQosData();
+            if (!data.hasAddress()) {
+               log.error(ME, "Can't connect to node '" + getId() + "', address is null");
+               throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
+                         "Can't connect to node '" + getId() + "', address is null");
+            }
+            data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
+            // The password is from the environment -passwd or more specific -passwd[heron]
+            postInitialize();
+         }
+      }
+      catch(XmlBlasterException e) {
+         throw new SAXException("Cluster node configuration parse error", e);
+      }
+      finally {
          character.setLength(0);
-         return;
       }
-
-      character.setLength(0);
       return;
+   }
+
+   /**
+    * Create a more or less unique sessionId. 
+    * <p />
+    * see Authenticate.java createSessionId() for a discussion
+    */
+   private String createCbSessionId() throws XmlBlasterException {
+      try {
+         String ip = this.remoteGlob.getLocalIP();
+         java.util.Random ran = new java.util.Random();
+         StringBuffer buf = new StringBuffer(512);
+         buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(this.remoteGlob.getId()).append("-");
+         buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
+         String sessionId = buf.toString();
+         if (log.TRACE) log.trace(ME, "Created callback sessionId='" + sessionId + "'");
+         return sessionId;
+      }
+      catch (Exception e) {
+         String text = "Can't generate a unique callback sessionId: " + e.toString();
+         log.error(ME, text);
+         throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, text);
+      }
    }
 
    /**
@@ -294,17 +370,20 @@ public final class NodeInfo
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
+      sb.append(offset).append("<connect>");
+      sb.append(getConnectQosData().toXml(extraOffset + Constants.INDENT));
+      sb.append(offset).append("</connect>");
+      /*
       sb.append(offset).append("<info>");
-      if (getAddressMap() != null && getAddressMap().size() > 0) {
-         Iterator it = getAddressMap().values().iterator();
-         while (it.hasNext()) {
-            Address info = (Address)it.next();
-            sb.append(info.toXml(extraOffset + Constants.INDENT));
+      if (this.connectQosData != null) {
+         AddressBase[] arr = this.connectQosData.getAddresses();
+         for (int i=0; i<arr.length; i++) {
+            sb.append(arr[i].toXml(extraOffset + Constants.INDENT));
          }
       }
  
-      if (getCbAddressMap() != null && getCbAddressMap().size() > 0) {
-         Iterator it = getCbAddressMap().values().iterator();
+      if (cbAddressMap != null && cbAddressMap.size() > 0) {
+         Iterator it = cbAddressMap.values().iterator();
          while (it.hasNext()) {
             CallbackAddress info = (CallbackAddress)it.next();
             sb.append(info.toXml(extraOffset + Constants.INDENT));
@@ -321,6 +400,7 @@ public final class NodeInfo
          sb.append(offset).append("   </backupnode>");
       }
       sb.append(offset).append("</info>");
+      */
 
       return sb.toString();
    }

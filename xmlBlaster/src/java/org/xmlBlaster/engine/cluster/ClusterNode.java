@@ -73,15 +73,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /** Currently always true, needs to be configurable !!! TODO */
    private boolean isAllowed = true;
 
-   /** A unique created session id delivered on callback in update() method */
-   private String cbSessionId = null;
-
-   private long counter = 0L;
-
    /**
     * Create an object holding all informations about a node
     */
-   public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) {
+   public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) throws XmlBlasterException {
       this.fatherGlob = glob;
       this.sessionInfo = sessionInfo;
       this.log = this.fatherGlob.getLog("cluster");
@@ -142,43 +137,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
  
-         // TODO: get the protocol, login properties, callback properties etc. from the __sys__ messages as well:
-
-         Address addr = getNodeInfo().getAddress();
-         if (addr == null) {
-            log.error(ME, "Can't connect to node '" + getId() + "', address is null");
-            throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
-                      "Can't connect to node '" + getId() + "', address is null");
-         }
-         this.remoteGlob.setBootstrapAddress(addr);
-
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
 
-         CallbackAddress callback = nodeInfo.getCbAddress();
-         if (callback.getSecretSessionId().equals(AddressBase.DEFAULT_sessionId))
-            callback.setSecretSessionId(createCbSessionId());
-         this.cbSessionId = callback.getSecretSessionId();
-
-         ConnectQosData qos = new ConnectQosData(this.remoteGlob, this.fatherGlob.getNodeId());
-
-         qos.setClusterNode(true);
-
-         // As we forward many subscribes probably accessing the
-         // same message but only want one update.
-         // We cache this update and distribute to all our clients:
-         qos.setDuplicateUpdates(false);
-
-         qos.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
-         // The password is from the environment -passwd or more specific -passwd[heron]
-
-         qos.setAddress(addr);      // use the configured access properties
-         qos.addCallbackAddress(callback); // we want to receive update()
-         qos.getSessionQos().setSessionTimeout(0L); // session lasts forever
-         qos.getSessionQos().clearSessions(true);   // We only login once, kill other (older) sessions of myself!
+         ConnectQosData qos = getNodeInfo().getConnectQosData();
 
          try {
+            Address addr = qos.getAddress();
             log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
 
             if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
@@ -190,7 +156,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             ConnectReturnQos retQos = this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
          }
          catch(XmlBlasterException e) {
-            log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
+            if (e.isInternal()) {
+               log.error(ME, "Connecting to " + getId() + " is currently not possible: " + e.getMessage());
+            }
+            else {
+               log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
+            }
             log.info(ME, "The connection is in failsafe mode and will queue messages until " + getId() + " is available");
          }
       }
@@ -392,7 +363,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       }
 
       // Important: Do authentication of sender:
-      if (!this.cbSessionId.equals(cbSessionId)) {
+      if (!getNodeInfo().getCbSessionId().equals(cbSessionId)) {
          log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + this.remoteGlob.getId());
          throw new XmlBlasterException(updateKey.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
                      "Your callback sessionId is invalid, no access to " + this.remoteGlob.getId());
@@ -404,29 +375,6 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       if (ret == null || ret.length() < 1)
          return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
-   }
-
-   /**
-    * Create a more or less unique sessionId. 
-    * <p />
-    * see Authenticate.java createSessionId() for a discussion
-    */
-   private String createCbSessionId() throws XmlBlasterException {
-      try {
-         String ip = this.remoteGlob.getLocalIP();
-         java.util.Random ran = new java.util.Random();
-         StringBuffer buf = new StringBuffer(512);
-         buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(this.remoteGlob.getId()).append("-");
-         buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
-         String sessionId = buf.toString();
-         if (log.TRACE) log.trace(ME, "Created sessionId='" + sessionId + "'");
-         return sessionId;
-      }
-      catch (Exception e) {
-         String text = "Can't generate a unique callback sessionId: " + e.toString();
-         log.error(ME, text);
-         throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, text);
-      }
    }
 
    public void shutdown() {
