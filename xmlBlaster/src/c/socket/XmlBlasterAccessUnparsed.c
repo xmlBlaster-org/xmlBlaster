@@ -120,7 +120,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
 
 Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 {
-   int retVal, rc;
+   int rc;
 
    if (xa == 0) {
       char *stack = getStackTrace(10);
@@ -130,7 +130,8 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       return;
    }
 
-   xa->isShutdown = true; /* Inhibit access to xa */
+   if (xa->isShutdown) return; /* Avoid simultaneous multiple calls */
+   xa->isShutdown = true;      /* Inhibit access to xa */
 
    if (xa->callbackP != 0) {
       xa->callbackP->shutdown(xa->callbackP);
@@ -140,28 +141,56 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    }
 
    if (xa->callbackP != 0) {
+      const bool USE_DETACH_MODE = true;  /* Detach or join? On Linux both work fine. On Windows it blocks sometimes forever during join */
+      int retVal;
       if (!xa->callbackP->isShutdown) {
-         
-         /* pthread_cancel() does not block. Who cleans up open resources? TODO: pthread_cleanup_push() */
-         /* On Linux all works fine without pthread_cancel() but on Windows the later pthread_join() sometimes hangs without a pthread_cancel()
-         retVal = pthread_cancel(xa->callbackThreadId);
-         if (retVal != 0) {
-            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
-         }
-         */
 
+         {  /* Wait for any pending update() dispatcher threads to die */
+            int i;
+            int num = 200;
+            int interval = 10;
+            for (i=0; i<num; i++) {
+               if (xa->callbackP->isShutdown)
+                  break;
+               sleepMillis(interval);
+               if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+                   "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for callback thread to join. %d/%d", interval, i, num);
+            }
+            if (i == num) {
+               xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Proper shutdown of callback thread failed, it seems to block on the socket");
+            }
+         }
+
+         if (!USE_DETACH_MODE) {
+            /* pthread_cancel() does not block. Who cleans up open resources? TODO: pthread_cleanup_push() */
+            /* On Linux all works fine without pthread_cancel() but on Windows the later pthread_join() sometimes hangs without a pthread_cancel() */
+            /*
+            retVal = pthread_cancel(xa->callbackThreadId);
+            if (retVal != 0) {
+               xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cancel problem return value is %d", retVal);
+            }
+            */
+         }
+      }
+
+      if (USE_DETACH_MODE) {
+         retVal = pthread_detach(xa->callbackThreadId);
+         if (retVal != 0) {
+            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "[%d] Detaching callback thread 0x%x failed with error number %d", __LINE__, xa->callbackThreadId, retVal);
+         }
+      }
+      else { /* JOIN mode */
          retVal = pthread_join(xa->callbackThreadId, 0);
          if (retVal != 0) {
             xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_join problem return value is %d", retVal);
          }
          else {
             if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
-                                        "Pthread_join(id=%ld) succeeded for callback server thread", xa->callbackThreadId);
+                                          "Pthread_join(id=%ld) succeeded for callback server thread", xa->callbackThreadId);
          }
-         /*         if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
-                                        "Pthread_join(id=%ld) COMMENTED OUT"); */
-         xa->callbackThreadId = 0;
       }
+
+      xa->callbackThreadId = 0;
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=0x%x cbP=0x%x", xa->connectionP, xa->callbackP);
