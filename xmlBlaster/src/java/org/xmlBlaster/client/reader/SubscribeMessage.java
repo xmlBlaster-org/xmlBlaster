@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.10 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.11 2001/05/06 07:56:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -27,7 +27,11 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * for example for debugging reasons.
  * Invoke examples:<br />
  * <pre>
- *    jaco org.xmlBlaster.client.reader.SubscribeMessage -c &lt;content-file> -k &lt;key-file> -q &lt;qos-file> -m &lt;mime-type>
+ *    jaco org.xmlBlaster.client.reader.SubscribeMessage  -name  Tim  -passwd  secret  -oid  __sys__TotalMem
+ * </pre>
+ * For other supported options type
+ * <pre>
+ *    java org.xmlBlaster.client.reader.SubscribeMessage -?
  * </pre>
  */
 public class SubscribeMessage implements I_Callback
@@ -207,7 +211,7 @@ public class SubscribeMessage implements I_Callback
 
 
    /**
-    * Invoke:  jaco org.xmlBlaster.client.reader.SubscribeMessage -c <content-file> -k <key-file> -q <qos-file> -m <mime-type>
+    * Invoke:  jaco org.xmlBlaster.client.reader.SubscribeMessage  -name Tim  -passwd secret  -oid __sys__TotalMem
     */
    public static void main(String args[])
    {

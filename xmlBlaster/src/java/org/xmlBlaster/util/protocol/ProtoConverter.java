@@ -3,7 +3,7 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.2 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: ProtoConverter.java,v 1.3 2001/05/06 07:58:03 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
@@ -139,7 +139,7 @@ public class ProtoConverter {
 
 
    /**
-    * Convets a Vector to a String[] object. All elements of the Vector must
+    * Converts a Vector to a String[] object. All elements of the Vector must
     * be valid String objects.
     * @param vec vector containing the Strings to be converted.
     * @return an array of String objects.

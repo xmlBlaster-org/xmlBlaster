@@ -3,7 +3,7 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlasterConnection.java,v 1.2 2001/02/14 00:46:08 ruff Exp $
+Version:   $Id: I_XmlBlasterConnection.java,v 1.3 2001/05/06 07:56:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -23,6 +23,12 @@ import org.xmlBlaster.client.LoginQosWrapper;
  * <p />
  * Note that you don't need this code, you can access xmlBlaster
  * with your own lowlevel RMI or CORBA coding as well.
+ * <p />
+ * If you are interested in a fail save client connection, consider
+ * using XmlBlasterConnection.java which implements some nice features.
+ *
+ * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
+ *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public interface I_XmlBlasterConnection
