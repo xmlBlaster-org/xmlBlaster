@@ -76,7 +76,8 @@ private:
    vector<Address>         addresses_;
    vector<CallbackAddress> cbAddresses_;
    vector<QueueProperty>   clientQueueProperties_;
-   vector<CbQueueProperty> cbQueueProperties_;
+//   vector<CbQueueProperty> cbQueueProperties_;
+   CbQueueProperty         sessionCbQueueProperty_;
    vector<ServerRef>       serverReferences_;
 
    friend class ConnectQosFactory;
@@ -94,8 +95,7 @@ private:
       addresses_              = data.addresses_;
       cbAddresses_            = data.cbAddresses_;
       clientQueueProperties_  = data.clientQueueProperties_;
-      cbQueueProperties_      = data.cbQueueProperties_;
-
+      sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
    }
 
 public:
@@ -136,8 +136,7 @@ public:
    void addClientQueueProperty(const QueueProperty& prop);
    QueueProperty getClientQueueProperty() const;
 
-   void addCbQueueProperty(const CbQueueProperty& prop);
-   void setCbQueueProperty(const CbQueueProperty& prop);
+   void setSessionCbQueueProperty(const CbQueueProperty& prop);
    CbQueueProperty getSessionCbQueueProperty() const;
 
 };

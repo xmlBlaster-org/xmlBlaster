@@ -58,6 +58,7 @@ private:
    MsgQueue*               adminQueue_;
    string                  lastSessionId_;
    const string            instanceName_;
+   bool                    hasConnectEntries_; // there can be a maximum of one ConnectQueueEntry in the queue, otherwise session leak.
 
 public:
    ConnectionsHandler(Global& global, const string& instanceName);

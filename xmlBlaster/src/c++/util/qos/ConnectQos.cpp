@@ -7,6 +7,7 @@ Comment:   Implementation of ConnectQos (ConnectReturnQos ConnectQosData)
 
 #include <util/qos/ConnectQos.h>
 #include <util/Global.h>
+#include <util/Constants.h>
 #include <boost/lexical_cast.hpp>
 #include <util/Global.h>
 
@@ -26,7 +27,7 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       addresses_(),
       cbAddresses_(),
       clientQueueProperties_(),
-      cbQueueProperties_(),
+      sessionCbQueueProperty_(global, Constants::RELATING_CALLBACK, ""),
       serverReferences_()
 {
    clusterNode_      = false;
@@ -41,9 +42,8 @@ ConnectQosData::ConnectQosData(const ConnectQosData& data)
       addresses_(data.addresses_),
       cbAddresses_(data.cbAddresses_),
       clientQueueProperties_(data.clientQueueProperties_),
-      cbQueueProperties_(data.cbQueueProperties_),
+      sessionCbQueueProperty_(data.sessionCbQueueProperty_),
       serverReferences_(data.serverReferences_)
-//      serverRef_(data.serverRef_)
 {
    copy(data);
 }
@@ -87,18 +87,12 @@ string ConnectQosData::getSecretSessionId() const
 
 string ConnectQosData::getUserId() const
 {
-//   return securityQos_.getUserId();
    return sessionQos_.getAbsoluteName();
 }
 
 string ConnectQosData::getCallbackType() const
 {
-   if (serverReferences_.empty()) {
-      if (cbQueueProperties_.empty()) return "IOR";
-      return (*cbQueueProperties_.begin()).getType();
-   }
-   return (*serverReferences_.begin()).getType();
-//   return getCallbackAddress().getType();
+   return sessionCbQueueProperty_.getType();
 }
 
 void ConnectQosData::setSecurityQos(const SecurityQos& securityQos)
@@ -110,18 +104,6 @@ SecurityQos ConnectQosData::getSecurityQos() const
 {
    return securityQos_;
 }
-
-/*
-void ConnectQosData::setServerRef(const ServerRef& serverRef)
-{
-   serverRef_ = serverRef;
-}
-
-ServerRef ConnectQosData::getServerRef() const
-{
-   return serverRef_;
-}
-*/
 
 void ConnectQosData::setClusterNode(bool clusterNode)
 {
@@ -195,41 +177,15 @@ QueueProperty ConnectQosData::getClientQueueProperty() const
    return *(clientQueueProperties_.begin());
 }
 
-void ConnectQosData::addCbQueueProperty(const CbQueueProperty& prop)
+void ConnectQosData::setSessionCbQueueProperty(const CbQueueProperty& prop)
 {
-   cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
-}
-
-void ConnectQosData::setCbQueueProperty(const CbQueueProperty& prop)
-{
-   if (!cbQueueProperties_.empty())
-      cbQueueProperties_.erase(cbQueueProperties_.begin());
-   cbQueueProperties_.insert(cbQueueProperties_.begin(), prop);
+   sessionCbQueueProperty_ = prop;
 }
 
 CbQueueProperty ConnectQosData::getSessionCbQueueProperty() const
 {
-   if (cbQueueProperties_.empty())
-      return CbQueueProperty(global_, Constants::RELATING_CALLBACK, "");
-   return *(cbQueueProperties_.begin());
+   return sessionCbQueueProperty_;
 }
-
-/*
-string ConnectQosData::toXml(const string& extraOffset) const
-{
-   string ret = string("<qos>\n") +
-                getSecurityQos().toXml() +
-                getSessionQos().toXml() +
-                string("   <ptp>") + getPtpAsString() + string("</ptp>\n") +
-                string("\n") + 
-                string("   <!-- client queue here ... (still missing) -->\n") +
-                string("   <!-- callback queue here ... (still missing) -->\n") +
-                string("\n") + 
-                string("</qos>\n");
-
-   return ret;
-}
-*/
 
 /**
  * Dump state of this object into a XML ASCII string.
@@ -264,14 +220,8 @@ string ConnectQosData::toXml(const string& extraOffset)
          }
       }
 
-      {  //callback queue properties
-         vector<CbQueueProperty>::iterator
-            iter = cbQueueProperties_.begin();
-         while (iter != cbQueueProperties_.end()) {
-            ret += (*iter).toXml(extraOffset);
-            iter++;
-         }
-      }
+      ret += sessionCbQueueProperty_.toXml(extraOffset);
+
       {  //serverReferences
          vector<ServerRef>::iterator
             iter = serverReferences_.begin();

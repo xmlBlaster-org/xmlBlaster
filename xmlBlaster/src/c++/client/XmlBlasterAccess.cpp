@@ -87,7 +87,7 @@ void XmlBlasterAccess::createDefaultCbServer()
    addr.setAddress(cbServer_->getCbAddress());
    addr.setType(cbServer_->getCbProtocol());
    prop.setCallbackAddress(addr);
-   connectQos_.setCbQueueProperty(prop);
+   connectQos_.setSessionCbQueueProperty(prop);
    if (log_.TRACE) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_.toXml());
    log_.info(ME, "Callback settings: " + prop.getSettings());
 }

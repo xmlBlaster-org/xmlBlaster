@@ -165,7 +165,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
          }
          else {
              CbQueueProperty prop = help;
-             connectQos_.addCbQueueProperty(prop);
+             connectQos_.setSessionCbQueueProperty(prop);
          }
          subFactory_ = NULL;
       }

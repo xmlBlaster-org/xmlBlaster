@@ -33,119 +33,136 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-   void StatusQosData::copy(const StatusQosData& data)
-   {
-      state_          = data.state_;
-      stateInfo_      = data.stateInfo_;
-      subscriptionId_ = data.subscriptionId_;
-      keyOid_         = data.keyOid_;
+void StatusQosData::copy(const StatusQosData& data)
+{
+   state_             = data.state_;
+   stateInfo_         = data.stateInfo_;
+   subscriptionId_    = data.subscriptionId_;
+   keyOid_            = data.keyOid_;
+   rcvTimestamp_      = data.rcvTimestamp_;
+}
+
+StatusQosData::StatusQosData(Global& global)
+   : ME("StatusQosData"), global_(global)
+{
+   state_ = Constants::STATE_OK;
+   rcvTimestamp_ = 0;
+}
+
+StatusQosData::StatusQosData(const StatusQosData& data)
+  : ME(data.ME), global_(data.global_)
+{
+   copy(data);
+}
+
+StatusQosData StatusQosData::operator =(const StatusQosData& data)
+{
+   copy(data);
+   return *this;
+}
+
+void StatusQosData::setState(const string& state)
+{
+   state_ = state;
+}
+
+string StatusQosData::getState() const
+{
+   return state_;
+}
+
+bool StatusQosData::isOk() const
+{
+   return Constants::STATE_OK == state_;
+}
+
+bool StatusQosData::isErased() const
+{
+   return Constants::STATE_ERASED == state_;
+}
+
+bool StatusQosData::isTimeout() const
+{
+   return Constants::STATE_TIMEOUT == state_;
+}
+
+bool StatusQosData::isForwardError() const
+{
+   return Constants::STATE_FORWARD_ERROR == state_;
+}
+
+void StatusQosData::setStateInfo(const string& stateInfo)
+{
+   stateInfo_ = stateInfo;
+}
+
+string StatusQosData::getStateInfo() const
+{
+   return stateInfo_;
+}
+
+void StatusQosData::setSubscriptionId(const string& subscriptionId)
+{
+   subscriptionId_ = subscriptionId;
+}
+
+string StatusQosData::getSubscriptionId() const
+{
+   return subscriptionId_;
+}
+
+string StatusQosData::getKeyOid() const
+{
+   return keyOid_;
+}
+
+void StatusQosData::setKeyOid(const string& oid)
+{
+   keyOid_ = oid;
+}
+
+int StatusQosData::size() const
+{
+   return toXml().length();
+}
+
+string StatusQosData::toXml(const string& extraOffset) const
+{
+   string ret;
+   string offset = Constants::OFFSET + extraOffset;
+
+   ret += offset + "<qos>"; // <!-- SubscribeRetQos -->");
+   if (!isOk()) {
+      ret += offset + " <state id='" + getState();
+      if (!getStateInfo().empty())
+         ret += "' info='" + getStateInfo();
+      ret += "'/>";
    }
+   if (!getSubscriptionId().empty())
+      ret += offset + " <subscribe id='" + getSubscriptionId() + "'/>";
+   if (!getKeyOid().empty())
+      ret += offset + " <key oid='" + getKeyOid() + "'/>";
+   ret += offset + "</qos>";
 
-   StatusQosData::StatusQosData(Global& global)
-      : ME("StatusQosData"), global_(global)
-   {
-      state_ = Constants::STATE_OK;
-   }
+   if (ret.length() < 16)
+      return "<qos/>";  // minimal footprint
 
-   StatusQosData::StatusQosData(const StatusQosData& data)
-     : ME(data.ME), global_(data.global_)
-   {
-      copy(data);
-   }
+   return ret;
+}
 
-   StatusQosData StatusQosData::operator =(const StatusQosData& data)
-   {
-      copy(data);
-      return *this;
-   }
+void StatusQosData::setRcvTimestamp(Timestamp rcvTimestamp)
+{
+   rcvTimestamp_ = rcvTimestamp;
+}
 
-   void StatusQosData::setState(const string& state)
-   {
-      state_ = state;
-   }
+Timestamp StatusQosData::getRcvTimestamp() const
+{
+   return rcvTimestamp_;
+}
 
-   string StatusQosData::getState() const
-   {
-      return state_;
-   }
-
-   bool StatusQosData::isOk() const
-   {
-      return Constants::STATE_OK == state_;
-   }
-
-   bool StatusQosData::isErased() const
-   {
-      return Constants::STATE_ERASED == state_;
-   }
-
-   bool StatusQosData::isTimeout() const
-   {
-      return Constants::STATE_TIMEOUT == state_;
-   }
-
-   bool StatusQosData::isForwardError() const
-   {
-      return Constants::STATE_FORWARD_ERROR == state_;
-   }
-
-   void StatusQosData::setStateInfo(const string& stateInfo)
-   {
-      stateInfo_ = stateInfo;
-   }
-
-   string StatusQosData::getStateInfo() const
-   {
-      return stateInfo_;
-   }
-
-   void StatusQosData::setSubscriptionId(const string& subscriptionId)
-   {
-      subscriptionId_ = subscriptionId;
-   }
-
-   string StatusQosData::getSubscriptionId() const
-   {
-      return subscriptionId_;
-   }
-
-   string StatusQosData::getKeyOid() const
-   {
-      return keyOid_;
-   }
-
-   void StatusQosData::setKeyOid(const string& oid)
-   {
-      keyOid_ = oid;
-   }
-
-   int StatusQosData::size() const
-   {
-      return toXml().length();
-   }
-
-   string StatusQosData::toXml(const string& extraOffset) const
-   {
-      string ret;
-      string offset = Constants::OFFSET + extraOffset;
-
-      ret += offset + "<qos>"; // <!-- SubscribeRetQos -->");
-      if (!isOk()) {
-         ret += offset + " <state id='" + getState();
-         if (!getStateInfo().empty())
-            ret += "' info='" + getStateInfo();
-         ret += "'/>";
-      }
-      if (!getSubscriptionId().empty())
-         ret += offset + " <subscribe id='" + getSubscriptionId() + "'/>";
-      if (!getKeyOid().empty())
-         ret += offset + " <key oid='" + getKeyOid() + "'/>";
-      ret += offset + "</qos>";
-
-      if (ret.length() < 16)
-         return "<qos/>";  // minimal footprint
-
-      return ret;
-   }
+void StatusQosData::touchRcvTimestamp()
+{
+   rcvTimestamp_ = TimestampFactory::getInstance().getTimestamp();
+}
 
 }}}} // namespace

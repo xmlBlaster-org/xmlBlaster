@@ -85,6 +85,13 @@ public:
     */
     void setKeyOid(const string& oid);
 
+   /** 
+    * The approximate receive timestamp (UTC time),
+    * when message arrived in requestBroker.publish() method.<br />
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    */
+   Timestamp getRcvTimestamp() const;
+
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>

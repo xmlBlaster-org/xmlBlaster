@@ -130,6 +130,7 @@ public:
     * STALE messages or any other user problem domain specific event.
     */
    bool isTimeout() const;
+
    /** 
     * The approximate receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />

@@ -40,6 +40,17 @@ void StatusQosFactory::startElement(const XMLCh* const name, AttributeList& attr
      return;
    }
 
+   if (SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
+      if (!inQos_) return;
+      int len = attrs.getLength();
+      for (int i = 0; i < len; i++) {
+         if (SaxHandlerBase::caseCompare(attrs.getName(i), "nanos")) {
+            statusQosData_.setRcvTimestamp(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+         }
+      }
+      return;
+   }
+ 
    if (SaxHandlerBase::caseCompare(name, "state")) {
       if (!inQos_) return;
       inState_ = true;
