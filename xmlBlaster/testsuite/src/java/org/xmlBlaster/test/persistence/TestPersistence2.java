@@ -86,7 +86,6 @@ public class TestPersistence2 extends TestCase implements I_Callback
    protected void setUp()
    {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
 
       doLogin();
