@@ -77,3 +77,5 @@ _____________________________________________________________
    The xmlBlaster/doc/requirement html files have links
    on the testsuite examples.
    Type 'make html' to generate the html files.
+
+   Probably we should migrate to http://www.vaegar.f9.co.uk
