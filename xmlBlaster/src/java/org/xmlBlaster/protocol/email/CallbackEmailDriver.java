@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.11 2001/11/23 17:57:14 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.12 2001/11/26 09:15:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -25,8 +25,15 @@ import javax.mail.internet.*;
 /**
  * Sends a MessageUnit back to a client using Email.
  * <p>
- * One instance of this for each client callback is used
- *
+ * Activate the email callback driver in xmlBlaster.properies first,
+ * for example:
+ * <pre>
+ *    Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+ *                             EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * 
+ *    EmailDriver.smtpHost=192.1.1.1
+ *    EmailDriver.from=xmlblast@localhost
+ * </pre>
  * @author $Author: ruff $
  */
 public class CallbackEmailDriver implements I_CallbackDriver
@@ -78,7 +85,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
          String text = getMailBody(msgUnitWrapper, messageUnitArr);
          message.setText(text);
          Log.info(ME + ".sendUpdate", "Sending email from " + from + " to " + to + ", smtpHost=" + smtpHost);
-         Log.info(ME + ".sendUpdate", "\n"+text);
+         if (Log.DUMP) Log.dump(ME + ".sendUpdate", "\n"+text);
          // Send message
          Transport.send(message);
       } catch (Exception e) {
@@ -96,7 +103,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
 
       sb.append(offset).append("<xmlBlaster>");
       sb.append(offset).append(msgUnitWrapper.getXmlKey().toXml()).append("\n");
-      sb.append(offset).append("   <content>").append(new String(msgUnitWrapper.getMessageUnit().getContent())).append("</content>");
+      sb.append(offset).append("   <content><![CDATA[").append(new String(msgUnitWrapper.getMessageUnit().getContent())).append("]]></content>");
       sb.append(offset).append(msgUnitWrapper.getPublishQoS().toXml());
       if (arr.length > 1)
          Log.error(ME, "Sendung more than one callback email (burst mode) is not supported, mails are lost!");
