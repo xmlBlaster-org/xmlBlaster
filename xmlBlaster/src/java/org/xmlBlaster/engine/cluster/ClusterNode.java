@@ -372,7 +372,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
       XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
       PublishQos qos = new PublishQos(glob, updateQos);
-      MessageUnit msgUnit = new MessageUnit(key.toXml(), content, qos.toXml());
+      MessageUnit msgUnit = new MessageUnit(key.literal(), content, qos.toXml());
 
       String ret = glob.getRequestBroker().publish(sessionInfo, key, msgUnit, qos);
       if (ret == null || ret.length() < 1)
