@@ -1,21 +1,16 @@
+"""
+__version__ = '$Revision: 1.4 $'
+__date__    = '$Date: 2003/05/08 22:03:34 $'
+__author__  = 'spex66@gmx.net'
+__license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
+
+last change by $Author: spex66 $ 
+
+"""
+
 # Copyright (c) 2003 Peter Arwanitis
 # mailto:spex66 @ gmx . net
 # (=PA=)
-#
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation; either version 2 of the License, or (at your option) any later
-# version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-__version__ = '120403'
 
 
 """
@@ -31,6 +26,7 @@ __version__ = '120403'
                  888
             Y8b d88P
              'Y88P'
+
 
 =======================================================
 THE ABSTRACT
@@ -80,6 +76,11 @@ Additional core files
                                http://www.logilab.org
     ThreadedXMLRPCServer.py    mixin class SimpleXMLRPCServer & BaseService
                                to build an threaded XMLRPCServer
+                               
+                               ResponsiveThreadedXMLRPCServer thanks to
+                               Robin Munn, I've figured out a XMLRPCServer
+                               cooperative with threading, look at the
+                               comments in new ResponsiveThreadingTCPServer.py
                             
 Optional files
     ShellService.py            mixin class BaseService & InteractiveConsole
@@ -129,7 +130,7 @@ Test (batteries included):
 """
 
 
-from ThreadedXMLRPCServer import ThreadedXMLRPCServer
+from ThreadedXMLRPCServer import ResponsiveThreadedXMLRPCServer
 import xmlrpclib
 import sys
 from ShellService import ShellService
@@ -229,16 +230,16 @@ class XmlBlasterClient:
         
     def unSubscribe(self, xmlKey, qos):
         """
-        Unsubscribe from messages.
+        unSubscribe  from messages.
 
         To pass the raw xml ASCII strings, use this method.
 
         @param xmlKey_literal Depending on the security plugin this key is encrypted
-        @param unSubscribeQoS_literal Depending on the security plugin this qos is encrypted
+        @param unSubscribe QoS_literal Depending on the security plugin this qos is encrypted
         @see org.xmlBlaster.engine.RequestBroker
         """
-        print "==> ::UNSUBSCRIBE:: <=="
-        self.proxy.xmlBlaster.unSubscribe(self.sessionId, xmlKey, qos)
+        print "==> ::unSubscribe :: <=="
+        self.proxy.xmlBlaster.unSubscribe (self.sessionId, xmlKey, qos)
             
     def get(self, xmlKey, qos):
         """
@@ -312,14 +313,20 @@ class XmlBlasterCallbackClient(XmlBlasterClient):
 
     # Start / Stop Server ######################################################
 
-    def startCallbackServer(self, port) :
+    def startCallbackServer(self, port=0) :
+        # Automatic port is allocated if port is 0
 
-        self.callback_server = ThreadedXMLRPCServer(port, 
+        self.callback_server = ResponsiveThreadedXMLRPCServer(port, 
                                     dispatcherClass=self.XB_CallbackDispatcher, 
                                     callbackInstance=self
                                     )
         
-        self.callback_url = 'http://%s:%i/RPC2' % (gethostname(), port)   
+        # thanks to Doug Palmer
+        allocated_port = self.callback_server.getConnectedPort()
+        
+        #print 'autoport acquired:: ', allocated_port
+        
+        self.callback_url = 'http://%s:%i/RPC2' % (gethostname(), allocated_port)   
         
         print "\n==> ::STARTCALLBACKSERVER:: <=="
         print '      Success with callback_url= ', self.callback_url
@@ -330,6 +337,8 @@ class XmlBlasterCallbackClient(XmlBlasterClient):
         print "\n==> ::STOPCALLBACKSERVER:: <=="
         print "      I'm dying... "
         self.callback_server.stop()
+        
+        print 'CBServer is alive? ', self.callback_server.isAlive()
         print "      ...good bye!"
         
 
@@ -343,6 +352,7 @@ class XmlBlasterCallbackClient(XmlBlasterClient):
 
     def stopShellService(self):
         if self.shell:
+            print "\n==> ::STOPSHELLSERVICE:: <=="
             self.shell.stop()
             
     # Total Shutdown ##############################################
@@ -350,12 +360,17 @@ class XmlBlasterCallbackClient(XmlBlasterClient):
         "Closes all servers (joining all threads) and connections"
         
         # XXX 080403 PA ? thread stopping isn't workink smooth yet... help appreciated!
+        # XXX 080503 PA ? callbackserver joins now, but not perfectly smooth
+        #                 with stopping the shellservice :-/
+        
+        #                 from time to time shellservice ends automagically ?!?
         
         print "\n==> ::SHUTDOWN Initiated:: <=="
         if self.sessionId: self.logout()
         if self.callback_server: self.stopCallbackServer()
         if self.shell: self.stopShellService()
         print "\n==> ::SHUTDOWN Completed:: <=="
+        #sys.exit(1)
         
             
 

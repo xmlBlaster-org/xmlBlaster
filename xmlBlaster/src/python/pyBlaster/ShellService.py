@@ -1,4 +1,4 @@
-__version__ = '080403'
+__version__ = '030415'
 __author__ = 'spex66@gmx.net'
 
 
@@ -24,7 +24,7 @@ class ShellService(BaseService, InteractiveConsole):
 
     # target that is executed by thread ########################################
 
-    def _run(self):
+    def run(self):
         """Closely emulate the interactive Python console."""
         
         # INIT
@@ -48,13 +48,18 @@ class ShellService(BaseService, InteractiveConsole):
         
         # SERVE Python prompt
         
-        while self.loop:
+        print "%s starts" % (self.getName(),)
+        while self.isNotStopped():
             if more:
                 prompt = sys.ps2
             else:
                 prompt = sys.ps1
 
-            line = raw_input(prompt)
+            try:
+                line = raw_input(prompt)
+            except EOFError:
+                print '...ShSrv EOF...'
+                continue
             
             if line.lower() in ('bye', 'quit', 'exit'):
                 # get exit commands
@@ -64,3 +69,9 @@ class ShellService(BaseService, InteractiveConsole):
                 more = self.push(line)
                 
 
+        print "%s ends" % (self.getName(),)
+
+
+    def stop(self):
+        print 'Press any key to leave the shell...'
+        BaseService.stop(self)

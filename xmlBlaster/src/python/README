@@ -1,16 +1,16 @@
 doc = """
 
  8888888b.           888888b.   888                   888
- 888   Y88b          888  "88b  888                   888
+ 888   Y88b          888  '88b  888                   888
  888    888          888  .88P  888                   888
  888   d88P 888  888 8888888K.  888  8888b.  .d8888b  888888 .d88b.  888d888
- 8888888P"  888  888 888  "Y88b 888     "88b 88K      888   d8P  Y8b 888P"
- 888        888  888 888    888 888 .d888888 "Y8888b. 888   88888888 888
+ 8888888P'  888  888 888  'Y88b 888     '88b 88K      888   d8P  Y8b 888P'
+ 888        888  888 888    888 888 .d888888 'Y8888b. 888   88888888 888
  888        Y88b 888 888   d88P 888 888  888      X88 Y88b. Y8b.     888
- 888         "Y88888 8888888P"  888 "Y888888  88888P'  "Y888 "Y8888  888
+ 888         'Y88888 8888888P'  888 'Y888888  88888P'  'Y888 'Y8888  888
                  888
             Y8b d88P
-             "Y88P"
+             'Y88P'
 
 =======================================================
 THE ABSTRACT
@@ -60,7 +60,18 @@ Additional core files
                                http://www.logilab.org
     ThreadedXMLRPCServer.py    mixin class SimpleXMLRPCServer & BaseService
                                to build an threaded XMLRPCServer
-                            
+                               
+                               
+                               # since 080503
+                               ResponsiveThreadedXMLRPCServer thanks to
+                               Robin Munn, I've figured out a XMLRPCServer
+                               cooperative with threading, look at the
+                               comments in new ResponsiveThreadingTCPServer.py
+                               
+                               # since 080503
+                               startCallbackServer-> port is now optional
+                                            it can be allocated automatic
+                               
 Optional files
     ShellService.py            mixin class BaseService & InteractiveConsole
                                to serve an interactive Python prompt (shell) 
@@ -103,6 +114,9 @@ Test (batteries included):
     start pyBlaster.py in more than one shell and experiment interactive
           with publish / subcribe / get <-- this is the python way :)
     
+=======================================================
+THE LICENCE
+__license__ = 'pyBlaster is under LGPL, see See http://www.xmlBlaster.org/license.html'
 
 
 (=PA=)        
