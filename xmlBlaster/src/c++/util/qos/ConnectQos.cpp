@@ -25,7 +25,6 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       securityQos_(global, user, passwd),
       sessionQos_(global, user, publicSessionId),
       ptp_(true),
-      isDirty_(false),
       addresses_(),
       cbAddresses_(),
       clientQueueProperties_(),

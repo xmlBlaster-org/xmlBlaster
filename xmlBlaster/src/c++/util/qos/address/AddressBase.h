@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.7 2003/02/13 15:08:18 ruff Exp $
+Version:   $Id: AddressBase.h,v 1.8 2003/02/13 18:59:28 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -163,9 +163,9 @@ protected:
       dispatchPlugin_      = addr.dispatchPlugin_;
       nodeId_              = addr.nodeId_;
       maxMsg_              = addr.maxMsg_;
-      pingInterval_        = addr.defaultPingInterval_;
-      retries_             = addr.defaultRetries_;
-      delay_               = addr.defaultDelay_;
+      defaultPingInterval_ = addr.defaultPingInterval_;
+      defaultRetries_      = addr.defaultRetries_;
+      defaultDelay_        = addr.defaultDelay_;
    }
 
    long defaultPingInterval_;

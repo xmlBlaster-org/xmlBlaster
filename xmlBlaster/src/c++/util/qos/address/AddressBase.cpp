@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.8 2003/02/13 15:08:18 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.9 2003/02/13 18:59:28 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -42,32 +42,32 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
    : global_(global), log_(global.getLog("core"))
 {
 
-   defaultPingInterval_ = 0;
+   defaultPingInterval_ = 0L;
    defaultRetries_      = 0;
-   defaultDelay_        = 0;
+   defaultDelay_        = 0L;
 
    // set the defaults here ...
-   ME = "AddressBase";
-   nodeId_ = "";
-   maxMsg_ = 0;
-   address_ = "";
-   hostname_ = "";
+   ME                   = "AddressBase";
+   nodeId_              = "";
+   maxMsg_              = 0;
+   address_             = "";
+   hostname_            = "";
    isHardcodedHostname_ = false;
-   type_ = DEFAULT_type;
-   port_ = DEFAULT_port;
-   version_ = DEFAULT_version;
-   collectTime_ = DEFAULT_collectTime;
-   collectTimeOneway_ = DEFAULT_collectTimeOneway;
-   pingInterval_ = defaultPingInterval_;
-   retries_ = defaultRetries_;
-   delay_ = defaultDelay_;
-   oneway_ = DEFAULT_oneway;
-   compressType_ = DEFAULT_compressType;
-   minSize_ = DEFAULT_minSize;
-   ptpAllowed_ = DEFAULT_ptpAllowed;
-   sessionId_ = DEFAULT_sessionId;
-   useForSubjectQueue_ = DEFAULT_useForSubjectQueue;
-   dispatchPlugin_ = DEFAULT_dispatchPlugin;
+   type_                = DEFAULT_type;
+   port_                = DEFAULT_port;
+   version_             = DEFAULT_version;
+   collectTime_         = DEFAULT_collectTime;
+   collectTimeOneway_   = DEFAULT_collectTimeOneway;
+   pingInterval_        = defaultPingInterval_;
+   retries_             = defaultRetries_;
+   delay_               = defaultDelay_;
+   oneway_              = DEFAULT_oneway;
+   compressType_        = DEFAULT_compressType;
+   minSize_             = DEFAULT_minSize;
+   ptpAllowed_          = DEFAULT_ptpAllowed;
+   sessionId_           = DEFAULT_sessionId;
+   useForSubjectQueue_  = DEFAULT_useForSubjectQueue;
+   dispatchPlugin_      = DEFAULT_dispatchPlugin;
    setRootTag(rootTag);
 }
 

@@ -68,7 +68,6 @@ private:
    mutable SessionQos  sessionQos_;
 //   ServerRef   serverRef_;
    bool        ptp_;
-   bool        isDirty_;
    bool        clusterNode_;
    bool        duplicateUpdates_;
 
@@ -87,7 +86,6 @@ private:
       sessionQos_             = data.sessionQos_;
 //      serverRef_              = data.serverRef_;
       ptp_                    = data.ptp_;
-      isDirty_                = data.isDirty_;
       clusterNode_            = data.clusterNode_;
       duplicateUpdates_       = data.duplicateUpdates_;
       serverReferences_       = data.serverReferences_;

@@ -12,6 +12,7 @@ import org.xmlBlaster.util.enum.PriorityEnum;
 public class DummyEntry extends MsgQueueEntry {
 
    public static final String ENTRY_TYPE = "DUMMY";
+   private long sizeOfMsg = 0;
 
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
@@ -23,6 +24,11 @@ public class DummyEntry extends MsgQueueEntry {
    public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, boolean persistent) {
       super(glob, ENTRY_TYPE, priority, storageId, persistent);
       //log.error("DummyEntry", ""+getUniqueId());
+   }
+
+   public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, long sizeOfMsg, boolean persistent) {
+      super(glob, ENTRY_TYPE, priority, storageId, persistent);
+      this.sizeOfMsg = sizeOfMsg;
    }
 
    /**
@@ -73,6 +79,8 @@ public class DummyEntry extends MsgQueueEntry {
    }
 
    public final long getSizeInBytes() {
-      return super.getSizeInBytes() + 34;
+      if (this.sizeOfMsg == 0)
+         return super.getSizeInBytes() + 34;
+      else return this.sizeOfMsg;
    }
 }

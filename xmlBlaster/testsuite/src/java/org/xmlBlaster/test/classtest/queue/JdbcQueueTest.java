@@ -63,7 +63,7 @@ public class JdbcQueueTest extends TestCase {
 
    private int numOfQueues = 10;
    private int numOfMsg = 10000;
-   private int sizeOfMsg = 100;
+   private long sizeOfMsg = 100L;
 
    private I_Queue[] queues = null;
 
@@ -91,7 +91,7 @@ public class JdbcQueueTest extends TestCase {
       this.glob = (glob == null) ? new Global() : glob;
       this.numOfQueues = glob.getProperty().get("queues", 2);
       this.numOfMsg = glob.getProperty().get("entries", 100);
-      this.sizeOfMsg = glob.getProperty().get("sizes", 10);
+      this.sizeOfMsg = glob.getProperty().get("sizes", 10L);
       this.suppressTest = false;
       this.count = currImpl;
       try {

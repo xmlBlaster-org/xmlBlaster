@@ -479,7 +479,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
-         return this.manager.getEntriesByPriority(numOfEntries, numOfBytes, minPriority, maxPriority, this.associatedTable, getStorageId());
+         return this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithPriority() caught sql exception, status is" + toXml(""), ex);
@@ -513,7 +513,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       try {
 
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.deleteFirstEntries(this.associatedTable, 1, -1L);
+            ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -542,7 +542,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (numOfEntries == 0) return 0L;
       try {
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.deleteFirstEntries(this.associatedTable, numOfEntries, numOfBytes);
+            ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -891,7 +891,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public long clear() {
       try {
-         ReturnDataHolder ret = this.manager.deleteFirstEntries(this.associatedTable, -1, -1L);
+         ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), -1, -1L);
          this.numOfEntries = 0L;
          this.numOfBytes = 0L;
          this.numOfPersistentEntries = 0L;

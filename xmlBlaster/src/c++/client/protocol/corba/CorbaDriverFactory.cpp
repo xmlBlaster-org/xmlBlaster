@@ -149,9 +149,9 @@ int CorbaDriverFactory::killDriverInstance(const string& instanceName)
    DriversMap::iterator iter = drivers_.find(instanceName);
    if (iter == drivers_.end()) return -1;
    int ret = --(*iter).second.second;
-   log_.trace(ME, string("instances before deleting ") + lexical_cast<string>(ret));
+   if (log_.trace()) log_.trace(ME, string("instances before deleting ") + lexical_cast<string>(ret));
    if (ret <= 0) {
-      log_.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
+      if (log_.trace()) log_.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
       // do remove it since the counter is zero
       CorbaDriver* driver = (*iter).second.first;
       drivers_.erase(iter);
@@ -168,7 +168,8 @@ int CorbaDriverFactory::killDriverInstance(const string& instanceName)
          return 0;
       }
    }
-   log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<string>(ret));
+   if (log_.trace()) 
+      log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<string>(ret));
    return ret;
 }
 

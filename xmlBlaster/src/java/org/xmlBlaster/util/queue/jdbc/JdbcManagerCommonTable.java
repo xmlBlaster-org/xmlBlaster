@@ -648,7 +648,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
 
-
    public int wipeOutDB() throws XmlBlasterException {
       // retrieve all tables to delete
       String req = "SELECT " + this.tableNameTxt + " FROM " + this.tablesTxt + "";
@@ -695,6 +694,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
       }
    }
+
 
    /**
     * Dumps the metadata to the log object. The log will write out this
@@ -764,7 +764,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final ArrayList processResultSet(ResultSet rs, StorageId storageId, int numOfEntries, long numOfBytes, boolean onlyId)
       throws SQLException, XmlBlasterException {
 
-      if (this.log.CALL) this.log.call(getLogId(null, storageId.toString(), "processResultSet"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(storageId.getStrippedId(), null, "processResultSet"), "Entering");
 
       ArrayList entries = new ArrayList();
       int count = 0;
@@ -1061,10 +1061,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ret.countBytes = amount;
          ret.countEntries = count;
 
-//         numOfBytes = new Long(amount); // the return for the sizes in bytes
          // prepare for deleting (we don't use deleteEntries since we want
          // to use the same transaction (and the same connection)
-
          if (leaveOne) {
             // leave at least one entry
             if (stillEntriesInQueue) stillEntriesInQueue = rs.next();
@@ -1095,7 +1093,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (query != null) query.close();
       }
    }
-
 
 
    /**
@@ -1150,19 +1147,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param amount the maximum amount of bytes to remove. Note that if no entries
     *        fit into this size, the first entry is taken anyway (to avoid deadlocks)
     */
-   public ReturnDataHolder deleteFirstEntries(String tableName, long numOfEntries, long amount)
+   public ReturnDataHolder deleteFirstEntries(String queueName, String nodeId, long numOfEntries, long amount)
       throws XmlBlasterException, SQLException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, null, "deleteFirstEntries called"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteFirstEntries called"), "Entering");
 
       ReturnDataHolder ret = new ReturnDataHolder();
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(getLogId(tableName, null, "deleteFirstEntries"), "Currently not possible. No connection to the DB");
+            this.log.trace(getLogId(queueName, nodeId, "deleteFirstEntries"), "Currently not possible. No connection to the DB");
          return ret;
       }
 
       if (numOfEntries > Integer.MAX_VALUE)
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(tableName, null, "deleteFirstEntries"),
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(queueName, nodeId, "deleteFirstEntries"),
                "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
 
       PreparedQuery query = null;
@@ -1171,11 +1168,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
   //    ArrayList list = null;
       try {
-         String req = "select dataId,byteSize from " + tableName + " ORDER BY prio DESC, dataid ASC";
+         String req = "select dataId,byteSize from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
          query = new PreparedQuery(pool, req, false, this.log, -1);
          // I only want the uniqueId (dataId)
          if (numOfEntries >= Integer.MAX_VALUE)
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(tableName, null, "deleteFirstEntries"),
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(queueName, nodeId, "deleteFirstEntries"),
                      "The number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
 
          ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
@@ -1186,13 +1183,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          long[] uniqueIds = new long[nmax];
          for (int i=0; i < nmax; i++) uniqueIds[i] = ((Long)ret.list.get(i)).longValue();
 
-         ArrayList reqList = whereInStatement("delete from " + tableName + " where dataId in(", uniqueIds);
+         ArrayList reqList = whereInStatement("delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataId in(", uniqueIds);
          ret.countEntries = 0L;
 
          // everything in the same transaction (just in case)
          for (int i=0; i < reqList.size(); i++) {
             req = (String)reqList.get(i);
-            if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "deleteFirstEntries"), "'" + req + "'");
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "deleteFirstEntries"), "'" + req + "'");
 
             ret.countEntries +=  update(req, query.conn);
          }
@@ -1201,7 +1198,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "deleteFirstEntries"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "deleteFirstEntries"), ex);
          throw ex;
       }
       finally {
@@ -1219,36 +1216,47 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public ArrayList getEntriesByPriority(int numOfEntries, long numOfBytes, int minPrio, int maxPrio, String tableName, StorageId storageId)
+   public ArrayList getEntriesByPriority(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
       throws XmlBlasterException, SQLException {
 
-      if (this.log.CALL) this.log.call(getLogId(tableName, storageId.toString(), "getEntriesByPriority"), "Entering");
+      String queueName = storageId.getStrippedId();
+
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntriesByPriority"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesByPriority"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
-      String req = "SELECT * from " + tableName + " where prio >= " + minPrio + " and prio <= " + maxPrio +
+      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + "' AND prio >= " + minPrio + " and prio <= " + maxPrio +
             " ORDER BY prio DESC, dataid ASC";
 
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesByPriority"), "Request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Request: '" + req + "'");
 
       PreparedQuery query =null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesByPriority"), "Found " + ret.size() + " entries");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId.toString(), "getEntriesByPriority"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getEntriesByPriority"), ex);
          throw ex;
       }
       finally {
          if (query != null) query.close();
       }
    }
+
+
+
+
+
+
+
+
+
 
    /**
     * gets the first numOfEntries of the queue which have the same priority.
