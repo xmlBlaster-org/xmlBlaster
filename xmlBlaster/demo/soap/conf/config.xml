@@ -1,0 +1,76 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE config SYSTEM "config.dtd">
+<config>
+  <!-- 
+    This should only be used when the server is running in standalone mode.
+    If the server is running inside of another application (like Tomcat)
+    then you should comment this out.
+  -->
+  <stop-port>10001</stop-port>
+  
+  <!--
+    Deployer configuration
+    path -    is the path from the saw.home directory where the webservice archives are
+    workdir - is the path from the saw.home directory that should be used for processing
+              webservice archives in the path described above
+  -->
+  <deployer
+    path="webservices/" 
+    workdir="work/"/>
+  
+  <!--
+    SOAP Processor Configuration
+    
+    count -   how many SOAP Processor(s) to pool, this should be a 
+              relatively similiar number to the number of handlers you
+              have for the server(s) defined below or the number of synchronous
+              request you expect to be handling
+  -->
+  <processor
+    count="30"/>
+    
+  <!--
+    SessionManager Configuration
+    
+      manager - Implementation of 'org.jafw.saw.session.SessionManager' to
+                use for this configuration.
+                
+      timeout - Number of milliseconds before a session expires without inactivity
+                1000 milliseconds = 1 second.
+  -->
+    
+  <session
+    class="org.jafw.saw.session.DefaultSessionManager"    
+    timeout="1800000"
+  />
+    
+  <!--
+    Defines a server to listen on a port for a specific piece of content
+    
+    name -              The name that will reference this server
+    port -              Port to run the server on
+    transportType -     Transport to run on this server, right now the only transports are HTTP and HTTPS
+    handlerCount -      How many handler threads should be created for this server
+    conncetionTimeout - The timeout in milliseconds for a socket
+    
+    Following params are only used for SSL transports
+    keyFile -           Absolute path to the java keystore
+    keyPassword -       The password to the key store
+    
+  -->
+  <server
+    name="HTTP SAW Server"
+    port="8686"
+    transportType="http"
+    handlerCount="30"
+    connectionTimeout="60000" />
+  
+  <!-- server
+    name="HTTP SSL SAW Server"
+    port="8787"
+    transportType="https"
+    handlerCount="30"
+    keyFile="${saw.home}/keys/testssl.ks"
+    keyPassword="foofoo"
+    connectionTimeout="60000" / -->
+</config>

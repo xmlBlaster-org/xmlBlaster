@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!ELEMENT config ( server+, deployer ) >
+
+<!ELEMENT server EMPTY >
+<!ATTLIST server name NMTOKENS #REQUIRED >
+<!ATTLIST server connectionTimeout NMTOKEN #REQUIRED >
+<!ATTLIST server port NMTOKEN #REQUIRED >
+<!ATTLIST server transportType (http) #REQUIRED >
+<!ATTLIST server handlerCount NMTOKEN #REQUIRED >
+
+<!ELEMENT deployer EMPTY >
+<!ATTLIST deployer path NMTOKEN #REQUIRED >
+<!ATTLIST deployer workdir NMTOKEN #REQUIRED >
