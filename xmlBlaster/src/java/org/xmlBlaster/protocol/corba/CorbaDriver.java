@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.58 2003/03/27 16:04:42 laghi Exp $
+Version:   $Id: CorbaDriver.java,v 1.59 2003/03/27 17:10:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -548,7 +548,11 @@ public class CorbaDriver implements I_Driver
          try {
             log.trace(ME, "Deactivate POA Manager ...");
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
+         } catch(Exception e) { log.warn(ME, "rootPOA deactivate failed: " + e.toString()); }
+         try {
+            log.trace(ME, "_release POA Manager ...");
+            rootPOA.the_POAManager()._release();
+         } catch(Exception e) { log.warn(ME, "tootPOA _release failed: " + e.toString()); }
          rootPOA = null;
       }
 
