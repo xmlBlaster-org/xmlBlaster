@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.86 2001/01/30 14:25:02 freidlin Exp $
+Version:   $Id: RequestBroker.java,v 1.87 2001/02/23 01:42:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.86 $
+ * @version $Revision: 1.87 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -727,6 +727,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
          //----- 3. check all known query subscriptions if the new message fits as well
          checkExistingSubscriptions(clientInfo, xmlKey, msgUnitHandler, publishQoS);
+
+         if (publishQoS.isVolatile()) {
+              if (Log.TRACE) Log.trace(ME, "Published message is marked as volatile, erasing it");
+ 
+              fireMessageEraseEvent(clientInfo, msgUnitHandler);
+              msgUnitHandler.erase();
+              msgUnitHandler = null;
+         }
       }
       else if (publishQoS.isPTP_Style()) {
          if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
@@ -818,21 +826,20 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (Log.CALL) Log.call(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
-      String[] oidArr = new String[xmlKeyVec.size()];
+      Set oidSet = new HashSet(xmlKeyVec.size());
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
 
          if (xmlKeyExact == null) { // unSubscribe on a unknown message ...
             Log.warn(ME, "Erase on unknown message [" + xmlKey.getUniqueKey() + "] is ignored");
-            oidArr[ii] = ""; // !!! how to report to client?
-                             // !!! how to delete XPath subscriptions, still MISSING ???
+            // !!! how to delete XPath subscriptions, still MISSING ???
             continue;
          }
 
          MessageUnitHandler msgUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
 
-         oidArr[ii] = msgUnitHandler.getUniqueKey();
+         oidSet.add(msgUnitHandler.getUniqueKey());
          try {
             fireMessageEraseEvent(clientInfo, msgUnitHandler);
          } catch (XmlBlasterException e) {
@@ -841,6 +848,8 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
          msgUnitHandler = null;
       }
 
+      String[] oidArr = new String[oidSet.size()];
+      oidSet.toArray(oidArr);
       return oidArr;
 
    }
