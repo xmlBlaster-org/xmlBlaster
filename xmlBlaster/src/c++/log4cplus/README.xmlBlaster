@@ -1,0 +1,39 @@
+log4cplus Version 1.0.1	 (Apache Software License version 1.1)
+http://log4cplus.sourceforge.net/projstatus.html
+Original Author:  Tad E. Smith
+
+Configured for Intel-Linux.
+
+Modifed to compile on WinXP as well:
+
+Index: config.h
+===================================================================
+RCS file: /opt/cvsroot/xmlBlaster/src/c++/log4cplus/config.h,v
+retrieving revision 1.1
+diff -r1.1 config.h
+42a43
+> # ifndef _WIN32 // xmlBlaster
+43a45
+> # endif
+45a48
+> # ifndef _WIN32 // xmlBlaster
+46a50
+> #endif
+66a71
+> # ifndef _WIN32 // xmlBlaster
+67a73
+> #endif
+69a76
+> # ifndef _WIN32 // xmlBlaster
+70a78
+> #endif
+cvs server: Diffing helpers
+Index: helpers/pointer.h
+===================================================================
+RCS file: /opt/cvsroot/xmlBlaster/src/c++/log4cplus/helpers/pointer.h,v
+retrieving revision 1.1
+diff -r1.1 pointer.h
+88c88
+<         class SharedObject {
+---
+>         class LOG4CPLUS_EXPORT SharedObject {

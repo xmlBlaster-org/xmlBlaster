@@ -40,10 +40,14 @@
 #define HAVE_FTIME 1
 
 /* Define to 1 if you have the `gettimeofday' function. */
+# ifndef _WIN32 // xmlBlaster
 #define HAVE_GETTIMEOFDAY 1
+# endif
 
 /* Define to 1 if you have the `gmtime_r' function. */
+# ifndef _WIN32 // xmlBlaster
 #define HAVE_GMTIME_R 1
+#endif
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -64,10 +68,14 @@
 /* #undef HAVE_LIBSOCKET */
 
 /* Define to 1 if you have the `localtime_r' function. */
+# ifndef _WIN32 // xmlBlaster
 #define HAVE_LOCALTIME_R 1
+#endif
 
 /* Define to 1 if you have the `lstat' function. */
+# ifndef _WIN32 // xmlBlaster
 #define HAVE_LSTAT 1
+#endif
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
