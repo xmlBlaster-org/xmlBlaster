@@ -4,7 +4,7 @@
 <requirement id='engine.qos.publish.isVolatile' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster allows to mark messages as volatile</topic>
    <description>
-      Using the QOS flag &lt;isVolatile/&gt; allows to mark a published message
+      Using the QOS flag &amp;lt;isVolatile/&amp;gt; allows to mark a published message
       as volatile. A volatile published message lives only until it is processed in the
       server and is erased immediately thereafter. 
       A message not marked volatile will stay in memory until xmlBlaster shuts down or
@@ -22,7 +22,7 @@
    <author>pra@mint.se</author>
    <author>ruff@swand.lake.de</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
