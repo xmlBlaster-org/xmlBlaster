@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.13 1999/12/16 11:49:16 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.14 1999/12/17 09:59:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -561,9 +561,9 @@ class DefaultCallback implements BlasterCallbackOperations
          }
 
          // Now we know all about the received message, dump it or do some checks
-         if (Log.DUMP) Log.dump("UpdateKey", updateKey.printOn().toString());
-         if (Log.DUMP) Log.dump("content", (new String(content)).toString());
-         if (Log.DUMP) Log.dump("UpdateQoS", updateQoS.printOn().toString());
+         if (Log.DUMP) Log.dump("UpdateKey", "\n" + updateKey.printOn().toString());
+         if (Log.DUMP) Log.dump("content", "\n" + new String(content));
+         if (Log.DUMP) Log.dump("UpdateQoS", "\n" + updateQoS.printOn().toString());
          if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQoS.getSender());
 
          boss.update(loginName, updateKey, content, updateQoS); // Call my boss
