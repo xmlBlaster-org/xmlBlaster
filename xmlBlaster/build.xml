@@ -37,8 +37,8 @@ Building instructions
 Ok, let's build the baby. First, make sure your current working directory is
 where this very file is located. Then type
 
-  ./build.sh (unix)
-  .\build.bat (win32)
+  ./build.sh all (unix)
+  .\build.bat all (win32)
 
 if everything is right and all the required packages are visible, this action
 will generate a file called "xmlBlaster.jar" in the "./lib" directory.
@@ -182,6 +182,7 @@ Else add it manually.
     <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
     <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
     <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties"/>
+    <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties"/>
 
     <javac srcdir="${build.src}/xmlBlaster"
            destdir="${build.dest}"
