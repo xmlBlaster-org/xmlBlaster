@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.4 2000/05/31 20:09:01 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.5 2000/06/01 13:29:02 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -82,11 +82,15 @@ public class ResourceWrapper
       this.creationTime = System.currentTimeMillis();
       this.instanceId = instanceId;
       this.resource = resource;
+      if (timeout > 0 && timeout < 100) {
+         Log.warning(ME, "Setting minimum timeout from " + timeout + " to 100 milli seconds");
+         timeout = 100;
+      }
       this.timeout = timeout;
-      if (timeout <= 0)
+      if (this.timeout <= 0)
          timeoutHandle = null;
       else
-         timeoutHandle = Timeout.getInstance().addTimeoutListener(poolManager, timeout, this);
+         timeoutHandle = Timeout.getInstance().addTimeoutListener(poolManager, this.timeout, this);
       if (this.instanceId == null || this.instanceId.length() < 1)
          if (resource != null)
             this.instanceId = "" + resource.hashCode();
