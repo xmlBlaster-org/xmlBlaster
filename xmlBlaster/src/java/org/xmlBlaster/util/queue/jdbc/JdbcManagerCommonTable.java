@@ -843,7 +843,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (persistent == true) preStatement.setString(6, "T");
          else preStatement.setString(6, "F");
          preStatement.setLong(7, sizeInBytes);
-         preStatement.setBytes(8, blob);
+         ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
+         preStatement.setBinaryStream(8, blob_stream,(int)sizeInBytes);
+         // preStatement.setBytes(8, blob);
 
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), preStatement.toString());
 
@@ -1021,7 +1023,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (persistent == true) preStatement.setString(6, "T");
             else preStatement.setString(6, "F");
             preStatement.setLong(7, sizeInBytes);
-            preStatement.setBytes(8, blob);
+            ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
+            preStatement.setBinaryStream(5, blob_stream,(int)sizeInBytes);
+            // preStatement.setBytes(8, blob);
             if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), preStatement.toString());
             preStatement.addBatch();
          }
