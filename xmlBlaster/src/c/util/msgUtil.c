@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.23 2004/04/09 10:35:03 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.24 2004/04/09 17:22:08 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.23 2004/04/09 10:35:03 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.24 2004/04/09 17:22:08 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -376,8 +376,8 @@ Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
          *contentStr = 0;
       else if (maxContentDumpLen > 0 && maxContentDumpLen < (msg->contentLen-5))
          strcpy(contentStr+maxContentDumpLen, " ...");
-      SNPRINTF(xml, len, "%s\n <content size='%d'><![CDATA[%s]]></content>%s",
-                         msg->key, msg->contentLen, contentStr, msg->qos);
+      SNPRINTF(xml, len, "%s\n <content size='%lu'><![CDATA[%s]]></content>%s",
+                         msg->key, (unsigned long)msg->contentLen, contentStr, msg->qos);
       free(contentStr);
       return xml;
    }
@@ -874,6 +874,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
 #  else
    const char * const * logText = LOG_TEXT_ESCAPE;
 #  endif
+   if (logUserP) {}  // To avoid "logUserP was never referenced" compiler warning
 
    if (level > currLevel) {
       return;
