@@ -19,6 +19,87 @@
     The default port to access xmlBlaster is 2702, configuring the port to 0 switches
     telnet access off (see below).
     </p>
+
+      <h3>
+      How does the return value look like?
+      </h3>
+      <p>
+         Responses of attributes have the key and the value, separated to lines.
+         Messages are returned XML encoded.<br />
+         The following table shows the return values of <i>get</i> invocations.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Return</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>get /node/?numNodes</td>
+            <td><pre>
+/node/?numNodes=5
+            </pre></td>
+            <td>The separator between the key and the value is '='
+            </td>
+         </tr>
+         <tr>
+            <td>get client/*/?uptime</td>
+            <td><pre>
+/node/client/joe/?uptime=345600
+/node/client/jack/?uptime=19500
+/node/client/averell/?uptime=19500
+            </pre></td>
+            <td>The query matched three users, the lines are seperated by cr and lf
+            </td>
+         </tr>
+         <tr>
+            <td>get /node/heron/?clientList</td>
+            <td><pre>
+/node/heron/?clientList=joe,jack,
+   averell,william
+            </pre></td>
+            <td>The clientList is one attribute, containing the list of known clients
+            </td>
+         </tr>
+         <tr>
+            <td>get /node/heron/msg/?Hello</td>
+            <td>
+               <pre><![CDATA[
+<xmlBlaster>
+  <key oid='Hello' contentMime='text/plain'/>
+  <content>How are you</content>
+  <qos><rcvTimestamp nanos='1291'/></qos>
+</xmlBlaster>
+               ]]></pre>
+            </td>
+            <td>The query returns exactly one message
+            </td>
+         </tr>
+      </table>
+
+      <p>
+         The next table shows the return values of <i>set</i> invocations:
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Return</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>set client/joe/ses17/?cbQueueMaxMsgs=30000</td>
+            <td>
+               <pre><![CDATA[
+<qos>
+   <state id='OK' info='Blah'/>
+</qos>
+               ]]></pre>
+            </td>
+            <td>The returned string is XML encoded
+            </td>
+         </tr>
+      </table>
+      <br />
    </description>
 
    <example lang="any" type="HTML">
@@ -145,7 +226,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
             <td>Choose the port where xmlBlaster listens for telnet requests, 0 switches telnet access off.
                 Port 2702 is a good port to try.<br />Example:
 <pre>java org.xmlBlaster.Main -cluster.node.id heron
-                              -admin.remoteconsole.port 2702</pre>
+         -admin.remoteconsole.port 2702</pre>
                 </td>
             <td>yes</td>
          </tr>
@@ -174,7 +255,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
