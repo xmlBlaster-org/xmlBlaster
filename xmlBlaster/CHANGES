@@ -10,6 +10,8 @@ Changes for 0.x [200x-xx-xx]
  
  o Bugfix: C SOCKET client library, fixed uninitialized memory read in memmove call
  
+ o changed the JdbcConnectionPool to be handled by Doug Lea's classes
+ 
  o Added Thread Name to Logs 
 
  o Added a demo applet with XML script access to xmlBlaster.

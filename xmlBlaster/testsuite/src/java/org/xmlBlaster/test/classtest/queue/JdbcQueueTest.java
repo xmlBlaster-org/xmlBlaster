@@ -4,36 +4,22 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.key.PublishKey;
-
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 
+import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import junit.framework.*;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.queue.I_Queue;
-import java.lang.reflect.Constructor;
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
@@ -54,6 +40,39 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
  */
 public class JdbcQueueTest extends TestCase {
+   
+   
+   public class ConnectionConsumer extends Thread {
+      private JdbcConnectionPool pool;
+      private int count;
+      
+      public ConnectionConsumer(JdbcConnectionPool pool, int count) {
+         this.pool = pool;
+         this.count = count;
+         start();
+      }
+      
+      public void run() {
+         try {
+            log.info(ME, "connectionConsumer " + this.count + " starting");
+            Connection conn = this.pool.getConnection();
+            log.info(ME, "connectionConsumer " + this.count + " got the connection " + conn);
+            if (conn != null) this.pool.releaseConnection(conn);
+         }
+         catch (XmlBlasterException ex) {
+            log.info(ME, "connectionConsumer exception " + ex.getMessage());
+            if (ex.getErrorCode().getErrorCode().equals(ErrorCode.RESOURCE_TOO_MANY_THREADS.getErrorCode())) {
+               synchronized(JdbcQueueTest.class) {
+                  exceptionCount++;
+               }
+            }
+         }
+      }
+      
+   }
+   
+   int exceptionCount = 0;
+   
    private String ME = "JdbcQueueTest";
    protected Global glob;
    protected LogChannel log;
@@ -186,7 +205,7 @@ public class JdbcQueueTest extends TestCase {
             DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
             queue.put(entry, false);
             try {
-               Thread.currentThread().sleep(5000L);
+               Thread.sleep(5000L);
             }
             catch (Exception ex) {
             }
@@ -219,7 +238,7 @@ public class JdbcQueueTest extends TestCase {
             if (this.log.TRACE)  this.log.trace(me, ex.getMessage());
             if ("resource.db.unavailable".equalsIgnoreCase(ex.getErrorCodeStr())) {
                try {
-                  Thread.currentThread().sleep(5000L);
+                  Thread.sleep(5000L);
                }
                catch (Exception e) {
                }
@@ -368,6 +387,70 @@ public class JdbcQueueTest extends TestCase {
    }
 
 
+   public void testConnectionPool() {
+      try {
+         String me = ME + "-testConnectionPool";
+         this.log.info(me, " starting ");
+         int numConn = 3;
+         int maxWaitingThreads = 10;
+
+         Global ownGlobal = this.glob.getClone(null);
+
+         QueuePluginManager pluginManager = new QueuePluginManager(ownGlobal);
+         PluginInfo pluginInfo = new PluginInfo(ownGlobal, pluginManager, "JDBC", "1.0");
+
+         pluginInfo.getParameters().put("connectionBusyTimeout", "10000");
+         pluginInfo.getParameters().put("maxWaitingThreads", "" + maxWaitingThreads);
+         pluginInfo.getParameters().put("connectionPoolSize", "" + numConn);
+
+         JdbcConnectionPool pool = new JdbcConnectionPool();
+         pool.initialize(ownGlobal, pluginInfo.getParameters());
+
+         Connection[] conn = new Connection[numConn];         
+         for (int i=0; i < numConn; i++) {
+            this.log.info(me, " getting connection " + i);
+            conn[i] = pool.getConnection();
+            assertNotNull("The connection " + i + " shall not be null", conn[i]);
+         }
+         
+         this.log.info(me, " getting extra connection");
+         
+         Connection extraConn = null;
+         try {
+            extraConn = pool.getConnection();
+            assertTrue("An Exception should have occured here: ", false);
+         }
+         catch (Exception ex) {
+         }
+         // should wait 10 seconds and then return null
+         assertNull("the extra connection should be null", extraConn);
+         
+         pool.releaseConnection(conn[0]);
+         extraConn = pool.getConnection();
+         assertNotNull("the extra connection should not be null", extraConn);
+         //pool.releaseConnection(extraConn);
+
+         this.exceptionCount = 0;         
+         int expectedEx = 4;
+         for (int i=0; i < maxWaitingThreads + expectedEx; i++) {
+            ConnectionConsumer cc = new ConnectionConsumer(pool, i);
+         }
+ 
+         try {
+            Thread.sleep(15000L);
+         }
+         catch (InterruptedException ex) {
+         }
+ 
+         assertEquals("Number of exceptions due to too many waiting threads is wrong", expectedEx, this.exceptionCount);
+         this.log.info(me, " successfully ended ");
+      }
+      catch (Exception ex) {
+         fail("Exception when testing multiplePut probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );
+         ex.printStackTrace();
+      }
+   }
+
 
    /**
     * Method is used by TestRunner to load these tests
@@ -376,6 +459,7 @@ public class JdbcQueueTest extends TestCase {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
+         suite.addTest(new JdbcQueueTest(glob, "testConnectionPool", i, true));
          suite.addTest(new JdbcQueueTest(glob, "testMultiplePut", i, true));
          suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i, false));
          suite.addTest(new JdbcQueueTest(glob, "testInitialEntries", i, true));
@@ -393,6 +477,10 @@ public class JdbcQueueTest extends TestCase {
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i, true);
+
+         testSub.setUp();
+         testSub.testConnectionPool();
+         testSub.tearDown();
 
          testSub.setUp();
          testSub.testMultiplePut();
