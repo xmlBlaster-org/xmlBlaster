@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Timestamp;
 /**
  * Handling the returned QoS (quality of service) of a publish() call.
  * <p />
- * If you are a Java client and use the XmlBlasterConnection helper class
+ * If you are a Java client and use the I_XmlBlasterAccess interface
  * you get this object as the publish() return value.
  * <p />
  * Example:

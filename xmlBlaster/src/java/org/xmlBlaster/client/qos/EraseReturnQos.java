@@ -14,7 +14,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 /**
  * Handling the returned QoS (quality of service) of a erase() call. 
  * <p />
- * If you are a Java client and use the XmlBlasterConnection helper class
+ * If you are a Java client and use the interface I_XmlBlasterAccess
  * you get this object as the erase() return value.
  * <p />
  * Example:

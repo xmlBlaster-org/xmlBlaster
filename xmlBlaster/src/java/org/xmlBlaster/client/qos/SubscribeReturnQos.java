@@ -12,7 +12,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 /**
  * Handling the returned QoS (quality of service) of a subscribe() call.
  * <p />
- * If you are a Java client and use the XmlBlasterConnection helper class
+ * If you are a Java client and use the I_XmlBlasterAccess interface
  * you get this object as the subscribe() return value.
  * <p />
  * Example:

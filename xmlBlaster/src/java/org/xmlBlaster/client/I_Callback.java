@@ -3,7 +3,7 @@ Name:      I_Callback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.java,v 1.11 2002/12/18 12:28:45 ruff Exp $
+Version:   $Id: I_Callback.java,v 1.12 2003/03/24 19:59:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -18,13 +18,13 @@ import org.xmlBlaster.client.qos.UpdateQos;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XML-RPC.
  *
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_Callback
 {
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * So you should implement in your client the I_Callback interface -
@@ -37,6 +37,7 @@ public interface I_Callback
     * @param updateKey   The arrived key
     * @param content     The arrived message content
     * @param qos         Quality of Service of the MsgUnit
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException;
 }
