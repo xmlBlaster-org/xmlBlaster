@@ -771,6 +771,23 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
  </xmlBlaster>
 ]]>
 </pre>
+ <h3>Note:</h3>
+ <p>
+ Variables like <tt>${db.user}</tt> are replaced on startup when the plugin is loaded.
+ You could add <tt>db.user=system</tt> into <tt>xmlBlaster.properties</tt> or on command line
+ and <tt>${db.user}</tt> would be replaced to <tt>system</tt>.
+ </p>
+ <p>
+ Now we face the problem that we need to set ${...} constructs which we want to pass through
+ to the DbWatcher sub-plugins like <tt>MD5ChangeDetector</tt>. On plugin load they can't
+ be resolved and an exception is thrown. To escape such variable please write <tt>$_{...}</tt>,
+ for example <tt>$_{changeDetector.detectStatement}</tt>,
+ and they will be passed through as is. The currently available sub-plugins themselves are capable to replace
+ such constructs as well.<br />
+ For most variables we have coded a work around in <tt>XmlBlasterPlugin.java</tt> but
+ if you add own sub-plugins the work around does not detect it and you need to use <tt>$_</tt>
+ (or in fact any other construct like <tt>$[..]</tt> if only your sub-plugin can handle it).
+ </p>
 
    </configuration>
 
