@@ -200,14 +200,14 @@ XmlBlasterException XmlBlasterException::parseFromString(string fromString)
          try {
             errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")), end);
          }
-         catch(const out_of_range &e1) {
+         catch(const out_of_range &/*e1*/) {
          }
       }
       else {
          try {
             errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")));
          }
-         catch(out_of_range e2) {
+         catch(out_of_range &/*e2*/) {
          }
       }
    }
@@ -215,7 +215,7 @@ XmlBlasterException XmlBlasterException::parseFromString(string fromString)
       try {
          reason = fromString.substr(end+(sizeof(" message=")/sizeof("e")));
       }
-      catch(out_of_range e3) {
+      catch(out_of_range &/*e3*/) {
       }
    }
    try {
