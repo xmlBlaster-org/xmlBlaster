@@ -54,23 +54,33 @@ cd <XMLBLASTER_HOME>/demo/c/xmlrpc
 Run it:
 =======
 
-Start xmlBlaster server
+1. Start xmlBlaster server
 
    export CLASSPATH=<XMLBLASTER_HOME>/lib/xmlBlaster.jar
    java org.xmlBlaster.Main
 
 
-Start this client:
+2. Start the XmlRpc-c callbackServer, this will receive the data
+   on http://myHost:8081/RPC2 (as configured in abyss.conf):
 
-	client -xmlrpc.serverUrl http://idvssrv:8080/ -xmlrpc.cbUrl http://idvssrv:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.txt
+   callbackServer <pathToXmlrpcConf>abyss.conf
 
-It will login as user 'ben', and send to user 'ben' a PtP message
-(Probably you should start a Java client to receive the message like:
- java org.xmlBlaster.client.reader.SubscribeMessage  -name ben  -passwd secret  -oid __sys__TotalMem
+  Please edit abyss.conf before starting, e.g.
+  set 'Port 8081' and adjust ServerRoot to point
+  to your xmlrpc-c installation!
+
+
+3. Start this client:
+
+  	client -xmlrpc.serverUrl http://myHost:8080/ -xmlrpc.cbUrl http://myHost:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.xml
+
+  the -msgFile allows to send any file (binary data as well).
+
+  It will login as user 'ben', and send to user 'ben' a PtP message
+
+
+(You may also want to start a Java client to receive the messages like:
+  java org.xmlBlaster.client.reader.SubscribeMessage  -name ben  -passwd secret  -oid __sys__TotalMem
 ) 
-
-Start the callbackServer:
-
-   callbackServer abyss.conf
 
 01/2002 marcel

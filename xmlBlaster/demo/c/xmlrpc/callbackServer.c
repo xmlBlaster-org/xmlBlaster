@@ -1,12 +1,53 @@
-/* A simple standalone XML-RPC server written in C. */
+/*------------------------------------------------------------------------------
+Name:      callbackServer.c
 
+Project:   xmlBlaster.org
+
+Comment:   Example how to receive asynchrouns callback messages from xmlBlaster
+           with C and XmlRpc (see README)
+           See http://xmlrpc-c.sourceforge.net/
+
+Author:    ruff@swand.lake.de
+
+Compile:   Read xmlrpc-c/doc/overview.txt
+           SERVER_CFLAGS=`xmlrpc-c-config abyss-server --cflags`
+           SERVER_LIBS=`xmlrpc-c-config abyss-server --libs`
+           gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
+
+Invoke:    callbackServer <pathToXmlrpcConf>abyss.conf
+           Please edit abyss.conf before starting, e.g.
+           Port 8081
+------------------------------------------------------------------------------*/
 #include <stdio.h>
 
 #include <xmlrpc.h>
 #include <xmlrpc_abyss.h>
-#include <curses.h> /* beep() */
 
-/*
+xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data);
+
+
+/**
+ *
+ */
+int main (int argc, char **argv)
+{
+    if (argc != 2) {
+        fprintf(stderr, "Usage: servertest abyss.conf\n");
+        exit(1);
+    }
+
+    xmlrpc_server_abyss_init(XMLRPC_SERVER_ABYSS_NO_FLAGS, argv[1]);
+    xmlrpc_server_abyss_add_method("update", &update, NULL);
+
+    printf("server: switching to background.\n");
+    xmlrpc_server_abyss_run();
+
+    /* We never reach this point. */
+    return 0;
+}
+
+
+/**
  * Update message arrives here.
  * This is the callback invoked from xmlBlaster
  */
@@ -41,19 +82,3 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
    return retVal;
 }
 
-int main (int argc, char **argv)
-{
-    if (argc != 2) {
-        fprintf(stderr, "Usage: servertest abyss.conf\n");
-        exit(1);
-    }
-
-    xmlrpc_server_abyss_init(XMLRPC_SERVER_ABYSS_NO_FLAGS, argv[1]);
-    xmlrpc_server_abyss_add_method("update", &update, NULL);
-
-    printf("server: switching to background.\n");
-    xmlrpc_server_abyss_run();
-
-    /* We never reach this point. */
-    return 0;
-}

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 Name:      client.c
 Project:   xmlBlaster.org
-Comment:   Example how to access xmlBlaster wit C and XmlRpc
+Comment:   Example how to access xmlBlaster with C and XmlRpc
            See http://xmlrpc-c.sourceforge.net/
            Usually you start first the callback server to receive
            asynchronous update from xmlBlaster as well (see README)
