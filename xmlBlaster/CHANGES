@@ -12,14 +12,17 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    'void *' to 'const unsigned char *'
 
  o C++ client library:
-   Added native SOCKET protocol plugin based on the C-client library
-   Fixed command line usage, try 'HelloWorld2 -help'
-   Fixed memory leak for some XmlBlasterExceptions thrown
-   Logging cleanup (switchable xterm colors)
-   Added Global::getCompiler()
-   Fixed LifeTimeManager to have destruction sequence reversed to creation sequence
-   Added map to LifeTimeManager to support registered object lookup by key
-   Other minor changes
+   - Added native SOCKET protocol plugin based on the C-client library
+   - Fixed command line usage, try 'HelloWorld2 -help'
+   - Fixed memory leak for some XmlBlasterExceptions thrown
+   - Logging cleanup (switchable xterm colors)
+   - Added Global::getCompiler()
+   - Fixed LifeTimeManager to have destruction sequence reversed to creation sequence
+   - Added map to LifeTimeManager to support registered object lookup by key
+   - Bugfix for lexical_cast<double> and lexical_cast<long double>
+     which rounded to only 6 digits
+   - Added Base64 support for ClientProperty
+   - Other minor changes
 
  o C-client library:
    Fixed to return secretSessionId in update() method
