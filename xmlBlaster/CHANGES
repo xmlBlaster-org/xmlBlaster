@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Added support to set and lookup the engine.Global (via GlobalUtil) for the j2ee components.
+
+ o Finished the LOCAL protocol.
+
  o Added flag enableBatchMode in the jdbc queue plugins
 
  o added storage of blob in DummyEntry (before it was a fictive size, now its complete size is stored/retrieved from the DB).
