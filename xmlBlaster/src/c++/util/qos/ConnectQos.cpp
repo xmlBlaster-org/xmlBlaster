@@ -24,6 +24,8 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       log_(global.getLog("core")),
       securityQos_(global, user, passwd),
       sessionQos_(global, user, publicSessionId),
+      ptp_(true),
+      isDirty_(false),
       addresses_(),
       cbAddresses_(),
       clientQueueProperties_(),
@@ -59,10 +61,12 @@ bool ConnectQosData::getPtp() const
    return ptp_;
 }
 
-string ConnectQosData::getBoolAsString(bool boolVal) const
+const string& ConnectQosData::getBoolAsString(bool val) const
 {
-   if (boolVal == true) return string("true");
-   return string("false");
+   static const string _TRUE = "true";
+   static const string _FALSE = "false";
+   if (val) return _TRUE;
+   else return _FALSE;
 }
 
 void ConnectQosData::setPtp(bool ptp)

@@ -103,7 +103,7 @@ public:
    ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;
 //   string getPtpAsString() const;
-   string getBoolAsString(bool boolVal) const;
+   const string& getBoolAsString(bool boolVal) const;
    void setPtp(bool ptp);
    void setSessionQos(const SessionQos& sessionQos);
    SessionQos& getSessionQos() const;
