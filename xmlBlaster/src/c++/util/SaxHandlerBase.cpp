@@ -16,6 +16,7 @@ Comment:   Default handling of Sax callbacks
 #include <sax/SAXException.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
+#include <util/StopWatch.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -57,6 +58,7 @@ SaxHandlerBase::parse(const string &xmlData)
   if (log_.trace()) {
      log_.trace(me(), string("parse content:'") + xmlData + string("'"));
   }
+  StopWatch stopWatch;
   try {
     log_.trace(me(), "parse entrering try/catch block");
     SAXParser parser;
@@ -102,6 +104,8 @@ SaxHandlerBase::parse(const string &xmlData)
   catch (...) {
     throw XmlBlasterException(INTERNAL_UNKNOWN, me() + "::parse", string("parse: unknown exception."));
   }
+
+  if (log_.trace()) log_.trace(me(), "Time used for parsing: " + stopWatch.nice());
 }
 
       
