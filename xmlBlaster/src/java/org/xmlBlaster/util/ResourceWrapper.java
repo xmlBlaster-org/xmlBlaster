@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.3 2000/05/31 19:48:06 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.4 2000/05/31 20:09:01 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ public class ResourceWrapper
    /** My manager */
    private PoolManager poolManager;
 
-   public final static String INVALID_KEY = "RESOURCE_IS_IDLE";
+   final static String INVALID_KEY = "RESOURCE_IS_IDLE";
 
 
    /**
@@ -48,7 +48,7 @@ public class ResourceWrapper
     * @param resource Your resource
     * @param timeout  The max. life span for this resource
     */
-   public ResourceWrapper(PoolManager poolManager, String instanceId, Object resource, long timeout)
+   ResourceWrapper(PoolManager poolManager, String instanceId, Object resource, long timeout)
    {
       this.poolManager = poolManager;
       init(instanceId, resource, timeout);
@@ -61,7 +61,7 @@ public class ResourceWrapper
     * You need to call resource(yourResource) after constructing.
     * @param poolManager A reference on my manager
     */
-   public ResourceWrapper(PoolManager poolManager)
+   ResourceWrapper(PoolManager poolManager)
    {
       this.poolManager = poolManager;
       init(null, null, 0);
@@ -77,7 +77,7 @@ public class ResourceWrapper
     * @param timeout    The max. life span.<br />
     *                   0: infinite life span
     */
-   public void init(String instanceId, Object resource, long timeout)
+   void init(String instanceId, Object resource, long timeout)
    {
       this.creationTime = System.currentTimeMillis();
       this.instanceId = instanceId;
@@ -106,7 +106,7 @@ public class ResourceWrapper
 
 
    /**
-    * How long am i running. 
+    * How long am i running.
     * @return Milliseconds since creation or -1 if not known
     */
    public long elapsed()
@@ -228,7 +228,7 @@ public class ResourceWrapper
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <p />
     * @return internal state of this ResourceWrapper as a XML ASCII string
     */
@@ -239,7 +239,7 @@ public class ResourceWrapper
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <p />
     * @param extraOffset indenting of tags for nice output
     * @return internal state of this ResourceWrapper as a XML ASCII string

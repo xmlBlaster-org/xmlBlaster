@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.3 2000/05/31 19:48:05 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.4 2000/05/31 20:09:00 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -26,20 +26,8 @@ import java.util.Enumeration;
  * <p />
  * You can easily handle bigger number of resources with good performance.
  * <p />
- * How to use:<br />
- * Extend your specialized pool from this class and implement some methods:
- * <ul>
- *    <li>In your constructor you need to calls this constructor:<br />
- *        <code>super("NiceName", 100, (long)60*60*6); // Default life cycle is 6 hours</code>
- *    </li>
- *    <li>Ask for a resource
- *    </li>
- *    <li>Release a resource explicitly
- *    </li>
- *    <li>If a timeout releases the resource, you are notified about it<br />
- *        <code>protected void notifyAboutRelease(ResourceWrapper rw)</code>
- *    </li>
- * </ul>
+ * To find out how to use it see the TestPool example in the main() method of this class.
+ * <p />
  * <pre>
  *    State chart of resource handling:
  *
@@ -83,8 +71,8 @@ import java.util.Enumeration;
  * If a user is active you can refresh the session with releaseRefresh().
  * </p>
  * <p>
- * If you want to pool JDBC connections, you wouldn't use any timeouts, reserve()
- * a connection before you do your query and release() it immediately again. If you
+ * If you want to pool JDBC connections, reserve() a connection before you do your query
+ * and release() it immediately again. If you
  * want to close connections after peak usage, you could set a idleEraseTimeout,
  * to erase your JDBC connection after some time not used (reducing the current pool size).
  * </p>
@@ -99,6 +87,7 @@ public class PoolManager implements I_Timeout
    private String ME = "PoolManager";
    /** A nice name for the generated id */
    private String poolName = "Resource";
+   /** The callback into the using application, which needs to implement the interface I_PoolManager */
    private I_PoolManager callback = null;
    /** Holds busy resources */
    private java.util.Hashtable busy = null;
@@ -450,7 +439,7 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <p />
     * @return internal state of this PoolManager as a XML ASCII string
     */
@@ -461,7 +450,7 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * Dump state of this object into a XML ASCII string. 
+    * Dump state of this object into a XML ASCII string.
     * <p />
     * @param extraOffset indenting of tags for nice output
     * @return internal state of this PoolManager as a XML ASCII string
@@ -472,7 +461,7 @@ public class PoolManager implements I_Timeout
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
-      
+
       buf.append(offset).append("<").append(ME).append(" maxInstances='").append(maxInstances);
       buf.append("' releaseTimeout='").append(releaseTimeout);
       buf.append("' busyEraseTimeout='").append(busyEraseTimeout).append("'>");
@@ -483,14 +472,14 @@ public class PoolManager implements I_Timeout
          buf.append(rw.toXml("   "));
       }
       buf.append(offset).append("   </busy>");
-      
+
       buf.append(offset).append("   <idle num='").append(idle.size()).append(">");
       for (int ii=0; ii<idle.size(); ii++) {
          ResourceWrapper rw = (ResourceWrapper)idle.elementAt(ii);
          buf.append(rw.toXml("   "));
       }
       buf.append(offset).append("   </idle>");
-      
+
       buf.append(offset).append("</" + ME + ">");
       return buf.toString();
    }
@@ -513,7 +502,7 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * For testing only. 
+    * For testing only.
     * <p />
     * Invoke: java org.xmlBlaster.util.PoolManager
     */
@@ -521,7 +510,11 @@ public class PoolManager implements I_Timeout
       final String ME = "TestPool";
       Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
-      class TestResource { // This class is usually a UserSession object or a JDBC connection object ...
+      /**
+       * This class is usually a UserSession object or a JDBC connection object
+       * or whatever resource you want to handle
+       */
+      class TestResource {
          String name;
          boolean isBusy;
          boolean isErased = false;
@@ -531,6 +524,10 @@ public class PoolManager implements I_Timeout
          }
       }
 
+      /**
+       * This class does the resource pooling for TestResource,
+       * with the help of PoolManager
+       */
       class TestPool implements I_PoolManager {
          private int counter=0;
          PoolManager poolManager;
@@ -578,6 +575,7 @@ public class PoolManager implements I_Timeout
          }
       }
 
+      // And now test it ...
       TestPool testPool = new TestPool();
       TestResource r0 = testPool.reserve();
       TestResource r1 = testPool.reserve();
@@ -588,7 +586,7 @@ public class PoolManager implements I_Timeout
       testPool.release(r2);
       Log.plain(ME, testPool.poolManager.toXml());
 
-      // The resources are swapped to idle in 2 seconds ...
+      // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
       try { Thread.currentThread().sleep(3000); } catch( InterruptedException i) {}
       Log.plain(ME, testPool.poolManager.toXml());
       testPool.reserve();
