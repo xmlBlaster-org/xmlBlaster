@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.8 2001/05/06 07:38:10 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.9 2001/08/16 08:10:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -34,7 +34,7 @@ import java.applet.Applet;
 
 /**
  * This is a helper class, helping a Java client to connect to xmlBlaster
- * using IIOP (CORBA), RMI, XML-RPC or any other supported protocol. 
+ * using IIOP (CORBA), RMI, XML-RPC or any other supported protocol.
  * <p>
  * Please note that you don't need to use this wrapper, you can use the raw I_XmlBlasterConnection
  * interface as well. You can also hack your own little wrapper, which does exactly
@@ -70,7 +70,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -148,7 +148,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * java ... -client.protocol IOR
     * java ... -client.protocol XML-RPC
     * </pre>
-    * @param arg  parameters given on command line
+    * @param arg  parameters given on command line, or coded e.g.:
+    * <pre>
+    *    String[] args = new String[2];
+    *    args[0] = "-iorPort";
+    *    args[1] = "" + serverPort;
+    *    corbaConnection = new XmlBlasterConnection(args); // Find orb
+    * </pre>
     */
    public XmlBlasterConnection(String[] args) throws XmlBlasterException
    {
