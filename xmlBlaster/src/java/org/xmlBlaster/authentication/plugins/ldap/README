@@ -70,6 +70,8 @@ NOTE: Authorization of actions (like subcribing/publishing/erasing messages)
       
       and implement the method
       
+         // actionKey is "SUSCRIBE", "GET", "PUBLISH", "ERASE"
+         // key is the ID of a message
          public boolean isAuthorized(String actionKey, String key)
          {
             DirContext ctx = ldap.getRootContext();
