@@ -7,7 +7,14 @@ package org.xmlBlaster.client.filepoller;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.regex.Pattern;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
+
+import gnu.regexp.RE;
+import gnu.regexp.REException;
+//import java.util.regex.Pattern;
 
 /**
  * FilenameFilter. This code is based on the BasicFileChooserUI swing code. The
@@ -17,17 +24,18 @@ import java.util.regex.Pattern;
  */
 public class FilenameFilter implements FileFilter {
 
-   private Pattern pattern;
-
+   //private Pattern pattern;
+   private RE pattern;
+   
    public FilenameFilter() {
    }
 
-   public FilenameFilter(String pattern) {
+   public FilenameFilter(Global global, String pattern) throws XmlBlasterException {
       this();
-      setPattern(pattern);
+      setPattern(global, pattern);
    }
 
-   public void setPattern(String globPattern) {
+   public void setPattern(Global global, String globPattern) throws XmlBlasterException {
       char[] gPat = globPattern.toCharArray();
       char[] rPat = new char[gPat.length * 2];
       boolean isWin32 = (File.separatorChar == '\\');
@@ -103,7 +111,13 @@ public class FilenameFilter implements FileFilter {
             }
          }
       }
-      this.pattern = Pattern.compile(new String(rPat, 0, j), Pattern.CASE_INSENSITIVE);
+      try {
+         this.pattern = new RE(new String(rPat, 0, j), RE.REG_ICASE);
+      }
+      catch (REException ex) {
+         throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + new String(rPat, 0, j) + "'", ex);
+      }
+      //this.pattern = Pattern.compile(new String(rPat, 0, j), Pattern.CASE_INSENSITIVE);
    }
 
    /**
@@ -116,6 +130,7 @@ public class FilenameFilter implements FileFilter {
       if (f.isDirectory()) {
          return false;
       }
-      return pattern.matcher(f.getName()).matches();
+      return pattern.isMatch(f.getName());
+      // return pattern.matcher(f.getName()).matches();
    }
 }

@@ -52,7 +52,7 @@ public class DirectoryManager {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
-         this.fileFilter = new FilenameFilter(filter);
+         this.fileFilter = new FilenameFilter(this.global, filter);
       this.log = this.global.getLog("filepoller");
       this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
