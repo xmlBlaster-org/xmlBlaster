@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
-<!DOCTYPE xmlBlaster SYSTEM "marcel.dtd">
-<!-- So liegen die keys im xmlBlaster DOM Baum -->
+<!DOCTYPE xmlBlaster SYSTEM "AirportInternal.dtd">
+<!-- Representation of the internal xmlBlaster Big-DOM tree -->
 <xmlBlaster>
-   <key oid="Wasschoenes">
+   <key oid="Nr1">
       <Airport icao="EDDI">
         <Runway id="d1">
-           <WindVeloc w_id="xyz">HALLO</WindVeloc>
+           <WindVeloc w_id="xyz">8</WindVeloc>
         </Runway>
       </Airport>
    </key>
 
-   <key oid="Whoenes">
+   <key oid="Nr2">
       <Airport icao="EDDN">
         <Runway id="d3">
-           <WindVeloc w_id="_i">HLO</WindVeloc>
+           <WindVeloc w_id="_i">12</WindVeloc>
         </Runway>
       </Airport>
    </key>
