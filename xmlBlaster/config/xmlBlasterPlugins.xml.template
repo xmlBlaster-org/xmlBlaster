@@ -131,6 +131,7 @@
       <action do='STOP' onShutdownRunlevel='4' sequence='1'/>   
    </plugin>
 
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html -->
    <!--
    <plugin id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
       <action do='LOAD' onStartupRunlevel='7' sequence='1' onFail='resource.configuration.pluginFailed'/>
@@ -142,7 +143,21 @@
    </plugin>
    -->
 
-   <!-- See http://http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
+   <!--
+   <plugin id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='5'
+                           onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+      <attribute id='loginName'>_StartupTasks</attribute>
+      <attribute id='password'>secret</attribute>
+      <attribute id='directoryName'></attribute>
+      <attribute id='scriptFileName'>xmlBlasterStartup.xml</attribute>
+      <attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt</attribute>
+   </plugin>
+   -->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html -->
    <!--
    <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
      <attribute id='directoryName'>/tmp/filePoller</attribute>
