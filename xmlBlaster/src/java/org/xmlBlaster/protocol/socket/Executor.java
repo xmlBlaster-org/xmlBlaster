@@ -458,24 +458,26 @@ public abstract class Executor implements ExecutorBase
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log.TRACE) log.trace(ME, "Freeing " + latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
-      while (true) {
-         Latch l = null;
-         synchronized (latchSet) {
-            Iterator it = latchSet.iterator();
-            if (it.hasNext()) {
-               l = (Latch)it.next();
-               it.remove();
+      if (log != null && log.TRACE) log.trace(ME, "Freeing " + latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (latchSet != null) {
+         while (true) {
+            Latch l = null;
+            synchronized (latchSet) {
+               Iterator it = latchSet.iterator();
+               if (it.hasNext()) {
+                  l = (Latch)it.next();
+                  it.remove();
+               }
+               else
+                  break;
             }
-            else
+            if (l == null)
                break;
+            l.release();
          }
-         if (l == null)
-            break;
-         l.release();
-      }
-      synchronized(latchSet) {
-         latchSet.clear();
+         synchronized(latchSet) {
+            latchSet.clear();
+         }
       }
    }
 
