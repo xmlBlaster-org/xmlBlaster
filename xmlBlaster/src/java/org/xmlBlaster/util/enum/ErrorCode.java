@@ -363,6 +363,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_PTP_UNKNOWNDESTINATION_SESSION = new ErrorCode("user.ptp.unknownDestinationSession",
+         "You have send a point to point message but the receiver session is not known.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.publish", "interface.publish")
+         }
+      );
+
    public static final ErrorCode USER_QUERY_INVALID = new ErrorCode("user.query.invalid",
          "You have invoked get(), subscribe(), unSubscribe() or erase() with an illegal query syntax.",
          new ResourceInfo[] {
@@ -620,6 +627,7 @@ public final class ErrorCode implements java.io.Serializable
          return sb.toString();
       }
    }
+
 
 
 
