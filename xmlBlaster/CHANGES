@@ -3,6 +3,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79b [???, ?? 2000]
 ================================
 
+ - Bug fixed in JDBC adapter, NullPointerException because of
+   missing namespace.
+
  - Subscribe Bug fixed (reported by Stefan Nickisch)
    If a subscriber crashes without logout, this will disturb all other
    subscribers.
