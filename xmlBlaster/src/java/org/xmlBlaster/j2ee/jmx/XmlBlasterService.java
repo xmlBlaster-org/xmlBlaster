@@ -44,7 +44,7 @@ import org.jutils.log.LogChannel;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.3 $ $Date: 2002/11/05 14:26:13 $
+ * @version $Revision: 1.4 $ $Date: 2002/11/07 13:12:50 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -94,28 +94,33 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
     * Start the embeddeb XmlBlaster.
     */
    public void start() throws Exception {
-      //Lets do a little test
+      log = glob.getLog(null);
+      //Get all properties
       loadJacorbProperties();
+      loadPropertyFile();
+      setupSecurityManager();
+      
+      //To get ok behaviuor we really need to do it this way:
+      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false  );
 
       //glob.getProperty().set("trace", "true");
-      glob.getProperty().set("xmlBlaster.isEmbedded", "true");
-      log = glob.getLog(null);
+      runglob.getProperty().set("xmlBlaster.isEmbedded", "true");
+      log = runglob.getLog(null);
       log.info(ME,"Starting XmlBlasterService");
-      glob.getProperty().set("classloader.xmlBlaster","false");
+      runglob.getProperty().set("classloader.xmlBlaster","false");
       // Must be set to false to stop the embedded to create an engine Global
       // in such a way that the xmlBlaster.properties file are loaded
       // once more!
-      glob.getProperty().set("useXmlBlasterClassloader","false");
-      loadPropertyFile();
-      log = glob.getLog("XmlBlasterService");
-      setupSecurityManager();
+      runglob.getProperty().set("useXmlBlasterClassloader","false");
+      log = runglob.getLog("XmlBlasterService");
+
 
       //setUpClassLoader(); we skip this for now, does not help with concurrent.
 
       ClassLoader currCl = Thread.currentThread().getContextClassLoader();
       if (cl != null)
          Thread.currentThread().setContextClassLoader(cl);
-      blaster = EmbeddedXmlBlaster.startXmlBlaster(glob);
+      blaster = EmbeddedXmlBlaster.startXmlBlaster(runglob);
       Thread.currentThread().setContextClassLoader(currCl);
    }
 
@@ -188,7 +193,14 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          
          
          Property p = glob.getProperty();
-         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
+         URL url = Thread.currentThread().getContextClassLoader().getResource(propFile);
+         InputStream is = null;
+         try {
+            is= url.openStream();
+         }catch(java.io.IOException ex) {
+            is = null;
+         }
+            //Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
          if ( is == null) {
             // Use xmlBlaster way of searching
             FileInfo i = p.findPath(propFile);
@@ -196,6 +208,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          } // end of if ()
          
          if ( is != null) {
+            log.info(ME,"Loading properties from " + url);
             Properties prop = new Properties();
             prop.load(is);
             String[] args = Property.propsToArgs(prop);
