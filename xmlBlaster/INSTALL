@@ -12,13 +12,6 @@ We hope these hints are useful to get you running with xmlBlaster.
 If  you  have  problems, don't hesitate to contact the maintainers
 through the mailing list (see http://www.xmlBlaster.org).
 
-If  you  do  some own hacks, feel free to contribute them back, so
-anybody  benefits  from  your  glorious invention. This project is
-living  from  ideas and contributions. If you are a Ruby hacker,
-why  not  contribute  some  Ruby  helper  classes? If you prefer
-Smalltalk,  why  not contributing your xmlBlaster client solution?
-But, if you are lazy, just use and enjoy xmlBlaster as delivered!
-
 
 +--------------------+
 | REQUIRED           |
@@ -130,10 +123,11 @@ suppport server crash recovery and huge message
 amount to be queued (swapping) with the embedded
 database HSQLDB.
 
-However you can choose to use an external database for persistency.
+However you can choose to use an external database for persistency,
+as HSQLDB is not suitable for production use.
 Oracle, Postgres, MS-SQL-Server and others are supported.
 Expect some 20 minutes to setup Postgres to run
-with xmlBlaster and one to two days if you decide
+with xmlBlaster and some more hours if you decide
 to use Oracle.
 
 The details are described in
