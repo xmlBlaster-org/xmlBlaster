@@ -7,6 +7,7 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
 import org.jutils.text.StringHelper;
+import org.xmlBlaster.engine.cluster.NodeId;
 
 /**
  * Handles unified naming convention of login names and user sessions. 
@@ -24,7 +25,7 @@ public final class SessionName
    public final static String SUBJECT_MARKER_TAG = "client";
    /** The absolute name */
    private String absoluteName;
-   private String nodeId;
+   private NodeId nodeId;
    private String relativeName;
    private final String subjectId;
    private String pubSessionId;
@@ -42,10 +43,10 @@ public final class SessionName
     * @exception IllegalArgumentException if your name can't be parsed
     */
    public SessionName(Global glob, String name) {
-      this(glob, (String)null, name);
+      this(glob, (NodeId)null, name);
    }
 
-   public SessionName(Global glob, String nodeId, String name) {
+   public SessionName(Global glob, NodeId nodeId, String name) {
       this.glob = (glob == null) ? Global.instance() : glob;
 
       if (name == null) {
@@ -65,8 +66,8 @@ public final class SessionName
                throw new IllegalArgumentException(ME+": '" + name + "': The root tag must be '/node'.");
          }
          if (arr.length > 1) {
-            this.nodeId = arr[1];
-            if ("unknown".equals(this.nodeId)) this.nodeId = null;
+            this.nodeId = new NodeId(arr[1]);
+            if ("unknown".equals(this.nodeId.getId())) this.nodeId = null;
          }
          if (arr.length > 2) {
             if (!"client".equals(arr[2]))
@@ -82,14 +83,7 @@ public final class SessionName
       }
 
       if (nodeId != null) {
-         if (nodeId.startsWith("/node/"))
-            this.nodeId = nodeId.substring("/node/".length());
-         else {
-            this.nodeId = nodeId;
-         }
-         if (this.nodeId.indexOf("/") > -1) {
-            throw new IllegalArgumentException(ME+": '" + name + "': The nodeId '" + this.nodeId + "' must not contain a '/'");
-         }
+         this.nodeId = nodeId;
       }
 
       // parse relative part
@@ -133,7 +127,7 @@ public final class SessionName
    public String getAbsoluteName() {
       if (this.absoluteName == null) {
          StringBuffer buf = new StringBuffer(256);
-         buf.append("/node/").append((this.nodeId==null)?"unknown":this.nodeId).append("/");
+         buf.append("/node/").append((this.nodeId==null)?"unknown":this.nodeId.getId()).append("/");
          buf.append(getRelativeName());
          this.absoluteName = buf.toString();
       }
@@ -163,8 +157,15 @@ public final class SessionName
    /**
     * @return e.g. "heron", or null
     */
-   public String getNodeId() {
+   public NodeId getNodeId() {
       return this.nodeId;
+   }
+
+   /**
+    * @return e.g. "heron", or null
+    */
+   public String getNodeIdStr() {
+      return (this.nodeId == null) ? null : this.nodeId.getId();
    }
 
    /**
