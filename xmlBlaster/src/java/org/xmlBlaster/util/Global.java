@@ -811,8 +811,8 @@ public class Global implements Cloneable
          g.statusQosFactory = this.statusQosFactory;
          g.dispatchPluginManager = null; // Force a new instance of DispatchPluginManager (which has its separate cache of plugins)
 
-         if (g.id != id)
-            getLog("core").error(ME, "g.id=" + g.id + " and id=" + id);
+         if (g.id != this.id)
+            getLog("core").error(ME, "g.id=" + g.id + " and id=" + this.id);
          return g;
       }
       catch (CloneNotSupportedException e) {
