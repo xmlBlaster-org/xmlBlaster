@@ -713,6 +713,8 @@ public final class RamQueuePlugin implements I_Queue, I_Plugin
     * destroys all the resources associated to this queue.
     */
    public void destroy() throws XmlBlasterException {
+      this.storage.clear();
+      this.shutdown(true);
       this.property = null;
    }
 
