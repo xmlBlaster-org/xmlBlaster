@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.2 2000/01/21 08:19:04 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.3 2000/01/24 09:02:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
@@ -24,7 +24,14 @@ import java.io.FilenameFilter;
  * <br />
  * All methods are marked final, in hope to have some performance gain (could be changed to allow a customized driver)
  * <br />
- * CAUTION: This driver is not suitable for production purposes<br />
+ * CAUTION: This driver is not suitable for production purposes.
+ * If you want to use this driver for more than some hundred different messages
+ * we recommend to use it with the ReiserFS.<br />
+ * Reiserfs is a file system using a plug-in based object oriented variant on classical balanced tree algorithms.<br />
+ * See ftp://ftp.suse.com:/pub/suse/i386/update/6.3/reiserfs/<br />
+ * and http://devlinux.com/projects/reiserfs/content_table.html
+ * for further informations.
+ * <br />
  * TODO: Extend interface to support caching!<br />
  * TODO: Is the File stuff thread save or do we need to add some synchronize?
  * <br />
@@ -109,7 +116,7 @@ public class FileDriver implements I_PersistenceDriver
 
 
    /**
-    * Gets all messages from the store. 
+    * Gets all messages from the store.
     * <p />
     * @param clientInfo    Needed to publish
     * @param requestBroker Needed to publish
@@ -138,7 +145,7 @@ public class FileDriver implements I_PersistenceDriver
    public final void recover(String oid, ClientInfo clientInfo, RequestBroker requestBroker) throws XmlBlasterException
    {
       String xmlKey_literal = FileUtil.readAsciiFile(path, oid + XMLKEY_TOKEN);
-      
+
       byte[] content = FileUtil.readFile(path, oid);
 
       MessageUnit messageUnit = new MessageUnit(xmlKey_literal, content);
@@ -153,7 +160,7 @@ public class FileDriver implements I_PersistenceDriver
 
 
    /**
-    * Filter only the xy-XmlKey.xml files. 
+    * Filter only the xy-XmlKey.xml files.
     */
    private class XmlKeyFilter implements FilenameFilter
    {
