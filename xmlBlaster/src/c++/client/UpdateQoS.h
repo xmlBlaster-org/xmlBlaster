@@ -3,7 +3,7 @@ Name:      UpdateQoS.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service),knows how to parse it with SAX
-Version:   $Id: UpdateQoS.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: UpdateQoS.h,v 1.3 2000/07/07 17:02:11 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 //  package org.xmlBlaster.client;
@@ -181,6 +181,12 @@ namespace client {
       }
 
       
+      /**
+       * Since xerces ver 1.2
+       */
+      void setDocumentLocator(const Locator *loc) {
+      }
+
       /**
        * Dump state of this object into a XML ASCII string.
        * <br>

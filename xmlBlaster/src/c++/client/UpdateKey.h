@@ -3,7 +3,7 @@ Name:      UpdateKey.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: UpdateKey.h,v 1.3 2000/07/07 17:02:11 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_UPDATEKEY_H
@@ -173,8 +173,6 @@ namespace client {
       }
       
       
-   public:
-
       /**
        * Start element.
        * <p />
@@ -189,6 +187,11 @@ namespace client {
 	 }
       }
 
+      /**
+       * Since xerces ver 1.2
+       */
+      void setDocumentLocator(const Locator *loc) {
+      }
 
       /**
        * End element callback, does handling of tag &lt;key>. <p />
