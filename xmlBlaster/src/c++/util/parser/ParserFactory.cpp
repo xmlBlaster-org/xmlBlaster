@@ -56,7 +56,7 @@ ParserFactory& ParserFactory::operator =(const ParserFactory&)
 ParserFactory::~ParserFactory()
 {
    if (isUsingXerces_) {
-      std::cerr << "ParserFactory destructor" << std::endl;
+      //std::cerr << "ParserFactory destructor" << std::endl;
       XMLPlatformUtils::Terminate();
    }
 }
