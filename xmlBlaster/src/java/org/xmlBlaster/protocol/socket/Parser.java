@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.45 2004/08/24 15:18:52 ruff Exp $
+Version:   $Id: Parser.java,v 1.46 2004/10/10 21:09:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -300,7 +300,13 @@ public class Parser
       this.checksum = checksum;
    }
 
-   /** Compress message? */
+   /**
+    * Compress message?
+    * NOTE: This compressed flag is set if the SOCKET header is plain text
+    * and the MsgUnit[] is compressed. This mode is not implemented,
+    * as we have "zlib:stream" compression which compresses the whole socket input/output
+    * stream (there is no need to set this flag as it is compressed as well).
+    */
    public final void setCompressed(boolean compressed) {
       if (compressed == true) {
          log.warn(ME, "Compression for raw socket message is not supported");
