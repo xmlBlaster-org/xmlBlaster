@@ -89,7 +89,7 @@ public:
 
       subscribe();
       
-      log_.info(ME, "Please use PublishDemo to publish a message 'Hello', i'm waiting for updates ...");
+      log_.info(ME, "Please use PublishDemo to publish a message '"+oid+"', i'm waiting for updates ...");
 
       if (interactive) {
          org::xmlBlaster::util::thread::Thread::sleepSecs(1);
