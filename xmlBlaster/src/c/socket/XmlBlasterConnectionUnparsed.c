@@ -317,7 +317,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       xb->requestId, xb->requestId+1, dataLen_);
    xb->requestId++;
    if (xb->requestId > 1000000000) xb->requestId = 0;
-   SNPRINTF(requestIdStr, XMLBLASTEREXCEPTION_MESSAGE_LEN, "%-ld", xb->requestId);
+   SNPRINTF(requestIdStr, MAX_REQUESTID_LEN, "%-ld", xb->requestId);
 
    if (xb->preSendEvent != 0) {
       /* A callback function pointer is registered to be notified just before sending */
@@ -363,6 +363,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       xmlBlasterConnectionShutdown(xb);
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
+      free(rawMsg);
       return false;
    }
 
