@@ -41,13 +41,7 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  define VSNPRINTF vsnprintf    /* stdarg.h */
 #endif
 
-#if defined(__sun)
-  typedef long long int64_t;
-  typedef int int32_t;
-  typedef short int16_t;
-# define PRINTF_PREFIX_INT64_T "%lld"
-
-#elif defined(_WINDOWS)
+#if defined(_WINDOWS)
   typedef __int64 int64_t;
 # define PRINTF_PREFIX_INT64_T "%I64d"
   /*typedef long long int64_t;*/
@@ -60,6 +54,8 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 */
 # if defined(__FreeBSD__) 
 #   include <inttypes.h>
+# elif defined(__sun)
+    /*#   include <int_types.h>*/ /* /usr/include/sys/int_types.h */
 # else
 #   include <stdint.h>  /*-> C99:  uint64_t etc. */
 # endif
