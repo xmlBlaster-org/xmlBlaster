@@ -3,7 +3,7 @@ Name:      callbackServer.c
 
 Project:   xmlBlaster.org
 
-Comment:   Example how to receive asynchrouns callback messages from xmlBlaster
+Comment:   Example how to receive asynchronous callback messages from xmlBlaster
            with C and XmlRpc (see README)
            See http://xmlrpc-c.sourceforge.net/
 
@@ -15,11 +15,11 @@ Compile:   Read xmlrpc-c/doc/overview.txt
            gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
 
 Invoke:    callbackServer <pathToXmlrpcConf>abyss.conf
-           Please edit abyss.conf before starting, e.g.
-           Port 8081
+           Please edit abyss.conf before starting,
+           e.g. set Port 8081
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
-
+#include <string.h>
 #include <xmlrpc.h>
 #include <xmlrpc_abyss.h>
 
@@ -27,7 +27,7 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
 
 
 /**
- *
+ * Starts XmlRpc Webserver as configured in abyss.conf
  */
 int main (int argc, char **argv)
 {
@@ -53,18 +53,23 @@ int main (int argc, char **argv)
  */
 xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
 {
-   char *loginName=NULL, *key=NULL, *qos=NULL;
+   char *loginName=NULL;        // May change in future to a sessionId
+   char *key=NULL;              // The message meta information
+   char *qos=NULL;              // Some Quality of Service information
    unsigned char *content=NULL; // binary data, the message content
    size_t len;
    xmlrpc_value *retVal = NULL;
    char *retData = NULL;
 
-   printf("\n\n-------------------------------------------\n");
-   if (env->fault_occurred)
-      printf("callbackServer: Entering update(), ERROR message arrives ...\n");
-   else
-      printf("callbackServer: Entering update(), message arrives ...\n\n");
+   {  // print info ...
+      printf("\n\n-------------------------------------------\n");
+      if (env->fault_occurred)
+         printf("callbackServer: Entering update(), ERROR message arrives ...\n");
+      else
+         printf("callbackServer: Entering update(), message arrives ...\n\n");
+   }
 
+   // Parse the received message ...
    xmlrpc_parse_value(env, param_array, "(ss6s*)", &loginName, &key, &content, &len, &qos);
    if (env->fault_occurred) {
       fprintf(stderr, "callbackServer: Error when parsing message ... %d, %d, %s\n",
@@ -73,11 +78,16 @@ xmlrpc_value *update (xmlrpc_env *env, xmlrpc_value *param_array, void *user_dat
       return xmlrpc_build_value(env, "s", "<qos><state>ERROR</state></qos>");
    }
 
-   printf("loginName=%s\nkey=%s\ncontent=%s\nqos=%s\n",
-                    loginName, key, content, qos);
-   printf("\n-------------------------------------------\n");
+   {  // dump what we have got ...
+      unsigned char buf[len+2];
+      strncpy(buf, content, len);
+      *(buf + len) = 0;
+      printf("loginName=%s\nkey=%s\ncontent=%s\nqos=%s\n",
+                       loginName, key, buf, qos);
+      printf("\n-------------------------------------------\n");
+   }
 
-   /* Return our result. */
+   // Return our result
    retData = "<qos><state>OK</state></qos>";
    retVal = xmlrpc_build_value(env, "s#", retData, strlen(retData));
    return retVal;

@@ -2,14 +2,15 @@ Simple example how to access xmlBlaster with C and XmlRpc
 =========================================================
 
 
-Installation
-============
+Installation:
+=============
 
 Download XmlRpc lib from:
         http://xmlrpc-c.sourceforge.net/
 
 This XmlRpc implementation needs the W3C HTTP client library
 (download from http://www.w3.org/Library/)
+
 
 
 Compile (on UNIX):
@@ -51,6 +52,7 @@ cd <XMLBLASTER_HOME>/demo/c/xmlrpc
    SERVER_LIBS=`xmlrpc-c-config abyss-server --libs`
 	gcc $SERVER_CFLAGS -o callbackServer callbackServer.c $SERVER_LIBS -Wall
 
+
 Run it:
 =======
 
@@ -82,5 +84,20 @@ Run it:
 (You may also want to start a Java client to receive the messages like:
   java org.xmlBlaster.client.reader.SubscribeMessage  -name ben  -passwd secret  -oid __sys__TotalMem
 ) 
+
+
+Note:
+=====
+
+When the client start (see 3.), it publishes the callback address
+of the callbackServer (see 2., as configured in abyss.conf).
+We need to do this, since the callback server itself has no
+way to tell its callback address to xmlBlaster.
+
+
+Note:
+=====
+
+I'm not shure if i have detected all possible memory leaks.
 
 01/2002 marcel

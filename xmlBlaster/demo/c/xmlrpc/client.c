@@ -1,15 +1,20 @@
 /*------------------------------------------------------------------------------
 Name:      client.c
+
 Project:   xmlBlaster.org
+
 Comment:   Example how to access xmlBlaster with C and XmlRpc
            See http://xmlrpc-c.sourceforge.net/
-           Usually you start first the callback server to receive
+           Usually you start first the callbackServer to receive
            asynchronous update from xmlBlaster as well (see README)
+
 Author:    ruff@swand.lake.de
+
 Compile:   Read xmlrpc-c/doc/overview.txt
            CLIENT_CFLAGS=`xmlrpc-c-config libwww-client --cflags`
            CLIENT_LIBS=`xmlrpc-c-config libwww-client --libs`
            gcc $CLIENT_CFLAGS -o client client.c $CLIENT_LIBS -Wall
+
 Invoke:    See usage text below
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -62,7 +67,10 @@ int main (int argc, char** argv)
      }
    }
 
-   data = readFile(msgFile);
+   if (destination == NULL) // as default, we send messages to ourself (-> our callbackServer)
+      destination = loginName;
+
+   data = readFile(msgFile); // get the data we want to send
 
    if (destination == NULL || data == NULL) {
       printf("Missing arguments\n");
