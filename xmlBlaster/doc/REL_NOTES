@@ -4,6 +4,16 @@
 Changes for 0.72 [Feb. 2000]
 ==============================
 
+   - Added some simple console input mode, to control xmlBlaster
+	  Type <?> and <Enter> when xmlBlaster is running to get help.
+
+   - Extended control panel GUI to support
+	  * dumping of xmlBlaster internal state
+	  * clearing the logging window
+
+   - Added support to toggle from control panel GUI to console mode
+	  and back again
+
    - Bug fixed for subscribe with oid and later publish of this message.
 	  The BigXmlDom was not updated properly.
 
