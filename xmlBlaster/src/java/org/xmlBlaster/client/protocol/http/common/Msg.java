@@ -3,7 +3,7 @@ Name:      Msg.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.client.protocol.http.applet;
+package org.xmlBlaster.client.protocol.http.common;
 
 import java.util.Hashtable;
 

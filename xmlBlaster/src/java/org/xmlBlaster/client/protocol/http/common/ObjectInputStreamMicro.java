@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-package org.xmlBlaster.client.protocol.http.applet;
+package org.xmlBlaster.client.protocol.http.common;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -39,12 +39,12 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       int size = this.in.readInt();
       Vector ret = new Vector();
       for (int i=0; i < size; i++) {
-         ret.add(readHashtable());
-         ret.add(readHashtable());
+         ret.addElement(readHashtable());
+         ret.addElement(readHashtable());
          int length = this.in.readInt();
          byte[] content = new byte[length];
          this.in.read(content);
-         ret.add(content);
+         ret.addElement(content);
       }
       return ret;
    }

@@ -1,15 +1,11 @@
 package org.xmlBlaster.client.protocol.http.applet;
 
 import java.applet.Applet;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
-//import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.client.protocol.http.common.*;
 
 /**
  * A java client implementation to access xmlBlaster using a persistent http connection
@@ -89,16 +85,14 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
       return properties;
    }
 
-
    /**
     * This notation is URLEncoder since JDK 1.4.
     * To avoid deprecation warnings
-    * at many places and support JDK < 1.4 we provide it here
+    * at many places and support JDK &lt; 1.4 we provide it here
     * and simply map it to the old encode(String)
     */
-   public String encode(String s, String enc)
-   {
-     return java.net.URLEncoder.encode(s);
+   public String encode(String s, String enc) {
+      return new String(encodeBase64(s.getBytes()));
    }
    
    public byte[] encodeBase64(byte[] data) {
@@ -109,52 +103,8 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
       return Base64.decodeBase64(data);
    }
 
-   protected InputStream prepareRequest(String request, boolean doPost, boolean oneway) throws Exception {
-      // applet.getAppletContext().showDocument(URL url, String target);
-      URL url = (doPost) ? new URL(this.xmlBlasterServletUrl) : new URL(this.xmlBlasterServletUrl + request);
-      URLConnection conn = url.openConnection();
-      conn.setUseCaches(false);
-      writeCookie(conn);
-      log("DEBUG", "doPost=" + doPost + ", sending '" + url.toString() + "' with request '" + request + "' ...");
-      if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
-         conn.setDoOutput(true);
-         DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
-         dataOutput.writeBytes(request);
-         dataOutput.close();
-      }
-      readCookie(conn);
-      return conn.getInputStream();
-   }
-
-
-   public void readCookie(Object obj) {
-      if (!this.runsAsApplet) { // no cookie is setting the sessionId
-         //conn.setRequestProperty("cookie", "JSESSIONID=" + this.sessionId);
-         URLConnection conn = (URLConnection)obj;
-         String threadName = Thread.currentThread().getName();
-         log("DEBUG", threadName + " readCookie: original cookie: " + cookie);
-         log("DEBUG", threadName + " readCookie: Cookie         : " + conn.getRequestProperty("Cookie"));
-         log("DEBUG", threadName + " readCookie: Set-Cookie     : " + conn.getHeaderField("Set-Cookie"));
-
-         String setCookie = conn.getHeaderField("Set-Cookie"); 
-         if (setCookie != null) this.cookie = extractCookies(setCookie);
-      }
-   }
-
-   public void writeCookie(Object obj) {
-      if (!this.runsAsApplet) { // no cookie is setting the sessionId
-         //conn.setRequestProperty("cookie", "JSESSIONID=" + this.sessionId);
-         URLConnection conn = (URLConnection)obj;
-         String threadName = Thread.currentThread().getName();
-         log("DEBUG", threadName + " writeCookie: original cookie: " + this.cookie);
-         if (this.cookie == null) {
-            conn.setRequestProperty("cookie", "");
-         }
-         else conn.setRequestProperty("cookie", "JSESSIONID=" + (String)this.cookie.get("JSESSIONID"));
-         conn.setRequestProperty("Cache-Control", "no-cache");
-         conn.setRequestProperty("Pragma", "no-cache");
-         conn.setRequestProperty("Connection", "keep-alive");
-      }
+   public I_Connection createConnection(String urlString) throws Exception {
+      return new UrlConnection(urlString);
    }
 
 }

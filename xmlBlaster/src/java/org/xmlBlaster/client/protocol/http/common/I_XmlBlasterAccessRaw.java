@@ -3,7 +3,7 @@ Name:      I_XmlBlasterRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.client.protocol.http.applet;
+package org.xmlBlaster.client.protocol.http.common;
 
 import java.util.Hashtable;
 
@@ -103,4 +103,14 @@ public interface I_XmlBlasterAccessRaw
     * @return The found parameters
     */
    public Hashtable getHtmlProperties();
+   
+   
+   /**
+    * Creates a connection to the specified servlet. 
+    * @param urlString
+    * @return
+    * @throws Exception
+    */
+   public I_Connection createConnection(String urlString) throws Exception;
+      
 }

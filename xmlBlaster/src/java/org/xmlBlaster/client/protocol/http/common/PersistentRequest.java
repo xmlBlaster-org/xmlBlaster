@@ -1,12 +1,8 @@
-package org.xmlBlaster.client.protocol.http.applet;
+package org.xmlBlaster.client.protocol.http.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
-import java.net.URLConnection;
-import java.net.URL;
 import java.util.Hashtable;
-import org.apache.commons.codec.binary.Base64;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Opens a persistent http connection to the servlet which is the proxy to xmlBlaster. 
@@ -18,7 +14,6 @@ import org.xmlBlaster.util.def.MethodName;
 public class PersistentRequest extends Thread {
 
    private String xmlBlasterServletUrl;
-   //private String request;
    private XmlBlasterAccessRawBase xmlBlasterAccess;
    private String connectReturnQos;
    private String loginName;
@@ -57,7 +52,7 @@ public class PersistentRequest extends Thread {
    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
    */
    PersistentRequest(XmlBlasterAccessRawBase xmlBlasterAccess, String xmlBlasterServletUrl, String connectQos) {
-      super("PersistentRequest");
+      super();
       this.xmlBlasterAccess = xmlBlasterAccess;
       this.xmlBlasterServletUrl = this.xmlBlasterAccess.getXmlBlasterServletUrl();
       this.connectQos = connectQos;
@@ -83,7 +78,7 @@ public class PersistentRequest extends Thread {
    public void run(){
       try{
          this.xmlBlasterAccess.request("?ActionType=dummyToCreateASessionId",
-                           XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
+                           XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
 
          /*
           NOTE: We are sending the paramters encoded into the URL because i don't
@@ -92,12 +87,11 @@ public class PersistentRequest extends Thread {
                   xmlBlaster@marcelruff.info 2003-11-09
          */
 
-         String request = "?ActionType="+MethodName.CONNECT.toString() +
+         String request = "?ActionType="+I_XmlBlasterAccessRaw.CONNECT_NAME +
                           "&xmlBlaster.connectQos=" + this.xmlBlasterAccess.encode(this.connectQos, "UTF-8");
-         URL url = new URL(xmlBlasterServletUrl+request);  // This works fine but is more a GET variant
-         //URL url = new URL(xmlBlasterServletUrl);
          
-         URLConnection conn = url.openConnection();
+         String url = xmlBlasterServletUrl+request;
+         I_Connection conn = this.xmlBlasterAccess.createConnection(url);  // This works fine but is more a GET variant
          this.xmlBlasterAccess.writeCookie(conn);
          conn.setDoInput(true);
          conn.setDoOutput(true);
@@ -107,12 +101,12 @@ public class PersistentRequest extends Thread {
          //conn.setRequestProperty("Content-length", ""+request.length());
          //conn.setRequestProperty("User-Agent","XmlBlasterApplet 1.0");
          DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
-         log("DEBUG", "POST, sending '" + url.toString() + "' ...");
+         log("DEBUG", "POST, sending '" + url + "' ...");
          //dataOutput.writeBytes("ActionType="+MethodName.CONNECT.toString()+"\n");
          //dataOutput.writeBytes("xmlBlaster.connectQos=" + XmlBlasterAccessRaw.encode(this.connectQos) + "\n");
          dataOutput.close();
 
-         log("DEBUG", "Creating now a persistent connection to '" + url.toString() + "'");
+         log("DEBUG", "Creating now a persistent connection to '" + url + "'");
 
          conn.connect();
          
@@ -126,22 +120,26 @@ public class PersistentRequest extends Thread {
             if (line.indexOf("--End") != -1) { // base64 may not contain "--"
                continue;
             }
-            byte[] serial = Base64.decodeBase64(line.getBytes());
+            byte[] serial = this.xmlBlasterAccess.decodeBase64(line.getBytes());
             log("DEBUG", "Parsing now: <" + new String(serial) + "> with length " + serial.length);
+
+            // don't know why but sometimes a special character resulting in a converted empty string
+            if (serial.length < 1) continue;
 
             ByteArrayInputStream in = new ByteArrayInputStream(serial);
             ObjectInputStreamMicro ois = new ObjectInputStreamMicro(in);
 
             String method = (String)ois.readObject(); // e.g. "update"
+            log("DEBUG", "Received method '" + method + "'");
 
-            if (MethodName.PING.toString().equals(method)) { // "ping"
+            if (I_XmlBlasterAccessRaw.PING_NAME.equals(method)) { // "ping"
                String qos = (String)ois.readObject();
                log("DEBUG", "Received ping '" + qos + "'");
                if (qos.indexOf("loginSucceeded") != -1) {
                   this.connectReturnQos = "<qos/>";
                   this.xmlBlasterAccess.isConnected(true);
                   this.xmlBlasterAccess.request("?ActionType=pong",
-                                   XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
+                                   XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
                }
                else { // An ordinary ping arrived
                   if (!this.xmlBlasterAccess.isConnected()) {
@@ -149,15 +147,15 @@ public class PersistentRequest extends Thread {
                      continue;
                   }
                   this.xmlBlasterAccess.request("?ActionType=pong",
-                                   XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
+                                   XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
                }
             }
-            else if (MethodName.UPDATE.toString().equals(method)) { // "update"
+            else if (I_XmlBlasterAccessRaw.UPDATE_NAME.equals(method)) { // "update"
                String cbSessionId = (String)ois.readObject();
                Hashtable qosMap = (Hashtable)ois.readObject();
                Hashtable keyMap = (Hashtable)ois.readObject();
                String contentBase64 = (String)ois.readObject();
-               byte[] content = Base64.decodeBase64(contentBase64.getBytes());
+               byte[] content = this.xmlBlasterAccess.decodeBase64(contentBase64.getBytes());
                log("DEBUG", "Received update keyOid='" + keyMap.get("/key/@oid") + "' stateId=" + qosMap.get("/qos/state/@id"));
                this.xmlBlasterAccess.update(cbSessionId, keyMap, content, qosMap);
             }

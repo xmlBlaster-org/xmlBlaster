@@ -4,11 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
-package org.xmlBlaster.client.protocol.http.applet;
+package org.xmlBlaster.client.protocol.http.common;
 
 import java.io.IOException;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -34,10 +35,11 @@ public class ObjectOutputStreamMicro implements I_ObjectStream {
       int nmax = map.size();
       if (nmax < 1) return;
       this.out.writeInt(nmax);
-      Object[] keys = map.keySet().toArray();
-      for (int i=0; i < nmax; i++) {
-         this.out.writeUTF((String)keys[i]);
-         this.out.writeUTF((String)map.get(keys[i]));
+      Enumeration keys = map.keys();
+      while (keys.hasMoreElements()) {
+         String key = (String)keys.nextElement();
+         this.out.writeUTF(key);
+         this.out.writeUTF((String)map.get(key));
       }
    }
 
@@ -45,9 +47,9 @@ public class ObjectOutputStreamMicro implements I_ObjectStream {
       int size = vec.size() / 3;
       this.out.writeInt(size);
       for (int i=0; i < size; i++) {
-         Hashtable qos = (Hashtable)vec.get(3*i);
-         Hashtable key = (Hashtable)vec.get(3*i+1);
-         byte[] content = (byte[])vec.get(3*i+2);
+         Hashtable qos = (Hashtable)vec.elementAt(3*i);
+         Hashtable key = (Hashtable)vec.elementAt(3*i+1);
+         byte[] content = (byte[])vec.elementAt(3*i+2);
          writeHashtable(qos);
          writeHashtable(key);
          this.out.writeInt(content.length);
