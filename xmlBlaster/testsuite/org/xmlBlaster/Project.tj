@@ -1,3 +1,0 @@
-# Native compilation with TowerJ
-# see xmlBlaster/.bashrc for setup and invocation
-root=testsuite.org.xmlBlaster.LoadTestSub
