@@ -2,6 +2,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Renamed <isClusterNode/> to <clusterNode/> in connect Qos
+
  o There is new support to publish an administrative message
    to configure a topic with QoS markup <administrative/>
 
