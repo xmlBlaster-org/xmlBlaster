@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.2 2002/05/28 10:17:58 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.3 2002/05/30 09:54:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -293,7 +293,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * @return dummy to match I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full with id="<driverName>.MaxSize"
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -314,7 +314,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * For I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -334,7 +334,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * @return dummy to match I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
@@ -368,7 +368,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * @return dummy to match I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
@@ -388,7 +388,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * @return dummy to match I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -409,7 +409,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
 
    /**
     * @return dummy to match I_XmlBlaster interface
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
    public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -431,7 +431,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    /**
     * For I_XmlBlaster interface
     * @return false No connection to server, off line recording messages.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public boolean ping()
    {

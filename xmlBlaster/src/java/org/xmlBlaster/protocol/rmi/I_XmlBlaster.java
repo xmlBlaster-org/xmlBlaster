@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.5 2002/05/19 12:55:52 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.6 2002/05/30 09:52:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -17,7 +17,7 @@ import java.rmi.RemoteException;
 /**
  * RMI clients access xmlBlaster through these methods. 
  *
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @see org.xmlBlaster.engine.RequestBroker
  * @see org.xmlBlaster.protocol.I_XmlBlaster
  * @author ruff@swand.lake.de
@@ -59,7 +59,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
    /**
     * Publish messages.
     * <p />
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(String sessionId, MessageUnit[] msgUnitArr)
                            throws RemoteException;
