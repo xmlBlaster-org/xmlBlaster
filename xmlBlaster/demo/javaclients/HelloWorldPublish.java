@@ -226,7 +226,8 @@ public class HelloWorldPublish
                   String key = (String)it.next();
                   pq.setClientProperty(key, clientPropertyMap.get(key).toString());
                }
-               pq.getData().setClientProperty("ALONG", (new Long(12)));
+               //Example for a typed property:
+               //pq.getData().setClientProperty("ALONG", (new Long(12)));
             }
             
             if (i == 0) {
