@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = corba email http jdbc rmi
+SUB_DIRS = corba email http jdbc rmi nativ
 LOCAL_FILES = \
 			$(CLASS_DIR)/I_CallbackDriver.class
 #------------------------------------------------------------------------------
