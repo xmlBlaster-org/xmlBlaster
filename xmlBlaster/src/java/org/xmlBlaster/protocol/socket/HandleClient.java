@@ -289,7 +289,15 @@ public class HandleClient extends Executor implements Runnable
                receiver.parse(iStream); // blocks until a message arrives
             }
             catch (Throwable e) {
-               log.error(ME, "Error parsing data from TCP packet: " + e);
+               if (e.toString().indexOf("closed") != -1) {
+                  if (log.TRACE) log.trace(ME, "TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
+               }
+               else if (e.toString().indexOf("EOF") != -1) {
+                  log.warn(ME, "Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
+               }
+               else {
+                  log.error(ME, "Error parsing TCP data from '" + remoteSocketStr + "': " + e.toString());
+               }
                shutdown();
                break;
             }
