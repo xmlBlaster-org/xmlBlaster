@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
+import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.ClusterManager;
@@ -155,6 +156,7 @@ public final class RunlevelManager
     */
    public final int changeRunlevel(int newRunlevel, boolean force) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Changing from run level " + currRunlevel + " to run level " + newRunlevel + " with force=" + force);
+      long start = System.currentTimeMillis();
       int numErrors = 0;
       if (currRunlevel == newRunlevel) {
          return numErrors;
@@ -182,8 +184,9 @@ public final class RunlevelManager
             finally {
                if (dest > from && isMajorLevel(dest)) {
                   currRunlevel = dest; // pre/post events are not marked as run levels
+                  long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info(ME, "Successful startup to run level " + toRunlevelStr(dest) + ".");
+                     log.info(ME, "Successful startup to run level " + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
                   else
                      log.info(ME, "Startup to run level " + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
@@ -199,8 +202,9 @@ public final class RunlevelManager
             finally {
                if (dest < from && isMajorLevel(dest)) {
                   currRunlevel = dest;
+                  long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info(ME, "Successful shutdown to run level=" + toRunlevelStr(dest) + ".");
+                     log.info(ME, "Successful shutdown to run level=" + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
                   else
                      log.info(ME, "Shutdown to run level=" + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
