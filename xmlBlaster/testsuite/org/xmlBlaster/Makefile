@@ -21,6 +21,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/LoadTestSub.class \
     $(CLASS_DIR)/RamTest.class \
     $(CLASS_DIR)/TestLogin.class \
+    $(CLASS_DIR)/TestLoginLogoutEvent.class \
     $(CLASS_DIR)/TestPersistence.class \
     $(CLASS_DIR)/TestPtD.class \
     $(CLASS_DIR)/TestPtDQueue.class \
