@@ -11,6 +11,8 @@ echo "STARTING classtest TESTS ..."
 java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 echo "STARTING qos TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.AllTests
+echo "STARTING client TESTS ..."
+java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.AllTests
 echo "STARTING authentication TESTS ..."
 java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.authentication.AllTests
 echo "STARTING dispatch TESTS ..."
