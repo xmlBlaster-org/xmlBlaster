@@ -1,0 +1,21 @@
+<!--
+   java javaclients.script.XmlScript -requestFile unsubscribeAfterErase.xml
+-->
+
+<xmlBlaster>
+
+  <connect/>
+  <publish><key oid="1"><airport /></key><content>Hi</content></publish>
+  <subscribe><key queryType="XPATH">//airport</key><qos/></subscribe>
+  <wait delay="500" />
+<!--  <erase><key oid="1"></key><qos><force/></qos></erase> -->
+  
+  <wait delay="2000" />
+  <unSubscribe><key queryType="XPATH">//airport1</key><qos/></unSubscribe>
+
+  <erase><key oid="1"></key><qos><force/></qos></erase>
+
+
+  <disconnect />
+</xmlBlaster>
+
