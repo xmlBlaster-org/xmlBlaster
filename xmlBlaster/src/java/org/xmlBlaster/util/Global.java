@@ -1133,24 +1133,42 @@ public class Global implements Cloneable
     */
    public String getCbHostname() {
       if (this.cbHostname == null) {
+         Address addr = getBootstrapAddress();
+         this.cbHostname = getProperty().get("bootstrapHostnameCB",
+                           getCbHostname(addr.getBootstrapHostname(), addr.getBootstrapPort()));
+      }
+      return this.cbHostname;
+   }
+
+   /**
+    * Returns a local IP as a default setting to use for callback servers.
+    * <p />
+    * It is determined by doing a short connect to the given hostname/socket
+    * an reading the used local hostname.
+    * The precedence of finding the callback hostname is:
+    * <ol>
+    *  <li>Try to determine it by a temporary connection to the given hostname/socket and reading the used local IP</li>
+    *  <li>Use default IP of this host</li>
+    * </ol>
+    * @return The default IP, is never null
+    */
+   public String getCbHostname(String hostname, int port) {
+      String cbHostname = null;
+      if (port > 0) {
          try {
-            Address addr = getBootstrapAddress();
-            if (addr.getBootstrapPort() > 0) {
-               Socket sock = new Socket(addr.getBootstrapHostname(), addr.getBootstrapPort());
-               this.cbHostname = sock.getLocalAddress().getHostAddress();
-               sock.close();
-               sock = null;
-               if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
-            }
+            Socket sock = new Socket(hostname, port);
+            cbHostname = sock.getLocalAddress().getHostAddress();
+            sock.close();
+            sock = null;
+            if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
          }
          catch (java.io.IOException e) {
             log.trace(ME, "Can't find default cb hostname: " + e.toString());
          }
-         if (this.cbHostname == null)
-            this.cbHostname = getLocalIP();
-         this.cbHostname = getProperty().get("bootstrapHostnameCB", this.cbHostname);
       }
-      return this.cbHostname;
+      if (cbHostname == null)
+         cbHostname = getLocalIP();
+      return cbHostname;
    }
 
    /**
