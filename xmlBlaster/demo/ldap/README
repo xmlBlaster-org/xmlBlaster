@@ -1,0 +1,100 @@
+
+   Demo with openldap server 2.x, the free ldap server (slapd)
+      http://www.openldap.org/
+
+Note:
+
+  In this README you find a description of how to set up openldap.
+  After you have the running LDAP server, please follow
+
+     xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/ldap/README
+
+   on how to use it with xmlBlaster (it is simple - just go for it).
+
+See:
+
+  http://nimbus.temple.edu/ldap/ 
+  http://www.yolinux.com/TUTORIALS/LinuxTutorialLDAP.html
+  http://www.ldapguru.com/
+  http://java.sun.com/products/jndi
+       The JAVA based ldap interface
+  http://developer.netscape.com/docs/manuals/dirsdk/jsdk40/servinfo.htm
+       Demo code
+  xmlBlaster/demo/ldap/demoData.ldif
+       Demo users for our ldap server
+
+GUI based client:
+
+  Under UNIX you can use 'gq' to manage your ldap data.
+  (The gentlemans LDAP client)
+
+
+Install this demo:
+
+  JDK 1.3 and higher has ldap drivers integrated, for
+  JDK 1.2 please download the ldap driver and add it to your
+  classpath.
+
+
+Configure OpenLDAP server:
+
+  Edit /etc/openldap/slapd.conf
+    suffix     "o=xmlBlaster, c=ORG"
+    rootdn     "cn=Manager, o=xmlBlaster, c=ORG"
+
+    # Define global ACLs to allow default read/write access.
+    access to * by * read
+    access to * by * write
+
+    # Switch on logging:
+    loglevel -1
+
+  tail -f /var/log/messages
+
+
+Start/Stop:
+
+  rcldap start
+  rcldap stop
+
+
+Feed some initial users:
+
+  We have provided a file demoData.ldif which contains some
+  demo data, in the ldap interchange format.
+  The demo data is based on the core.schema.
+  Please import it:
+
+  ldapadd -x -D "cn=Manager,o=xmlBlaster,c=ORG" -w secret -v -f demoData.ldif
+
+
+Query the ldap server (cn is the unique user name):
+
+  ldapsearch -x -b 'o=xmlBlaster,c=ORG' '(objectclass=*)'
+
+  Check password:
+    ldapsearch -x -b 'o=xmlBlaster,c=ORG' '(&(cn=tim)(userPassword=tim))'
+  You should get a line like:  # numEntries: 1
+
+
+Recursiv remove all data:
+
+  echo "o=xmlBlaster, c=ORG" | ldapdelete -x -D "cn=Manager,o=xmlBlaster,c=ORG" -w secret -v -r
+
+
+Query ldap server with netscape:
+
+  ldap://localhost/o=xmlBlaster, c=ORG??base
+  ldap://localhost/o=xmlBlaster, c=ORG??sub
+  ldap://localhost/o=xmlBlaster, c=ORG?cn,dbAnrede?sub
+  ldap://localhost/o=xmlBlaster, c=ORG?cn?sub?(sn=Stallman)
+
+  Syntax:
+    ldap[s]://<hostname>:<port>/<base_dn>?<attributes>?<scope>?<filter>
+    RFC2255
+
+
+LDAP and Kerberos:
+
+  http://www.umich.edu/~dirsvcs/ldap/doc/guides/slapd/15.html#RTFToC123
+

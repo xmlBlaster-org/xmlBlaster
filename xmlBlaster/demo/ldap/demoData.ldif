@@ -1,0 +1,30 @@
+dn: o=xmlBlaster, c=ORG
+o: xmlBlaster
+businessCategory: Free MOM
+objectclass: ORGanization
+
+dn: ou=internal, o=xmlBlaster, c=ORG
+ou: internal
+objectclass: ORGanizationalUnit
+
+dn: ou=clients, o=xmlBlaster, c=ORG
+ou: clients
+objectclass: ORGanizationalUnit
+
+dn: cn=__sys__jdbc, ou=internal, o=xmlBlaster, c=ORG
+cn: __sys__jdbc
+userPassword: __sys__jdbc
+sn: JDBC driver for xmlBlaster
+description: This driver is used to query arbitrary JDBC databases from any client (Python,C++,...)
+seeAlso: href=http://www.xmlBlaster.org
+objectclass: person
+
+dn: cn=tim, ou=clients, o=xmlBlaster, c=ORG
+cn: tim
+sn: Stallman
+telephoneNumber: 12345
+localityName: HongKong
+userPassword: tim
+description: A demo user
+objectclass: residentialPerson
+
