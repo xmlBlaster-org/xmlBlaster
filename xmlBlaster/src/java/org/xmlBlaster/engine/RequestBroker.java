@@ -881,7 +881,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          }
 
-         if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "') ...");
+         if (Log.CALL) Log.call(ME, "Entering publish(oid='" + xmlKey.getKeyOid() + "', contentMime='" + xmlKey.getContentMime() + "', contentMimeExtended='" + xmlKey.getContentMimeExtended() + "' domain='" + xmlKey.getDomain() + "' ...");
          if (Log.DUMP) Log.dump(ME, "Receiving message in publish()\n" + xmlKey.toXml() + "\n" + publishQos.toXml());
 
          String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
