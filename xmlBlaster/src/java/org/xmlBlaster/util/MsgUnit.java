@@ -23,9 +23,9 @@ public final class MsgUnit implements java.io.Serializable
 {
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
    private transient Global glob;
-   private QosData qosData;
-   private byte[] content;
-   private KeyData keyData;
+   private QosData qosData; // never null
+   private byte[] content;  // never null
+   private KeyData keyData; // can be null
 
    /**
     * Uses the default global and assumes a PUBLISH. 
@@ -79,6 +79,14 @@ public final class MsgUnit implements java.io.Serializable
          this.qosData = this.glob.getQueryQosFactory().readObject(qos);
          this.keyData = this.glob.getQueryKeyFactory().readObject(key);
       }
+      else if (methodName == MethodName.CONNECT) {
+         this.qosData = this.glob.getConnectQosFactory().readObject(qos);
+         this.keyData = null;
+      }
+      else if (methodName == MethodName.DISCONNECT) {
+         this.qosData = this.glob.getDisconnectQosFactory().readObject(qos);
+         this.keyData = null;
+      }
       else {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, "MsgUnit", "Sorry method support for '" + methodName.toString() + "' is missing");
       }
@@ -115,13 +123,17 @@ public final class MsgUnit implements java.io.Serializable
    }
 
    /**
+    * Create a MsgUnit with pre-parsed parameters. 
+    * @param key can be null
+    * @param content can be null
+    * @param qos Never null!
     */
    public MsgUnit(KeyData key, byte[] content, QosData qos) {
-      if (key == null || qos == null) {
+      if (qos == null) {
          Thread.dumpStack();
-         throw new IllegalArgumentException("MsgUnit constructor with key=="+key+" OR qos="+qos+" is invalid");
+         throw new IllegalArgumentException("MsgUnit constructor with qos="+qos+" is invalid");
       }
-      this.glob = (key == null) ? qos.getGlobal() : key.getGlobal();
+      this.glob = qos.getGlobal();
       this.keyData = key;
       this.qosData = qos;
       setContent(content);
@@ -168,8 +180,12 @@ public final class MsgUnit implements java.io.Serializable
 
    public void setGlobal(Global glob) {
       this.glob = glob;
-      this.keyData.setGlobal(this.glob);
+      if (this.keyData != null) this.keyData.setGlobal(this.glob);
       this.qosData.setGlobal(this.glob);
+   }
+
+   public MethodName getMethodName() {
+      return this.qosData.getMethod();
    }
 
    /**
@@ -208,26 +224,41 @@ public final class MsgUnit implements java.io.Serializable
     * For performance reasons you get a reference to the internal byte[] buffer and no copy.
     * Note that you are not allowed to manipulate the returned byte[].
     * </p>
+    * @return never null
     */
    public byte[] getContent() {
       return this.content;
    }
 
+   /**
+    * Convenience method to get the raw content as a string. 
+    * @return never null
+    */
    public String getContentStr() {
       return new String(this.content);
    }
 
    /**
-    * The QoS XML string
+    * The QoS XML string. 
+    * @return never null
     */
    public String getQos() {
       return this.qosData.toXml();
    }
 
+   /**
+    * The parsed key. 
+    * @return for PUBLISH/UPDATE never null, otherwise it may be null
+    */
    public KeyData getKeyData() {
       return this.keyData;
    }
-
+   
+   /**
+    * The parsed QoS. 
+    * Is of type QueryQosData, MsgQosData depending on the MethodName
+    * @return never null
+    */
    public QosData getQosData() {
       return this.qosData;
    }
@@ -266,7 +297,8 @@ public final class MsgUnit implements java.io.Serializable
    public MsgUnit getClone() {
       byte[] newContent = new byte[content.length];
       System.arraycopy(this.content, 0,  newContent, 0, this.content.length);
-      return new MsgUnit((KeyData)this.keyData.clone(), content, (QosData)this.qosData.clone());
+      return new MsgUnit((this.keyData==null)?null:(KeyData)this.keyData.clone(), 
+                         content, (QosData)this.qosData.clone());
    }
 
    public MsgUnitRaw getMsgUnitRaw() {
@@ -300,7 +332,7 @@ public final class MsgUnit implements java.io.Serializable
     */
    public long size() {
       //glob.getLog("core").info("MsgUnit", this.qosData.toXml() + "qosSize=" + this.qosData.size() + " keySize=" + this.keyData.size() + " contentSize=" + this.content.length + this.qosData.toXml());
-      return this.qosData.size() + this.keyData.size() + this.content.length;
+      return this.qosData.size() + ((this.keyData==null)?0:this.keyData.size()) + this.content.length;
    }
 
    /**
@@ -338,7 +370,9 @@ public final class MsgUnit implements java.io.Serializable
       String offset = Constants.OFFSET + extraOffset;
 
       //sb.append(offset).append("<MsgUnit>");
-      sb.append(this.keyData.toXml(extraOffset+Constants.INDENT));
+      if (this.keyData != null) {
+         sb.append(this.keyData.toXml(extraOffset+Constants.INDENT));
+      }
       if (maxContentLen < 0 || this.content.length < maxContentLen) {
          sb.append(offset).append("  <content><![CDATA[").append(new String(this.content)).append("]]></content>");
       }
@@ -351,5 +385,4 @@ public final class MsgUnit implements java.io.Serializable
 
       return sb.toString();
    }
-   
 }
