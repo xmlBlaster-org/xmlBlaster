@@ -278,8 +278,10 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                   controlPanel.showWindow();
             }
             else if (line.toLowerCase().equals("gc")) {
+               long totalMem = Runtime.getRuntime().totalMemory();
+               long freeMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
                System.gc();
-               log.info(ME, "Garbage collector has run");
+               log.info(ME, "Garbage collector has run, total/free bytes before="+totalMem+"/"+freeMem+", after="+Runtime.getRuntime().totalMemory()+"/"+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
             }
             else if (line.toLowerCase().startsWith("r")) {
                if (line.length() > 1) {
