@@ -152,10 +152,6 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Initialize and configure fail safe connection, with this the client library
-    * automatically polls for the xmlBlaster server. 
-    * @param address The configuration of the client connection
-    * @param connectionListener null or your listener implementation on connection state changes (ALIVE | POLLING | DEAD)
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(I_ConnectionStateListener)
     */
    public synchronized void registerConnectionListener(I_ConnectionStateListener connectionListener) {
@@ -164,7 +160,6 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(int)
     */
    public SynchronousCache createSynchronousCache(int size) {
       if (this.synchronousCache != null)

@@ -50,9 +50,7 @@ import org.xmlBlaster.client.I_ConnectionStateListener;
 public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 {
    /**
-    * Initialize and configure fail safe connection, with this the client library
-    * automatically polls for the xmlBlaster server. 
-    * @param address The configuration of the client connection
+    * Register a listener to get events about connection status changes. 
     * @param connectionListener null or your listener implementation on connection state changes (ALIVE | POLLING | DEAD)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe requirement</a>
     */
@@ -164,7 +162,6 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * and destroys low level connection and callback server.
     * @param disconnectQos Describe the desired behavior on disconnect
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
     */
    boolean disconnect(DisconnectQos disconnectQos);
 
