@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.19 2002/05/19 12:55:57 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.20 2002/05/27 16:28:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -37,7 +38,7 @@ import junit.framework.*;
  *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
  * </pre>
  */
-public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, I_CallbackRaw
+public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_CallbackRaw
 {
    private static String ME = "TestInvocationRecorder";
    private final Global glob;
@@ -79,7 +80,7 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
    {
       Log.info(ME, "setup test");
       numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
-      recorder = new InvocationRecorder(1000, this, this);
+      recorder = new InvocationRecorder(glob, 1000, this, this);
    }
 
 
@@ -174,6 +175,17 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
       if (Log.CALL) Log.call(ME, "publish() ...");
       numPublish++;
       return dummyS;
+   }
+
+
+   /**
+    * @return dummy to match I_InvocationRecorder interface
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+    */
+   public void publishOneway(MessageUnit [] msgUnitArr)
+   {
+      if (Log.CALL) Log.call(ME, "publishOneway() ...");
+      numPublishArr++;
    }
 
 
