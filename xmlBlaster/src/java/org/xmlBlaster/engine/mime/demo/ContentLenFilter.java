@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.4 2002/03/16 08:46:02 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.5 2002/03/16 09:10:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -125,7 +125,7 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
     * @param query   The max. message length as given by the subscriber.<br />
     *                If null we use 1 MByte as max size
     * @return true   If message is not too long
-    * @exception XmlBlasterException Is thrown on problems, for example if MIME type
+    * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
     *            does not fit to message content.<br />
     *            Take care throwing an exception, as the
     *            exception is routed back to the publisher. Subscribers which where served before
