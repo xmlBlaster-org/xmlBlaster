@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.6 2002/06/03 09:38:59 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.7 2002/06/03 17:25:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -226,7 +226,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
     */
    public void pullback(float msgPerSec) throws XmlBlasterException {
-      throw new XmlBlasterException(ME, "Sorry, pullback(msgPerSec) is not implemented");
+      log.warn(ME, "Sorry, pullback(msgPerSec) is not implemented, we switch to full speed mode");
+      pullback(0L, 0L, 0.);
    }
 
    /**
