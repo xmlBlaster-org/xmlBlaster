@@ -1316,9 +1316,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public void addQueueSizeListener(I_QueueSizeListener listener) {
       if (listener == null) 
          throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
-      if (this.queueSizeListener != null) 
-         throw new IllegalArgumentException(ME + ": addQueueSizeListener() not allowed now: there is already one registered. Remove it before assigning a new one");
       synchronized(this.queueSizeListenerSync) {
+         if (this.queueSizeListener != null) 
+            throw new IllegalArgumentException(ME + ": addQueueSizeListener() not allowed now: there is already one registered. Remove it before assigning a new one");
          this.queueSizeListener = listener;
       }
    }
@@ -1335,9 +1335,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
    
    private final void invokeQueueSizeListener() {
-      synchronized(this.queueSizeListenerSync) {
-         if (this.queueSizeListener != null) {
-            this.queueSizeListener.changed(this, this.numOfEntries, this.numOfBytes);
+      if (this.queueSizeListener != null) {
+         try {
+            this.queueSizeListener.changed(this, this.getNumOfEntries(), this.getNumOfBytes());
+         }
+         catch (NullPointerException e) {
+            if (log.TRACE) log.trace(ME, "invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListener, this is OK to prevent a synchronize.");
          }
       }
    }
@@ -1346,11 +1349,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#hasQueueSizeListener(I_QueueSizeListener)
     */
    public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
-      synchronized(this.queueSizeListenerSync) {
-         if (listener == null)
-            return this.queueSizeListener != null;
-         else return this.queueSizeListener == listener;
-      }      
+      if (listener == null)
+         return this.queueSizeListener != null;
+      else
+         return this.queueSizeListener == listener;
    }
 
 }
