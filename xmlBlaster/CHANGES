@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o SOCKET bugfix: java client did not return callback ping which resulted in a client disconnect
+ 
+ o added missing logkit and avalon framework to distribution- and client distribution build
  
  o C++ Clients: requests are now threadsafe: mutual block on requests (update thread is
    not blocked). For example a publish can not be done simultaneously as a publish on the
