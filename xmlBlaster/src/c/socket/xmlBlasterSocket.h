@@ -78,13 +78,13 @@ extern char *encodeSocketMessage(
               size_t dataLen,
               bool debug,
               size_t *rawMsgLen);
-Dll_Export extern BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
-Dll_Export extern BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
-extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
-extern void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
-extern void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug);
-Dll_Export extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
-extern QosArr *parseQosArr(size_t dataLen, char *data);
+Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
+Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
+Dll_Export bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
+Dll_Export void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
+Dll_Export void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug);
+Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
+Dll_Export QosArr *parseQosArr(size_t dataLen, char *data);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
