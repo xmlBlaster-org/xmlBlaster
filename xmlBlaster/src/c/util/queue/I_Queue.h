@@ -56,11 +56,12 @@ typedef struct I_QueueStruct I_Queue;
 
 /** Declare function pointers to use in struct to simulate object oriented access */
 typedef bool  ( * I_QueueInitialize)(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception);
-typedef void  ( * I_QueueShutdown)(I_Queue *queueP, ExceptionStruct *exception);
+typedef void  ( * I_QueueShutdown)(I_Queue **queuePP, ExceptionStruct *exception);
+typedef bool  ( * I_QueueDestroy)(I_Queue **queuePP, ExceptionStruct *exception);
 typedef const QueueProperties *( * I_QueueGetProperties)(I_Queue *queueP);
-typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, ExceptionStruct *exception);
+typedef void  ( * I_QueuePut)(I_Queue *queueP, const QueueEntry *queueEntry, ExceptionStruct *exception);
 typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, ExceptionStruct *exception);
-typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
+typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, const QueueEntryArr *queueEntryArr, ExceptionStruct *exception);
 typedef bool  ( * I_QueueClear)(I_Queue *queueP, ExceptionStruct *exception);
 typedef bool  ( * I_QueueEmpty)(I_Queue *queueP);
 typedef int32_t ( * I_QueueNumOfEntries)(I_Queue *queueP);
@@ -81,11 +82,6 @@ struct I_QueueStruct {
     * Access the configuration properties (readonly). 
     */
    I_QueueGetProperties getProperties;
-
-   /**
-    * Shutdown the queue, no entries are destroyed. 
-    */
-   I_QueueShutdown shutdown;
 
    /**
     * puts a new entry into the queue. 
@@ -122,6 +118,21 @@ struct I_QueueStruct {
     * @return true on success, if false *exception.errorCode is not 0
     */
    I_QueueClear clear;
+
+   /**
+    * Shutdown the queue and free memory resources, no persistent entries are destroyed. 
+    * The backend store is closed and all memory allocation are freed and the queueP is set to NULL<br />
+    * NOTE: Your queueP is not usable anymore after this call.
+    * @param queuePP The pointer to your queue pointer, after freeing it is set to *queuePP=0
+    * @param exception *exception.errorCode!=0 if the underlying implementation gets an exception
+    */
+   I_QueueShutdown shutdown;
+
+   /**
+    * An administrative command to remove the backend store (e.g. clear all entries and the database files). 
+    * @return true on success, if false *exception.errorCode is not 0
+    */
+   I_QueueDestroy destroy;
 
    /**
     * Access the current number of entries. 
@@ -194,11 +205,6 @@ Dll_Export extern I_Queue *createQueue(const QueueProperties *queueProperties,
                                       XMLBLASTER_LOG_LEVEL logLevel,
                                       ExceptionStruct *exception);
 /*Dll_Export extern I_Queue *createQueue(int argc, const char* const* argv, I_QueueLogging logFp);*/
-
-/**
- * Free your instance after using the persistent queue. 
- */
-Dll_Export extern void freeQueue(I_Queue *queueP);
 
 extern Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr);
 extern Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr);
