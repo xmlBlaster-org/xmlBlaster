@@ -14,7 +14,9 @@ Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
 #ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
 extern "C" {
+#endif
 #endif
 
 #include <msgUtil.h>
@@ -88,7 +90,7 @@ typedef ResponseListener * ( * RemoveResponseListener)(CallbackServerUnparsed *c
 struct CallbackServerUnparsedStruct {
    int listenSocket;
    int acceptSocket;
-   const char * hostCB;
+   char * hostCB;
    int portCB;
    bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
    bool debug;
@@ -117,7 +119,7 @@ struct CallbackServerUnparsedStruct {
  * @param argv The command line arguments
  * @param update The function pointer on your update() function which handles the received messages
  *               Please read the documentation of UpdateFp above.
- * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
+ * @return NULL if allocation or bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
 extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv,
@@ -141,6 +143,8 @@ typedef void * (*cbFp)(void *);
 
 
 #ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP
 }
+#endif
 #endif
 

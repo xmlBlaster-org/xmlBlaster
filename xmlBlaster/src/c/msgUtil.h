@@ -7,9 +7,16 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #ifndef XMLBLASTER_MSGUTIL_H
 #define XMLBLASTER_MSGUTIL_H
 
-#define bool int
-#define true 1
-#define false 0
+#ifndef __cplusplus
+#  ifndef __sun
+#    include <stdbool.h>
+#  endif
+#  ifndef __bool_true_false_are_defined
+#    define bool int
+#    define true 1
+#    define false 0
+#  endif
+#endif
 
 #ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
 #ifndef __USE_BSD /* gcc -ansi on Linux: */
@@ -85,9 +92,9 @@ extern void freeMsgUnitData(MsgUnit *msgUnit);
 extern void freeMsgUnit(MsgUnit *msgUnit);
 extern void freeMsgUnitArr(MsgUnitArr *msgUnitArr);
 extern char *messageUnitToXml(MsgUnit *msg);
-extern char *contentToString(char *content, MsgUnit *msg);
 extern char *strFromBlobAlloc(const char *blob, const size_t len);
 extern char *strcpyAlloc(const char *src);
+extern char *strcpyRealloc(char **dest, const char *src);
 extern char *strcatAlloc(char **dest, const char *src);
 extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 extern void trim(char *s);

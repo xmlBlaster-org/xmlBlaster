@@ -20,7 +20,9 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 #define _XmlBlasterAccessUnparsed_H
 
 #ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
 extern "C" {
+#endif
 #endif
 
 #include <msgUtil.h>
@@ -89,7 +91,9 @@ extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAcc
 extern const char *xmlBlasterAccessUnparsedUsage();
 
 #ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP
 }
+#endif
 #endif
 
 #endif /* _XmlBlasterAccessUnparsed_H */

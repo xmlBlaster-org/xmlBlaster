@@ -23,7 +23,7 @@ Compile:
 static bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse);
 static int runCallbackServer(CallbackServerUnparsed *cb);
 static bool createCallbackServer(CallbackServerUnparsed *cb);
-static int isListening(CallbackServerUnparsed *cb);
+static bool isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
 static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
@@ -40,6 +40,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    int iarg;
 
    CallbackServerUnparsed *cb = (CallbackServerUnparsed *)calloc(1, sizeof(CallbackServerUnparsed));
+   if (cb == 0) return cb;
    cb->listenSocket = -1;
    cb->acceptSocket = -1;
    cb->useThisSocket = useThisSocket;
@@ -48,7 +49,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
    cb->shutdown = shutdownCallbackServer;
    cb->reusingConnectionSocket = false; /* is true if we tunnel callback through the client connection socket */
    cb->debug = false;
-   cb->hostCB = "localhost";
+   cb->hostCB = 0;
    cb->portCB = DEFAULT_CALLBACK_SERVER_PORT;
    cb->update = update;
    memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(char *));
@@ -58,7 +59,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, char** argv, UpdateF
 
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/hostname") == 0)
-         cb->hostCB = argv[++iarg];
+         strcpyRealloc(&cb->hostCB, argv[++iarg]);
       else if (strcmp(argv[iarg], "-dispatch/callback/plugin/socket/port") == 0)
          cb->portCB = atoi(argv[++iarg]);
       else if (strcmp(argv[iarg], "-debug") == 0)
@@ -74,13 +75,13 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
 {
    struct sockaddr_in localAddr;
    socklen_t size = (socklen_t)sizeof(localAddr);
-   memset((char *)&localAddr, 0, size);
+   memset((char *)&localAddr, 0, (size_t)size);
    if (getsockname(socketToUse, (struct sockaddr *)&localAddr, &size) == -1) {
       printf("[CallbackServerUnparsed] Can't determine the local socket host and port, errno=%d\n", errno);
       return false;
    }
    cb->portCB = localAddr.sin_port;
-   cb->hostCB = inet_ntoa(localAddr.sin_addr);
+   strcpyRealloc(&cb->hostCB, inet_ntoa(localAddr.sin_addr)); /* inet_ntoa holds the host in an internal static string */
 
    cb->listenSocket = socketToUse;
    cb->acceptSocket = socketToUse;
@@ -194,7 +195,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       }
 
       if (cb->reusingConnectionSocket &&
-          (socketDataHolder.type == MSG_TYPE_RESPONSE || socketDataHolder.type == MSG_TYPE_EXCEPTION)) {
+          (socketDataHolder.type == (char)MSG_TYPE_RESPONSE || socketDataHolder.type == (char)MSG_TYPE_EXCEPTION)) {
          ResponseListener *listener = getResponseListener(cb, socketDataHolder.requestId);
          if (listener != 0) {
             /* This is a response for a request (no callback for us) */
@@ -206,7 +207,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          }
          else {
             printf("[CallbackServerUnparsed] PANIC: Did not expect an INVOCATION '%c'='%d' as a callback\n",
-                   socketDataHolder.type, socketDataHolder.type);
+                   socketDataHolder.type, (int)socketDataHolder.type);
          }
       }
 
@@ -250,9 +251,10 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
    char *tmphstbuf=NULL;
    size_t hstbuflen=0;
    char serverHostName[256];
-   if (cb->hostCB == NULL) {
-      gethostname(serverHostName, 125);
-      cb->hostCB = serverHostName;
+   if (cb->hostCB == 0) {
+      strcpyRealloc(&cb->hostCB, "localhost");
+      if (gethostname(serverHostName, 125) == 0)
+         strcpyRealloc(&cb->hostCB, serverHostName);
    }   
 
    if (cb->debug)
@@ -432,7 +434,7 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
 #     ifdef _WINDOWS
       closesocket(cb->acceptSocket);
 #     else
-      close(cb->acceptSocket);
+      (void)close(cb->acceptSocket);
 #     endif
       cb->acceptSocket = -1;
       if (cb->debug) printf("[CallbackServerUnparsed] Closed accept socket\n");
@@ -449,12 +451,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
    }
 
    if (cb->hostCB != 0) {
-      /*
-        free(cb->hostCB); The string is returned from inet_ntoa() in a statically allocated buffer,
-         which subsequent calls will overwrite (and reuse).
-         So we may only free it on exit(), but we don't know when we exit
-         so we leave these ~ 20 bytes as they are allocated only once
-      */
+      free(cb->hostCB);
       cb->hostCB = 0;
    }
 
@@ -464,7 +461,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 #  ifdef _WINDOWS
       closesocket(cb->listenSocket);
 #  else
-      close(cb->listenSocket);
+      (void)close(cb->listenSocket);
 #  endif
       cb->listenSocket = -1;
       if (cb->debug) printf("[CallbackServerUnparsed] Closed listener socket\n");

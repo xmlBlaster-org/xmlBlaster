@@ -45,12 +45,12 @@ int main(int argc, char** argv)
       "\n\nExample:"
       "\n  XmlBlasterConnectionUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
       printf("Usage:\n%s%s\n", xmlBlasterConnectionUnparsedUsage(), pp);
-      exit(1);
+      exit(EXIT_FAILURE);
    }
 
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-debug") == 0)
-         debug = !strcmp(argv[++iarg], "true");
+         debug = (strcmp(argv[++iarg], "true") == 0) ? true : false;
    }
 
    xb = getXmlBlasterConnectionUnparsed(argc, argv);
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
    {  /* connect */
       char connectQos[2048];
-      sprintf(connectQos,
+      strncpy(connectQos,
              "<qos>"
              " <securityService type='htpasswd' version='1.0'>"
              "  <![CDATA["
@@ -73,13 +73,13 @@ int main(int argc, char** argv)
              "   <passwd>secret</passwd>"
              "  ]]>"
              " </securityService>"
-             "</qos>");
+             "</qos>", 2047);
 
       response = xb->connect(xb, connectQos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
+      if (*xmlBlasterException.errorCode != '\0') {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception during connect errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
       free(response);
       printf("[XmlBlasterConnectionUnparsedMain] Connected to xmlBlaster, do some tests ...\n");
@@ -101,10 +101,10 @@ int main(int argc, char** argv)
       const char *qos = "<qos/>";
       printf("[XmlBlasterConnectionUnparsedMain] Subscribe message 'HelloWorld' ...\n");
       response = xb->subscribe(xb, key, qos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
+      if (*xmlBlasterException.errorCode != '\0') {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Subscribe success, returned status is '%s'\n", response);
       free(response);
@@ -115,13 +115,13 @@ int main(int argc, char** argv)
       printf("[XmlBlasterConnectionUnparsedMain] Publishing message 'HelloWorld' ...\n");
       msgUnit.key = "<key oid='HelloWorld'/>";
       msgUnit.content = "Some message payload";
-      msgUnit.contentLen = strlen("Some message payload");
+      msgUnit.contentLen = strlen(msgUnit.content);
       msgUnit.qos = "<qos><persistent/></qos>";
       response = xb->publish(xb, &msgUnit, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
+      if (*xmlBlasterException.errorCode != '\0') {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Publish success, returned status is '%s'\n", response);
       free(response);
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
       else {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in unSubscribe errorCode=%s, message=%s\n", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
    }
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
       if (msgUnitArr != (MsgUnitArr *)0) {
          for (i=0; i<msgUnitArr->len; i++) {
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
       else {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
    }
 
@@ -184,10 +184,10 @@ int main(int argc, char** argv)
       const char *qos = "<qos/>";
       printf("[XmlBlasterConnectionUnparsedMain] Erasing message 'HelloWorld' ...\n");
       response = xb->erase(xb, key, qos, &xmlBlasterException);
-      if (*xmlBlasterException.errorCode != 0) {
+      if (*xmlBlasterException.errorCode != '\0') {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Erase success, returned status is '%s'\n", response);
       free(response);
@@ -197,11 +197,11 @@ int main(int argc, char** argv)
       if (xb->disconnect(xb, 0, &xmlBlasterException) == false) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterConnectionUnparsed(xb);
-         exit(1);
+         exit(EXIT_FAILURE);
       }
    }
 
    freeXmlBlasterConnectionUnparsed(xb);
    printf("[XmlBlasterConnectionUnparsedMain] Good bye.\n");
-   exit(0);
+   return 0;
 }

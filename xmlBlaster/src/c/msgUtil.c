@@ -10,6 +10,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include "msgUtil.h"
 
 #ifdef _ENABLE_STACK_TRACE_
@@ -35,43 +36,47 @@ const char *getXmlBlasterVersion()
 /**
  * Add for GCC compilation: "-rdynamic -export-dynamic -D_ENABLE_STACK_TRACE_"
  * @return The stack trace, you need to free() it.
+ *         Returns NULL if out of memory.
  */
 const char *getStackTrace(int maxNumOfLines)
 {
 #ifdef _ENABLE_STACK_TRACE_
    int i;
    void** arr = (void **)calloc(maxNumOfLines, sizeof(void *));
-   /*
-   > +Currently, the function name and offset can only be obtained on systems
-   > +that use the ELF binary format for programs and libraries.
-   Perhaps a reference to the addr2line program can be added here.  It
-   can be used to retrieve symbols even if the -rdynamic flag wasn't
-   passed to the linker, and it should work on non-ELF targets as well.
-   o  Under linux, gcc interprets it by setting the 
-      "-export-dynamic" option for ld, which has that effect, according
-      to the linux ld manpage.
+   if (arr == 0) return (const char *)0;
+   {
+      /*
+      > +Currently, the function name and offset can only be obtained on systems
+      > +that use the ELF binary format for programs and libraries.
+      Perhaps a reference to the addr2line program can be added here.  It
+      can be used to retrieve symbols even if the -rdynamic flag wasn't
+      passed to the linker, and it should work on non-ELF targets as well.
+      o  Under linux, gcc interprets it by setting the 
+         "-export-dynamic" option for ld, which has that effect, according
+         to the linux ld manpage.
 
-   o Under IRIX it's ignored, and the program's happy as a clam.
+      o Under IRIX it's ignored, and the program's happy as a clam.
 
-   o Under SunOS-4.1, gcc interprets it by setting the -dc -dp
-      options for ld, which again forces the allocation of the symbol
-      table in the code produced (see ld(1) on a Sun).
-   */
-   int bt = backtrace(arr, maxNumOfLines);
-   char** list = (char **)backtrace_symbols(arr, bt); /* malloc the return pointer, the entries don't need to be freed */
-   char *ret = strcpyAlloc("");
-   for (i=0; i<bt; i++) {
-      if (list[i] != NULL) {
-         strcatAlloc(&ret, list[i]);
-         strcatAlloc(&ret, "\n");
+      o Under SunOS-4.1, gcc interprets it by setting the -dc -dp
+         options for ld, which again forces the allocation of the symbol
+         table in the code produced (see ld(1) on a Sun).
+      */
+      int bt = backtrace(arr, maxNumOfLines);
+      char** list = (char **)backtrace_symbols(arr, bt); /* malloc the return pointer, the entries don't need to be freed */
+      char *ret = strcpyAlloc("");
+      for (i=0; i<bt; i++) {
+         if (list[i] != NULL) {
+            strcatAlloc(&ret, list[i]);
+            strcatAlloc(&ret, "\n");
+         }
       }
+      free(list);
+      free(arr);
+      if (strlen(ret) < 1) {
+         strcatAlloc(&ret, "Creation of stackTrace failed");
+      }
+      return ret;
    }
-   free(list);
-   free(arr);
-   if (strlen(ret) < 1) {
-      strcatAlloc(&ret, "Creation of stackTrace failed");
-   }
-   return ret;
 #else
    return strcpyAlloc("No stack trace provided in this system");
 #endif
@@ -98,11 +103,23 @@ void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
 void freeMsgUnitData(MsgUnit *msgUnit)
 {
    if (msgUnit == (MsgUnit *)0) return;
-   free(msgUnit->key);
-   free(msgUnit->content);
+   if (msgUnit->key != 0) {
+      free(msgUnit->key);
+      msgUnit->key = 0;
+   }
+   if (msgUnit->content != 0) {
+      free(msgUnit->content);
+      msgUnit->content = 0;
+   }
    msgUnit->contentLen = 0;
-   free(msgUnit->qos);
-   free(msgUnit->responseQos);
+   if (msgUnit->qos != 0) {
+      free(msgUnit->qos);
+      msgUnit->qos = 0;
+   }
+   if (msgUnit->responseQos != 0) {
+      free(msgUnit->responseQos);
+      msgUnit->responseQos = 0;
+   }
    /* free(msgUnit); -> not in this case, as the containing array has not allocated us separately */
 }
 
@@ -119,7 +136,7 @@ void freeMsgUnit(MsgUnit *msgUnit)
 /**
  * NOTE: You need to free the returned pointer with free()!
  *
- * @return A ASCII XML formatted message
+ * @return A ASCII XML formatted message or NULL if out of memory
  */
 char *messageUnitToXml(MsgUnit *msg)
 {
@@ -128,26 +145,22 @@ char *messageUnitToXml(MsgUnit *msg)
    }
    else if (msg->contentLen < 1) {
       char *xml = strcpyAlloc(msg->key);
+      if (xml == 0) return 0;
       return strcatAlloc(&xml, msg->qos);
    }
    else {
-      char *content = (char *)malloc(msg->contentLen+1);
+      char *contentStr = strFromBlobAlloc(msg->content, msg->contentLen);
       size_t len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
-      char *xml = (char *)malloc(len*sizeof(char));
-      sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
-                         msg->key,
-                         contentToString(content, msg), /* append \0 */
-                         msg->qos);
-      free(content);
+      char *xml = (char *)calloc(len, sizeof(char));
+      if (xml == 0) {
+         free(contentStr);
+         return 0;
+      }
+      snprintf(xml, len, "%s\n<content><![CDATA[%s]]></content>\n%s",
+                         msg->key, contentStr, msg->qos);
+      free(contentStr);
       return xml;
    }
-}
-
-char *contentToString(char *content, MsgUnit *msg)
-{
-   strncpy(content, msg->content, msg->contentLen);
-   *(content + msg->contentLen) = 0;
-   return content;
 }
 
 /**
@@ -155,14 +168,20 @@ char *contentToString(char *content, MsgUnit *msg)
  * You need to free it with free()
  * @param blob If null it is malloc()'d for you, else the given blob is used to be filled. 
  * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
+ *         We return NULL on out of memory.
  */
 XmlBlasterBlob *blobcpyAlloc(XmlBlasterBlob *blob, const char *data, size_t dataLen)
 {
    if (blob == 0) {
       blob = (XmlBlasterBlob *)calloc(1, sizeof(XmlBlasterBlob));
+      if (blob == 0) return blob;
    }
    blob->dataLen = dataLen;
    blob->data = (char *)malloc((dataLen+1)*sizeof(char));
+   if (blob->data == 0) {
+      free(blob);
+      return (XmlBlasterBlob *)0;
+   }
    *(blob->data + dataLen) = 0;
    memcpy(blob->data, data, dataLen);
    return blob;
@@ -186,26 +205,43 @@ XmlBlasterBlob *freeXmlBlasterBlobContent(XmlBlasterBlob *blob)
 /**
  * Allocates the string with malloc for you. 
  * You need to free it with free()
- * @return The allocated string
+ * @return The allocated string or NULL if out of memory
  */
 char *strcpyAlloc(const char *src)
 {
    char *dest;
    if (src == 0) return (char *)0;
    dest = (char *)malloc((strlen(src)+1)*sizeof(char));
+   if (dest == 0) return 0;
    strcpy(dest, src);
    return dest;
 }
 
 /**
  * Same as strcat but reallocs the 'dest' string
+ * @return The allocated string (*dest) or NULL if out of memory
  */
 char *strcatAlloc(char **dest, const char *src)
 {
+   assert(dest != 0);
    if (src == 0) return (char *)0;
    (*dest) = (char *)realloc(*dest, (strlen(src)+strlen(*dest)+1)*sizeof(char));
+   if ((*dest) == 0) return 0;
    strcat((*dest), src);
    return (*dest);
+}
+
+/**
+ * Same as strcpyAlloc but if the given *dest != NULL this old allocation is freed first
+ * @return *dest The allocated string filled with 'src',
+ *         you need to free() it when not needed anymore.
+ */
+char *strcpyRealloc(char **dest, const char *src)
+{
+   if (*dest != 0)
+      free(*dest);
+   *dest = strcpyAlloc(src);
+   return *dest;
 }
 
 /**
@@ -220,20 +256,24 @@ char *strFromBlobAlloc(const char *blob, const size_t len)
    size_t i;
    if (blob == 0 || len < 1) {
       dest = (char *)malloc(1*sizeof(char));
+      if (dest == 0) return 0;
       *dest = 0;
       return dest;
    }
 
    dest = (char *)malloc((len+1)*sizeof(char));
+   if (dest == 0) return 0;
    for (i=0; i<len; i++) {
       dest[i] = (char)blob[i];
    }
-   dest[len] = 0;
+   dest[len] = '\0';
    return dest;
 }
 
 /**
  * Guarantees a '\0' terminated string
+ * @param to The destination string must be big enough
+ * @param from The source to be copied
  * @param maxLen of 'to' will be filled with a '\0'
  * @return The destination string 'to'
  */
@@ -251,7 +291,7 @@ void trim(char *s)
 {
    size_t first=0;
    size_t len;
-   size_t i;
+   int i;
    
    if (s == (char *)0) return;
 
@@ -266,13 +306,13 @@ void trim(char *s)
    }
 
    if (first>=len) {
-      *s = 0;
+      *s = '\0';
       return;
    }
    else
       strcpy((char *) s, (char *) s+first);
 
-   for (i=strlen((char *) s)-1; i >= 0; i--)
+   for (i=(int)strlen((char *) s)-1; i >= 0; i--)
       if (!isspace(s[i])) {
          s[i+1] = '\0';
          return;
@@ -295,24 +335,26 @@ char *blobDump(XmlBlasterBlob *blob)
  * Converts the given binary data to a more readable string,
  * the '\0' are replaced by '*'
  * @param len The length of the binary data
- * @return readable is returned, it must be free()'d
+ * @return readable is returned, it must be free()'d.
+ *         If allocation fails NULL is returned
  */
 char *toReadableDump(char *data, size_t len)
 {
    char *readable;
    size_t i;
    if (data == 0) {
-      return 0;
+      return (char *)0;
    }
    readable = (char *)malloc((len+1) * sizeof(char));
+   if (readable == (char *)0) return (char *)0;
    for (i=0; i<len; i++) {
-      if (data[i] == 0)
+      if (data[i] == '\0')
          readable[i] = '*';
       else
          readable[i] = data[i];
    }
-   readable[len] = 0;
-        return readable;
+   readable[len] = '\0';
+   return readable;
 }
 
 /**
@@ -321,8 +363,8 @@ char *toReadableDump(char *data, size_t len)
 void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
 {
    xmlBlasterException->remote = false;
-   *xmlBlasterException->errorCode = 0;
-   *xmlBlasterException->message = 0;
+   *xmlBlasterException->errorCode = (char)0;
+   *xmlBlasterException->message = (char)0;
 }
 
 
@@ -451,10 +493,13 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
    struct hostent *hp;
    int herr,res;
 
+   assert(tmphstbuf != 0);
+
    if (*hstbuflen == 0)
    {
       *hstbuflen = 1024; 
       *tmphstbuf = (char *)malloc (*hstbuflen);
+      if (*tmphstbuf == 0) return 0;
    }
 
    while (( res = 
@@ -464,8 +509,9 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
       /* Enlarge the buffer. */
       *hstbuflen *= 2;
       *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
+      if (*tmphstbuf == 0) return 0;
    }
-   if (res) {
+   if (res != 0) {
       free(*tmphstbuf);
       *tmphstbuf = 0;
       return 0;
@@ -480,6 +526,7 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
       {
          *hstbuflen = 1024;
          *tmphstbuf = (char *)malloc (*hstbuflen);
+         if (*tmphstbuf == 0) return 0;
       }
 
       while ((NULL == ( hp = 
@@ -489,6 +536,7 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
          /* Enlarge the buffer. */
          *hstbuflen *= 2;
          *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
+         if (*tmphstbuf == 0) return 0;
       }
       return hp;
 #  else
@@ -497,11 +545,13 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
          {
             *hstbuflen = sizeof(struct hostent_data);
             *tmphstbuf = (char *)malloc (*hstbuflen);
+            if (*tmphstbuf == 0) return 0;
          }
          else if (*hstbuflen < sizeof(struct hostent_data))
          {
             *hstbuflen = sizeof(struct hostent_data);
             *tmphstbuf = (char *)realloc(*tmphstbuf, *hstbuflen);
+            if (*tmphstbuf == 0) return 0;
          }
          memset((void *)(*tmphstbuf),0,*hstbuflen);
 

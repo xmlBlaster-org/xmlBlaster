@@ -13,7 +13,7 @@ Compile:
 
   Linux with shared lib:
         g++ -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I.
-            -Wl,-rpath=../../lib -D_REENTRANT  -lpthread
+            -Wl,-rpath=../../lib -DXMLBLASTER_C_COMPILE_AS_CP
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
                   "</qos>";
    response = xb->connect(xb, connectQos, &exception);
    free(response);
-   if (*exception.errorCode != 0) {
+   if (*exception.errorCode != '\0') {
       printf("[client] Caught exception during connect, errorCode=%s, message=%s",
              exception.errorCode, exception.message);
       freeXmlBlasterConnectionUnparsed(xb);
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
    printf("[HelloWorld] Connected to xmlBlaster, invoking now get() ...\n");
    
    msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
-   if (*exception.errorCode != 0) {
+   if (*exception.errorCode != '\0') {
       printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s",
              exception.errorCode, exception.message);
       freeXmlBlasterConnectionUnparsed(xb);
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
    }
    freeMsgUnitArr(msgUnitArr);
    
-   xb->disconnect(xb, 0, &exception);
+   (void)xb->disconnect(xb, 0, &exception);
 
    freeXmlBlasterConnectionUnparsed(xb);
    printf("[HelloWorld] Good bye.\n");
