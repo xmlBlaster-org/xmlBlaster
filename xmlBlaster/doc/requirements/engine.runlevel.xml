@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.runlevel' type='NEW' prio='MEDIUM' status="INWORK">
+   <topic>XmlBlaster supports different run levels</topic>
+   <description>
+     <p>
+     An xmlBlaster server instance has different states, we call it <i>run levels</i> as a gesture of honor
+     to the UNIX run levels.<br />
+     The run level 0 is a stopped xmlBlaster, the run level 10 is a fully operational run level.
+     </p>
+     <p>
+     Here is a description of the different run levels:
+     </p>
+      <table border="1">
+         <tr>
+            <td>Level</td>
+            <td>No</td>
+            <td>active Services</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>HALTED</td>
+            <td>0</td>
+            <td>-</td>
+            <td>XmlBlaster is not existing</td>
+         </tr>
+         <tr>
+            <td>STANDBY</td>
+            <td>3</td>
+            <td>All configured plugins are alive
+                but only administrative access from outside is possible</td>
+            <td>XmlBlaster has sync all databases and just waits, it is ready to be killed or reactivated</td>
+         </tr>
+         <tr>
+            <td>CLEANUP</td>
+            <td>6</td>
+            <td>All configured plugins are alive and operational
+                but only administrative access from outside is possible</td>
+            <td>XmlBlaster still flushes queues to other cluster nodes or to connected clients</td>
+         </tr>
+         <tr>
+            <td>RUNNING</td>
+            <td>10</td>
+            <td>All configured plugins are alive</td>
+            <td>XmlBlaster is fully operational</td>
+         </tr>
+     </table>
+
+     <p>
+     Administration features:
+     </p>
+     <ul>
+       <li>Administer run level changes:<br />
+       The internal command manager supports the attribute <i>getRunlevel()</i> and <i>setRunlevel()</i>
+       allowing to monitor or change the run level via SNMP, telnet or other supported administration
+       protocols (see requirement admin below).
+       </li>
+     </ul>
+
+     <p>
+     Implementation features:
+     </p>
+     <ul>
+       <li>How to implement run level changes:<br />
+         The various plugin manager gets informed about run level changes if they
+         have subscribed to run level events.<br /> The event contains
+         the current run level and the destination run level, the manager
+         decides autonomous what to do with this change, usually starting or
+         stopping its plugins.
+       </li>
+       <li>Increments of run level changes:<br />
+       The run levels are changed directly, e.g. to change from level 10
+       to level 5 only one event is fired (10->5) and not an event for
+       every step (10->9->8->7->6->5)
+       </li>
+     </ul>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+   </example>
+
+   <configuration where="server">
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.I_RunlevelListener</see>
+   <see type="API">org.xmlBlaster.engine.helper.Constants</see>
+   <see type="REQ">admin</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 14</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
