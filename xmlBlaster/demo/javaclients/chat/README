@@ -7,3 +7,9 @@ Compile it (make all) and start it like that:
 where "Nickname" should be different for each client you start.
 Don´t forget to start the server (jaco org.xmlBlaster.MainGUI) first.
 
+To chat from you multi homed host the another server running xmlBlaster:
+
+    java -DOAIAddr=198.197.24.129 javaclients.chat.SimpleChat -name Ben -iorHost 62.132.140.7
+
+-DOAIAddr is the IP address for our internal chat CORBA callback server.
+-iorHost is the xmlBlaster server,
