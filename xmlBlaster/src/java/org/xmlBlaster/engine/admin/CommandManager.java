@@ -252,7 +252,6 @@ public final class CommandManager implements I_RunlevelListener
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //log.error(ME, "DEBUG ONLY: Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;

@@ -104,7 +104,6 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
          return false;
       }
-      log.error(ME, "DEBUG ony: Entering initializeVariables()");
 
       if (!isBootstrap) { // Ignore the first bootstrap instance
          if (sessionTimeout > 0L) {
@@ -388,7 +387,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    public CommandHandlerIfc getInstance() {
-      log.error(ME, "DEBUG ony: Entering getInstance(isShutdown="+isShutdown+", port="+this.port+")");
+      //log.error(ME, "DEBUG ONLY: Entering getInstance(isShutdown="+isShutdown+", port="+this.port+")");
       if (isShutdown) return this; // Called on shutdown, we need to investigate and redesign the whole baby
 
       if (this.port <= 1000) {
