@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.12 2002/05/02 19:08:38 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.13 2002/05/03 13:44:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -140,12 +140,9 @@ public class CallbackAddress extends AddressBase
     */
    public String usage()
    {
-      String text = "\n";
-      text += "Control xmlBlaster server side callback (if we install a local callback server)\n";
+      String text = "";
+      text += "Control xmlBlaster server side callback (if we install a local callback server):\n";
       text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
-      text += "   -cb.queue.maxMsg    The max. capacity of the queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
-      text += "   -cb.queue.onOverflow  Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
-      text += "   -cb.queue.onFailure   Error handling when callback failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
       text += "                         This allows performance tuning, try set it to 200.\n";
       text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
@@ -155,7 +152,6 @@ public class CallbackAddress extends AddressBase
       text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
       text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
       text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
-      text += "\n";
       return text;
    }
 

@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.5 2002/05/03 10:33:55 ruff Exp $
+Version:   $Id: Address.java,v 1.6 2002/05/03 13:44:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -33,7 +33,7 @@ public class Address extends AddressBase
    /** The node id to which we want to connect */
    private String nodeId = null;
 
-   /** TODO: Move this attribute to QueueProperty.java */
+   /** TODO: Move this attribute to CbQueueProperty.java */
    private int maxMsg;
 
    /**
@@ -106,7 +106,6 @@ public class Address extends AddressBase
       setMinSize(glob.getProperty().get("compress.minSize", DEFAULT_minSize));
       setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
-      setMaxMsg(glob.getProperty().get("queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
       if (nodeId != null) {
          setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
          setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", getCollectTime()));
@@ -119,6 +118,11 @@ public class Address extends AddressBase
          setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", getMinSize()));
          setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", isPtpAllowed()));
          setSessionId(glob.getProperty().get("sessionId["+nodeId+"]", getSessionId()));
+      }
+
+      // TODO: This is handled in QueueProperty.java already -> 
+      setMaxMsg(glob.getProperty().get("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault));
+      if (nodeId != null) {
          setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
       }
    }
@@ -148,21 +152,20 @@ public class Address extends AddressBase
     */
    public final String usage()
    {
-      String text = "\n";
-      text += "Control fail save connection to xmlBlaster server\n";
-      text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
-      //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
-      //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
+      String text = "";
+      text += "Control fail save connection to xmlBlaster server:\n";
+      // is in QueueProperty.java: text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxMsgDefault + "].\n";
+    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadLetter' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
+    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";
       text += "                       This allows performance tuning, try set it to 200.\n";
-      //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
+    //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
       text += "   -pingInterval       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
       text += "   -retries            How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
       text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
-      //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
-      //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
-      text += "\n";
+    //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
+    //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
       return text;
    }
 
