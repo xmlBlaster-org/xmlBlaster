@@ -82,15 +82,17 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
          xmlKey = "<key/>";
       }
 
-      msgKeyData = new MsgKeyData(glob, this, xmlKey);
+      this.msgKeyData = new MsgKeyData(glob, this, xmlKey);
 
       init(xmlKey);  // use SAX parser to parse it (is slow)
 
-      if (msgKeyData.getOid() == null || msgKeyData.getOid().length() < 1) {
-         msgKeyData.setOid(msgKeyData.generateOid(glob.getStrippedId()));
+      if (this.msgKeyData.getOid() == null || this.msgKeyData.getOid().length() < 1) {
+         this.msgKeyData.setOid(this.msgKeyData.generateOid(glob.getStrippedId()));
       }
 
-      return msgKeyData;
+      MsgKeyData tmp = this.msgKeyData;
+      this.msgKeyData = null; // Don't need it anymore
+      return tmp;
    }
 
    /**
