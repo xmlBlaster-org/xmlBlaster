@@ -95,7 +95,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char*
    xa->callbackMultiThreaded = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/multiThreaded", xa->callbackMultiThreaded);
    if (xa->callbackMultiThreaded == true) {
       xa->log(xa->logLevel, LOG_WARN, __FILE__, "Sorry, multi threaded callback delivery is implemented but not functional yet, use it for experiments only");
-      //xa->callbackMultiThreaded = false;
+      /*xa->callbackMultiThreaded = false;*/
    }
    xa->responseTimeout = xa->props->getLong(xa->props, "plugin/socket/responseTimeout", 60000L); /* One minute (given in millis) */
    xa->responseTimeout = xa->props->getLong(xa->props, "dispatch/connection/plugin/socket/responseTimeout", xa->responseTimeout);
