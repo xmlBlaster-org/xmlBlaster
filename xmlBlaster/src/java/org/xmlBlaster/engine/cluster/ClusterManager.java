@@ -249,19 +249,23 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    /**
-    * @return null if no forwarding is done, if we are the master of this message ourself<br />
+    * @return null if no forwarding is done and we are the master of this message ourself<br />
     *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
-    *         Otherwise the normal publish return value of the remote cluster node and the responsible
-    *         NodeDomainInfo instance.  
-    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
+    *         Otherwise the normal publish return value of the remote cluster node
+    * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller<br />
+    *         ErrorCode.USER_PTP_UNKNOWNDESTINATION if destination cluster node is not found<br />
+    *         ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE is destination cluster node is known but down   
     */
    public PublishReturnQos forwardPtpPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper, Destination destination) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardPtpPublish(" + msgWrapper.getUniqueKey() + ", " + destination.getDestination() + ")");
 
+      if (destination.getDestination().getNodeId() == null)
+         return null;
+
       ClusterNode clusterNode = getClusterNode(destination.getDestination().getNodeId());
-      log.info(ME, "PtP message " + msgWrapper.getUniqueKey() + " destination " + destination.getDestination() +
+      if (log.TRACE) log.trace(ME, "PtP message " + msgWrapper.getUniqueKey() + " destination " + destination.getDestination() +
                    " trying node " + ((clusterNode==null)?"null":clusterNode.getId()));
 
       if (clusterNode == null) {
@@ -285,6 +289,8 @@ public final class ClusterManager implements I_RunlevelListener
       }
 
       if (clusterNode.isLocalNode()) {
+         if (log.TRACE) log.trace(ME, "PtP message " + msgWrapper.getUniqueKey() +
+                         " destination " + destination.getDestination() + " destination cluster node reached");
          return null;
       }
 
@@ -300,6 +306,8 @@ public final class ClusterManager implements I_RunlevelListener
       // Set the new qos ...
       MessageUnit msgUnitShallowClone = new MessageUnit(msgWrapper.getMessageUnit(), null, null, publishQos.toXml());
 
+      if (log.TRACE) log.trace(ME, "PtP message " + msgWrapper.getUniqueKey() + " destination " + destination.getDestination() +
+                   " is now forwarded to node " + clusterNode.getId());
       return con.publish(msgUnitShallowClone);
    }
 
