@@ -30,11 +30,22 @@ public final class SubscribeReturnQos
 {
    private String ME = "SubscribeReturnQos";
    private final StatusQosData statusQosData;
+   private final boolean isFakedReturn;
 
    /**
     * Constructor which parses XML string.
+    * Use this for real returns from a server (-> isFakedReturn=false).
     */
    public SubscribeReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
+      this(glob, xmlQos, false);
+   }
+
+   /**
+    * Constructor which parses XML string.
+    * @param isFakedReturn true if the return value is faked from the client (on missing server connection)
+    */
+   public SubscribeReturnQos(Global glob, String xmlQos, boolean isFakedReturn) throws XmlBlasterException {
+      this.isFakedReturn = isFakedReturn;
       this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
       this.statusQosData.setMethod(MethodName.SUBSCRIBE);
    }
@@ -43,6 +54,15 @@ public final class SubscribeReturnQos
     * Constructor which reuses a StatusQosData object.
     */
    public SubscribeReturnQos(Global glob, StatusQosData statusQosData) {
+      this(glob, statusQosData, false);
+   }
+
+   /**
+    * Constructor which reuses a StatusQosData object.
+    * @param isFakedReturn true if the return value is faked from the client (on missing server connection)
+    */
+   public SubscribeReturnQos(Global glob, StatusQosData statusQosData, boolean isFakedReturn) {
+      this.isFakedReturn = isFakedReturn;
       this.statusQosData = statusQosData;
       this.statusQosData.setMethod(MethodName.SUBSCRIBE);
    }
@@ -53,6 +73,13 @@ public final class SubscribeReturnQos
     */
    public StatusQosData getData() {
       return statusQosData;
+   }
+
+   /**
+    * @return true if the subscribe return value is faked from the client library (on missing server connection)
+    */
+   public boolean isFakedReturn() {
+      return this.isFakedReturn;
    }
 
    /**
