@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.4 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.5 2000/02/29 16:54:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -218,6 +218,13 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
       numSetClientAttributes++;
    }
+
+
+   /**
+    * Enforced by ServerOperations interface
+    * @see xmlBlaster.idl
+    */
+   public void ping() {}
 
 
    /**

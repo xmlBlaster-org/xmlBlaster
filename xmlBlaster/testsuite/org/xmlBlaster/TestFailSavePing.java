@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestFailSave.java
+Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.10 2000/02/29 16:54:20 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.1 2000/02/29 16:54:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,7 +15,10 @@ import test.framework.*;
 
 
 /**
- * Tests the fail save behavior of the CorbaConnection client helper class.
+ * Tests the fail save behavior of the CorbaConnection client helper class,
+ * especially the pinging to xmlBlaster. This allows auto detection if the
+ * connection to xmlBlaster is lost.
+ * 
  * <br />For a description of what this fail save mode can do for you, please
  * read the API documentation of CorbaConnection.
  * <p>
@@ -24,11 +27,11 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *   jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
  * </pre>
  */
-public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
+public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionProblems
 {
    private static String ME = "Tim";
    private boolean messageArrived = false;
@@ -40,17 +43,15 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private String senderName;
 
    private int numReceived = 0;         // error checking
-   private int numPublish = 8;
-   private int numStop = 3;
    private final String contentMime = "text/plain";
 
    /**
-    * Constructs the TestFailSave object.
+    * Constructs the TestFailSavePing object.
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestFailSave(String testName, String loginName)
+   public TestFailSavePing(String testName, String loginName)
    {
        super(testName);
        this.senderName = loginName;
@@ -77,7 +78,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
          int retries = -1;           // -1 == forever
          int maxMessages = 1000;
-         long pingInterval = 0L;     // switched off
+         long pingInterval = 1000L;
          corbaConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
 
          // and do the login ...
@@ -103,19 +104,19 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       Log.info(ME, "Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSave-AGENT" +
+                      "   //TestFailSavePing-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
          strArr = corbaConnection.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      assertEquals("Wrong number of message erased", strArr.length, (numPublish - numStop));
+      } catch(XmlBlasterException e) { assert("tearDown - XmlBlasterException: " + e.reason, false); }
+      assertEquals("Wrong number of message erased", 1, strArr.length);
 
       Util.delay(500L);    // Wait some time
       corbaConnection.logout();
 
-      Util.delay(500L);    // Wait some time
+      Util.delay(200L);    // Wait some time
       stopServer();
    }
 
@@ -128,7 +129,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       if (Log.TRACE) Log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSave-AGENT" +
+                      "   //TestFailSavePing-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       String subscribeOid = null;
@@ -154,8 +155,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
       String oid = "Message" + "-" + counter;
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
-                      "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                      "   </TestFailSave-AGENT>" +
+                      "   <TestFailSavePing-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "   </TestFailSavePing-AGENT>" +
                       "</key>";
       String content = "" + counter;
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
@@ -172,28 +173,20 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    public void testFailSave()
    {
       testSubscribe();
-      for (int ii=0; ii<numPublish; ii++) {
-         try {
-            if (ii == numStop) // 3
-               stopServer();
-            if (ii == 5)
-               startServer();
-            testPublish(ii+1);
-            waitOnUpdate(2000L);
-            //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
-         }
-         catch(XmlBlasterException e) {
-            if (e.id.equals("TryingReconnect"))
-               Log.warning(ME, e.id + " exception: Lost connection, my connection layer is polling");
-            else if (e.id.equals("NoConnect"))
-               assert("Lost connection, my connection layer is not polling", false);
-            else
-               assert("Publishing problems id=" + e.id + ": " + e.reason, false);
-         }
-         //Util.delay(3000L);    // Wait some time
-      }
+      Util.delay(200L);
+      stopServer();
+      Util.delay(3000L);    // Wait some time, ping should activate login polling
 
-      assertEquals("numReceived is wrong", numPublish, numReceived);
+      startServer();
+      Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
+
+      numReceived = 0;
+
+      stopServer();
+      Util.delay(5000L);    // Wait some time, ping should activate login polling
+
+      startServer();
+      Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
    }
 
 
@@ -208,11 +201,20 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       Log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to xmlBlaster");
       testSubscribe();    // initialize subscription again
       try {
-         corbaConnection.flushQueue();    // send all tailback messages
-         // corbaConnection.resetQueue(); // or discard them (it is our choice)
-      } catch (XmlBlasterException e) {
-         assert("Exception during reconnection recovery: " + e.reason, false);
+         testPublish(1);
+         waitOnUpdate(2000L);
+         assertEquals("numReceived is wrong", 1, numReceived);
       }
+      catch(XmlBlasterException e) {
+         if (e.id.equals("TryingReconnect"))
+            Log.warning(ME, e.id + " exception: Lost connection, my connection layer is polling");
+         else if (e.id.equals("NoConnect"))
+            assert("Lost connection, my connection layer is not polling", false);
+         else
+            assert("Publishing problems id=" + e.id + ": " + e.reason, false);
+      }
+
+      corbaConnection.resetQueue(); // discard messages (dummy)
    }
 
 
@@ -249,7 +251,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
-      String oid = "Message" + "-" + numReceived;
+      String oid = "Message-1";
       assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
 
       messageArrived = true;
@@ -289,7 +291,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestFailSave("testFailSave", loginName));
+       suite.addTest(new TestFailSavePing("testFailSave", loginName));
        return suite;
    }
 
@@ -299,7 +301,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       serverThread = new ServerThread(serverPort);
       serverThread.start();
       Util.delay(3000L);    // Wait some time
-      Log.info(ME, "Server is up again!");
+      Log.info(ME, "Server is up!");
    }
 
 
@@ -344,22 +346,22 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestFailSave
+    * Invoke: jaco testsuite.org.xmlBlaster.TestFailSavePing
     * <p />
     * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing</pre>
     */
    public static void main(String args[])
    {
       Log.setLogLevel(args);
-      TestFailSave testSub = new TestFailSave("TestFailSave", "Tim");
+      TestFailSavePing testSub = new TestFailSavePing("TestFailSavePing", "Tim");
       testSub.setUp();
       testSub.testFailSave();
       testSub.tearDown();
-      Log.exit(TestFailSave.ME, "Good bye");
+      Log.exit(TestFailSavePing.ME, "Good bye");
    }
 }
 

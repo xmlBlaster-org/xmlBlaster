@@ -25,6 +25,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestPtDQueue.class \
     $(CLASS_DIR)/TestPub.class \
     $(CLASS_DIR)/TestFailSave.class \
+    $(CLASS_DIR)/TestFailSavePing.class \
     $(CLASS_DIR)/TestSub.class \
     $(CLASS_DIR)/TestGet.class \
     $(CLASS_DIR)/TestUnSub.class \

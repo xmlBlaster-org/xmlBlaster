@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.32 2000/02/24 22:19:51 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.33 2000/02/29 16:54:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -307,6 +307,12 @@ module serverIdl
       void setClientAttributes(in string clientName, in string xmlAttr,
                                in serverIdl::XmlType qos)
                       raises (serverIdl::XmlBlasterException);
+
+
+      /**
+       * Ping to check if xmlBlaster is alive
+       */
+      void ping();
 
    }; // interface server
 

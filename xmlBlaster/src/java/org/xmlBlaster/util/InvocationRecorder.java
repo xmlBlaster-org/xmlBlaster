@@ -3,7 +3,7 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.4 2000/02/29 16:54:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -20,7 +20,7 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class InvocationRecorder implements ServerOperations, BlasterCallbackOperations
@@ -329,6 +329,13 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       cont.xmlQos = qos_literal;
       queue.push(cont);
    }
+
+
+   /**
+    * For ServerOperations interface
+    * @see xmlBlaster.idl
+    */
+   public void ping() {}
 
 
    /**

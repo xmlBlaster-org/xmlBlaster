@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.33 2000/02/29 08:12:38 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.34 2000/02/29 16:54:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -52,8 +52,12 @@ import java.util.Properties;
  * <p />
  * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
  * <p />
+ * If you specify the last argument in initFailSave() to bigger than 0 milliseconds,
+ * a thread is installed which does a ping to xmlBlaster (tests the connection) with the given sleep interval.
+ * If the ping fails, the login polling is automatically activated.
+ * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -87,6 +91,12 @@ public class CorbaConnection implements ServerOperations
 
    /** communicate from LoginThread back to CorbaConnection that we give up */
    private boolean noConnect = false;
+
+   /** How many milli seconds sleeping between the pings */
+   private long pingInterval;
+
+   /** Handle on the ever running ping thread.Only switched on in fail save mode */
+   private PingThread pingThread = null;
 
    /** Remember the number of successful logins */
    private long numLogins = 0L;
@@ -194,14 +204,27 @@ public class CorbaConnection implements ServerOperations
     * @param retries Number of retries if connection cannot directly be established
     *                passing -1 does polling forever
     * @param maxInvocations How many messages shall we queue max
+    * @param pingInterval How many milli seconds sleeping between the pings<br />
+    *                     < 1 switches pinging off
     */
-   public void initFailSave(I_ConnectionProblems callback, long retryInterval, int retries, int maxInvocations)
+   public void initFailSave(I_ConnectionProblems callback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
-      if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + "");
+      if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
       this.clientCallback = callback;
       this.retryInterval = retryInterval;
+      this.pingInterval = pingInterval;
       this.retries = retries;
       this.recorder = new InvocationRecorder(maxInvocations, this, null);
+   }
+
+
+   /**
+    * Killing the ping thread (not recommended). 
+    */
+   public void killPing()
+   {
+      if (pingThread != null)
+         pingThread.pingRunning = false;
    }
 
 
@@ -450,6 +473,12 @@ public class CorbaConnection implements ServerOperations
       }
       if (isReconnectPolling && numLogins > 0)
          clientCallback.reConnected();
+
+      if (pingInterval > 0L && pingThread == null) {
+         pingThread = new PingThread(this, pingInterval);
+         pingThread.start();
+      }
+
    }
 
 
@@ -516,10 +545,11 @@ public class CorbaConnection implements ServerOperations
    {
       Log.info(ME, "Going to poll for xmlBlaster and queue your messages ...");
 
-      LoginThread p = new LoginThread(this, retryInterval, retries);
-      p.start();
+      LoginThread lt = new LoginThread(this, retryInterval, retries);
+      lt.start();
+
       if (blocking)
-         try { p.join(); } catch(InterruptedException e) {}
+         try { lt.join(); } catch(InterruptedException e) {}
    }
 
 
@@ -534,13 +564,16 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Logout from the server.
+    * Logout from the server. 
+    * <p />
+    * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
     *         false failure on logout
     * @deprecated Use logout() without arguments
     */
    public boolean logout(Server xmlBlaster)
    {
+      killPing();
       return logout();
    }
 
@@ -775,6 +808,31 @@ public class CorbaConnection implements ServerOperations
       }
    }
 
+
+   /**
+    * Enforced by ServerOperations interface (fail save mode)
+    * @see xmlBlaster.idl
+    */
+   public void ping()
+   {
+      if (isReconnectPolling)
+         return;
+      try {
+         xmlBlaster.ping();
+         if (Log.TRACE) Log.trace(ME, "ping success() ...");
+         return;
+      } catch(Exception e) {
+         if (Log.TRACE) Log.trace(ME, "ping failed, xmlBlaster seems to be down, try to reactivate connection ...");
+         try {
+            handleConnectionException(e);
+         } catch(XmlBlasterException ep) {
+            if (Log.TRACE) Log.trace(ME, "Exception in ping! " + ep.reason);
+         }
+      }
+      return ; // never reached, there is always an exception thrown
+   }
+
+
    public void flushQueue() throws XmlBlasterException
    {
       if (recorder == null) {
@@ -814,7 +872,7 @@ public class CorbaConnection implements ServerOperations
          this.corbaConnection = corbaConnection;
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
-         if (Log.CALLS) Log.trace(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
+         if (Log.CALLS) Log.calls(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
       }
 
       public void run() {
@@ -837,6 +895,39 @@ public class CorbaConnection implements ServerOperations
          Log.info(ME, "max polling for xmlBlaster server done, no success");
       }
    } // class LoginThread
+
+
+   /**
+    * Ping the xmlBlaster server, to test if connection is alive
+    */
+   private class PingThread extends Thread
+   {
+      private final String ME = "PingThread";
+      private CorbaConnection corbaConnection;
+      private final long PING_INTERVAL;
+      boolean pingRunning = true;
+
+      /**
+       * @param pingInterval How many milli seconds sleeping between the pings
+       */
+      PingThread(CorbaConnection corbaConnection, long pingInterval) {
+         this.corbaConnection = corbaConnection;
+         this.PING_INTERVAL = pingInterval;
+         if (Log.CALLS) Log.calls(ME, "Entering constructor ping interval=" + pingInterval + " millis");
+      }
+      public void run() {
+         Log.info(ME, "Pinging xmlBlaster server");
+         while (pingRunning) {
+            try {
+               corbaConnection.ping();
+            } catch(Exception e) {
+            }
+            try {
+               Thread.currentThread().sleep(PING_INTERVAL);
+            } catch (InterruptedException i) { }
+         }
+      }
+   } // class PingThread
 
 } // class CorbaConnection
 

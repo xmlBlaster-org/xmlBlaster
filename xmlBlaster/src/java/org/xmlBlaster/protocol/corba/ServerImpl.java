@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.4 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.5 2000/02/29 16:54:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -61,7 +61,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * Get a handle on the request broker singleton (the engine of xmlBlaster). 
+    * Get a handle on the request broker singleton (the engine of xmlBlaster).
     * @return RequestBroker
     */
    public RequestBroker getRequestBroker()
@@ -239,6 +239,15 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       requestBroker.setClientAttributes(clientName, xmlAttr_literal, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in setClientAttributes()" + stop.nice());
+   }
+
+
+   /**
+    * Ping to check if xmlBlaster is alive
+    */
+   public void ping()
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering ping() ...");
    }
 }
 

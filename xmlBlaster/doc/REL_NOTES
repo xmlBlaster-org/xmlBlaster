@@ -3,37 +3,37 @@
 Changes for 0.74 [Feb.29, 2000]
 ==============================
    - New XML based requirements framework.
-	  See xmlBlaster/doc/requirements
+     See xmlBlaster/doc/requirements
 
    - 'Fail save' client connection for Java clients added.
-	  Clients begin polling and automatic local recording of messages
-	  if xmlBlaster server disappears.
-	  See CorbaConnection.java
+     Clients begin polling and automatic local recording of messages
+     if xmlBlaster server disappears.
+     See CorbaConnection.java
 
-   - C++ POA demo client added [Michele Laghi].
-	  See xmlBlaster/testsuite/c++
+   - C++ POA demo client added [Michele]
+     See xmlBlaster/testsuite/c++
 
    - Recorder to record/playback of messages in slow/fast motion added.
-	  See InvocationRecorder.java
+     See InvocationRecorder.java
 
    - CorbaConnection: logout(boolean) deprecated -> use logout() now.
 
    - Changed xmlBlaster.idl: messageUnit    -> msgUnit
                              messageUnitArr -> msgUnitArr
      Case does not matter, IDL is case-insensitive when detecting name clashes.
-	  (Thanks to Michele Laghi)
+     (Thanks to Michele Laghi)
 
    - Added a guide line for xmlBLaster core developer.
-	  See xmlBlaster/doc/developer-guidelines.html
+     See xmlBlaster/doc/developer-guidelines.html
 
-   - Set up xmlBLaster to use Ant as it's build system
+   - Set up xmlBLaster to use Ant as it's build system [James]
 
-   - Added the revolutionary XML based JDBC database gateway.
-	  see xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc
-	  see xmlBlaster/demo/javaclients/jdbc
+   - Added the revolutionary XML based JDBC database gateway. [James]
+     see xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc
+     see xmlBlaster/demo/javaclients/jdbc
 
-   - Added servlet / browser callback framework
-	  see xmlBlaster/src/java/org/xmlBlaster/protocol/http
+   - Added servlet - browser callback framework (not yet finished)
+     see xmlBlaster/src/java/org/xmlBlaster/protocol/http
 
 
 Changes for 0.73 [Feb.20, 2000]
