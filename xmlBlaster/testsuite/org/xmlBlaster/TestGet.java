@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.5 2000/03/07 12:21:11 ruff Exp $
+Version:   $Id: TestGet.java,v 1.6 2000/03/09 18:36:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -140,11 +140,11 @@ public class TestGet extends TestCase
 
 
    /**
-    * LOAD TEST: get 2000 times a not existing message
+    * LOAD TEST: get 200 times a not existing message
     */
    public void testGetMany()
    {
-      int num = 2000;
+      int num = 200;
       Log.info(ME, "Get " + num + " not existing messages ...");
       String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       String qos = "<qos></qos>";

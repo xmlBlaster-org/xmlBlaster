@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.10 2000/02/29 16:54:20 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.11 2000/03/09 18:36:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -64,7 +64,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    protected void setUp()
    {
-      startServer();
+      serverThread = ServerThread.startXmlBlaster(serverPort);
       try {
          numReceived = 0;
 
@@ -116,7 +116,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       corbaConnection.logout();
 
       Util.delay(500L);    // Wait some time
-      stopServer();
+      ServerThread.stopXmlBlaster(serverThread);
    }
 
 
@@ -175,9 +175,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       for (int ii=0; ii<numPublish; ii++) {
          try {
             if (ii == numStop) // 3
-               stopServer();
+               ServerThread.stopXmlBlaster(serverThread);
             if (ii == 5)
-               startServer();
+               serverThread = ServerThread.startXmlBlaster(serverPort);
             testPublish(ii+1);
             waitOnUpdate(2000L);
             //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
@@ -292,55 +292,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
        suite.addTest(new TestFailSave("testFailSave", loginName));
        return suite;
    }
-
-
-   private void startServer()
-   {
-      serverThread = new ServerThread(serverPort);
-      serverThread.start();
-      Util.delay(3000L);    // Wait some time
-      Log.info(ME, "Server is up again!");
-   }
-
-
-   private void stopServer()
-   {
-      serverThread.stopServer = true;
-      Util.delay(500L);    // Wait some time
-      Log.info(ME, "Server is down!");
-   }
-
-
-   /**
-    * Start a xmlBlaster server instance.
-    * Invoke thread.stopServer=true; to stop it.
-    */
-   private class ServerThread extends Thread
-   {
-      private final String ME = "ServerThread";
-      int port = 7609; // this is the default port, which is probably blocked by another xmlBlaster server
-      boolean stopServer = false;
-      org.xmlBlaster.Main xmlBlasterMain = null;
-
-
-      ServerThread(int port) { this.port = port; }
-
-      public void run() {
-         Log.info(ME, "Starting a xmlBlaster server instance for testing ...");
-         String[] args = new String[4];
-         args[0] = "-iorPort";
-         args[1] = "" + port;
-         args[2] = "-doBlocking";
-         args[3] = "false";
-         xmlBlasterMain = new org.xmlBlaster.Main(args);
-         while(!stopServer) {
-            try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-         }
-         xmlBlasterMain.shutdown(false);
-         stopServer = false;
-         Log.info(ME, "Stopping the xmlBlaster server instance ...");
-      }
-   } // class ServerThread
 
 
    /**

@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.1 2000/02/29 16:54:20 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.2 2000/03/09 18:36:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,7 +18,7 @@ import test.framework.*;
  * Tests the fail save behavior of the CorbaConnection client helper class,
  * especially the pinging to xmlBlaster. This allows auto detection if the
  * connection to xmlBlaster is lost.
- * 
+ *
  * <br />For a description of what this fail save mode can do for you, please
  * read the API documentation of CorbaConnection.
  * <p>
@@ -65,7 +65,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    protected void setUp()
    {
-      startServer();
+      serverThread = ServerThread.startXmlBlaster(serverPort);
       try {
          numReceived = 0;
 
@@ -117,7 +117,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       corbaConnection.logout();
 
       Util.delay(200L);    // Wait some time
-      stopServer();
+      ServerThread.stopXmlBlaster(serverThread);
    }
 
 
@@ -174,18 +174,18 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    {
       testSubscribe();
       Util.delay(200L);
-      stopServer();
+      ServerThread.stopXmlBlaster(serverThread);
       Util.delay(3000L);    // Wait some time, ping should activate login polling
 
-      startServer();
+      serverThread = ServerThread.startXmlBlaster(serverPort);
       Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
 
       numReceived = 0;
 
-      stopServer();
+      ServerThread.stopXmlBlaster(serverThread);
       Util.delay(5000L);    // Wait some time, ping should activate login polling
 
-      startServer();
+      serverThread = ServerThread.startXmlBlaster(serverPort);
       Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
    }
 
@@ -294,55 +294,6 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
        suite.addTest(new TestFailSavePing("testFailSave", loginName));
        return suite;
    }
-
-
-   private void startServer()
-   {
-      serverThread = new ServerThread(serverPort);
-      serverThread.start();
-      Util.delay(3000L);    // Wait some time
-      Log.info(ME, "Server is up!");
-   }
-
-
-   private void stopServer()
-   {
-      serverThread.stopServer = true;
-      Util.delay(500L);    // Wait some time
-      Log.info(ME, "Server is down!");
-   }
-
-
-   /**
-    * Start a xmlBlaster server instance.
-    * Invoke thread.stopServer=true; to stop it.
-    */
-   private class ServerThread extends Thread
-   {
-      private final String ME = "ServerThread";
-      int port = 7609; // this is the default port, which is probably blocked by another xmlBlaster server
-      boolean stopServer = false;
-      org.xmlBlaster.Main xmlBlasterMain = null;
-
-
-      ServerThread(int port) { this.port = port; }
-
-      public void run() {
-         Log.info(ME, "Starting a xmlBlaster server instance for testing ...");
-         String[] args = new String[4];
-         args[0] = "-iorPort";
-         args[1] = "" + port;
-         args[2] = "-doBlocking";
-         args[3] = "false";
-         xmlBlasterMain = new org.xmlBlaster.Main(args);
-         while(!stopServer) {
-            try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-         }
-         xmlBlasterMain.shutdown(false);
-         stopServer = false;
-         Log.info(ME, "Stopping the xmlBlaster server instance ...");
-      }
-   } // class ServerThread
 
 
    /**
