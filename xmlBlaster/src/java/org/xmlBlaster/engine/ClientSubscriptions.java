@@ -474,13 +474,13 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    public final String toXml(String extraOffset) throws XmlBlasterException
    {
-      StringBuffer sb = new StringBuffer(1024);
+      StringBuffer sb = new StringBuffer(10000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<ClientSubscriptions>");
       sb.append(offset).append(" <ExactSubscriptions>");
-      synchronized(clientSubscriptionMap) {
+      synchronized(this.clientSubscriptionMap) {
          Iterator iterator = clientSubscriptionMap.values().iterator();
          while (iterator.hasNext()) {
             Map subMap = (Map)iterator.next();
@@ -488,8 +488,9 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
                Iterator iterator2 = subMap.values().iterator();
                while (iterator2.hasNext()) {
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
-                  if (sub.getKeyData().isExact())
-                     sb.append(offset).append("  <id>").append(sub.getSubscriptionId()).append("</id>");
+                  if (sub.getKeyData().isExact()) {
+                     sb.append(sub.toXmlSmall(extraOffset + Constants.INDENT + Constants.INDENT));
+                  }
                }
             }
          }
@@ -500,12 +501,11 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            //sb.append(offset).append("      <id>").append(sub.getSubscriptionId()).append("</id>");
             sb.append(offset).append(sub.toXml(extraOffset + Constants.INDENT + Constants.INDENT));
          }
       }
       sb.append(offset + " </XPathSubscriptions>");
-      sb.append(offset + "</ClientSubscriptions>\n");
+      sb.append(offset + "</ClientSubscriptions>");
       return sb.toString();
    }
 }
