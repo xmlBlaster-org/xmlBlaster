@@ -103,7 +103,8 @@
    
   LogRedirect:    6,3 kBytes 
 
-   libxmlBlasterClientC.so => /home/xmlblast/xmlBlaster/lib/libxmlBlasterClientC.so (0x40016000)
+   libxmlBlasterClientC.so => 
+      /opt/xmlBlaster/lib/libxmlBlasterClientC.so (0x40016000)
    libdl.so.2 => /lib/libdl.so.2 (0x40037000)
    libpthread.so.0 => /lib/libpthread.so.0 (0x4003a000)
    libc.so.6 => /lib/libc.so.6 (0x4008a000)
@@ -161,20 +162,20 @@ build.sh reportShow
 cd xmlBlaster/src/c
 
 Linux C:
-   gcc -Wall -g -I. -o HelloWorld HelloWorld.c util/*.c
+  gcc -Wall -g -I. -o HelloWorld HelloWorld.c util/*.c
        socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
 
 Linux C++:
-   g++ -Wall -g -DXMLBLASTER_C_COMPILE_AS_CPP -I. -o HelloWorld HelloWorld.c
+  g++ -Wall -g -DXMLBLASTER_C_COMPILE_AS_CPP -I. -o HelloWorld HelloWorld.c
        util/*.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
 
 Windows:
-   cl -D_WINDOWS -I. HelloWorld.c util\*.c socket\XmlBlasterConnectionUnparsed.c
+  cl -D_WINDOWS -I. HelloWorld.c util\*.c socket\XmlBlasterConnectionUnparsed.c
                                    socket\xmlBlasterSocket.c ws2_32.lib
 
 Solaris:
-   cc -Xc -g -I. -o HelloWorld HelloWorld.c util/*.c
-      socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
+  cc -Xc -g -I. -o HelloWorld HelloWorld.c util/*.c
+   socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
      </pre>
      <p>
      To compile a multi threaded client with synchronous access and asynchronous
@@ -184,22 +185,22 @@ Solaris:
 cd xmlBlaster/src/c/socket
 
 Linux C:
-   gcc -DXmlBlasterAccessUnparsedMain -Wall -pedantic -g -D_REENTRANT -I..
-       -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/*.c
-       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
-       -lpthread
+  gcc -DXmlBlasterAccessUnparsedMain -Wall -pedantic -g -D_REENTRANT -I..
+    -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/*.c
+    xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
+    -lpthread
 
 Windows:
-   cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
-      /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\*.c
-      xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
-      ws2_32.lib pthreadVC.lib
+  cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
+   /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\*.c
+   xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
+   ws2_32.lib pthreadVC.lib
     
 Solaris:
-   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I..
-       -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/*.c
-       xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c
-       CallbackServerUnparsed.c -lpthread -lsocket -lnsl
+  cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I..
+    -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../util/*.c
+    xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c
+    CallbackServerUnparsed.c -lpthread -lsocket -lnsl
      </pre>
      <p>
      Compilation hints are in the source files 
@@ -345,247 +346,251 @@ Solaris:
 <a name="line5" href="#line5">  5</a> Comment:   Example for all remote method invocations.
 <a name="line6" href="#line6">  6</a> Author:    &quot;Marcel Ruff&quot; &lt;xmlBlaster@marcelruff.info&gt;
 <a name="line7" href="#line7">  7</a> Compile:   cd xmlBlaster; build.sh c
-<a name="line8" href="#line8">  8</a> Invoke:    HelloWorld3 -help
-<a name="line9" href="#line9">  9</a> See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
-<a name="line10" href="#line10"> 10</a> -----------------------------------------------------------------------------*/</font>
-<a name="line11" href="#line11"> 11</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
-<a name="line12" href="#line12"> 12</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
-<a name="line13" href="#line13"> 13</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;string.h&gt;</font></strong></font>
-<a name="line14" href="#line14"> 14</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;XmlBlasterAccessUnparsed.h&gt;</font></strong></font>
-<a name="line15" href="#line15"> 15</a> 
-<a name="line16" href="#line16"> 16</a> <font color="#444444"><i>/**
-<a name="line17" href="#line17"> 17</a>  * Here we receive the callback messages from xmlBlaster
-<a name="line18" href="#line18"> 18</a>  * @see UpdateFp in CallbackServerUnparsed.h
-<a name="line19" href="#line19"> 19</a>  */</i></font>
-<a name="line20" href="#line20"> 20</a> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>, <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">exception</font><font color="4444FF">)</font>
-<a name="line21" href="#line21"> 21</a> <font color="4444FF"><strong>{</strong></font>
-<a name="line22" href="#line22"> 22</a>    <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
-<a name="line23" href="#line23"> 23</a>    <font color="#2040a0">bool</font> <font color="#2040a0">testException</font> <font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">;</font>
-<a name="line24" href="#line24"> 24</a>    <font color="#444444">/* XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData; */</font>
-<a name="line25" href="#line25"> 25</a> 
-<a name="line26" href="#line26"> 26</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line27" href="#line27"> 27</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line28" href="#line28"> 28</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line29" href="#line29"> 29</a>              <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line30" href="#line30"> 30</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line31" href="#line31"> 31</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line32" href="#line32"> 32</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
-<a name="line33" href="#line33"> 33</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line34" href="#line34"> 34</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">testException</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line35" href="#line35"> 35</a>       <font color="#2040a0">strncpy0</font><font color="4444FF">(</font><font color="#2040a0">exception</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">errorCode</font>, <font color="#008000">&quot;user.clientCode&quot;</font>,
-<a name="line36" href="#line36"> 36</a>                <font color="#2040a0">XMLBLASTEREXCEPTION_ERRORCODE_LEN</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line37" href="#line37"> 37</a>       <font color="#2040a0">strncpy0</font><font color="4444FF">(</font><font color="#2040a0">exception</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">message</font>, <font color="#008000">&quot;I don't want these messages&quot;</font>,
-<a name="line38" href="#line38"> 38</a>                <font color="#2040a0">XMLBLASTEREXCEPTION_MESSAGE_LEN</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line39" href="#line39"> 39</a>       <strong>return</strong> <font color="#2040a0">false</font><font color="4444FF">;</font>
-<a name="line40" href="#line40"> 40</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line41" href="#line41"> 41</a>    <strong>return</strong> <font color="#2040a0">true</font><font color="4444FF">;</font>
-<a name="line42" href="#line42"> 42</a> <font color="4444FF"><strong>}</strong></font>
-<a name="line43" href="#line43"> 43</a> 
-<a name="line44" href="#line44"> 44</a> <font color="#444444"><i>/**
-<a name="line45" href="#line45"> 45</a>  * Invoke: HelloWorld3 -logLevel TRACE
-<a name="line46" href="#line46"> 46</a>  */</i></font>
-<a name="line47" href="#line47"> 47</a> <strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">argc</font>, <strong>char</strong><font color="4444FF">*</font><font color="4444FF">*</font> <font color="#2040a0">argv</font><font color="4444FF">)</font>
-<a name="line48" href="#line48"> 48</a> <font color="4444FF"><strong>{</strong></font>
-<a name="line49" href="#line49"> 49</a>    <strong>int</strong> <font color="#2040a0">iarg</font><font color="4444FF">;</font>
-<a name="line50" href="#line50"> 50</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line51" href="#line51"> 51</a>    <font color="#444444">/*
-<a name="line52" href="#line52"> 52</a>       * callbackSessionId:
-<a name="line53" href="#line53"> 53</a>       * Is created by the client and used to validate callback messages in update. 
-<a name="line54" href="#line54"> 54</a>       * This is sent on connect in ConnectQos.
-<a name="line55" href="#line55"> 55</a>       * (Is different from the xmlBlaster secret session ID)
-<a name="line56" href="#line56"> 56</a>       */</font>
-<a name="line57" href="#line57"> 57</a>    <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">callbackSessionId</font> <font color="4444FF">=</font> <font color="#008000">&quot;topSecret&quot;</font><font color="4444FF">;</font>
-<a name="line58" href="#line58"> 58</a>    <font color="#2040a0">XmlBlasterException</font> <font color="#2040a0">xmlBlasterException</font><font color="4444FF">;</font>
-<a name="line59" href="#line59"> 59</a>    <font color="#2040a0">XmlBlasterAccessUnparsed</font> <font color="4444FF">*</font><font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line60" href="#line60"> 60</a> 
-<a name="line61" href="#line61"> 61</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Try option '-help' if you need usage informations<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line62" href="#line62"> 62</a> 
-<a name="line63" href="#line63"> 63</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">iarg</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font> <font color="4444FF">&lt;</font> <font color="#2040a0">argc</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line64" href="#line64"> 64</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;-help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;--help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line65" href="#line65"> 65</a>          <strong>char</strong> <font color="#2040a0">usage</font><font color="4444FF">[</font><font color="#2040a0">XMLBLASTER_MAX_USAGE_LEN</font><font color="4444FF">]</font><font color="4444FF">;</font>
-<a name="line66" href="#line66"> 66</a>          <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">pp</font> <font color="4444FF">=</font>
-<a name="line67" href="#line67"> 67</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  -logLevel            ERROR | WARN | INFO | TRACE [WARN]&quot;</font>
-<a name="line68" href="#line68"> 68</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font><font color="#77dd77">\n</font>Example:&quot;</font>
-<a name="line69" href="#line69"> 69</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  HelloWorld3 -logLevel TRACE&quot;</font>
-<a name="line70" href="#line70"> 70</a>          <font color="#008000">&quot; -dispatch/connection/plugin/socket/hostname 192.168.2.9&quot;</font><font color="4444FF">;</font>
-<a name="line71" href="#line71"> 71</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;Usage:<font color="#77dd77">\n</font>XmlBlaster C SOCKET client %s<font color="#77dd77">\n</font>%s%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line72" href="#line72"> 72</a>                   <font color="#2040a0">getXmlBlasterVersion</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">xmlBlasterAccessUnparsedUsage</font><font color="4444FF">(</font><font color="#2040a0">usage</font><font color="4444FF">)</font>, <font color="#2040a0">pp</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line73" href="#line73"> 73</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line74" href="#line74"> 74</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line75" href="#line75"> 75</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line76" href="#line76"> 76</a> 
-<a name="line77" href="#line77"> 77</a>    <font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#2040a0">getXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">argc</font>, <font color="#2040a0">argv</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line78" href="#line78"> 78</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">initialize</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line79" href="#line79"> 79</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connection to xmlBlaster failed,&quot;</font>
-<a name="line80" href="#line80"> 80</a>              <font color="#008000">&quot; please start the server or check your configuration<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line81" href="#line81"> 81</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line82" href="#line82"> 82</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line83" href="#line83"> 83</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line84" href="#line84"> 84</a> 
-<a name="line85" href="#line85"> 85</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* connect */</font>
-<a name="line86" href="#line86"> 86</a>       <strong>char</strong> <font color="#2040a0">connectQos</font><font color="4444FF">[</font><font color="#FF0000">2048</font><font color="4444FF">]</font><font color="4444FF">;</font>
-<a name="line87" href="#line87"> 87</a>       <strong>char</strong> <font color="#2040a0">callbackQos</font><font color="4444FF">[</font><font color="#FF0000">1024</font><font color="4444FF">]</font><font color="4444FF">;</font>
-<a name="line88" href="#line88"> 88</a>       <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">callbackQos</font>,
-<a name="line89" href="#line89"> 89</a>                <font color="#008000">&quot;&lt;queue relating='callback' maxEntries='100' maxEntriesCache='100'&gt;&quot;</font>
-<a name="line90" href="#line90"> 90</a>                <font color="#008000">&quot;  &lt;callback type='SOCKET' sessionId='%s'&gt;&quot;</font>
-<a name="line91" href="#line91"> 91</a>                <font color="#008000">&quot;    socket://%.120s:%d&quot;</font>
-<a name="line92" href="#line92"> 92</a>                <font color="#008000">&quot;  &lt;/callback&gt;&quot;</font>
-<a name="line93" href="#line93"> 93</a>                <font color="#008000">&quot;&lt;/queue&gt;&quot;</font>,
-<a name="line94" href="#line94"> 94</a>                <font color="#2040a0">callbackSessionId</font>, <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">callbackP</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">hostCB</font>, <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">callbackP</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">portCB</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line95" href="#line95"> 95</a>       <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">connectQos</font>,
-<a name="line96" href="#line96"> 96</a>                <font color="#008000">&quot;&lt;qos&gt;&quot;</font>
-<a name="line97" href="#line97"> 97</a>                <font color="#008000">&quot; &lt;securityService type='htpasswd' version='1.0'&gt;&quot;</font>
-<a name="line98" href="#line98"> 98</a>                <font color="#008000">&quot;  &lt;![CDATA[&quot;</font>
-<a name="line99" href="#line99"> 99</a>                <font color="#008000">&quot;   &lt;user&gt;fritz&lt;/user&gt;&quot;</font>
-<a name="line100" href="#line100">100</a>                <font color="#008000">&quot;   &lt;passwd&gt;secret&lt;/passwd&gt;&quot;</font>
-<a name="line101" href="#line101">101</a>                <font color="#008000">&quot;  ]]&gt;&quot;</font>
-<a name="line102" href="#line102">102</a>                <font color="#008000">&quot; &lt;/securityService&gt;&quot;</font>
-<a name="line103" href="#line103">103</a>                <font color="#008000">&quot;%.1024s&quot;</font>
-<a name="line104" href="#line104">104</a>                <font color="#008000">&quot;&lt;/qos&gt;&quot;</font>, <font color="#2040a0">callbackQos</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line105" href="#line105">105</a> 
-<a name="line106" href="#line106">106</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">connect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">connectQos</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line107" href="#line107">107</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line108" href="#line108">108</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception during connect errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line109" href="#line109">109</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line110" href="#line110">110</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line111" href="#line111">111</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line112" href="#line112">112</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line113" href="#line113">113</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line114" href="#line114">114</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connected to xmlBlaster, do some tests ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line115" href="#line115">115</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line116" href="#line116">116</a> 
-<a name="line117" href="#line117">117</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">ping</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line118" href="#line118">118</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line119" href="#line119">119</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] ERROR: Pinging a connected server failed<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line120" href="#line120">120</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line121" href="#line121">121</a>    <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
-<a name="line122" href="#line122">122</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Pinging a connected server, response=%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line123" href="#line123">123</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line8" href="#line8">  8</a>            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+<a name="line9" href="#line9">  9</a> Invoke:    HelloWorld3 -help
+<a name="line10" href="#line10"> 10</a> See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+<a name="line11" href="#line11"> 11</a> -----------------------------------------------------------------------------*/</font>
+<a name="line12" href="#line12"> 12</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+<a name="line13" href="#line13"> 13</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
+<a name="line14" href="#line14"> 14</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;string.h&gt;</font></strong></font>
+<a name="line15" href="#line15"> 15</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;XmlBlasterAccessUnparsed.h&gt;</font></strong></font>
+<a name="line16" href="#line16"> 16</a> 
+<a name="line17" href="#line17"> 17</a> <font color="#444444"><i>/**
+<a name="line18" href="#line18"> 18</a>  * Here we receive the callback messages from xmlBlaster
+<a name="line19" href="#line19"> 19</a>  * @see UpdateFp in CallbackServerUnparsed.h
+<a name="line20" href="#line20"> 20</a>  */</i></font>
+<a name="line21" href="#line21"> 21</a> <strong>static</strong> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>,
+<a name="line22" href="#line22"> 22</a>                      <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">exception</font><font color="4444FF">)</font>
+<a name="line23" href="#line23"> 23</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line24" href="#line24"> 24</a>    <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
+<a name="line25" href="#line25"> 25</a>    <font color="#2040a0">bool</font> <font color="#2040a0">testException</font> <font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">;</font>
+<a name="line26" href="#line26"> 26</a>    <font color="#444444">/* XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData; */</font>
+<a name="line27" href="#line27"> 27</a> 
+<a name="line28" href="#line28"> 28</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line29" href="#line29"> 29</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line30" href="#line30"> 30</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line31" href="#line31"> 31</a>              <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line32" href="#line32"> 32</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line33" href="#line33"> 33</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font> 
+<a name="line34" href="#line34"> 34</a>                   <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line35" href="#line35"> 35</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
+<a name="line36" href="#line36"> 36</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line37" href="#line37"> 37</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">testException</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line38" href="#line38"> 38</a>       <font color="#2040a0">strncpy0</font><font color="4444FF">(</font><font color="#2040a0">exception</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">errorCode</font>, <font color="#008000">&quot;user.clientCode&quot;</font>,
+<a name="line39" href="#line39"> 39</a>                <font color="#2040a0">XMLBLASTEREXCEPTION_ERRORCODE_LEN</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line40" href="#line40"> 40</a>       <font color="#2040a0">strncpy0</font><font color="4444FF">(</font><font color="#2040a0">exception</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">message</font>, <font color="#008000">&quot;I don't want these messages&quot;</font>,
+<a name="line41" href="#line41"> 41</a>                <font color="#2040a0">XMLBLASTEREXCEPTION_MESSAGE_LEN</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line42" href="#line42"> 42</a>       <strong>return</strong> <font color="#2040a0">false</font><font color="4444FF">;</font>
+<a name="line43" href="#line43"> 43</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line44" href="#line44"> 44</a>    <strong>return</strong> <font color="#2040a0">true</font><font color="4444FF">;</font>
+<a name="line45" href="#line45"> 45</a> <font color="4444FF"><strong>}</strong></font>
+<a name="line46" href="#line46"> 46</a> 
+<a name="line47" href="#line47"> 47</a> <font color="#444444"><i>/**
+<a name="line48" href="#line48"> 48</a>  * Invoke: HelloWorld3 -logLevel TRACE
+<a name="line49" href="#line49"> 49</a>  */</i></font>
+<a name="line50" href="#line50"> 50</a> <strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">argc</font>, <strong>char</strong><font color="4444FF">*</font><font color="4444FF">*</font> <font color="#2040a0">argv</font><font color="4444FF">)</font>
+<a name="line51" href="#line51"> 51</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line52" href="#line52"> 52</a>    <strong>int</strong> <font color="#2040a0">iarg</font><font color="4444FF">;</font>
+<a name="line53" href="#line53"> 53</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line54" href="#line54"> 54</a>    <font color="#444444">/*
+<a name="line55" href="#line55"> 55</a>       * callbackSessionId:
+<a name="line56" href="#line56"> 56</a>       * Is created by the client and used to validate callback messages in update. 
+<a name="line57" href="#line57"> 57</a>       * This is sent on connect in ConnectQos.
+<a name="line58" href="#line58"> 58</a>       * (Is different from the xmlBlaster secret session ID)
+<a name="line59" href="#line59"> 59</a>       */</font>
+<a name="line60" href="#line60"> 60</a>    <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">callbackSessionId</font> <font color="4444FF">=</font> <font color="#008000">&quot;topSecret&quot;</font><font color="4444FF">;</font>
+<a name="line61" href="#line61"> 61</a>    <font color="#2040a0">XmlBlasterException</font> <font color="#2040a0">xmlBlasterException</font><font color="4444FF">;</font>
+<a name="line62" href="#line62"> 62</a>    <font color="#2040a0">XmlBlasterAccessUnparsed</font> <font color="4444FF">*</font><font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line63" href="#line63"> 63</a> 
+<a name="line64" href="#line64"> 64</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] XmlBlaster %s C SOCKET client, try option '-help' if you need&quot;</font>
+<a name="line65" href="#line65"> 65</a>           <font color="#008000">&quot; usage informations<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">getXmlBlasterVersion</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line66" href="#line66"> 66</a> 
+<a name="line67" href="#line67"> 67</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">iarg</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font> <font color="4444FF">&lt;</font> <font color="#2040a0">argc</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line68" href="#line68"> 68</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;-help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;--help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line69" href="#line69"> 69</a>          <strong>char</strong> <font color="#2040a0">usage</font><font color="4444FF">[</font><font color="#2040a0">XMLBLASTER_MAX_USAGE_LEN</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<a name="line70" href="#line70"> 70</a>          <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">pp</font> <font color="4444FF">=</font>
+<a name="line71" href="#line71"> 71</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  -logLevel            ERROR | WARN | INFO | TRACE [WARN]&quot;</font>
+<a name="line72" href="#line72"> 72</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font><font color="#77dd77">\n</font>Example:&quot;</font>
+<a name="line73" href="#line73"> 73</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  HelloWorld3 -logLevel TRACE&quot;</font>
+<a name="line74" href="#line74"> 74</a>          <font color="#008000">&quot; -dispatch/connection/plugin/socket/hostname 192.168.2.9&quot;</font><font color="4444FF">;</font>
+<a name="line75" href="#line75"> 75</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;Usage:<font color="#77dd77">\n</font>XmlBlaster C SOCKET client %s<font color="#77dd77">\n</font>%s%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line76" href="#line76"> 76</a>                   <font color="#2040a0">getXmlBlasterVersion</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">xmlBlasterAccessUnparsedUsage</font><font color="4444FF">(</font><font color="#2040a0">usage</font><font color="4444FF">)</font>, <font color="#2040a0">pp</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line77" href="#line77"> 77</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line78" href="#line78"> 78</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line79" href="#line79"> 79</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line80" href="#line80"> 80</a> 
+<a name="line81" href="#line81"> 81</a>    <font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#2040a0">getXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">argc</font>, <font color="#2040a0">argv</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line82" href="#line82"> 82</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">initialize</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line83" href="#line83"> 83</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connection to xmlBlaster failed,&quot;</font>
+<a name="line84" href="#line84"> 84</a>              <font color="#008000">&quot; please start the server or check your configuration<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line85" href="#line85"> 85</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line86" href="#line86"> 86</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line87" href="#line87"> 87</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line88" href="#line88"> 88</a> 
+<a name="line89" href="#line89"> 89</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* connect */</font>
+<a name="line90" href="#line90"> 90</a>       <strong>char</strong> <font color="#2040a0">connectQos</font><font color="4444FF">[</font><font color="#FF0000">2048</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<a name="line91" href="#line91"> 91</a>       <strong>char</strong> <font color="#2040a0">callbackQos</font><font color="4444FF">[</font><font color="#FF0000">1024</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<a name="line92" href="#line92"> 92</a>       <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">callbackQos</font>,
+<a name="line93" href="#line93"> 93</a>                <font color="#008000">&quot;&lt;queue relating='callback' maxEntries='100' maxEntriesCache='100'&gt;&quot;</font>
+<a name="line94" href="#line94"> 94</a>                <font color="#008000">&quot;  &lt;callback type='SOCKET' sessionId='%s'&gt;&quot;</font>
+<a name="line95" href="#line95"> 95</a>                <font color="#008000">&quot;    socket://%.120s:%d&quot;</font>
+<a name="line96" href="#line96"> 96</a>                <font color="#008000">&quot;  &lt;/callback&gt;&quot;</font>
+<a name="line97" href="#line97"> 97</a>                <font color="#008000">&quot;&lt;/queue&gt;&quot;</font>,
+<a name="line98" href="#line98"> 98</a>                <font color="#2040a0">callbackSessionId</font>, <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">callbackP</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">hostCB</font>, <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">callbackP</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">portCB</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line99" href="#line99"> 99</a>       <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">connectQos</font>,
+<a name="line100" href="#line100">100</a>                <font color="#008000">&quot;&lt;qos&gt;&quot;</font>
+<a name="line101" href="#line101">101</a>                <font color="#008000">&quot; &lt;securityService type='htpasswd' version='1.0'&gt;&quot;</font>
+<a name="line102" href="#line102">102</a>                <font color="#008000">&quot;  &lt;![CDATA[&quot;</font>
+<a name="line103" href="#line103">103</a>                <font color="#008000">&quot;   &lt;user&gt;fritz&lt;/user&gt;&quot;</font>
+<a name="line104" href="#line104">104</a>                <font color="#008000">&quot;   &lt;passwd&gt;secret&lt;/passwd&gt;&quot;</font>
+<a name="line105" href="#line105">105</a>                <font color="#008000">&quot;  ]]&gt;&quot;</font>
+<a name="line106" href="#line106">106</a>                <font color="#008000">&quot; &lt;/securityService&gt;&quot;</font>
+<a name="line107" href="#line107">107</a>                <font color="#008000">&quot;%.1024s&quot;</font>
+<a name="line108" href="#line108">108</a>                <font color="#008000">&quot;&lt;/qos&gt;&quot;</font>, <font color="#2040a0">callbackQos</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line109" href="#line109">109</a> 
+<a name="line110" href="#line110">110</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">connect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">connectQos</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line111" href="#line111">111</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line112" href="#line112">112</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception during connect errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line113" href="#line113">113</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line114" href="#line114">114</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line115" href="#line115">115</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line116" href="#line116">116</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line117" href="#line117">117</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line118" href="#line118">118</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connected to xmlBlaster, do some tests ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line119" href="#line119">119</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line120" href="#line120">120</a> 
+<a name="line121" href="#line121">121</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">ping</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line122" href="#line122">122</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line123" href="#line123">123</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] ERROR: Pinging a connected server failed<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
 <a name="line124" href="#line124">124</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line125" href="#line125">125</a> 
-<a name="line126" href="#line126">126</a>    <font color="4444FF"><strong>{</strong></font> <font color="#444444">/* subscribe ... */</font>
-<a name="line127" href="#line127">127</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line128" href="#line128">128</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line129" href="#line129">129</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Subscribe message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line130" href="#line130">130</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">subscribe</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line131" href="#line131">131</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line132" href="#line132">132</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in subscribe errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line133" href="#line133">133</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line134" href="#line134">134</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line135" href="#line135">135</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line136" href="#line136">136</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line137" href="#line137">137</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line138" href="#line138">138</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Subscribe success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line139" href="#line139">139</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line140" href="#line140">140</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line141" href="#line141">141</a> 
-<a name="line142" href="#line142">142</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* publish ... */</font>
-<a name="line143" href="#line143">143</a>       <font color="#2040a0">MsgUnit</font> <font color="#2040a0">msgUnit</font><font color="4444FF">;</font>
-<a name="line144" href="#line144">144</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Publishing message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line145" href="#line145">145</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line146" href="#line146">146</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">content</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;Some message payload&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line147" href="#line147">147</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">contentLen</font> <font color="4444FF">=</font> <font color="#2040a0">strlen</font><font color="4444FF">(</font><font color="#2040a0">msgUnit</font>.<font color="#2040a0">content</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line148" href="#line148">148</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">qos</font> <font color="4444FF">=</font><font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;persistent/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line149" href="#line149">149</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">publish</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="4444FF">&amp;</font><font color="#2040a0">msgUnit</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line150" href="#line150">150</a>       <font color="#2040a0">freeMsgUnitData</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnit</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line151" href="#line151">151</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line152" href="#line152">152</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in publish errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line153" href="#line153">153</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line154" href="#line154">154</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line155" href="#line155">155</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line156" href="#line156">156</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line157" href="#line157">157</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line158" href="#line158">158</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Publish success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line159" href="#line159">159</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line160" href="#line160">160</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line161" href="#line161">161</a> 
-<a name="line162" href="#line162">162</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* unSubscribe ... */</font>
-<a name="line163" href="#line163">163</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line164" href="#line164">164</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line165" href="#line165">165</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] UnSubscribe message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line166" href="#line166">166</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">unSubscribe</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line167" href="#line167">167</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line168" href="#line168">168</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Unsubscribe success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line169" href="#line169">169</a>          <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line170" href="#line170">170</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line171" href="#line171">171</a>       <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
-<a name="line172" href="#line172">172</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in unSubscribe errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line173" href="#line173">173</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line174" href="#line174">174</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line175" href="#line175">175</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line176" href="#line176">176</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line177" href="#line177">177</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line178" href="#line178">178</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line179" href="#line179">179</a> 
-<a name="line180" href="#line180">180</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* get synchnronous ... */</font>
-<a name="line181" href="#line181">181</a>       <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
-<a name="line182" href="#line182">182</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key queryType='XPATH'&gt;//key&lt;/key&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line183" href="#line183">183</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line184" href="#line184">184</a>       <font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">;</font>
-<a name="line185" href="#line185">185</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Get synchronous messages with XPath '//key' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line186" href="#line186">186</a>       <font color="#2040a0">msgUnitArr</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">get</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line187" href="#line187">187</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line188" href="#line188">188</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in get errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line189" href="#line189">189</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line190" href="#line190">190</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line191" href="#line191">191</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line192" href="#line192">192</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line193" href="#line193">193</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line194" href="#line194">194</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line195" href="#line195">195</a>          <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line196" href="#line196">196</a>             <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">contentStr</font> <font color="4444FF">=</font> <font color="#2040a0">strFromBlobAlloc</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">content</font>,
-<a name="line197" href="#line197">197</a>                                              <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">contentLen</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line198" href="#line198">198</a>             <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">dots</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">contentLen</font> <font color="4444FF">&gt;</font> <font color="#FF0000">96</font><font color="4444FF">)</font> ?
-<a name="line199" href="#line199">199</a>                                  <font color="#008000">&quot; ...&quot;</font> <font color="4444FF">:</font> <font color="#008000">&quot;&quot;</font><font color="4444FF">;</font>
-<a name="line200" href="#line200">200</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;<font color="#77dd77">\n</font>[client] Received message#%u/%u:<font color="#77dd77">\n</font>&quot;</font>
-<a name="line201" href="#line201">201</a>                      <font color="#008000">&quot;-------------------------------------&quot;</font>
-<a name="line202" href="#line202">202</a>                      <font color="#008000">&quot;%s<font color="#77dd77">\n</font> &lt;content&gt;%.100s%s&lt;/content&gt;%s<font color="#77dd77">\n</font>&quot;</font>
-<a name="line203" href="#line203">203</a>                      <font color="#008000">&quot;-------------------------------------<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line204" href="#line204">204</a>                      <font color="#2040a0">i</font><font color="4444FF">+</font><font color="#FF0000">1</font>, <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font>,
-<a name="line205" href="#line205">205</a>                      <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">key</font>,
-<a name="line206" href="#line206">206</a>                      <font color="#2040a0">contentStr</font>, <font color="#2040a0">dots</font>,
-<a name="line207" href="#line207">207</a>                      <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">qos</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line208" href="#line208">208</a>             <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">contentStr</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line209" href="#line209">209</a>          <font color="4444FF"><strong>}</strong></font>
-<a name="line210" href="#line210">210</a>          <font color="#2040a0">freeMsgUnitArr</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line211" href="#line211">211</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line212" href="#line212">212</a>       <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
-<a name="line213" href="#line213">213</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in get errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line214" href="#line214">214</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line215" href="#line215">215</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line216" href="#line216">216</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line217" href="#line217">217</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line218" href="#line218">218</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line219" href="#line219">219</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line220" href="#line220">220</a> 
-<a name="line221" href="#line221">221</a> 
-<a name="line222" href="#line222">222</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* erase ... */</font>
-<a name="line223" href="#line223">223</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line224" href="#line224">224</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
-<a name="line225" href="#line225">225</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Erasing message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line226" href="#line226">226</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">erase</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line227" href="#line227">227</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line228" href="#line228">228</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in erase errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line229" href="#line229">229</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line230" href="#line230">230</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line231" href="#line231">231</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line232" href="#line232">232</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line233" href="#line233">233</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line234" href="#line234">234</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Erase success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line235" href="#line235">235</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line236" href="#line236">236</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line237" href="#line237">237</a> 
-<a name="line238" href="#line238">238</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line239" href="#line239">239</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in disconnect, errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line240" href="#line240">240</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line241" href="#line241">241</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line242" href="#line242">242</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line243" href="#line243">243</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line244" href="#line244">244</a> 
-<a name="line245" href="#line245">245</a>    <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line246" href="#line246">246</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Good bye.<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line247" href="#line247">247</a>    <strong>return</strong> <font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line248" href="#line248">248</a> <font color="4444FF"><strong>}</strong></font>
+<a name="line125" href="#line125">125</a>    <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+<a name="line126" href="#line126">126</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Pinging a connected server, response=%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line127" href="#line127">127</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line128" href="#line128">128</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line129" href="#line129">129</a> 
+<a name="line130" href="#line130">130</a>    <font color="4444FF"><strong>{</strong></font> <font color="#444444">/* subscribe ... */</font>
+<a name="line131" href="#line131">131</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line132" href="#line132">132</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line133" href="#line133">133</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Subscribe message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line134" href="#line134">134</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">subscribe</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line135" href="#line135">135</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line136" href="#line136">136</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in subscribe errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line137" href="#line137">137</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line138" href="#line138">138</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line139" href="#line139">139</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line140" href="#line140">140</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line141" href="#line141">141</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line142" href="#line142">142</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Subscribe success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line143" href="#line143">143</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line144" href="#line144">144</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line145" href="#line145">145</a> 
+<a name="line146" href="#line146">146</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* publish ... */</font>
+<a name="line147" href="#line147">147</a>       <font color="#2040a0">MsgUnit</font> <font color="#2040a0">msgUnit</font><font color="4444FF">;</font>
+<a name="line148" href="#line148">148</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Publishing message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line149" href="#line149">149</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line150" href="#line150">150</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">content</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;Some message payload&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line151" href="#line151">151</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">contentLen</font> <font color="4444FF">=</font> <font color="#2040a0">strlen</font><font color="4444FF">(</font><font color="#2040a0">msgUnit</font>.<font color="#2040a0">content</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line152" href="#line152">152</a>       <font color="#2040a0">msgUnit</font>.<font color="#2040a0">qos</font> <font color="4444FF">=</font><font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;persistent/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line153" href="#line153">153</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">publish</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="4444FF">&amp;</font><font color="#2040a0">msgUnit</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line154" href="#line154">154</a>       <font color="#2040a0">freeMsgUnitData</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnit</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line155" href="#line155">155</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line156" href="#line156">156</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in publish errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line157" href="#line157">157</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line158" href="#line158">158</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line159" href="#line159">159</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line160" href="#line160">160</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line161" href="#line161">161</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line162" href="#line162">162</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Publish success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line163" href="#line163">163</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line164" href="#line164">164</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line165" href="#line165">165</a> 
+<a name="line166" href="#line166">166</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* unSubscribe ... */</font>
+<a name="line167" href="#line167">167</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line168" href="#line168">168</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line169" href="#line169">169</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] UnSubscribe message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line170" href="#line170">170</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">unSubscribe</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line171" href="#line171">171</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line172" href="#line172">172</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Unsubscribe success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line173" href="#line173">173</a>          <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line174" href="#line174">174</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line175" href="#line175">175</a>       <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+<a name="line176" href="#line176">176</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in unSubscribe errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line177" href="#line177">177</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line178" href="#line178">178</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line179" href="#line179">179</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line180" href="#line180">180</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line181" href="#line181">181</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line182" href="#line182">182</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line183" href="#line183">183</a> 
+<a name="line184" href="#line184">184</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* get synchnronous ... */</font>
+<a name="line185" href="#line185">185</a>       <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
+<a name="line186" href="#line186">186</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key queryType='XPATH'&gt;//key&lt;/key&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line187" href="#line187">187</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line188" href="#line188">188</a>       <font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">;</font>
+<a name="line189" href="#line189">189</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Get synchronous messages with XPath '//key' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line190" href="#line190">190</a>       <font color="#2040a0">msgUnitArr</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">get</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line191" href="#line191">191</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line192" href="#line192">192</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in get errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line193" href="#line193">193</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line194" href="#line194">194</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line195" href="#line195">195</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line196" href="#line196">196</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line197" href="#line197">197</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line198" href="#line198">198</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line199" href="#line199">199</a>          <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line200" href="#line200">200</a>             <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">contentStr</font> <font color="4444FF">=</font> <font color="#2040a0">strFromBlobAlloc</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">content</font>,
+<a name="line201" href="#line201">201</a>                                              <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">contentLen</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line202" href="#line202">202</a>             <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">dots</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">contentLen</font> <font color="4444FF">&gt;</font> <font color="#FF0000">96</font><font color="4444FF">)</font> ?
+<a name="line203" href="#line203">203</a>                                  <font color="#008000">&quot; ...&quot;</font> <font color="4444FF">:</font> <font color="#008000">&quot;&quot;</font><font color="4444FF">;</font>
+<a name="line204" href="#line204">204</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;<font color="#77dd77">\n</font>[client] Received message#%u/%u:<font color="#77dd77">\n</font>&quot;</font>
+<a name="line205" href="#line205">205</a>                      <font color="#008000">&quot;-------------------------------------&quot;</font>
+<a name="line206" href="#line206">206</a>                      <font color="#008000">&quot;%s<font color="#77dd77">\n</font> &lt;content&gt;%.100s%s&lt;/content&gt;%s<font color="#77dd77">\n</font>&quot;</font>
+<a name="line207" href="#line207">207</a>                      <font color="#008000">&quot;-------------------------------------<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line208" href="#line208">208</a>                      <font color="#2040a0">i</font><font color="4444FF">+</font><font color="#FF0000">1</font>, <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font>,
+<a name="line209" href="#line209">209</a>                      <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">key</font>,
+<a name="line210" href="#line210">210</a>                      <font color="#2040a0">contentStr</font>, <font color="#2040a0">dots</font>,
+<a name="line211" href="#line211">211</a>                      <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">qos</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line212" href="#line212">212</a>             <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">contentStr</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line213" href="#line213">213</a>          <font color="4444FF"><strong>}</strong></font>
+<a name="line214" href="#line214">214</a>          <font color="#2040a0">freeMsgUnitArr</font><font color="4444FF">(</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line215" href="#line215">215</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line216" href="#line216">216</a>       <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+<a name="line217" href="#line217">217</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in get errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line218" href="#line218">218</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line219" href="#line219">219</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line220" href="#line220">220</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line221" href="#line221">221</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line222" href="#line222">222</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line223" href="#line223">223</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line224" href="#line224">224</a> 
+<a name="line225" href="#line225">225</a> 
+<a name="line226" href="#line226">226</a>    <font color="4444FF"><strong>{</strong></font>  <font color="#444444">/* erase ... */</font>
+<a name="line227" href="#line227">227</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">key</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;key oid='HelloWorld'/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line228" href="#line228">228</a>       <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">qos</font> <font color="4444FF">=</font> <font color="#008000">&quot;&lt;qos/&gt;&quot;</font><font color="4444FF">;</font>
+<a name="line229" href="#line229">229</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Erasing message 'HelloWorld' ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line230" href="#line230">230</a>       <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">erase</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">key</font>, <font color="#2040a0">qos</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line231" href="#line231">231</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line232" href="#line232">232</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in erase errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line233" href="#line233">233</a>                   <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line234" href="#line234">234</a>          <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line235" href="#line235">235</a>          <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line236" href="#line236">236</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line237" href="#line237">237</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line238" href="#line238">238</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Erase success, returned status is '%s'<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line239" href="#line239">239</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line240" href="#line240">240</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line241" href="#line241">241</a> 
+<a name="line242" href="#line242">242</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line243" href="#line243">243</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in disconnect, errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line244" href="#line244">244</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line245" href="#line245">245</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line246" href="#line246">246</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line247" href="#line247">247</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line248" href="#line248">248</a> 
+<a name="line249" href="#line249">249</a>    <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line250" href="#line250">250</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Good bye.<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line251" href="#line251">251</a>    <strong>return</strong> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line252" href="#line252">252</a> <font color="4444FF"><strong>}</strong></font>
    </pre>
 
    <p>
@@ -645,9 +650,9 @@ Solaris:
 <a name="line6" href="#line6">  6</a> Author:    &quot;Marcel Ruff&quot; &lt;xmlBlaster@marcelruff.info&gt;
 <a name="line7" href="#line7">  7</a> Compile:
 <a name="line8" href="#line8">  8</a>   Linux with libxmlBlasterC.so:
-<a name="line9" href="#line9">  9</a>            gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
+<a name="line9" href="#line9">  9</a>           gcc  -D_REENTRANT -Wall -o LogRedirect LogRedirect.c -I../../../src/c
 <a name="line10" href="#line10"> 10</a>                 -L../../../lib -lxmlBlasterClientC -Wl,-rpath=../../../lib -lpthread
-<a name="line11" href="#line11"> 11</a> See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+<a name="line11" href="#line11"> 11</a> See:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 <a name="line12" href="#line12"> 12</a> -----------------------------------------------------------------------------*/</font>
 <a name="line13" href="#line13"> 13</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
 <a name="line14" href="#line14"> 14</a> <font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
@@ -659,155 +664,160 @@ Solaris:
 <a name="line20" href="#line20"> 20</a> <strong>static</strong> <strong>void</strong> <font color="#2040a0">myLogger</font><font color="4444FF">(</font><font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">currLevel</font>,
 <a name="line21" href="#line21"> 21</a>                      <font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">level</font>,
 <a name="line22" href="#line22"> 22</a>                      <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">location</font>, <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">fmt</font>, ...<font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line23" href="#line23"> 23</a> <strong>static</strong> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>, <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line24" href="#line24"> 24</a> 
-<a name="line25" href="#line25"> 25</a> <font color="#444444"><i>/**
-<a name="line26" href="#line26"> 26</a>  * Invoke: LogRedirect -logLevel TRACE
-<a name="line27" href="#line27"> 27</a>  */</i></font>
-<a name="line28" href="#line28"> 28</a> <strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">argc</font>, <strong>char</strong><font color="4444FF">*</font><font color="4444FF">*</font> <font color="#2040a0">argv</font><font color="4444FF">)</font>
-<a name="line29" href="#line29"> 29</a> <font color="4444FF"><strong>{</strong></font>
-<a name="line30" href="#line30"> 30</a>    <strong>int</strong> <font color="#2040a0">iarg</font><font color="4444FF">;</font>
-<a name="line31" href="#line31"> 31</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line32" href="#line32"> 32</a>    <strong>char</strong> <font color="#2040a0">connectQos</font><font color="4444FF">[</font><font color="#FF0000">2048</font><font color="4444FF">]</font><font color="4444FF">;</font>
-<a name="line33" href="#line33"> 33</a>    <font color="#2040a0">XmlBlasterException</font> <font color="#2040a0">xmlBlasterException</font><font color="4444FF">;</font>
-<a name="line34" href="#line34"> 34</a>    <font color="#2040a0">XmlBlasterAccessUnparsed</font> <font color="4444FF">*</font><font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line35" href="#line35"> 35</a> 
-<a name="line36" href="#line36"> 36</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Try option '-help' if you need usage informations<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line37" href="#line37"> 37</a> 
-<a name="line38" href="#line38"> 38</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">iarg</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font> <font color="4444FF">&lt;</font> <font color="#2040a0">argc</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line39" href="#line39"> 39</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;-help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;--help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line40" href="#line40"> 40</a>          <strong>char</strong> <font color="#2040a0">usage</font><font color="4444FF">[</font><font color="#2040a0">XMLBLASTER_MAX_USAGE_LEN</font><font color="4444FF">]</font><font color="4444FF">;</font>
-<a name="line41" href="#line41"> 41</a>          <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">pp</font> <font color="4444FF">=</font>
-<a name="line42" href="#line42"> 42</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  -logLevel            ERROR | WARN | INFO | TRACE [WARN]&quot;</font>
-<a name="line43" href="#line43"> 43</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font><font color="#77dd77">\n</font>Example:&quot;</font>
-<a name="line44" href="#line44"> 44</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  LogRedirect -logLevel TRACE&quot;</font>
-<a name="line45" href="#line45"> 45</a>                <font color="#008000">&quot; -dispatch/connection/plugin/socket/hostname server.mars.universe&quot;</font><font color="4444FF">;</font>
-<a name="line46" href="#line46"> 46</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;Usage:<font color="#77dd77">\n</font>XmlBlaster C SOCKET client %s<font color="#77dd77">\n</font>%s%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line47" href="#line47"> 47</a>                   <font color="#2040a0">getXmlBlasterVersion</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">xmlBlasterAccessUnparsedUsage</font><font color="4444FF">(</font><font color="#2040a0">usage</font><font color="4444FF">)</font>, <font color="#2040a0">pp</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line48" href="#line48"> 48</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line49" href="#line49"> 49</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line50" href="#line50"> 50</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line51" href="#line51"> 51</a> 
-<a name="line52" href="#line52"> 52</a>    <font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#2040a0">getXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">argc</font>, <font color="#2040a0">argv</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line53" href="#line53"> 53</a> 
-<a name="line54" href="#line54"> 54</a>    <font color="#444444">/* Register our own logging function */</font>
-<a name="line55" href="#line55"> 55</a>    <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">log</font> <font color="4444FF">=</font> <font color="#2040a0">myLogger</font><font color="4444FF">;</font>
-<a name="line56" href="#line56"> 56</a> 
-<a name="line57" href="#line57"> 57</a>    <font color="#444444">/* connect */</font>
-<a name="line58" href="#line58"> 58</a>    <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">connectQos</font>,
-<a name="line59" href="#line59"> 59</a>             <font color="#008000">&quot;&lt;qos&gt;&quot;</font>
-<a name="line60" href="#line60"> 60</a>             <font color="#008000">&quot; &lt;securityService type='htpasswd' version='1.0'&gt;&quot;</font>
-<a name="line61" href="#line61"> 61</a>             <font color="#008000">&quot;  &lt;![CDATA[&quot;</font>
-<a name="line62" href="#line62"> 62</a>             <font color="#008000">&quot;   &lt;user&gt;fritz&lt;/user&gt;&quot;</font>
-<a name="line63" href="#line63"> 63</a>             <font color="#008000">&quot;   &lt;passwd&gt;secret&lt;/passwd&gt;&quot;</font>
-<a name="line64" href="#line64"> 64</a>             <font color="#008000">&quot;  ]]&gt;&quot;</font>
-<a name="line65" href="#line65"> 65</a>             <font color="#008000">&quot; &lt;/securityService&gt;&quot;</font>
-<a name="line66" href="#line66"> 66</a>             <font color="#008000">&quot;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line67" href="#line67"> 67</a> 
-<a name="line68" href="#line68"> 68</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">connect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">connectQos</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line69" href="#line69"> 69</a>    <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line70" href="#line70"> 70</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception during connect errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line71" href="#line71"> 71</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line72" href="#line72"> 72</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line73" href="#line73"> 73</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line74" href="#line74"> 74</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line75" href="#line75"> 75</a>    <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line76" href="#line76"> 76</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connected to xmlBlaster, do some tests ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line77" href="#line77"> 77</a> 
-<a name="line78" href="#line78"> 78</a>    <font color="#444444">/* ping */</font>
-<a name="line79" href="#line79"> 79</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">ping</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line80" href="#line80"> 80</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line81" href="#line81"> 81</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] ERROR: Pinging a connected server failed<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line82" href="#line82"> 82</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line83" href="#line83"> 83</a>    <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
-<a name="line84" href="#line84"> 84</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Pinging a connected server, response=%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line85" href="#line85"> 85</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line86" href="#line86"> 86</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line87" href="#line87"> 87</a> 
-<a name="line88" href="#line88"> 88</a>    <font color="#444444">/* disconnect */</font>
-<a name="line89" href="#line89"> 89</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line90" href="#line90"> 90</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in disconnect, errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line91" href="#line91"> 91</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line92" href="#line92"> 92</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line93" href="#line93"> 93</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line94" href="#line94"> 94</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line95" href="#line95"> 95</a> 
-<a name="line96" href="#line96"> 96</a>    <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line97" href="#line97"> 97</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Good bye.<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line98" href="#line98"> 98</a>    <strong>return</strong> <font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line99" href="#line99"> 99</a> <font color="4444FF"><strong>}</strong></font>
-<a name="line100" href="#line100">100</a> 
-<a name="line101" href="#line101">101</a> <font color="#444444"><i>/**
-<a name="line102" href="#line102">102</a>  * Customized logging output is handled by this method. 
-<a name="line103" href="#line103">103</a>  * &lt;p&gt;
-<a name="line104" href="#line104">104</a>  * We register this function with 
-<a name="line105" href="#line105">105</a>  * &lt;/p&gt;
-<a name="line106" href="#line106">106</a>  * &lt;pre&gt;
-<a name="line107" href="#line107">107</a>  * xa-&gt;log = myLogger;
-<a name="line108" href="#line108">108</a>  * &lt;/pre&gt;
-<a name="line109" href="#line109">109</a>  * @param currLevel The actual log level of the client
-<a name="line110" href="#line110">110</a>  * @param level The level of this log entry
-<a name="line111" href="#line111">111</a>  * @param location A string describing the code place
-<a name="line112" href="#line112">112</a>  * @param fmt The formatting string
-<a name="line113" href="#line113">113</a>  * @param ... Other variables to log, corresponds to 'fmt'
-<a name="line114" href="#line114">114</a>  * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default implementation
-<a name="line115" href="#line115">115</a>  */</i></font>
-<a name="line116" href="#line116">116</a> <strong>static</strong> <strong>void</strong> <font color="#2040a0">myLogger</font><font color="4444FF">(</font><font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">currLevel</font>,
-<a name="line117" href="#line117">117</a>                      <font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">level</font>,
-<a name="line118" href="#line118">118</a>                      <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">location</font>, <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">fmt</font>, ...<font color="4444FF">)</font>
-<a name="line119" href="#line119">119</a> <font color="4444FF"><strong>{</strong></font>
-<a name="line120" href="#line120">120</a>    <font color="#444444">/* Guess we need no more than 200 bytes. */</font>
-<a name="line121" href="#line121">121</a>    <strong>int</strong> <font color="#2040a0">n</font>, <font color="#2040a0">size</font> <font color="4444FF">=</font> <font color="#FF0000">200</font><font color="4444FF">;</font>
-<a name="line122" href="#line122">122</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
-<a name="line123" href="#line123">123</a>    <font color="#2040a0">va_list</font> <font color="#2040a0">ap</font><font color="4444FF">;</font>
-<a name="line124" href="#line124">124</a> 
-<a name="line125" href="#line125">125</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">level</font> <font color="4444FF">&gt;</font> <font color="#2040a0">currLevel</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <font color="#444444">/* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */</font>
-<a name="line126" href="#line126">126</a>       <strong>return</strong><font color="4444FF">;</font>
-<a name="line127" href="#line127">127</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line128" href="#line128">128</a>    <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#2040a0">malloc</font> <font color="4444FF">(</font><font color="#2040a0">size</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font>
-<a name="line129" href="#line129">129</a>       <strong>return</strong><font color="4444FF">;</font>
-<a name="line130" href="#line130">130</a> 
-<a name="line131" href="#line131">131</a>    <strong>for</strong> <font color="4444FF">(</font><font color="4444FF">;</font><font color="4444FF">;</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line132" href="#line132">132</a>       <font color="#444444">/* Try to print in the allocated space. */</font>
-<a name="line133" href="#line133">133</a>       <font color="#2040a0">va_start</font><font color="4444FF">(</font><font color="#2040a0">ap</font>, <font color="#2040a0">fmt</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line134" href="#line134">134</a>       <font color="#2040a0">n</font> <font color="4444FF">=</font> <font color="#2040a0">vsprintf</font> <font color="4444FF">(</font><font color="#2040a0">p</font>, <font color="#2040a0">fmt</font>, <font color="#2040a0">ap</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line135" href="#line135">135</a>       <font color="#2040a0">va_end</font><font color="4444FF">(</font><font color="#2040a0">ap</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line136" href="#line136">136</a>       <font color="#444444">/* If that worked, print the string to console. */</font>
-<a name="line137" href="#line137">137</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="4444FF">-</font><font color="#FF0000">1</font> <font color="4444FF">&amp;</font><font color="4444FF">&amp;</font> <font color="#2040a0">n</font> <font color="4444FF">&lt;</font> <font color="#2040a0">size</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line138" href="#line138">138</a>          <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">level</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">LOG_TRACE</font><font color="4444FF">)</font>
-<a name="line139" href="#line139">139</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;%s %s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">getLogLevelStr</font><font color="4444FF">(</font><font color="#2040a0">level</font><font color="4444FF">)</font>, <font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line140" href="#line140">140</a>          <strong>else</strong>
-<a name="line141" href="#line141">141</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;{%s-%s-%s} [%s] %s<font color="#77dd77">\n</font>&quot;</font>,
-<a name="line142" href="#line142">142</a>                    <font color="#2040a0">__DATE__</font>, <font color="#2040a0">__TIME__</font>, <font color="#2040a0">getLogLevelStr</font><font color="4444FF">(</font><font color="#2040a0">level</font><font color="4444FF">)</font>, <font color="#2040a0">location</font>, <font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line143" href="#line143">143</a>          <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line144" href="#line144">144</a>          <strong>return</strong><font color="4444FF">;</font>
-<a name="line145" href="#line145">145</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line146" href="#line146">146</a>       <font color="#444444">/* Else try again with more space. */</font>
-<a name="line147" href="#line147">147</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font>    <font color="#444444">/* glibc 2.1 */</font>
-<a name="line148" href="#line148">148</a>          <font color="#2040a0">size</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">+</font><font color="#FF0000">1</font><font color="4444FF">;</font> <font color="#444444">/* precisely what is needed */</font>
-<a name="line149" href="#line149">149</a>       <strong>else</strong>           <font color="#444444">/* glibc 2.0 */</font>
-<a name="line150" href="#line150">150</a>          <font color="#2040a0">size</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>  <font color="#444444">/* twice the old size */</font>
-<a name="line151" href="#line151">151</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#2040a0">realloc</font> <font color="4444FF">(</font><font color="#2040a0">p</font>, <font color="#2040a0">size</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line152" href="#line152">152</a>          <strong>return</strong><font color="4444FF">;</font>
-<a name="line153" href="#line153">153</a>       <font color="4444FF"><strong>}</strong></font>
-<a name="line154" href="#line154">154</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line155" href="#line155">155</a> <font color="4444FF"><strong>}</strong></font>
-<a name="line156" href="#line156">156</a> 
-<a name="line157" href="#line157">157</a> <font color="#444444"><i>/**
-<a name="line158" href="#line158">158</a>  * Here we receive the callback messages from xmlBlaster
-<a name="line159" href="#line159">159</a>  */</i></font>
-<a name="line160" href="#line160">160</a> <strong>static</strong> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>, <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font>
-<a name="line161" href="#line161">161</a> <font color="4444FF"><strong>{</strong></font>
-<a name="line162" href="#line162">162</a>    <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
-<a name="line163" href="#line163">163</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
-<a name="line164" href="#line164">164</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line165" href="#line165">165</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line166" href="#line166">166</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line167" href="#line167">167</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font> <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
-<a name="line168" href="#line168">168</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
-<a name="line169" href="#line169">169</a>    <font color="4444FF"><strong>}</strong></font>
-<a name="line170" href="#line170">170</a>    <strong>return</strong> <font color="#2040a0">true</font><font color="4444FF">;</font>
-<a name="line171" href="#line171">171</a> <font color="4444FF"><strong>}</strong></font>
+<a name="line23" href="#line23"> 23</a> <strong>static</strong> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>,
+<a name="line24" href="#line24"> 24</a>                      <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line25" href="#line25"> 25</a> 
+<a name="line26" href="#line26"> 26</a> <font color="#444444"><i>/**
+<a name="line27" href="#line27"> 27</a>  * Invoke: LogRedirect -logLevel TRACE
+<a name="line28" href="#line28"> 28</a>  */</i></font>
+<a name="line29" href="#line29"> 29</a> <strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">argc</font>, <strong>char</strong><font color="4444FF">*</font><font color="4444FF">*</font> <font color="#2040a0">argv</font><font color="4444FF">)</font>
+<a name="line30" href="#line30"> 30</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line31" href="#line31"> 31</a>    <strong>int</strong> <font color="#2040a0">iarg</font><font color="4444FF">;</font>
+<a name="line32" href="#line32"> 32</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line33" href="#line33"> 33</a>    <strong>char</strong> <font color="#2040a0">connectQos</font><font color="4444FF">[</font><font color="#FF0000">2048</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<a name="line34" href="#line34"> 34</a>    <font color="#2040a0">XmlBlasterException</font> <font color="#2040a0">xmlBlasterException</font><font color="4444FF">;</font>
+<a name="line35" href="#line35"> 35</a>    <font color="#2040a0">XmlBlasterAccessUnparsed</font> <font color="4444FF">*</font><font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line36" href="#line36"> 36</a> 
+<a name="line37" href="#line37"> 37</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Try option '-help' if you need usage informations<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line38" href="#line38"> 38</a> 
+<a name="line39" href="#line39"> 39</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">iarg</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font> <font color="4444FF">&lt;</font> <font color="#2040a0">argc</font><font color="4444FF">;</font> <font color="#2040a0">iarg</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line40" href="#line40"> 40</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;-help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">strcmp</font><font color="4444FF">(</font><font color="#2040a0">argv</font><font color="4444FF">[</font><font color="#2040a0">iarg</font><font color="4444FF">]</font>, <font color="#008000">&quot;--help&quot;</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line41" href="#line41"> 41</a>          <strong>char</strong> <font color="#2040a0">usage</font><font color="4444FF">[</font><font color="#2040a0">XMLBLASTER_MAX_USAGE_LEN</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<a name="line42" href="#line42"> 42</a>          <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">pp</font> <font color="4444FF">=</font>
+<a name="line43" href="#line43"> 43</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  -logLevel            ERROR | WARN | INFO | TRACE [WARN]&quot;</font>
+<a name="line44" href="#line44"> 44</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font><font color="#77dd77">\n</font>Example:&quot;</font>
+<a name="line45" href="#line45"> 45</a>          <font color="#008000">&quot;<font color="#77dd77">\n</font>  LogRedirect -logLevel TRACE&quot;</font>
+<a name="line46" href="#line46"> 46</a>                <font color="#008000">&quot; -dispatch/connection/plugin/socket/hostname server.mars.universe&quot;</font><font color="4444FF">;</font>
+<a name="line47" href="#line47"> 47</a>          <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;Usage:<font color="#77dd77">\n</font>XmlBlaster C SOCKET client %s<font color="#77dd77">\n</font>%s%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line48" href="#line48"> 48</a>                   <font color="#2040a0">getXmlBlasterVersion</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">xmlBlasterAccessUnparsedUsage</font><font color="4444FF">(</font><font color="#2040a0">usage</font><font color="4444FF">)</font>, <font color="#2040a0">pp</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line49" href="#line49"> 49</a>          <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line50" href="#line50"> 50</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line51" href="#line51"> 51</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line52" href="#line52"> 52</a> 
+<a name="line53" href="#line53"> 53</a>    <font color="#2040a0">xa</font> <font color="4444FF">=</font> <font color="#2040a0">getXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">argc</font>, <font color="#2040a0">argv</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line54" href="#line54"> 54</a> 
+<a name="line55" href="#line55"> 55</a>    <font color="#444444">/* Register our own logging function */</font>
+<a name="line56" href="#line56"> 56</a>    <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">log</font> <font color="4444FF">=</font> <font color="#2040a0">myLogger</font><font color="4444FF">;</font>
+<a name="line57" href="#line57"> 57</a> 
+<a name="line58" href="#line58"> 58</a>    <font color="#444444">/* connect */</font>
+<a name="line59" href="#line59"> 59</a>    <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">connectQos</font>,
+<a name="line60" href="#line60"> 60</a>             <font color="#008000">&quot;&lt;qos&gt;&quot;</font>
+<a name="line61" href="#line61"> 61</a>             <font color="#008000">&quot; &lt;securityService type='htpasswd' version='1.0'&gt;&quot;</font>
+<a name="line62" href="#line62"> 62</a>             <font color="#008000">&quot;  &lt;![CDATA[&quot;</font>
+<a name="line63" href="#line63"> 63</a>             <font color="#008000">&quot;   &lt;user&gt;fritz&lt;/user&gt;&quot;</font>
+<a name="line64" href="#line64"> 64</a>             <font color="#008000">&quot;   &lt;passwd&gt;secret&lt;/passwd&gt;&quot;</font>
+<a name="line65" href="#line65"> 65</a>             <font color="#008000">&quot;  ]]&gt;&quot;</font>
+<a name="line66" href="#line66"> 66</a>             <font color="#008000">&quot; &lt;/securityService&gt;&quot;</font>
+<a name="line67" href="#line67"> 67</a>             <font color="#008000">&quot;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line68" href="#line68"> 68</a> 
+<a name="line69" href="#line69"> 69</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">connect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#2040a0">connectQos</font>, <font color="#2040a0">myUpdate</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line70" href="#line70"> 70</a>    <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line71" href="#line71"> 71</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception during connect errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line72" href="#line72"> 72</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line73" href="#line73"> 73</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line74" href="#line74"> 74</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line75" href="#line75"> 75</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line76" href="#line76"> 76</a>    <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line77" href="#line77"> 77</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Connected to xmlBlaster, do some tests ...<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line78" href="#line78"> 78</a> 
+<a name="line79" href="#line79"> 79</a>    <font color="#444444">/* ping */</font>
+<a name="line80" href="#line80"> 80</a>    <font color="#2040a0">response</font> <font color="4444FF">=</font> <font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">ping</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line81" href="#line81"> 81</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">response</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line82" href="#line82"> 82</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] ERROR: Pinging a connected server failed<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line83" href="#line83"> 83</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line84" href="#line84"> 84</a>    <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+<a name="line85" href="#line85"> 85</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Pinging a connected server, response=%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line86" href="#line86"> 86</a>       <font color="#2040a0">xmlBlasterFree</font><font color="4444FF">(</font><font color="#2040a0">response</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line87" href="#line87"> 87</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line88" href="#line88"> 88</a> 
+<a name="line89" href="#line89"> 89</a>    <font color="#444444">/* disconnect */</font>
+<a name="line90" href="#line90"> 90</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">disconnect</font><font color="4444FF">(</font><font color="#2040a0">xa</font>, <font color="#FF0000">0</font>, <font color="4444FF">&amp;</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">false</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line91" href="#line91"> 91</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Caught exception in disconnect, errorCode=%s, message=%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line92" href="#line92"> 92</a>                <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">errorCode</font>, <font color="#2040a0">xmlBlasterException</font>.<font color="#2040a0">message</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line93" href="#line93"> 93</a>       <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line94" href="#line94"> 94</a>       <font color="#2040a0">exit</font><font color="4444FF">(</font><font color="#2040a0">EXIT_FAILURE</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line95" href="#line95"> 95</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line96" href="#line96"> 96</a> 
+<a name="line97" href="#line97"> 97</a>    <font color="#2040a0">freeXmlBlasterAccessUnparsed</font><font color="4444FF">(</font><font color="#2040a0">xa</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line98" href="#line98"> 98</a>    <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] Good bye.<font color="#77dd77">\n</font>&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line99" href="#line99"> 99</a>    <strong>return</strong> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line100" href="#line100">100</a> <font color="4444FF"><strong>}</strong></font>
+<a name="line101" href="#line101">101</a> 
+<a name="line102" href="#line102">102</a> <font color="#444444"><i>/**
+<a name="line103" href="#line103">103</a>  * Customized logging output is handled by this method. 
+<a name="line104" href="#line104">104</a>  * &lt;p&gt;
+<a name="line105" href="#line105">105</a>  * We register this function with 
+<a name="line106" href="#line106">106</a>  * &lt;/p&gt;
+<a name="line107" href="#line107">107</a>  * &lt;pre&gt;
+<a name="line108" href="#line108">108</a>  * xa-&gt;log = myLogger;
+<a name="line109" href="#line109">109</a>  * &lt;/pre&gt;
+<a name="line110" href="#line110">110</a>  * @param currLevel The actual log level of the client
+<a name="line111" href="#line111">111</a>  * @param level The level of this log entry
+<a name="line112" href="#line112">112</a>  * @param location A string describing the code place
+<a name="line113" href="#line113">113</a>  * @param fmt The formatting string
+<a name="line114" href="#line114">114</a>  * @param ... Other variables to log, corresponds to 'fmt'
+<a name="line115" href="#line115">115</a>  * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
+<a name="line116" href="#line116">116</a>  *      implementation
+<a name="line117" href="#line117">117</a>  */</i></font>
+<a name="line118" href="#line118">118</a> <strong>static</strong> <strong>void</strong> <font color="#2040a0">myLogger</font><font color="4444FF">(</font><font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">currLevel</font>,
+<a name="line119" href="#line119">119</a>                      <font color="#2040a0">XMLBLASTER_LOG_LEVEL</font> <font color="#2040a0">level</font>,
+<a name="line120" href="#line120">120</a>                      <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">location</font>, <strong>const</strong> <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">fmt</font>, ...<font color="4444FF">)</font>
+<a name="line121" href="#line121">121</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line122" href="#line122">122</a>    <font color="#444444">/* Guess we need no more than 200 bytes. */</font>
+<a name="line123" href="#line123">123</a>    <strong>int</strong> <font color="#2040a0">n</font>, <font color="#2040a0">size</font> <font color="4444FF">=</font> <font color="#FF0000">200</font><font color="4444FF">;</font>
+<a name="line124" href="#line124">124</a>    <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+<a name="line125" href="#line125">125</a>    <font color="#2040a0">va_list</font> <font color="#2040a0">ap</font><font color="4444FF">;</font>
+<a name="line126" href="#line126">126</a> 
+<a name="line127" href="#line127">127</a>    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">level</font> <font color="4444FF">&gt;</font> <font color="#2040a0">currLevel</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <font color="#444444">/* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */</font>
+<a name="line128" href="#line128">128</a>       <strong>return</strong><font color="4444FF">;</font>
+<a name="line129" href="#line129">129</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line130" href="#line130">130</a>    <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#2040a0">malloc</font> <font color="4444FF">(</font><font color="#2040a0">size</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font>
+<a name="line131" href="#line131">131</a>       <strong>return</strong><font color="4444FF">;</font>
+<a name="line132" href="#line132">132</a> 
+<a name="line133" href="#line133">133</a>    <strong>for</strong> <font color="4444FF">(</font><font color="4444FF">;</font><font color="4444FF">;</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line134" href="#line134">134</a>       <font color="#444444">/* Try to print in the allocated space. */</font>
+<a name="line135" href="#line135">135</a>       <font color="#2040a0">va_start</font><font color="4444FF">(</font><font color="#2040a0">ap</font>, <font color="#2040a0">fmt</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line136" href="#line136">136</a>       <font color="#2040a0">n</font> <font color="4444FF">=</font> <font color="#2040a0">vsprintf</font> <font color="4444FF">(</font><font color="#2040a0">p</font>, <font color="#2040a0">fmt</font>, <font color="#2040a0">ap</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line137" href="#line137">137</a>       <font color="#2040a0">va_end</font><font color="4444FF">(</font><font color="#2040a0">ap</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line138" href="#line138">138</a>       <font color="#444444">/* If that worked, print the string to console. */</font>
+<a name="line139" href="#line139">139</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="4444FF">-</font><font color="#FF0000">1</font> <font color="4444FF">&amp;</font><font color="4444FF">&amp;</font> <font color="#2040a0">n</font> <font color="4444FF">&lt;</font> <font color="#2040a0">size</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line140" href="#line140">140</a>          <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">level</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">LOG_TRACE</font><font color="4444FF">)</font>
+<a name="line141" href="#line141">141</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;%s %s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">getLogLevelStr</font><font color="4444FF">(</font><font color="#2040a0">level</font><font color="4444FF">)</font>, <font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line142" href="#line142">142</a>          <strong>else</strong>
+<a name="line143" href="#line143">143</a>             <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;{%s-%s-%s} [%s] %s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line144" href="#line144">144</a>                    <font color="#2040a0">__DATE__</font>, <font color="#2040a0">__TIME__</font>, <font color="#2040a0">getLogLevelStr</font><font color="4444FF">(</font><font color="#2040a0">level</font><font color="4444FF">)</font>, <font color="#2040a0">location</font>, <font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line145" href="#line145">145</a>          <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">p</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line146" href="#line146">146</a>          <strong>return</strong><font color="4444FF">;</font>
+<a name="line147" href="#line147">147</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line148" href="#line148">148</a>       <font color="#444444">/* Else try again with more space. */</font>
+<a name="line149" href="#line149">149</a>       <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font>    <font color="#444444">/* glibc 2.1 */</font>
+<a name="line150" href="#line150">150</a>          <font color="#2040a0">size</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">+</font><font color="#FF0000">1</font><font color="4444FF">;</font> <font color="#444444">/* precisely what is needed */</font>
+<a name="line151" href="#line151">151</a>       <strong>else</strong>           <font color="#444444">/* glibc 2.0 */</font>
+<a name="line152" href="#line152">152</a>          <font color="#2040a0">size</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>  <font color="#444444">/* twice the old size */</font>
+<a name="line153" href="#line153">153</a>       <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="4444FF">)</font><font color="#2040a0">realloc</font> <font color="4444FF">(</font><font color="#2040a0">p</font>, <font color="#2040a0">size</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line154" href="#line154">154</a>          <strong>return</strong><font color="4444FF">;</font>
+<a name="line155" href="#line155">155</a>       <font color="4444FF"><strong>}</strong></font>
+<a name="line156" href="#line156">156</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line157" href="#line157">157</a> <font color="4444FF"><strong>}</strong></font>
+<a name="line158" href="#line158">158</a> 
+<a name="line159" href="#line159">159</a> <font color="#444444"><i>/**
+<a name="line160" href="#line160">160</a>  * Here we receive the callback messages from xmlBlaster
+<a name="line161" href="#line161">161</a>  */</i></font>
+<a name="line162" href="#line162">162</a> <strong>static</strong> <font color="#2040a0">bool</font> <font color="#2040a0">myUpdate</font><font color="4444FF">(</font><font color="#2040a0">MsgUnitArr</font> <font color="4444FF">*</font><font color="#2040a0">msgUnitArr</font>, <strong>void</strong> <font color="4444FF">*</font><font color="#2040a0">userData</font>,
+<a name="line163" href="#line163">163</a>                      <font color="#2040a0">XmlBlasterException</font> <font color="4444FF">*</font><font color="#2040a0">xmlBlasterException</font><font color="4444FF">)</font>
+<a name="line164" href="#line164">164</a> <font color="4444FF"><strong>{</strong></font>
+<a name="line165" href="#line165">165</a>    <font color="#2040a0">size_t</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
+<a name="line166" href="#line166">166</a>    <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">=</font><font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">&lt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+<a name="line167" href="#line167">167</a>       <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">xml</font> <font color="4444FF">=</font> <font color="#2040a0">messageUnitToXml</font><font color="4444FF">(</font><font color="4444FF">&amp;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line168" href="#line168">168</a>       <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;[client] CALLBACK update(): Asynchronous message update arrived:%s<font color="#77dd77">\n</font>&quot;</font>,
+<a name="line169" href="#line169">169</a>              <font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line170" href="#line170">170</a>       <font color="#2040a0">free</font><font color="4444FF">(</font><font color="#2040a0">xml</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line171" href="#line171">171</a>       <font color="#2040a0">msgUnitArr</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">msgUnitArr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font>.<font color="#2040a0">responseQos</font> <font color="4444FF">=</font>
+<a name="line172" href="#line172">172</a>              <font color="#2040a0">strcpyAlloc</font><font color="4444FF">(</font><font color="#008000">&quot;&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;&quot;</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<a name="line173" href="#line173">173</a>       <font color="#444444">/* Return QoS: Everything is OK */</font>
+<a name="line174" href="#line174">174</a>    <font color="4444FF"><strong>}</strong></font>
+<a name="line175" href="#line175">175</a>    <strong>return</strong> <font color="#2040a0">true</font><font color="4444FF">;</font>
+<a name="line176" href="#line176">176</a> <font color="4444FF"><strong>}</strong></font>
     </pre>
     <p>
     In this example we want to do logging ourself and define the method
@@ -1022,7 +1032,7 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
