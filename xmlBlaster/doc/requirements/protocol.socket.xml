@@ -392,9 +392,12 @@ ConnectQos qos = new ConnectQos(glob);
          <tr>
             <td>plugin/socket/responseTimeout</td>
             <td>60000 (one minute)</td>
-            <td>When a method is invoked we wait the given time on a response.<br />
+            <td>When a method is invoked we wait the given time on a response, the value must be
+	    bigger than zero, there is no unlimited setting possible.<br />
             The response is the return value or an exception for method invocations which
-            are not marked oneway.
+            are not marked oneway.<br />
+	    On timeout an exception is thrown which leads on server side to a dead message
+	    (depending on the installed error handler).
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -525,7 +528,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.41 $</revision>
+   <revision>$Revision: 1.42 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
