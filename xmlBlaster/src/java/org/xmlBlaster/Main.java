@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.55 2000/10/11 13:32:04 ruff Exp $
+Version:   $Id: Main.java,v 1.56 2000/10/11 15:57:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -102,8 +102,6 @@ public class Main
    {
       this.args = args;
       boolean showUsage = false;
-      
-      loadClasses();
 
       try {
          showUsage = XmlBlasterProperty.init(args);
@@ -165,49 +163,6 @@ public class Main
          checkForKeyboardInput();
          // orb.run();
       }
-   }
-
-
-   /**
-    * TODO:
-    * Implements loading internals the jar files from the lib directory
-    * to avoid a long CLASSPATH
-    * Problems:
-    * 1. Find the lib directory
-    * 2. Make my ClassLoader as the default ClassLoader (or extend the System ClassLoader)
-    *    Is this possible?
-    */
-   private void loadClasses()
-   {
-      /*
-      try {
-         // System.out.println("Main Resource is " + this.getClass().getResource("Main.class"));
-         // java -jar lib/xmlBlaster.jar
-         //   jar:file:/home/ruff/xmlBlaster/lib/xmlBlaster.jar!/org/xmlBlaster/Main.class
-         // java org.xmlBlaster.Main
-         //   file:/home/ruff/xmlBlaster/classes/org/xmlBlaster/Main.class
-         String url = System.getProperty("user.home") + "/xmlBlaster/lib/"; // $XMLBLASTER_HOME see above.
-
-         File dir = new File(url);
-         if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            URL urlArr[] = new URL[files.length]; // e.g. /home/ruff/xmlBlaster/lib/jacorb.jar
-            for (int ii = 0; ii < files.length; ii++) {
-               // name.indexOf(".jar") != -1      check on jar extension is missing here
-               urlArr[ii] = files[ii].toURL();
-            }
-            ClassLoader loader = new URLClassLoader(urlArr, Thread.currentThread().getContextClassLoader());
-            try { // test:
-               Class c = loader.loadClass("org.jutils.init.Args");  // org.jutils.init.Args
-               Object obj = c.newInstance();  // Create an instance of the class just loaded
-               System.out.println("Success in loadClasses()");
-            } catch(Exception e) { System.out.println("Error in loadClasses(): " + e.toString()); }
-         }
-      }
-      catch (java.net.MalformedURLException e) {
-         System.out.println("Error in loadClasses(): " + e.toString());
-      }
-      */
    }
 
 
