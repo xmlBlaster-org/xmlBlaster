@@ -186,11 +186,17 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      this.glob = glob;
-      this.log = glob.getLog("corba");
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog("corba");
+
+      if (glob == null) {
+         log.error(ME, "glob is null");
+         Thread.currentThread().dumpStack();
+      }
+
       if (orb == null) { // Thread leak !!!
-         CorbaDriver.initializeOrbEnv(glob,true);
-         orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
+         CorbaDriver.initializeOrbEnv(this.glob,true);
+         orb = org.omg.CORBA.ORB.init(this.glob.getArgs(), null);
       }
       resetConnection();
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
