@@ -853,7 +853,7 @@ public final class TopicHandler implements I_Timeout
          subs = (SubscriptionInfo)this.subscriberMap.remove(subscriptionInfoUniqueKey);
       }
       if (subs == null && !isDead() && !isSoftErased()) {
-         Thread.currentThread().dumpStack();
+         //Thread.currentThread().dumpStack();
          log.warn(ME, "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
       }
 
@@ -960,7 +960,9 @@ public final class TopicHandler implements I_Timeout
    private final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
                                         MsgUnitWrapper[] msgUnitWrapperArr) {
       if (!sub.getSessionInfo().hasCallback()) {
-         log.error(ME, "Internal problem: A client which subcribes should have a callback server: " + publisherSessionInfo.toXml(""));
+         log.error(ME, "Internal problem: A client which subcribes should have a callback server: "
+                       + ((publisherSessionInfo != null) ? publisherSessionInfo.toXml("") : ""));
+         Thread.currentThread().dumpStack();
          return 0;
       }
       if (isUnconfigured()) {
@@ -1014,14 +1016,32 @@ public final class TopicHandler implements I_Timeout
                      }
                   }
                   catch (Throwable e) {
-                     if (log.TRACE) log.trace(ME, "Mime access filter '" + filterQos[ii].getType() + " threw an exception: " + e.toString()); 
                      // sender =      publisherSessionInfo.getLoginName()
                      // receiver =    sub.getSessionInfo().getLoginName()
+                     // 1. We just log the situation:
+                     SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
+                                        msgUnitWrapper.getMsgQosData().getSender();
+                     String reason = "Mime access filter '" + filterQos[ii].getType() + "' for message '" +
+                               msgUnitWrapper.getLogId() + "' from sender '" + publisherName + "' to subscriber '" +
+                               sub.getSessionInfo().getSessionName() + "' threw an exception, we don't deliver " +
+                               "the message to the subscriber: " + e.toString();
+                     if (log.TRACE) log.trace(ME, reason);
+                     MsgQueueEntry[] entries = {
+                          new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                                      sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId()) };
+                     requestBroker.deadMessage(entries, null, reason);
+                     
+                     // 2. This error handling is wrong as the plugin should not invalidate the subscribe:
+                     //sub.getSessionInfo().getDeliveryManager().internalError(e); // calls MsgErrorHandler
+                     
+                     // 3. This error handling is wrong as we handle a subscribe and not a publish:
+                     /*
                      MsgQueueEntry entry =
                           new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                       sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
                      publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
-                     retCount++;
+                     */
+                     //retCount++;
                      continue NEXT_MSG;
                   }
                }
@@ -1042,7 +1062,9 @@ public final class TopicHandler implements I_Timeout
          }
          catch (Throwable e) {
             e.printStackTrace();
-            if (log.TRACE) log.trace(ME, "Sending of message from " + publisherSessionInfo.getId() + " to " +
+            SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
+                                        msgUnitWrapper.getMsgQosData().getSender();
+            if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
                                sub.getSessionInfo().getId() + " failed: " + e.toString());
             sub.getSessionInfo().getDeliveryManager().internalError(e); // calls MsgErrorHandler
             //retCount does not change
