@@ -90,7 +90,7 @@ import java.util.Iterator;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see testsuite.org.xmlBlaster.TestFailSave
  *
- * @author $Author: ruff $
+ * @author $Author: kkrafft2 $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
 {
@@ -206,6 +206,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initFailSave(null);
    }
 
+   public XmlBlasterConnection(String[] args, String driverType, String driverClassName) throws XmlBlasterException
+   {
+      initArgs(args);
+      initDriver(driverType, driverClassName);
+      initFailSave(null);
+   }
+
    private void initArgs(String[] args)
    {
       this.args = args;
@@ -273,6 +280,31 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI or XML-RPC.";
          Log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
+      }
+   }
+
+   /**
+    * Load the desired protocol driver like CORBA or RMI driver.
+    */
+   private void initDriver(String driverType, String driverClassName) throws XmlBlasterException
+   {
+      if (driverType == null) driverType = XmlBlasterProperty.get("client.protocol", "IOR");
+      if (driverClassName == null) driverClassName = XmlBlasterProperty.get("client.protocol.class",
+                                                                            "org.xmlBlaster.protocol.corba.CorbaConnection");
+      Log.info(ME, "Using 'client.protocol=" + driverType + "' and 'client.protocol.class=" + driverClassName + "'to access xmlBlaster");
+      try {
+         java.lang.Class driverClass = Class.forName(driverClassName);
+         java.lang.Class[] paramTypes = new java.lang.Class[1];
+         paramTypes[0] = this.args.getClass();
+         java.lang.reflect.Constructor constructor = driverClass.getDeclaredConstructor(paramTypes);
+         Object[] params = new Object[1];
+         params[0] = this.args;
+         driver = (I_XmlBlasterConnection) constructor.newInstance(params);
+      }
+      catch(Exception e) {
+         String text = "Invalid driver class '" + driverClassName + "' to access xmlBlaster. (Check package name and constructors!)";
+         Log.error(ME, text);
+         throw new XmlBlasterException(ME+".InvalidDriver", text);
       }
    }
 
@@ -462,7 +494,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       if (qos == null)
          qos = new ConnectQos();
-      
+
       I_SecurityQos securityQos = qos.getSecurityQos();
       if(securityQos == null) {
          // Create default security tags (as specified in xmlBlaster.properties) ...
@@ -679,7 +711,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                }
             }
             callbackMap.clear();
-         } 
+         }
          boolean ret = driver.logout();
          Log.info(ME, "Successful logout");
          return ret;
@@ -778,7 +810,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * This subscribe variant allows to specify a specialized callback
-    * for updated messages. 
+    * for updated messages.
     * <p />
     * Implementing for every subscription a callback, you don't need to
     * dispatch updates when they are received in one central
@@ -801,7 +833,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *   }
     * </pre>
     * <p />
-    * NOTE: You need to pass a callback handle on login as well (even if you 
+    * NOTE: You need to pass a callback handle on login as well (even if you
     * never use it). It allows to setup the callback server and is the
     * default callback deliver channel.
     * <p />
@@ -877,7 +909,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          synchronized (callbackMap) {
             XmlKey key = new XmlKey(xmlKey);
             callbackMap.remove(key.getUniqueKey());
-         } 
+         }
       } catch(XmlBlasterException e) {
          throw e;
       } catch(ConnectionException e) {
