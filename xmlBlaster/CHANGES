@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Java client library:
+   Changed ClientErrorHandler to not remove client side queue entries on certain exceptions
+
+ o Bugfix in PtP cluster forwarding:
+   In some cases the destination QoS got lost
+
  o SOCKET SSL
    Renamed configuration 'keystore' to 'keyStore' to conform to javas system property
    Renamed configuration 'keystorepassword' to 'keyStorePassword' to conform to javas system property
@@ -19,7 +25,7 @@ Changes cvs
    subscriptions so they now about the stale subscription.
 
  o SOCKET UDP support:
-   Added paramter to switch on/off the server side UDP listener (defaults to true)
+   Added paramter to switch on/off the server side UDP listener (defaults to false)
    -plugin/socket/startUdpListener true/false
 
  o SOCKET compression for Java server and clients added
@@ -97,7 +103,7 @@ Changes for 0.91 [2004-08-30]
 
  o C++ client library:
    - Added UDP datagram support via SOCKET protocol, try
-     java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true
+     java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true -plugin/socket/startUdpListener true
      PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
      SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
      C: HelloWorldUdp -plugin/socket/useUdpForOneway true
