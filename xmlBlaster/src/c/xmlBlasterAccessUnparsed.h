@@ -3,7 +3,11 @@ Name:      xmlBlasterAccessUnparsed.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Include this header in your client code
+           The returned strings are not parsed, we need another layer
+           doing XML parsing with expat.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
+Date:      05/2003
+See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
 #include "msgUtil.h"
 
@@ -16,6 +20,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 struct XmlBlasterAccessUnparsedStruct;
 typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;
 
+/* Declare function pointers to use in struct to simulate object oriented access */
 typedef char *( * XmlBlasterConnect)(XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterDisconnect)(XmlBlasterAccessUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterPublish)(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -52,9 +57,16 @@ struct XmlBlasterAccessUnparsedStruct {
 };
 
 
+/**
+ * Get an instance of this to get xmlBlaster access. 
+ * NOTE: Every call creates a new and independend client accessor to xmlBlaster
+ */
 extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv);
-void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
 
+/**
+ * Free your instance after accessing xmlBlaster. 
+ */
+void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
 
 
 /* Callback from xmlBlaster */

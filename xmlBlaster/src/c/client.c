@@ -8,6 +8,7 @@ Compile:   gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
 Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS client.c callbackServer.c ws2_32.lib
 Invoke:    client -dispatch/callback/protocol/socket/hostname develop -dispatch/callback/protocol/socket/port 7607
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
