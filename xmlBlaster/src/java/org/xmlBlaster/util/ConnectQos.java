@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.40 2003/01/17 12:50:24 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.41 2003/01/21 13:20:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -48,7 +48,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Allows to mark that we are an xmlBlaster cluster node.
     */
-   protected boolean isClusterNode = false;
+   protected boolean clusterNode = false;
 
    /**
     * If duplicateUpdates=false we will send only one update, even if
@@ -669,15 +669,15 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * @param Set if we are a cluster node. 
     */
-   public final void setIsClusterNode(boolean isClusterNode) {
-      this.isClusterNode = isClusterNode;
+   public final void setClusterNode(boolean clusterNode) {
+      this.clusterNode = clusterNode;
    }
 
    /**
     * @return Are we a cluster?
     */
    public final boolean isClusterNode() {
-      return this.isClusterNode;
+      return this.clusterNode;
    }
 
    /**
@@ -984,8 +984,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if (name.equalsIgnoreCase("isClusterNode")) {
-         setIsClusterNode(true);
+      if (name.equalsIgnoreCase("clusterNode")) {
+         setClusterNode(true);
          character.setLength(0);
          return;
       }
@@ -1060,10 +1060,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if (name.equalsIgnoreCase("isClusterNode")) {
+      if (name.equalsIgnoreCase("clusterNode")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
-            setIsClusterNode(new Boolean(tmp).booleanValue());
+            setClusterNode(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -1156,7 +1156,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append(offset).append(" <ptp>").append(ptpAllowed).append("</ptp>");
    
       if (isClusterNode())
-         sb.append(offset).append(" <isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
+         sb.append(offset).append(" <clusterNode>").append(isClusterNode()).append("</clusterNode>");
 
       if (duplicateUpdates() == false)
          sb.append(offset).append(" <duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
@@ -1236,7 +1236,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   </securityService>\n" +
             */
             "   <ptp>true</ptp>\n" +
-            "   <isClusterNode>true</isClusterNode>\n" +
+            "   <clusterNode>true</clusterNode>\n" +
             "   <duplicateUpdates>false</duplicateUpdates>\n" +
             "   <session timeout='3600000' maxSessions='20' clearSessions='false' sessionId='wvt57gj'/>\n" +
             "   <queue relating='callback' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
