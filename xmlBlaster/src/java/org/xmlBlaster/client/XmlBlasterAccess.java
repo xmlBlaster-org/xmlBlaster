@@ -259,7 +259,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
-         log.info(ME, "Successful login as " + getId());
+         log.info(ME, "Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
 
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();

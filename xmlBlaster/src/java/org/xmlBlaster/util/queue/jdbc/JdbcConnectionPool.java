@@ -273,7 +273,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.glob = glob;
       this.pluginProp = pluginProperties;
       this.log = this.glob.getLog("jdbc");
-      this.log.info(ME, "initialize");
+      if (this.log.TRACE) this.log.trace(ME, "initialize");
 
       // could these also be part of the properties specific to the invoking plugin ?
       org.jutils.init.Property prop = glob.getProperty();
