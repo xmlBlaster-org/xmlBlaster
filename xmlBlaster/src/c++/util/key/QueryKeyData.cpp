@@ -33,12 +33,12 @@ QueryKeyData& QueryKeyData::operator =(const QueryKeyData& key)
 void QueryKeyData::setQueryType(const string& queryType)
 {
    string tmp = queryType;
-   transform (tmp.begin(), tmp.end(), tmp.begin(), toupper);
+   transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
  
    if (Constants::EXACT != tmp && Constants::XPATH !=tmp)
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setQueryType",
                                 "Your queryType=" + queryType_ + " is invalid, use one of '" + 
-				Constants::EXACT + "' , '" + Constants::XPATH + "'");
+                                Constants::EXACT + "' , '" + Constants::XPATH + "'");
    queryType_ = tmp;
 }
 
