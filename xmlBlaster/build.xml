@@ -117,6 +117,7 @@ TODO
    <property name="dist-classes.dir" value="./dist-classes"/>
    <property name="dist-client.dir" value="./dist-client"/>
  
+   <property name="test.class" value="org.xmlBlaster.test.AllTests"/>
    <property name="report.dir" value="./doc/test/report"/> <!-- junit HTML report -->
  
    <property name="xmlblaster_home" value="."/>
@@ -127,13 +128,14 @@ TODO
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
+   <property name="cp.xpath" value="lib/xpath/jaxen-core.jar:lib/xpath/jaxen-dom.jar:lib/xpath/saxpath.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
 
    <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
    <property name="soapdeploy.dir" value="./demo/soap"/>
    <property name="soaplib.dir" value="lib/soap"/>
    <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
-   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}:${cp.soap}"/>
+   <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.xpath}:${cp.test}:${cp.soap}"/>
 
 
    <!-- =================================================================== -->
@@ -265,6 +267,7 @@ TODO
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
       <echo message="                   into xmlBlaster/doc/test/report/html/junit-noframes.html"/>
       <echo message="   runTestsAndReport --> does both of above"/>
+      <echo message="   -Dtest.class=nameOfTestClass  runJunit --> run junit on the specifyed testclass"/>
       <echo message=""/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   javadocs-delete --> remove the above"/>
@@ -630,11 +633,14 @@ TODO
              haltonerror="off" showoutput="on" fork="yes">
          <formatter type="xml"/>
          <jvmarg value="-Djava.compiler=NONE"/>
+         <jvmarg value="-Xmx256m"/>
          <classpath>
             <pathelement path="lib/xmlBlaster.jar:${cp}"/>
          </classpath>
-         <!-- test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/ -->
+         <!-- test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/
          <test name="org.xmlBlaster.test.AllTests" fork="yes" todir="${report.dir}"/>
+ -->
+          <test name="${test.class}" fork="yes" todir="${report.dir}"/>
       </junit>
       <echo message="See ${report.dir} for results"/>
       <echo message="Invoke target 'report' for HTML report generation"/>
