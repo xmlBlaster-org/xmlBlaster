@@ -1416,7 +1416,7 @@ TODO
       </switch>
 
       <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster-cS.cpp" value="true">
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlasterS.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
 
