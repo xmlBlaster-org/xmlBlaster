@@ -219,9 +219,9 @@ public abstract class AddressBase
    }
 
    /**
-    * Set the PluginInfo parameters (deived from xmlBlasterPlugins.xml of xmlBlaster.properties). 
+    * Set the PluginInfo parameters (derived from xmlBlasterPlugins.xml or xmlBlaster.properties). 
     * <br />
-    * As a plugin developer you should call this method if you have a PluginInfo instance
+    * As a protocol plugin developer you should call this method if you have a PluginInfo instance
     * to use the default paramaters of the plugin.
     * <br />
     * Example from xmlBlasterPlugins.xml:
@@ -232,6 +232,8 @@ public abstract class AddressBase
     *  &lt;/plugin>
     * <p/>
     * These settings are used as default settings for the plugin with lowest priority
+    * <p/>
+    * Calls initialize() to reinitialize compression.
     */
    public void setPluginInfoParameters(Properties parameters) {
       if (parameters == null) {
