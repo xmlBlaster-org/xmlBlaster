@@ -93,8 +93,8 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", false, qos.isReadonly());
          assertEquals("", "Gesa", qos.getSender().getLoginName());
 
-         assertEquals("", 0L, qos.getLifeTime()); // isVolatile=true
-         assertEquals("", 0L, qos.getRemainingLifeStatic());
+         assertEquals("", 0L, qos.getLifeTime()); // PtP message (because of Destination) is volatile
+         assertEquals("", -1L, qos.getRemainingLifeStatic());
 
          assertEquals("", 3, qos.getRouteNodes().length);
          assertEquals("", 2, qos.getRouteNodes()[0].getStratum());
