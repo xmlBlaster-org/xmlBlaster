@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.65 2001/01/30 13:02:21 ruff Exp $
+Version:   $Id: Main.java,v 1.66 2001/02/12 00:07:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -74,7 +74,7 @@ public class Main
    /** command line arguments */
    private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
-   private String version = "0.79a";
+   private String version = "0.79+";
 
    /**
     * true: If instance created by control panel<br />
