@@ -1,5 +1,13 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.84x [xxx, xx 2003]
+================================
+
+ o Coded new requirement for CORBA NameService
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.corba.NameService.html
+
+ o C++: Bugfix: returned pointer was freed before usage in to_string()
+
 Changes for 0.842 [Feb, 21 2003]
 ================================
  o C++: Added Global::getVersion() and Global::getBuildTimestamp() and rcsid.
