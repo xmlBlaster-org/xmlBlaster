@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.76 2002/04/21 17:12:50 ruff Exp $
+Version:   $Id: Main.java,v 1.77 2002/04/24 06:51:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -192,7 +192,7 @@ public class Main
     */
    private void loadDrivers()
    {
-      String defaultDrivers =
+      String defaultDrivers = // See CbInfo.java for "Protocol.CallbackDrivers" default settings
                  "IOR:org.xmlBlaster.protocol.corba.CorbaDriver," +
                  "SOCKET:org.xmlBlaster.protocol.socket.SocketDriver," +
                  "RMI:org.xmlBlaster.protocol.rmi.RmiDriver," +
