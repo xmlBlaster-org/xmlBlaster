@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.17 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.18 2002/06/27 12:55:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -28,20 +28,13 @@ import junit.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style.
- * <p>
- * Note that the three clients (client logins) are simulated in this class.<br />
- * Tests performed:<br />
- * <ul>
- *    <li>Manuel is the 'sender' and Ulrike the 'receiver' of a love letter</li>
- *    <li>Manuel sends a message to two destinations</li>
- * </ul>
+ * This client tests the number of threads opened and cleaned up by JacORB corba library. 
  * <p>
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestCorbaThreads
  *
- *    java junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestCorbaThreads
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestCorbaThreads
  * </pre>
  */
 public class TestCorbaThreads extends TestCase implements I_CallbackExtended
@@ -49,7 +42,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    private final static String ME = "TestCorbaThreads";
 
    private Global glob;
-   private final String loginName = "Manuel";
+   private final String loginName = "TestCorbaThreads";
    private String publishOid = "";
    private CorbaConnection corbaConnection = null;
    private I_CallbackServer cbServer = null;
@@ -69,17 +62,17 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
        this.glob = glob;
    }
 
+   protected void setUp() {}
 
    /**
-    * Sets up the fixture.
+    * Login. 
     * <p />
     * Creates a CORBA connection and does a login.<br />
     * - One connection for the sender client<br />
     * - One connection for the receiver client
     * - One connection for the receiver2 client
     */
-   protected void setUp()
-   {
+   private void login() {
       try {
          String passwd = "secret";
 
@@ -88,7 +81,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
          corbaConnection = new CorbaConnection(glob);
          //cbServer = new CorbaCallbackServer(this.glob, loginName, this, corbaConnection.getOrb());
-         corbaConnection.login(loginName, passwd, new ConnectQos(glob));
+         corbaConnection.connect(new ConnectQos(glob, loginName, passwd));
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -96,17 +89,15 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       }
    }
 
+   protected void tearDown() {}
 
    /**
-    * Tears down the fixture.
-    * <p />
     * cleaning up .... logout
     */
-   protected void tearDown()
-   {
+   private void logout() {
       if (corbaConnection != null) {
          Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
-         corbaConnection.logout();
+         corbaConnection.disconnect(null);
          corbaConnection = null;
          System.gc();
       }
@@ -131,8 +122,8 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
       for (int ii=0; ii<5; ii++) {
          Log.info(ME, "Testing login/logout no = " + ii);
-         setUp();
-         tearDown();
+         login();
+         logout();
          if (ii==0) {
             threadsBefore = ThreadLister.countThreads();
             Log.info(ME, "Testing thread consume on multiple login/logouts, used threads after first login=" + threadsBefore);
