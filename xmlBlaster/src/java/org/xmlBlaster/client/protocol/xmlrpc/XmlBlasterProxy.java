@@ -3,7 +3,7 @@ Name:      XmlBlasterProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlBlasterProxy.java,v 1.4 2000/10/11 21:50:20 ruff Exp $
+Version:   $Id: XmlBlasterProxy.java,v 1.5 2000/10/14 20:12:02 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -63,6 +63,9 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          this.xmlRpcClient = new XmlRpcClient(url);
          Log.info(ME, "Created XmlRpc client to " + url);
 
+         // similar to -Dsax.driver=com.sun.xml.parser.Parser
+         System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
+         
          // start the WebServer object here (to receive callbacks)
          webServer = new WebServer(callbackPort);
          webServer.addHandler("$default", this);
@@ -514,20 +517,20 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    {
       if (Log.CALL) Log.call(ME, "Entering update(): loginName: " + loginName);
       // insert here what you want to do with the message....
-      System.err.println("THE UPDATE HAS BEEN CALLED SUCCESSFULLY !!!! ");
-      System.err.println("The message sent is: ");
-      System.err.println(new String(content));
+      Log.info(ME, "THE UPDATE HAS BEEN CALLED SUCCESSFULLY !!!! ");
+      if (Log.TRACE) Log.trace(ME, "The message sent is: ");
+      if (Log.TRACE) Log.trace(ME, new String(content));
    }
 
 
 
    /**
-    * For Testing. 
+    * For Testing.
     * <pre>
     * java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
     * </pre>
     */
-   public static void main (String args[])
+   public static void main(String args[])
    {
       final String ME = "XmlRpcHttpClient";
       try { XmlBlasterProperty.init(args); } catch(org.jutils.JUtilsException e) { Log.panic(ME, e.toString()); }
@@ -539,7 +542,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          String sessionId = "Session1";
 
          String loginAnswer = proxy.login("LunaMia", "silence", qos, sessionId);
-         System.err.println("The answer from the login is: " + loginAnswer);
+         Log.info(ME, "The answer from the login is: " + loginAnswer);
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
@@ -548,21 +551,21 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
          String publishOid = proxy.publish(sessionId, msgUnit);
-         System.err.println("Published message with " + publishOid);
+         Log.info(ME, "Published message with " + publishOid);
 
          SubscribeKeyWrapper subscribeKey = new SubscribeKeyWrapper(publishOid);
 
-         System.err.println("Subscribe key: " + subscribeKey.toXml());
+         Log.info(ME, "Subscribe key: " + subscribeKey.toXml());
 
          proxy.subscribe(sessionId, subscribeKey.toXml(), "");
 
          // wait some time if necessary ....
          proxy.erase(sessionId, subscribeKey.toXml(), "");
 
-         System.exit(0);
+         Log.exit(ME, "Good bye.");
 
       } catch(XmlBlasterException e) {
-         System.err.println("XmlBlasterException: " + e.toString());
+         Log.error(ME, "XmlBlasterException: " + e.toString());
       }
 
       // wait for some time here ....
