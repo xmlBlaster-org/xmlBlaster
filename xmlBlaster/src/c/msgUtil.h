@@ -18,6 +18,14 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  endif
 #endif
 
+#if defined(_WINDOWS)
+#  define SNPRINTF _snprintf
+#  define VSNPRINTF _vsnprintf
+#else
+#  define SNPRINTF snprintf
+#  define VSNPRINTF vsnprintf
+#endif
+
 #ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
 #ifndef __USE_BSD /* gcc -ansi on Linux: */
    typedef unsigned short u_short;

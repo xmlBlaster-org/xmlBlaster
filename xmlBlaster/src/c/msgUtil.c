@@ -115,6 +115,7 @@ char *getStackTrace(int maxNumOfLines)
       return ret;
    }
 #else
+   maxNumOfLines = 0;      /* to make the compiler happy */
    return strcpyAlloc(""); /* No stack trace provided in this system */
 #endif
 }
@@ -193,13 +194,8 @@ char *messageUnitToXml(MsgUnit *msg)
          free(contentStr);
          return 0;
       }
-#     ifdef _WINDOWS
-      sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
+      SNPRINTF(xml, len, "%s\n<content><![CDATA[%s]]></content>\n%s",
                          msg->key, contentStr, msg->qos);
-#     else
-      snprintf(xml, len, "%s\n<content><![CDATA[%s]]></content>\n%s",
-                         msg->key, contentStr, msg->qos);
-#     endif
       free(contentStr);
       return xml;
    }
@@ -659,11 +655,7 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-#     ifdef _WINDOWS
-         n = vsprintf (p, fmt, ap);
-#     else
-         n = vsnprintf (p, size, fmt, ap);
-#     endif
+      n = VSNPRINTF(p, size, fmt, ap);
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {

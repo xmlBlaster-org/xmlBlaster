@@ -161,7 +161,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
          else {
             if (xb->logLevel>=LOG_WARN) {
                char errnoStr[MAX_ERRNO_LEN];
-               sprintf(errnoStr, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
+               SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
 #              ifdef _LINUX
                strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
 #              endif
@@ -248,7 +248,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 
    if (exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
@@ -256,14 +256,14 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 
    if (!xb->isConnected(xb)) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
    if (strcmp(XMLBLASTER_CONNECT, methodName) && strlen(xb->secretSessionId) < 1) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please call connect() before invoking '%s'", __FILE__, __LINE__, methodName);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please call connect() before invoking '%s'", __FILE__, __LINE__, methodName);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
@@ -273,7 +273,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       xb->requestId, xb->requestId+1, dataLen_);
    xb->requestId++;
    if (xb->requestId > 1000000000) xb->requestId = 0;
-   sprintf(requestIdStr, "%-ld", xb->requestId);
+   SNPRINTF(requestIdStr, XMLBLASTEREXCEPTION_MESSAGE_LEN, "%-ld", xb->requestId);
 
    if (xb->preSendEvent != 0) {
       /* A callback function pointer is registered to be notified just before sending */
@@ -293,7 +293,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       }
       if (requestInfoP == 0) {
          strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-         sprintf(exception->message, "[%s:%d] ERROR: returning requestInfo 0 without exception is not supported, please correct your preSendEvent() function.", __FILE__, __LINE__);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR: returning requestInfo 0 without exception is not supported, please correct your preSendEvent() function.", __FILE__, __LINE__);
          if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
          return false;
       }
@@ -318,7 +318,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
                                    "Lost connection to xmlBlaster server");
       xmlBlasterConnectionShutdown(xb);
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
       return false;
    }
 
@@ -326,7 +326,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       if (xb->logLevel>=LOG_ERROR) xb->log(xb->logLevel, LOG_ERROR, __FILE__,
          "Sent only %d bytes from %u", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] ERROR Sent only %d bytes from %u", __FILE__, __LINE__, numSent, rawMsgLen);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Sent only %d bytes from %u", __FILE__, __LINE__, numSent, rawMsgLen);
       free(rawMsg);
       return false;
    }
@@ -382,7 +382,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
             xb->log(xb->logLevel, LOG_WARN, __FILE__, "Lost connection to xmlBlaster server");
             xmlBlasterConnectionShutdown(xb);
             strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-            sprintf(exception->message, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
+            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
             return false;
          }
          if (responseSocketDataHolder->type == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException */
@@ -440,14 +440,14 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    
    if (qos == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterConnect()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterConnect()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
 
    if (initConnection(xb) == false) {
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] No connection to xmlBlaster, check your configuration", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster, check your configuration", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
@@ -473,7 +473,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
             int len = (int)(pEnd - pStart + 1);
             if (len >= MAX_SECRETSESSIONID_LEN) {
                strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-               sprintf(exception->message, "[%s:%d] ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", __FILE__, __LINE__, len);
+               SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", __FILE__, __LINE__, len);
                if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
             }
             strncpy0(xb->secretSessionId, pStart, len);
@@ -499,7 +499,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 {
    if (exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterDisconnect()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterDisconnect()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
@@ -562,7 +562,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterSubscribe()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterSubscribe()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
@@ -616,7 +616,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char 
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterUnSubscribe()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterUnSubscribe()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
@@ -670,7 +670,7 @@ static char *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * cons
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterErase()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterErase()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
@@ -751,7 +751,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[%s:%d] Please provide valid arguments to xmlBlasterGet()", __FILE__, __LINE__);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterGet()", __FILE__, __LINE__);
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (MsgUnitArr *)0;
    }
