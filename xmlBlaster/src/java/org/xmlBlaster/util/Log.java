@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.62 2002/04/26 21:32:00 ruff Exp $
+Version:   $Id: Log.java,v 1.63 2002/04/29 09:43:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -267,24 +267,32 @@ public class Log
       if (lc == null) return;
       lc.error(source, text);
       */
-      numErrorInvocations++;
-      String location = getLocation();
-      String tmp = source;
-      if (location != null && tmp != null && tmp.length() > 0)
-         tmp = location + "-" + source;
-      else if (location != null)
-         tmp = location;
-      lc.error(tmp, text);
-      if (text != null) {
-         try {
-            if (text.indexOf("java.lang.NullPointerException") >= 0 ||
-                text.indexOf("java.lang.ArrayIndexOutOfBoundsException") >= 0
-               )
-            {
-               Exception e = new Exception();
-               e.printStackTrace();
-            }
-         } catch (Throwable e) {}
+      try {
+         numErrorInvocations++;
+         String location = null;
+         String tmp = source;
+         if (location != null && tmp != null && tmp.length() > 0)
+            tmp = location + "-" + source;
+         else if (location != null)
+            tmp = location;
+         if (lc == null)
+            System.err.println(tmp + ": " + text);
+         else
+            lc.error(tmp, text);
+         if (text != null) {
+            try {
+               if (text.indexOf("java.lang.NullPointerException") >= 0 ||
+                   text.indexOf("java.lang.ArrayIndexOutOfBoundsException") >= 0
+                  )
+               {
+                  Exception e = new Exception();
+                  e.printStackTrace();
+               }
+            } catch (Throwable e) {}
+         }
+      }
+      catch(Throwable e) {
+         System.err.println("Internal error in Log class: " + e.toString() + ", nested message is: " + source + ": " + text);
       }
    }
 
@@ -320,6 +328,7 @@ public class Log
          BufferedReader bufferedReader = new BufferedReader(stringReader);
          for (int ii=0; ii<20; ii++) {  // ignore first lines of stack trace (not important)
             String line = bufferedReader.readLine();
+            // System.out.println("Stack: " + line);
             if (line == null) return null;
             if (stopStackPos(line) == true)
                break;
@@ -403,7 +412,10 @@ public class Log
     * delegate log plain to LogChannel object.
     */
    public static final void plain(String source, String text) {
-      if (lc == null) return;
+      if (lc == null) {
+         System.out.println(source + ": " + text);
+         return;
+      }
       lc.plain(source, text);
    }
 
@@ -413,7 +425,6 @@ public class Log
     */
    public static final void dump(String instance, String text)
    {
-      System.out.println("Log.dump: EEEEEENTERING");
       if (lc == null) return;
       lc.dump(instance, text);
       lc.dump(instance, Memory.getStatistic());
@@ -423,7 +434,10 @@ public class Log
     * delegate log plain to LogChannel object.
     */
    public static final void plain(String text) {
-      if (lc == null) return;
+      if (lc == null) {
+         System.out.println(text);
+         return;
+      }
       lc.plain("unknown", text);
    }
 
@@ -444,8 +458,13 @@ public class Log
     */
    public static final void panic(String instance, String text)
    {
-      error(instance, text);
       System.err.println(text);
+      try {
+         error(instance, text);
+      }
+      catch(Throwable e) {
+         System.err.println("Internal error in Log class: " + e.toString() + ", nested message is: " + instance + ": " + text);
+      }
       numErrorInvocations++;
       displayStatistics();
       exitLow(1);
