@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.2 1999/12/15 00:45:10 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.3 1999/12/20 15:35:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -38,21 +38,29 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 public class PublishKeyWrapper extends KeyWrapper
 {
    private String ME = "PublishKeyWrapper";
-   private String mimeType = "text/plain";
+   /** value from attribute <key oid="" contentMime="..."> */
+   private String contentMime = "text/plain";
+   /** value from attribute <key oid="" contentMimeExtended="..."> */
+   private String contentMimeExtended = null;
    private String clientTags = "";
 
 
    /**
-    * Constructor with given oid and mimeType.
+    * Constructor with given oid and contentMime.
     * @param oid is optional and will be generated if ""
-    * @param mimeType the MIME type of the content e.g. "text/xml" or "image/gif"
+    * @param contentMime the MIME type of the content e.g. "text/xml" or "image/gif"
+    * @param contentMimeExtended Use it for whatever, e.g. the version number or parser infos for your content<br />
+    *        set to null if not needed
     */
-   public PublishKeyWrapper(String oid, String mimeType)
+   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended)
    {
       super(oid);
-      if (mimeType != null)
-         this.mimeType = mimeType;
+      if (contentMime != null)
+         this.contentMime = contentMime;
+      if (contentMimeExtended != null)
+         this.contentMimeExtended = contentMimeExtended;
    }
+
 
    /**
     * Converts the data in XML ASCII string.
@@ -74,7 +82,11 @@ public class PublishKeyWrapper extends KeyWrapper
    {
       clientTags = str;
       StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("' contentMime='").append(mimeType).append("'>\n");
+      sb.append("<key oid='").append(oid).append("'");
+      sb.append(" contentMime='").append(contentMime).append("'");
+      if (contentMimeExtended != null)
+         sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
+      sb.append(">\n");
       sb.append(clientTags);
       sb.append("\n</key>");
       return sb.toString();

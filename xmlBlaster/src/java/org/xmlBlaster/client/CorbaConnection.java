@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.14 1999/12/17 09:59:27 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.15 1999/12/20 15:35:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -346,7 +346,7 @@ public class CorbaConnection
     */
    public Server login(String loginName, String passwd, BlasterCallback callback, String qos) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "login() ...");
+      if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
 
       if (xmlBlaster != null) {
          Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
