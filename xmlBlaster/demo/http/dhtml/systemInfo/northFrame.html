@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+COMMENT:
+   This frame listens on message updates and draws with the
+   received data a cpuinfo and meminfo frame
+-->
+<html>
+   <head>
+      <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <meta http-equiv='Pragma' content='no-cache'>
+      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+      <script language="Javascript1.2">
+         /**
+          * The callback from xmlBlaster.
+          * The Javascript objects are defined in callback.js
+          * @param messageQueue array with MessageWrapperDom objects (key, content, qos)
+          *        key     = UpdateKey object
+          *        content = The content (a string with the message data)
+          *        qos     = UpdateQos object
+          */
+         function update( messageQueue ) {
+            top.xmlBlasterWindow.Log.trace("northFrame is receiving " + messageQueue.length + " updates");
+            for( var i = 0; i < messageQueue.length; i++ ) {
+               top.xmlBlasterWindow.setReady( self, false );
+               var keyOid = messageQueue[i].key.oid;
+               var frameName = keyOid + "Frame";  // Frame name is for example "cpuinfoFrame"
+               var content = messageQueue[i].content;
+               updateFrame(frameName, content);
+            }
+         }
+
+         /**
+          * Tell the callbackFrame that i am interested in message updates
+          */
+         function initialize() {
+            top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
+            top.xmlBlasterWindow.addUpdateListener( self );
+            top.xmlBlasterWindow.setReady( self, true );
+            // updateFrame("cpuinfo", 0);
+            // updateFrame("meminfo", 0);
+         }
+
+         /**
+          * Draw the cpuinfo/meminfo frame with the received new data
+          */
+         function updateFrame(frameName, contentStr)
+         {
+            var value = parseInt(contentStr);
+
+            if (value < 1) value = 1;
+            if (value > 100) value = 100;
+
+            top.xmlBlasterWindow.Log.trace("Drawing to frame '" + frameName + "': '" + value + "'");
+
+            var label = frameName;
+            if (frameName=="cpuinfoFrame") label = "CPU";
+            if (frameName=="meminfoFrame") label = "MEM";
+
+            var doc = parent.frames[frameName].document;
+            doc.open();
+            // Mozilla does not like the percent in <img width=...%, so we use pixels below
+            var str =
+               "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>\n" +
+               "<html>\n" +
+               "   <head>\n" +
+               "      <meta http-equiv='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\n" +
+               "      <meta http-equiv='Pragma' content='no-cache'>\n" +
+               "      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>\n" +
+               "      <title>Bar</title>\n" +
+               "   </head>\n" +
+               "<body>\n" +
+               "   <p /><br />\n" +
+               "   <center>\n" +
+               "   <table class='SystemLoad' border='1' cellpadding='2' cellspacing='2' bgcolor='#EEEEEE' summary='bar graph'>\n" +
+               "      <tr>\n" +
+               "         <td width='60'>\n" +
+               "            <font size='+1'>" + label + "</font>\n" +
+               "         </td>\n" +
+               "         <td width='40' align='center'>\n" +
+               "            <font size='-1'>" + value + "%</font>\n" +
+               "         </td>\n" +
+               "         <td width='300' valign='middle'>\n" +
+               "            <img name='" + frameName + "Color' width='" + value*300/100 + "' height='10' src='/xmlBlaster/dhtml/systemInfo/colors/" + frameName + ".gif' alt='Bar should display " + value + "%' />\n" +
+               "         </td>\n" +
+               "      </tr>\n" +
+               "   </table>\n" +
+               "   </center>\n" +
+               "\n" +
+               "</body>\n" +
+               "</html>\n";
+            doc.write(str);
+            doc.close();
+            top.xmlBlasterWindow.setReady( self, true );
+         }
+      </script>
+   </head>
+
+   <body onLoad="initialize();" bgcolor="#FFFFFF">
+   <center>
+      <h2>
+         System load on <a href="http://www.xmlBlaster.org">xmlBlaster.org</a> server
+      </h2>
+      <i><strong>Demo with immediate data updates from the server, without closing the http connection.</strong></i>
+      <p />
+      XmlBlaster Apache/Jserv web server (Linux) on Intel Pentium with 120 MHz
+      <br />
+      <font size='-2'>Below you should see two frames displaying dynamic CPU and MEM data:</font>
+      <br />
+      <script language="Javascript1.2">
+         /*  top.xmlBlasterWindow is not yet valid if systemInfo.html is the persistentWindow creater
+         var info = top.xmlBlasterWindow.getBrowserInfo();
+         document.writeln('<font size="-2">' + info + '</font>');
+         */
+      </script>
+   </center>
+   </body>
+</html>
+
