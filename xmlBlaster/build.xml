@@ -125,6 +125,10 @@ TODO
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
    <property name="cp.test" value="testsuite/org/xmlBlaster"/>
+
+   <property name="soaplib.dir" value="lib/org/xmlBlaster/protocol/soap/SoapDriver"/>
+   <property name="cp.soap" value="${soaplib.dir}/jdom.jar:${soaplib.dir}/log4j-core.jar:${soaplib.dir}/log4j.jar:${soaplib.dir}/saw.jar:${soaplib.dir}/soap.jar:${soaplib.dir}/xerces.jar"/>
+   
    <property name="cp" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}"/>
 
 
@@ -338,6 +342,7 @@ TODO
             <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
             <exclude name="**/OracleSqlFactory.java"/>
+            <exclude name="**/soap/**"/>
          </fileset>
       </copy>
 
@@ -930,6 +935,8 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
          <defineset>
             <define name="MICO" value="1" />
+            <define name="pedantic" />
+            <define name="Wall" />
             <!-- undefine name="UNWANTEDDEF" / -->
          </defineset>
       </cc>
@@ -998,6 +1005,8 @@ TODO
 
          <defineset>
             <define name="MICO" value="1" />
+            <define name="pedantic" />
+            <define name="Wall" />
          </defineset>
       </cc>
    </target>
