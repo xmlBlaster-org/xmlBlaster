@@ -39,6 +39,14 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - Added proper logout on runlevel change to HALTED
+
+  - New PHP demo client, see
+      xmlBlaster/demo/php/xmlrpc/README
+
+  - Updated Perl demo client, see
+      xmlBlaster/demo/perl/xmlrpc/README
+
   - Changed to generate key oid without special characters which
     prevents oid to be used as file name, bug reported by
     Doug.Palmer@csiro.au
