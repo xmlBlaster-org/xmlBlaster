@@ -7,6 +7,7 @@ package org.xmlBlaster.engine.dispatch;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -61,7 +62,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
    }
 
    /** Load the appropriate protocol driver */
-   public final void initDriver() throws XmlBlasterException {
+   public final void loadPlugin() throws XmlBlasterException {
       
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
       //if (address.getId().equalsIgnoreCase("NATIVE")) {
@@ -71,15 +72,25 @@ public final class CbDeliveryConnection extends DeliveryConnection
       if (this.cbDriver == null) { // instantiate the callback plugin ...
          this.cbDriver = ((org.xmlBlaster.engine.Global)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
          if (this.cbDriver == null)
-            throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + address.getType() + "' is not supported");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
+         if (log.TRACE) log.trace(ME, "Created callback plugin '" + this.address.getType() + "'");
       }
       else {
          if (log.TRACE) log.trace(ME, "Created native callback driver for protocol '" + address.getType() + "'");
       }
+   }
 
+   /**
+    * @see DeliveryConnection#connectLowlevel()
+    */
+   public final void connectLowlevel() throws XmlBlasterException {
+      // Initialize the driver (connect on lowlevel layer) ...
       this.cbDriver.init(glob, (CallbackAddress)address);
 
-      if (log.TRACE) log.trace(ME, "Created callback driver for protocol '" + this.address.getType() + "'");
+      // Check if it is available
+      this.cbDriver.ping("");
+
+      if (log.TRACE) log.trace(ME, "Connected low level to callback '" + this.address.getType() + "'");
    }
 
    /**
@@ -198,7 +209,7 @@ public final class CbDeliveryConnection extends DeliveryConnection
     * @param extraOffset indenting of tags for nice output
     * @return internal state as an XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
+   public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
