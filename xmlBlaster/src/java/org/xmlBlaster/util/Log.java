@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.46 2000/06/03 12:25:07 ruff Exp $
+Version:   $Id: Log.java,v 1.47 2000/06/03 13:26:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -334,7 +334,7 @@ public class Log
    {
       int level = logLevelToBit(logLevel);
       LOGLEVEL = (LOGLEVEL & ~level);
-      // System.out.println("removeLogLevel("+logLevel+"):" + bitToLogLevel(LOGLEVEL));
+      //System.out.println("removeLogLevel("+logLevel+"):" + bitToLogLevel(LOGLEVEL));
       setPreLogLevelCheck();
    }
 
@@ -378,6 +378,7 @@ public class Log
          return L_TRACE;
       else if (logLevel.equals("DUMP"))
          return L_DUMP;
+      System.err.println("Unknown logging level '" + logLevel + "'");
       return L_NOLOG;
    }
 
