@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/13 17:16:06 $
+           $Date: 1999/11/13 17:20:38 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -106,6 +106,8 @@ public class ServerImpl implements ServerOperations {    // tie approach
     */
    public int publish(String sessionId, MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
+      authenticate.check(sessionId);
+
       if (messageUnitArr.length < 1) {
          if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero messageUnits sent");
          return 0;
@@ -120,6 +122,8 @@ public class ServerImpl implements ServerOperations {    // tie approach
     */
    public int erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
+      authenticate.check(sessionId);
+      
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
@@ -139,12 +143,5 @@ public class ServerImpl implements ServerOperations {    // tie approach
       return messageUnitArr;
    }
 
-
-   /**
-    * !!! This is the wrong place: But where shall i put it?
-    */
-   public org.xmlBlaster.clientIdl.BlasterCallback getBlasterCallback(String callbackIOR)
-   {
-      return org.xmlBlaster.clientIdl.BlasterCallbackHelper.narrow(orb.string_to_object(callbackIOR));
-   }
 }
+

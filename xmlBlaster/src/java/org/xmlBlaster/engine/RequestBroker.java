@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.6 $
-           $Date: 1999/11/13 17:16:06 $
+           $Revision: 1.7 $
+           $Date: 1999/11/13 17:20:32 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -48,14 +48,6 @@ public class RequestBroker
    private RequestBroker(ServerImpl serverImpl)
    {
       this.serverImpl = serverImpl;
-   }
-
-
-   /**
-    */
-   public BlasterCallback getBlasterCallback(String callbackIOR)
-   {
-      return serverImpl.getBlasterCallback(callbackIOR);
    }
 
 
