@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.26 2002/06/27 11:12:13 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.27 2002/07/07 19:19:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p />
  * Full text search scanning the content BLOB may be available through MIME based plugins.
  */
-public class BigXmlKeyDOM extends XmlKeyDom implements MessageEraseListener
+public class BigXmlKeyDOM extends XmlKeyDom
 {
    final private static String ME = "BigXmlKeyDOM";
 
@@ -47,8 +47,6 @@ public class BigXmlKeyDOM extends XmlKeyDom implements MessageEraseListener
       this.requestBroker = requestBroker;
       this.authenticate = authenticate;
       this.log = requestBroker.getLog();
-
-      requestBroker.addMessageEraseListener(this);
    }
 
 
@@ -63,13 +61,11 @@ public class BigXmlKeyDOM extends XmlKeyDom implements MessageEraseListener
 
 
    /**
-    * Invoked on message erase() invocation (interface MessageEraseListener)
+    * Invoked on message erase() invocation.
     */
-   public void messageErase(MessageEraseEvent e) throws XmlBlasterException
+   public void messageErase(MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Erase event occured ...");
-      MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
-
       if (msgUnitHandler.isPublishedWithData()) {
          org.w3c.dom.Node node = removeKeyNode(msgUnitHandler.getRootNode());
       }
