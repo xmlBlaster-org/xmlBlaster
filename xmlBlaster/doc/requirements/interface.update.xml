@@ -62,7 +62,11 @@
          </td>
          </tr>
          <tr>
-         <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
+           <td>XmlBlasterException</td>
+           <td>exception</td>
+           <td>Thrown on error. The only allowed error codes are of type ErrorCode.USER_UPDATE_..., this is
+           for example <i>user.update.internalError</i> or <i>user.update.security.authentication.accessDenied</i>
+           See ErrorCode.java for a complete list of error codes.</td>
          </tr>
       </table>
 
@@ -176,6 +180,7 @@
 
    <see type="API">org.xmlBlaster.client.UpdateKey</see>
    <see type="API">org.xmlBlaster.client.UpdateQos</see>
+   <see type="API">org.xmlBlaster.util.enum.ErrorCode</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <see type="API">org.xmlBlaster.client.protocol.corba.CorbaCallbackServer</see>
    <see type="API">org.xmlBlaster.client.protocol.rmi.RmiCallbackServer</see>
@@ -187,7 +192,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
