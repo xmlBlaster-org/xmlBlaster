@@ -56,7 +56,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    // be null and thus generating a NullPointerException.
    private Object notifierSynch = new Object();
 
-   private String tableNamePrefix = "XMLBLASTER";
+   private String tableNamePrefix = "XB"; // stands for "XMLBLASTER", it is chosen short for Postgres max. eval length = 26 chars (timestamp has already 19 chars)
    private int tableAllocationIncrement = 2;
    /** will be set when a connecton is broken */
    private int status = I_StorageProblemListener.UNDEF;
@@ -379,7 +379,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.maxWaitingThreads = prop.get("queue.persistent.maxWaitingThreads", 200);
       // these should be handled by the JdbcManager
       this.tableAllocationIncrement = prop.get("queue.persistent.tableAllocationIncrement", 10);
-      this.tableNamePrefix = prop.get("queue.persistent.tableNamePrefix", "XMLBLASTER").toUpperCase();
+      this.tableNamePrefix = prop.get("queue.persistent.tableNamePrefix", "XB").toUpperCase(); // XB stands for XMLBLASTER
 
       // the property settings specific to this plugin type / version
       url = pluginProp.getProperty("url", this.url);
