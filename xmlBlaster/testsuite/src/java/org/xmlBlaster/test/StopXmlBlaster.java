@@ -42,7 +42,9 @@ public class StopXmlBlaster extends TestCase
 
          con.disconnect(null);
 
-         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+         // xmlBlaster shuts down 2 sec later + time to process shutdown
+         try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
+
          try {
             XmlBlasterConnection con2 = new XmlBlasterConnection(args);
             con2.connect(qos, null);
