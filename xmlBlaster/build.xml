@@ -176,6 +176,7 @@ TODO
    <property name="src.c.dir" value="./src/c"/>
    <property name="c.debug" value="true" />
    <property name="c.obj.dir" value="${build.dir}/objC" />
+   <property name="gcc.enableStackTrace" value="-D_ENABLE_STACK_TRACE_" /> <!-- Use -U... to undefine for OSF -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -237,7 +238,7 @@ TODO
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-D${thread.impl}" />
    </compiler>
 
@@ -248,7 +249,7 @@ TODO
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
-      <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
    </compiler>
 
    <!-- Compile Intel C++ -->
@@ -1431,6 +1432,9 @@ TODO
                </default>
             </switch>
          </case>                                     <!-- Probably we need to set it all the time in build.properties -->
+         <case value="OSF1">                         <!-- Giglio Federico: OSF1 V5.1 1885 alpha machine using gcc (GCC) 3.3.1 -->
+            <property name="use-gcc" value="true" />
+         </case>
          <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
          </default>
       </switch>
