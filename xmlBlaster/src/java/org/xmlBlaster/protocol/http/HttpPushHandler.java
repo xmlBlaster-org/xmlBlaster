@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.21 2000/05/13 20:07:32 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.22 2000/05/13 21:29:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -34,7 +34,7 @@ public class HttpPushHandler
 {
    static private final String ME  = "HttpPushHandler";
    /**
-    * Ping the browser every 10 seconds. 
+    * Ping the browser every 10 seconds.
     * <br />
     * You need to adjust ping() in persistenWindow/index.html as well,
     * if you change the value here.
@@ -44,7 +44,7 @@ public class HttpPushHandler
    private final HttpServletRequest req;
    private final HttpServletResponse res;
    private final String sessionId;
-   
+
    /** Current http connection state */
    private boolean closed = false;
 
@@ -189,7 +189,7 @@ public class HttpPushHandler
    }
 
 
-   /** 
+   /**
     * Delegates the cleanup call to HttpPushHandler
     */
    private void cleanup()
@@ -495,7 +495,7 @@ public class HttpPushHandler
 
 
    /**
-    * This is the browser response for our previous ping. 
+    * This is the browser response for our previous ping.
     */
    public void pong()
    {
@@ -509,7 +509,7 @@ public class HttpPushHandler
     * <p />
     * Note that the ping sends some bytes as well, the netscape browser
     * for example closes the http connection if the amount of bytes per second
-    * falls below a certain level. 
+    * falls below a certain level.
     * <p />
     * The browser responses with 'pong' which allows us to check if the browser
     * is still here.
@@ -554,7 +554,9 @@ public class HttpPushHandler
             catch (InterruptedException i) { }
 
             try {
-               if (waitForPong) {
+               if (false) {
+               // if (waitForPong) {  //// Switched off !!!!!
+               // This ping doesn't work over the internet??????
                   Log.warning(ME, "Browser seems to have disappeared, no response for my ping. Closing connection.");
                   pushHandler.cleanup();
                   stopThread();
