@@ -3,7 +3,7 @@ Name:      TestClientProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestClientProperty.java,v 1.3 2003/09/24 17:57:57 laghi Exp $
+Version:   $Id: TestClientProperty.java,v 1.4 2003/12/07 12:27:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -34,6 +34,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 import junit.framework.*;
 
@@ -88,9 +89,9 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    private void checkValues(Map map) {
       assertEquals("", 3, map.size());
-      assertEquals("", "oneValue", (String)map.get("oneKey"));
-      assertEquals("", "twoValue", (String)map.get("twoKey"));
-      assertEquals("", "threeValue", (String)map.get("threeKey"));
+      assertEquals("", "oneValue", ((ClientProperty)map.get("oneKey")).getStringValue());
+      assertEquals("", "twoValue", ((ClientProperty)map.get("twoKey")).getStringValue());
+      assertEquals("", 55, ((ClientProperty)map.get("threeKey")).getIntValue());
    }
 
 
@@ -98,9 +99,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestConnectQos");
       ConnectQos qos = new ConnectQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
@@ -117,9 +118,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestDisconnectQos");
       DisconnectQos qos = new DisconnectQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       DisconnectQosSaxFactory factory = new DisconnectQosSaxFactory(this.glob);
@@ -137,9 +138,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestPublishQos");
       PublishQos qos = new PublishQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       MsgQosSaxFactory factory = new MsgQosSaxFactory(this.glob);
@@ -157,9 +158,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestSubscribeQos");
       SubscribeQos qos = new SubscribeQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
@@ -177,9 +178,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestUnSubscribeQos");
       UnSubscribeQos qos = new UnSubscribeQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
@@ -197,9 +198,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestGetQos");
       ConnectQos qos = new ConnectQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
@@ -216,9 +217,9 @@ public class TestClientProperty extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "TestEraseQos");
       EraseQos qos = new EraseQos(this.glob);
-      qos.setClientProperty("oneKey", "oneValue");
-      qos.setClientProperty("twoKey", "twoValue");
-      qos.setClientProperty("threeKey", "threeValue");
+      qos.addClientProperty("oneKey", "oneValue");
+      qos.addClientProperty("twoKey", "twoValue");
+      qos.addClientProperty("threeKey", new Integer(55));
       String literal = qos.toXml();
       
       QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
@@ -250,9 +251,9 @@ public class TestClientProperty extends TestCase implements I_Callback
          // publish 
          PublishKey key = new PublishKey(this.glob, "clientProp");
          PublishQos qos = new PublishQos(this.glob);
-         qos.setClientProperty("oneKey", "oneValue");
-         qos.setClientProperty("twoKey", "twoValue");
-         qos.setClientProperty("threeKey", "threeValue");
+         qos.addClientProperty("oneKey", "oneValue");
+         qos.addClientProperty("twoKey", "twoValue");
+         qos.addClientProperty("threeKey", new Integer(55));
          MsgUnit msg = new MsgUnit(key, "message".getBytes(), qos);
          senderConnection.publish(msg);
 
