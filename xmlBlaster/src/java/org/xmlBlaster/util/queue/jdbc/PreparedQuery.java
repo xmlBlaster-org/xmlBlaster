@@ -10,7 +10,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
+//import java.sql.PreparedStatement; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
+import java.sql.Statement;
 import java.sql.ResultSet;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.jutils.log.LogChannel;
@@ -22,11 +23,12 @@ import org.jutils.log.LogChannel;
 
 public class PreparedQuery {
    public final static String ME = "PreparedQuery";
-   private LogChannel log = null;
-   public Connection conn = null;
-   private PreparedStatement st = null;
-   public ResultSet rs = null;
-   private JdbcConnectionPool pool = null;
+   private LogChannel log;
+   public Connection conn;
+   //private PreparedStatement st; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
+   private Statement st;
+   public ResultSet rs;
+   private JdbcConnectionPool pool;
    private boolean isClosed = true;
    private boolean isException = false;
 
@@ -51,7 +53,8 @@ public class PreparedQuery {
       try {
          this.conn = this.pool.getConnection();
          if (this.conn.getAutoCommit() != isAutoCommit) this.conn.setAutoCommit(isAutoCommit);
-         this.st = conn.prepareStatement(request);
+         // this.st = conn.prepareStatement(request); Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
+         this.st = conn.createStatement();
          this.st.setQueryTimeout(this.pool.getQueryTimeout());
 
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
@@ -127,7 +130,8 @@ public class PreparedQuery {
 
       try {
          if (this.st != null) this.st.close();  // close the previous statement
-         this.st = conn.prepareStatement(request);
+         // this.st = conn.prepareStatement(request);  Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
+         this.st = conn.createStatement();
          this.st.setQueryTimeout(this.pool.getQueryTimeout());
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);

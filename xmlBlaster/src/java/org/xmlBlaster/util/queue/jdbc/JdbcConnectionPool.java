@@ -9,6 +9,7 @@ Author:    laghi@swissinfo.org
 package org.xmlBlaster.util.queue.jdbc;
 
 import org.jutils.log.LogChannel;
+import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -427,6 +428,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       try {
          conn = this.getConnection();
          productName = conn.getMetaData().getDatabaseProductName();
+         // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
+         // blanks are not allowed, thanks to zhang zhi wei
+         productName = StringHelper.replaceAll(productName, " ", "");
       }
       finally {
          if (conn != null) releaseConnection(conn);
