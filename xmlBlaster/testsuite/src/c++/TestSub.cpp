@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.30 2004/06/22 22:25:47 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.31 2004/06/24 22:10:44 laghi Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -124,8 +124,12 @@ private:
          string passwd = "secret";
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
+         connQos.getSessionQosRef()->setPubSessionId(3L);
          returnQos_ = connection_.connect(connQos, this);
          string name = returnQos_.getSessionQos().getAbsoluteName();
+         string name1 = returnQos_.getSessionQosRef()->getAbsoluteName();
+         assertEquals(log_, ME, name, name1, string("name comparison for reference"));
+
          log_.info(ME, string("connection setup: the session name is '") + name + "'");
          // Login to xmlBlaster
       }
@@ -216,8 +220,8 @@ private:
       subscribeOid_ = "";
       try {
          subscribeOid_ = connection_.subscribe(subKey1, subQos, cb1_).getSubscriptionId();
-         connection_.subscribe(subKey2, subQos, cb2_);
-         connection_.subscribe(subKey3, subQos, cb3_);
+         string sub1 = connection_.subscribe(subKey2, subQos, cb2_).getSubscriptionId();
+         string sub2 = connection_.subscribe(subKey3, subQos, cb3_).getSubscriptionId();
 
          log_.info(ME, string("Success: Subscribe subscription-id=") + subscribeOid_ + " done");
 
@@ -249,10 +253,18 @@ private:
          assertEquals(log_, "specificCallback", 1, cb1_->getCount(), string("callback 1"));
          assertEquals(log_, "specificCallback", 2, cb2_->getCount(), string("callback 2"));
          assertEquals(log_, "specificCallback", 3, cb3_->getCount(), string("callback 3"));
+
+         UnSubscribeKey key(global_);
+         key.setOid(oid1);
+         UnSubscribeQos qos(global_);
+         connection_.unSubscribe(key, qos);
+         key.setOid(oid2);
+         connection_.unSubscribe(key, qos);
+         key.setOid(oid3);
+         connection_.unSubscribe(key, qos);
       }
       catch(XmlBlasterException &e) {
-         log_.warn(ME, string("XmlBlasterException: ")
-                      + e.toXml());
+         log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
          cerr << "subscribe - XmlBlasterException: " << e.toXml() << endl;
          assert(0);
       }
@@ -550,7 +562,7 @@ int main(int args, char *argc[])
  
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
-      testSubscribeSpecificCallback();
+      testSub.testSubscribeSpecificCallback();
       testSub.tearDown();
 
       Thread::sleepSecs(1);

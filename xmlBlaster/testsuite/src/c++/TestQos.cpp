@@ -7,6 +7,7 @@ Comment:   Testing the ClientProperty Features
 #include "TestSuite.h"
 #include <iostream>
 #include <util/qos/SessionQos.h>
+#include <util/qos/StatusQosFactory.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -67,6 +68,41 @@ public:
       }
    }
 
+   void testStatusQos() 
+   {
+      log_.info(ME, "testSessionQos(): Starting tests ...");
+      try {
+         {
+            StatusQosData data(global_);
+            data.setState("OK");
+            data.setStateInfo("OK-INFO");
+            data.setKeyOid("dummyKey");
+            data.setPersistent(true);
+            data.setSubscriptionId("subId3");
+
+            assertEquals(log_, ME, "OK", data.getState(), "state");
+            assertEquals(log_, ME, "OK-INFO", data.getStateInfo(), "stateInfo");
+            assertEquals(log_, ME, "dummyKey", data.getKeyOid(), "key");
+            assertEquals(log_, ME, true, data.isPersistent(), "persistent");
+            assertEquals(log_, ME, "subId3", data.getSubscriptionId(), "subId");
+
+            StatusQosFactory factory(global_);
+            StatusQosData data2 = factory.readObject(data.toXml());
+
+            assertEquals(log_, ME, "OK", data2.getState(), "state");
+            assertEquals(log_, ME, "OK-INFO", data2.getStateInfo(), "stateInfo");
+            assertEquals(log_, ME, "dummyKey", data2.getKeyOid(), "key");
+            assertEquals(log_, ME, true, data2.isPersistent(), "persistent");
+            assertEquals(log_, ME, "subId3", data2.getSubscriptionId(), "subId");
+
+         }
+      }
+      catch(bad_cast b) {
+         cout << "EXCEPTION: " << b.what() << endl;
+         assert(0);
+      }
+   }
+
    void setUp() {
    }
 
@@ -89,6 +125,10 @@ int main(int args, char *argv[])
 
    testObj.setUp();
    testObj.testSessionQos();
+   testObj.tearDown();
+
+   testObj.setUp();
+   testObj.testStatusQos();
    testObj.tearDown();
 
    return 0;
