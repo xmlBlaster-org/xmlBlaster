@@ -3,7 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
-
+ 
+ o changed ant to 1.6.1
+ 
  o Tested on IBM s390: Linux 2.4.19-4 SMP s390
    Java client/server, C++ and C compiles (g++ 3.2.2) and runs fine
 
