@@ -89,9 +89,10 @@
       Zipping is applied only to contents bigger a configurable value, typically contents
       bigger 1.2 kBytes.
       </li>
-      <li>Pinging of callback server [TODO]<br />
-      The callback server is pinged on demand. Pinging with method ping() is similar
+      <li>Pinging of callback server<br />
+      The callback server is pinged every minute as default. Pinging with method ping() is similar
       implemented as the update() invocation on the client callback server.
+      If the ping fails ('onExhaust') the session is killed - the client is auto logged out.
       </li>
       <li>Error handling<br />
       We distinguish recovery procedures for callback connection problems
@@ -102,7 +103,7 @@
       <ol>
          <li>Receiver is not reachable or throws an exception<br />
          Depending on configuration we try to redeliver. When we give up
-         a dead letter is published.
+         a dead letter is published and the client is logged out.
          </li>
          <li>Receiver blocks [TODO]<br />
          Currently we can't detect this, the callback worker thread is blocked
@@ -114,7 +115,7 @@
          </li>
       </ol>
       <p>
-      A possible approache for a lost PtP messages is to send a NAK to the
+      A possible approach for a lost PtP messages is to send a NAK to the
       sender of the message [TODO - needs to be specified]
       </p>
       </li>
@@ -191,12 +192,13 @@
             <td>cb.pingInterval</td>
             <td>60000 (one minute)</td>
             <td>Ping interval: pinging every given milliseconds</td>
-            <td>no</td>
+            <td>yes</td>
          </tr>
          <tr>
             <td>cb.retries</td>
             <td>0</td>
-            <td>How often to retry if callback fails: defaults to don't retry, on failure we give up</td>
+            <td>How often to retry if callback fails: defaults to 0 == don't retry, on failure we give up.
+                Set to -1 to try forever</td>
             <td>yes</td>
          </tr>
          <tr>
@@ -257,7 +259,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

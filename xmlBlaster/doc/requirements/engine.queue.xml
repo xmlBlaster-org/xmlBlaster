@@ -32,11 +32,12 @@
       <li>Bounded (max size)<br />
       Every queue has a maximum size. The maximum boundary is adjustable
       as the number of entries in the queue or as maximum memory consumption.
-      On queue overflow the queue blocks until there is place in the queue
-      again. This means that the publisher client blocks in its publish() method as well.
-      A MsgQueue can be configured to send a <i>deadLetter</i> on overflow (see below).
+      On queue overflow xmlBlaster sends a <i>deadLetter</i> (see below).
       'Falling through' - the oldest message is removed when the queue is full and
       a new message arrives - is currently not supported.
+      A MsgQueue can be configured to block until there is place in the queue
+      again. This means that the publisher client blocks in its publish() method as well.
+      Note that this is causing dead locks in some situation and is currently not recommended.
       </li>
       <li>Dead letter<br />
       On queue overflow or on callback failure a "dead letter" mode is adjustable.
@@ -231,7 +232,7 @@ These is an example QoS of a disconnect() invocation:
          </tr>
          <tr>
             <td>queue.onOverflow</td>
-            <td>block</td>
+            <td>deadLetter</td>
             <td>Error handling when queue is full: <i>block</i> or <i>deadLetter</i></td>
             <td>yes</td>
          </tr>
@@ -256,7 +257,7 @@ These is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
