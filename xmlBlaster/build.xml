@@ -1837,7 +1837,6 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
          <includepath location="${src.c.dir}" />   <!-- Using the C SOCKET client library -->
-         <includepath location="${src.c.dir}/pthreads" if="windows" />
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
@@ -1845,6 +1844,8 @@ TODO
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
+           <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
+           <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="_WIN32_WINNT" value="0x0400" if="windows"/> <!-- omnithread, OMNIORB -->
            <define name="__x86__" if="windows"/>                     <!-- omnithread, OMNIORB -->  <!-- ${sun.cpu.endian}="little" -->
            <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
@@ -2023,6 +2024,8 @@ TODO
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
+           <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
+           <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba tests? -->
@@ -2205,10 +2208,11 @@ TODO
          <fileset dir="${src.c.dir}/util" includes="*.c" excludes="msgUtil.c"/>  <!-- uses msgUtil_CopyByAnt.c -->
 
          <includepath location="${src.c.dir}" />
-         <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <!-- define name="TC" value="1" if="windows" /--> <!-- Force C compiling: TC, to force C++: TP -->
+           <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
+           <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in basicDefs.h, sets DLL_Export -->
            <define name="__linux" value="1" if="linux" />
            <define name="__sunos__" value="1" if="sun" />
@@ -2279,13 +2283,14 @@ TODO
          <compiler refid="CC"/>
          <fileset dir="${compileCSourcePath}" includes="${exeName}.c"/>
          <includepath location="${src.c.dir}" />
-         <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset>
            <!-- define name="TC" value="1" if="windows" / --> <!-- Force C compiling -->
            <define name="WIN32" value="1" if="windows" />
+           <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
+           <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="_MBCS" value="1" if="windows" />
            <define name="_USRDLL" value="1" if="windows" />
