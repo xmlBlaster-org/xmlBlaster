@@ -8,6 +8,7 @@ package org.xmlBlaster.test.client;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
@@ -15,10 +16,12 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -45,7 +48,7 @@ import junit.framework.*;
  * </pre>
  * @see org.xmlBlaster.client.I_XmlBlasterAccess
  */
-public class TestPersistentSession extends TestCase implements I_ConnectionStateListener
+public class TestPersistentSession extends TestCase implements I_ConnectionStateListener, I_Callback
 {
    private static String ME = "TestPersistentSession";
    private Global glob;
@@ -65,6 +68,9 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
    private final long reconnectDelay = 2000L;
    private boolean persistent = true;
+   private boolean failsafeCallback = true;
+   private boolean exactSubscription = false;
+   private int numSubscribers = 1;
 
    public TestPersistentSession(String testName) {
       this(null, testName);
@@ -74,6 +80,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       super(testName);
       this.glob = glob;
       this.senderName = testName;
+      // this.updateInterceptors = new MsgInterceptor[this.numSubscribers];
    }
 
    /**
@@ -104,11 +111,13 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          connectQos.setAddress(addressProp);
          
          // setup failsafe handling for callback ...
-         CallbackAddress cbAddress = new CallbackAddress(this.glob);
-         cbAddress.setRetries(-1);
-         cbAddress.setPingInterval(-1);
-         cbAddress.setDelay(1000L);
-         connectQos.addCallbackAddress(cbAddress);
+         if (this.failsafeCallback) {
+            CallbackAddress cbAddress = new CallbackAddress(this.glob);
+            cbAddress.setRetries(-1);
+            cbAddress.setPingInterval(-1);
+            cbAddress.setDelay(1000L);
+            connectQos.addCallbackAddress(cbAddress);
+         }
 
          this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
@@ -160,15 +169,19 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void doSubscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+   public void doSubscribe(int num, boolean isExact) {
       try {
-         SubscribeKey key = new SubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
+         SubscribeKey key = null;
+         if (isExact)  key = new SubscribeKey(this.glob, "Message-1");
+         else key = new SubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
+
          SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
          qos.setPersistent(this.persistent);
          qos.setWantNotify(false); // to avoig getting erased messages
 
+         //this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
          SubscribeReturnQos subscriptionId = con.subscribe(key, qos);
+
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
@@ -176,7 +189,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
-
+ 
    /**
     * TEST: Construct a message and publish it.
     * <p />
@@ -211,7 +224,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    public void testPersistentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
-      doSubscribe();
+      doSubscribe(0, this.exactSubscription);
       for (int i=0; i<numPublish; i++) {
          try {
             if (i == numStop) { // 3
@@ -240,12 +253,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                // Message-4 We need to wait until the client reconnected (reconnect interval)
                // Message-5
                assertEquals("", 2, this.updateInterceptor.waitOnUpdate(reconnectDelay*2L, 2));
+               // for (int j=0; j < this.numSubscribers; j++) 
                this.updateInterceptor.clear();
             }
             doPublish(i+1);
             if (i < numStop || i >= numStart ) {
                assertEquals("", 1, this.updateInterceptor.waitOnUpdate(4000L, 1));
             }
+            // for (int j=0; j < this.numSubscribers; j++) 
             this.updateInterceptor.clear();
          }
          catch(XmlBlasterException e) {
@@ -278,6 +293,11 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+      this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
+      return "OK";
+   }
+
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPersistentSession
     * <p />
@@ -292,14 +312,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          System.exit(1);
       }
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
-      /*
       testSub.setUp();
       testSub.testPersistentSessionWithStop();
       testSub.tearDown();
-      */
+      /*
       testSub.setUp();
       testSub.testPersistentSessionWithRunlevelChange();
       testSub.tearDown();
+      */
    }
 }
 

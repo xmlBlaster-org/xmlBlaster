@@ -776,8 +776,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          }
 
          SubscriptionInfo subsQuery = null;
-         // if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-         if (true) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
+         if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
             subsQuery = new SubscriptionInfo(glob, sessionInfo, xmlKey, subscribeQos.getData());
             returnOid = subsQuery.getSubscriptionId(); // XPath query
             fireSubscribeEvent(subsQuery);
