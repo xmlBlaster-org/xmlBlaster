@@ -3,6 +3,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes cvs
 ===========
 
+ o Reintroduced notify for XPATH subscriptions (they were removed in 0.91)
+   NOTE: XPath subscriptions will match again if the erased topic is recreated
+   Exact subscriptions are lost when a topic is explicitely erased, a subscriber
+   would need to re-subscribe on a erased topic if needed.
+   This is an important difference, the erase notify is essential for exact
+   subscriptions so they now about the stale subscription.
+
  o SOCKET UDP support:
    Added paramter to switch on/off the server side UDP listener (defaults to true)
    -plugin/socket/startUdpListener true/false
@@ -38,7 +45,7 @@ Changes cvs
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
-   - Incompatible API change: 
+   - Incompatible API change (the compiler will tell you everything - no risk!): 
       o 'class Destination' constructor expects now the new SessionName instead of SessionQos
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
       o Removed namespace from header: Clients now may need to add
