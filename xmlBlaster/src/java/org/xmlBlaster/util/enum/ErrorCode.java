@@ -435,6 +435,7 @@ public final class ErrorCode implements java.io.Serializable
 
    /**
     * Return a human readable string of the errorCode and description
+    * @return never null
     */
    public String toString() {
       return "errorCode=" + this.errorCode + ": " + this.description;
@@ -442,6 +443,7 @@ public final class ErrorCode implements java.io.Serializable
 
    /**
     * Returns the errorCode string. 
+    * @return never null
     */
    public String getErrorCode() {
       return this.errorCode;
@@ -449,6 +451,7 @@ public final class ErrorCode implements java.io.Serializable
 
    /**
     * Returns the description of the errorCode. 
+    * @return never null
     */
    public String getDescription() {
       return this.description;
