@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.12 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.13 2000/11/05 19:18:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -230,15 +230,15 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public static final String convert(byte[] objectId)
    {
       String result = "IIOP:";
+      //result += new String(objectId).replace('\n', ' ');
       for (int i=0; i<objectId.length; i++) {
          int n1 = (objectId[i] & 0xff) / 16;
          int n2 = (objectId[i] & 0xff) % 16;
          char c1 = (char)(n1>9 ? ('A'+(n1-10)) : ('0'+n1));
          char c2 = (char)(n2>9 ? ('A'+(n2-10)) : ('0'+n2));
-         // result = result + ( c1 + (c2 + " "));
-         result += (c1 + c2);
+         result += ( c1 + (c2 + ""));
       }
-      // if (Log.TRACE) Log.trace("CONVERT", "Converted POA-AOM <" + objectId + "> to session ID <" + result + ">");
+      // if (Log.TRACE) Log.trace("ServerImpl.CONVERT", "Converted POA-AOM <" + objectId + "> to session ID <" + result + ">");
       return result;
    }
 
