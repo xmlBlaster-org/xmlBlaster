@@ -1294,7 +1294,10 @@ public final class TopicHandler implements I_Timeout
       }
    }
 
-   private boolean removeTopicPersistence() {
+   private void removeTopicPersistence() {
+      if (requestBroker.getTopicStore() == null) {
+         return;   // RAM based operation
+      }
       try {
          if (this.topicEntry != null) {
             int num = this.requestBroker.removePersistentTopicHandler(this.topicEntry);
@@ -1305,13 +1308,12 @@ public final class TopicHandler implements I_Timeout
             else {
                if (log.TRACE) log.trace(ME, "" + num + " TopicHandler removed from persistency");
             }
-            return num>0;
+            return;
          }
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
       }
-      return false;
    }
 
    private void toUnreferenced() throws XmlBlasterException {
