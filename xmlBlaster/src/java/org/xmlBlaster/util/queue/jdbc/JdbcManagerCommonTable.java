@@ -100,6 +100,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final boolean AUTO_COMMIT = true;
    private final String managerName;
 
+   PreparedStatement pingPrepared = null;
+
    /**
     * Counts the queues using this manager.
     */
@@ -250,13 +252,39 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //      Statement st = null;
       try {
          // conn.isClosed();
-//         st = conn.createStatement();
-//         st.setQueryTimeout(this.pool.getQueryTimeout());
-//          st.execute(""); <-- this will not work on ORACLE (fails)
-//         st.execute("SELECT count(*) from " + this.tablesTxt);
-//         st.execute(this.pingStatement);
 
-         ResultSet rs = conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
+         if (this.log.TRACE) this.log.trace(ME, "Trying ping ...");
+         conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
+
+         /*
+         if (false) {  // Postgres: 1 millis   Oracle: 2 millis
+            if (this.pingPrepared == null) {
+               //this.pingPrepared = conn.prepareStatement("SELECT count(nodeid) from " + this.nodesTableName);
+               this.pingPrepared = conn.prepareStatement("SELECT nodeid from " + this.nodesTableName + " where nodeid='bla'");
+            }
+            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            this.pingPrepared.executeQuery();
+            log.info(ME, "ping on Prepared select nodeid elapsed=" + stopWatchToBlob.nice());
+         }
+         {  // Postgres: 1 millis   Oracle: 4 millis
+            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            Statement st = null;
+            st = conn.createStatement();
+            st.setQueryTimeout(this.pool.getQueryTimeout());
+            st.execute("SELECT nodeid from " + this.nodesTableName + " where nodeid='bla'");// + this.tablesTxt);
+            log.info(ME, "ping on select nodeid elapsed=" + stopWatchToBlob.nice());
+         }
+         {  // Postgres: 6 millis    Oracle: 9 millis
+            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            ResultSet rs = conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
+            log.info(ME, "ping xy elapsed=" + stopWatchToBlob.nice());
+         }
+         {  // Postgres: 14 millis   Oracle: 2 sec 527
+            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            conn.getMetaData().getTables(null, null, null, null);
+            log.info(ME, "ping null elapsed=" + stopWatchToBlob.nice());
+         }
+         */
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
          return true;
       }
@@ -381,7 +409,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          String table = rs.getString(3).toUpperCase();
          // if (table.startsWith(this.tablePrefix))
          // we currently add everything since I don't know what's better: speed here or when searching
-         if (this.log.TRACE) this.log.trace(ME, "getXbTableNames found table '" + table + "': adding to the of found tables"); 
+         if (this.log.TRACE) this.log.trace(ME, "getXbTableNames found table '" + table + "': adding to the set of found tables"); 
          ret.add(table);
       }
       return ret;
@@ -718,8 +746,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *
     * @return true on success
     *
-    * @throws XmlBlasterException if an error occured when trying to get a connection or an SQLException
-    *         occured.
+    * @throws XmlBlasterException if an error occurred when trying to get a connection or an SQLException
+    *         occurred.
     */
    public final boolean modifyEntry(String queueName, String nodeId, I_Entry entry)
       throws XmlBlasterException {
