@@ -32,7 +32,9 @@ CLASSPATH=lib/Xindice/xalan-2.0.1.jar:$CLASSPATH
 CLASSPATH=lib/Xindice/xindice.jar:$CLASSPATH
 CLASSPATH=lib/Xindice/xmldb.jar:$CLASSPATH
 
-CLASSPATH=lib/ant/xerces.jar:$CLASSPATH
+CLASSPATH=testsuite/org/xmlBlaster:$CLASSPATH
+
+CLASSPATH=$CLASSPATH:lib/ant/xerces.jar
 
 ALL_ENV=`env`
 MY_DEF=""
