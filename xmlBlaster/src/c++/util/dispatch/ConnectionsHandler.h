@@ -60,6 +60,13 @@ private:
    Timestamp               timestamp_;
    MsgQueue*               queue_;
    bool                    pingIsStarted_;
+   /**
+    * Temporary hack until the server will give back the same sessionId. Here all subscriptions and 
+    * unSubscriptions are stored. When reconnecting a check is made to see if we got the same sessionId. If
+    * the id differe, then all subscribe and unSubscribe are repeated.
+    */
+   MsgQueue*               adminQueue_;
+   string                  lastSessionId_;
 
 public:
    ConnectionsHandler(Global& global, DeliveryManager& deliveryManager);
@@ -145,7 +152,7 @@ public:
 
 protected:
    /** only used inside the class to avoid deadlock */
-   long flushQueueUnlocked();
+   long flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove=true);
    PublishReturnQos queuePublish(const MessageUnit& msgUnit);
    bool startPinger();
 

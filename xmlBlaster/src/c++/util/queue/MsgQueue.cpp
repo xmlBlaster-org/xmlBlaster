@@ -72,7 +72,6 @@ void MsgQueue::put(MsgQueueEntry *entry)
 }
 
 
-
 void MsgQueue::put(const PublishQueueEntry& entry)
 {
    PublishQueueEntry *ptr = new PublishQueueEntry(entry);
@@ -82,6 +81,18 @@ void MsgQueue::put(const PublishQueueEntry& entry)
 void MsgQueue::put(const ConnectQueueEntry& entry)
 {
    ConnectQueueEntry *ptr = new ConnectQueueEntry(entry);
+   put(ptr);
+}
+
+void MsgQueue::put(const SubscribeQueueEntry& entry)
+{
+   SubscribeQueueEntry *ptr = new SubscribeQueueEntry(entry);
+   put(ptr);
+}
+
+void MsgQueue::put(const UnSubscribeQueueEntry& entry)
+{
+   UnSubscribeQueueEntry *ptr = new UnSubscribeQueueEntry(entry);
    put(ptr);
 }
 

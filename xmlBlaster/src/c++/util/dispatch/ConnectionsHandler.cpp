@@ -27,6 +27,8 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
      log_(global.getLog("delivery")),
      connectionMutex_()
 {
+   QueueProperty prop(global_, "");
+   adminQueue_ = new MsgQueue(global, prop);
    connectQos_         = NULL;
    connectionProblems_ = NULL;
    connectReturnQos_   = NULL;
@@ -36,6 +38,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
    currentRetry_       = 0;
    timestamp_          = 0;
    pingIsStarted_      = false;
+   lastSessionId_      = "";
 }
 
 ConnectionsHandler::~ConnectionsHandler()
@@ -50,6 +53,8 @@ ConnectionsHandler::~ConnectionsHandler()
       delete queue_;
       queue_ = NULL;
    }
+   delete adminQueue_;
+   adminQueue_ = NULL;
    delete connectQos_;
    delete connectReturnQos_;
    status_ = END;
@@ -81,10 +86,10 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
 
    connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
-   string sessionId = connectReturnQos_->getSessionQos().getSessionId();
-   log_.info(ME, string("successfully connected with sessionId = '") + sessionId + "'");
+   lastSessionId_ = connectReturnQos_->getSessionQos().getSessionId();
+   log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
    SessionQos tmp = connectQos_->getSessionQos();
-   tmp.setSessionId(sessionId);
+   tmp.setSessionId(lastSessionId_);
    connectQos_->setSessionQos(tmp);
    if (log_.TRACE) {
       log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
@@ -167,7 +172,10 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
    int i = 0;
    while (i < retries_ || retries_ < 0) {
       try {
-         return connection_->subscribe(key, qos);
+         SubscribeReturnQos ret = connection_->subscribe(key, qos);
+	 SubscribeQueueEntry entry(global_, key, qos);
+	 adminQueue_->put(entry);
+	 return ret;
       }
       catch (XmlBlasterException &ex) {
          i++;
@@ -179,7 +187,10 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "subscribe");
 */
    try {
-      return connection_->subscribe(key, qos);
+      SubscribeReturnQos ret = connection_->subscribe(key, qos);
+      SubscribeQueueEntry entry(global_, key, qos);
+      adminQueue_->put(entry);
+      return ret;
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) toPollingOrDead();
@@ -218,7 +229,10 @@ vector<UnSubscribeReturnQos>
    if (status_ == POLLING) throw XmlBlasterException(COMMUNICATION_NOCONNECTION_POLLING, ME, "unSubscribe");
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "unSubscribe");
    try {
-      return connection_->unSubscribe(key, qos);
+      vector<UnSubscribeReturnQos> ret = connection_->unSubscribe(key, qos);
+      UnSubscribeQueueEntry entry(global_, key, qos);
+      adminQueue_->put(entry);
+      return ret;
    }   
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) toPollingOrDead();
@@ -390,7 +404,7 @@ void ConnectionsHandler::timeout(void *userData)
 	   if (connectReturnQos_) delete connectReturnQos_;
            connectReturnQos_ = new ConnectReturnQos(retQos);
 	   string sessionId = connectReturnQos_->getSessionQos().getSessionId();
-           log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
+	   log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
 
            if ( log_.TRACE ) {
 	      log_.trace(ME, "ping timeout: re-connection was successful");
@@ -399,11 +413,17 @@ void ConnectionsHandler::timeout(void *userData)
 
 	   bool doFlush = true;
            if ( connectionProblems_ ) doFlush = connectionProblems_->reConnected();
-
 	   status_ = CONNECTED;
+           if (sessionId != lastSessionId_) {
+	      log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
+	      lastSessionId_ = sessionId;
+	      MsgQueue tmpQueue = *adminQueue_;
+	      flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
+	   }
+
 	   if (doFlush) {
 	      try {
-		 flushQueueUnlocked();		 
+		 flushQueueUnlocked(queue_, true);
 	      }
 	      catch (...) {
 		 log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
@@ -464,19 +484,19 @@ long ConnectionsHandler::flushQueue()
 {
    if (log_.CALL) log_.call(ME, "flushQueue");
    Lock lock(connectionMutex_);
-   return flushQueueUnlocked();
+   return flushQueueUnlocked(queue_, true);
 }  
 
    
-long ConnectionsHandler::flushQueueUnlocked()
+long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove)
 {
    if ( log_.CALL ) log_.call(ME, "flushQueueUnlocked");
-	   if (!queue_ || queue_->empty()) return 0;
+	   if (!queueToFlush || queueToFlush->empty()) return 0;
    if (status_ != CONNECTED || connection_ == NULL) return -1;
 
    long ret = 0;
-   while (!queue_->empty()) {
-      vector<EntryType> entries = queue_->peekWithSamePriority();
+   while (!queueToFlush->empty()) {
+      vector<EntryType> entries = queueToFlush->peekWithSamePriority();
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
@@ -484,12 +504,12 @@ long ConnectionsHandler::flushQueueUnlocked()
 	 }
 	 catch (XmlBlasterException &ex) {
 	   if (ex.isCommunication()) toPollingOrDead();
-	   queue_->randomRemove(entries.begin(), iter);
+	   if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
 	   throw ex;
 	 }
 	 iter++;
       }
-      ret += queue_->randomRemove(entries.begin(), entries.end());
+      if (doRemove) ret += queueToFlush->randomRemove(entries.begin(), entries.end());
    }
    return ret;
 }

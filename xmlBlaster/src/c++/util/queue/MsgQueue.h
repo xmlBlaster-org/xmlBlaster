@@ -22,6 +22,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/MsgQueueEntry.h>
 #include <util/queue/PublishQueueEntry.h>
 #include <util/queue/ConnectQueueEntry.h>
+#include <util/queue/SubscribeQueueEntry.h>
+#include <util/queue/UnSubscribeQueueEntry.h>
 #include <util/qos/storage/QueueProperty.h>
 #include <util/thread/Thread.h>
 #include <util/Log.h>
@@ -69,6 +71,10 @@ public:
    void put(const PublishQueueEntry& entry);
 
    void put(const ConnectQueueEntry& entry);
+
+   void put(const SubscribeQueueEntry& entry);
+
+   void put(const UnSubscribeQueueEntry& entry);
 
 
    /**
