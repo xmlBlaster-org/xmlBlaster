@@ -78,8 +78,7 @@ bool initConnection(int argc, char** argv)
 	   return 1; 
 	}
 # endif
- 
-/* The WinSock DLL is acceptable. Proceed. */
+
    strcpy(serverHostName, "localhost");
    gethostname(serverHostName, 125);
 
@@ -99,6 +98,17 @@ bool initConnection(int argc, char** argv)
    memset(secretSessionId, 0, sizeof(secretSessionId));
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
    xmlBlasterAddr.sin_family=AF_INET;
+
+# if WIN32_NOT_YET_PORTED // In win  gethostbyname is deprecated
+	const struct addrinfo hints;
+   struct addrinfo** res;
+	int getaddrinfo(serverHostName, servTcpPort, &hints, res);
+	res->ai_next : ai_family, ai_socktype, and ai_protocol
+
+	...
+
+	void freeaddrinfo(*res);
+# endif
    hostP = gethostbyname(serverHostName);
    //printf("gethostbyname error=%d\n", WSAGetLastError());
    portP = getservbyname(servTcpPort, "tcp");
