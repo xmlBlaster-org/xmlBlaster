@@ -4,6 +4,8 @@
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
 # See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+# Configure: Attributes added to plugins are used as default settings, see
+#            http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.env.html
 -->
 <xmlBlaster>
 
@@ -25,6 +27,18 @@
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
    </plugin>
+
+   <!-- Example to start a second SOCKET plugin with different listener port -->
+<!--
+   <plugin id='SOCKET_UDP' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='useUdpForOneway'>true</attribute>
+      <attribute id='port'>7608</attribute>
+      <attribute id='threadPrio'>3</attribute>
+   </plugin>
+-->
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
