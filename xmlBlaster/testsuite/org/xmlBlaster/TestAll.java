@@ -40,7 +40,7 @@ public class TestAll
       suite.addTest(TestCallback.suite());
       suite.addTest(TestLoginLogoutEvent.suite());
       suite.addTest(TestGet.suite());
-      //!!!!suite.addTest(TestSubExact.suite());
+      suite.addTest(TestSubExact.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
