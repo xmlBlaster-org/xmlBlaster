@@ -168,7 +168,7 @@ TODO
    <property name="OMNIORB_LIBS" value="omniORB4,omnithread" /> <!-- The necessary libs for omniORB C++ clients -->
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
-   <property name="C_LINK" value="shared"/>  <!-- link a shared (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
+   <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
    <property name="src.c.dir" value="./src/c"/>
    <property name="c.debug" value="true" />
 
@@ -1637,6 +1637,40 @@ TODO
             -o /opt/local/xmlBlaster/lib/libxmlBlasterClient.so.0.79d
             /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
       -->
+      <!--
+         cl /W3 -DOMNITHREAD /c /nologo /GX /Zi /Od /GZ /D_DEBUG /MDd /DXMLBLASTER_TAO=1 /D__WIN32__ /D_WIN32_WINNT=0x0400 /D__x86__ /D__NT__ /D__O
+         SVERSION__=4 /D_OMNITHREAD_DLL=1 /DWIN32=1 /DDLL_BUILD=1 /D_MBCS=1 /D_WINDOWS=1 /IC:\Marcel\xmlBlaster\src\c++ /IC:\Marcel\ACE_wrappers\TAO /IC:\Marce
+         l\ACE_wrappers /IC:\Marcel\ACE_wrappers\TAO\orbsvcs /IC:\Marcel\ACE_wrappers\TAO\include /IC:\Marcel\xmlBlaster\src\c++\generated /IC:\Marcel\ACE_wrap
+         pers\TAO\include\windows /IC:\Marcel\xerces-c2_2_0-win32\src /IC:\Marcel\xerces-c2_2_0-win32\src\xercesc /IC:\Marcel\xerces-c2_2_0-win32\include /IC:\
+         Marcel\xerces-c2_2_0-win32\include\xercesc C:\Marcel\xmlBlaster\src\c++\util\qos\ConnectQosFactory.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\AccessFil
+         terQos.cpp C:\Marcel\xmlBlaster\src\c++\util\key\KeyData.cpp C:\Marcel\xmlBlaster\src\c++\util\Property.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\stor
+         age\CbQueueProperty.cpp C:\Marcel\xmlBlaster\src\c++\util\Constants.cpp
+
+         link @C:\Marcel\xmlBlaster\lib\xmlBlasterClient.rsp
+           Creating library xmlBlasterClient.lib and object xmlBlasterClient.exp
+
+         === xmlBlasterClient.rsp contains: ===
+         /NOLOGO
+         /DEBUG
+         /DLL
+         /INCREMENTAL:NO
+         /OUT:xmlBlasterClient.dll
+         ..\..\ACE_wrappers\ace\aced.lib
+         ..\..\ACE_wrappers\TAO\tao\TAOd.lib
+         ..\..\ACE_wrappers\TAO\tao\PortableServer\TAO_PortableServerd.lib
+         ..\..\ACE_wrappers\TAO\orbsvcs\orbsvcs\TAO_CosNamingd.lib
+         ..\..\xerces-c2_2_0-win32\lib\xerces-c_2.lib
+         ..\build\obj\QueryKeyData.obj
+         ..\build\obj\Timeout.obj
+         ...
+
+        RESULT:
+         06/24/2003  11:46 AM         3,178,496 xmlBlasterClient.dll
+         06/24/2003  11:46 AM           668,081 xmlBlasterClient.exp
+         06/24/2003  11:46 AM         1,098,054 xmlBlasterClient.lib
+         06/24/2003  11:46 AM         7,195,648 xmlBlasterClient.pdb
+         06/24/2003  11:46 AM             2,957 xmlBlasterClient.rsp
+       -->
       <mkdir dir="${build.dir}/obj"/>
 
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
@@ -1977,6 +2011,15 @@ TODO
       <!--
         g++ -o HelloWorld HelloWorld.c -L../../lib -lxmlBlasterClientC -I. -Wl,-rpath=../../lib -D_REENTRANT  -lpthread
       -->
+      <!-- 
+        [cc] link /NOLOGO /DEBUG /DLL /INCREMENTAL:NO /OUT:xmlBlasterClientC.dll '"..\..\..\Program Files\Microsoft Visual Studio .NET 2003\Vc7\Platfor
+        mSDK\Lib\WS2_32.Lib"' ..\src\c\socket\pthreadVC.lib ..\build\obj\Properties.obj ..\build\obj\xmlBlasterSocket.obj ..\build\obj\CallbackServerUnparsed.
+        obj ..\build\obj\msgUtil_CopyByAnt.obj ..\build\obj\XmlBlasterConnectionUnparsed.obj ..\build\obj\XmlBlasterAccessUnparsed.obj
+
+       RESULT:
+         06/24/2003  11:41 AM            73,728 xmlBlasterClientC.dll
+         06/24/2003  11:41 AM           175,104 xmlBlasterClientC.pdb
+      -->
       <mkdir dir="${build.dir}/obj"/>
 
       <!-- Copy msgUtil.c so that "@version@" is replaced to current values by ant -->
@@ -1984,8 +2027,12 @@ TODO
       <copy file="${src.c.dir}/util/msgUtil.c" tofile="${src.c.dir}/util/msgUtil_CopyByAnt.c" filtering="true" overwrite="true" />
 
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
-      <cc debug="${c.debug}" link="${C_LINK}"
-          outfile="${lib.dir}/xmlBlasterClientC" objdir="${build.dir}/obj"
+      <cc debug="${c.debug}"
+          link="${C_LINK}"
+          outtype="${C_LINK}"
+          runtime="static"
+          outfile="${lib.dir}/xmlBlasterClientC"
+          objdir="${build.dir}/obj"
           multithreaded="true">
          <compiler refid="gcc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
@@ -1998,7 +2045,8 @@ TODO
          <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
-           <define name="TC" value="1" if="windows" /> <!-- Force C compiling -->
+           <define name="TC" value="1" if="windows" /> <!-- Force C compiling: TC, to force C++: TP -->
+           <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in basicDefs.h, sets DLL_Export -->
            <define name="__linux" value="1" if="linux" />
            <define name="__sunos__" value="1" if="sun" />
            <define name="__sparc__" value="1" if="sun" />
