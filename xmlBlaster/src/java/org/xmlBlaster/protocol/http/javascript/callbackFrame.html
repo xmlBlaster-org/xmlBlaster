@@ -1,0 +1,39 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!-- xmlBlaster.org ruff@swand.lake.de -->
+<html>
+<head>
+   <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+   <!-- link REL="stylesheet" type="text/css" href="xmlBlaster.css" -->
+   <script language="JavaScript">
+      self.onerror = top.catchError;
+   </script>
+</head>
+
+<body>
+   <script language="JavaScript">
+
+      var testOnly = true;
+
+      if (testOnly)
+      {
+         // Test message updates
+         var num = 1;
+         function update()
+         {
+            var key = new top.UpdateKey("<key oid='1234' contentMime='text/xml'>\n</key>")
+            var content = "Hello World " + num + "!";
+            num++;
+            var qos = new top.UpdateQos("<qos>\n<sender>Fritz</sender>\n</qos>")
+
+            // Inform all frames about the new message
+            top.fireMessageUpdateEvent(new top.MessageWrapper(key, content, qos));
+
+            if (num < 5)
+               setTimeout("update()", 5000);
+         }
+      }
+   </script>
+</body>
+
+</html>
+

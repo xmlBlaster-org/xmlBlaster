@@ -1,0 +1,107 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!-- xmlBlaster.org ruff@swand.lake.de -->
+<html>
+   <!--
+      This frame displays the login button with a text field to enter the login name
+      Another text field allows to enter the message to publish
+      Finally a button is displayed which shows a short description of this demo
+   -->
+   <head>
+      <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <link REL="stylesheet" type="text/css" href="xmlBlaster.css">
+
+      <script language="JavaScript">
+         self.onerror = top.catchError;
+
+         function login()
+         {
+            top.loginName = self.document.LoginForm.LoginText.value;
+            if (top.loginName == "YourFirstName" || top.loginName.length < 1) {
+               alert("Please enter some other name to login");
+               return;
+            }
+            var ret = top.login(top.loginName, "secret"); // delegate to callback.js
+            if (ret == true) {
+               self.document.LoginForm.LoginButton.value = "Logout";
+               self.document.LoginForm.LoginButton.onclick= "logout()"; // !!! doesn't work
+               // !!! display(true, top.loginName); // Destroys the context!
+            }
+         }
+
+         function logout()
+         {
+            top.logout();
+            self.document.LoginForm.LoginButton.value = "Login ";
+         }
+
+         function publish()
+         {
+            var strText = self.document.ChatForm.InputText.value;
+            if (strText.length < 1) {
+               alert("Please enter your text to publish");
+               return;
+            }
+            var key = new top.PublishKeyWrapper(null, "text/xml", "chatDemo");
+            key.wrap("<chatDemo />");
+            top.publish(new top.MessageWrapper(key, strText, null));
+         }
+
+         function explain()
+         {
+            var str = "When clicking on 'Send', your message is published to xmlBaster (first using http and then XML over CORBA).\n\n";
+            str += "Everybody from the internet who has this window open has subscribed to such messages with a XPath query.\n\n";
+            str += "So they will be updated instantly with your brightfull comment.\n";
+            alert(str);
+         }
+
+         var headerStr =
+            '<HTML>' +
+            '<HEAD>' +
+            '   <link REL="stylesheet" type="text/css" href="xmlBlaster.css">' +
+            '   <title>Blaster with the world!</title>' +
+            '</HEAD>';
+
+         // @param isLoggedIn true/false
+         function display(isLoggedIn)
+         {
+            self.onerror = top.catchError;
+            var d = self.document;
+            d.writeln(headerStr);
+            d.writeln('<BODY onBlur="var dummy=null;">'); // onUnload="top.logout();">'); // kill window immediatly??
+            if (isLoggedIn == false) {
+               d.writeln('   <H3>Please enter your first name and login.</H3>');
+            }
+            else {
+               d.writeln('<CENTER><H3>Welcome, ' + top.loginName + '</H3></CENTER><H3>Please enter some text, it will be published to everybody who is online:</H3>');
+            }
+            d.writeln('   <FORM NAME="LoginForm">');
+            if (isLoggedIn == false) {
+               d.writeln('      <INPUT TYPE="BUTTON" NAME="LoginButton" VALUE="Login " onClick="login()">');
+            }
+            else {
+               d.writeln('      <INPUT TYPE="BUTTON" VALUE="Logout" onClick="logout()">');
+            }
+            d.writeln('      <INPUT TYPE="TEXT" MAXLENGTH="15" SIZE="15" NAME="LoginText" VALUE="' + top.loginName + '">'); // onBlur="login()">');
+            d.writeln('   </FORM>');
+            d.writeln('   <FORM NAME="ChatForm">');
+            d.writeln('      <INPUT TYPE="BUTTON" VALUE="Send" onClick="publish()">');
+            d.writeln('      <INPUT TYPE="TEXT" SIZE="40" NAME="InputText" VALUE="">'); // onBlur="publish()">');
+            d.writeln('   </FORM>');
+            d.writeln('   <FONT SIZE=-2><FORM NAME="ExplainForm">');
+            d.writeln('      <INPUT TYPE="BUTTON" VALUE="Explain, please" onClick="explain()">');
+            d.writeln('   </FORM></FONT>');
+            d.writeln('</BODY></HTML>');
+            d.close();
+            self.focus();
+            return;
+         }
+      </script>
+   </head>
+
+   <body>
+      <script language="JavaScript">
+         display(false, "");
+      </script>
+   </body>
+
+</html>

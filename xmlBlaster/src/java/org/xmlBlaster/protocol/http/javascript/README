@@ -1,0 +1,27 @@
+These javascript helpers help you to handle xmlBlaster callback messages.
+
+Note: The framework is not yet finished.
+
+
+util.js
+=======
+This contains some helper Javascript objects.
+An html table error output popup allows smarter development.
+
+
+callback.js
+===========
+Containing parsers for all xmlBlaster messages, so that you
+don't need to do this yourself.
+
+Contains a listener framework, where frames can register
+to receive callbacks.
+
+Does login/logout handling
+
+
+xparse.js
+=========
+A XML parser for Javascript from Copyright 1998 Jeremie
+Please see http://www.jeremie.com for more information
+

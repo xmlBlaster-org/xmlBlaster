@@ -1,0 +1,91 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<!-- xmlBlaster.org ruff@swand.lake.de -->
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <!-- link REL="stylesheet" type="text/css" href="xmlBlaster.css" -->
+   <script language="JavaScript">
+      self.onerror = top.catchError;
+
+      function CallbackImpl()
+      {
+         this.loginName = "";
+         this.nameArr = new Array();
+         this.textArr = new Array();
+         this.headerStr =
+            '<HTML>' +
+            '<HEAD>' +
+            '   <link REL="stylesheet" type="text/css" href="xmlBlaster.css">' +
+            '   <title>Blaster with the world!</title>' +
+            '</HEAD>';
+         this.buildTable_ = buildTable_;
+         this.showUpdate_ = showUpdate_;
+         this.update = update; // Callback method for hidden callback frame
+      }
+      var callbackImpl = new CallbackImpl();
+
+      function buildTable_(nameA, textA)
+      {
+            var tableStr =
+                  "<TABLE NAME='ChatTable' BORDER='2' WIDTH='100%'>" +
+                  "   <TR>" +
+                  "      <TD WIDTH='20%'>" +
+                  "Name" +
+                  "      </TD>" +
+                  "      <TD WIDTH='80%'>" +
+                  "What'y say?" +
+                  "      </TD>" +
+                  "   </TR>";
+            for (var ii=0; ii<nameA.length; ii++) {
+               tableStr +=
+                  "   <TR>" +
+                  "      <TD>" +
+                  nameA[ii] +
+                  "      &nbsp;</TD>" +
+                  "      <TD>" +
+                  textA[ii] +
+                  "      &nbsp;</TD>" +
+                  "   </TR>";
+            }
+            tableStr += "</TABLE>";
+            return tableStr;
+      }
+
+      function showUpdate_(strName, strText)
+      {
+            var d = self.document;
+            d.open("text/html");
+            if (strText.length > 0) {
+               this.nameArr[this.nameArr.length] = strName;
+               this.textArr[this.textArr.length] = strText;
+            }
+            d.writeln(this.headerStr);
+            d.writeln(this.buildTable_(this.nameArr, this.textArr));
+            d.writeln('</BODY></HTML>');
+            d.close();
+            self.focus();
+         return;
+      }
+
+      /**
+       * This method gets invoked when a new message arrives form xmlBlaster
+       */
+      function update(message)
+      {
+         top.log.info("Received new chat message");
+         var strName = message.qos.sender;
+         this.showUpdate_(strName, message.content);
+         // top.contentFrame.callbackImpl.showUpdate_(strName, message.content);
+      }
+   </script>
+</head>
+
+<body>
+   <script language="JavaScript">
+      top.addUpdateListener(self.callbackImpl);
+      self.callbackImpl.showUpdate_("KARL", "HALLO");
+   </script>
+   Waiting on chat messages ...
+</body>
+
+</html>
