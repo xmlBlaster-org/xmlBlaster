@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+Name:      PDOM.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Stores the xmlkey in a DOM. 
+Version:   $Id: PDOM.java,v 1.3 2000/08/23 14:14:05 kron Exp $
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb.dom;
 
 import java.util.Enumeration;
@@ -34,12 +41,10 @@ public class PDOM
    private static PDOM _pdomInstance;
    private static XmlDocument _xmlBlasterDoc;
    private static org.w3c.dom.Node _rootNode;
+   private static Vector _oidTable;
 
-//   private static long _cacheSize = 0L;
-//   private static Cache _cache;
 
-   private PDOM()
-   {
+   private PDOM(){
    }
 
    public static PDOM getInstance()
@@ -48,13 +53,11 @@ public class PDOM
       {
          _pdomInstance  = new PDOM();
          _xmlBlasterDoc = new XmlDocument();
+         _oidTable      = new Vector();
 
          /** Create DOM-Key-Tree  */
          _rootNode = (org.w3c.dom.Node)_xmlBlasterDoc.createElement("xmlBlaster");
          _xmlBlasterDoc.appendChild(_rootNode);
-
- //        /** Cache */
- //       _cache = new Cache();
       }
       return _pdomInstance;
    }
@@ -65,21 +68,31 @@ public class PDOM
     * @param mu        The MesageUnit
     * @param isDurable The durable-flag makes the MessageUnit persistent
     */
-   public final void insert(MessageUnit mu)
+   public final void insert(PMessageUnit pmu)
    {
-      if(mu == null){
+      if(pmu == null){
          Log.error(ME + ".insert", "The arguments of insert() are invalid (null)");
+      }
+      if(!keyExists(pmu.oid)){
+         _oidTable.addElement(pmu.oid);
+      }else{   
+         return;
       }
 
       // Insert key to DOM
       try
       {
-         XMLtoDOM.parse(mu.xmlKey, _xmlBlasterDoc);
+         XMLtoDOM.parse(pmu.msgUnit.xmlKey, _xmlBlasterDoc);
       }catch(Exception e){
          e.printStackTrace();
       }
    }
 
+
+   public boolean keyExists(String oid)
+   {
+      return _oidTable.contains(oid);
+   }
 
    public final int getKeyCount()
    {
@@ -93,15 +106,6 @@ public class PDOM
       /** Update Key and MessageUnit **/
       return 0; // return a hashkey number of the xmlkey
    }
-
-   
-   
-   //public final void delete(String key)
-   //{
-       /** Delete PMessageUnit in Cache. */
-//       _cache.delete(pmu.oid);
-  // }
-
 
 
    public final void  delete(String oid)
@@ -121,6 +125,7 @@ public class PDOM
             break;   
          }
       }
+      _oidTable.remove(oid);
    }
 
 
@@ -149,8 +154,6 @@ public class PDOM
          Log.error(ME,"Can't query by XPATH because : "+ e.getMessage());
       }
 
-//      /** Read PMessageUnits from Cache and give it back to the engine */
-//      Enumeration pmus = null;
       Vector v = new Vector();
 
       while(keys.hasMoreElements())
@@ -167,29 +170,15 @@ public class PDOM
          nodeString = keyNode.toString();
          String oid = getOid(nodeString);
 
-         /** Read from Cache */
-//         PMessageUnit pmu = _cache.read(oid);
-//         if(pmu != null){
-            v.addElement(oid);
-//         }
+         v.addElement(oid);
       }
-//      pmus = v.elements();
-
       return v.elements();
    }
+
 
    public org.w3c.dom.Node getRootNode()
    {
       return _rootNode;
-   }
-
-   public Vector getState()
-   {
-      Vector stateCache = null;
-//      Vector stateCache = _cache.getCacheState();
-//      stateCache.addElement(String.valueOf(getKeyCount()));
-
-      return stateCache;
    }
 
 

@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id: TestXmlDb.java,v 1.4 2000/08/23 12:30:52 kron Exp $
+Version:   $Id: TestXmlDb.java,v 1.5 2000/08/23 14:13:35 kron Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -123,9 +123,6 @@ public class TestXmlDb extends TestCase
          return;
       }
       assertEquals("Query was not correct for oid 101.",new String("101"),pmu.oid);
-      xmldb.delete("100");
-      xmldb.delete("101");
-      xmldb.delete("102");
    }
 
    public void testInsertQuery()
@@ -154,6 +151,7 @@ public class TestXmlDb extends TestCase
       for(int i=100;i<1100;i++){
          insertMsg(String.valueOf(i));
       }
+
       if(stop.elapsed()<1000)
       {
          assert("Can't insert 1000 MessageUnits",false);
@@ -161,7 +159,18 @@ public class TestXmlDb extends TestCase
          long msgSec = 1000 / (stop.elapsed()/1000L); 
          Log.info(ME,"MessageUnits per Second by INSERT : "+String.valueOf(msgSec)+" Msg/sec.");
       }
-      
+
+      stop.restart();
+
+      // Delete MessageUnits 
+      for(int i=100;i<1100;i++){
+        xmldb.delete(String.valueOf(i));
+      }      
+      Log.info(ME,"1000 MessageUnits deleted in : "+stop.toString());
+   }
+
+   public void testCache()
+   {
    }
 
    /**

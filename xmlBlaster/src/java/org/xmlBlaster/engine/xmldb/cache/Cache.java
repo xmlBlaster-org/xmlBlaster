@@ -39,8 +39,8 @@ public class Cache
 
    public Cache()
    {
-      _maxCacheSize = XmlBlasterProperty.get("PDOM.Cachesize", 20000000L);
-      _maxMsgSize   = XmlBlasterProperty.get("PDOM.Messagesize",5000L);
+      _maxCacheSize = XmlBlasterProperty.get("xmldb.Cachesize", 20000000L);
+      _maxMsgSize   = XmlBlasterProperty.get("xmldb.Messagesize",5000L);
 
       _lru = new LRU(this);
 
@@ -50,7 +50,7 @@ public class Cache
       /** FileDb */
       try {
         /** read properties */
-        _dbPath = XmlBlasterProperty.get("PDOM.Dbpath",System.getProperty("user.dir"));
+        _dbPath = XmlBlasterProperty.get("xmldb.Dbpath",System.getProperty("user.dir"));
 
         /** Test now if databasefile exists */
         File dbfile = new File(_dbPath+"/xmlBlaster.msg");

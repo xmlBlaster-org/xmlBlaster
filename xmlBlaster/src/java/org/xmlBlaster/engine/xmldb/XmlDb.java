@@ -3,7 +3,7 @@ Name:      XmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Store MessageUnits in a File-database or holds in a Cache
-Version:   $Id: XmlDb.java,v 1.3 2000/08/23 12:32:06 kron Exp $
+Version:   $Id: XmlDb.java,v 1.4 2000/08/23 14:14:05 kron Exp $
 Author:    manuel.kron@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xmldb;
@@ -70,15 +70,16 @@ public class XmlDb
          Log.error(ME + ".insert", "The arguments of insert() are invalid (null)");
       }
 
-      // Insert key to DOM
-      _pdomInstance.insert(mu);
-
       PMessageUnit pmu = new PMessageUnit(mu,isDurable);
 
       // Check if key exists in cache
-      if(_cache.keyExists(pmu.oid)){
+      //if(_cache.keyExists(pmu.oid)){
+      if(_pdomInstance.keyExists(pmu.oid)){
          return pmu.oid;
       }
+
+      // Insert key to DOM
+      _pdomInstance.insert(pmu);
 
       // write MessageUnit to Cache
       _cache.write(pmu);
