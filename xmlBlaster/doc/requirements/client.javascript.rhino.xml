@@ -18,7 +18,7 @@
       currently the following:
 
       <pre>
-      function update(loginName, key, content, qos) {
+      function update(sessionId, key, content, qos) {
         ....
         return ...
       }
@@ -33,15 +33,21 @@
       </p>
 
    </description>
-   <example lang="Javascript">
-      <![CDATA[
-      
-
-
+   <example lang="Javascript" type="HTML">
+      <pre><![CDATA[
 /**
- * This example is a Chess game where the GUI is an SVG document which can be opened in a browser. Since this example 
- * makes use of the LiveConnect techology which is implemented in Rhino (http://www.mozilla.org) it can only used in
- * browsers which use this interpreter. It has been tested in batik (http://xml.apache.org).
+ * xmlBlaster/demo/javaclients/svg/rhino/chessRhino.svg
+ *
+ * This example is a Chess game where the GUI is an SVG document which can be opened
+ * in a browser.
+ * Since this example makes use of the LiveConnect techology which is implemented in
+ * Rhino (http://www.mozilla.org)
+ * it can only used in browsers which use this interpreter.
+ * It has been tested in batik (http://xml.apache.org).
+ *
+ * @see 
+ *   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.javascript.rhino.html
+ * @see xmlBlaster/demo/javaclients/svg/rhino/README how to invoke
  */
 
 /**
@@ -49,6 +55,7 @@
  */
 importPackage(java.awt);
 importPackage(Packages.org.xmlBlaster.client);
+importPackage(Packages.org.xmlBlaster.client.qos);
 importPackage(Packages.org.xmlBlaster.client.protocol);
 importPackage(Packages.org.xmlBlaster.engine.helper);
 importPackage(Packages.org.xmlBlaster.util);
@@ -57,13 +64,17 @@ importPackage(Packages.org.xmlBlaster.util);
    var x0  = 0; // the x coordinate of the first point (used to calculate the movement)
    var y0  = 0; // the y coordinate ...
    var doc;     // this svg document 
-   var currentElement; // the element which has been selected.
-   var xmlBlaster; // the xmlBlasterAccess object used to communicate with xmlBlaster
+   var currentElement // the element which has been selected.
+   var xmlBlaster; // the connection object used to communicate with xmlBlaster
+   var ME = "chessRhino.svg";
+   var glob;    // the 'stack' (local data) of one client connection
+   var log;     // log to file or console
 
 
    
    /**
-    * The function which returns a generated user name which should be unique within the same xmlBlaster server.
+    * The function which returns a generated user name which should be unique within
+    * the same xmlBlaster server.
     */
    function getUser() {
       return System.getProperty("user.name") + System.currentTimeMillis();
@@ -71,9 +82,10 @@ importPackage(Packages.org.xmlBlaster.util);
    
 
    /**
-    * This function has been added to force batik to update. Without it the screen does not update, probably because
-    * batik only updates when an event has been fired (xmlBlaster updates come in asynchroneously and do not generate
-    * a dom event).
+    * This function has been added to force batik to update.
+    * Without it the screen does not update, probably because
+    * batik only updates when an event has been fired
+    * (xmlBlaster updates come in asynchroneously and do not generate a dom event).
     */
    function fireClickEvent() {
      var evt = doc.createEvent("MouseEvents");
@@ -85,13 +97,14 @@ importPackage(Packages.org.xmlBlaster.util);
 
 
    /**
-    * This is the method which is invoked by the XmlBlaster object when a message matches a subscription
+    * This is the method which is invoked by the XmlBlaster object when
+    * a message matches a subscription
     */
    function update(loginName, key, content, qos) {
       var root = Xparse(new String(content));
       var element = root.contents[0];
       var id = element.contents[0].contents[0].value;
-
+      log.info(ME, "Receiving chess move " + id);
       var transform = element.contents[1].contents[0].value;
       var el = doc.getElementById(id);
       el.setAttribute("transform", transform);
@@ -103,57 +116,91 @@ importPackage(Packages.org.xmlBlaster.util);
   
 
    /**
-    * This helper function builds the string to use as the 'translate' attribute. It is this attribute which
-    * makes the element move. If such an attribute does not exist, it is added, otherwise it is replaced.
+    * This helper function builds the string to use as the 'translate' attribute.
+    * It is this attribute which makes the element move.
+    * If such an attribute does not exist, it is added, otherwise it is replaced.
     */
    function createTranslateAttribute(element, dx, dy) {
-      var buf = element.getAttribute("transform");
+      var buf = element.getAttribute("transform");  // e.g. 'translate(150,300)'
       var pos = buf.indexOf("translate(");
       var x   = dx;
       var y   = dy;
-        
+   
       if (pos > -1) {
-         buf = buf.substring(pos+10, buf.length());
+         buf = buf.substring(pos+10, buf.length()-1);  // e.g. '150,300'
          var A = new Array();
-         A  = buf.split(',');
-         x  += parseInt(A[0], 10);
-         var B = new Array();
-         B  = A[1].split(')');
-         y += parseInt(B[0], 10);
+         A = buf.split(',');
+         x += parseInt(A[0], 10);
+         y += parseInt(A[1], 10);
       }
-      return "translate(" + x + "," + y + ")";
+      var result = "translate(" + x + "," + y + ")";
+      log.info(ME, "createTranslateAttribute() '" + buf + "' -> '" + result + "'");
+      return result;
    }
   
   
    /**
-    * A helper function build the xml string to send as to xmlBlaster as the content of the message.
+    * A helper function build the xml string to send as to xmlBlaster as the
+    * content of the message.
     */
    function toXml(id, transform) {
-      var content = "<chess><id>" + id + "</id><transform>" + transform + "</transform></chess>";
+      var content = "<chess><id>" + id + "</id><transform>" +
+                    transform + "</transform></chess>";
       return content;
    }
         
 
    /**
-    * Called when opening this document, this function establishes a connection to xmlBlaster, makes a login and 
-    * a subscription to the messages it is insterested in. It currently connects on the localhost. You could easly 
-    * change this by making it read the System properties.
+    * Called when opening this document, this function establishes a connection to
+    * xmlBlaster, makes a login and a subscription to the messages it is insterested in.
+    * <br />
+    * It currently connects on the localhost.
+    * You could easly change this by making it read the System properties, e.g.
+    * <pre>
+    * java -Dprotocol=SOCKET -Ddispatch/connection/plugin/socket/hostname=myServer
+    *       org.apache.batik.apps.svgbrowser.Main
+    *       $XMLBLASTER_HOME/demo/javaclients/svg/rhino/chessRhino.svg
+    * </pre>
     */
    function doInit(evt) { 
       doc = evt.target.ownerDocument;
-      var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
-      args = new Array(2);
-      // you can set here the command line to pass to I_XmlBlasterAccess
-      args[0] = new String("-bootstrapHostname");
-      args[1] = new String("localhost");
+      // you can set here the command line to pass to I_XmlBlasterAccess, e.g.
+      var args = new Array();
+      //args.push("-bootstrapHostname");        // If you use CORBA
+      //args.push("myServer.myCompany.com");    // try "server.xmlBlaster.org"
+      args.push("-protocol");
+      args.push("SOCKET");
+      //args.push("-dispatch/connection/plugin/socket/hostname");
+      //args.push("217.83.166.225");
+      args.push("-dispatch/connection/plugin/socket/port");
+      args.push(new String(7607));
+      
       xmlBlaster = new XmlBlasterAccess(args);
+      
+      glob = xmlBlaster.getGlobal();
+      log = glob.getLog("svg");
+      var connectQos = new ConnectQos(glob, getUser(), "secret");
 
-      ConnectQos connectQos = new ConnectQos(glob, getUser(), "secret")
       xmlBlaster.connect(connectQos, new JavascriptCallback(this));
-      xmlBlaster.subscribe(key, "<qos></qos>");
+
+      var key = new String("<key oid='' queryType='XPATH'>//chess</key>");
+      var qos = new String("<qos/>");
+      xmlBlaster.subscribe(key, qos);
+
+      log.info(ME, "Connected to xmlBlaster server");
    }
     
+
+   function shutdown(evt) { 
+      var qos = new DisconnectQos(glob);
+      xmlBlaster.disconnect(qos);
+      glob.shutdown();
+      xmlBlaster = null;
+      glob = null;
+      log.info(ME, "xmlBlaster connection closed");
+   }
+
 
    /**
     * sets the starting point for the movement of the elment.
@@ -166,31 +213,78 @@ importPackage(Packages.org.xmlBlaster.util);
   
   
    /**
-    * Calculates the movement and then publishes this information to xmlBlaster. Note that it currently does only
-    * calculate movements based on the original size of the document. In other words, if you resize the browser, 
+    * Calculates the movement and then publishes this information to xmlBlaster.
+    * Note that it currently does only calculate movements based on the original
+    * size of the document. In other words, if you resize the browser, 
     * you will get the wrong size of the movements.
     */
-   function movePoint (evt) {
+   function movePoint(evt) {
+      if (currentElement == null) {
+         return; // click on empty field
+      }
       var dx = evt.getClientX() - x0;
       var dy = evt.getClientY() - y0;
           
       //   var id = currentElement.getAttribute("id");
       // the next lines are a workaround for the bug in batik.
       var id = currentElement.getAttribute("id") + "A"; // workaround for the Bug ?
+      log.info(ME, "movePoint() -> Moving chess figure " + id);
       currentElement = doc.getElementById(id);
       // end of the bugfix
 
       var transform = createTranslateAttribute(currentElement, dx, dy);
       var content = new String(toXml(id, transform));
-      var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
+      var key = "<key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
       var qos = "<qos></qos>";
      
-      messageUnit = new MsgUnit(key, content, qos);
+      messageUnit = new MsgUnit(glob, key, content, qos);
       xmlBlaster.publish(messageUnit);
-   }
-  
 
-      ]]>
+      currentElement = null;
+   }
+      
+   // ... SVG markup ommitted, see chessRhino.svg
+]]></pre>
+   <p>
+   The above example is an excerpt from 
+   xmlBlaster/demo/javaclients/svg/rhino/chessRhino.svg.
+   </p>
+   <p>To start this demo do following
+   </p>
+   <ol>
+<li>Start a session of the xmlBlaster server (the chessRhino.svg is
+configured for the localhost. If you use an other host, please 
+change chessRhino.svg) by invoking
+<pre>
+   java org.xmlBlaster.Main
+</pre>
+</li>
+
+<li>On another terminal start the SVG browser from batik by invoking
+<pre>
+   java org.apache.batik.apps.svgbrowser.Main 
+     $XMLBLASTER_HOME/demo/javaclients/svg/rhino/chessRhino.svg
+</pre>
+This loads already the chess game.
+</li>
+
+<li>Start another SVG browser on another terminal as you did in 2) and then you can start
+to play chess.
+</li>
+   </ol>
+
+      <h3>Performance</h3>
+      <p>
+      To test the performance you can start another client which randomly moves around the chess
+      pieces. This can be done by invoking:
+      </p>
+      <pre>
+   java javaclients.svg.rhino.ChessMover -interval 500
+      </pre>
+      <p>
+      where 30 here would be the number of milliseconds the application waits between 
+      the movement of each piece.
+      </p>
    </example>
    <todo>
       Pass byte[] objects to the update method.
@@ -199,7 +293,7 @@ importPackage(Packages.org.xmlBlaster.util);
    <author>laghi@swissinfo.org</author>
    <effort>1</effort>
    <date>2001 04 06</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>Should even be tested with mozilla</comment>
