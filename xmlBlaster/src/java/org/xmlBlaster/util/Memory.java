@@ -3,7 +3,7 @@ Name:      Memory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Memory.java,v 1.3 2000/03/02 13:51:35 kkrafft2 Exp $
+Version:   $Id: Memory.java,v 1.4 2000/05/06 16:56:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -17,6 +17,27 @@ import java.io.*;
 public class Memory
 {
    private final static String ME = "Memory";
+   private long startMemory = 0L;
+
+   /**
+    * Create an instance only if you want to use it with the usedMemory() method. 
+    */
+   public Memory()
+   {
+      startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+   }
+
+   /**
+    * Display the consumed memory (RAM) since construction of this object. 
+    * <p />
+    * Note that this number is not very precise, since the garbage collector
+    * is spitting in our soup.
+    */
+   public long usedMemory()
+   {
+      long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+      return endMemory - startMemory;
+   }
 
 
   /**
