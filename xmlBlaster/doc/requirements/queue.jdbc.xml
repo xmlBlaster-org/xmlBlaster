@@ -96,6 +96,14 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+         <tr>
+            <td>queue.persistent.maxStatementLength</td>
+            <td>2048</td>
+            <td>The maximum SQL statement length supported by this JDBC driver.
+            If the JDBC meta data delivers this information this property is ignored.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
         </table>
 
    </configuration>
@@ -114,7 +122,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 16</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
