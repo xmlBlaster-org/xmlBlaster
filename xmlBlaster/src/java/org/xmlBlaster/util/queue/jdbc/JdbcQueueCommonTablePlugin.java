@@ -964,7 +964,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
          if (this.debug) {
             if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
-               String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
+               String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentBytes': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
@@ -1011,11 +1011,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
             if (this.debug) {
                if (oldValue != this.numOfPersistentBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  String txt = "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'";
+                  String txt = "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentBytes': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'";
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
+            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
             return this.numOfPersistentBytes;
          }
          catch (XmlBlasterException ex) {
@@ -1041,7 +1041,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfPersistentBytes_(true);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "getNumOfBytes, exception: " + ex.getMessage());
+         this.log.error(ME, "getNumOfPersistentBytes, exception: " + ex.getMessage());
          return this.numOfPersistentBytes;
       }
    }

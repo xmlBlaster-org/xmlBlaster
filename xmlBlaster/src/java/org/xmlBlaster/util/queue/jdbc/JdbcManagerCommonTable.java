@@ -2377,7 +2377,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       String req = "select sum(bytesize) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistents"), "Request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getSizeOfPersistents"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, true, this.log, -1);
@@ -2389,9 +2389,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
-         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
-            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfPersistents", "", ex); 
-         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfPersistents", "", ex); 
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getSizeOfPersistents"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getSizeOfPersistents", "", ex); 
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getSizeOfPersistents", "", ex); 
       }
       finally {
          try {
