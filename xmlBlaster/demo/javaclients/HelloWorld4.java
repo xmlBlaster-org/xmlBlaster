@@ -137,7 +137,8 @@ public class HelloWorld4
                }
 
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.error(ME, "I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead");
+                  log.error(ME, "I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
+                  System.exit(1);
                }
             });
 
@@ -180,24 +181,25 @@ public class HelloWorld4
          log.error(ME, "Houston, we have a problem: " + e.getMessage());
       }
       finally {
-         if (con != null && con.isConnected()) {
-            try {
-               EraseQos eq = new EraseQos(glob);
+         if (con != null) {
+            if (con.isConnected()) {
+               try {
+                  EraseQos eq = new EraseQos(glob);
 
-               EraseKey ek = new EraseKey(glob, "HelloWorld4");
-               EraseReturnQos[] er = con.erase(ek, eq);
-               
-               ek = new EraseKey(glob, "Banking");
-               er = con.erase(ek, eq);
+                  EraseKey ek = new EraseKey(glob, "HelloWorld4");
+                  EraseReturnQos[] er = con.erase(ek, eq);
+                  
+                  ek = new EraseKey(glob, "Banking");
+                  er = con.erase(ek, eq);
 
-               // Wait on message erase events
-               try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+                  // Wait on message erase events
+                  try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "Houston, we have a problem: " + e.getMessage());
+                  e.printStackTrace();
+               }
             }
-            catch (XmlBlasterException e) {
-               log.error(ME, "Houston, we have a problem: " + e.getMessage());
-               e.printStackTrace();
-            }
-            
             con.disconnect(new DisconnectQos(glob));
          }
       }
