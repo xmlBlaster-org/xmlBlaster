@@ -97,6 +97,7 @@ public class ReferenceEntry extends MsgQueueEntry
                   msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit,
                                              topicHandler.getMsgUnitCache().getStorageId(),
                                              1, 0, -1);
+                  // The topicHandler holds the real reference:
                   msgUnitWrapper = topicHandler.addMsgUnitWrapper(msgUnitWrapper, storageId);
                   // NOTE: The returned msgUnitWrapper is not always identical to the passed one
                   // if two threads do this simultaneously, the topic handler sync this situation
@@ -162,6 +163,7 @@ public class ReferenceEntry extends MsgQueueEntry
          if (msgUnitWrapper != null) {
             msgUnitWrapper.incrementReferenceCounter(-1, storageId);
             msgUnitWrapper = null;
+            if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed successfully from queue, new reference count is " + msgUnitWrapper.getReferenceCounter());
          }
          else {
             if (log.TRACE) log.trace(ME, " Entry '" + getLogId() + "' removed from queue but no meat found");
