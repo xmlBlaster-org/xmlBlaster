@@ -16,11 +16,11 @@ jacorb.outbuf_size=2048
 # URL where IORs are stored (used in orb.resolve_initial_service())
 jacorb.NameServerURL=http://localhost:80/NS_Ref
 jacorb.TradingServiceURL=http://localhost:80/TS_Ref
-jacorb.ImplementationRepositoryURL=http://www.inf.fu-berlin.de/~brose/ImR_Ref
-jacorb.ProxyServerURL=http://www.inf.fu-berlin.de/~brose/Proxy_Ref
+jacorb.ImplementationRepositoryURL=http://localhost:80/ImR_Ref
+jacorb.ProxyServerURL=http://localhost:80/Proxy_Ref
 
 # client-side caching of object references
-#jacorb.reference_caching=off
+jacorb.reference_caching=off
 
 # amount of diagnostic output, 0 is off
 jacorb.verbosity=1
