@@ -411,8 +411,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             if (controlPanel == null) {
                int width = 48;
                org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
-               String line = sh.charChain('o', width-2);
-               String bound = "o";
+               String line = sh.charChain('-', width-2);
+               String bound = "+";
                log.info(ME, " "+line+" ");
                String ver = bound + " xmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp();
                log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
