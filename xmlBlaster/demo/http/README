@@ -1,6 +1,11 @@
 Howto run the html examples with persistent http connection:
 ============================================================
 
+NOTE: http callbacks are tested with tomcat 3.2.x only.
+      tomcat 4.x is not known to run.
+      Download tomcat from http://jakarta.apache.org
+      (jserv was OK as well
+
 1. Run
       'build.bat deploy_war'  (Windows)
       'build.sh deploy_war'   (UNIX)
