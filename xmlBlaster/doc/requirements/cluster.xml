@@ -542,7 +542,11 @@
 
    <configuration where="server">
       <p>
-      These parameters allow to configure the cluster default behavior.
+      These parameters allow to configure the cluster behavior.
+      </p>
+      <p>
+      They can be set on command line, in the xmlBlaster.properties file or
+      dynamically via messages.
       </p>
       <table border="1">
          <tr>
@@ -642,6 +646,26 @@
             </td>
             <td>yes</td>
          </tr>
+
+         <tr>
+            <td>pingInterval[heron]<br />...</td>
+            <td><pre>
+-pingInterval 2000
+-pingInterval[frodo] 1000
+            </pre></td>
+            <td>
+            All client connection configuration settings are adjustable.<br />
+            Try a<br />
+            <code>java HelloWorld3 -help</code><br />
+            for a list of current options.<br />
+            Here we show as an example the ping interval, the time between the
+            pings to another node in milliseconds.
+            A given node <i>pingInterval[frodo]</i> has precedence over the <i>pingInterval</i> setting.
+            This way you could tell xmlBlaster to ping its partner nodes every 2 seconds (pingInterval=2000)
+            but to ping frodo more often (pingInterval=1000).
+            </td>
+            <td>yes</td>
+         </tr>
       </table>
    </configuration>
 
@@ -654,7 +678,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
