@@ -72,9 +72,13 @@ public class XmlBlasterAccessTest extends TestCase {
    private Global glob;
    private LogChannel log;
 
+   public XmlBlasterAccessTest() {
+      this(null, "XmlBlasterAccessTest");
+   }
+
    public XmlBlasterAccessTest(Global glob, String name) {
       super(name);
-      this.glob = glob;
+      this.glob = (glob == null) ? Global.instance() : glob;
    }
 
    protected void setUp() {
