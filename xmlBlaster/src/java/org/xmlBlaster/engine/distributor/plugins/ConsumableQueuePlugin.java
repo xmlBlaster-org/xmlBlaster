@@ -14,6 +14,7 @@ import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -42,7 +43,6 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    private TopicHandler topicHandler;
    
    public ConsumableQueuePlugin() {
-      if (this.log.CALL) this.log.call(ME, "constructor");
       this.status = UNINITIALIZED;
    }
 
@@ -165,7 +165,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       try {
          ArrayList lst = this.topicHandler.peekFromHistory(-1, -1L);
          for (int i=0; i < lst.size(); i++) {
-            MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)lst.get(i);
+            MsgUnitWrapper msgUnitWrapper = ((MsgQueueHistoryEntry)lst.get(i)).getMsgUnitWrapper();
             this.syncDistribution(msgUnitWrapper);
          }  
       }

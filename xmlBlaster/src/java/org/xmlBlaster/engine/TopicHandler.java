@@ -10,7 +10,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -1850,8 +1849,8 @@ public final class TopicHandler implements I_Timeout
       return sb.toString();
    }
    
-   public int removeFromHistory(I_Entry entry) throws XmlBlasterException {
-      return this.historyQueue.removeRandom(entry);
+   public void removeFromHistory(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+      this.historyQueue.removeRandom(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()));
    }   
    
    /**
@@ -1874,9 +1873,8 @@ public final class TopicHandler implements I_Timeout
    private void initMsgDistributorPlugin() throws XmlBlasterException {
       if (this.distributor != null) return;
       String typeVersion = this.topicProperty.getMsgDistributor();
-      PluginInfo pluginInfo = new PluginInfo(this.glob, null, typeVersion);
-      pluginInfo.setUserData(this);
-      this.distributor = (I_MsgDistributor)this.glob.getMsgDistributorPluginManager().getPluginObject(pluginInfo);
+      // if (typeVersion == null) return; // no plugin has been configured for this topic
+      this.distributor = this.glob.getMsgDistributorPluginManager().getPlugin(typeVersion, this);
       this.subscriptionListener = this.distributor; 
       if (this.subscriptionListener != null) {
          SubscriptionInfo[] subs = getSubscriptionInfoArr();

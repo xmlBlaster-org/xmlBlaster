@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.distributor.plugins;
 
+import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -33,9 +34,9 @@ public class MsgDistributorPluginManager extends PluginManagerBase {
     * @param typeVersion The type and version e.g. "ConsumerQueue,1.0"
     * @return null if no plugin was loaded
     */
-      public I_MsgDistributor getPlugin(String typeVersion) throws XmlBlasterException {
+      public I_MsgDistributor getPlugin(String typeVersion, TopicHandler topicHandler) throws XmlBlasterException {
          PluginInfo pluginInfo = new PluginInfo(getGlobal(), this, typeVersion);
-         pluginInfo.setUserData(typeVersion); // transport to postInstantiate() without any modification
+         pluginInfo.setUserData(topicHandler); // transport to init
          return (I_MsgDistributor)getPluginObject(pluginInfo);
       }
 
