@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.20 2002/08/03 10:13:55 ruff Exp $
+Version:   $Id: Executor.java,v 1.21 2002/08/21 22:30:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -23,6 +23,7 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.InterruptedIOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Collections;
  * Allows to block during a request and deliver the return message
  * to the waiting thread.
  *
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public abstract class Executor implements ExecutorBase
@@ -54,8 +56,10 @@ public abstract class Executor implements ExecutorBase
    protected String sessionId = null;
    /** The client login name */
    protected String loginName = "";
-   /** How long to block on remote call */
+   /** How long to block on remote call waiting on response */
    protected long responseWaitTime = 0;
+   /** How long to block the socket on remote call */
+   protected long soTimeout = 0;
    /** This is the client side */
    protected I_CallbackExtended cbClient = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -92,7 +96,38 @@ public abstract class Executor implements ExecutorBase
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
-      this.responseWaitTime = glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS);
+      setResponseWaitTime(glob.getProperty().get("socket.responseTimeout", Constants.MINUTE_IN_MILLIS));
+      // the responseWaitTime is used later to wait on a return value
+      // additionally we protect against blocking on socket level during invocation
+      // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
+      //        and with "jacorb.client.pending_reply_timeout"
+      setSoTimeout(glob.getProperty().get("socket.SoTimeout", Constants.MINUTE_IN_MILLIS));
+      this.sock.setSoTimeout((int)this.soTimeout);
+      this.sock.setSoLinger(true, (int)this.soTimeout/2);
+   }
+
+   /**
+    * Set the given millis to protect against blocking client. 
+    * @param millis If <= 0 it is set to one minute
+    */
+   public final void setResponseWaitTime(long millis) {
+      if (millis <= 0L) {
+         log.warn(ME, "socket.responseTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
+         this.responseWaitTime = Constants.MINUTE_IN_MILLIS;
+      }
+      this.responseWaitTime = millis;
+   }
+
+   /**
+    * Set the given millis to protect against blocking socket
+    * @param millis If <= 0 it is set to one minute
+    */
+   public final void setSoTimeout(long millis) {
+      if (millis <= 0L) {
+         log.warn(ME, "socket.SoTimeout=" + millis + " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
+         this.soTimeout = Constants.MINUTE_IN_MILLIS;
+      }
+      this.soTimeout = millis;
    }
 
    public final void setCbClient(I_CallbackExtended cbClient)
@@ -321,9 +356,15 @@ public abstract class Executor implements ExecutorBase
       // Send the message / method invocation ...
       byte[] rawMsg = parser.createRawMsg();
       if (SOCKET_DEBUG>1) log.info(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
-      oStream.write(rawMsg);
-      oStream.flush();
-      // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
+      try {
+         oStream.write(rawMsg);
+         oStream.flush();
+         // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
+      }
+      catch (InterruptedIOException e) {
+         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -socket.responseTimeout <millis>";
+         throw new XmlBlasterException(ME, str);
+      }
 
       //if (SOCKET_DEBUG>1) log.info(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
 
