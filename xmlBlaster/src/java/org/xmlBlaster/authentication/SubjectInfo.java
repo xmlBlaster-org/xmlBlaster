@@ -863,7 +863,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     */
    I_AdminSession getSessionByPubSessionId(long pubSessionId) {
       SessionInfo sessionInfo = getSessionByPublicId(pubSessionId);
-      return sessionInfo.getSessionInfoProtector();
+      return (sessionInfo == null) ? null : sessionInfo.getSessionInfoProtector();
    }
 
    /**
