@@ -289,21 +289,16 @@ LogFormat.Time=MEDIUM
 
 
 #------------------- Global setting for the persistence -----------------------
-# Lazy recover (not at server startup but on demand) is not yet supported.
-Persistence.Driver[xmldb][xindice]=org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin
-Persistence.LazyRecovery=true
+# Server side setup to recover after a server crash
+TopicStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+TopicStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+TopicStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
 
-Persistence.Driver.Type=filestore
-Persistence.Driver.Version=1.0
-Persistence.Path=${user.home}${file.separator}tmp
-
-# XIndice:
-# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.html
-# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.xindice.html
-#Persistence.Driver.Type=xmldb
-#Persistence.Driver.Version=xindice
-#Persistence.Driver.Version=eXist
-#Persistence.Path=xmldb:xindice:///db/xmlBlaster
+# Choose the plugin
+#persistence.defaultPlugin=CACHE,1.0
+# If you choose CACHE as defaultPlugin configure the CACHE plugin:
+#persistence.cache.persistentQueue=JDBC,1.0
+#persistence.cache.transientQueue=RAM,1.0
 #------------------------------------------------------------------------------
 
 
