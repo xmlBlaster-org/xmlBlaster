@@ -14,7 +14,7 @@ OUT_DIR_C = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba/clientIdl
 
 
 $(OUT_DIR_S)/Server.java: xmlBlaster.idl
-	$(IDL2JAVA)  -d $(SRC_JAVA_TOP_DIR) xmlBlaster.idl
+	$(IDL2JAVA)  $(IDL_OUTDIR) $(SRC_JAVA_TOP_DIR) xmlBlaster.idl
 
 all: precond idl
 
