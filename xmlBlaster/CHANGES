@@ -65,6 +65,8 @@ Changes cvs
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - Changed 'ExceptionStruct: bool remote;' to type 'int' to have 4 byte struct alignment
+     It crashed when called from VC7 C++ into C
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientCD.dll"
      You can switch off debugging with "c.debug=false" in build.properties => "xmlBlasterClientC.dll"
    - Changed CallbackServer again to close socket on server EOF to avoid clients thread blocking
@@ -78,9 +80,11 @@ Changes cvs
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
       o Removed namespace from header: Clients now may need to add
          using namespace org::xmlBlaster::util::qos;
+   - New methods for XmlBlasterAccess: isAlive(), isPolling(), isDead()
    - SecurityQos constructor now accepts the security plugin name
    - Fixed reading of default client name
    - Fixed setting default SecurtiyQos userId from SessionName
+   - BUGFIX: Fixed to pass configuration settings to C-SOCKET layer on reconnect
    - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
      You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
