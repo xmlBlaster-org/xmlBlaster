@@ -23,7 +23,7 @@ import java.util.Iterator;
  * <p>
  * NOTE: You need to add here new error codes!
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
  */
 public final class ErrorCode implements java.io.Serializable
@@ -129,6 +129,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_EXHAUST = new ErrorCode("resource.exhaust",
+         "A resource of your system exhausted",
+         new ResourceInfo[] {
+         }
+      );
+
    /*
    public static final ErrorCode RESOURCE_NOMORESPACE = new ErrorCode("resource.noMoreSpace",
          "The harddisk is full",
@@ -167,6 +173,26 @@ public final class ErrorCode implements java.io.Serializable
          "There is no connection to a backend database using JDBC",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.API, "JDBC connection management", "org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool")
+         }
+      );
+
+   public static final ErrorCode RESOURCE_DB_UNKNOWN = new ErrorCode("resource.db.unknown",
+         "An unknown error with the backend database using JDBC occurred",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.API, "JDBC connection management", "org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool")
+         }
+      );
+
+   public static final ErrorCode RESOURCE_ADMIN_UNAVAILABLE = new ErrorCode("resource.admin.unavailable",
+         "The administrative support is switched off for this xmlBlaster instance",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "admin.messages", "admin.messages")
+         }
+      );
+
+   public static final ErrorCode RESOURCE_CONFIGURATION = new ErrorCode("resource.configuration",
+         "Please check your configuration.",
+         new ResourceInfo[] {
          }
       );
 
@@ -289,6 +315,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_PUBLISH_READONLY = new ErrorCode("user.publish.readonly",
+         "You published a message which is marked as readonly.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "engine.qos.publish.readonly", "engine.qos.publish.readonly"),
+         }
+      );
+
    public static final ErrorCode USER_OID_UNKNOWN = new ErrorCode("user.oid.unknown",
          "You passed a message oid which is not known.",
          new ResourceInfo[] {
@@ -321,6 +354,24 @@ public final class ErrorCode implements java.io.Serializable
          "You have send a point to point message but the receiver is not known and <destination forceQueuing='true'> is not set.",
          new ResourceInfo[] {
             new ResourceInfo(ResourceInfo.REQ, "interface.publish", "interface.publish")
+         }
+      );
+
+   public static final ErrorCode USER_QUERY_INVALID = new ErrorCode("user.query.invalid",
+         "You have invoked get(), subscribe(), unSubscribe() or erase() with an illegal query syntax.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.get", "interface.get"),
+            new ResourceInfo(ResourceInfo.REQ, "interface.subscribe", "interface.subscribe"),
+            new ResourceInfo(ResourceInfo.REQ, "interface.unSubscribe", "interface.unSubscribe"),
+            new ResourceInfo(ResourceInfo.REQ, "interface.erase", "interface.erase"),
+            new ResourceInfo(ResourceInfo.API, "query syntax", "org.xmlBlaster.util.key.QueryKeyData")
+         }
+      );
+
+   public static final ErrorCode USER_ADMIN_INVALID = new ErrorCode("user.admin.invalid",
+         "Your administrative request was illegal.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "admin.messages", "admin.messages")
          }
       );
 
@@ -427,6 +478,23 @@ public final class ErrorCode implements java.io.Serializable
       return sb.toString();
    }
 
+   ///////////////
+   // This code is a helper for serialization so that after
+   // deserial the check
+   //   PriortiyEnum.MAX == priorityInstance
+   // is still usable (the singleton is assured when deserializing)
+   public Object writeReplace() throws java.io.ObjectStreamException {
+      return new SerializedForm(this.getErrorCode());
+   }
+   private static class SerializedForm implements java.io.Serializable {
+      String errorCode;
+      SerializedForm(String errorCode) { this.errorCode = errorCode; }
+      Object readResolve() throws java.io.ObjectStreamException {
+         return ErrorCode.toErrorCode(errorCode);
+      }
+   }
+   ///////////////END
+
    /**
     * Dump all codes to xml notation
     * <pre>
@@ -435,6 +503,56 @@ public final class ErrorCode implements java.io.Serializable
     */
    public static void main (String [] args) {
       System.out.println(toXmlAll(""));
+      //verifiySerialization();
+   }
+
+   private static void verifiySerialization() {
+      String fileName = "ErrorCode.ser";
+      ErrorCode pOrig = ErrorCode.USER_PTP_UNKNOWNSESSION;
+      {
+
+         try {
+            java.io.FileOutputStream f = new java.io.FileOutputStream(fileName);
+            java.io.ObjectOutputStream objStream = new java.io.ObjectOutputStream(f);
+            objStream.writeObject(pOrig);
+            objStream.flush();
+            System.out.println("SUCCESS written " + pOrig.toString());
+         }
+         catch (Exception e) {
+            System.err.println("ERROR: " + e.toString());
+         }
+      }
+
+      ErrorCode pNew = null;
+      {
+
+         try {
+            java.io.FileInputStream f = new java.io.FileInputStream(fileName);
+            java.io.ObjectInputStream objStream = new java.io.ObjectInputStream(f);
+            pNew = (ErrorCode)objStream.readObject();
+            System.out.println("SUCCESS loaded " + pNew.toString());
+         }
+         catch (Exception e) {
+            System.err.println("ERROR: " + e.toString());
+         }
+      }
+
+      if (pNew.toString().equals(pOrig.toString())) {
+         System.out.println("SUCCESS, string form is equals " + pNew.toString());
+      }
+      else {
+         System.out.println("ERROR, string form is different " + pNew.toString());
+      }
+
+      int hashOrig = pOrig.hashCode();
+      int hashNew = pNew.hashCode();
+
+      if (pNew == pOrig) {
+         System.out.println("SUCCESS, hash is same, the objects are identical");
+      }
+      else {
+         System.out.println("ERROR, hashCode is different hashOrig=" + hashOrig + " hashNew=" + hashNew);
+      }
    }
 }
 
