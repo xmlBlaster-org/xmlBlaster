@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.17 2000/05/18 17:20:01 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.18 2000/05/19 15:20:02 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -36,7 +36,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -63,12 +63,13 @@ public class ProxyConnection implements I_Callback
 
       //establish connection to server
       corbaConnection = new CorbaConnection();
-      xmlBlaster = corbaConnection.login( loginName, passwd, null, this);
+
+      xmlBlaster = corbaConnection.login(loginName, passwd, null, this);
       httpConnections = new Hashtable();
    }
 
    /**
-    * Check local if passwd is valid. 
+    * Check local if passwd is valid.
     */
    boolean checkPasswd(String pw)
    {
@@ -126,7 +127,9 @@ public class ProxyConnection implements I_Callback
 
 
    /**
-    * Clean up if a browser disappears or does a logout.
+    * Clean up if a browser disappears or does a logout. 
+    * If this was the last browser using the corbaConnection,
+    * the CORBA connection to xmlBlaster is removed as well.
     * @param sessionId The unique browser identifier
     */
    public void cleanup(String sessionId)
