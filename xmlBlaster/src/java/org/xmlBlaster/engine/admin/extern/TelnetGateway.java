@@ -15,9 +15,15 @@ import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.I_Timeout;
 
 import remotecons.RemoteServer;
 import remotecons.ifc.CommandHandlerIfc;
+import remotecons.wttools.ConnectionServer;
 
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -31,25 +37,112 @@ import java.io.IOException;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html">admin.telnet requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.command.html">admin.command requirement</a>
  */
-public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
+public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, I_Timeout
 {
    private String ME;
    private Global glob;
    private LogChannel log;
-   private CommandManager manager;
+   private CommandManager commandManager;
    private int port;
    private RemoteServer rs = null;
    private final String CRLF = "\r\n";
+   private static int instanceCounter = 0;
+
+   private boolean isLogin = false;
+   private ConnectReturnQos connectRetQos = null;
+   private String loginName = "";
+
+   private Timeout expiryTimer = new Timeout("TelnetSessionTimer");
+   private Timestamp timerKey = null;
+   private long sessionTimeout = 600000L; // autologout after 10 min
+
+   private ConnectionServer connectionServer = null;
+
+   private String lastCommand = "";
+
+
 
    /**
     * Creates the remote console server. 
     */
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
+      initializeVariables(glob, commandManager);
+      return initListener();
+   }
+
+   private void initializeVariables(Global glob, CommandManager commandManager) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.ME = "TelnetGateway-" + this.glob.getId();
-      this.manager = commandManager;
-      port = glob.getProperty().get("admin.remoteconsole.port", 0); // 2702;
+      this.instanceCounter++;
+      this.ME = "TelnetGateway-" + this.glob.getId() + "-" + this.instanceCounter;
+      this.commandManager = commandManager;
+      this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
+      this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
+
+      if (this.instanceCounter > 1) { // Ignore the first bootstrap instance
+         if (sessionTimeout > 0L) {
+            log.info(ME, "New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
+            timerKey = this.expiryTimer.addTimeoutListener(this, sessionTimeout, null);
+         }
+         else
+            log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
+      }
+   }
+
+   // Hack into remotecons to allow shutdown (marcel)
+   public void register(remotecons.wttools.ConnectionServer server) {
+      this.connectionServer = server;
+   }
+
+   private void stopTimer() {
+      if (timerKey != null) {
+         this.expiryTimer.removeTimeoutListener(timerKey);
+         timerKey = null;
+      }
+   }
+
+   protected void finalize() {
+      stopTimer();
+      disconnect();
+   }
+
+   /**
+    * We are notified when this session expires. 
+    * @param userData You get bounced back your userData which you passed
+    *                 with Timeout.addTimeoutListener()
+    */
+   public final void timeout(Object userData)
+   {
+      synchronized (this) {
+         timerKey = null;
+         if (isLogin)
+            log.warn(ME, "Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for telnet client " + loginName + " occurred, autologout.");
+         else
+            log.warn(ME, "Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for not authorized telnet client occurred, autologout.");
+      }
+      //disconnect(); This happens automatically in Authenticate.java at the same time
+      connectRetQos = null;
+      if (connectionServer != null)
+         connectionServer.shutdown();  // Hack into remotecons to allow shutdown (marcel)
+   }
+
+   private synchronized void disconnect() {
+      if (connectRetQos != null) {
+         try {
+            glob.getAuthenticate().disconnect(connectRetQos.getSessionId(), null);
+         }
+         catch (org.xmlBlaster.util.XmlBlasterException e) {
+            log.warn(e.id, e.reason);
+         }
+         log.info(ME, "Logout of '" + loginName + "', telnet connection destroyed");
+         connectRetQos = null;
+      }
+      else
+         log.info(ME, "Connection from not authorized telnet client destroyed");
+   }
+
+   private boolean initListener() throws XmlBlasterException { 
+      port = glob.getProperty().get("admin.remoteconsole.port", 2702); // 0 == off
       port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", port);
       if (port > 1000) {
          createRemoteConsole(port);
@@ -92,33 +185,107 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    public String handleCommand(String cmd) {
       try {
          if (cmd == null || cmd.length() < 1) {
+            lastCommand = "";
             return getErrorText("Ignoring your empty command.");
          }
          cmd = cmd.trim();
          if (cmd.length() < 1) {
+            lastCommand = "";
             return getErrorText("Ignoring your empty command.");
+         }
+
+         // Commands without login:
+
+         if (cmd.trim().equalsIgnoreCase("time")) {
+            lastCommand = cmd;
+            return ""+new java.util.Date()+CRLF;
+         }
+
+         if (cmd.trim().toUpperCase().startsWith("MEM")) {
+            lastCommand = cmd;
+            Runtime rt = Runtime.getRuntime();
+            return ""+rt.totalMemory()+"/"+rt.freeMemory()+CRLF;
          }
 
          StringTokenizer st = new StringTokenizer(cmd, " ");
          if (!st.hasMoreTokens()) {
+            lastCommand = cmd;
             return getErrorText("Ignoring your empty command.");
          }
          String cmdType = (String)st.nextToken();
 
          if (!st.hasMoreTokens()) {
-            if (cmdType.trim().equalsIgnoreCase("GET") || cmdType.trim().equalsIgnoreCase("SET")) {
+            if (cmdType.trim().equalsIgnoreCase("GET") ||
+                cmdType.trim().equalsIgnoreCase("SET") ||
+                cmdType.trim().equalsIgnoreCase("CONNECT")) {
+               lastCommand = cmd;
                return getErrorText("Ignoring your empty command '" + cmd + "'");
             }
-            else
+            if (cmdType.trim().equalsIgnoreCase("echo")) {
+               lastCommand = cmd;
                return null;
+            }
          }
 
          String query = cmd.substring(cmdType.length()).trim();
 
+         if (cmdType.trim().equalsIgnoreCase("CONNECT")) {
+            if (!st.hasMoreTokens()) {
+               lastCommand = cmd;
+               return getErrorText("Please give me a login name and password to connect: '" + cmd + " <name> <passwd>'");
+            }
+            String loginName = (String)st.nextToken();
+            if (!st.hasMoreTokens()) {
+               lastCommand = cmd;
+               return getErrorText("Please give me a password to connect: '" + cmd + " <passwd>'");
+            }
+            String passwd = (String)st.nextToken();
+            connect(loginName, passwd); // throws Exception or sets isLogin=true  
+            log.info(ME, "Successful login for telnet client " + loginName + "', session timeout is " +
+                     org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
+            lastCommand = cmd;
+            return "Successful login for user " + loginName + CRLF;
+         }
+
+         if (!isLogin) {
+            lastCommand = cmd;
+            return getErrorText("Please login first with 'connect <loginName> <password>'");
+         }
+
+         // Commands with login only:
+
+         if (cmd.trim().equalsIgnoreCase("gc")) {
+            lastCommand = cmd;
+            System.gc();
+            return "OK\r\n";
+         }
+
+         if (cmd.trim().toUpperCase().startsWith("EXIT")) {
+            lastCommand = cmd;
+            return
+              "\r\nYou are going to shutdown remote JVM!\r\n"+
+              "Are you sure to do this and stop xmlBlaster? (yes/no): ";
+         }
+
+         if (cmd.trim().equalsIgnoreCase("yes")) {
+            if (lastCommand.trim().startsWith("exit")) {
+               System.exit(0);
+            }
+         }
+
+         lastCommand = "";
+
+         if (cmd.trim().equalsIgnoreCase("no")) {
+            if (lastCommand.trim().toUpperCase().startsWith("EXIT")) {
+               lastCommand = "";
+               return CRLF;
+            }
+         }
+
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
-            MessageUnit[] msgs = manager.get(query);
+            MessageUnit[] msgs = commandManager.get(query);
             if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
@@ -129,7 +296,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
             return sb.toString() + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("SET")) {
-            SetReturn ret = manager.set(query);
+            SetReturn ret = commandManager.set(query);
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
             return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
          }
@@ -145,7 +312,13 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    }
 
    private final String getErrorText(String error) {
-      String text = "ERROR-XmlBlaster telnet server: " + error + CRLF + "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF;
+      String text = "ERROR-XmlBlaster telnet server: " + error + CRLF;
+      if (isLogin) {
+         text += "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF;
+      }
+      else {
+         text += "Try 'help'" + CRLF + CRLF;
+      }
       log.info(ME, error);
       return text;
    }
@@ -156,9 +329,16 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    public String help() {
       return CRLF +
              "  XmlBlaster telnet administration" + CRLF +
-             "   get [command]  Get property or xmlBlaster state" + CRLF +
-             "   set [command]  Set a property or change xmlBlaster setting" + CRLF +
-             "  For commands see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF;
+             "   connect [name] [passwd]  Login with you login name and password" + CRLF +
+             "   get [query]              Get property or xmlBlaster state" + CRLF +
+             "   set [query]              Set a property or change xmlBlaster setting" + CRLF +
+             "   time                     Display current time on server" + CRLF +
+             "   gc                       Run System.gc() command on remote system" + CRLF +
+             "   mem [total|free]         Display amount of memory on remote system" + CRLF +
+             "   exit                     Call System.exit(0) on remote system" + CRLF +
+             "  For query syntax see" + CRLF +
+             "  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF +
+             "  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html" + CRLF + CRLF;
    }
    /**
     * Enforced by "remotecons.CommandHandlerIfc"
@@ -168,12 +348,45 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    }
 
    public CommandHandlerIfc getInstance() {
-      if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
-      return this;
+      //if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
+      TelnetGateway telnetGateway = new TelnetGateway();
+      telnetGateway.initializeVariables(glob, commandManager);
+      return telnetGateway;
    }
 
    public String getName() {
       return "TelnetGateway";
+   }
+
+   /**
+    * Login to xmlBlaster server. 
+    */
+   public void connect(String loginName, String passwd) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+
+      if (loginName==null || passwd==null) {
+         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use 'connect loginName password'");
+      }
+
+      try {
+         ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
+         connectQos.setSessionTimeout(sessionTimeout);
+         this.connectRetQos = glob.getAuthenticate().connect(connectQos);
+         this.loginName = loginName;
+         isLogin = true;
+
+         if (connectQos.getSessionTimeout() > 0L) {
+            stopTimer();
+            if (log.TRACE) log.trace(ME, "Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
+            timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
+         }
+         else
+            log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
    public void shutdown() {
