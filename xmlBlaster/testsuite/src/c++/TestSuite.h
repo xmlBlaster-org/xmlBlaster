@@ -3,6 +3,7 @@ Name:      TestSuite.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing helper
+See:       Other C++ test tools: http://c2.com/cgi/wiki?TestingFramework
 -----------------------------------------------------------------------------*/
 
 #ifndef _TESTSUITE_H
