@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.27 2004/02/22 17:25:36 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.28 2004/02/22 17:48:10 ruff Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -44,7 +44,7 @@ private:
    ConnectReturnQos returnQos_;
 
    /** Publish tests */
-   enumer TestType {
+   enum TestType {
       TEST_ONEWAY, TEST_PUBLISH, TEST_ARRAY
    };
 
