@@ -209,7 +209,7 @@ public class ServerEntryFactory implements I_EntryFactory
       this.glob = (org.xmlBlaster.engine.Global)glob;
       this.name = name;
       this.log = glob.getLog("queue");
-      this.log.info(ME, "successfully initialized");
+      if (this.log.TRACE) this.log.trace(ME, "Successfully initialized");
    }
 
    /**

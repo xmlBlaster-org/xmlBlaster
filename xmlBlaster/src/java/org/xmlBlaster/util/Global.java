@@ -1332,6 +1332,7 @@ public class Global implements Cloneable
             manager = new JdbcManager(pool, getEntryFactory(managerName));
             pool.setConnectionListener(manager);
             manager.setUp();
+            if (log.TRACE) log.trace(ME, "Created JdbcManager instance for storage class '" + managerName + "'");
          }
          catch (ClassNotFoundException ex) {
             this.log.error(location, "getJdbcQueueManager class not found: " + ex.getMessage());
@@ -1347,8 +1348,10 @@ public class Global implements Cloneable
       else manager = (JdbcManager)obj;
 
       try {
-         if (!manager.getPool().isInitialized())
+         if (!manager.getPool().isInitialized()) {
             manager.getPool().initialize(this, managerName + ".queue.persistent");
+            if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
+         }
       }
       catch (ClassNotFoundException ex) {
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
