@@ -1662,7 +1662,7 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
-/*
+
          testSub.setUp();
          testSub.testSize1();
          testSub.tearDown();
@@ -1702,13 +1702,11 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testBigEntries();
          testSub.tearDown();
-*/
+
          testSub.setUp();
          testSub.testOverflow();
          testSub.tearDown();
 
-        /*
-         */
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }
