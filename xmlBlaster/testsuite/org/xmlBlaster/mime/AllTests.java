@@ -19,6 +19,7 @@ public class AllTests {
       suite.addTest(TestGetRegexFilter.suite());
       suite.addTest(TestGetFilter.suite());
       suite.addTest(TestSubscribeFilter.suite());
+      suite.addTest(TestPublishFilter.suite());
       return suite;
    }
    // To force compilation:
@@ -26,5 +27,6 @@ public class AllTests {
       new TestGetRegexFilter(null,null,null); 
       new TestGetFilter(null,null,null); 
       new TestSubscribeFilter(null,null,null); 
+      new TestPublishFilter(null,null,null); 
    }
 }
