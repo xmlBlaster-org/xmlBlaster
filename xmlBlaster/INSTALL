@@ -6,12 +6,11 @@
   /___________)                                              (__________\
 
 
-Welcome!
+Welcome !
 
 We hope these hints are useful to get you running with xmlBlaster.
 If  you  have  problems, don't hesitate to contact the maintainers
 through the mailing list (see http://www.xmlBlaster.org).
-
 
 +--------------------+
 | REQUIRED           |
@@ -61,7 +60,7 @@ Find out what command line options you have:
   java -classpath lib/xmlBlaster.jar HelloWorld3 -help
 
 
-To simplify usage, set your CLASSAPTH:
+To simplify usage, set your CLASSAPATH:
 
   export CLASSPATH=<pathToXmlBlaster>/lib/xmlBlaster.jar  [UNIX,sh,ksh,bash]
 
