@@ -6,3 +6,5 @@ doc
 http
 *.class
 xmlBlaster.policy
+jacorb.properties
+html
