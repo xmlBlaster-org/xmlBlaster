@@ -138,6 +138,17 @@ all_SUB_DIRS:
 		) \
 	done
 
+html_SUB_DIRS:
+	@for i in $(SUB_DIRS) "ignore" ; do \
+	   ( \
+	   if [ -d $$i ]; then \
+		   cd $$i; \
+	      echo "Making $$i" ; \
+	      $(MAKE) html; \
+		fi \
+		) \
+	done
+
 clean_SUB_DIRS:
 	@for i in $(SUB_DIRS) "ignore" ; do \
 	   ( \
