@@ -15,6 +15,9 @@ public interface I_Main
 {
    public void init(org.xmlBlaster.util.Global g);
    public void init(java.util.Properties p);
+   /** Same as shutdown() but does additionally an engine.global.shutdown() */
+   public void destroy();
+   /** Release all resources */
    public void shutdown();
    public boolean isHalted();
    public org.xmlBlaster.engine.Global getGlobal();
