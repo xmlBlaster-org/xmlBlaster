@@ -44,6 +44,15 @@
       <param-value>false</param-value>
       <description>dumps messages</description>
     </init-param>
+
+    <!-- Example to look for xmlBlaster on another host -->
+    <!-- init-param>
+      <param-name>iorHost</param-name>
+      <param-value>192.168.1.5</param-value>
+      <description>dumps messages</description>
+    </init-param -->
+
+    <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
   </servlet>
 
 
