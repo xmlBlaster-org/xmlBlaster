@@ -241,7 +241,7 @@ bool sendData(const char * const methodName,
    if (XMLBLASTER_DEBUG) {
       rawMsgStr = toReadableDump(rawMsg, rawMsgLen);
       printf("xmlBlasterClient: Sending now %u bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
-                free(rawMsgStr);
+      free(rawMsgStr);
    }
 
    // send the header ...
@@ -250,6 +250,7 @@ bool sendData(const char * const methodName,
       if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
+      free(rawMsg);
       return false;
    }
 
@@ -319,6 +320,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
       if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      free(rawMsg);
       return false;
    }
 
@@ -327,6 +329,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received response message of type=%c", responseHolder->type);
       if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      free(rawMsg);
       return false;
    }
 
@@ -335,6 +338,7 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received response message of unsupported version=%c", responseHolder->version);
       if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      free(rawMsg);
       return false;
    }
 
@@ -553,8 +557,10 @@ static char *xmlBlasterSubscribe(const char * const key, const char * qos, XmlBl
 
    if (sendData(XMLBLASTER_SUBSCRIBE, secretSessionId, data, totalLen,
                 &responseHolder, exception) == false) {
+      free(data);
       return (char *)0;
    }
+   free(data);
 
    response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
@@ -602,8 +608,10 @@ static char *xmlBlasterUnSubscribe(const char * const key, const char * qos, Xml
 
    if (sendData(XMLBLASTER_UNSUBSCRIBE, secretSessionId, data, totalLen,
                 &responseHolder, exception) == false) {
+      free(data);
       return (char *)0;
    }
+   free(data);
 
    response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
@@ -651,8 +659,10 @@ static char *xmlBlasterErase(const char * const key, const char * qos, XmlBlaste
 
    if (sendData(XMLBLASTER_ERASE, secretSessionId, data, totalLen,
                 &responseHolder, exception) == false) {
+      free(data);
       return (char *)0;
    }
+   free(data);
 
    response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
