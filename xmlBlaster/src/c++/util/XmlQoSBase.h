@@ -11,6 +11,7 @@ Comment:   Handling one QoS (quality of service), knows how to parse it
 
 #ifndef _UTIL_XMLQOSBASE_H
 #define _UTIL_XMLQOSBASE_H
+
 using namespace std;
 
 namespace org { namespace xmlBlaster {
@@ -81,7 +82,7 @@ namespace util {
         *         need to look at this tag anymore
         *         false this tag is not handled by this Base class
         */
-       bool startElementBase(const XMLCh* const name, AttributeList &attrs) {
+       bool startElementBase(const XMLCh* const name, AttributeList &/*attrs*/) {
           if (SaxHandlerBase::caseCompare(name, "qos")) {
              inQos_ = true;
              return true;

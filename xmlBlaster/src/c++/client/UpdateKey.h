@@ -190,7 +190,7 @@ namespace org { namespace xmlBlaster {
       /**
        * Since xerces ver 1.2
        */
-      void setDocumentLocator(const Locator *loc) {
+      void setDocumentLocator(const Locator */*loc*/) {
       }
 
       /**

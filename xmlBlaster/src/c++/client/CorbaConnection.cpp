@@ -595,7 +595,7 @@ namespace org { namespace xmlBlaster {
     */
 
    string CorbaConnection::ping(const string &qos) {
-      if (log_.CALL) log_.call(me(), "ping() ...");
+      if (log_.CALL) log_.call(me(), "ping(" + qos + ") ...");
 
       if (CORBA::is_nil(xmlBlaster_)) {
          string txt = "no auth.Server, you must login first";

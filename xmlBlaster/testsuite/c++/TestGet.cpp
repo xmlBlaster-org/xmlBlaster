@@ -7,6 +7,7 @@ Comment:   Testing get()
 
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <util/Constants.h>
 #include <util/StopWatch.h>
 #include <client/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
@@ -43,11 +44,10 @@ private:
    /**
     * Constructs the TestGet object.
     * <p />
-    * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
 public:
-   TestGet(const string &testName, const string &loginName) {
+   TestGet(const string &loginName) {
       loginName_           = loginName;
       publishOid_          = "TestGet";
       senderContent_       = "A test message";
@@ -239,7 +239,7 @@ public:
 
 int main(int args, char *argc[]) {
 
-   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet("TestGet", "Tim");
+   org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet("Tim");
    testSub->setUp(args, argc);
    testSub->testGetMany();
    testSub->testGet();

@@ -28,7 +28,7 @@ public:
   BlasterCallback_impl()  {}
   ~BlasterCallback_impl() {}
 
-  serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& messageUnitArr) {
+  serverIdl::StringArr* update(const char* /*sessionId*/, const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
     serverIdl::StringArr *res = new serverIdl::StringArr(nmax);
     res->length(nmax);
@@ -45,7 +45,7 @@ public:
     return res;
   };
 
-  void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& messageUnitArr) {
+  void updateOneway(const char* /*sessionId*/, const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
     cout << endl;
     cout << "Oneway callback invoked: there are " << nmax << " messages" << endl;
@@ -56,7 +56,7 @@ public:
     }
   };
 
-  char *ping(const char *qos) {
+  char *ping(const char */*qos*/) {
    return CORBA::string_dup("");
   };
 };

@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.8 2002/08/15 11:08:32 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.9 2002/08/15 16:22:34 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -53,7 +53,7 @@ private:
    util::Log log_;
 
 public:
-   RamTest(const string &testName, const string &loginName) : 
+   RamTest(const string &loginName) : 
                  stopWatch_(), log_() {
       senderName_   = loginName;
       publishOid_   = "";
@@ -226,7 +226,7 @@ public:
 
 
 int main(int args, char *argc[]) {
-   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest("RamTest", "Tim");
+   org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest("Tim");
    testSub->setUp(args, argc);
    testSub->testManyPublish();
    testSub->tearDown();

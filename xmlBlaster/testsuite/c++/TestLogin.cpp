@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.10 2002/08/12 07:24:19 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.11 2002/08/15 16:23:26 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -59,7 +59,7 @@ public:
     * @param loginName  The name to login to the xmlBlaster
     * @param secondName The name to login to the xmlBlaster again
     */
-   TestLogin(const string &testName, const string &senderName,
+   TestLogin(const string &senderName,
              const string &secondName) : stopWatch_() {
       senderName_  = senderName;
       secondName_  = secondName;
@@ -97,10 +97,10 @@ public:
     * @param qos       Quality of Service of the MessageUnit
     * @return The status string
     */
-   string update(const string &sessionId,
-               UpdateKey &updateKey,
-               void *content, long contentSize,
-               UpdateQos &updateQos) {
+   string update(const string &/*sessionId*/,
+               UpdateKey &/*updateKey*/,
+               void */*content*/, long /*contentSize*/,
+               UpdateQos &/*updateQos*/) {
       if (log_->CALL) log_->call(me(), "Receiving update of a message ...");
       numReceived_++;
       return "<qos><state id='OK'/></qos>";
@@ -436,7 +436,7 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin("TestLogin", "Tim", "Joe");
+   org::xmlBlaster::TestLogin *testSub = new org::xmlBlaster::TestLogin("Tim", "Joe");
    testSub->setUp(args, argc);
    testSub->testLoginLogout();
    testSub->tearDown();

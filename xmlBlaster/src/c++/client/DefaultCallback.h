@@ -56,7 +56,7 @@ namespace org { namespace xmlBlaster {
        */
    public:
       DefaultCallback(const string &name="", I_Callback *boss=0, 
-                      /*BlasterCache*/ void* cache=0) : log_() {
+                      /*BlasterCache*/ void* /*cache*/=0) : log_() {
          boss_         = boss;
          loginName_    = name;
          // cache_ = cache;
@@ -222,7 +222,7 @@ namespace org { namespace xmlBlaster {
        * @see xmlBlaster.idl
        */
       char *ping(const char *qos) {
-         if (log_.CALL) log_.call(me(), "ping() ...");
+         if (log_.CALL) log_.call(me(), "ping(" + string(qos) + ") ...");
          return CORBA::string_dup("");
       } // ping
 
