@@ -79,8 +79,8 @@ javadoc:
 	( cd ${SRC_DOCS_DIR}; make doc)
 	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)
 
-jar: all
-	( cd ${CLASS_TOP_DIR}; jar cvf ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients)
+jar:
+	( cd ${CLASS_TOP_DIR}; jar cvmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients)
 
 
 test: all
