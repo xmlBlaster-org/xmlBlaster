@@ -16,10 +16,11 @@
 # NOTE: If you want to use the naming service, you need to use jaco,
 #       which sets the -Xbootclasspath
 #       since otherwise the wrong NamingContext from JDK is used.
+#       If your code uses NamingContextExt instead of NamingContext
+#       you don't need -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar
 #
 # NOTE: If you use the RMI server, you should adjust the security policy
 #       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
-
 
 # Variant loading the xmlBlaster.policy via CLASSPATH (if you use RMI):
 #export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
