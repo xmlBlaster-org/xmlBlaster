@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.51 2000/09/21 08:53:58 ruff Exp $
+Version:   $Id: Main.java,v 1.52 2000/10/02 09:44:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -102,6 +102,20 @@ public class Main
       try {
          authenticate = new Authenticate();
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
+
+         /* Marcel: Runs fine with JDK 1.3, not yet tested what happens in JDK 1.2 (does it compile?)
+         try {  // Add shutdown hook (since JDK 1.3, catch signals)
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+               public void run() {
+                  Log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
+                  shutdown();
+               }
+            });
+            Log.info(ME, "Shutdown hook added, Ctrl-C will work to stop the server on UNIX.");
+         } catch (Throwable e)  { // JDK 1.2.. ignore!
+            Log.info(ME, "Could not add shutdown hook for JDK 1.2, Ctrl-C wont work.");
+         }
+         */
 
          loadDrivers();
 
