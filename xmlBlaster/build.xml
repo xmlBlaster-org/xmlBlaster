@@ -434,6 +434,7 @@ TODO
             <exclude name="javaclients/Latency.java"/>
             <exclude name="javaclients/PtpReceive.java"/>
             <exclude name="javaclients/PtpSend.java"/>
+            <exclude name="queryXML/**"/>
          </fileset>
       </copy>
 
@@ -449,6 +450,16 @@ TODO
             <include name="PtpSend.java"/>
          </fileset>
       </copy>
+
+      <copy todir="${build.src}/demo">
+         <fileset dir="${demo.dir}/queryXML">
+            <include name="DomQueryTest.java"/>
+            <include name="XtOmQueryTest.java"/>
+            <include name="Agent.xml"/>
+            <include name="AgentBig.xml"/>
+         </fileset>
+      </copy>
+
 
 
       <copy file="${demo.java.dir}/simplereader/blue.gif" todir="${build.dest}/javaclients/simplereader"/>
