@@ -21,6 +21,7 @@ Author:    laghi@swissinfo.org
   </xsl:template>
 
    <xsl:template match="html:a[@class='source'] | a[@class='source']">
+      <img class="embed" src="embedded.gif"></img><br/>
       <xsl:apply-templates select="document(@href)/html:html//html:pre"/>
    </xsl:template>
 

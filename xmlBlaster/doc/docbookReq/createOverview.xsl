@@ -1,4 +1,4 @@
-<?xml version='1.0'?>
+<?xml version='1.0' encoding="UTF-8"?>
 <!--
 Name:      createMenu.xsl
 Project:   xmlBlaster.org
@@ -11,11 +11,15 @@ Author:    laghi@swissinfo.org
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 version='1.0'
-                xmlns="http://www.w3.org/TR/xhtml1/transitional"
                 exclude-result-prefixes="#default">
 
-
-<xsl:output method="xml"/>
+<!--
+<xsl:output method="xml" 
+   			doctype-system="http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" 
+            doctype-public = "-//OASIS//DTD DocBook XML V4.2//EN"
+	   		indent="yes"/>
+-->
+<xsl:output method="xml" indent="yes"/>
 
     <!-- 
        article/title/text() = requirement/@id
@@ -51,8 +55,9 @@ Author:    laghi@swissinfo.org
                   </row>
                </thead>
             	<tbody valign="top">
-                  <xsl:for-each select="/files/url">
-                     <xsl:sort select="document(.)/article/title/text()" order="ascending"/>
+                  <xsl:for-each select="files/url">
+   <!--                     <xsl:sort select="document(.)/article/title/text()" order="ascending"/> -->
+                     <xsl:sort select="document(.)/article/title" order="ascending"/>
                      <xsl:sort select="document(.)/article/articleinfo/@userlevel" order="ascending"/>
                      <xsl:call-template name="article"/>
                   </xsl:for-each>
@@ -68,35 +73,25 @@ Author:    laghi@swissinfo.org
 </xsl:template>
 
 
-
-
 <xsl:template match="url">
 </xsl:template>   
    
-
    <!-- Create the HTML output for one requirement -->
 <xsl:template name="article">
-		<row>
-			<entry></entry>
-		</row>
-
-   <row>
-<!--
-       title/text() = requirement/@id
-       articleinfo/@userlevel = requirement/@status
--->
-      <xsl:message terminate="no">now processing '<xsl:value-of select="."/>'</xsl:message>
-      <entry role="reqId"><xsl:value-of select="document(.)/article/title/text()"/></entry>
-      <entry>
-         <xsl:attribute name="role"><xsl:value-of select="document(.)/article/articleinfo/@userlevel"/></xsl:attribute>
-         <xsl:value-of select="document(.)/article/articleinfo/@userlevel"/>
-      </entry>
-      <entry>
-         <ulink><xsl:attribute name="url"><xsl:value-of select="document(.)/article/title/text()"/>.html</xsl:attribute>&gt;&gt;</ulink>
-      </entry>
-      <entry role="topic"><xsl:value-of select="document(.)/article/subtitle/text()"/></entry>
-   </row>
-
+   <xsl:if test="document(.)/article/title != ''">
+      <row>
+         <!--   title/text() = requirement/@id  articleinfo/@userlevel = requirement/@status  -->
+         <entry role="reqId"><xsl:value-of select="document(.)/article/title"/></entry>
+         <entry>
+            <xsl:attribute name="role"><xsl:value-of select="document(.)/article/articleinfo/@userlevel"/></xsl:attribute>
+            <xsl:value-of select="document(.)/article/articleinfo/@userlevel"/>
+         </entry>
+         <entry>
+            <ulink><xsl:attribute name="url"><xsl:value-of select="document(.)/article/title"/>.html</xsl:attribute><inlinegraphic align="center" fileref="arrow.gif"/></ulink>
+         </entry>
+         <entry role="topic"><xsl:value-of select="document(.)/article/subtitle"/></entry>
+      </row>
+   </xsl:if>
 </xsl:template>
 
 
