@@ -9,6 +9,7 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
+   - #12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread
    - #12871 Extended clientProperty API
    - #12870 Added xerces XMLPlatformUtils::Initialize PanicHandler
    - #12870 Added locale setting for xerces XMLPlatformUtils::Initialize, adjust with for example
