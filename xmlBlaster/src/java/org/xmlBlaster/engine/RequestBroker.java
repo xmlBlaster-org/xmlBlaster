@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.5 $
-           $Date: 1999/11/12 14:31:32 $
+           $Revision: 1.6 $
+           $Date: 1999/11/13 17:16:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -24,8 +24,6 @@ public class RequestBroker
    final private String ME = "RequestBroker";
 
    private static RequestBroker requestBroker = null; // Singleton pattern
-
-   final private Map clientInfoMap = Collections.synchronizedMap(new HashMap());
 
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
 
@@ -63,25 +61,8 @@ public class RequestBroker
 
    /**
     */
-   public ClientInfo getClientInfo(XmlKey xmlKey, XmlQoS qos) throws XmlBlasterException
+   public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      synchronized(clientInfoMap) {
-         Object obj = clientInfoMap.get(xmlKey);
-         if (obj == null) {
-            ClientInfo clientInfo = new ClientInfo(this, xmlKey, qos);
-            clientInfoMap.put(clientInfo.getUniqueKey(), clientInfo);
-            return clientInfo;
-         }
-         return (ClientInfo)obj;
-      }
-   }
-
-
-   /**
-    */
-   public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
-   {
-      ClientInfo clientInfo = getClientInfo(xmlKey, subscribeQoS);
       String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
       synchronized(messageContainerMap) {
@@ -100,9 +81,8 @@ public class RequestBroker
 
    /**
     */
-   public void unSubscribe(XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
+   public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
-      ClientInfo clientInfo = getClientInfo(xmlKey, unSubscribeQoS);
       String uniqueKey = xmlKey.getUniqueKey();
 
       synchronized(messageContainerMap) {

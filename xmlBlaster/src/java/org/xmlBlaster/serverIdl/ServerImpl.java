@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/12 14:31:34 $
+           $Date: 1999/11/13 17:16:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.XmlKey;
 import org.xmlBlaster.engine.XmlQoS;
+import org.xmlBlaster.authentication.Authenticate;
 import java.util.*;
 
 
@@ -25,6 +26,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
    private final String ME = "ServerImpl";
    private org.omg.CORBA.ORB orb;
    private RequestBroker requestBroker;
+   private Authenticate authenticate;
 
 
    /**
@@ -35,6 +37,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
       if (Log.CALLS) Log.trace(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.requestBroker = RequestBroker.getInstance(this);
+      this.authenticate = Authenticate.getInstance(this);
    }
 
 
@@ -46,6 +49,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
       super();
       if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
       this.requestBroker = RequestBroker.getInstance(this);
+      this.authenticate = Authenticate.getInstance(this);
    }
 
 
@@ -59,9 +63,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
                        String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName + ", qos=" + qos_literal + ")");
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      // !!! return requestBroker.login(loginName, passwd, cb, xmlQoS);
-      return orb.object_to_string(cb);
+      return authenticate.login(loginName, passwd, cb, qos_literal, orb.object_to_string(cb));
    }
 
 
@@ -71,7 +73,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
    public void logout(String sessionId) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering logout(sessionId=" + sessionId);
-      // !!! return requestBroker.logout(sessionId);
+      authenticate.logout(sessionId);
    }
 
 
@@ -83,7 +85,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
       if (Log.CALLS) Log.trace(ME, "Entering subscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.subscribe(xmlKey, xmlQoS);
+      requestBroker.subscribe(authenticate.check(sessionId), xmlKey, xmlQoS);
    }
 
 
@@ -95,7 +97,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
       if (Log.CALLS) Log.trace(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      requestBroker.unSubscribe(xmlKey, xmlQoS);
+      requestBroker.unSubscribe(authenticate.check(sessionId), xmlKey, xmlQoS);
    }
 
 

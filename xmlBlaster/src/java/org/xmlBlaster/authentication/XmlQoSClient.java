@@ -1,31 +1,31 @@
 /*------------------------------------------------------------------------------
-Name:      XmlQoSUpdate.java
+Name:      XmlQoSClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-           $Revision: 1.2 $  $Date: 1999/11/13 17:16:06 $
+           $Revision: 1.1 $  $Date: 1999/11/13 17:16:05 $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine;
+package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 
 /**
- * XmlQoSUpdate
- * Informations sent from server to client via the update() Method
+ * XmlQoSClient
+ * Informations sent to server about client preferences and wishes
  */
-public class XmlQoSUpdate extends org.xmlBlaster.util.XmlQoSBase
+public class XmlQoSClient extends org.xmlBlaster.util.XmlQoSBase
 {
-   private String ME = "XmlQoSUpdate";
+   private String ME = "XmlQoSClient";
 
-   public XmlQoSUpdate(String xmlQoS_literal)
+   public XmlQoSClient(String xmlQoS_literal)
    {
       super(xmlQoS_literal);
    }
 
 
-   public XmlQoSUpdate()
+   public XmlQoSClient()
    {
       super("");
    }

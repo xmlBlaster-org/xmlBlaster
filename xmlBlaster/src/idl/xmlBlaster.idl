@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.8 1999/11/12 14:31:22 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.9 1999/11/13 17:16:01 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
@@ -162,7 +162,7 @@ module org { module xmlBlaster { module serverIdl
        */
       string login(in string loginName, in string passwd,
                    in org::xmlBlaster::clientIdl::BlasterCallback cb,
-                   in XmlType qos) raises (XmlBlasterException);
+                   in XmlType qosClient) raises (XmlBlasterException);
 
 
       /**

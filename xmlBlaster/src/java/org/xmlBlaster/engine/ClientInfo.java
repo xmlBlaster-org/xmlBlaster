@@ -3,10 +3,11 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.3 $  $Date: 1999/11/12 13:07:06 $
+           $Revision: 1.4 $  $Date: 1999/11/13 17:16:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.authentication.XmlQoSClient;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.clientIdl.BlasterCallback;
@@ -15,29 +16,37 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * ClientInfo stores all known data about a client
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Name:  $
  */
 public class ClientInfo
 {
    private String ME = "ClientInfo";
-   private XmlKey xmlKey;
-   private XmlQoS xmlQoS;
+   private String sessionId;
+   private String loginName;
+   private String passwd;
+   private XmlQoSClient xmlQoS;
    private BlasterCallback callback=null;
-   private RequestBroker requestBroker;
+   private String callbackIOR;
 
-   public ClientInfo(RequestBroker requestBroker, XmlKey xmlKey, XmlQoS xmlQoS)
+   public ClientInfo(String sessionId, String loginName, String passwd,
+                       BlasterCallback callback,
+                       String callbackIOR, XmlQoSClient xmlQoS)
    {
-      this.requestBroker = requestBroker;
-      this.xmlKey = xmlKey;
+      this.sessionId = sessionId;
+      this.loginName = loginName;
+      this.passwd = passwd;
+      this.callback = callback;
+      this.callbackIOR = callbackIOR;
       this.xmlQoS = xmlQoS;
-      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + xmlKey.getUniqueKey());
+      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + loginName);
    }
 
    public final BlasterCallback getCB() throws XmlBlasterException
    {
-      if (this.callback == null)
-         callback = requestBroker.getBlasterCallback(getCallbackIOR());
+      if (this.callback == null) {
+         throw new XmlBlasterException(ME+"NoCallback", "Sorry, no Callback for " + loginName);
+      }
       return callback;
    }
 
@@ -47,13 +56,12 @@ public class ClientInfo
     */
    public String getUniqueKey() throws XmlBlasterException
    {
-      // return xmlKey.getUniqueKey();
-      return getCallbackIOR();
+      return sessionId;
    }
 
 
    public String getCallbackIOR() throws XmlBlasterException
    {
-      return xmlQoS.getCallbackIOR();
+      return callbackIOR;
    }
 }
