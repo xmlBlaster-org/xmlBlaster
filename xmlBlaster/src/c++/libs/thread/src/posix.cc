@@ -1,5 +1,5 @@
-//				Package : omnithread
-// omnithread/posix.cc		Created : 7/94 tjr
+//                              Package : omnithread
+// omnithread/posix.cc          Created : 7/94 tjr
 //
 //    Copyright (C) 1994-1999 AT&T Laboratories Cambridge
 //
@@ -80,7 +80,7 @@
 #else
 #define ERRNO(x) (x)
 #define THROW_ERRORS(x) { int rc = (x); \
-			  if (rc != 0) throw omni_thread_fatal(rc); }
+                          if (rc != 0) throw omni_thread_fatal(rc); }
 #endif
 
 
@@ -141,13 +141,13 @@ omni_condition::timedwait(unsigned long secs, unsigned long nanosecs)
 
 again:
     int rc = ERRNO(pthread_cond_timedwait(&posix_cond,
-					  &mutex->posix_mutex, &rqts));
+                                          &mutex->posix_mutex, &rqts));
     if (rc == 0)
-	return 1;
+        return 1;
 
 #if (PthreadDraftVersion <= 6)
     if (rc == EAGAIN)
-	return 0;
+        return 0;
 #endif
 
     // Some versions of unix produces this errno when the wait was
@@ -159,7 +159,7 @@ again:
       goto again;
 
     if (rc == ETIMEDOUT)
-	return 0;
+        return 0;
 
     throw omni_thread_fatal(rc);
 #ifdef _MSC_VER
@@ -203,7 +203,7 @@ omni_semaphore::wait(void)
     omni_mutex_lock l(m);
 
     while (value == 0)
-	c.wait();
+        c.wait();
 
     value--;
 }
@@ -214,7 +214,7 @@ omni_semaphore::trywait(void)
     omni_mutex_lock l(m);
 
     if (value == 0)
-	return 0;
+        return 0;
 
     value--;
     return 1;
@@ -275,8 +275,8 @@ static int& count() {
 
 omni_thread::init_t::init_t(void)
 {
-    if (count()++ != 0)	// only do it once however many objects get created.
-	return;
+    if (count()++ != 0) // only do it once however many objects get created.
+        return;
 
     DB(cerr << "omni_thread::init: posix 1003.4a/1003.1c (draft "
        << PthreadDraftVersion << ") implementation initialising\n");
@@ -323,12 +323,12 @@ omni_thread::init_t::init_t(void)
 
     case 0:
     case 1:
-	normal_priority = lowest_priority;
-	break;
+        normal_priority = lowest_priority;
+        break;
 
     default:
-	normal_priority = lowest_priority + 1;
-	break;
+        normal_priority = lowest_priority + 1;
+        break;
     }
 
 #endif   /* PthreadSupportThreadPriority */
@@ -354,7 +354,7 @@ omni_thread::init_t::init_t(void)
 #if (PthreadDraftVersion == 4)
 
     THROW_ERRORS(pthread_setprio(t->posix_thread,
-				 posix_priority(PRIORITY_NORMAL)));
+                                 posix_priority(PRIORITY_NORMAL)));
 
 #elif (PthreadDraftVersion == 6)
 
@@ -410,21 +410,21 @@ omni_thread_wrapper(void* ptr)
     //
 
     if (me->fn_void != NULL) {
-	(*me->fn_void)(me->thread_arg);
-	omni_thread::exit();
+        (*me->fn_void)(me->thread_arg);
+        omni_thread::exit();
     }
 
     if (me->fn_ret != NULL) {
-	void* return_value = (*me->fn_ret)(me->thread_arg);
-	omni_thread::exit(return_value);
+        void* return_value = (*me->fn_ret)(me->thread_arg);
+        omni_thread::exit(return_value);
     }
 
     if (me->detached) {
-	me->run(me->thread_arg);
-	omni_thread::exit();
+        me->run(me->thread_arg);
+        omni_thread::exit();
     } else {
-	void* return_value = me->run_undetached(me->thread_arg);
-	omni_thread::exit(return_value);
+        void* return_value = me->run_undetached(me->thread_arg);
+        omni_thread::exit(return_value);
     }
 
     // should never get here.
@@ -478,7 +478,7 @@ omni_thread::common_constructor(void* arg, priority_t pri, int det)
     next_id_mutex->unlock();
 
     thread_arg = arg;
-    detached = det;	// may be altered in start_undetached()
+    detached = det;     // may be altered in start_undetached()
 
     _dummy       = 0;
     _values      = 0;
@@ -496,11 +496,11 @@ omni_thread::~omni_thread(void)
     DB(cerr << "destructor called for thread " << id() << endl);
     if (_values) {
         for (key_t i=0; i < _value_alloc; i++) {
-	    if (_values[i]) {
-	        delete _values[i];
-	    }
+            if (_values[i]) {
+                delete _values[i];
+            }
         }
-	delete [] _values;
+        delete [] _values;
     }
 }
 
@@ -515,7 +515,7 @@ omni_thread::start(void)
     omni_mutex_lock l(mutex);
 
     if (_state != STATE_NEW)
-	throw omni_thread_invalid();
+        throw omni_thread_invalid();
 
     pthread_attr_t attr;
 
@@ -543,9 +543,9 @@ omni_thread::start(void)
 
     THROW_ERRORS(pthread_attr_setschedparam(&attr, &sparam));
 
-#endif	/* PthreadDraftVersion */
+#endif  /* PthreadDraftVersion */
 
-#endif	/* PthreadSupportThreadPriority */
+#endif  /* PthreadSupportThreadPriority */
 
 #if !defined(__linux__)
     if (stack_size) {
@@ -556,11 +556,11 @@ omni_thread::start(void)
 
 #if (PthreadDraftVersion == 4)
     THROW_ERRORS(pthread_create(&posix_thread, attr, omni_thread_wrapper,
-				(void*)this));
+                                (void*)this));
     pthread_attr_delete(&attr);
 #else
     THROW_ERRORS(pthread_create(&posix_thread, &attr, omni_thread_wrapper,
-				(void*)this));
+                                (void*)this));
     pthread_attr_destroy(&attr);
 #endif
 
@@ -569,9 +569,9 @@ omni_thread::start(void)
     if (detached) {
 
 #if (PthreadDraftVersion <= 6)
-	THROW_ERRORS(pthread_detach(&posix_thread));
+        THROW_ERRORS(pthread_detach(&posix_thread));
 #else
-	THROW_ERRORS(pthread_detach(posix_thread));
+        THROW_ERRORS(pthread_detach(posix_thread));
 #endif
     }
 }
@@ -585,7 +585,7 @@ void
 omni_thread::start_undetached(void)
 {
     if ((fn_void != NULL) || (fn_ret != NULL))
-	throw omni_thread_invalid();
+        throw omni_thread_invalid();
 
     detached = 0;
     start();
@@ -602,17 +602,17 @@ omni_thread::join(void** status)
     mutex.lock();
 
     if ((_state != STATE_RUNNING) && (_state != STATE_TERMINATED)) {
-	mutex.unlock();
-	throw omni_thread_invalid();
+        mutex.unlock();
+        throw omni_thread_invalid();
     }
 
     mutex.unlock();
 
     if (this == self())
-	throw omni_thread_invalid();
+        throw omni_thread_invalid();
 
     if (detached)
-	throw omni_thread_invalid();
+        throw omni_thread_invalid();
 
     DB(cerr << "omni_thread::join: doing pthread_join\n");
 
@@ -642,7 +642,7 @@ omni_thread::set_priority(priority_t pri)
     omni_mutex_lock l(mutex);
 
     if (_state != STATE_RUNNING)
-	throw omni_thread_invalid();
+        throw omni_thread_invalid();
 
     _priority = pri;
 
@@ -721,21 +721,21 @@ omni_thread::exit(void* return_value)
 
     if (me)
       {
-	me->mutex.lock();
+        me->mutex.lock();
 
-	me->_state = STATE_TERMINATED;
+        me->_state = STATE_TERMINATED;
 
-	me->mutex.unlock();
+        me->mutex.unlock();
 
-	DB(cerr << "omni_thread::exit: thread " << me->id() << " detached "
-	   << me->detached << " return value " << return_value << endl);
+        DB(cerr << "omni_thread::exit: thread " << me->id() << " detached "
+           << me->detached << " return value " << return_value << endl);
 
-	if (me->detached)
-	  delete me;
+        if (me->detached)
+          delete me;
       }
     else
       {
-	DB(cerr << "omni_thread::exit: called with a non-omnithread. Exit quietly." << endl);
+        DB(cerr << "omni_thread::exit: called with a non-omnithread. Exit quietly." << endl);
       }
 
     pthread_exit(return_value);
@@ -796,26 +796,26 @@ omni_thread::sleep(unsigned long secs, unsigned long nanosecs)
     timespec remain;
     while (nanosleep(&rqts, &remain)) {
       if (errno == EINTR) {
-	rqts.tv_sec  = remain.tv_sec;
-	rqts.tv_nsec = remain.tv_nsec;
-	continue;
+        rqts.tv_sec  = remain.tv_sec;
+        rqts.tv_nsec = remain.tv_nsec;
+        continue;
       }
       else
-	throw omni_thread_fatal(errno);
+        throw omni_thread_fatal(errno);
     }
 #else
 
 #if defined(__osf1__) && defined(__alpha__) || defined(__hpux__) && (__OSVERSION__ == 10) || defined(__VMS) || defined(__SINIX__) || defined (__POSIX_NT__)
 
     if (pthread_delay_np(&rqts) != 0)
-	throw omni_thread_fatal(errno);
+        throw omni_thread_fatal(errno);
 
 #elif defined(__linux__) || defined(__aix__)
 
     if (secs > 2000) {
       while ((secs = ::sleep(secs))) ;
     } else {
-	usleep(secs * 1000000 + (nanosecs / 1000));
+        usleep(secs * 1000000 + (nanosecs / 1000));
     }
 
 #elif defined(__darwin__)
@@ -832,13 +832,13 @@ omni_thread::sleep(unsigned long secs, unsigned long nanosecs)
     throw omni_thread_invalid();
 
 #endif
-#endif	/* NoNanoSleep */
+#endif  /* NoNanoSleep */
 }
 
 
 void
 omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
-		      unsigned long rel_sec, unsigned long rel_nsec)
+                      unsigned long rel_sec, unsigned long rel_nsec)
 {
     timespec abs;
 
@@ -858,17 +858,17 @@ omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
     abs.tv_sec = tv.tv_sec;
     abs.tv_nsec = tv.tv_usec * 1000;
 
-#else	/* __linux__ || __aix__ */
+#else   /* __linux__ || __aix__ */
 
     clock_gettime(CLOCK_REALTIME, &abs);
 
-#endif	/* __linux__ || __aix__ */
+#endif  /* __linux__ || __aix__ */
 
     abs.tv_nsec += rel_nsec;
     abs.tv_sec += rel_sec + abs.tv_nsec / 1000000000;
     abs.tv_nsec = abs.tv_nsec % 1000000000;
 
-#endif	/* __osf1__ && __alpha__ */
+#endif  /* __osf1__ && __alpha__ */
 
     *abs_sec = abs.tv_sec;
     *abs_nsec = abs.tv_nsec;
@@ -876,19 +876,23 @@ omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
 
 
 int
+#ifdef PthreadSupportThreadPriority
 omni_thread::posix_priority(priority_t pri)
+#else
+omni_thread::posix_priority(priority_t)
+#endif
 {
 #ifdef PthreadSupportThreadPriority
     switch (pri) {
 
     case PRIORITY_LOW:
-	return lowest_priority;
+        return lowest_priority;
 
     case PRIORITY_NORMAL:
-	return normal_priority;
+        return normal_priority;
 
     case PRIORITY_HIGH:
-	return highest_priority;
+        return highest_priority;
 
     }
 #endif
