@@ -33,6 +33,9 @@ BUGS:
 
 Changes for xxxxx [xxx, xx 200x]
 ================================
+  - Added message erase events for subscribers, see
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+
   - Bugfix for client side -hostname parameter.
 
   - Automatic detection of the local IP for dial in hosts
