@@ -17,7 +17,6 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * You need to add this plugin to xmlBlasterPlugins.xml, for example:
  * <pre>
  *  &lt;plugin id='HelloWorldNative' className='javaclients.HelloWorldNative'>
- *     &lt;attribute id='loginName'>jack&lt;/attribute>
  *     &lt;action do='LOAD' onStartupRunlevel='9' sequence='5' onFail='resource.configuration.pluginFailed'/>
  *     &lt;action do='STOP' onShutdownRunlevel='6' sequence='4'/>
  *  &lt;/plugin>
@@ -27,6 +26,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * Other protocols like CORBA or SOCKET would work as well but carry the overhead
  * of sending the message over TCP/IP.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.html" target="others">run level requirement</a>
+ * @see javaclients.HelloWorldNative2
  */
 public class HelloWorldNative implements I_Plugin
 {
@@ -35,9 +35,6 @@ public class HelloWorldNative implements I_Plugin
           "-protocol", "LOCAL",
           "-dispatch/connection/pingInterval", "0",
           "-dispatch/connection/burstMode/collectTime", "0",
-          //"-queue/callback/defaultPlugin", "RAM,1.0",
-          //"-queue/connection/defaultPlugin", "RAM,1.0",
-          //"-queue/subject/defaultPlugin", "RAM,1.0",
           "-queue/defaultPlugin", "RAM,1.0"
           };
 
@@ -47,8 +44,9 @@ public class HelloWorldNative implements I_Plugin
          I_XmlBlasterAccess con = new XmlBlasterAccess(glob);
 
          ConnectQos qos = new ConnectQos(this.glob); /* Client side object */
-         qos.setUserId("A-native-client-plugin");
-         con.connect(qos, null);    // Login to xmlBlaster as "A-native-client-plugin"
+         qos.setUserId("A-NATIVE-CLIENT-PLUGIN");
+         qos.getSessionQos().setSessionTimeout(0L);
+         con.connect(qos, null);    // Login to xmlBlaster as "A-NATIVE-CLIENT-PLUGIN"
 
          MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
 
@@ -81,8 +79,10 @@ public class HelloWorldNative implements I_Plugin
       System.err.println("\nHelloWorldNative: shutdown()\n");
    }
 
+   /** To start as a plugin */
    public HelloWorldNative() {}
 
+   /** To start as a standalone client: java javaclients.HelloWorldNative */
    public HelloWorldNative(String args[]) {
       this.glob = new Global(args);
       queryServerMemory();
