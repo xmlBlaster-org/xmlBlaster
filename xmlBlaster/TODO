@@ -1,7 +1,7 @@
-TODO for release 0.79
+TODO for release 0.80
 ---------------------
 
-(1) Generic support for DOM  and SAX in the xmlBlaster                [--]
+(1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)         [ok]
 (2) Integrate persistence support with mudb                           [--]
 (3) Perl support(src/perl) with xmlrpc and not with COPE.             [--]
 (4) Suport for searching in our Maillinglist                          [--]
@@ -13,7 +13,7 @@ TODO for release 0.79
 (10) Integrate JacOrb 1.2.1                                           [ok]
 (11) SOAP  ?                                                          [--]
 (12) Configure the xmlBlaster by xmlBlaster.xml                       [--]
-(13) CLASSPATH is to long!!                                           [--]
+(13) CLASSPATH is to long                                             [ok]
 (14) xmlBlaster HP support for all browsers                           [ok]
 
 
