@@ -374,7 +374,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
 
             {  // keyStore with my private key
                FileLocator locator = new FileLocator(glob);
-               URL url = locator.findStoreInXmlBlasterSearchPath(null, keyStore);
+               URL url = locator.findFileInXmlBlasterSearchPath((String)null, keyStore);
                if (url != null) {
                   InputStream in = url.openStream();
                   java.security.KeyStore ks = java.security.KeyStore.getInstance(storeType); // since JDK 1.2
@@ -392,7 +392,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
             }
             {  // trustStore with others public keys
                FileLocator locator = new FileLocator(glob);
-               URL url = locator.findStoreInXmlBlasterSearchPath(null, trustStore);
+               URL url = locator.findFileInXmlBlasterSearchPath((String)null, trustStore);
                if (url != null) {
                   InputStream in = url.openStream();
                   java.security.KeyStore ks = java.security.KeyStore.getInstance(storeType);
@@ -412,7 +412,7 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
             javax.net.ssl.SSLContext ctx = javax.net.ssl.SSLContext.getInstance("SSLv3");
             java.security.SecureRandom random = null; // since JDK 1.2
             ctx.init((kmf==null)?null:kmf.getKeyManagers(), (tmf==null)?null:tmf.getTrustManagers(), random);
-            javax.net.ssl.SSLSocketFactory ssf = ctx.getSocketFactory();
+            javax.net.ssl.SSLSocketFactory ssf = ctx.getSocketFactory(); // since JDK 1.4
             if (localSocketUrl != null && localSocketUrl.getPort() > -1)
                retSock = ssf.createSocket(getInetAddress(),
                           getPort(), localSocketUrl.getInetAddress(), localSocketUrl.getPort());
