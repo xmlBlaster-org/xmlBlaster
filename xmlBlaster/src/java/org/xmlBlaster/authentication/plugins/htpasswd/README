@@ -1,0 +1,96 @@
+   XMLBLASTER HTPASSWD HOWTO  11/2001 cyrille@ktaland.com
+
+To get started with htpasswd authentication please
+setup a htpasswd file.
+
+Todo that, there is 2 methods :
+
+1a/ use httpasswd command found in Apache distribution
+
+1b/ use jcrypt :
+
+        java org.xmlBlaster.authentication.plugins.htpasswd.jcrypt <salt> <password>
+
+        [mad@kawa]$ java org.xmlBlaster.authentication.plugins.htpasswd.jcrypt yZ password
+        [yZ] [password] => [yZEPH6exqDoqk]
+
+        cut/paste the password (here yZEPH6exqDoqk) in your htpassword file.
+
+        file htpasswd :
+        testuser:yZEPH6exqDoqk
+
+Then configure xmlBlaster for that htpasswd auth plugin :
+
+2/ add this lines in xmlBlaster.properties :
+
+        for server :
+        Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.Manager
+        Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}<your_htpasswd_filename>
+
+        for client :
+        Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.ClientPlugin
+
+3/ Start the xmlBlaster server:
+
+      java -jar lib/xmlBlaster.jar
+
+4/ Start a client (all in one line), e.g.
+
+      java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -name <username> -passwd <userpasswd>
+
+   In the log output of xmlBlaster server you should see something like:
+
+      SecurityPluginManager] Plugin 'org.xmlBlaster.authentication.plugins.htpasswd.Manager' successfully initialized 
+
+   Congratulations, you were authenticated by HTPASSWD !
+
+
+5/ Now try an invalid password:
+
+                java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -user <username> -passwd <BadPassword>
+
+   You should get an authentication error from HTPASSWD
+
+// Comments :
+
+That not a perfomante way for authentification, but it's very simple for managing 3 to 10 users ...
+That's my need ;o)
+
+// TODO :
+
+Following the Apache style htpasswd / htaccess.
+So add a htaccess file with filter for subcribing/publishing/erasing messages
+
+<Limit SUBSCRIBE>
+require valid-user
+</Limit>
+<Limit PUBLISHING>
+require user admin
+require user sender
+</Limit>
+
+Or some more complicated rules with XPath ...
+I'm thinking about how to do that.
+
+
+========================
+ From LDAP Readme :
+
+NOTE: Authorization of actions (like subcribing/publishing/erasing messages)
+      is not supported with this plugin,
+      xmlBlaster logs warnings to notify you about this.
+      If you want to implement authorization, please subclass
+
+         org.xmlBlaster.authentication.plugins.ldap.Session
+      
+      and implement the method
+      
+         // actionKey is "SUBSCRIBE", "GET", "PUBLISH", "ERASE"
+         // key is the ID of a message
+         public boolean isAuthorized(String actionKey, String key)
+         {
+            DirContext ctx = ldap.getRootContext();
+            // ... your LDAP queries to authorize the user action ...
+            // return true if user may do this.
+         }
+         
