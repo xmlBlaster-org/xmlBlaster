@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.21 1999/12/10 16:44:45 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.22 1999/12/14 11:32:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -161,7 +161,7 @@ public class XmlKeyBase
 
 
    /**
-    * Access the literal XML-ASCII xmlKey. 
+    * Access the literal XML-ASCII xmlKey.
     * <p />
     * Note that this may vary from the original ASCII string:<br />
     * When the key oid was generated locally, the literal string contains
@@ -307,12 +307,7 @@ public class XmlKeyBase
                if (val.length() < 1) {
                   keyOid = generateKeyOid();
                   attribute.setNodeValue(keyOid);
-                  if (isPublish) {
-                     Log.warning(ME, "Generated key oid=\"" + keyOid + "\" for publish mode seems to be strange");
-                  }
-                  else {
-                     if (Log.TRACE) Log.trace(ME, "Generated key oid=\"" + keyOid + "\"");
-                  }
+                  if (Log.TRACE) Log.trace(ME, "Generated key oid=\"" + keyOid + "\"");
                }
                else {
                   keyOid = val;
@@ -364,7 +359,7 @@ public class XmlKeyBase
       }
    }
 
-   
+
    /**
     * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
     */
@@ -389,8 +384,15 @@ public class XmlKeyBase
    {
       StringBuffer oid = new StringBuffer(60);
 
-      String ip_addr = jacorb.orb.Environment.getProperty("OAIAddr");
+      // String ip_addr = jacorb.orb.Environment.getProperty("OAIAddr");
+      String ip_addr = "127.0.0.0";
       String oa_port = jacorb.orb.Environment.getProperty("OAPort");
+      try {
+         ip_addr = java.net.InetAddress.getLocalHost().toString();
+      } catch (java.net.UnknownHostException e) {
+         if (Log.TRACE) Log.trace(ME, e.toString());
+      }
+
       long currentTime = System.currentTimeMillis();
 
       oid.append(ip_addr).append("-").append(oa_port).append("-").append(currentTime);
