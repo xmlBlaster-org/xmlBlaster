@@ -59,7 +59,7 @@ public class HelloWorld5
                      pq.addDestination(new Destination(updateQos.getSender()));
                      MessageUnit msgUnit = new MessageUnit(pk.toXml(), "ACK".getBytes(), pq.toXml());
                      String retQos = receiver.publish(msgUnit);
-                     log.info(receiverName, "Published message '" + pk.getOid() + "' to " + senderName);
+                     log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                   }
                   catch (XmlBlasterException e) {
                      log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed");
