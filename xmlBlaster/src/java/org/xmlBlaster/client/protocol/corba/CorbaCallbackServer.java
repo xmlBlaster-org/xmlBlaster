@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.22 2002/06/23 08:39:36 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.23 2002/06/23 10:55:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -11,7 +11,7 @@ package org.xmlBlaster.client.protocol.corba;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -43,6 +43,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
 
    private String ME;
    private Global glob;
+   private LogChannel log;
    private I_CallbackExtended boss;
    private String loginName;
 
@@ -72,6 +73,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.glob = glob;
       if (this.glob == null)
          this.glob = new Global();
+      this.log = glob.getLog("corba");
 
       String cbHostname = null;
       if (orb == null) {
@@ -84,7 +86,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.loginName = name;
       this.orb = orb;
       createCallbackServer();
-      Log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
+      log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
    }
 
    /**
@@ -104,7 +106,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       } catch (org.omg.CORBA.COMM_FAILURE e) {
          throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco' instead of 'java' and read instructions in xmlBlaster/bin/jaco or xmlBlaster/config/orb.properties: " + e.toString());
       } catch (Exception e) {
-         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
+         log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
          throw new XmlBlasterException("CallbackCreationError", e.toString());
       }
 
@@ -114,7 +116,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          // necessary for orbacus
          if (orb.work_pending()) orb.perform_work();
       } catch (Exception e) {
-         Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
+         log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
          throw new XmlBlasterException("CallbackCreationError", e.toString());
       }
    }
@@ -125,7 +127,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    public boolean shutdownCb()
    {
       if (this.callback == null) {
-         if (Log.TRACE) Log.trace(ME, "No callback server to shutdown.");
+         if (log.TRACE) log.trace(ME, "No callback server to shutdown.");
          return false;
       }
 
@@ -133,7 +135,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          try {
             callback._release();
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
+         } catch(Exception e) { log.warn(ME, "POA deactivate callback failed"); }
          callback = null;
       }
 
@@ -152,11 +154,11 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       if (rootPOA != null) {
          try {
             rootPOA.the_POAManager().deactivate(true, true);
-         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
+         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
          rootPOA = null;
       }
       */
-      Log.info(ME, "The callback server is shutdown.");
+      log.info(ME, "The callback server is shutdown.");
       return true;
    }
 
@@ -194,10 +196,10 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
       if (msgUnitArr == null) {
-         Log.warn(ME, "Receiving in updateOneway(" + cbSessionId + ") null message");
+         log.warn(ME, "Receiving in updateOneway(" + cbSessionId + ") null message");
          return;
       }
-      if (Log.CALL) Log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+      if (log.CALL) log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
 
       try {
          // convert Corba to internal MessageUnit and call update() ...
@@ -205,7 +207,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          boss.updateOneway(cbSessionId, localMsgUnitArr);
       }
       catch (Throwable e) {
-         Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -232,10 +234,10 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          eCorba.reason = "Received update of null message";
          throw eCorba;
       }
-      if (Log.CALL) Log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
-      if (Log.DUMP) {
+      if (log.CALL) log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+      if (log.DUMP) {
          for (int ii=0; ii< msgUnitArr.length; ii++)
-            Log.dump(ME, "update()\nkey=" + msgUnitArr[ii].xmlKey + "qos\n" + msgUnitArr[ii].qos);
+            log.dump(ME, "update()\nkey=" + msgUnitArr[ii].xmlKey + "qos\n" + msgUnitArr[ii].qos);
       }
 
       try {
@@ -244,7 +246,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          return boss.update(cbSessionId, localMsgUnitArr);
       }
       catch(XmlBlasterException e) {
-         Log.error(ME, "Delivering message to client failed, message is lost.");
+         log.error(ME, "Delivering message to client failed, message is lost.");
          org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
              new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
          eCorba.id = e.id;
@@ -252,7 +254,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          throw eCorba;
       }
       catch (Throwable e) {
-         Log.error(ME, "Delivering message to client failed, message is lost.");
+         log.error(ME, "Delivering message to client failed, message is lost.");
          e.printStackTrace();
          org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba =
              new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException();
@@ -269,7 +271,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     */
    public String ping(String qos)
    {
-      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      if (log.CALL) log.call(ME, "Entering ping() ...");
       return "";
    }
 } // class CorbaCallbackServer
