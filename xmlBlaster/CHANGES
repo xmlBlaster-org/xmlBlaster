@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
 
+ o Updated Perl support, see
+   
+
  o Bugfix for topics with a destroy delay of 0 msec.
    Reported by Dominique Petitpierre
 
