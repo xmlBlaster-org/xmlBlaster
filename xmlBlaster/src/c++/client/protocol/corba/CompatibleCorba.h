@@ -11,6 +11,9 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 
 /*
  * Implementor specific macros (for includes etc.)
+ * The invocation of this header is done maximum one time per compilation unit. Since the server side 
+ * will include different files than the client side (see SERVER_HEADER and CLIENT_HEADER) this might cause
+ * problems in units acting as a server and a client. In such cases invoke it first as a server.
  */
 
 /******************************************************************
@@ -143,6 +146,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define ORB_IS_THREAD_SAFE        true
 #ifdef SERVER_HEADER
 #  include <generated/xmlBlasterS.h>
+#  include <generated/xmlBlaster.h> // client side include header
 #else
 #  include <generated/xmlBlaster.h> // client side include header
 #endif
