@@ -167,7 +167,8 @@ public class HelloWorldPublish
                public void reachedDead(ConnectionStateEnum oldState,
                                        I_XmlBlasterAccess connection) {
                   log.warn(ME, "I_ConnectionStateListener: Connection to " +
-                          connection.getGlobal().getId() + " is DEAD");
+                          connection.getGlobal().getId() + " is DEAD, doing exit.");
+                  System.exit(1);
                }
             });
    
