@@ -29,7 +29,7 @@ public:
    /**
     * @param nodeId_ If not "" (empty), the command line properties will look
     *                for prop[nodeId] as well,
-    * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
+    * e.g. -persistence.maxMsg and -persistence.maxMsg[heron] will be searched
     */
    MsgUnitStoreProperty(Global& global, const string& nodeId);
 
