@@ -22,6 +22,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/RamTest.class \
     $(CLASS_DIR)/TestLogin.class \
     $(CLASS_DIR)/TestSession.class \
+    $(CLASS_DIR)/TestSessionCb.class \
     $(CLASS_DIR)/TestCallback.class \
     $(CLASS_DIR)/TestCallbackConfig.class \
     $(CLASS_DIR)/TestLoginLogoutEvent.class \
