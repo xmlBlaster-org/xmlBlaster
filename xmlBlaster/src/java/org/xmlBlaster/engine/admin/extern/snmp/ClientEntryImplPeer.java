@@ -16,23 +16,23 @@ public class ClientEntryImplPeer
     private long clientUptime;
     private long clientDowntime;
 
-    public ClientEntryImplPeer(String clientNameVal,
-			       int peerTypeVal,
-			       int connectionStateVal,
-			       long clientQueueMaxMsgsVal,
-			       long clientQueueThresholdVal,
-			       int clearClientQueueVal,
-			       long maxSessionsVal,
+    public ClientEntryImplPeer(String clientName,
+			       int peerType,
+			       int connectionState,
+			       long clientQueueMaxMsgs,
+			       long clientQueueThreshold,
+			       int clearClientQueue,
+			       long maxSessions,
                                long sessionThreshold)
     {
-        clientName = clientNameVal;
-        peerType = peerTypeVal;
-        connectionState = connectionStateVal;
-        clientQueueMaxMsgs = clientQueueMaxMsgsVal;
-        clientQueueThreshold = clientQueueThresholdVal;
-        clearClientQueue = clearClientQueueVal;
-        maxSessions = maxSessionsVal;
-        sessionThreshold = sessionThreshold;
+        this.clientName = clientName;
+        this.peerType = peerType;
+        this.connectionState = connectionState;
+        this.clientQueueMaxMsgs = clientQueueMaxMsgs;
+        this.clientQueueThreshold = clientQueueThreshold;
+        this.clearClientQueue = clearClientQueue;
+        this.maxSessions = maxSessions;
+        this.sessionThreshold = sessionThreshold;
     }
 
     /**

@@ -51,11 +51,19 @@ public class XmlBlasterTest
         NodeEntryImplPeer nodeEntryImplPeer4;
         ConnectionEntryImplPeer connectionEntryImplPeer1;
         ConnectionEntryImplPeer connectionEntryImplPeer2;
+        ClientEntryImplPeer clientEntryImplPeer1;
+        ClientEntryImplPeer clientEntryImplPeer2;
+        SessionEntryImplPeer sessionEntryImplPeer1;
+        SessionEntryImplPeer sessionEntryImplPeer2;
         NodeTable nodeTable;
         NodeTableSubject nodeTableSubject;
         NodeTableObserver nodeTableObserver;
         ConnectionTableSubject connectionTableSubject;
         ConnectionTableObserver connectionTableObserver;
+        ClientTableSubject clientTableSubject;
+        ClientTableObserver clientTableObserver;
+        SessionTableSubject sessionTableSubject;
+        SessionTableObserver sessionTableObserver;
         boolean sleep = true;
 
         //System.setProperty("jax.debug", "true");
@@ -104,6 +112,10 @@ public class XmlBlasterTest
         nodeTableObserver = new NodeTableObserver(nodeTableSubject, session);
         connectionTableSubject = new ConnectionTableSubject(nodeTableObserver);
         connectionTableObserver = new ConnectionTableObserver(connectionTableSubject, session);
+        clientTableSubject = new ClientTableSubject(nodeTableObserver);
+        clientTableObserver = new ClientTableObserver(clientTableSubject, session);
+        sessionTableSubject = new SessionTableSubject(nodeTableObserver, clientTableObserver);
+        sessionTableObserver = new SessionTableObserver(sessionTableSubject, session);
 
         nodeEntryImplPeer1 = new NodeEntryImplPeer("node11", "host11", 111, 1161, 80, "err1.log", 1);
         nodeEntryImplPeer2 = new NodeEntryImplPeer("node22", "host22", 222, 1162, 20, "err2.log", 2);
@@ -113,6 +125,12 @@ public class XmlBlasterTest
         connectionEntryImplPeer1 = new ConnectionEntryImplPeer("hostAAA", 4711, "192.47.11", 5);
         connectionEntryImplPeer2 = new ConnectionEntryImplPeer("hostBBB", 2222, "3.3.3.3.3", 335);
 
+        clientEntryImplPeer1 = new ClientEntryImplPeer("client111", 1, 1, 1111, 11, 1, 111, 11);
+        clientEntryImplPeer2 = new ClientEntryImplPeer("client222", 2, 2, 2222, 22, 2, 222, 22);
+
+        sessionEntryImplPeer1 = new SessionEntryImplPeer("session1", 111, 50, 1, 1);
+        sessionEntryImplPeer2 = new SessionEntryImplPeer("session2", 222, 60, 2, 2);
+
         // add entries to concrete subjects using the observer pattern
         nodeTableSubject.addEntry(nodeEntryImplPeer1);
         nodeTableSubject.addEntry(nodeEntryImplPeer2);
@@ -120,6 +138,15 @@ public class XmlBlasterTest
         nodeTableSubject.addEntry(nodeEntryImplPeer4);
         connectionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
         connectionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), connectionEntryImplPeer2);
+        clientTableSubject.addEntry(nodeEntryImplPeer3.get_nodeName(), clientEntryImplPeer1);
+        clientTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), clientEntryImplPeer1);
+        clientTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), clientEntryImplPeer2);
+        sessionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), 
+                                     clientEntryImplPeer1.get_clientName(),
+                                     sessionEntryImplPeer1);
+        sessionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), 
+                                     clientEntryImplPeer1.get_clientName(),
+                                     sessionEntryImplPeer2);
 
         // remove entries
         nodeTableSubject.removeEntry(nodeEntryImplPeer3);

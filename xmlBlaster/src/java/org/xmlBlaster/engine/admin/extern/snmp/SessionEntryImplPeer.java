@@ -10,17 +10,17 @@ public class SessionEntryImplPeer
     private int closeSession;
     private long cbQueueNumMsgs;
 
-    public SessionEntryImplPeer(String sessionNameVal,
-				long cbQueueMaxMsgsVal,
-				long cbQueueThresholdVal,
-				int clearCbQueueVal,
-                                int closeSessionVal)
+    public SessionEntryImplPeer(String sessionName,
+				long cbQueueMaxMsgs,
+				long cbQueueThreshold,
+				int clearCbQueue,
+                                int closeSession)
     {
-        sessionName = sessionNameVal;
-        cbQueueMaxMsgs = cbQueueMaxMsgs;
-        cbQueueThreshold = cbQueueThreshold;
-	clearCbQueue = clearCbQueue;
-	closeSession = closeSession;
+        this.sessionName = sessionName;
+        this.cbQueueMaxMsgs = cbQueueMaxMsgs;
+        this.cbQueueThreshold = cbQueueThreshold;
+	this.clearCbQueue = clearCbQueue;
+	this.closeSession = closeSession;
     }
 
     /**

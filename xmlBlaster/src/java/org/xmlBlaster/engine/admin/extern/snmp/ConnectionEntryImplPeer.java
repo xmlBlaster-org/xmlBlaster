@@ -8,15 +8,15 @@ public class ConnectionEntryImplPeer
     private String connectionAddress;
     private int connectionProtocol;
 
-    public ConnectionEntryImplPeer(String connectionHostVal,
-                          long connectionPortVal,
-                          String connectionAddressVal,
-                          int connectionProtocolVal)
+    public ConnectionEntryImplPeer(String connectionHost,
+                          long connectionPort,
+                          String connectionAddress,
+                          int connectionProtocol)
     {
-        connectionHost = connectionHostVal;
-        connectionPort = connectionPortVal;
-        connectionAddress = connectionAddressVal;
-        connectionProtocol = connectionProtocolVal;
+        this.connectionHost = connectionHost;
+        this.connectionPort = connectionPort;
+        this.connectionAddress = connectionAddress;
+        this.connectionProtocol = connectionProtocol;
     }
 
     /**

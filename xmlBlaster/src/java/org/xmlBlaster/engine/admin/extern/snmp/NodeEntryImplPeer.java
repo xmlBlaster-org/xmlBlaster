@@ -21,21 +21,21 @@ public class NodeEntryImplPeer
      * NodeEntryImplPeer
      * - initializes mib variables.
      */
-    public NodeEntryImplPeer(String nodeNameVal, 
-                    String hostnameVal,
-                    long portVal, 
-                    long maxClientsVal, 
-                    long clientThresholdVal, 
-                    String errorLogfileVal, 
-                    int logLevelVal)
+    public NodeEntryImplPeer(String nodeName, 
+                    String hostname,
+                    long port, 
+                    long maxClients, 
+                    long clientThreshold, 
+                    String errorLogfile, 
+                    int logLevel)
     {
-        nodeName = nodeNameVal;
-        hostname = hostnameVal;
-        port = portVal;
-        maxClients = maxClientsVal;
-        clientThreshold = clientThresholdVal;
-        errorLogfile = errorLogfileVal;
-        logLevel = logLevelVal;
+        this.nodeName = nodeName;
+        this.hostname = hostname;
+        this.port = port;
+        this.maxClients = maxClients;
+        this.clientThreshold = clientThreshold;
+        this.errorLogfile = errorLogfile;
+        this.logLevel = logLevel;
     }
 
     /**

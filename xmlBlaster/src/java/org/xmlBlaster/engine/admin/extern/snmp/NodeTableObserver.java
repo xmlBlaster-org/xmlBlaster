@@ -164,7 +164,7 @@ public class NodeTableObserver implements Observer {
 
                       // is node referenced by other table entries
                       if (refCounts.get(nodeName) != null) {
-                          System.out.println("node " + nodeName + " is referenced by other table entries.");
+                          System.out.println("node " + nodeName + " is referenced by ...");
 			  break;
                       }
 

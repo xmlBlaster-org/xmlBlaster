@@ -15,35 +15,8 @@ public class NodeTableSubject implements Subject {
       public NodeEntryImplPeer nodeEntryImplPeer;
       public ArrayList observers = new ArrayList();
       public int opCode;
-      private Hashtable refCounts;
       public static final int INSERT = 0;
       public static final int REMOVE = 1;
-
-      public NodeTableSubject() {
-	  refCounts = new Hashtable();
-      }
-
-      public void increment(String nodeName) {
-         Integer rc = (Integer)refCounts.get(nodeName);
-         if (rc != null) {
-            refCounts.put(nodeName, new Integer(rc.intValue() + 1));
-            System.out.println("increment, " + nodeName + ", " + ((Integer)refCounts.get(nodeName)).intValue());
-         }
-         else {
-            refCounts.put(nodeName, new Integer(1));
-            System.out.println("increment, " + nodeName + ", 1");
-         }
-      } 
-
-      public void decrement(String nodeName) {
-         int rc = ((Integer)refCounts.get(nodeName)).intValue();
-         if (rc > 1) {
-            refCounts.put(nodeName, new Integer(rc - 1));
-         }
-         else {
-	     refCounts.remove(nodeName);
-	 }
-      } 
 
       /**
        * addEntry
@@ -69,14 +42,7 @@ public class NodeTableSubject implements Subject {
 
 	  this.nodeEntryImplPeer = nodeEntryImplPeer;
           opCode = REMOVE;
-          String nodeName = nodeEntryImplPeer.get_nodeName();
-          Integer rc = (Integer)refCounts.get(nodeName);
-          if (rc == null) {
-             notifyObservers();
-          }
-          else {
-	      System.out.println("Node table entry " + nodeName + " is referenced " + rc + " times.");
-          }
+          notifyObservers();
       }
 
       /**
