@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.queue.SessionMsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Timestamp;
@@ -47,7 +48,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </ol>
  * @author Marcel Ruff
  */
-public class SessionInfo implements I_Timeout
+public class SessionInfo implements I_Timeout, I_AdminSession
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
@@ -69,6 +70,10 @@ public class SessionInfo implements I_Timeout
     */
    private MsgQueue sessionQueue;
 
+   // Enforced by I_AdminSubject
+   /** Incarnation time of this object instance in millis */
+   private long uptime;
+   private long numUpdates = 0L;
 
    /**
     * Create this instance when a client did a login.
@@ -93,6 +98,7 @@ public class SessionInfo implements I_Timeout
          instanceCounter++;
       }
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
+      this.uptime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
@@ -112,9 +118,21 @@ public class SessionInfo implements I_Timeout
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
+    * @see #getPublicSessionId
     */
    public final long getInstanceId() {
       return this.instanceId;
+   }
+
+   /**
+    * This is a unique instance id per JVM. 
+    * <p />
+    * It is NOT the secret sessionId and may be published with PtP messages
+    * without security danger
+    * @see #getInstanceId
+    */
+   public final String getPublicSessionId() {
+      return ""+getInstanceId();
    }
 
    public void finalize()
@@ -310,5 +328,29 @@ public class SessionInfo implements I_Timeout
          sb.append(offset).append("'/>");
 
       return sb.toString();
+   }
+
+
+   //=========== Enforced by I_AdminSession ================
+   /**
+    * @return uptime in seconds
+    */
+   public final long getUptime() {
+      return (System.currentTimeMillis() - this.uptime)/1000L;
+   }
+   /**
+    * How many update where sent for this client, the sum of all session and
+    * subject queues of this clients. 
+    */ 
+   public final long getNumUpdates() {
+      return this.numUpdates;
+   }
+
+   public final int getCbQueueNumMsgs() {
+      return sessionQueue.size();
+   }
+
+   public final int getCbQueueMaxMsgs() {
+      return sessionQueue.capacity();
    }
 }
