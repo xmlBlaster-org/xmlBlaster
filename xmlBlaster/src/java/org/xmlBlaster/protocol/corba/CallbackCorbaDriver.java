@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.19 2002/03/18 00:29:30 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.20 2002/03/22 08:18:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -98,9 +98,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
 
       try {
-         cb.update(callbackAddress.getSessionId(), updateArr);
-      } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException("CallbackOnewayFailed", "CORBA oneway callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" + e.id + " reason=" + e.reason);
+         cb.updateOneway(callbackAddress.getSessionId(), updateArr);
       } catch (Throwable e) {
          throw new XmlBlasterException("CallbackOnewayFailed", "CORBA oneway callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
       }
