@@ -30,7 +30,10 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.UpdateReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionHandler;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +63,7 @@ public final class XmlBlasterNativeClient implements I_Callback
    private final I_XmlBlaster xmlBlasterImpl;
    private final String sessionId;
    */
-   private XmlBlasterConnection xmlBlasterCon;
+   private I_XmlBlasterAccess xmlBlasterCon;
    private final ConnectQos connectQos;
    private ConnectReturnQos conRetQos;
    private boolean connected;
@@ -90,7 +93,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       log.info(ME, "Connecting to xmlBlaster to subscribe to status messages");
 
       // Connect as a remote client ...
-      xmlBlasterCon = new XmlBlasterConnection(this.glob);
+      xmlBlasterCon = glob.getXmlBlasterAccess();
       this.loginName = this.glob.getProperty().get("PriorizedDeliveryPlugin.user", "_PriorizedDeliveryPlugin");
       String passwd = this.glob.getProperty().get("PriorizedDeliveryPlugin.password", "secret");
       this.cbSessionId = passwd;
@@ -109,9 +112,9 @@ public final class XmlBlasterNativeClient implements I_Callback
       cbAddress.setDispatchPlugin("undef");
       this.connectQos.addCallbackAddress(cbAddress);
 
-      this.xmlBlasterCon.initFailSave(new I_ConnectionProblems() {
+      this.xmlBlasterCon.registerConnectionListener(new I_ConnectionStateListener() {
             
-            public void reConnected() {
+            public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                connected = true;
                conRetQos = xmlBlasterCon.getConnectReturnQos();
                log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
@@ -121,10 +124,16 @@ public final class XmlBlasterNativeClient implements I_Callback
                } catch (XmlBlasterException e) {
                   log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                }
+               return false;
             }
 
-            public void lostConnection() {
+            public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                log.warn(ME, "I_ConnectionProblems: No connection to " + glob.getId());
+               connected = false;
+            }
+
+            public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+               log.error(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
                connected = false;
             }
          });
