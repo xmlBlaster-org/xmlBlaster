@@ -123,22 +123,14 @@ All packages allow free use for both commercial and non-commercial applications.
   those class files in your classpath as well.
 
 
-10) xmlrpc.jar 1.0_beta_4
-=========================
+10) xmlrpc.jar 1.0
+==================
    XML-RPC Library for Java
    Copyright (c) 1999 Hannes Wallnoefer, hannes@helma.at
-   http://xmlrpc.helma.org/
-   Patch: http://helma.org/download/xmlrpc/
-   The XML-RPC Library for Java is free for both commercial and non-commercial
-   use and redistribution. If you choose to redistribute the source code
-   please keep this copyright and disclaimer intact and visible. You are free
-   to modify this library for your own use and to redistribute it with your
-   modifications, provided that the modifications are prominently documented.
+   http://xml.apache.org/xmlrpc/
 
-   The file helma/xmlrpc/XmlRpc.java is modified to run with JAXP parsers.
-
-   The file Base64.java is patched to fix a bug for long data length (2001-03-11)
-   (see http://www.ruralnet.net/~kelley/java/Base64.java)
+   The org.xml.sax stuff is stripped from xmlrpc.jar
+   to avoid XML parser conflict.
 
 
 11) ant.jar 1.4.1

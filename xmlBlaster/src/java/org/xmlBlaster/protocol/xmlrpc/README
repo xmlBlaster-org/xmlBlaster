@@ -1,10 +1,10 @@
 This proxy allows clients to access xmlBlaster with XML-RPC.
 
-See http://www.xmlrpc.com
+See http://xml.apache.org/xmlrpc/
 
    XML-RPC Library for Java
    Copyright (c) 1999 Hannes Wallnoefer, hannes@helma.at
-   http://helma.at/hannes/xmlrpc/
+   (http://helma.at/hannes/xmlrpc/)
 
 and http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
 
@@ -28,14 +28,14 @@ Todo:
   Add filter to allow only wanted clients:
      acceptClient(java.lang.String address)
      setParanoid(boolean p)
-  See API of helma.xmlrpc.WebServer
+  See API of org.apache.xmlrpc.WebServer
   Make addresses configurable with xmlBlaster.properties
 
 
 Test the driver:
 ================
 
-   $JAVA_WRAP org.xmlBlaster.Main
+   java org.xmlBlaster.Main
 
    java javaclients.ClientSub -client.protocol XML-RPC
 
@@ -51,13 +51,13 @@ Test the driver:
 
 To further Test the driver:
 ===========================
-   jaco org.xmlBlaster.Main -call true
+   java org.xmlBlaster.Main -call true
 
-   java helma.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
+   java org.apache.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
 
-   java helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='__sys__Login'></key>" "<qos></qos>"
+   java org.apache.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='__sys__Login'></key>" "<qos></qos>"
 
-   java helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='cpuinfo'></key>" "<qos></qos>"
+   java org.apache.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='cpuinfo'></key>" "<qos></qos>"
 
 and the proxy receives the updates.
 

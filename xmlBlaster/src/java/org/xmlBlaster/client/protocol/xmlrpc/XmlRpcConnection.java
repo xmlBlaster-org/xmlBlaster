@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.16 2001/11/19 15:22:32 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.17 2001/12/30 10:41:14 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -29,9 +29,9 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import java.applet.Applet;
 
-import helma.xmlrpc.XmlRpcClient;
-import helma.xmlrpc.XmlRpc;
-import helma.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.XmlRpc;
+import org.apache.xmlrpc.XmlRpcException;
 
 
 /**
@@ -569,7 +569,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
-    * xml-rpc exception: helma.xmlrpc.XmlRpcException: java.lang.Exception: id=RequestBroker.UnavailableKey reason=The key 'NotExistingMessage' is not available.
+    * xml-rpc exception: org.apache.xmlrpc.XmlRpcException: java.lang.Exception: id=RequestBroker.UnavailableKey reason=The key 'NotExistingMessage' is not available.
     */
    public static XmlBlasterException extractXmlBlasterException(XmlRpcException e) {
       String all = e.toString();

@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.21 2001/12/04 09:31:22 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.22 2001/12/30 10:40:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
-import helma.xmlrpc.*;
+import org.apache.xmlrpc.*;
 import java.io.IOException;
 
 
