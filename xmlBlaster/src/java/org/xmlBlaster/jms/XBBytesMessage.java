@@ -8,13 +8,17 @@ package org.xmlBlaster.jms;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.ObjectOutputStream;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
+import javax.jms.MessageNotReadableException;
+import javax.jms.MessageNotWriteableException;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 
@@ -26,9 +30,13 @@ import org.xmlBlaster.util.qos.MsgQosData;
  */
 public class XBBytesMessage extends XBMessage implements BytesMessage {
    private final static String ME = "XBBytesMessage";
-   private ObjectInputStream is;
-   private ObjectOutputStream os;
+   private DataInputStream is;
+   private DataOutputStream os;
+   private ByteArrayOutputStream baos;
    
+   private boolean readOnly;
+   private boolean writeOnly;
+      
    /**
     * If the content is empty it will be considered a message for a producer, i.e. a message to
     * be filled and sent. If the content is not null, then it is assumed to be a message for a
@@ -40,248 +48,317 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
     */
    XBBytesMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) throws JMSException {
       super(global, key, content, qos, XBMessage.BYTES);
-      try {
-         if (this.content != null) 
-            is = new ObjectInputStream(new ByteArrayInputStream(this.content));
-         else os = new ObjectOutputStream(new ByteArrayOutputStream());   
+      if (this.content != null) {
+         this.readOnly = true; 
+         this.writeOnly = false;
+         this.is = new DataInputStream(new ByteArrayInputStream(this.content));
       }
-      catch (IOException ex) {
-         throw new JMSException(ME, "constructor: " + ex.getMessage());
-      }
-   }
-
-
-   private void getterCheck(String methodName) throws JMSException {
-      if (is == null) {
-         throw new JMSException(ME, methodName + " this is a producer message (only setters allowed)");
+      else {
+         this.readOnly = false;
+         this.writeOnly = true;
+         this.baos = new ByteArrayOutputStream(); 
+         this.os = new DataOutputStream(this.baos);   
       }
    }
 
-   private void setterCheck(String methodName) throws JMSException {
-      if (os == null) {
-         throw new JMSException(ME, methodName + " this is a consumer message (only getters allowed)");
+   private void getterCheck(String methodName) throws MessageNotReadableException {
+      if (this.writeOnly || is == null) {
+         throw new MessageNotReadableException(ME + " writeonly message: not allowed to read on operation '" + methodName + "'");
       }
    }
 
+   private void setterCheck(String methodName) throws MessageNotWriteableException {
+      if (this.readOnly || os == null) {
+         throw new MessageNotWriteableException("could not invoke '" + methodName + "' since the message is in readonly mode"); 
+      }
+   }
 
    public long getBodyLength() throws JMSException {
       return this.content.length;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readBoolean()
-    */
    public boolean readBoolean() throws JMSException {
       getterCheck("readBoolean");
       try {
          return this.is.readBoolean();
       }
       catch (IOException ex) {
-         throw new JMSException(ME, "readBoolean: " + ex.getMessage());
+         throw new JMSException(ME + ".readBoolean: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
       }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readByte()
-    */
    public byte readByte() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readByte");
+      try {
+         return this.is.readByte();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readByte: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readUnsignedByte()
-    */
    public int readUnsignedByte() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readUnsignedByte");
+      try {
+         return this.is.readUnsignedByte();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readUnsignedByte: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readShort()
-    */
    public short readShort() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readShort");
+      try {
+         return this.is.readShort();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readShort: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readUnsignedShort()
-    */
    public int readUnsignedShort() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readUnsignedShort");
+      try {
+         return this.is.readUnsignedShort();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readUnsignedShort: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readChar()
-    */
    public char readChar() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readChar");
+      try {
+         return this.is.readChar();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readChar: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readInt()
-    */
    public int readInt() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readInt");
+      try {
+         return this.is.readInt();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readInt: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readLong()
-    */
    public long readLong() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readLong");
+      try {
+         return this.is.readLong();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readLong: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readFloat()
-    */
    public float readFloat() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readFloat");
+      try {
+         return this.is.readFloat();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readFloat: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readDouble()
-    */
    public double readDouble() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      getterCheck("readDouble");
+      try {
+         return this.is.readDouble();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readDouble: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readUTF()
-    */
    public String readUTF() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      getterCheck("readUTF");
+      try {
+         return this.is.readUTF();
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readUTF: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readBytes(byte[])
-    */
-   public int readBytes(byte[] arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+   public int readBytes(byte[] value) throws JMSException {
+      return readBytes(value, value.length);
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#readBytes(byte[], int)
-    */
-   public int readBytes(byte[] arg0, int arg1) throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+   public int readBytes(byte[] value, int length) throws JMSException {
+      getterCheck("readBytes");
+      if (length < 0 || length > value.length)
+         throw new IndexOutOfBoundsException(ME + ".readBytes: length='" + length + "' array length='" + value.length + "'");
+      try {
+         int size = 0;
+         int offset = 0;
+         while ( (size=this.is.available()) > 0) {
+            if (offset + size > length) size = length - offset;
+            if (size < 1) break;
+            this.is.read(value, offset, size);
+         }
+         int sum = size + offset; 
+         if (sum < 1) return -1;
+         return sum;
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".readBytes: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeBoolean(boolean)
-    */
-   public void writeBoolean(boolean arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeBoolean(boolean value) throws JMSException {
+      setterCheck("writeBoolean");
+      try {
+         this.os.writeBoolean(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeBoolean: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeByte(byte)
-    */
-   public void writeByte(byte arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeByte(byte value) throws JMSException {
+      setterCheck("writeByte");
+      try {
+         this.os.writeByte(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeByte: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeShort(short)
-    */
-   public void writeShort(short arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeShort(short value) throws JMSException {
+      setterCheck("writeShort");
+      try {
+         this.os.writeShort(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeShort: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeChar(char)
-    */
-   public void writeChar(char arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeChar(char value) throws JMSException {
+      setterCheck("writeChar");
+      try {
+         this.os.writeChar(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeChar: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeInt(int)
-    */
-   public void writeInt(int arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeInt(int value) throws JMSException {
+      setterCheck("writeInt");
+      try {
+         this.os.writeInt(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeInt: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeLong(long)
-    */
-   public void writeLong(long arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeLong(long value) throws JMSException {
+      setterCheck("writeLong");
+      try {
+         this.os.writeLong(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeLong: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeFloat(float)
-    */
-   public void writeFloat(float arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeFloat(float value) throws JMSException {
+      setterCheck("writeFloat");
+      try {
+         this.os.writeFloat(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeFloat: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeDouble(double)
-    */
-   public void writeDouble(double arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeDouble(double value) throws JMSException {
+      setterCheck("writeDouble");
+      try {
+         this.os.writeDouble(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeDouble: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeUTF(java.lang.String)
-    */
-   public void writeUTF(String arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeUTF(String value) throws JMSException {
+      setterCheck("writeUTF");
+      if (value == null) throw new NullPointerException(ME + ".writeUTF");
+      try {
+         this.os.writeUTF(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeUTF: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeBytes(byte[])
-    */
-   public void writeBytes(byte[] arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeBytes(byte[] value) throws JMSException {
+      setterCheck("writeBytes");
+      if (value == null) throw new NullPointerException(ME + ".writeBytes");
+      try {
+         this.os.write(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeBytes: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeBytes(byte[], int, int)
-    */
-   public void writeBytes(byte[] arg0, int arg1, int arg2)
+   public void writeBytes(byte[] value, int offset, int length)
       throws JMSException {
-      // TODO Auto-generated method stub
-
+      setterCheck("writeBytes");
+      if (value == null) throw new NullPointerException(ME + ".writeBytes");
+      try {
+         this.os.write(value, offset, length);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeBytes: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#writeObject(java.lang.Object)
-    */
-   public void writeObject(Object arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void writeObject(Object value) throws JMSException {
+      setterCheck("writeObject");
+      if (value == null) throw new NullPointerException(ME + ".writeObject");
+      try {
+         ObjectOutputStream oo = new ObjectOutputStream(this.os);
+         oo.writeObject(value);
+      }
+      catch (IOException ex) {
+         throw new JMSException(ME + ".writeObject: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.BytesMessage#reset()
-    */
    public void reset() throws JMSException {
-      // TODO Auto-generated method stub
-
-   }
-
-   public static void main(String[] args) {
+      if (this.writeOnly) {
+         this.writeOnly = false;
+         this.readOnly = true;
+         try {
+            this.content = this.baos.toByteArray();
+            this.baos.close();
+            this.os = null;
+            this.baos = null;
+            if (this.content != null) {
+               this.readOnly = true; 
+               this.writeOnly = false;
+               this.is = new DataInputStream(new ByteArrayInputStream(this.content));
+            }
+            else {
+               throw new JMSException(ME + ".reset: content was null", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+            }
+         }
+         catch (IOException ex) {
+            throw new JMSException(ME + ".reset: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+         }
+      }
    }
 }

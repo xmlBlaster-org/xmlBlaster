@@ -22,8 +22,8 @@ public class XBQueueSession extends XBSession implements QueueSession {
 
    private final static String ME = "XBQueueSession";
 
-   XBQueueSession(XBConnection connection, int ackMode) {
-      super(connection, ackMode);
+   XBQueueSession(XBConnection connection, int ackMode, boolean transacted) {
+      super(connection, ackMode, transacted);
    }
 
    /* (non-Javadoc)

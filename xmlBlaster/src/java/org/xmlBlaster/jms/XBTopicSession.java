@@ -22,8 +22,8 @@ public class XBTopicSession extends XBSession implements TopicSession {
 
    private final static String ME = "XBTopicSession";
 
-   XBTopicSession(XBConnection connection, int ackMode) {
-      super(connection, ackMode);
+   XBTopicSession(XBConnection connection, int ackMode, boolean transacted) {
+      super(connection, ackMode, transacted);
    }
 
    public TopicPublisher createPublisher(Topic topic) throws JMSException {

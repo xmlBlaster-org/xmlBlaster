@@ -308,7 +308,7 @@ public class XBMessage implements Message {
    }
 
    public void setJMSExpiration(long lifeTime) throws JMSException {
-      setJMSExpiration(lifeTime);
+      setJMSExpiration(lifeTime, true);
    }
 
    void setJMSExpiration(long lifeTime, boolean mark) throws JMSException {

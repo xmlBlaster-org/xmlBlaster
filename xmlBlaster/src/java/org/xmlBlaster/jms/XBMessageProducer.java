@@ -9,10 +9,14 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * XBMessageProducer
@@ -40,12 +44,8 @@ public class XBMessageProducer implements MessageProducer {
       // only the administrator should erase the topic
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDeliveryMode()
-    */
    public int getDeliveryMode() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      return this.deliveryMode;
    }
 
    /* (non-Javadoc)
@@ -64,28 +64,16 @@ public class XBMessageProducer implements MessageProducer {
       return false;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getPriority()
-    */
    public int getPriority() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      return this.priority;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getTimeToLive()
-    */
    public long getTimeToLive() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
+      return this.timeToLive;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setDeliveryMode(int)
-    */
-   public void setDeliveryMode(int arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
+   public void setDeliveryMode(int deliveryMode) throws JMSException {
+      this.deliveryMode = deliveryMode;
    }
 
    /* (non-Javadoc)
@@ -102,34 +90,50 @@ public class XBMessageProducer implements MessageProducer {
       // TODO Auto-generated method stub
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setPriority(int)
-    */
-   public void setPriority(int arg0) throws JMSException {
-      // TODO Auto-generated method stub
+   public void setPriority(int priority) throws JMSException {
+      this.priority = priority;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setTimeToLive(long)
-    */
-   public void setTimeToLive(long arg0) throws JMSException {
-      // TODO Auto-generated method stub
-   }
-
-
-   public void send(Message message, int deliveryMode, int priority, long timeToLive)  
-      throws JMSException {
+   public void setTimeToLive(long timeToLive) throws JMSException {
+      this.timeToLive = timeToLive;
    }
 
    public void send(Message message) throws JMSException {
+      send(this.destination, message);
    }
 
    public void send(Destination dest, Message message)
       throws JMSException {
+      send(dest, message, this.deliveryMode, this.priority, this.timeToLive);
+   }
+
+   public void send(Message message, int deliveryMode, int prio, long timeToLive)
+      throws JMSException {
+      send(this.destination, message, deliveryMode, prio, timeToLive);
    }
 
    public void send(Destination dest, Message message, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
+      if (message instanceof XBMessage) {
+         XBMessage msg = (XBMessage)message;
+         msg.setJMSDeliveryMode(deliveryMode);
+         msg.setJMSPriority(priority);
+         if (destination == null) 
+            throw new UnsupportedOperationException(ME + ".send of message needs a destination topic to be set");
+         msg.setJMSDestination(dest);
+         msg.setJMSExpiration(timeToLive);
+         try {
+            MsgUnit msgUnit = msg.getMsgUnit();
+            this.publishReturnQos = this.access.publish(msgUnit); 
+            // what to do whith the publish return qos ?
+         }
+         catch (XmlBlasterException ex) {
+            throw XBConnectionFactory.convert(ex, ME + ".send: ");         
+         }
+      }
+      else {
+         throw new MessageFormatException(ME + ".send of message from other provider is not supported.", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      }
    }
 
    public Destination getDestination() throws JMSException {

@@ -132,21 +132,21 @@ public class XBConnection implements QueueConnection, TopicConnection, I_Callbac
       throws JMSException {
       if (transacted) 
          throw new JMSException(ME + " 'createSession' in transacted mode not implemented yet");
-      return new XBSession(this, ackMode);      
+      return new XBSession(this, ackMode, transacted);      
    }
 
    public TopicSession createTopicSession(boolean transacted, int ackMode)
       throws JMSException {
          if (transacted) 
             throw new JMSException(ME + " 'createTopicSession' in transacted mode not implemented yet");
-         return new XBTopicSession(this, ackMode);      
+         return new XBTopicSession(this, ackMode, transacted);      
    }
 
    public QueueSession createQueueSession(boolean transacted, int ackMode)
       throws JMSException {
          if (transacted) 
             throw new JMSException(ME + " 'createQueueSession' in transacted mode not implemented yet");
-         return new XBQueueSession(this, ackMode);      
+         return new XBQueueSession(this, ackMode, transacted);      
    }
 
 

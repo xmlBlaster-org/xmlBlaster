@@ -5,17 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.jms;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.Topic;
-import javax.jms.TopicSession;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -46,9 +46,9 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    protected LogChannel log;
    int counter = 0, nmax;
 
-   private TopicConnectionFactory factory;
-   private Topic topic;
-   private TopicConnection connection;
+   private ConnectionFactory factory;
+   private Destination topic;
+   private Connection connection;
    private Object latch = new Object();
    private long[] timestamps;
    private String[] args;
@@ -125,7 +125,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
             assertTrue("naming exception", false);
          }
 
-         this.connection = this.factory.createTopicConnection();
+         this.connection = this.factory.createConnection();
          this.connection.start();
          this.nmax = 5;
          this.timestamps = new long[this.nmax];
@@ -176,15 +176,16 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
 
    public void testSubAutoAck() {
       try {
-         TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         TopicSubscriber subscriber = session.createSubscriber(this.topic);
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer subscriber = session.createConsumer(this.topic);
          subscriber.setMessageListener(this);
-         TopicPublisher publisher = session.createPublisher(this.topic);
-         TextMessage msg = session.createTextMessage();
+         Session session2 = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer publisher = session2.createProducer(this.topic);
+         TextMessage msg = session2.createTextMessage();
          msg.setText("this is a simple jms AUTO acknowlegded test message");
          
          for (int i=0; i < this.nmax; i++) {
-            publisher.publish(msg);
+            publisher.send(this.topic, msg);
             Thread.sleep(50L);
          }
          synchronized(this.latch) {
@@ -205,16 +206,17 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
 
    public void testSubClientAck() {
       try {
-         TopicSession session = connection.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-         TopicSubscriber subscriber = session.createSubscriber(this.topic);
+         Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageConsumer subscriber = session.createConsumer(this.topic);
          subscriber.setMessageListener(this);
-         TopicPublisher publisher = session.createPublisher(this.topic);
-         TextMessage msg = session.createTextMessage();
+         Session session2 = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageProducer publisher = session2.createProducer(this.topic);
+         TextMessage msg = session2.createTextMessage();
          msg.setText("this is a simple jms CLIENT acknowlegded test message");
          
          long t1 = System.currentTimeMillis();
          for (int i=0; i < this.nmax; i++) {
-            publisher.publish(msg);
+            publisher.send(this.topic, msg);
             Thread.sleep(50L);
          }
          synchronized(this.latch) {
@@ -233,6 +235,40 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
 
+   public void testJms11() {
+      try {
+         boolean transacted = false;
+         int priority = 9;
+         long timeToLive = 3600L;
+         InitialContext ctx = new InitialContext();
+         ConnectionFactory f = (ConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
+         Destination d = (Destination)ctx.lookup(TOPIC);
+         Connection c = f.createConnection();
+         Session s = c.createSession(transacted, Session.CLIENT_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(d);
+         Message m = s.createTextMessage("MyMessage");
+
+         long t1 = System.currentTimeMillis();
+         for (int i=0; i < this.nmax; i++) {
+            p.send(m, DeliveryMode.NON_PERSISTENT, priority, timeToLive);
+            Thread.sleep(50L);
+         }
+         synchronized(this.latch) {
+            this.latch.wait(this.nmax * 700L);
+            Thread.sleep(100L);
+            assertEquals("number of onMessage invocations is wrong", this.nmax, this.nmax);
+         }
+         double expDt = 200.0;
+         double dt = 1.0 * (this.timestamps[this.nmax-1] - this.timestamps[0]) / (this.nmax - 1.0);
+         this.log.info("", "The processing time is '" + dt + "' ms and expected is '" + expDt + "' ms");
+         assertEquals("The expected processing time wrong", 1.0*expDt, 1.0*dt, 0.2*dt);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("exception occured when sending according to JMS 1.1", false);
+      }
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.TestJmsSubscribe
@@ -248,5 +284,10 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       test.setUp();
       test.testSubClientAck();
       test.tearDown();
+      /*      
+      test.setUp();
+      test.testJms11();
+      test.tearDown();
+      */
    }
 }
