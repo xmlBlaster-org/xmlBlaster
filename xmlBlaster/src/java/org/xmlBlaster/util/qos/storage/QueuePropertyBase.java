@@ -15,6 +15,7 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropEntry;
+import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.qos.address.AddressBase;
 
 
@@ -90,7 +91,6 @@ public abstract class QueuePropertyBase implements Cloneable
    /** The settings for the storeSwapBytes */
    protected long reloadSwapBytes = (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache.getValue());
 
-
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
    public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
    protected PropString onOverflow = new PropString(DEFAULT_onOverflow);
@@ -104,6 +104,9 @@ public abstract class QueuePropertyBase implements Cloneable
 
    /** To allow specific configuration parameters for specific cluster nodes */
    protected String nodeId = null;
+
+   /** To allow debugging the queue (experimental) */
+   protected PropBoolean debug = new PropBoolean(false);
 
    /**
     * @param glob The global handle containing env informations
@@ -185,6 +188,7 @@ public abstract class QueuePropertyBase implements Cloneable
       this.version.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "version");
       this.onOverflow.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onOverflow");
       this.onFailure.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "onFailure");
+      this.debug.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "debug");
 
       // The old way:
       // prefix is e.g. "queue/callback" or "msgUnitStore."
@@ -537,6 +541,14 @@ public abstract class QueuePropertyBase implements Cloneable
             else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
                setType(attrs.getValue(ii).trim());
             }
+            else if (attrs.getQName(ii).equalsIgnoreCase("debug")) {
+               String tmp = attrs.getValue(ii).trim();
+               try {
+                  setDebug(new Boolean(tmp).booleanValue());
+               } catch (NumberFormatException e) {
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " debug='" + tmp + "'>, expected a boolean, using default.");
+               }
+            }
             else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
                setVersion(attrs.getValue(ii).trim());
             }
@@ -630,6 +642,7 @@ public abstract class QueuePropertyBase implements Cloneable
       String prefix = getPrefix();
       String text = "";
       text += "\n" + headerline + "\n";
+      text += "   -"+prefix+"debug           Sets a debug flag on the queue (currently used for consistency asserts on jdbc queue) [false].\n";
       text += "   -"+prefix+"maxEntries      The maximum allowed number of messages [" + this.maxEntries.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxEntriesCache The maximum allowed number of messages in the cache [" + this.maxEntriesCache.getDefaultValue() + "].\n";
       text += "   -"+prefix+"maxBytes        The maximum size in bytes of the storage [" + this.maxBytes.getDefaultValue() + "].\n";
@@ -676,6 +689,10 @@ public abstract class QueuePropertyBase implements Cloneable
 
       // open <queue ...
       sb.append(offset).append("<").append(getRootTagName());
+
+      if (this.debug.isModified())
+         sb.append(" debug='").append(getDebug()).append("'");
+
       sb.append(" relating='").append(getRelating()).append("'");
       if (this.type.isModified())
          sb.append(" type='").append(getType()).append("'");
@@ -750,6 +767,15 @@ public abstract class QueuePropertyBase implements Cloneable
          return null;
       }
    }
+
+   public final boolean getDebug() {
+      return this.debug.getValue();
+   }
+
+   public final void setDebug(boolean debug) {
+      this.debug.setValue(debug);
+   }
+
 }
 
 

@@ -27,6 +27,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -59,6 +60,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private Object modificationMonitor = new Object();
    private PluginInfo pluginInfo = null;
 
+   private boolean debug = false;
 
    /**
     * This method is only used for testing. It resets all cached sizes and counters. While testing it
@@ -160,6 +162,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             ex.printStackTrace();
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "sql exception in initialize(" + uniqueQueueId + ")", ex);
          }
+      }
+
+      boolean dbg = this.glob.getProperty().get("queue/debug", false);
+      if (dbg == true) this.property.setDebug(true);
+      this.debug = this.property.getDebug();
+      if (this.debug) {
+         this.log.warn(ME, "initialize: debugging is enabled");
       }
    }
 
@@ -275,7 +284,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, "put: the maximum number of entries reached." +
                    " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
-*/	  
+*/        
       String exTxt = null;
       if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
@@ -337,10 +346,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          try {
 
 // this line has been added:
-int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries);
+ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries);
             for (int i=0; i < queueEntries.length; i++) {
 //               boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries[i]);
-               boolean isProcessed = help[i] > 0;
+               boolean isProcessed = help[i] > 0 || help[i] == Statement.SUCCESS_NO_INFO;
+               if (this.log.TRACE) {
+               	  this.log.trace(ME, "put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "' (by the way SUCCESS_NO_INFO is '" + Statement.SUCCESS_NO_INFO + "'");
+               }
                if (isProcessed) {
                   this.numOfEntries++;
                   this.numOfBytes += queueEntries[i].getSizeInBytes();
@@ -776,14 +788,15 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @exception XmlBlasterException if number is not retrievable
     */
    private long getNumOfEntries_() throws XmlBlasterException {
-      if (this.numOfEntries > -1L && !this.log.DUMP) return this.numOfEntries;
+      if (this.numOfEntries > -1L && !this.debug) return this.numOfEntries;
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfEntries;
             this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.log.DUMP) {
+            if (this.debug) {
                if (oldValue != this.numOfEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  this.log.error(ME, "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'");
+                  String txt = "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'";
+                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
@@ -826,14 +839,15 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfPersistentEntries()
     */
    private long getNumOfPersistentEntries_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfPersistentEntries > -1L && !this.log.DUMP) return this.numOfPersistentEntries;
+      if (this.numOfPersistentEntries > -1L && !this.debug) return this.numOfPersistentEntries;
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfPersistentEntries;
             this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.log.DUMP) {
+            if (this.debug) {
                if (oldValue != this.numOfPersistentEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  this.log.error(ME, "getNumOfPersistentEntries: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentEntries + "'");
+                  String txt = "getNumOfPersistentEntries: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentEntries + "'";
+                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
@@ -886,14 +900,15 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfBytes()
     */
    private long getNumOfBytes_() throws XmlBlasterException {
-      if (this.numOfBytes > -1L && !this.log.DUMP) return this.numOfBytes;
+      if (this.numOfBytes > -1L && !this.debug) return this.numOfBytes;
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfBytes;
             this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.log.DUMP) {
+            if (this.debug) {
                if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  this.log.error(ME, "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'");
+                  String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
+                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
@@ -936,14 +951,15 @@ int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.g
     * @see I_Queue#getNumOfPersistentBytes()
     */
    private long getNumOfPersistentBytes_(boolean verbose) throws XmlBlasterException {
-      if (this.numOfPersistentBytes > -1L && !this.log.DUMP) return this.numOfPersistentBytes;
+      if (this.numOfPersistentBytes > -1L && !this.debug) return this.numOfPersistentBytes;
       synchronized (this.modificationMonitor) {
          try {
             long oldValue = this.numOfPersistentBytes;
             this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.log.DUMP) {
+            if (this.debug) {
                if (oldValue != this.numOfPersistentBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  this.log.error(ME, "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'");
+                  String txt = "getNumOfPersistentBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfPersistentBytes + "'";
+                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");

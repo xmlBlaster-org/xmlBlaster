@@ -195,9 +195,14 @@ public interface I_Queue extends I_StorageProblemNotifier
     * together) whichever is higher. Note that numOfEntries is exclusive.
     * If there is no entry of lower order (lower priority and higher uniqueId)
     * than the one specified, an empty array list is returned.
-    * A further restriction is the following: At least one entry must be left
-    * on the queue. In other words the queue is not allowed to be completely
-    * emptied, since this would result in loops.
+    * A further restriction is the following: if 'leaveOne' is 'true', then at least one entry must be 
+    * left on the queue. 
+    * 
+    * A little example: suppose the size of every entry is 100 bytes and you invoke the following:
+    * takeLowest(3, 750, null, false);
+    * then it will give back 8 entries because:
+    * numEntries would give back 3 entries. 750 bytes / 100 bytes/entry gives 7.5 entries so it would 
+    * round it up to 8. Since it gives back the less restrictive it will give back 8 entries.
     *
     * @param numOfEntries inclusive, zero up to numOfEntries, if -1 up to the whole queue
     * @param numOfBytes inclusive, and minimum one is returned (but not if limitEntry suppress it)
