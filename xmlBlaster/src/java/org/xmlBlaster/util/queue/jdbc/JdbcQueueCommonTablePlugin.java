@@ -491,8 +491,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
+         ArrayList ret = null;
          synchronized(this.modificationMonitor) {
-            ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+            ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
 
             long ids[] = new long[ret.size()];
             for (int i=0; i < ids.length; i++)
@@ -502,9 +503,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) this.numOfEntries--;
             }
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return ret;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return ret;
       }
       finally {
          resetCounters();
@@ -531,8 +532,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
 
       try {
+         ReturnDataHolder ret = null;
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
+            ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
 
@@ -541,9 +543,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return ret.list;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return ret.list;
       }
       catch (XmlBlasterException ex) {
          resetCounters();
@@ -626,14 +628,15 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
       if (limitEntry == null) return 0L;
       try {
+         long ret = 0L;
          synchronized(this.modificationMonitor) {
-            long ret = this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
+            ret = this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
             if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
                resetCounters();
             }
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return ret;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return ret;
       }
       catch (XmlBlasterException ex) {
          resetCounters();
@@ -651,8 +654,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public int remove() throws XmlBlasterException {
       try {
+         ReturnDataHolder ret = null;
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
+            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -660,9 +664,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes = getNumOfPersistentBytes_(true);
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return (int)ret.countEntries;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return (int)ret.countEntries;
       }
       catch (XmlBlasterException ex) {
          resetCounters();
@@ -681,8 +685,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return 0L;
       try {
+         ReturnDataHolder ret = null;
          synchronized(this.modificationMonitor) {
-            ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+            ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
 
@@ -690,9 +695,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentBytes = getNumOfPersistentBytes_(true);
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return ret.countEntries;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return ret.countEntries;
       }
       catch (XmlBlasterException ex) {
          resetCounters();
@@ -741,18 +746,18 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          currentPersistentSize += currentAmount;
          currentPersistentEntries = 1L;
       }
-
+      int ret = 0;
       synchronized(this.modificationMonitor) {
-         int ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
+         ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
          this.numOfEntries--;
          if (ret > 0) { // then we need to retrieve the values
             this.numOfBytes -= currentAmount;
             this.numOfPersistentBytes -= currentPersistentSize;
             this.numOfPersistentEntries -= currentPersistentEntries;
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
 
    /**
@@ -776,6 +781,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             }
          }
 
+         boolean[] tmp = null; 
          synchronized(this.modificationMonitor) {
 /*
             int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
@@ -786,7 +792,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                if (ret[i]) sum++;
             }
 */  
-            boolean[] tmp = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
+            tmp = this.manager.deleteEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
             long sum = 0;
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) sum++;
@@ -803,9 +809,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                this.numOfPersistentBytes -= currentPersistentSize;
                this.numOfPersistentEntries -= currentPersistentEntries;
             }
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return tmp;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return tmp;
       }
       catch (XmlBlasterException ex) {
          resetCounters();
@@ -832,15 +838,16 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public int removeTransient() throws XmlBlasterException {
 
       try {
+         int ret = 0; 
          synchronized(this.modificationMonitor) {
-            int ret = this.manager.deleteAllTransient(getStorageId().getStrippedId(), glob.getStrippedId());
+            ret = this.manager.deleteAllTransient(getStorageId().getStrippedId(), glob.getStrippedId());
             this.numOfEntries -= ret;
             // not so performant but only called on init
             this.numOfBytes = -999L;
             this.numOfBytes = getNumOfBytes_();
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
-            return ret;
          }
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+         return ret;
       }
       catch (XmlBlasterException ex) {
          resetCounters();

@@ -200,8 +200,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @return The number of messages erased
     */
    public long clear() {
+      long ret = 0L;      
       synchronized(this) {
-         long ret = (long)this.storage.size();
+         ret = (long)this.storage.size();
 
          // Take a copy to avoid java.util.ConcurrentModificationException
          I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
@@ -217,9 +218,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
          this.numOfPersistentEntries = 0L;
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
 
    /**
@@ -252,9 +253,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
             }
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
          }
 
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
          this.storage.removeAll(elementsToDelete);
          this.sizeInBytes -= ret.countBytes;
          return elementsToDelete.size();
@@ -494,9 +495,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                   this.numOfPersistentEntries--;
                }
             }
-            if (this.queueSizeListener != null) invokeQueueSizeListener();
          }
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
       return ret;
    }
 
@@ -548,8 +549,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
       return ret;
    }
 
@@ -591,13 +592,14 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private ArrayList takeOrPeekLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne, boolean doDelete)
       throws XmlBlasterException {
 
+      ArrayList ret = null; 
       synchronized(this) {
          LinkedList list = new LinkedList(this.storage);
          ListIterator iter = list.listIterator(list.size());
          int count = 0;
          long currentSizeInBytes = 0L;
          long totalSizeInBytes = 0L;
-         ArrayList ret = new ArrayList();
+         ret = new ArrayList();
 
          // it leaves at least one entry in the list
          while (iter.hasPrevious()) {
@@ -630,9 +632,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
          // this.sizeInBytes -= totalSizeInBytes;
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
 
    /**
@@ -680,7 +682,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                if (this.notifiedAboutAddOrRemove) {
                   entry.added(this.storageId);
                }
-               if (this.queueSizeListener != null) invokeQueueSizeListener();
             }
          }
          else {
@@ -689,6 +690,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
 
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(entry);
       }
@@ -746,9 +748,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
       }
 
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(msgArr);
       }

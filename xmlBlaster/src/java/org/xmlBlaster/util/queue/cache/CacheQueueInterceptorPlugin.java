@@ -1177,6 +1177,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
          ex.printStackTrace();
       }
+      this.queueSizeListener = null;
    }
 
    public boolean isShutdown() {
