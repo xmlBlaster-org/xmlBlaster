@@ -44,6 +44,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
 	if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
