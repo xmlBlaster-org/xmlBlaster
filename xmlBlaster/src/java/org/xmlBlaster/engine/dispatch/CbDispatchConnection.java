@@ -142,6 +142,12 @@ public final class CbDispatchConnection extends DispatchConnection
                String oid = mu.getQosData().getClientProperty("__oid", (String)null);
                if (oid != null) {
                   mu.getKeyData().setOid(oid);
+                  try {
+                     ((org.xmlBlaster.util.qos.MsgQosData)mu.getQosData()).setSubscriptionId(mu.getQosData().getClientProperty("__subscriptionId", (String)null));
+                  }
+                  catch (Throwable e) {
+                     log.error(ME, "Failed to set subscriptionId: " + e.toString());
+                  }
                   mu.getQosData().getClientProperties().clear();
                }
             }
