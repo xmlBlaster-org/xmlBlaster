@@ -1,17 +1,7 @@
 FEATURES
 --------
 
-o Test message expiry lifecycle (some implementation is missing)
-
 o Add support to reconnect to previous session again on reconnect
-
-o PtP with session destination
-
-o PtP in cluster environment
-
-o RequestBroker.get() the return QoS should be merged with UpdateQos
-
-o Remove thread save gap in RequestBroker:publish() for PtP messages
 
 o Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 
@@ -50,16 +40,6 @@ o xmlBlaster mirroring / object persistence with object persistence
   - http://www.prevayler.org/wiki.jsp?topic=StartingPoints
 
 o Embed BeanShell or Javascript scripting
-
-o URI based loginName handling:
-  This URI does a login and delivers some qos:
-
-   xmlBlaster.login://joe:mypassword@server.xmlBlaster.org:3412?qos.master=IOR:0000345&qos.topic.type=EXACT&qos.topic=WindVeloc
-   xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:3412?key.oid=MyMessage&content=Hello&nbsp;world&sessionId=09278cn88sa
-
-   http://joe:mypassword@172.24.64.70:8080?method=xmlBlaster.publish&key.oid=MyMessage&content=Hello&nbsp;world
-
-   joe:mypassword@server.xmlBlaster.org:8080
 
 o Journaled Communication (History)
   For auditing/logging and play back of events (error recovery).
