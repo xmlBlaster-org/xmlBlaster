@@ -188,8 +188,8 @@ public final class RunlevelManager
                if (ii != from) fireRunlevelEvent(ii, dest, force); // exclusive from
             }
             finally {
+               currRunlevel = dest; // pre/post events are not marked as run levels
                if (dest > from && isMajorLevel(dest)) {
-                  currRunlevel = dest; // pre/post events are not marked as run levels
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
                      log.info(ME, "Successful startup to run level " + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
@@ -207,8 +207,8 @@ public final class RunlevelManager
                fireRunlevelEvent(ii, dest, force);
             }
             finally {
+               currRunlevel = dest;
                if (dest < from && isMajorLevel(dest)) {
-                  currRunlevel = dest;
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
                      log.info(ME, "Successful shutdown to run level=" + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
@@ -334,7 +334,7 @@ public final class RunlevelManager
    }
 
    public boolean isHalted() {
-      return currRunlevel == RUNLEVEL_HALTED;
+      return currRunlevel <= RUNLEVEL_HALTED;
    }
    public boolean isStandby() {
       return currRunlevel == RUNLEVEL_STANDBY;
