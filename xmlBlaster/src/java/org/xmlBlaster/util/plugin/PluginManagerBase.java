@@ -207,6 +207,10 @@ public class PluginManagerBase implements I_PluginManager {
 
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
+      if (pluginName == null) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME,
+               "The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
+      }
       try {
          ClassLoaderFactory factory = glob.getClassLoaderFactory();
          if (factory != null) {
