@@ -13,10 +13,10 @@ Author:    Michele Laghi
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
-using namespace org::xmlBlaster;
 
 /**
  * This client connects to xmlBlaster and subscribes to a message.
@@ -82,6 +82,11 @@ public:
 
          // Creates a connect qos with the user 'joe' and the password 'secret'
          ConnectQos qos(global_, "joe", "secret");
+
+         /* To test SOCKET plugin
+         ServerRef ref("SOCKET", "socket://localhost:7604");
+         qos.addServerRef(ref);
+         */
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());
 
          // connects to xmlBlaster and gives a pointer to this class to tell
@@ -110,7 +115,7 @@ public:
          PublishReturnQos pubRetQos = con.publish(msgUnit);
          log_.info(ME, "successfully published to xmlBlaster. Return qos: " + pubRetQos.toXml());
          try {
-            Thread::sleepSecs(1);
+            org::xmlBlaster::util::thread::Thread::sleepSecs(1);
          }
          catch(XmlBlasterException e) {
             cout << e.toXml() << endl;
