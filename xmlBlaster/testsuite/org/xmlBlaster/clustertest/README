@@ -1,4 +1,6 @@
-Test xmlBlaster on class level.
+Test cluster features of xmlBlaster:
+
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
 
 Invoke:
 
