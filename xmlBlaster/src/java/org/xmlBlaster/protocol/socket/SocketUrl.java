@@ -362,8 +362,8 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
          boolean findStoreInXmlBlasterSearchPath = address.getEnv("findStoreInXmlBlasterSearchPath", false).getValue();
 
          if (findStoreInXmlBlasterSearchPath) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "findStoreInXmlBlasterSearchPath=true: SSL keyStore lookup in xmlBlaster search path is not implemented as it only compiles with JDK 1.4 or above:" +
-                         " Uncomment in SocketUrl.java:365 the code and recompile xmlBlaster with JDK >= 1.4 to have this support, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "findStoreInXmlBlasterSearchPath=true: SSL keyStore lookup in xmlBlaster search path is not compiled in, as it only compiles with JDK 1.4 or above:" +
+                         " Try to recompile with 'build -Dneed.JDK.14=true clean all' to have this support, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
             /*
             javax.net.ssl.KeyManagerFactory kmf = null;    // since JDK 1.4
             javax.net.ssl.TrustManagerFactory tmf = null;
