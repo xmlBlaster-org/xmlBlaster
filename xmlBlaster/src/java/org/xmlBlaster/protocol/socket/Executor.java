@@ -288,12 +288,12 @@ public abstract class Executor implements ExecutorBase
                cbClientTmp.updateOneway(receiver.getSecretSessionId(), arr);
             }
             catch (XmlBlasterException e) {
-               executeExecption(receiver, e);
+               executeException(receiver, e);
                return true;
             }
             catch (Throwable e) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
-               executeExecption(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException);
                return true;
             }
          }
@@ -311,12 +311,12 @@ public abstract class Executor implements ExecutorBase
                executeResponse(receiver, response);
             }
             catch (XmlBlasterException e) {
-               executeExecption(receiver, e);
+               executeException(receiver, e);
                return true;
             }
             catch (Throwable e) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
-               executeExecption(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException);
                return true;
             }
          }
@@ -331,7 +331,7 @@ public abstract class Executor implements ExecutorBase
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
-               executeExecption(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException);
                return true;
             }
             if (xmlBlasterImpl != null) {
@@ -466,10 +466,10 @@ public abstract class Executor implements ExecutorBase
       
       // Waiting for the response to arrive ...
       try {
-         boolean awaikened = false;
+         boolean awakened = false;
          while (true) {
             try {
-               awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
+               awakened = startSignal.attempt(responseWaitTime); // block max. milliseconds
                break;
             }
             catch (InterruptedException e) {
@@ -477,7 +477,7 @@ public abstract class Executor implements ExecutorBase
                // try again
             }
          }
-         if (awaikened) {
+         if (awakened) {
             if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
                throw new IOException(ME + ": Lost socket connection for " + parser.getMethodName() + "(requestId=" + requestId + ")");
@@ -489,6 +489,7 @@ public abstract class Executor implements ExecutorBase
          }
          else {
             String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -dispatch/callback/plugin/socket/responseTimeout <millis>";
+            removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
          }
       }
@@ -552,7 +553,8 @@ public abstract class Executor implements ExecutorBase
    /**
     * Send a one way exception back to the other side
     */
-   protected final void executeExecption(Parser receiver, XmlBlasterException e) throws XmlBlasterException, IOException {
+   protected final void executeException(Parser receiver, XmlBlasterException e) throws XmlBlasterException, IOException {
+      e.isServerSide(glob.isServerSide());
       Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSecretSessionId());
       returner.setChecksum(false);
       returner.setCompressed(false);

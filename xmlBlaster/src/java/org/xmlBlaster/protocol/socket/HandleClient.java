@@ -258,7 +258,7 @@ public class HandleClient extends Executor implements Runnable
             catch (XmlBlasterException e) {
                if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
                try {
-                  executeExecption(receiver, e);
+                  executeException(receiver, e);
                }
                catch (Throwable e2) {
                   log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
