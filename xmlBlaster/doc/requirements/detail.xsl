@@ -5,10 +5,13 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.3 2000/05/02 09:39:23 ruff Exp $
+Version:   $Id: detail.xsl,v 1.4 2000/05/18 13:23:37 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
+<!DOCTYPE xsl:stylesheet [
+<!ENTITY nbsp   "&#160;">
+]>
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 version='1.0'
@@ -30,7 +33,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2000/05/02 09:39:23 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2000/05/18 13:23:37 $ $Author: ruff $ </p -->
 
    <p class="sitetitel">REQUIREMENT</p>
    <p class="sitetitel"><xsl:value-of select="@id"/></p>
