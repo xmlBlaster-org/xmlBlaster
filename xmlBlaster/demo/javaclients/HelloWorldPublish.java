@@ -207,6 +207,7 @@ public class HelloWorldPublish
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
 
+         org.jutils.time.StopWatch stopWatch = new org.jutils.time.StopWatch();
          for(int i=0; i<numPublish; i++) {
 
             if (interactive) {
@@ -286,6 +287,7 @@ public class HelloWorldPublish
                          " for published message '" + prq.getKeyOid() + "'");
             }
          }
+         log.info(ME, "Elapsed since starting to publish: " + stopWatch.nice(numPublish));
 
          if (erase) {
             if (interactive) {
