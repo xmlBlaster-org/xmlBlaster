@@ -13,6 +13,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -29,9 +30,10 @@ import java.util.*;
 public class MessageUnitHandler
 {
    private final static String ME = "MessageUnitHandler";
+   private final Global glob;
 
    /** The broker which manages me */
-   private RequestBroker requestBroker;
+   private final RequestBroker requestBroker;
 
    // Default is that a single client can subscribe the same message multiple times
    // private boolean allowMultiSubscriptionPerClient = XmlBlasterProperty.get("Engine.allowMultiSubscriptionPerClient", true);
@@ -77,6 +79,7 @@ public class MessageUnitHandler
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
 
+      this.glob = requestBroker.getGlobal();
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
 
@@ -98,7 +101,7 @@ public class MessageUnitHandler
          Log.error(ME, "Invalid constructor parameters");
          throw new XmlBlasterException(ME, "Invalid constructor parameters");
       }
-
+      this.glob = requestBroker.getGlobal();
       this.requestBroker = requestBroker;
       this.xmlKey = xmlKey;
       this.msgUnitWrapper = msgUnitWrapper;
@@ -409,7 +412,7 @@ public class MessageUnitHandler
       }
 
       try {
-         sub.getMsgQueue().putMsg(new MsgQueueEntry(sub, msgUnitWrapper));
+         sub.getMsgQueue().putMsg(new MsgQueueEntry(glob, sub, msgUnitWrapper));
       }
       catch(XmlBlasterException e) {
          if (e.id.equals("CallbackFailed")) {
