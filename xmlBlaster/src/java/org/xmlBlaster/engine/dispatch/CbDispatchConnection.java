@@ -182,11 +182,11 @@ public final class CbDispatchConnection extends DispatchConnection
    }
 
    /**
-    * Ping the callback server of the client. 
-    * @param data never null
+    * @see org.xmlBlaster.util.dispatch.DispatchConnection#doPing(String)
     */
    public final String doPing(String data) throws XmlBlasterException {
-      return this.cbDriver.ping(data);
+      String ret = this.cbDriver.ping(data);
+      return (ret==null) ? "" : ret;
    }
 
    /**
