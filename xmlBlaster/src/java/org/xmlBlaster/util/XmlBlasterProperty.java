@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.11 2000/10/10 09:39:33 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.12 2000/10/29 19:20:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -35,6 +35,19 @@ public class XmlBlasterProperty
    private final static String ME = "XmlBlasterProperty";
 
    private static Property property = null;
+
+
+   /**
+    * Set or overwrite a property,
+    * note that currently no variable replacement is implemented for the passed value.
+    * @param key The key for this property
+    * @param value The value for it
+    * @return The value, ${...} variables are replaced
+    */
+   public static final String set(String key, String value) throws JUtilsException
+   {
+      return getProps().set(key, value);
+   }
 
 
    /**
