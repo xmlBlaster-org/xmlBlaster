@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.30 2000/01/20 19:42:00 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.31 2000/01/23 22:45:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -339,6 +339,31 @@ public class XmlKeyBase
       else if (type == REGEX_QUERY)
          return "REGEX";
       return "";
+   }
+
+
+   /**
+    * Was subscribe() or get() formulated as a query?
+    * @return true if XPATH_QUERY (or other, not exact query types)
+    */
+   public final boolean isQuery() throws XmlBlasterException
+   {
+      int type = getQueryType();
+      if (type == XPATH_QUERY || type == REGEX_QUERY)
+         return true;
+      return false;
+   }
+
+
+   /**
+    * Was subscribe() or get() invoked with an exact oid?
+    * @return true if EXACT_QUERY
+    */
+   public final boolean isExact() throws XmlBlasterException
+   {
+      if (getQueryType() == EXACT_QUERY)
+         return true;
+      return false;
    }
 
 

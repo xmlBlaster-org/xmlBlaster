@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.9 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.10 2000/01/23 22:45:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -19,10 +19,10 @@ import java.io.*;
 
 
 /**
- * Handling subscriptions, collected for each Client. 
+ * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.9 1999/12/09 13:28:36 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.10 2000/01/23 22:45:05 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -118,14 +118,31 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
    /**
     * If you have the ingredients to construct a unique id of a subscription, you may access the
-    * SubscriptionInfo object here. 
+    * SubscriptionInfo object here.
     * <p />
+    * You can access XPATH or EXACT subscription objects through this method
     * @param clientInfo All infos about the client
     * @param xmlKey     The XML based message key
     * @param qos        The base QoS class
     * @return corresponding subscriptionInfo object
     */
    public SubscriptionInfo getSubscription(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
+   {
+      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, qos).toString();
+      return getSubscription(clientInfo, subscriptionInfoUniqueKey);
+   }
+
+
+   /**
+    * If you have the unique id of a subscription, you may access the
+    * SubscriptionInfo object here.
+    * <p />
+    * You can access XPATH or EXACT subscription objects through this method
+    * @param clientInfo All infos about the client
+    * @param subscriptionInfoUniqueKey
+    * @return corresponding subscriptionInfo object
+    */
+   public SubscriptionInfo getSubscription(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
       Object obj;
       Map aboMap;
@@ -136,7 +153,6 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
          aboMap = (Map)obj;
       }
 
-      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, qos).toString();
       SubscriptionInfo subs = (SubscriptionInfo)aboMap.get(subscriptionInfoUniqueKey);
       return subs;
    }
@@ -176,7 +192,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Event invoked on message erase() invocation (interface MessageEraseListener). 
+    * Event invoked on message erase() invocation (interface MessageEraseListener).
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
@@ -188,7 +204,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Event invoked on new subscription (interface SubscriptionListener). 
+    * Event invoked on new subscription (interface SubscriptionListener).
     */
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException
    {
@@ -237,7 +253,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked when a subscription is canceled (interface SubscriptionListener). 
+    * Invoked when a subscription is canceled (interface SubscriptionListener).
     * <p />
     * Note that the subscriptionInfo object carried in SubscriptionEvent
     * is not the real known subscription, but rather misused as a container to

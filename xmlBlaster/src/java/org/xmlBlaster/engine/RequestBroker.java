@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.47 2000/01/21 09:13:30 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.48 2000/01/23 22:45:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -31,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.48 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -158,7 +158,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * This Interface allows to hook in your own persistence driver.  
+    * This Interface allows to hook in your own persistence driver.
     * <p />
     * Configure the driver through xmlBlaster.properties
     * <br />
@@ -247,7 +247,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * </pre>
     * @return oid    The oid of your subscribed Message<br>
     *                If you subscribed using a query, the subscription ID of this<br>
-    *                query handling object is returned.<br>
+    *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this oid if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
     *
@@ -260,16 +260,17 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          updateInternalStateInfo(clientInfo);
 
       String returnOid = "";
-      if (xmlKey.getQueryType() != XmlKey.EXACT_QUERY) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
-         returnOid = xmlKey.getUniqueKey();
-         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS), true);
+      if (xmlKey.isQuery()) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
+         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+         returnOid = subs.getUniqueKey();
+         fireSubscriptionEvent(subs, true);
       }
 
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
+         if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
             xmlKeyExact = xmlKey;
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
          subscribeToOid(subs);                // fires event for subscription
@@ -310,7 +311,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
-         if (xmlKeyExact == null && xmlKey.getQueryType() == XmlKey.EXACT_QUERY) // subscription on a yet unknown message ...
+         if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
             xmlKeyExact = xmlKey;
 
          MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
@@ -398,15 +399,16 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       Vector xmlKeyVec = null;
       String clientName = clientInfo.toString();
 
-      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
+      if (xmlKey.isQuery()) { // query: subscription without a given oid
          xmlKeyVec = bigXmlKeyDOM.parseKeyOid(clientInfo, xmlKey, qos);
       }
 
-      else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
+      else if (xmlKey.isExact()) { // subscription with a given oid
          if (Log.TRACE) Log.trace(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
          XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
          xmlKeyVec = new Vector();
-         xmlKeyVec.addElement(xmlKeyExact);
+         if (xmlKeyExact != null)
+            xmlKeyVec.addElement(xmlKeyExact);
       }
 
       else {
@@ -508,12 +510,15 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
-      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) {
-         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS), false);
-         Log.warning(ME, "SUPPORT FOR QUERY unSubscribe is not yet tested"); // !!! Use the returned oid from subscribe ?!
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
+
+      if (xmlKeyVec.size() == 0 && xmlKey.isExact()) {
+         // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
+         SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey.getUniqueKey()); // Access the XPATH subscription object ...
+         if (subs.getXmlKey().isQuery()) // now do the query again ...
+            xmlKeyVec = parseKeyOid(clientInfo, subs.getXmlKey(), unSubscribeQoS);
       }
 
-      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, unSubscribeQoS);
       for (int ii=0; ii<xmlKeyVec.size(); ii++) {
          XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
          if (xmlKeyExact == null) {
@@ -523,6 +528,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          }
          SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, unSubscribeQoS);
          fireSubscriptionEvent(subs, false);
+      }
+
+      if (xmlKeyVec.size() < 1) {
+         Log.error(ME + ".OidUnknown2", "Can't access subscription, your key oid is wrong: " + xmlKey.getUniqueKey());
+         throw new XmlBlasterException(ME + ".OidUnknown2", "Can't access subscription, your key oid is wrong: " + xmlKey.getUniqueKey());
       }
    }
 
@@ -724,7 +734,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
                XmlKey queryXmlKey = existingQuerySubscription.getXmlKey();
 
                // ... check if the new message matches ...
-               if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
+               if (queryXmlKey.isQuery()) { // query: subscription without a given oid
 
                   Vector matchVec = bigXmlKeyDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
 
