@@ -109,18 +109,19 @@ public class DeliveryWorker implements Runnable
    public void run() {
       if (log.CALL) log.call(ME, "Starting remote delivery with " + this.msgQueue.getNumOfEntries() + " entries.");
       ArrayList entryList = null;
-      MsgQueueEntry[] entries = null;
+      ArrayList entryListChecked = null;
       try {
          I_MsgDeliveryInterceptor msgInterceptor = deliveryManager.getMsgDeliveryInterceptor();
          if (msgInterceptor != null) {
-               entryList = msgInterceptor.handleNextMessages(deliveryManager, null); // should call prepareMsgsFromQueue() immediately
+               entryListChecked = msgInterceptor.handleNextMessages(deliveryManager, null); // should call prepareMsgsFromQueue() immediately
+               entryList = entryListChecked;
          }
          else {
             synchronized (this.msgQueue) {
                //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
                entryList = this.msgQueue.peekSamePriority(-1, -1L);
-               deliveryManager.prepareMsgsFromQueue(entryList);
+               entryListChecked = deliveryManager.prepareMsgsFromQueue(entryList);
             }
          }
 
@@ -129,13 +130,15 @@ public class DeliveryWorker implements Runnable
             return;
          }
 
-         entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         
-         if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
-         
-         Object returnVals = deliveryManager.getDeliveryConnectionsHandler().send(entries);
-         
-         if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
+         if (entryListChecked != null && entryListChecked.size() > 0) {
+            MsgQueueEntry[] entries = (MsgQueueEntry[])entryListChecked.toArray(new MsgQueueEntry[entryListChecked.size()]);
+            
+            if (log.TRACE) log.trace(ME, "Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
+            
+            Object returnVals = deliveryManager.getDeliveryConnectionsHandler().send(entries);
+            
+            if (log.TRACE) log.trace(ME, "Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
+         }
 
          /*{
             int n = entries.length;
@@ -144,6 +147,8 @@ public class DeliveryWorker implements Runnable
          }*/
 
          // messages are successfully sent, remove them now from queue (sort of a commit()):
+         // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
+         MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
          this.msgQueue.removeRandom(entries);
 
          if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
