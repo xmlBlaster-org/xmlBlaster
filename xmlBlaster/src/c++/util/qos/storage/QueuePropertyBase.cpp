@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.5 2003/01/08 16:03:39 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.6 2003/01/08 16:23:16 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -128,7 +128,6 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    {
       nodeId_ = nodeId;
       propertyPrefix_ = "";
-      isCacheQueue_ = false;
       rootTagName_ = "queue";
    }
 
