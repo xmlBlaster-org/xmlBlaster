@@ -4,6 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Contains helper functions for string and message manipulation
 Compile:   gcc -Wall -g -o msgUtil msgUtil.c -DMSG_UTIL_MAIN -I..
+Testsuite: xmlBlaster/testsuite/src/c/TestUtil.c
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -36,9 +37,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.16 2003/10/29 21:08:53 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.17 2003/11/22 16:04:48 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.16 2003/10/29 21:08:53 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.17 2003/11/22 16:04:48 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -494,8 +495,50 @@ Dll_Export void trim(char *s)
       return;
    }
    else
-      memmove((char *) s, (char *) s+first, strlen(s+first));
+      memmove((char *) s, (char *) s+first, strlen(s+first)+1); /* including '\0' */
 
+   for (i=(int)strlen((char *) s)-1; i >= 0; i--)
+      if (!isspace((unsigned char)s[i])) {
+         s[i+1] = '\0';
+         return;
+      }
+   if (i<0) *s = '\0';
+}
+
+/**
+ * strip leading spaces of the given string
+ */
+Dll_Export void trimStart(char *s)
+{
+   size_t first=0;
+   size_t len;
+   
+   if (s == (char *)0) return;
+
+   len = strlen((char *) s);
+
+   {  /* find beginning of text */
+      while (first<len) {
+         if (!isspace((unsigned char)s[first]))
+            break;
+         first++;
+      }
+   }
+
+   if (first>=len) {
+      *s = '\0';
+      return;
+   }
+   else
+      memmove((char *) s, (char *) s+first, strlen(s+first)+1); /* including '\0' */
+}
+
+/**
+ * strip trailing spaces of the given string
+ */
+Dll_Export void trimEnd(char *s)
+{
+   int i;
    for (i=(int)strlen((char *) s)-1; i >= 0; i--)
       if (!isspace((unsigned char)s[i])) {
          s[i+1] = '\0';
@@ -897,6 +940,21 @@ int main()
    printf("Sleeping now for %ld millis\n", millisecs);
    sleepMillis(millisecs);
    printf("Waiking up after %ld millis\n", millisecs);
+
+   {
+      const char *ptr = "     28316";
+      char tr[20];
+      strcpy(tr, ptr);
+      trim(tr);
+      printf("Before '%s' after '%s'\n", ptr, tr);
+   }
+   {
+      const char *ptr = "     28316  ";
+      char tr[20];
+      strcpy(tr, ptr);
+      trim(tr);
+      printf("Before '%s' after '%s'\n", ptr, tr);
+   }
    return 0;
 }
 # endif

@@ -112,6 +112,8 @@ Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
 Dll_Export extern char *strcatAlloc(char **dest, const char *src);
 Dll_Export extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
 Dll_Export extern void trim(char *s);
+Dll_Export extern void trimStart(char *s);
+Dll_Export extern void trimEnd(char *s);
 Dll_Export extern char *blobDump(XmlBlasterBlob *blob);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
 Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
