@@ -1,0 +1,153 @@
+TODO for release 0.79
+---------------------
+
+(1) Generic support for DOM  and SAX in the xmlBlaster                [--]
+(2) Integrate persistence support with mudb                           [--]
+(3) Perl support(src/perl) with xmlrpc and not with COPE.             [--]
+(4) Suuport for searching in out Maillinglist by Majorcool            [--]
+(5) Integrate XmlRpc                                                  [ok]
+(6) Integrate XmlRpc for Perl                                         [--]
+(7) Autoconf for C++                                                  [--]
+(8) XmlBlaster-Matrix                                                 [--]
+(9) Documentation (some samll HOWTO'S)                                [--]
+(10) Integrate JacOrb 1.2.1                                           [ok]
+(11) SOAP  ?                                                          [--]
+ 
+
+Some small TODO's for the next release
+--------------------------------------
+(1) Documenation based on XML2PDF
+(2) Journaled Communication (History) 
+    For auditing/logging and play back of events (error recovery).
+(3) Allowing compound messages.
+
+--------------------------- TODO for the future ------------------------
+
+PERSISTENCE
+-----------
+(1) Mudb Transaction support, based on
+   Java(tm) Transaction Service (JTS) 1.0 Specification.
+   The xmldb should have Isolation Level 0-3.
+
+   Overview on the possible lock modes:
+   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
+   "serializable" to the strongest level (3).
+
+                ANSI    Dirty   Non Repreatable  Phantom Read
+   LOCK                 Read    Read
+   ----------------------------------------------------------
+   UNCOMMITED    0       X           X               X
+   COMMITED      1       -           X               X
+   REPEATABLE    2       -           -               X
+   SERIALIZABLE  3       -           -               -
+
+
+PERFORMANCE
+-----------
+(1) Normalizing the DOM tree
+(2) Profiling http://www.optimizeit.com/ or http://www.klg.com/ - JProbe (no Linux!?) or whatever
+(3) Use SML instead of XML? http://www.xml.com/pub/1999/11/sml/index.html
+(4) Evaluate other query engines for better performance, see
+    http://www-db.research.bell-labs.com/user/simeon/xquery.html
+
+TECHNOLOGIE
+-----------
+(1) XML Schema support. Necessary to use XPATH DTD-ID:
+    An element node may have a unique identifier (ID).
+    This is the value of the attribute that is declared in the Schema/DTD as type ID
+(2) Support for XQL see www.fatdog.com
+
+(3) Support for Wireless Application Protocol (WAP)
+
+(4) proprietary Protocol plugins (not CORBA)
+    ----------------------------------------
+    - Protocol plugins (www.webdav.com)
+    - state less protocols (email, http, webDav)
+    For HTTP and XML see XML-RPC:
+      http://www.xmlrpc.com/spec
+    and SOAP:
+      http://www.w3.org/TR/SOAP/
+      http://www.soap-wrc.com
+      http://www.alphaWorks.ibm.com/tech/soap4j
+      http://msdn.microsoft.com/xml/general/toolkit_intro.asp
+      http://msdn.microsoft.com/msdnmag/issues/0300/soap/soap.asp (tutorial)
+      http://windows.oreilly.com/news/soapreview_0600.html (IBM versus M$ comparison)
+    - http protocol Java servlet (including a Java web server):
+      http://www.mortbay.com/software/iX.html
+
+SERVER
+------
+(1) Reliability of update() callback
+    The update() method is declared oneway, so the xmlBlaster
+    can't guarantee if the update is delivered.
+
+    Perhaps there should be 2 update variants,
+    one blocking (no keyword oneway) and one none-blocking (with keyword oneway).
+
+    In the blocking mode, xmlBlaster would need a timeout
+    or an extra thread per update client, so that not
+    one client can block the whole update sequence.
+
+(2) Transaction support, based on:
+    Java(tm) Transaction Service (JTS) 1.0 Specification.
+    JTS specifies the implementation of a Transaction Manager which
+    supports the Java(tm) Transaction API (JTA) 1.0 Specification.
+    http://java.sun.com/products/jts/
+
+CLIENT
+------
+(1) Client should be able to query which subscriptions he has
+
+(2) Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
+    this is important if the client didn't logout properly.
+    There is no standard way to get a callback from CORBA on socket EOF.
+
+(3) Tcl/Tk
+
+(4) Phyton
+    Python language: http://www.python.org
+    Python CORBA:    http://www.dstc.edu.au/Fnorb (not free for commercial use!)
+    Python XML:      http://www.python.org/sigs/xml-sig/
+    Python XSL:      http://fourthought.com/4Suite/4XSLT  ftp://FourThought.com/pub/4Suite/4XSLT/
+
+
+AUTHENTICATE
+------------
+(1) Add an AuthenticateException type
+
+(2) xmlBlaster.idl
+    * rename AuthServer to AuthenticationService
+    * rename Server to xmlBlaster
+
+(3) Authentication (login etc)
+    Plugin possibility for existing user management systems
+    * JNDI with XML based LDAP access http://www.dsml.org/about.html
+
+AUTHORIZATION
+-------------
+(1) Authorization (ACL access control lists)
+    Our ACL should be XML based, so its possible to
+    query who may do what through XPath on Client meta informations which
+    are XML based, simple approach:
+
+    [User]  [Action]  [Data]
+    Martin  read      marketing-paper
+    Joe     write     homepage-layout
+
+    User:   may be any user based information like role, group, property etc. (XPath query)
+    Action: read, write, erase, change
+    Data:   Any data in xmlBlaster (XPath query)
+
+HOMEPAGE
+--------
+(1) cvsweb access using  http://www.lyra.org/viewcvs/
+(2) Allow search e.g. with glimpse http://glimpse.cs.arizona.edu/
+    Wilma at http://www.hpc.uh.edu/majordomo/#wilma integrates glimpse and MHonArc
+    or
+      http://Dig http://www.htdig.org/
+    for an example see
+      http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/
+      http://www.hpc.uh.edu/fvwm/archive/
+
+(3) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
+    http://www.unicorn-enterprises.com/
