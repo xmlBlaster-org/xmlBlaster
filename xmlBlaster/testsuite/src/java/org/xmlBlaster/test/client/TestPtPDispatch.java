@@ -11,14 +11,12 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
-import org.xmlBlaster.test.MsgInterceptor;
+import org.xmlBlaster.test.util.PtPDestination;
 
 import junit.framework.TestCase;
 
@@ -33,61 +31,6 @@ import junit.framework.TestCase;
  * @see org.xmlBlaster.client.I_XmlBlasterAccess
  */
 public class TestPtPDispatch extends TestCase {
-
-   public class PtPDestination {
-      private Global global;
-      private MsgInterceptor updateInterceptor;
-      private SessionName sessionName;
-      
-      public PtPDestination(Global parentGlobal, String sessionName) {
-         this.global = parentGlobal.getClone(null);
-         this.sessionName = new SessionName(this.global, sessionName);
-         this.updateInterceptor = new MsgInterceptor(this.global, this.global.getLog("test"), null);
-      }
-      
-      public void init(boolean wantsPtP, boolean shutdownCb) throws XmlBlasterException {
-         this.updateInterceptor.clear();
-         ConnectQos qos = new ConnectQos(this.global);
-         qos.setSessionName(this.sessionName);
-         qos.setPtpAllowed(wantsPtP);
-         qos.getSessionCbQueueProperty().setMaxEntries(1);
-         qos.getSessionCbQueueProperty().setMaxEntriesCache(1);
-         CallbackAddress cbAddress = new CallbackAddress(this.global);
-         cbAddress.setRetries(-1);
-         cbAddress.setPingInterval(-1);
-         cbAddress.setDelay(5000L);
-         qos.addCallbackAddress(cbAddress);
-         this.global.getXmlBlasterAccess().connect(qos, updateInterceptor);
-         if (shutdownCb) {
-            try {
-               Thread.sleep(TestPtPDispatch.TIMEOUT);
-            }
-            catch (InterruptedException ex) {
-               ex.printStackTrace();
-               TestCase.assertTrue("An interrupted exception occured", false);
-            }
-            this.global.getXmlBlasterAccess().getCbServer().shutdown();
-         }
-         this.updateInterceptor.clear();
-      }
-
-      public void shutdown(boolean doDisconnect) {
-         DisconnectQos qos = new DisconnectQos(this.global);
-         if (doDisconnect) 
-            this.global.getXmlBlasterAccess().disconnect(qos);
-         this.global.shutdown();
-         this.global = null;
-      }
-      
-      public SessionName getSessionName() {
-         return this.sessionName;
-      }
-      
-      public void check(long timeout, int expected) {
-         TestCase.assertEquals(this.getSessionName().getRelativeName(), expected, this.updateInterceptor.waitOnUpdate(timeout, expected));
-         this.updateInterceptor.clear();         
-      }
-   }
 
    private static String ME = "TestPtPDispatch";
    private final static long TIMEOUT = 5000L;
@@ -144,8 +87,8 @@ public class TestPtPDispatch extends TestCase {
 
    private void prepare(boolean shutdownCb) {
       try {
-         this.destinations[0].init(true, shutdownCb);
-         this.destinations[1].init(false, shutdownCb);
+         this.destinations[0].init(true, shutdownCb, 1, 1, 3, 1);
+         this.destinations[1].init(false, shutdownCb, 1, 1, 3, 1);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -220,7 +163,7 @@ public class TestPtPDispatch extends TestCase {
          this.destinations[dest].shutdown(false);
          String sessionName = this.destinations[dest].getSessionName().getRelativeName();
          this.destinations[dest] = new PtPDestination(this.glob, sessionName);
-         this.destinations[dest] .init(wantsPtP, false);
+         this.destinations[dest] .init(wantsPtP, false, 1, 1, 3, 1);
          this.destinations[dest] .check(delay, expected);
       }
       catch (XmlBlasterException ex) {
@@ -239,7 +182,7 @@ public class TestPtPDispatch extends TestCase {
     */
    private void checkWithoutPublish(PtPDestination dest, boolean wantsPtP, int expected, long delay) {
       try {
-         dest.init(wantsPtP, false);
+         dest.init(wantsPtP, false, 1, 1, 3, 1);
          dest.check(delay, expected);
          dest.shutdown(true);
       }
@@ -404,6 +347,53 @@ public class TestPtPDispatch extends TestCase {
    
 // -----------------------------------------------------------------------
 
+   private void subjectQueueNoOverflow(boolean isPersistent, String msgPrefix) {
+      boolean forceQueuing = false;
+      boolean shutdownCb = false;
+      prepare(shutdownCb);
+      
+      doPublish(-1 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      cleanup();
+   }
+
+   public void testSubjectQueueNoOverflowTransient() {
+      subjectQueueNoOverflow(false, "SubjectQueueNoOverflowTransient");
+   }
+   
+   public void testSubjectQueueNoOverflowPersistent() {
+      subjectQueueNoOverflow(true, "SubjectQueueNoOverflowPersistent");
+   }
+   
+// ------------------------------------------------------------------------
+
+   private void subjectQueueOverflow(boolean isPersistent, String msgPrefix) {
+      boolean shutdownCb = true;
+      prepare(shutdownCb);
+      
+      boolean forceQueuing = false;
+      doPublish(-1 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+
+      forceQueuing = true;
+      doPublish(-1 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(-1 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      cleanup();
+   }
+
+   public void testSubjectQueueOverflowTransient() {
+      subjectQueueNoOverflow(false, "SubjectQueueNoOverflowTransient");
+   }
+   
+   public void testSubjectQueueOverflowPersistent() {
+      subjectQueueNoOverflow(true, "SubjectQueueNoOverflowPersistent");
+   }
+   
+// -----------------------------------------------------------------------
+
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPtPDispatch
     * <p />
@@ -424,31 +414,47 @@ public class TestPtPDispatch extends TestCase {
       testSub.tearDown();
 
       testSub.setUp();
+      testSub.testNoQueuingNoOverflowTransient();
+      testSub.tearDown();
+
+      testSub.setUp();
       testSub.testQueuingNoOverflowPersistent();
       testSub.tearDown();
       
+      testSub.setUp();
+      testSub.testQueuingNoOverflowTransient();
+      testSub.tearDown();
+
       testSub.setUp();
       testSub.testNoQueuingOverflowPersistent();
       testSub.tearDown();
       
       testSub.setUp();
+      testSub.testNoQueuingOverflowTransient();
+      testSub.tearDown();
+
+      testSub.setUp();
       testSub.testQueuingOverflowPersistent();
       testSub.tearDown();
       
       testSub.setUp();
-      testSub.testNoQueuingNoOverflowTransient();
+      testSub.testQueuingOverflowTransient();
       testSub.tearDown();
 
       testSub.setUp();
-      testSub.testQueuingNoOverflowTransient();
+      testSub.testSubjectQueueNoOverflowPersistent();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testSubjectQueueNoOverflowTransient();
       testSub.tearDown();
       
       testSub.setUp();
-      testSub.testNoQueuingOverflowTransient();
+      testSub.testSubjectQueueOverflowPersistent();
       testSub.tearDown();
-      
+
       testSub.setUp();
-      testSub.testQueuingOverflowTransient();
+      testSub.testSubjectQueueOverflowTransient();
       testSub.tearDown();
       
    }
