@@ -1,0 +1,112 @@
+// xmlBlaster/demo/javaclients/Latency.java
+import org.xmlBlaster.util.*;
+import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.engine.helper.MessageUnit;
+
+
+/**
+ * Measure the brutto roundtrip latency of a message publish and update. 
+ * <p />
+ * Invoke examples (put xmlBlaster.jar in your CLASSPATH):
+ * <br />
+ * On localhost:
+ * <pre>
+ *   java org.xmlBlaster.Main
+ *   java Latency -numSend 100
+ * </pre>
+ * <br />
+ * Over the internet with CORBA:
+ * <pre>
+ *   java Latency -numSend 100 -hostname server.xmlBlaster.org
+ *  or if you have a dynamic IP:
+ *   java Latency -numSend 100 -hostname server.xmlBlaster.org -ior.hostnameCB <myCurrentIP>
+ * </pre>
+ * <br />
+ * Over the internet with XmlRpc:
+ * <pre>
+ *   java Latency -numSend 100 -client.protocol XML-RPC -xmlrpc.hostname server.xmlBlaster.org -xmlrpc.hostnameCB <myCurrentIP>
+ * </pre>
+ * <p />
+ * Results, for one round trip including publish -> processing in xmlBlaster -> update -> parsing in client (600 MHz AMD Linux):
+ * <br />
+ * <ul>
+ *   <li>CORBA in intranet: ~ 6 milliseconds</li>
+ *   <li>XmlRpc in intranet: ~ 16 milliseconds</li>
+ *   <li>CORBA over internet: ~ 105 milliseconds</li>
+ *   <li>XmlRpc over internet: ~ 320 milliseconds</li>
+ * </ul>
+ */
+public class Latency implements I_Callback
+{
+   private long startTime = 0L;
+   private boolean messageArrived = false;
+
+   public Latency(Global glob) {
+      try {
+         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+
+         ConnectQos qos = new ConnectQos(glob);
+         con.connect(qos, this);  // Login to xmlBlaster, register for updates
+
+         PublishKeyWrapper pk = new PublishKeyWrapper("Latency", "text/xml");
+         PublishQosWrapper pq = new PublishQosWrapper();
+         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+
+         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("Latency");
+         SubscribeQosWrapper sq = new SubscribeQosWrapper();
+         String subId = con.subscribe(sk.toXml(), sq.toXml());
+
+         int numSend = glob.getProperty().get("numSend", 10);
+
+         for (int ii=0; ii<numSend; ii++) {
+            startTime = System.currentTimeMillis();
+            con.publish(msgUnit);
+            while (true) {
+               try { Thread.currentThread().sleep(50); } catch( InterruptedException i) {}
+               if (messageArrived) {
+                  messageArrived = false;
+                  break;
+               }
+            }
+         }
+
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait a second to receive update()
+
+         DisconnectQos dq = new DisconnectQos();
+         con.disconnect(dq);
+      }
+      catch (Exception e) {
+         Log.panic("", e.toString());
+      }
+   }
+
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
+                        UpdateQos updateQos)
+   {
+      long endTime = System.currentTimeMillis();
+      messageArrived = true;
+      Log.info("", "Received asynchronous message '" + updateKey.getOid() +
+                   "' from xmlBlaster - latency=" + (endTime - startTime) + " millis");
+      return "";
+   }
+
+   /**
+    * Try
+    * <pre>
+    *   java Latency -help
+    * </pre>
+    * for usage help
+    */
+   public static void main(String args[]) {
+      Global glob = new Global();
+      
+      if (glob.init(args) != 0) { // Get help with -help
+         XmlBlasterConnection.usage();
+         Log.usage();
+         Log.exit("", "Example: java Latency -loginName Jeff\n");
+      }
+
+      new Latency(glob);
+   }
+}
