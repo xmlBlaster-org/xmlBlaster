@@ -18,6 +18,11 @@ You can query a closed requirement as follows:
 
 
 
+Generate HTML output:
+=====================
+   java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver engine.get.no.xml html.xsl requirement.html
+
+
 ruff@swand.lake.de
 
 Validating with IBM parser:
