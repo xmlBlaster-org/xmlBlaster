@@ -82,6 +82,7 @@ TODO
    <property name="optimize" value="off" />
    <property name="deprecation" value="off" />
 
+   <property name="xmlBlaster.home" value="${basedir}"/>
    <property name="src.java.dir" value="./src/java"/>
    <property name="dtd.dir" value="./src/dtd"/>
    <property name="doc.dir" value="./doc"/>
@@ -142,14 +143,15 @@ TODO
    <!-- =================================================================== -->
    <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
    <!-- =================================================================== -->
-   <property name="compiler" value="gcc"/> <!-- "gcc" "VC6" "bcc" -->
+   <!-- property name="use-msvc" value="1" /-->  <!-- Better from outside: build.bat -verbose -Duse-msvc=1 cpp -->
+   <property name="compiler" value="msvc"/> <!-- "gcc" "VC6" "bcc" "msvc" -->
    <property name="debug" value="true" />
    <property name="chmod.fail" value="true" />
 
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value="2.3.7"/>
    <property name="CORBACPP_HOME" value="/opt/local/mico"/>
-   <property name="XMLCPP_VER" value="1_7_0"/>
+   <property name="XMLCPP_VER" value="2"/>  <!-- 1_7_0 -->
    <property name="THREAD_SRC" value="src/c++/libs/thread/src"/> <!-- use the internal boost library -->
    <property name="THREAD_INC" value="src/c++"/> <!-- use the internal boost library -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
@@ -157,23 +159,29 @@ TODO
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
       <defineset define="DLL_EXPORT"/>
-      <compilerarg value="/GX" />
-      <compilerarg value="/GR" />
-      <compilerarg value="/TP" />
-      <compilerarg value="/MTd" />                  <!-- multi threading with debug -->
+      <!-- <compilerarg value="/GX" /> -->
+      <compilerarg value="/Gm" if="is-debug"/>      
+      <compilerarg value="/Zi" if="is-debug"/>      
       <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
+      <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug -->      
       <compilerarg value="/W3"/>                    <!-- display many warnings -->
-      <compilerarg value="/O2" unless="is-debug"/>  <!-- maximize speed -->
-      <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->
-      <defineset>
-         <define name="_CRTDBG_MAP_ALLOC" if="is-debug"/>
+      <!-- <compilerarg value="/Od" unless="is-debug"/> --> <!-- maximize speed --> 
+      <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->      
+
+      <!-- 
+      This flag makes good sense though currently ace complains for some reason
+      I think it is to do with the way I have built ace (Martin Johnson)
+      <defineset>      
+         <define name="_CRTDBG_MAP_ALLOC" if="is-debug"/>         
       </defineset>
-   </compiler>
+      -->
+      
+   </compiler>   
 
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
-      <compilerarg value="/Za"/>
-   </compiler>
+      <!-- <compilerarg value="/Za"/> -->
+   </compiler>       
 
    <compiler id="msvc-with-extensions" extends="base-msvc">
       <!--  enable Microsoft Extensions   -->
@@ -204,7 +212,6 @@ TODO
       <compilerarg value="-Wimplicit-int" />
       <compilerarg value="-Werror-implicit-function-declaration" />
    </compiler>
-
 
 
 
@@ -331,6 +338,9 @@ TODO
       <filter token="build.java.version" value="${java.version}"/>
       <filter token="build.java.vendor" value="${java.vendor}"/>
       <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
+
+      <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
+
    </target>
 
    <!-- =================================================================== -->
@@ -343,12 +353,10 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- Compiles the xmlBlaster core source directory                       -->
+   <!-- Compile the xmlBlaster.idl file for the CORBA plugin                -->
    <!-- =================================================================== -->
-   <target name="xmlBlaster" depends="prepare-src" description="Compile xmlBlaster server and create a xmlBlaster.jar">
-      <!-- convert idl -->
+   <target name="java-corba-idl" depends="prepare" description="Compile xmlBlaster.idl to generate Java stubs and skeletons">
       <echo message="Converting idl..."/>
-      <property name="idlBuild.required" value="true" />
       <echo message="Comparing ${idl.dir}/xmlBlaster.idl to ${idl.dir}/serverIdl/Server.java"/>
       <uptodate property="idlBuild.required" targetfile="${idl.dir}/serverIdl/Server.java" value="false">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
@@ -359,10 +367,17 @@ TODO
          </then>
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
-            <java classname="${idl.class}" classpath="${cp}" fork="false"
-                 args="-p ${idl} -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
+            <java classname="${idl.class}" classpath="${cp}" fork="false">
+               <arg line="-p ${idl} -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
+            </java>
          </else>
       </if>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compiles the xmlBlaster core source directory                       -->
+   <!-- =================================================================== -->
+   <target name="xmlBlaster" depends="java-corba-idl,prepare-src" description="Compile xmlBlaster server and create a xmlBlaster.jar">
 
       <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.java.dir}">
@@ -392,7 +407,7 @@ TODO
             deprecation="${deprecation}"
             target="${JVM.target}" />
 
-      <javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${cp}" />
+      <!-- javac srcdir="${req.dir}" destdir="${build.dest}" classpath="${cp}" / -->
 
       <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
       <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
@@ -515,13 +530,13 @@ TODO
    <target name="testsuite" depends="xmlBlaster,testsuite-only" description="Compile Java testsuite into testsuite.jar (based on junit) and xmlBlaster before">
    </target>
    <target name="testsuite-only" description="Compile Java testsuite only into testsuite.jar (based on junit)">
-      <copy todir="${build.src}/testsuite/src/java/org">
+      <copy todir="${build.src}/testsuite/src/java/org" filtering="true">
          <fileset dir="${testsuite.dir}/src/java/org">
             <exclude name="README, Makefile"/>
             <exclude name="Makefile"/>
          </fileset>
       </copy>
-      <javac srcdir="${build.src}/testsuite/src/java/org"
+      <javac srcdir="${build.src}/testsuite/src/java"
             destdir="${build.dest}"
             classpath="${cp}:${lib.dir}/${name}.jar"
             debug="${debug}"
@@ -1222,11 +1237,9 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- c++ client integration - create libxmlBlasterClient.sl (dll)         -->
-   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- Prepares env settings for C++ client library compilation            -->
    <!-- =================================================================== -->
-   <target name="cpp-lib" depends="prepare" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
-
+   <target name="prepare-cpp" depends="prepare" description="For internal use only, C++ client environment">
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
       <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
@@ -1235,35 +1248,43 @@ TODO
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
       <echo message=" THREAD_SRC    = ${THREAD_SRC}"/>
       <echo message=" THREAD_INC    = ${THREAD_INC}"/>
+      <echo message=" LIBS:           ${CORBACPP_HOME}/win32-bin/lib"/>
 
+      <property name="${corba.product}" value="true" /> <!-- Setting e.g. "MICO" or "TAO" to be used in if="" clause below -->
+      <echo message=" SETTING ${corba.product} = true" />
+      <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
+      <echo message=" SETTING ${corba.product},${os.family} = true" />
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-MICO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
       <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
-            <property name="WIN_TOKEN" value="" />
-            <property name="IDL_EXEC" value="${CORBACPP_HOME}/bin/idl" />
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/idl" />
          </case>
          <default>
-            <property name="WIN_TOKEN" value="win32-" />
-            <property name="IDL_EXEC" value="${CORBACPP_HOME}/win32-bin/idl" />
-            <echo message="Please check if the binary directory of ${CORBACPP_HOME} is in your path environment"/>
+            <property name="idl.cmd" value="${CORBACPP_HOME}/win32-bin/idl" />
          </default>
       </switch>
 
-      <!-- Start IDL compiler to create CORBA stubs and skeletons -->
-      <property name="idlBuild.required" value="true" />
-      <uptodate property="idlBuild.required" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="false">
+      <!-- Start IDL compiler to create CORBA stubs -->
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
-      <if><equals arg1="${idlBuild.required}" arg2="false" />
+
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
          <then>
             <echo message="IDL stubs and skeletons are up to date" />
          </then>
          <else>
-            <echo message="Generating IDL stubs and skeletons" />
-            <!-- A typical idl CORBA compile:
+            <echo message="Generating IDL stubs and skeletons for os=${os.family}" />
+            <!-- A typical MICO idl CORBA compile:
               /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
             -->
-            <exec dir="${src.cpp.dir}/generated" executable="${IDL_EXEC}" failonerror="true">
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
                <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
                <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
@@ -1273,10 +1294,59 @@ TODO
                <arg line="../../../${idl.file}"/>
             </exec>
             <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
       </if>
+   </target>
 
-      <!-- Build a shared library xmlBlasterClient.sl or xmlBlasterClient.dll -->
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-TAO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
+      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="idl.cmd" value="${CORBACPP_HOME}/../bin/tao_idl" />
+         </case>
+         <default>
+            <property name="idl.cmd" value="${CORBACPP_HOME}/../bin/tao_idl.exe" />
+         </default>
+      </switch>
+
+      <!-- Start IDL compiler to create CORBA stubs -->
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlasterC.cpp" value="true">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
+         <then>
+            <echo message="IDL stubs and skeletons are up to date" />
+         </then>
+         <else>
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl stubs and skeletons for os=${os.family}" />
+            <!-- A typical MICO idl CORBA compile:
+              /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+            -->
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/xmlbcfg.h -Wb,export_macro=Dll_Export"/>
+               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+            </exec>
+            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
+         </else>
+      </if>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)         -->
+   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- =================================================================== -->
+   <target name="cpp-lib" depends="prepare-cpp" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
+
+      <echo message="calling ant target cpp-corba-idl-${corba.product} ..." />
+      <antcall target="cpp-corba-idl-${corba.product}"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+
+      <!-- Build a shared library xmlBlasterClient.so, xmlBlasterClient.sl or xmlBlasterClient.dll -->
       <!-- A typical compile:
         g++ -g
             -fpic -I/opt/local/mico/include -DMICO -c /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.cc
@@ -1287,45 +1357,63 @@ TODO
             /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
       -->
       <mkdir dir="${build.dir}/obj"/>
+
+      <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
+
       <cc debug="true" link="shared"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
-         <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
-         <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/thread" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/key" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/qos" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/qos/storage" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/qos/address" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/queue" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/dispatch" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/util/cluster" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/client/protocol" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/client/qos" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/client/key" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/client/protocol/corba" includes="*.cpp" />
-         <fileset dir="${src.cpp.dir}/authentication" includes="*.cpp" />
-<!--         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp"/> -->
+         <fileset dir="${src.cpp.dir}/generated" includes="**/*.cpp"/>
+         <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" />
+         <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
+         <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
          <fileset dir="${THREAD_SRC}" includes="*.cpp"/>
          <sysincludepath location="${THREAD_INC}" />
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
-         <sysincludepath location="${CORBACPP_HOME}/include" />
-         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- necessary for mico on win32 -->
+         <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}/.." /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}/orbsvcs" /> <!-- TAO -->
+         <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO -->
+         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
+         <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->                  
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
-         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
+         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
-        <defineset>
-            <define name="MICO" value="1" />
-            <define name="pedantic" />
-            <define name="Wall" />
-            <!-- undefine name="UNWANTEDDEF" / -->
+         <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="WIN32" value="1" if="windows" />        
+           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="_MBCS" value="1" if="windows" />
+           <define name="_USRDLL" value="1" if="windows" />
+           <define name="DLL_BUILD" value="1" if="windows" />
+           <define name="pedantic" if="unix" />
+           <define name="Wall" if="unix" />
+           <!-- undefine name="UNWANTEDDEF" / -->
          </defineset>
+
+         <linker name="gcc"  if="use-gcc" />
+         <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
+            <!-- TAO -->
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
+            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
+
+            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+
+            <!-- MICO -->
+            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+         </linker>
+         <linker name="bcc"  if="use-bcc" />
       </cc>
    </target>
 
@@ -1357,7 +1445,7 @@ TODO
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
-   <target name="cpp-test" depends="prepare" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
+   <target name="cpp-test" depends="prepare-cpp" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
       <foreach list="TestConnectQos,TestCorbaDriver,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestGet,TestSub,TestSubXPath,TestRam,TestTimeout,TestTimestamp" target="compileCppExe" param="exeName" delimiter="," />
    </target>
 
@@ -1380,7 +1468,8 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
 
          <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" />
+         <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="windows" />
+         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="unix" />
          <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
          <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
@@ -1392,14 +1481,19 @@ TODO
          <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
 
          <defineset>
-            <define name="MICO" value="1" />
-            <define name="pedantic" />
-            <define name="Wall" />
+           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="WIN32" value="1" if="windows" />        
+           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="_MBCS" value="1" if="windows" />
+           <define name="_USRDLL" value="1" if="windows" />
+           <define name="DLL_BUILD" value="1" if="windows" />
+           <define name="pedantic" if="unix" />
+           <define name="Wall" if="unix" />
          </defineset>
       </cc>
    </target>
 
-   <target name="cpp-demo" depends="prepare" description="c++ client demo - create C++ demo clients"> <!-- depends="prepare,cpp-lib" -->
+   <target name="cpp-demo" depends="prepare-cpp" description="c++ client demo - create C++ demo clients"> <!-- depends="prepare,cpp-lib" -->
       <foreach list="HelloWorld2,PublishDemo,SubscribeDemo" target="compileCppDemoExe" param="exeName" delimiter="," />
    </target>
 
