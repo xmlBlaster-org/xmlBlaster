@@ -762,8 +762,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
 
-   private final String subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   private final String subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException, IllegalArgumentException
    {
+      if (qos==null) qos = "";
+      if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for subscribe()");
       if (secPlgn!=null) { // with security Plugin: interceptor
          return secPlgn.importMessage(
                      driver.subscribe(secPlgn.exportMessage(xmlKey),
@@ -860,9 +862,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException
+   public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
       if (Log.CALL) Log.call(ME, "unSubscribe() ...");
+      if (qos==null) qos = "";
+      if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for unSubscribe()");
       try {
          if (secPlgn!=null) { // with security Plugin
             driver.unSubscribe(secPlgn.exportMessage(xmlKey), secPlgn.exportMessage(qos));
@@ -946,9 +950,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
+   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
       if (Log.CALL) Log.call(ME, "erase() ...");
+      if (qos==null) qos = "";
+      if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for erase()");
       try {
          if (secPlgn!=null) {
             String[] result = driver.erase(secPlgn.exportMessage(xmlKey),
@@ -987,10 +993,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
+   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
       MessageUnit[] units = null;
       if (Log.CALL) Log.call(ME, "get() ...");
+      if (qos==null) qos = "";
+      if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for get()");
       try {
          //Is cache installed?
          if (cache != null) {
