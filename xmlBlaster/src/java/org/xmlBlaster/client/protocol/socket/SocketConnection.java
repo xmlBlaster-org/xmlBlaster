@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.34 2002/09/15 11:18:25 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.35 2002/09/15 17:05:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -191,7 +191,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
-         log.error(ME+".constructor", str);
+         if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new ConnectionException(ME, str);
       }
@@ -348,6 +348,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       if (!isLoggedIn()) {
          log.warn(ME, "You are not logged in, no logout possible.");
+         return false;
       }
 
       try {
@@ -365,7 +366,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          throw new ConnectionException(ME+".disconnect", e.toString());
       }
       catch (IOException e1) {
-         log.error(ME+".disconnect", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".disconnect", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".disconnect", e1.toString());
       }
    }
@@ -433,7 +434,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException
+   public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException
    {
       if (log.CALL) log.call(ME, "Entering subscribe(id=" + sessionId + ")");
       try {
@@ -443,18 +444,17 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
-         log.error(ME+".subscribe", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".subscribe", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".subscribe", e1.toString());
       }
    }
-
 
    /**
     * Unsubscribe from messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void unSubscribe (String xmlKey_literal,
+   public final void unSubscribe(String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException, ConnectionException
    {
       if (log.CALL) log.call(ME, "Entering unSubscribe(): id=" + sessionId);
@@ -468,12 +468,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return;
       }
       catch (IOException e1) {
-         log.error(ME+".unSubscribe", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".unSubscribe", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".unSubscribe", e1.toString());
       }
    }
-
-
 
    /**
     * Publish a message.
@@ -492,11 +490,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return arr[0]; // return the QoS
       }
       catch (IOException e1) {
-         log.error(ME+".publish", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".publish", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".publish", e1.toString());
       }
    }
-
 
    /**
     * Publish multiple messages in one sweep.
@@ -509,7 +506,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
+         if (log.TRACE) log.trace(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
          throw new XmlBlasterException(ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
@@ -520,7 +517,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
-         log.error(ME+".publishArr", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".publishArr", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".publishArr", e1.toString());
       }
    }
@@ -535,7 +532,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
 
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
+         if (log.TRACE) log.trace(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
          return;
       }
 
@@ -545,7 +542,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          getCbReceiver().execute(parser, ONEWAY);
       }
       catch (Throwable e) {
-         log.error(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
+         if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
          throw new ConnectionException(ME+".publishOneway", e.toString());
       }
    }
@@ -571,8 +568,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       return erase(xmlKey_literal, eraseQoS_literal);
    }
 
-
-
    /**
     * Delete messages.
     * <p />
@@ -590,11 +585,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
-         log.error(ME+".erase", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".erase", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".erase", e1.toString());
       }
    }
-
 
    /**
     * Synchronous access a message.
@@ -609,7 +603,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       return get(xmlKey_literal, getQoS_literal);
    }
-
 
    /**
     * Synchronous access a message.
@@ -627,11 +620,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return (MessageUnit[])response;
       }
       catch (IOException e1) {
-         log.error(ME+".get", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".get", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".get", e1.toString());
       }
    }
-
 
    /**
     * Check server.
@@ -646,34 +638,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return (String)response;
       }
       catch (IOException e1) {
-         log.error(ME+".ping", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".ping", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".ping", e1.toString());
       }
    }
-
-
-   /**
-    * The update method.
-    * <p />
-    * Gets invoked from xmlBlaster callback
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
-    */
-    /*
-   public String[] update(MessageUnit[] arr) throws XmlBlasterException
-   {
-      if (log.CALL) log.call(ME, "Entering update()");
-      if (cbClient == null) {
-         log.warn(ME, "Ignoring callback message, client is not interested in it");
-         return "<qos><state id='OK'/></qos>";
-      }
-      if (arr != null) {
-         for (int ii=0; ii<arr.length; ii++) {
-            cbClient.update(getLoginName(), arr[ii].getXmlKey(), arr[ii].getContent(), arr[ii].getQos());
-         }
-      }
-      return "<qos><state id='OK'/></qos>";
-   }
-    */
 
    /**
     * Dump of the state, remove in future.
@@ -691,7 +659,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (this.sock == null) return "<noConnection />";
       else return "<connected/>";
    }
-
 
    /**
     * Command line usage.
