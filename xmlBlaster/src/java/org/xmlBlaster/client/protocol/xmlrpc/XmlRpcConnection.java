@@ -18,9 +18,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
@@ -297,7 +294,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Unsubscribe from messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">The interface.unSubscribe requirement</a>
     */
    public final String[] unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
@@ -360,7 +357,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
@@ -404,7 +401,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final void publishOneway(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
@@ -438,11 +435,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   /**
+   /*
     * Delete messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
    public final String[] erase (XmlKey xmlKey, EraseQosServer eraseQoS)
       throws XmlBlasterException
    {
@@ -451,13 +446,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       return erase(xmlKey_literal, eraseQoS_literal);
    }
+    */
 
 
 
    /**
     * Delete messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
    public final String[] erase(String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
@@ -492,11 +488,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   /**
+   /*
     * Synchronous access a message.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
    public final MsgUnitRaw[] get (XmlKey xmlKey, GetQosServer getQoS)
       throws XmlBlasterException
    {
@@ -505,12 +499,13 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       return get(xmlKey_literal, getQoS_literal);
    }
+    */
 
 
    /**
     * Synchronous access a message.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
