@@ -433,10 +433,6 @@ public final class ConnectQos
     */
    public String usage() {
       String text = "\n";
-      text += "Control my security settings\n";
-      text += "   -security.plugin.type    The security plugin to use [simple]\n";
-      text += "   -security.plugin.version The version of the plugin [1.0]\n";
-      text += "\n";
       text += getSessionQos().usage();
       return text;
    }
