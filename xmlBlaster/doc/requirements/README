@@ -23,6 +23,9 @@ The html.xsl files needs the all.xml file to go though all xml requirements
 and build a HTML table.
 
 CollectXml.java is a little helper which generates all.xml
+containing all xml requirements.
+all.html is used by the XSL stylesheet to process all xml files into
+one html file
 
 
 Generate HTML output with Sun XML parser:
