@@ -241,7 +241,7 @@ void SocketDriver::reconnect(void)
 
    freeResources(true); // Cleanup if old connection exists
 
-	// Give a chance to new configuration settings
+   // Give a chance to new configuration settings
    if (argsStructP_ != 0) {
       global_.freeArgs(*argsStructP_);
       delete argsStructP_;
