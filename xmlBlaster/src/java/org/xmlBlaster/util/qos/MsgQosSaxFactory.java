@@ -36,6 +36,7 @@ import org.xml.sax.helpers.*;
  *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
  *     &lt;sender>Tim&lt;/sender>
  *     &lt;priority>5&lt;/priority>
+ *     &lt;administrative>false&lt;/administrative>
  *     &lt;subscribe id='__subId:1'/> <!-- Only for updates, PtP message are marked with id='__subId:PtP' -->
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
@@ -91,7 +92,7 @@ import org.xml.sax.helpers.*;
  *   &lt;/rcvTimestamp>
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.PtP.html">The engine.qos.publish.destination.PtP requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
  * @author xmlBlaster@marcelruff.info
  */
 public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_MsgQosFactory
@@ -108,7 +109,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inRedeliver = false;
    private boolean inTopic = false;
    private boolean inQueue = false;
-   private boolean inMsgUnitStore = false;
+   private boolean inPersistence = false;
    private boolean inIsPubSub = false;
    private boolean inDestination = false;
    private boolean inSender = false;
@@ -116,7 +117,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inExpiration = false;
    private boolean inRcvTimestamp = false;
    private boolean inIsVolatile = false;
+   private boolean inAdministrative = false;
    private boolean inIsDurable = false;
+   private boolean inForceUpdate = false;
    private boolean inReadonly = false;
    private boolean inRoute = false;
 
@@ -333,10 +336,10 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             if (inTopic) {
                String relatedVal = attrs.getValue("relating");
                if (relatedVal == null)
-                  relatedVal = "msgUnitStore";
+                  relatedVal = Constants.RELATING_MSGUNITSTORE;
 
                relatedVal = relatedVal.trim();
-               if ("msgUnitStore".equalsIgnoreCase(relatedVal)) {   // <queue related='msgUnitStore' is deprecated here! (is parsed now as msgUnitStore, see below)
+               if (Constants.RELATING_MSGUNITSTORE.equalsIgnoreCase(relatedVal)) {   // <queue related='msgUnitStore' is deprecated here! (is parsed now as msgUnitStore, see below)
                   MsgUnitStoreProperty tmpProp = new MsgUnitStoreProperty(glob, glob.getId());
                   tmpProp.startElement(uri, localName, name, attrs);
                   msgQosData.getTopicProperty().setMsgUnitStoreProperty(tmpProp);
@@ -354,10 +357,10 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("msgUnitStore")) {
+      if (name.equalsIgnoreCase("persistence")) {
          if (!inQos)
             return;
-         inMsgUnitStore = true;
+         inPersistence = true;
          if (attrs != null) {
             if (inTopic) {
                MsgUnitStoreProperty tmpProp = new MsgUnitStoreProperty(glob, glob.getId());
@@ -488,9 +491,18 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if (name.equalsIgnoreCase("administrative")) {
+         if (!inQos)
+            return;
+         inAdministrative = true;
+         msgQosData.setAdministrative(true);
+         return;
+      }
+
       if (name.equalsIgnoreCase("isDurable")) {
          if (!inQos)
             return;
+         inIsDurable = true;
          msgQosData.setDurable(true);
          return;
       }
@@ -498,6 +510,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("forceUpdate")) {
          if (!inQos)
             return;
+         inForceUpdate = true;
          msgQosData.setForceUpdate(true);
          return;
       }
@@ -505,6 +518,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("readonly")) {
          if (!inQos)
             return;
+         inReadonly = true;
          msgQosData.setReadonly(true);
          log.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
          return;
@@ -587,23 +601,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("msgUnitStore")) {
-         inMsgUnitStore = false;
+      if(name.equalsIgnoreCase("persistence")) {
+         inPersistence = false;
          character.setLength(0);
          return;
       }
 
       if(name.equalsIgnoreCase("rcvTimestamp")) {
          inRcvTimestamp = false;
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("forceUpdate")) {
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0)
-            msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
          character.setLength(0);
          return;
       }
@@ -627,12 +632,32 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if(name.equalsIgnoreCase("administrative")) {
+         inAdministrative = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            msgQosData.setAdministrative(new Boolean(tmp).booleanValue());
+         // if (log.TRACE) log.trace(ME, "Found administrative = " + msgQosData.isAdministrative());
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("isDurable")) {
          inIsDurable = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setDurable(new Boolean(tmp).booleanValue());
          // if (log.TRACE) log.trace(ME, "Found isDurable = " + msgQosData.getIsDurable());
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("forceUpdate")) {
+         inForceUpdate = false;
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
+         // if (log.TRACE) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
          character.setLength(0);
          return;
       }
@@ -750,6 +775,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
       //if (!msgQosData.isVolatileDefault())
       //   sb.append(offset).append(" <isVolatile>").append(msgQosData.isVolatile()).append("</isVolatile>");
+
+      if (msgQosData.getAdministrativeProp().isModified()) {
+         if (msgQosData.isAdministrative())
+            sb.append(offset).append(" <administrative/>");
+         else
+            sb.append(offset).append(" <administrative>false</administrative>");
+      }
 
       if (msgQosData.getDurableProp().isModified()) {
          if (msgQosData.isDurable())

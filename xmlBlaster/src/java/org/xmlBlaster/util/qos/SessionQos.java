@@ -82,7 +82,11 @@ public final class SessionQos implements java.io.Serializable, Cloneable
    }
 
    private final void initialize() {
-      String sessionNameStr = glob.getProperty().get("session.name", (String)null);
+
+      // login name: As default use the JVM System.property ${user.name} which is usually the login name of the OS
+      String defaultLoginName = glob.getProperty().get("user.name", "guest");
+
+      String sessionNameStr = glob.getProperty().get("session.name", defaultLoginName);
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
@@ -94,22 +98,14 @@ public final class SessionQos implements java.io.Serializable, Cloneable
          clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
          setSessionId(glob.getProperty().get("session.sessionId["+nodeId+"]", getSessionId()));
       }
-      if (sessionNameStr != null) {
-         this.sessionName = new SessionName(glob, sessionNameStr);
-      }
 
-      // -loginName is deprecated !!!
-      String loginName = glob.getProperty().get("loginName", "guest");
-      if (nodeId != null) {
-         loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
-      }
+      this.sessionName = new SessionName(glob, sessionNameStr);
 
-      if (this.sessionName != null && !"guest".equals(loginName)) {
-         log.warn(ME, "session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
-      }
-
-      if (this.sessionName == null) {
-         this.sessionName = new SessionName(glob, loginName); // "guest"
+      {
+         // user warning for the old style loginName
+         String loginName = glob.getProperty().get("loginName", (String)null);
+         if (loginName != null)
+            log.warn(ME, "session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
       }
 
       if (log.TRACE) log.trace(ME, "initialize session.name=" + this.sessionName + " nodeId=" + nodeId);
