@@ -3,7 +3,7 @@ Name:      util.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript utility objects
 Author:    ruff@swand.lake.de
-Version:   $Id: util.js,v 1.1 2000/02/21 10:00:52 ruff Exp $
+Version:   $Id: util.js,v 1.2 2000/03/08 13:36:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -31,9 +31,9 @@ function getBrowserInfo()
 /**
  * Logging of errors/warnings/infos
  * Example:
- *    log.error("The variable listenerList is empty.");
- *    log.warning("Performance over internet is slow.");
- *    log.info("Login granted.");
+ *    Log.error("The variable listenerList is empty.");
+ *    Log.warning("Performance over internet is slow.");
+ *    Log.info("Login granted.");
 */
 var logWindow = null;         // the window handle - a popup with the log output table
 var MAX_LOG_ENTRIES = 60;     // max number of rows in window
@@ -83,7 +83,7 @@ function catchError(text, url, row)
          url = url.slice(ind+1);
       }
    }
-   log.internal(url + ": " + row, text);
+   Log.internal(url + ": " + row, text);
    return true; // Suppress errors from browser
 }
 // Set event handler, to catch the internal errors as well
@@ -175,18 +175,18 @@ function logToWindow(level, codePos, text)
 }
 
 // The log handler, use this to invoke your logging output
-function logHandler()
+function LogHandler()
 {
    this.internal = internal_; // errors from browser are caught
-   this.error = error_;       // log.error() output
+   this.error = error_;       // Log.error() output
    this.warning = warning_;
    this.info = info_;
 }
 
 // The log handler, use this to invoke your logging output
 // Example:
-//    log.warning("Performance over internet is slow.");
-var log = new logHandler();
+//    Log.warning("Performance over internet is slow.");
+var Log = new LogHandler();
 
 
 

@@ -72,7 +72,7 @@
        */
       function update(message)
       {
-         top.log.info("Received new chat message");
+         top.Log.info("Received new chat message");
          var strName = message.qos.sender;
          this.showUpdate_(strName, message.content);
          // top.contentFrame.callbackImpl.showUpdate_(strName, message.content);

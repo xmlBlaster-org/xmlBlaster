@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.2 2000/02/21 11:30:25 ruff Exp $
+Version:   $Id: callback.js,v 1.3 2000/03/08 13:36:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -20,7 +20,7 @@ function login(login, passwd)
    loginName = login;
    top.target = "callbackFrame";
    top.location.href = "/servlet/Callback?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
-   log.info("Leaving login...");
+   Log.info("Leaving login...");
    return true;
 }
 
@@ -37,17 +37,17 @@ function logout()
 // @param message An instance of MessageWrapper
 function publish(message)
 {
-   log.error("Publish implementation to xmlBlaster is missing");
+   Log.error("Publish implementation to xmlBlaster is missing");
 }
 
 function get(xmlKey, qos)
 {
-   log.error("Get implementation to xmlBlaster is missing");
+   Log.error("Get implementation to xmlBlaster is missing");
 }
 
 function erase(xmlKey, qos)
 {
-   log.error("Erase implementation to xmlBlaster is missing");
+   Log.error("Erase implementation to xmlBlaster is missing");
 }
 
 
@@ -87,7 +87,7 @@ function PublishKeyWrapperToXml()
    str += ">\n";
    str += this.clientTags;
    str += "\n</key>";
-   log.info(str);
+   Log.info(str);
    return str;
 }
 function PublishKeyWrapperWrap(tags)
@@ -126,11 +126,11 @@ function UpdateKey(xml)
    this.root = top.Xparse(xml);     // The Javascript DOM tree
    var keyNode = this.root.contents[0];
    if (keyNode.name != "key") {
-      log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
+      Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
       return;
    }
    for(attrib in keyNode.attributes) {
-      // log.info('Processing ' + attrib + '="' + keyNode.attributes[attrib] + '" ...');
+      // Log.info('Processing ' + attrib + '="' + keyNode.attributes[attrib] + '" ...');
       if (attrib == "oid")
          this.oid = keyNode.attributes[attrib];
       else if (attrib == "contentMime")
@@ -146,7 +146,7 @@ function UpdateQos(xml)
    this.root = top.Xparse(xml);     // The Javascript DOM tree
    var qosNode = this.root.contents[0];
    if (qosNode.name != "qos") {
-      log.warning('Qos tag is missing in new arrvied message, received an unknown tag &lt;' + qosNode.name + '>');
+      Log.warning('Qos tag is missing in new arrvied message, received an unknown tag &lt;' + qosNode.name + '>');
       return;
    }
 
@@ -200,7 +200,7 @@ function MessageWrapper(xmlKey, content, qos)
 function UpdateMessageWrapper(xmlKey, content, qos)
 {
    if (xmlKey == null) {
-      log.error("Please specify an UpdateKey object");
+      Log.error("Please specify an UpdateKey object");
       return;
    }
    this.xmlKey = xmlKey;
@@ -208,7 +208,7 @@ function UpdateMessageWrapper(xmlKey, content, qos)
    this.content = content;
 
    if (qos == null) {
-      log.error("Please specify an UpdateQos object");
+      Log.error("Please specify an UpdateQos object");
       return;
    }
    this.qos = qos;
@@ -223,18 +223,18 @@ var listenerList = new Array();
 function addUpdateListener(listenerFrame)
 {
    if (listenerFrame.update == null) {
-      log.error("Frame has no method update()");
+      Log.error("Frame has no method update()");
       return;
    }
    listenerList[listenerList.length] = listenerFrame;
-   log.info("Added listener frame");
+   Log.info("Added listener frame");
    return;
 }
 
 function removeUpdateListener(listenerFrame)
 {
    if (listenerList == null) {
-      log.error("listenerList is empty");
+      Log.error("listenerList is empty");
       return;
    }
    var tmpArr = new Array(listenerList.length);
@@ -243,7 +243,7 @@ function removeUpdateListener(listenerFrame)
          continue;
       tmpArr[ii] = listenerList[ii];
    }
-   log.info("Removed listener frame");
+   Log.info("Removed listener frame");
    return;
 }
 
@@ -263,7 +263,7 @@ function update(message)
    var key = new UpdateKey(xml);
    // var qos = new UpdateKey(xml);
 
-   log.info("Received update message, dispatching it to " + listenerList.length + " frames");
+   Log.info("Received update message, dispatching it to " + listenerList.length + " frames");
    for (var ii=0; ii < listenerList.length; ++ii) {
       listenerList[ii].update(message);
    }
