@@ -717,9 +717,9 @@ public abstract class AddressBase
       if (this.oneway.isModified())
           sb.append(" oneway='").append(oneway()).append("'");
       if (this.useForSubjectQueue.isModified())
-          sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue).append("'");
+          sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue.getValue()).append("'");
       if (this.dispatchPlugin.isModified())
-          sb.append(" dispatchPlugin='").append(this.dispatchPlugin).append("'");
+          sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
       sb.append(">");
       sb.append(offset).append(" ").append(getAddress());
       if (this.collectTime.isModified() || this.collectTime.isModified()) {
