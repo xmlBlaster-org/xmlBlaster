@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.16 2000/10/29 20:24:59 ruff Exp $
+Version:   $Id: TestGet.java,v 1.17 2001/03/27 19:30:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -137,6 +137,8 @@ public class TestGet extends TestCase
          String qos = "<qos></qos>";
          MessageUnit[] msgArr = connection.get(xmlKey, qos);
          Log.info(ME, "Success, got the message");
+         assertEquals("Got wrong number of messages", 1, msgArr.length);
+         if (Log.DUMP) Log.dump(ME, msgArr[0].toXml());
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].content));
       } catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException for trying to get a message: " + e.reason);
