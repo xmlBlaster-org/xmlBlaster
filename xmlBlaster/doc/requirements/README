@@ -1,6 +1,17 @@
 XmlBlaster requirements
 =======================
 
+Open
+
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/requirement.html
+
+or locally
+
+  file:///<XMLBLASTER_HOME/doc/requirements/requirement.html
+
+to read the requirements.
+
+
 The requirement document layout is validated with requirement.dtd
 
 Each requirement is described in an own xml file
