@@ -673,7 +673,7 @@ public class JdbcManager implements I_ConnectionListener {
          statement = conn.createStatement();
          if (this.log.TRACE) this.log.call(ME, "update: executing statement");
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.call(ME, "update: executed statement");
+         if (this.log.TRACE) this.log.call(ME, "update: executed statement, ret=" + ret);
       }
       finally {
          if (this.log.TRACE) this.log.call(ME, "update: closing statement");
