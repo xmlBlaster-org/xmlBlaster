@@ -127,7 +127,7 @@ TODO
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
    <property name="cp.xml" value="lib/parser.jar:lib/jaxp.jar:lib/omquery.jar:lib/xtdash.jar"/>
-   <property name="cp.orb" value="lib/idl.jar:lib/jacorb.jar"/>
+   <property name="cp.orb" value="lib/miniJacorb.jar:lib/idl.jar:lib/jacorb.jar:lib/logkit.jar"/>
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar:lib/jdbc7.2dev-1.2.jar"/>
