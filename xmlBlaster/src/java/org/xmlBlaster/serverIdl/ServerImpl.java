@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.25 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.26 1999/12/09 00:11:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -14,7 +14,10 @@ import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.XmlKey;
 import org.xmlBlaster.engine.PublishQoS;
-import org.xmlBlaster.engine.XmlQoS;
+import org.xmlBlaster.engine.SubscribeQoS;
+import org.xmlBlaster.engine.UnSubscribeQoS;
+import org.xmlBlaster.engine.EraseQoS;
+import org.xmlBlaster.engine.GetQoS;
 import org.xmlBlaster.authentication.Authenticate;
 import java.util.*;
 
@@ -65,8 +68,8 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      String oid = requestBroker.subscribe(clientInfo, xmlKey, xmlQoS);
+      SubscribeQoS subscribeQoS = new SubscribeQoS(qos_literal);
+      String oid = requestBroker.subscribe(clientInfo, xmlKey, subscribeQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + requestBroker.printOn().toString());
@@ -87,7 +90,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      UnSubscribeQoS xmlQoS = new UnSubscribeQoS(qos_literal);
       requestBroker.unSubscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
@@ -148,7 +151,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      EraseQoS xmlQoS = new EraseQoS(qos_literal);
       if (Log.CALLS) Log.calls(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
 
       String [] retArr = requestBroker.erase(clientInfo, xmlKey, xmlQoS);
@@ -173,7 +176,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      GetQoS xmlQoS = new GetQoS(qos_literal);
       MessageUnit[] messageUnitArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());

@@ -3,11 +3,12 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.7 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.8 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientListener;
@@ -21,7 +22,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.7 1999/12/08 12:16:17 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.8 1999/12/09 00:11:05 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -119,12 +120,12 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * if you have the ingredients for a unique id of a subscription, you may access the
     * SubscriptionInfo object here
     *
-    * @param clientInfo
-    * @param xmlKey
-    * @param unSubscribeQoS
+    * @param clientInfo All infos about the client
+    * @param xmlKey     The XML based message key
+    * @param qos        The base QoS class
     * @return corresponding subscriptionInfo object
     */
-   public SubscriptionInfo getSubscription(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
+   public SubscriptionInfo getSubscription(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
       Object obj;
       Map aboMap;
@@ -135,7 +136,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
          aboMap = (Map)obj;
       }
 
-      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, unSubscribeQoS).toString();
+      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, qos).toString();
       SubscriptionInfo subs = (SubscriptionInfo)aboMap.get(subscriptionInfoUniqueKey);
       return subs;
    }

@@ -3,12 +3,13 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.12 1999/11/23 15:35:48 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.13 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.TimeHelper;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.clientIdl.BlasterCallback;
@@ -23,20 +24,31 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
-   private ClientInfo clientInfo;   // reference on ClientInfo
-   private XmlKey xmlKey;           // reference to xmlKey
-   private XmlQoS xmlQoS;           // reference to 'Quality of Service' of subscription
+   private ClientInfo clientInfo;     // reference on ClientInfo
+   private XmlKey xmlKey;             // reference to xmlKey
+   private XmlQoSBase xmlQoSBase = null; // reference to 'Quality of Service' base class
+   private SubscribeQoS subscribeQoS = null; // reference to 'Quality of Service' of subscription
+   private UnSubscribeQoS unSubscribeQoS = null; // reference to 'Quality of Service' of unsubscription
    private String uniqueKey=null;
 
    private MessageUnitHandler myHandler;  // reference to my managing container
 
    private long creationTime = System.currentTimeMillis();
 
-   public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+
+   /**
+    * @param qos This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
+    */
+   public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
       this.clientInfo = clientInfo;
       this.xmlKey = xmlKey;
-      this.xmlQoS = subscribeQoS;
+
+      // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
+      if (qos.getClass().getName().equals("org.xmlBlaster.engine.SubscribeQoS"))
+         this.subscribeQoS = (SubscribeQoS)qos;
+      else
+         this.unSubscribeQoS = (UnSubscribeQoS)qos;
 
       if (Log.CALLS) Log.trace(ME, "Created new SubscriptionInfo " + xmlKey.getUniqueKey());
    }
@@ -50,7 +62,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (Log.TRACE) Log.trace(ME, "Entering erase()");
       // clientInfo = null; not my business
       xmlKey = null;
-      xmlQoS = null;
+      xmlQoSBase = null;
+      subscribeQoS = null;
+      unSubscribeQoS = null;
       uniqueKey = null;
    }
 
@@ -121,9 +135,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       return xmlKey;
    }
 
-   public XmlQoS getXmlQoS()
+   public SubscribeQoS getSubscribeQoS()
    {
-      return xmlQoS;
+      return subscribeQoS;
    }
 
    /**
@@ -132,7 +146,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public String getUniqueKey() throws XmlBlasterException
    {
       if (uniqueKey == null) {
-         uniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, xmlQoS).toString();
+         uniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, xmlQoSBase).toString();
       }
       return uniqueKey;
    }
@@ -145,7 +159,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
     */
-   public static String generateUniqueKey(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS xmlQoS) throws XmlBlasterException
+   public static String generateUniqueKey(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
    {
       StringBuffer buf = new StringBuffer(80);
 
@@ -186,7 +200,14 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       sb.append(offset + "<SubscriptionInfo id='" + getUniqueKey() + "'>");
       sb.append(offset + "   <clientInfo id='" + (clientInfo==null ? "null" : clientInfo.toString()) + "'/>");
       sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
-      sb.append(offset + "   <xmlQoS id='" + (xmlQoS==null ? "null" : xmlQoS.toString()) + "'/>");
+      if (subscribeQoS != null)
+         sb.append(subscribeQoS.printOn(extraOffset + "   ").toString());
+      else
+         sb.append(offset + "   <SubscribeQoS></SubscribeQoS>");
+      if (unSubscribeQoS != null)
+         sb.append(unSubscribeQoS.printOn(extraOffset + "   ").toString());
+      else
+         sb.append(offset + "   <UnSubscribeQoS></UnSubscribeQoS>");
       sb.append(offset + "   <messageUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       sb.append(offset + "</SubscriptionInfo>\n");

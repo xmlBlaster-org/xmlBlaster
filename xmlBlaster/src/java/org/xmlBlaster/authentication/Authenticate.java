@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.18 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.19 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -224,7 +224,7 @@ public class Authenticate
       }
 
       org.xmlBlaster.serverIdl.Server xmlBlaster = org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
-      XmlQoSClient xmlQoS = new XmlQoSClient(xmlQoS_literal);
+      ClientQoS xmlQoS = new ClientQoS(xmlQoS_literal);
       AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, callback, callbackIOR, xmlQoS);
 
       if (clientInfo != null) {

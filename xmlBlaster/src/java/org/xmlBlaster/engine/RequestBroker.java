@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.35 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.36 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,7 +28,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -139,7 +139,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Invoked by a client, to subscribe to one/many MessageUnit
     */
-   public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
       String returnOid = "";
       if (xmlKey.getQueryType() != XmlKey.EXACT_QUERY) { // fires event for query subscription, this needs to be remembered for a match check of future published messages
@@ -166,7 +166,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Invoked by a client, to subscribe to one/many MessageUnit
     */
-   public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
+   public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
       MessageUnit[] messageUnitArr = new MessageUnit[xmlKeyVec.size()];
@@ -292,7 +292,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param clientInfo
     *
     */
-   public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
+   public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) {
          fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS), false);
@@ -345,6 +345,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
       if (publishQoS.isPubSubStyle()) {
+         if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
+
          //----- 1. set new value or create the new message:
          MessageUnitHandler messageUnitHandler = setMessageUnit(xmlKey, messageUnit, publishQoS);
 
@@ -357,6 +359,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          messageUnitHandler.invokeCallback();
       }
       else if (publishQoS.isPTP_Style()) {
+         if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
+
          MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
          Vector destinations = publishQoS.getDestinations(); // !!! add XPath client query here !!!
 
@@ -408,7 +412,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
                      SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription.getClientInfo(),
                                                                   xmlKey,
-                                                                  existingQuerySubscription.getXmlQoS());
+                                                                  existingQuerySubscription.getSubscribeQoS());
                      matchingSubsVec.addElement(subs);
                   }
                   else {
@@ -458,7 +462,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Store or update a new arrived message. 
+    * Store or update a new arrived message.
     * <p />
     * This is used only for publish/subscribe style.<br />
     * PTP messages are not stored in xmlBlaster
@@ -507,7 +511,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Client wants to erase a message
     */
-   public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qoS) throws XmlBlasterException
+   public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
       Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, qoS);
       String[] oidArr = new String[xmlKeyVec.size()];

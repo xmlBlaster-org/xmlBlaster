@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.4 1999/12/02 17:54:16 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.5 1999/12/09 00:11:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,39 +14,57 @@ import org.xml.sax.helpers.*;
 
 
 /**
- * XmlQoSBase
- * In good old C days this would have been named a 'flag' (with bit wise setting)
- * but: this nows some more stuff, namely:
- *
- *  - The stringified IOR of the ClientCallback
+ * In good old C days this would have been named a 'flag' (with bit wise setting)<br />
+ * But this allows to specify QoS (quality of service) in XML syntax. 
+ * <p />
+ * With XML there are no problems to extend the services of the xmlBlaster in unlimited ways.<br />
+ * The xml string is parsed with a SAX parser, since no persistent DOM tree is needed
+ * and SAX is much faster.
+ * <p />
+ * You may use this as a base class for your specialized QoS.
  */
 public class XmlQoSBase extends HandlerBase
 {
    private String ME = "XmlQoSBase";
 
-   // private static final String DEFAULT_PARSER_NAME =
-                                        // com.ibm.xml.parsers.SAXParser
-                                        // com.sun.xml.parser.ValidatingParser
-
-   protected StringBuffer  character = new StringBuffer();
-   protected boolean inQos = false;         // parsing inside <qos> ?
+   // private static final String DEFAULT_PARSER_NAME =  // com.ibm.xml.parsers.SAXParser // com.sun.xml.parser.ValidatingParser
+   protected StringBuffer character = new StringBuffer();
+   protected boolean inQos = false;     // parsing inside <qos> ? </qos>
 
 
    /**
     * The original key in XML syntax, for example:
-    *    "<qos></qos>"
+    * <code>   &lt;qos>&lt;/qos>"</code>
     */
    protected String xmlQoS_literal;
 
 
    /**
-    * This object parses the given quality of service XML string using the SAX parser.
-    * @param xmlQoS_literal Quality of service in XML notation
+    * Constructs an un initialized QoS (quality of service) object. 
+    * You need to call the init() method to parse the XML string.
     */
-   public XmlQoSBase(String xmlQoS_literal) throws XmlBlasterException
+   public XmlQoSBase()
    {
       if (Log.CALLS) Log.trace(ME, "Creating new XmlQoSBase");
+   }
 
+
+   /**
+    * Constructs an un initialized QoS (quality of service) object. 
+    * @deprecated Use the empty constructor
+    */
+   public XmlQoSBase(String xmlQoS_literal)
+   {
+      if (Log.CALLS) Log.trace(ME, "Creating new XmlQoSBase");
+   }
+
+
+   /*
+    * This method parses the given quality of service XML string using the SAX parser. 
+    * @param xmlQoS_literal Quality of service in XML notation
+    */
+   public void init(String xmlQoS_literal) throws XmlBlasterException
+   {
       if (xmlQoS_literal == null)
          xmlQoS_literal = "";
 

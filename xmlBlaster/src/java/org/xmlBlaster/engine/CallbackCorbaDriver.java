@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.2 1999/12/02 16:48:06 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.3 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -18,7 +18,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -46,13 +46,16 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       BlasterCallback cb = clientInfo.getCB();
 
-      XmlQoSUpdate xmlQoS = new XmlQoSUpdate(""); // !!! missing QOS
-
       MessageUnit[] updateMsgArr = new MessageUnit[1];
       updateMsgArr[0] = messageUnitWrapper.getMessageUnit();
 
       String[] qarr = new String[1];
-      qarr[0] = xmlQoS.toString();
+      qarr[0] = "<qos>" + clientInfo.getLoginName() + "</qos>";
+
+      /* not performing enough, but better OOD
+         UpdateQoS xmlQoS = new UpdateQoS(clientInfo.getLoginName(), xytag);
+         qarr[0] = xmlQoS.toString();
+      */
 
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + messageUnitWrapper.getXmlKey().getUniqueKey() + ") to " + clientInfo.toString());
 

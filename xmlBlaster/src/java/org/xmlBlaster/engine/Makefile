@@ -24,7 +24,10 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/XmlKey.class \
 			$(CLASS_DIR)/BigXmlKeyDOM.class \
 			$(CLASS_DIR)/SubscriptionInfo.class \
-			$(CLASS_DIR)/XmlQoS.class \
+			$(CLASS_DIR)/SubscribeQoS.class \
+			$(CLASS_DIR)/UnSubscribeQoS.class \
+			$(CLASS_DIR)/EraseQoS.class \
+			$(CLASS_DIR)/GetQoS.class \
 			$(CLASS_DIR)/PublishQoS.class
 #------------------------------------------------------------------------------
 

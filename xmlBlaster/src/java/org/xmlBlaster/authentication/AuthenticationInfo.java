@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.4 1999/12/02 13:59:43 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.5 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -25,7 +25,7 @@ public class AuthenticationInfo
    private String loginName;
    private String passwd;
    private org.xmlBlaster.serverIdl.Server xmlBlaster;
-   private XmlQoSClient xmlQoS;
+   private ClientQoS clientQoS;
    private BlasterCallback callback=null;
    private String callbackIOR;
 
@@ -39,12 +39,12 @@ public class AuthenticationInfo
     * @param xmlBlaster  The server serving this client
     * @param callback    The callback interface reference from the client
     * @param callbackIOR The string form of the callback
-    * @param xmlQoS      The login quality of service
+    * @param clientQoS   The login quality of service
     */
    public AuthenticationInfo(String uniqueKey, String loginName, String passwd,
                        org.xmlBlaster.serverIdl.Server xmlBlaster,
                        BlasterCallback callback,
-                       String callbackIOR, XmlQoSClient xmlQoS)
+                       String callbackIOR, ClientQoS clientQoS)
    {
       this.uniqueKey = uniqueKey;
       this.loginName = loginName;
@@ -52,7 +52,7 @@ public class AuthenticationInfo
       this.xmlBlaster = xmlBlaster;
       this.callback = callback;
       this.callbackIOR = callbackIOR;
-      this.xmlQoS = xmlQoS;
+      this.clientQoS = clientQoS;
       if (Log.CALLS) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
    }
 
@@ -72,7 +72,7 @@ public class AuthenticationInfo
 
 
    /**
-    * The CORBA xmlBlaster server reference serving this client. 
+    * The CORBA xmlBlaster server reference serving this client.
     * @return Server reference
     */
    org.xmlBlaster.serverIdl.Server getXmlBlaster() throws XmlBlasterException

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.10 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: Main.java,v 1.11 1999/12/09 00:11:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -53,7 +53,7 @@ public class Main
             Log.info(ME, "Published AuthServer IOR to file " + iorFile);
          }
 
-         // 2) Publish IOR on given port (swithc off this feature with '-iorPort -1'
+         // 2) Publish IOR on given port (switch off this feature with '-iorPort -1'
          int iorPort = Args.getArg(args, "-iorPort", 7609); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
             HttpIORServer httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));

@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.1 1999/12/02 17:54:30 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.2 1999/12/09 00:11:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -17,7 +17,7 @@ import java.util.Vector;
 
 
 /**
- * Handling of publish() quality of services. 
+ * Handling of publish() quality of services.
  * <p />
  * QoS Informations sent from the client to the server via the publish() Method<br />
  * The are needed to control the xmlBlaster
@@ -43,17 +43,17 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Constructs the specialized quality of service object for a publish() call. 
+    * Constructs the specialized quality of service object for a publish() call.
     */
    public PublishQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      super(xmlQoS_literal);
+      init(xmlQoS_literal);
    }
 
 
    /**
-    * Test if Publish/Subscribe style is used. 
-    * 
+    * Test if Publish/Subscribe style is used.
+    *
     * @return true if Publish/Subscribe style is used
     *         false if addressing of the destination is used
     */
@@ -64,8 +64,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Test if Point to Point addressing style is used. 
-    * 
+    * Test if Point to Point addressing style is used.
+    *
     * @return true if addressing of the destination is used
     *         false if Publish/Subscribe style is used
     */
@@ -112,7 +112,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Get all the destinations of this message. 
+    * Get all the destinations of this message.
     * This should only be used with PTP style messaging<br />
     * Check <code>if (isPTP_Style()) ...</code> before calling this method
     *
@@ -126,7 +126,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Start element, event from SAX parser. 
+    * Start element, event from SAX parser.
     * <p />
     * @param name Tag name
     * @param attrs the attributes of the tag
@@ -170,7 +170,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * End element, event from SAX parser. 
+    * End element, event from SAX parser.
     * <p />
     * @param name Tag name
     */
