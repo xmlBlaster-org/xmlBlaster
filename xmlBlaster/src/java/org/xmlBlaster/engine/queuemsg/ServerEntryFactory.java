@@ -138,17 +138,18 @@ public class ServerEntryFactory implements I_EntryFactory
             ByteArrayInputStream bais = new ByteArrayInputStream(blob);
             ObjectInputStream objStream = new ObjectInputStream(bais);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 3) {
+            if (obj.length != 4) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 3 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+                         "Expected 4 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
             String qos = (String)obj[0];
             String key = (String)obj[1];
             byte[] content = (byte[])obj[2];
+            Integer referenceCounter = (Integer)obj[3];
             PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
             MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
             MsgUnit msgUnit = new MsgUnit(glob, msgKeyData, content, publishQosServer.getData());
-            MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
+            MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, referenceCounter.intValue());
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -160,13 +161,14 @@ public class ServerEntryFactory implements I_EntryFactory
             ByteArrayInputStream bais = new ByteArrayInputStream(blob);
             ObjectInputStream objStream = new ObjectInputStream(bais);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 1) {
+            if (obj.length != 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 1 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+                         "Expected 2 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
             MsgUnit msgUnit = (MsgUnit)obj[0];
+            Integer referenceCounter = (Integer)obj[1];
             msgUnit.setGlobal(glob);
-            MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
+            MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, referenceCounter.intValue());
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -236,7 +238,7 @@ public class ServerEntryFactory implements I_EntryFactory
                publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
                MsgUnit msgUnit = new MsgUnit(glob, publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
                StorageId storageId = new StorageId("mystore", "someid");
-               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, persistType[jj]);
+               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, 0, persistType[jj]);
 
                I_EntryFactory factory = glob.getEntryFactory(storageId.getStrippedId());
 
