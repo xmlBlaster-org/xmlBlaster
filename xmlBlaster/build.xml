@@ -266,28 +266,26 @@ Else add it manually.
   <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
   <!-- =================================================================== -->
   <target name="jms-adapter" depends="k2">
-   <!-- Pack rar archive -->
-   <!-- create tmp dir to build it up -->
-   <mkdir dir="${build.dir}/jms"/>
-   <mkdir dir="${build.dir}/jms/META-INF"/>
+    <!-- Pack rar archive -->
+    <!-- create tmp dir to build it up -->
+    <mkdir dir="${build.dir}/jms"/>
+    <mkdir dir="${build.dir}/jms/META-INF"/>
     <mkdir dir="${build.dir}/jms/javaclients/j2ee/k2/"/>
-   <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
-   <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
-  <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
+    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter.java" toFile="${build.src}/javaclients/j2ee/k2/JmsAdapter.java"/>
+    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/ejb-jar.xml"/>
+    <copy file="${demo.dir}/javaclients/j2ee/k2/JmsAdapter-jboss-ejb-jar.xml" toFile="${build.dir}/jms/META-INF/jboss.xml"/>
 
 
    <javac srcdir="${build.src}/javaclients/j2ee/k2/"
-           destdir="${build.dest}"
-           classpath="${classpath}:${lib.dir}/${name}.jar"
-           debug="${debug}"/>
-
-
+          destdir="${build.dest}"
+          classpath="${classpath}:${lib.dir}/${name}.jar"
+          debug="${debug}"/>
 
     <jar jarfile="${build.dir}/JmsAdapter.jar">
         <fileset dir="${build.dest}"
              includes="**/JmsAdapter.class"/>
         <fileset dir="${build.dir}/jms"/>
-   </jar>
+    </jar>
 
     <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
     <!-- I know it is deprecated, but how else to remove dirs -->
