@@ -84,7 +84,7 @@ You have three options to start the xmlBlaster-Server.
 1. xmlBlaster with builtin HTTP-Server on localhost, port=7609 which to pass the server IOR
    (This is the Default-Startup)
 
-     jaco org.xmlBlaster.Main
+     jaco org.xmlBlaster.MainGUI
 
    and a testclient
     
@@ -94,7 +94,7 @@ You have three options to start the xmlBlaster-Server.
 
 2. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
 
-     jaco org.xmlBlaster.Main -iorPort 7609
+     jaco org.xmlBlaster.MainGUI -iorPort 7609
 
    and a testclient
 
@@ -104,7 +104,7 @@ You have three options to start the xmlBlaster-Server.
 
 3. A variant using a file to pass the server IOR:
 
-      jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+      jaco org.xmlBlaster.MainGUI -iorFile /tmp/NS_Ref
 
    and a testclient
 
@@ -117,7 +117,7 @@ You have three options to start the xmlBlaster-Server.
 
      rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
 
-     jaco org.xmlBlaster.Main
+     jaco org.xmlBlaster.MainGUI
 
      jaco javaclients.ClientXml
 
