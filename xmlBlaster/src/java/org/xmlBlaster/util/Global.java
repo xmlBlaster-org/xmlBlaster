@@ -3,7 +3,6 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.39 2002/06/28 07:17:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -414,6 +413,13 @@ public class Global implements Cloneable
                   catch (JUtilsException e2) {
                      errorText = ME + " ERROR: " + e2.toString();
                      System.err.println(errorText);
+                     try {
+                        property = new Property(null, true, new String[0], true);  // initialize without args
+                     }
+                     catch (JUtilsException e3) {
+                        errorText = ME + " ERROR: " + e3.toString();
+                        System.err.println(errorText);
+                     }
                   }
                   return -1;
                }

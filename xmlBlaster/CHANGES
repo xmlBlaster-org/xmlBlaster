@@ -46,6 +46,13 @@ Changes for 0.79dev [xxx, xx 200x]
   - Removed CLASSPATH settings from build.sh/build.bat
     They are now in build.xml
 
+  - Bugfix in HtPasswd for "name starts with" mode.
+
+  - Added JacORB1_3_30 bugfix in lib/jacorb.jar
+    Patched JacORB1_3_30/lib/org/jacorb/orb/BasicAdapter\$Listener.class:
+    Changed to if( address_string.indexOf( "/" ) >= 0 )
+    to fix bug when IP has no DNS entry
+
   - Updated to use newest JUnit from cvs
 
   - Added new documentation (all are CLOSED), see

@@ -18,19 +18,18 @@ Howto start the Perl/XmlRpc demo:
 
       1/ cd xmlBlaster/demo/perl/xmlrpc
 
-      perl  xmlBlasterClient.pl  http://myhost:port
+      perl  xmlBlasterClient.pl  myhost:port
 
       2/ if it doesn't work, look at the file xmlBlasterClient.pl
-      to make change as writed in section 'Required configuration'.
       The only 2 configuration stuff are :
-      	authentification type (plugin default is simple )
-      	two valid users on xmlBlaster server (default users are mad & yann ).
+      	authentification type (plugin default is htpasswd )
+      	two valid users on xmlBlaster server (default users are guest & admin ).
 
  - Run another Perl demo client : messagesList.pl
 
       1/ cd xmlBlaster/demo/perl/xmlrpc
 
-      perl  messagesList.pl  http://myhost:port
+      perl  messagesList.pl  myhost:port
 
       It will try to get all messages actually in xmlBlaster server.
 
@@ -75,6 +74,10 @@ with all allowed server-methods you can invoke.
 
 -------------------------------------------------------------------
 CHANGES :
+
+2002-07-08 cyrille@ktaland.com
+	- put xmlBlaster's perl packages in a folder
+	- all xml-rpc calls are encapsuled in a XmlBlaster package.
 
 2002-02-12 cyrille@ktaland.com
 

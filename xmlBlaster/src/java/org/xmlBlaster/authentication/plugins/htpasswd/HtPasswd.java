@@ -40,11 +40,15 @@ import java.util.Vector;
  */
 public class HtPasswd {
 
-   private static final String ME = "HtAccess";
+   private static final String ME = "HtPasswd";
 
    protected LogChannel log;
 
-   protected int useFullUsername = 1;
+   protected final int ALLOW_PARTIAL_USERNAME = 1;
+   protected final int FULL_USERNAME = 2;
+   protected final int SWITCH_OFF = 3;
+
+   protected int useFullUsername = ALLOW_PARTIAL_USERNAME;
    protected String htpasswdFilename = null ;
    protected Hashtable htpasswd = null ;
 
@@ -60,16 +64,17 @@ public class HtPasswd {
    public HtPasswd(Global glob) throws XmlBlasterException {
       log = glob.getLog("auth");
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", "NONE" );
-      boolean help = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
-      if ( help ) {
-          useFullUsername = 1;
+      boolean allowPartialUsername = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
+      if ( allowPartialUsername ) {
+         useFullUsername = ALLOW_PARTIAL_USERNAME;
+         log.info(ME, "Login names are searched with 'startswith' mode in '" + htpasswdFilename + "'.");
       }
       else {
-          useFullUsername = 2;
-          log.info(ME, "Login names are searched with 'startswith' mode in '" + htpasswdFilename + "'.");
+          useFullUsername = FULL_USERNAME;
+          if (log.TRACE) log.trace( ME, "contructor(" + htpasswdFilename + ") allowPartialUsername=false" );
       }
       if (htpasswdFilename != null && htpasswdFilename.equals("NONE")) {
-          useFullUsername = 3;
+          useFullUsername = SWITCH_OFF;
           if (first) {
              log.warn(ME, "Security risk, no access control: The passwd file is switched off with 'Security.Server.Plugin.htpasswd.secretfile=NONE'");
              first = false;
@@ -78,7 +83,7 @@ public class HtPasswd {
       }
 
 
-      if (log.TRACE) log.trace( ME, "contructor(" + htpasswdFilename + ")" );
+      if (log.TRACE) log.trace( ME, "contructor(" + htpasswdFilename + ") " );
 
       if( readHtpasswordFile( htpasswdFilename ) ){
       }
@@ -93,12 +98,15 @@ public class HtPasswd {
     * @return true if any one matches
     */
    private boolean checkDetailed(String userPassword, Vector fileEncodedPass)
-   { String encoded = null,salt,userEncoded;
+   { 
+     if (log.TRACE) log.trace(ME, "Comparing '" + userPassword + "' in " + fileEncodedPass.size() + " possibilities");
+     String encoded = null,salt,userEncoded;
      for (Enumeration e = fileEncodedPass.elements();e.hasMoreElements();)
      { encoded = (String)e.nextElement();
        if ( encoded != null ) 
        {  salt = encoded.substring(0,2);
           userEncoded = jcrypt.crypt(salt,userPassword);
+          if (log.TRACE) log.trace(ME, "Comparing '" + userEncoded + "' with passwd entry '" + encoded + "'");
           if ( userEncoded.equals(encoded) ) 
             return true;     
        }
@@ -115,29 +123,28 @@ public class HtPasswd {
    public boolean checkPassword( String userName, String userPassword )
                 throws XmlBlasterException {
 
-      //if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " passwd=" + userPassword);
-      if ( useFullUsername == 3 ) {
+      //if (log.TRACE && htpasswd!=null) log.trace(ME, "Checking userName=" + userName + " passwd='" + userPassword + "' in " + htpasswd.size() + " entries, mode=" + useFullUsername + " ...");
+      if ( useFullUsername == SWITCH_OFF ) {
         return true;
       }
-      if( htpasswd != null ){
+      if( htpasswd != null && userName!=null && userPassword!=null ){
          Vector pws = new Vector();
-         if( userName!=null && userPassword!=null ){
 
-            //find user in Hashtable htpasswd
-            String key;
-            if ( useFullUsername == 2 ) {
-              pws.addElement((String)htpasswd.get(userName));
-            }
-            else { 
-              for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
-                key = (String)e.nextElement();
-                if ( key.startsWith(userName) ) {
-                  pws.addElement((String)htpasswd.get(key));
-                }
+          //find user in Hashtable htpasswd
+          String key;
+          if ( useFullUsername == FULL_USERNAME ) {
+            pws.addElement((String)htpasswd.get(userName));
+          }
+          else { 
+            for (Enumeration e = htpasswd.keys();e.hasMoreElements() ; ) {
+              key = (String)e.nextElement();
+              if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " with key='" + key + "'");
+              if ( userName.startsWith(key) ) {
+                pws.addElement((String)htpasswd.get(key));
               }
             }
-            return checkDetailed(userPassword,pws);
-         }
+          }
+          return checkDetailed(userPassword,pws);
       }
       return false;
    }//checkPassword
@@ -193,7 +200,7 @@ public class HtPasswd {
                   if( ((char)st.ttype) == ':' ){  // user:password
                      readUser = false ;
                   }else if ( ((char)st.ttype) == '*') { //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
-                    useFullUsername = 3;
+                    useFullUsername = SWITCH_OFF;
                     if (first) {
                       log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
                       first = false;
@@ -244,5 +251,9 @@ public class HtPasswd {
       }
 
    }//readHtpasswordFile
+
+   public String getPasswdFileName() {
+      return htpasswdFilename; 
+   }
 
 }//class HtAccess

@@ -15,7 +15,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 
 /**
@@ -27,6 +27,7 @@ import org.xmlBlaster.util.Log;
 public class Session implements I_Session, I_Subject {
 
    private static final String ME = "Session";
+   private final LogChannel log;
 
    private Subject  subject = null;
    private static Subject dummyUsr = null;
@@ -45,8 +46,9 @@ public class Session implements I_Session, I_Subject {
 
    public Session( Manager sm, String sessionId )
         throws XmlBlasterException {
+      log = sm.getGlobal().getLog("auth");
 
-      Log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
+      log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
 
       secMgr = sm;
       this.sessionId = sessionId;
@@ -63,7 +65,7 @@ public class Session implements I_Session, I_Subject {
       final String rootPwd =  glob.getProperty().get("htpasswd.rootPwd", "secret");
       final String loginFieldName = glob.getProperty().get("htpasswd.loginFieldName", "cn");
 
-      Log.info(ME, "Initializing LDAP access on htpasswd.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in htpasswd should be '" + loginFieldName + "'.");
+      log.info(ME, "Initializing LDAP access on htpasswd.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in htpasswd should be '" + loginFieldName + "'.");
       htpasswd = new LdapGateway(serverUrl, rootDN, rootPwd, loginFieldName);
       */
 
@@ -94,13 +96,13 @@ public class Session implements I_Session, I_Subject {
       loginName = securityQos.getUserId();
       passwd = ((SecurityQos)securityQos).getCredential();
 
-      if (Log.TRACE) Log.trace( ME, "Checking password ...");
+      if (log.TRACE) log.trace( ME, "Checking password ...");
       authenticated = htpasswd.checkPassword(loginName, passwd);
 
-      if (Log.TRACE) Log.trace( ME, "Checking subject ...");
+      if (log.TRACE) log.trace( ME, "Password authenticated=" + authenticated + ". Checking subject ...");
       subject = determineSubject(securityQos.getUserId(), passwd); // throws XmlBlasterException if authentication fails
 
-      if (Log.TRACE) Log.trace( ME, "The password" /*+ passwd */+ " for " + loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
+      if (log.TRACE) log.trace( ME, "The password" /*+ passwd */+ " for " + loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
 
       if (authenticated == false)
          throw new XmlBlasterException("AccessDenied", "Authentication of user " + getName() + " failed");
@@ -137,11 +139,11 @@ public class Session implements I_Session, I_Subject {
    public boolean isAuthorized(String actionKey, String key)
    {
       if (authenticated == false) {
-         Log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
+         log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
          return false;
       }
 
-      Log.warn(ME, "No authorization check for action='" + actionKey + "' on key='" +key + "' is implemented, access generously granted.");
+      log.warn(ME, "No authorization check for action='" + actionKey + "' on key='" +key + "' is implemented, access generously granted.");
       return true;
    }
 
@@ -184,6 +186,7 @@ public class Session implements I_Session, I_Subject {
       Subject subj;
 
       subj = secMgr.getSubject(user); // throws a XmlBlasterException if user is unknown
+      if (log.TRACE) log.trace(ME, "user '" + user + "' found in " + htpasswd.getPasswdFileName() + ", checking now password ...");
       subj.authenticate(passwd); // throws a XmlBlasterException, if the autentication fails
 
       return subj;

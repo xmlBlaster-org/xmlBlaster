@@ -1,0 +1,34 @@
+
+Here is a little demo to use PHP langage to access xmlBlaster.
+
+At least, you need a xmlBlaster server running somewhere
+
+	- Start xmlBlaster
+	$ cd xmlBlaster
+	$ java -jar lib/xmlBlaster.jar
+
+Then,
+
+	- On the same computer, or on another one, you'll need a http server with PHP langage activated.
+	- copy php/xmlrpc demo files into a folder,
+	- call http://your.httpd.server/the.php.folder.demo/index.php
+	- fill some fields, then click "connect" button ...
+
+nice & easy, isn't it ?
+
+xmlrpc.inc : xmlrpc for php by Edd Dumbill (C) 1999-2001 <edd@usefulinc.com>
+xmlBlaster.inc : by cyrille@ktaland.com. The code is very very simple, need to be more robust.
+
+-------------------------------------------------------------------
+DOCS :
+
+See
+	xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
+	with all xmlrpc allowed server-methods you can invoke.
+
+-------------------------------------------------------------------
+CHANGES :
+
+2002-07-08 cyrille@ktaland.com
+	- first hack of da php demo, in a dark & very hot night.
+

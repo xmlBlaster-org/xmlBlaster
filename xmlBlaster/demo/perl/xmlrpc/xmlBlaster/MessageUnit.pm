@@ -1,10 +1,10 @@
+# MessageUnit.pm
 #
-# messageUnit.pm
-#
+# 04/07/02 17:17 mad@ktaland.com
+#	upgrade
 # 11/02/02 15:04 mad@ktaland.com
 #
-#
-package messageUnit ;
+package xmlBlaster::MessageUnit ;
 
 use Data::Dumper ;	# for sub dump()
 use MIME::Base64;	# to decode xml-rpc data type : Frontier::RPC2::Base64
@@ -37,16 +37,8 @@ sub new {
 	if( defined $data && ref($data) eq 'ARRAY' ){
 
 		#
-		# $data should be a Frontier ( Frontier-RPC-0.07b3 ) returned message.
+		# $data should be a Frontier ( Frontier-RPC ) returned message.
 		#
-		# 	$data_array = $server->call( 'xmlBlaster.get', $sessionId, $key ,$qos );
-		#	$message_unit = messageUnit->new( $data_array->[0] );
-		#
-
-		#my $aref = $data->[0];
-		#$self->{'key_xml'} = $aref->[0] if( ref($aref->[0]) eq '' );
-		#my $frontier_content = $aref->[1] ;
-		#$self->{'qos_xml'} = $aref->[2] if( ref($aref->[2]) eq '' );
 
 		my $aref = $data ;
 		$self->{'key_xml'} = $aref->[0] if( ref($aref->[0]) eq '' );
@@ -97,16 +89,10 @@ sub new {
 sub keyOid {
 	my $self = shift ;
 
-	# $self->{'key_xml'} should be like :
-	#
-	# '<key oid=\'__sys__UserList\' contentMime=\'text/plain\'>
-	# '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-3412-1013436081500-12" contentMime="text/plain"></key>',
-	#
-
 	my $keyoid = $self->{'key_xml'} ;
+	$keyoid =~ /<key (.*|[ ])oid=['"](.*?)['"]/mo ;
+	$keyoid = $2 ;
 
-	$keyoid =~ /<key oid=['"](.*?)['"]/mo ;
-	$keyoid = $1 ;
 	return $keyoid ;
 }
 sub xmlKey {
@@ -122,76 +108,23 @@ sub content {
 	return $self->{'content'} ;
 }
 
-##########################
+#############
+
 sub dump {
 	my( $self, $debug )=@_;
 
-	if( defined $debug ){
-		print '#'x40, "\nmessageUnit dump DEBUG :\n" ;
-		print 'REF=',ref( $self->{'frontier_data'} ), "\n";
-		print Dumper( $self->{'frontier_data'} ), "\n";
-		print '#'x40, "\n" ;
-	}
-
 	my $str = '' ;
 	$str .= ('='x40)."\n" ;
-	$str .= "messageUnit dump :\n" ;
+	$str .= "MessageUnit::dump :\n" ;
+	if( defined $debug ){
+		$str .= "Frontier data : [ ".Dumper( $self->{'frontier_data'} ). " ]\n";
+	}
 	$str .= "KeyOid : [". $self->keyOid ."]\n";
 	$str .= "Qos : [". $self->xmlQos ."]\n";
 	$str .= "Content : [". $self->content ."]\n";
 	$str .= ('='x40)."\n" ;
 	return $str ;
 
-	####print "[[[[[[ ",$message->{ __cmd:?totalMem }," \n";
-
-	#$sum = $result->{'sum'};
-	#$difference = $result->{'difference'};
-
-	#use Frontier::RPC2 ;
-	#my $coder = Frontier::RPC2->new;
-	#my $call = $coder->decode( $message );
-
-}#dumpMessage2
-
-###################
-#
-# Data:Dumper of a sysinternal message :
-#========================================
-#REF=ARRAY
-#$VAR1 = [
-#          [
-#            '<key oid=\'__sys__UserList\' contentMime=\'text/plain\'>
-#   <__sys__internal>
-#   </__sys__internal>
-#</key>',
-#            bless( do{\(my $o = 'YWZkYXMKdGVzdAo=')}, 'Frontier::RPC2::Base64' ),
-#            '
-#<qos>
-#   <state id='OK'/>
-#   <sender>
-#      afdas
-#   </sender>
-#</qos>'
-#          ]
-#        ];
-#========================================
-#
-# Data:Dumper of a get message :
-#========================================
-#REF=ARRAY
-#$VAR1 = [
-#          [
-#            '<?xml version="1.0" encoding="UTF-8"?><key oid="195.246.158.42-3412-1013436081500-12" contentMime="text/plain"></key>',
-#            bless( do{\(my $o = 'SEVMTE8gIQ==')}, 'Frontier::RPC2::Base64' ),
-#            '
-#<qos>
-#   <state id='OK'/>
-#   <sender>
-#      afdas
-#   </sender>
-#</qos>'
-#          ]
-#        ];
-#
+}#dump
 
 1;

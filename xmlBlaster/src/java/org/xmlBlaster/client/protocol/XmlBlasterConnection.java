@@ -797,6 +797,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
             this.recorder = glob.getRecorderPluginManager().getPlugin(type, version, createRecorderFileName(),
                             connectQos.getAddress().getMaxMsg(), this, null);
+
+            String mode = glob.getProperty().get("recorder.mode", (String)null);
+            mode = glob.getProperty().get("recorder.mode["+getServerNodeId()+"]", mode);
+            if (mode != null)
+              this.recorder.setMode(mode);
+
             log.info(ME, "Activated fail save mode: " + connectQos.getAddress().getSettings());
          }
       } catch (XmlBlasterException e) {
