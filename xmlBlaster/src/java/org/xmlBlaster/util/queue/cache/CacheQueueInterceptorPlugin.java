@@ -179,7 +179,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
             }
          } // persistentQueue!=null
          this.isDown = false;
-         log.info(ME, "Successful initialized");
+         if (log.TRACE) log.trace(ME, "Successful initialized");
       } // isDown?
    }
 
@@ -869,6 +869,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
 //      this.numOfBytes = 0L;
 //      this.numOfEntries = 0L;
 
+      /*
       try {
          // to be notified about reconnections / disconnections
          this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
@@ -876,6 +877,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       catch (Exception ex) {
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
       }
+      */
 
       return ret;
    }
@@ -894,13 +896,19 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
     * @param true: force shutdown, don't flush everything
     */
    public void shutdown(boolean force) {
+      if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
       this.transientQueue.shutdown(force);
       if (this.persistentQueue != null && this.isConnected)
          this.persistentQueue.shutdown(force);
+
+      try {
+         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+      }
    }
-
-
 
    public boolean isShutdown() {
       return this.isDown;

@@ -178,7 +178,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
 
          }
          this.isDown = false;
-         log.info(ME, "Successful initialized");
+         if (log.TRACE) log.trace(ME, "Successful initialized");
       } // isDown?
    }
 
@@ -482,6 +482,16 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
          this.log.error(ME, "could not clear persistent storage. Cause: " + ex.getMessage());
       }
 
+      /*
+      try {
+         // to be notified about reconnections / disconnections
+         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+      }
+      */
+
       //this.numOfBytes = 0L;
       //this.numOfEntries = 0L;
 
@@ -493,10 +503,18 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
     * @param true: force shutdown, don't flush everything
     */
    public void shutdown(boolean force) {
+      if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
       this.transientStore.shutdown(force);
       if (this.persistentStore != null && this.isConnected)
          this.persistentStore.shutdown(force);
+
+      try {
+         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+      }
    }
 
    public boolean isShutdown() {
