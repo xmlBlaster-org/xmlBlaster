@@ -3,13 +3,13 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.9 2000/05/26 20:48:34 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.10 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Destination;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 
 

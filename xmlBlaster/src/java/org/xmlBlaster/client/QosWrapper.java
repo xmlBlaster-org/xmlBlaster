@@ -3,12 +3,12 @@ Name:      QosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS message
-Version:   $Id: QosWrapper.java,v 1.2 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: QosWrapper.java,v 1.3 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**

@@ -3,14 +3,14 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.13 2000/04/14 13:16:02 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.14 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.StopParseException;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;

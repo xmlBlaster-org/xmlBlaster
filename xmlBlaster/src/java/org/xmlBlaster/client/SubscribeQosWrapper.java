@@ -3,12 +3,12 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.3 2000/05/16 20:57:36 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.4 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 
 

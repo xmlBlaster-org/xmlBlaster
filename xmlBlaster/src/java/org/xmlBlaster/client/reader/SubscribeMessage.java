@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.3 2000/05/16 20:57:37 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.4 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -11,7 +11,8 @@ import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.XmlKeyBase;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
@@ -27,7 +28,6 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  */
 public class SubscribeMessage implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static final String ME = "SubscribeMessage";
    private CorbaConnection corbaConnection;
    private String loginName;
@@ -98,7 +98,7 @@ public class SubscribeMessage implements I_Callback
    {
       try {
          corbaConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = corbaConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
+         corbaConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -122,7 +122,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKeyWrapper xmlKeyWr = new SubscribeKeyWrapper(xmlKey, queryType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         String subscriptionId = xmlBlaster.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         String subscriptionId = corbaConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
          Log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {
@@ -142,7 +142,7 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(subscriptionId);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         xmlBlaster.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
+         corbaConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
          if (Log.TRACE) Log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);

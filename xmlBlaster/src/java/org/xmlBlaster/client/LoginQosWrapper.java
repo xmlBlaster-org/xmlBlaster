@@ -3,13 +3,13 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.1 2000/05/17 07:02:33 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.2 2000/06/14 13:54:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.CallbackAddress;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Vector;
 
 
@@ -33,7 +33,7 @@ import java.util.Vector;
 public class LoginQosWrapper extends QosWrapper
 {
    private String ME = "LoginQosWrapper";
-   
+
    // <callback type="IOR>IOR:000122200..."</callback>
    protected Vector addressVec = new Vector();
 
