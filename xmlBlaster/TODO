@@ -9,13 +9,23 @@ TODO for release 0.80
 (6) Integrate XmlRpc for Python                                [ok]
 (7) Autoconf for C++                                           [ok]
 (8) XmlBlaster-Matrix                                          [--]
-(9) Documentation (some samll HOWTO'S)                         [--]
+(9) Documentation (some samll HOWTOs)                          [--]
 (10) Integrate JacOrb 1.2.1                                    [ok]
 (11) SOAP  ?                                                   [--]
 (12) Configure the xmlBlaster by xmlBlaster.xml                [--]
 (13) CLASSPATH is to long                                      [ok]
 (14) xmlBlaster HP support for all browsers                    [ok]
 (15) New callback framework                                    [--]
+(16) URI based loginName handling (see below)                  [--]
+
+
+URI based loginName handling:
+-----------------------------
+
+This URI does a login and delivers some qos:
+
+   xmlBlaster.login://joe:mypassword@server.xmlBlaster.org:7609?qos.master=IOR:0000345&qos.topic.type=EXACT&qos.topic=WindVeloc
+   xmlBlaster.publish://joe:mypassword@server.xmlBlaster.org:7609?key.oid=MyMessage&content=Hello&nbsp;world
 
 
 Some small TODO's for the next release
