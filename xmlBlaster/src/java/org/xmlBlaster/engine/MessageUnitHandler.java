@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.6 1999/11/17 16:00:53 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.7 1999/11/17 23:38:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -52,6 +52,12 @@ public class MessageUnitHandler
     */
    public MessageUnitHandler(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
    {
+      if (requestBroker == null || sub == null) {
+         Log.error(ME, "Invalid constructor parameters (sub)");
+         throw new XmlBlasterException(ME, "Invalid constructor parameters (sub)");
+      }
+
+      this.requestBroker = requestBroker;
       this.xmlKey = sub.getXmlKey();
       this.messageUnit = new MessageUnit(sub.getXmlKey().toString(), new byte[0]);
       this.uniqueKey = xmlKey.getUniqueKey();
@@ -76,7 +82,8 @@ public class MessageUnitHandler
 
       if (messageUnit.content == null)
          messageUnit.content = new byte[0];
-
+      
+      this.requestBroker = requestBroker;
       this.messageUnit = messageUnit;
       this.xmlKey = new XmlKey(messageUnit.xmlKey);
       this.uniqueKey = this.xmlKey.getUniqueKey();
@@ -122,6 +129,8 @@ public class MessageUnitHandler
 
    public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
    {
+      sub.addMessageUnitHandler(this);
+
       Object oldOne;
       synchronized(subscriberMap) {
          oldOne = subscriberMap.put(sub.getUniqueKey(), sub);

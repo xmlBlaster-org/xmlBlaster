@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.12 1999/11/17 16:00:56 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.13 1999/11/17 23:38:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -36,9 +36,18 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
+      this.authenticate = authenticate;
       this.orb = orb;
       this.requestBroker = RequestBroker.getInstance(this);
-      this.authenticate = authenticate;
+   }
+
+
+   /**
+    * Access the authentication server
+    */
+   public Authenticate getAuthenticate()
+   {
+      return authenticate;
    }
 
 

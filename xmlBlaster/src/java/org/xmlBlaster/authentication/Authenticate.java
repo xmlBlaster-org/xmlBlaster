@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.9 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.10 1999/11/17 23:38:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -38,6 +38,11 @@ public class Authenticate
    private AuthServerImpl authServerImpl;
 
    final private Map clientInfoMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * For listeners who want to be informed about login/logout
+    */
+   final private Set clientListenerSet = Collections.synchronizedSet(new HashSet());
 
    private final String xmlBlasterPOA_name = "xmlBlaster-POA"; //  This specialized POA controlles the xmlBlaster server
    private POA xmlBlasterPOA;                                  // We use our own, customized POA
@@ -163,6 +168,9 @@ public class Authenticate
       synchronized(clientInfoMap) {
          clientInfoMap.put(uniqueClientKey, clientInfo);
       }
+      
+      fireClientEvent(clientInfo, true);
+      
       return org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
    }
 
@@ -172,7 +180,6 @@ public class Authenticate
     */
    public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
    {
-
       byte[] oid;
 
       try {
@@ -193,15 +200,39 @@ public class Authenticate
          Log.error(ME, e.toString());
       }
 
+      Object obj;
       synchronized(clientInfoMap) {
-         Object obj = clientInfoMap.remove(uniqueClientKey);
-         if (obj == null) {
-            Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
-            throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
+         obj = clientInfoMap.remove(uniqueClientKey);
+      }
+
+      if (obj == null) {
+         Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
+         throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
+      }
+
+      ClientInfo clientInfo = (ClientInfo)obj;
+      
+      fireClientEvent(clientInfo, false);
+
+      Log.info(ME, "Successfull logout for client " + clientInfo.toString());
+      
+      clientInfo = null;
+   }
+
+
+   /**
+    */
+   private final void fireClientEvent(ClientInfo clientInfo, boolean login) throws XmlBlasterException
+   {
+      synchronized (clientListenerSet) {
+         Iterator iterator = clientListenerSet.iterator();
+         while (iterator.hasNext()) {
+            ClientListener cli = (ClientListener)iterator.next();
+            if (login)
+               cli.clientAdded(new ClientEvent(clientInfo));
+            else
+               cli.clientRemove(new ClientEvent(clientInfo));
          }
-         ClientInfo clientInfo = (ClientInfo)obj;
-         Log.info(ME, "Successfull logout for client " + clientInfo.toString());
-         obj = null;
       }
    }
 
@@ -248,4 +279,32 @@ public class Authenticate
 
       return clientInfo;
    }
+
+
+   /**
+    * Adds the specified client listener to receive login/logout events
+    */
+   public void addClientListener(ClientListener l) {
+      if (l == null) {
+         return;
+      }
+      synchronized (clientListenerSet) {
+         clientListenerSet.add(l);
+      }
+   }
+
+
+   /**
+    * Removes the specified listener
+    */
+   public synchronized void removeClientListener(ClientListener l) {
+      if (l == null) {
+         return;
+      }
+      synchronized (clientListenerSet) {
+         clientListenerSet.remove(l);
+      }
+   }
+
+ 
 }

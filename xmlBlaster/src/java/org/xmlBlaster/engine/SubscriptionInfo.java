@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.5 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.6 1999/11/17 23:38:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,6 +25,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    private XmlKey xmlKey;           // reference to xmlKey
    private XmlQoS xmlQoS;           // reference to 'Quality of Service' of subscription
 
+   private MessageUnitHandler myHandler;  // reference to my managing container
+
    private long creationTime = System.currentTimeMillis();
 
    public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
@@ -38,11 +40,29 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
+    * This must be called as soon as my MessageUnitHandler handles me!
+    */
+   public void addMessageUnitHandler(MessageUnitHandler myHandler)
+   {
+      this.myHandler = myHandler;
+   }
+
+
+   /**
     * @return the creation time of this subscription (in millis)
     */
    public long getCreationTime()
    {
       return creationTime;
+   }
+
+
+   /**
+    * Telling my container that i'm not enteristing any more
+    */
+   public void removeSubscribe() throws XmlBlasterException
+   {
+      myHandler.removeSubscriber(this);
    }
 
 

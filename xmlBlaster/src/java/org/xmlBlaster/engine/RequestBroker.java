@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.12 1999/11/17 17:13:27 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.13 1999/11/17 23:38:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -12,19 +12,56 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.ServerImpl;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.authentication.ClientListener;
+import org.xmlBlaster.authentication.ClientEvent;
 import java.util.*;
 import java.io.*;
 
 /**
  * RequestBroker
+ *
+ * The interface ClientListener informs about Client login/logout
  */
-public class RequestBroker
+public class RequestBroker implements ClientListener
 {
    final private static String ME = "RequestBroker";
 
    private static RequestBroker requestBroker = null; // Singleton pattern
 
+   /**
+    * All MessageUnitHandler objects are stored in this map. 
+    * <p>
+    * key   = xmlKey.getUniqueKey()
+    * value = MessageUnitHandler object
+    */
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * All Subscriptions of a Client are in this map
+    * A multimap would be appropriate, but since this is not supported
+    * by the Collections API, a map with a set as value is used. 
+    * <br>
+    * Used for performant logout.
+    * <p>
+    * key   = client.getUniqueKey()
+    * value = clientSubscriptionSet with SubscriptionInfo objects
+    */
+   final private Set clientSubscriptionSet = Collections.synchronizedSet(new HashSet());
+   final private Map clientSubscriptionMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * All generic subscriptions are collected here. 
+    * Generic are all subscriptions who don't subscribe a precise key-oid,
+    * but rather subscribe all MessageUnits matching a XPath query match.
+    * <br>
+    * If new MessageUnits are published, this set is consulted to check
+    * if some older subscriptions would match as well
+    * <p>
+    * value = SubscriptionInfo objects with generic subscriptions, but not
+    *         those, who subscribed a MessageUnit exactly by a known oid
+    */
+   final private Set subscribeRequestSet = Collections.synchronizedSet(new HashSet());
 
    final private ServerImpl serverImpl;
 
@@ -94,6 +131,8 @@ public class RequestBroker
       com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement ("xmlBlaster");
       xmlKeyDoc.appendChild(root);
       xmlKeyRootNode = xmlKeyDoc.getDocumentElement(); 
+
+      serverImpl.getAuthenticate().addClientListener(this);
    }
 
 
@@ -172,19 +211,20 @@ public class RequestBroker
    {
       String uniqueKey = xmlKey.getUniqueKey();
 
+      Object obj;
       synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.remove(uniqueKey);
-         if (obj == null) {
-            Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
-            throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
-         }
-         MessageUnitHandler msg = (MessageUnitHandler)obj;
-         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
-         int numRemoved = msg.removeSubscriber(subs);
-         if (numRemoved < 1) {
-            Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
-            throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
-         }
+         obj = messageContainerMap.remove(uniqueKey);
+      }
+      if (obj == null) {
+         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
+         throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
+      }
+      MessageUnitHandler msg = (MessageUnitHandler)obj;
+      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
+      int numRemoved = msg.removeSubscriber(subs);
+      if (numRemoved < 1) {
+         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
+         throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
       }
    }
 
@@ -262,4 +302,60 @@ public class RequestBroker
          }
       }
    }
+
+
+   /**
+    * Invoked on successfull client login (interface ClientListener)
+    */
+   public void clientAdded(ClientEvent e) throws XmlBlasterException
+   {
+      ClientInfo clientInfo = e.getClientInfo();
+      if (Log.TRACE) Log.trace(ME, "Login event for client " + clientInfo.toString());
+   }
+
+
+   /**
+    * Invoked when client does a logout (interface ClientListener)
+    */    
+   public void clientRemove(ClientEvent e) throws XmlBlasterException
+   {
+      ClientInfo clientInfo = e.getClientInfo();
+      String name = clientInfo.toString();
+      if (Log.TRACE) Log.trace(ME, "Logout event for client " + name);
+
+      String uniqueKey = clientInfo.getUniqueKey();
+
+      {
+         Object obj;
+         synchronized(clientSubscriptionMap) {
+            obj = clientSubscriptionMap.remove(uniqueKey);
+         }
+         if (obj == null) {
+            Log.warning(ME + ".ClientDoesntExist", "Sorry, can't logout, client " + name + " doesn't exist");
+            throw new XmlBlasterException(ME + ".ClientDoesntExist", "Sorry, can't logout, client " + name + " doesn't exist");
+         }
+         Set subscriptionSet = (Set)obj;
+         synchronized (subscriptionSet) {
+            Iterator iterator = subscriptionSet.iterator();
+            while (iterator.hasNext()) {
+               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
+            }
+         }
+      }
+
+      {  // Slow linear search!!!!
+         synchronized(subscribeRequestSet) {
+            Iterator iterator = subscribeRequestSet.iterator();
+            while (iterator.hasNext()) {
+               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               if (sub.getClientInfo().getUniqueKey().equals(uniqueKey)) {
+                  // !!! is this allowed?? or is it killing the iterator?????????
+                  subscribeRequestSet.remove(sub);
+               }
+            }
+         }
+      }
+   }
+
 }
