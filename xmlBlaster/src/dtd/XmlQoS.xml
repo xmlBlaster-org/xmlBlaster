@@ -8,6 +8,26 @@
 
 <demo>
 
+   <!-- QoS of a login -->
+   <connect>
+      <qos>
+         <securityService type="simple" version="1.0">
+            <![CDATA[
+            <user>michele</user>
+            <passwd>secret</passwd>
+            ]]>
+         </securityService>
+         <session timeout='3600000' maxSessions='20'/>
+         <ptp>true</ptp>
+         <callback type='IOR'>
+            IOR:10000010033200000099000010....
+            <burstMode collectTime='400' />
+         </callback>
+      </qos>
+   <connect>
+
+
+
    <!-- QoS when publishing without addressing (clients need to subscribe) -->
    <publish>
       <qos>
