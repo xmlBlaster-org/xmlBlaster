@@ -46,14 +46,14 @@ Example:
  * Helper for debugging. 
  */
 static void dumpZlib(const char *p, XmlBlasterZlibReadBuffers *zlibReadBufP, XmlBlasterZlibWriteBuffers *zlibWriteBufP) {
-	z_stream *zlibP = (zlibReadBufP!=0) ? &zlibReadBufP->c_stream : &zlibWriteBufP->c_stream;
+        z_stream *zlibP = (zlibReadBufP!=0) ? &zlibReadBufP->c_stream : &zlibWriteBufP->c_stream;
    printf("[%s:%d] %s\n", __FILE__, __LINE__, p);
    printf("{\n");
-	if (zlibReadBufP!=0) {
-	   printf("  compBufferP     =%d\n", (int)zlibReadBufP->compBuffer);
-	   printf("  currCompBufferP =%d\n", (int)zlibReadBufP->currCompBufferP);
-	   printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
-	}
+        if (zlibReadBufP!=0) {
+           printf("  compBufferP     =%d\n", (int)zlibReadBufP->compBuffer);
+           printf("  currCompBufferP =%d\n", (int)zlibReadBufP->currCompBufferP);
+           printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
+        }
    printf("  zlibP->next_in  =%d\n", (int)zlibP->next_in);
    printf("  zlibP->avail_in =%u\n", zlibP->avail_in);
    printf("  zlibP->next_out =%d\n", (int)zlibP->next_out);
@@ -284,6 +284,7 @@ int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) {
 int xmlBlaster_initZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { 
    fprintf(stderr, "No support for zlib is compiled, try with -DXMLBLASTER_ZLIB=1\n");
    assert(0);
+   return 0;
 }
 ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes) { return 0; }
 int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { return -1; }
