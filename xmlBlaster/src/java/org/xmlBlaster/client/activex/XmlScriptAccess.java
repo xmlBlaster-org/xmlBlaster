@@ -18,9 +18,12 @@ import java.beans.SimpleBeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
 
+import EDU.oswego.cs.dl.util.concurrent.Latch; // http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.SynchronousCache;
@@ -45,13 +48,30 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 
 /**
- * This bean can be exported to a Microsoft dll and accessed by C# or Visual Basic.Net 
- * <p />
- * Here we support only XML scripting access as described in the <i>client.script</i> requirement.
- * <p />
+ * This bean can be exported to a Microsoft dll (ActiveX component) and
+ * be accessed by C# or Visual Basic.Net 
+ * <br />
+ * Here we support XML scripting access as described in the <i>client.script</i> requirement
+ * by calling <code>sendRequest()</code> or alternatively you can use the methods
+ * like <code>publish()</code> or <code>subscribe()</code>. The latter
+ * methods have the advantage to return a ready parsed object to the ActiveX component,
+ * for example Visual Basic can directly call all methods of <code>SubscribeReturnQos</code>
+ * which is returned by <code>subscribe()</code>.
+ * <br />
  * One instance of this can hold one permanent connection to the xmlBlaster server,
  * multi threaded access is supported.
- * 
+ * <br />
+ * Compile the ActiveX control with <code>build activex</code> and see Visual Basic
+ * and C# samples in directory <code>xmlBlaster/demo/activex</code>.
+ * <br />
+ * As events into ActiveX can't have a return value and can't throw
+ * an exception back to us we handle it here as a callback, for example
+ * Visual Basic needs to call <code>sendUpdateReturn()</code> or <code>sendUpdateException()</code> after
+ * processing a message received by <code>update()</code>.
+ * Our update thread blocks until one of those two methods is called, however
+ * the blocking times out after 10 minutes which is adjustable with
+ * the property <code>client/activex/responseWaitTime</code> given in milli seconds.
+ *
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">client.script requirement</a>
  * @see <a href="http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html">ActiveX Bridge Developer Guide</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
@@ -64,16 +84,24 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    private Reader reader;
    private OutputStream outStream;
    private UpdateListener updateListener;
-   private List updateStack = null;
+
+   // As events into ActiveX can't have a return value and can't throw
+   // an exception back to us we handle it here as a callback
+   private Latch updateReturnLatch;
+   private String updateReturnQos;
+   private XmlBlasterException updateReturnException;
+   private long responseWaitTime;
 
    /**
     * Create a new access bean. 
     * We read a xmlBlaster.properties file if one is found
     */
    public XmlScriptAccess() {
-      System.out.println("Calling ctor of XmlScriptAccess");
       this.glob = new Global();  // Reads xmlBlaster.properties
       this.log = glob.getLog("demo");
+      // Wait max 10 minutes for update() method in C#/VB to return:
+      this.responseWaitTime = this.glob.getProperty().get("client/activex/responseWaitTime", 1000L * 60L * 10L);
+      if (log.CALL) log.call(ME, "Calling ctor of XmlScriptAccess, responseWaitTime=" + this.responseWaitTime);
    }
 
    /**
@@ -81,7 +109,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public void addUpdateListener(UpdateListener updateListener) /* throws java.util.TooManyListenersException */ {
       log.info(ME, "Registering update listener");
-      Thread.dumpStack();
+      if (log.DUMP) Thread.dumpStack();
       this.updateListener = updateListener;
    }
 
@@ -90,45 +118,144 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public void removeUpdateListener(UpdateListener updateListener) {
       log.info(ME, "Removing update listener");
-      Thread.dumpStack();
+      if (log.DUMP) Thread.dumpStack();
       this.updateListener = null;
    }
 
    /**
     * Fire an event into C# / VisualBasic containing an updated message. 
+    * <br />
+    * Note: The ActiveX event can't convey a return value or an exception back
+    * to us. There for we block the thread and wait until the
+    * activeX component has delivered us a return value or an exception by
+    * calling setUpdateReturn() or setUpdateException() 
     */
-   protected String notifyUpdateEvent(String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) {
+   protected synchronized String notifyUpdateEvent(String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) throws XmlBlasterException {
       if (this.updateListener == null) {
          log.warn(ME, "No updateListener is registered, ignoring " + key.toXml());
          return "<qos><state id='WARNING'/></qos>";
       }
       UpdateEvent ev = new UpdateEvent(this, cbSessionId, key, content, qos);
-      log.info(ME, "Notifying updateListener with new message " + key.toXml());
+      if (log.TRACE) log.trace(ME, "Notifying updateListener with new message " + key.toXml());
+      this.updateReturnLatch = new Latch();
+
       this.updateListener.update(ev);
-      String ret = ev.getReturn();
-      log.info(ME, "Notifying updateListener done: returned '" + ret + "'");
-      return ret;
+
+      boolean awaikened = false;
+      while (true) {
+         try {
+            if (log.TRACE) log.trace(ME, "notifyUpdateEvent() Entering wait ...");
+            awaikened = this.updateReturnLatch.attempt(this.responseWaitTime); // block max. milliseconds
+            break;
+         }
+         catch (InterruptedException e) {
+            log.warn(ME, "Waking up (waited on " + key.getOid() + " update response): " + e.toString());
+            // try again
+         }
+      }
+      try {
+         if (awaikened) {
+            if (this.updateReturnQos != null) {
+               if (log.TRACE) log.trace(ME, "Notifying updateListener done: returned '" + this.updateReturnQos + "'");
+               return this.updateReturnQos;
+            }
+            else if (this.updateReturnException != null) {
+               log.warn(ME, "Update failed: " + this.updateReturnException.getMessage());
+               throw this.updateReturnException;
+            }
+            else {
+               log.error(ME, "Update failed, no return available");
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_ERROR, ME, "Update to ActiveX failed, no return available");
+            }
+         }
+         else {
+            String str = "Timeout of " + this.responseWaitTime + " milliseconds occured when waiting on " + key.getOid() + " return value";
+            log.warn(ME, str);
+            throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, str);
+         }
+      }
+      finally {
+         this.updateReturnLatch = null;
+      }
    }
 
    /**
-    * Access a Properties object. 
+    * ActiveX code needs to call this method to set the return value
+    * for the current update message. 
+    * Alternatively you can call setUpdateException() to pass back
+    * an exception.
+    * <br />
+    * Note: You have to call setUpdateReturn() OR setUpdateException()
+    * for each update message to release the blocking thread!
+    *
+    * @param updateReturnQos for example "<qos><state id='OK'/></qos>"
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.update.html">The interface.update requirement</a>
+    */
+   public void setUpdateReturn(String updateReturnQos) {
+      if (this.updateReturnLatch == null) {
+         log.warn(ME, "Ignoring setUpdateReturn(), updateReturnLatch == null, probably a timeout occurred");
+         return;
+      }
+      this.updateReturnQos = updateReturnQos;
+      this.updateReturnException = null;
+      this.updateReturnLatch.release();
+      if (log.CALL) log.call(ME, "setUpdateReturn() called");
+   }
+
+   /**
+    * ActiveX code can call this method to return an exception for 
+    * the current update message
+    * @param errorCode Only known ErrorCode strings of type "user.*" are allowed
+    * @see org.xmlBlaster.util.def.ErrorCode
+    */
+   public void setUpdateException(String errorCode, String message) {
+      if (this.updateReturnLatch == null) {
+         log.warn(ME, "Ignoring setUpdateException(), updateReturnLatch == null, probably a timeout occurred");
+         return;
+      }
+      this.updateReturnQos = null;
+      ErrorCode code = null;
+      try {
+         code = ErrorCode.toErrorCode(errorCode);
+      }
+      catch (IllegalArgumentException e) {
+         log.warn(ME, "Don't know error code '" + errorCode + "', changing it to " + ErrorCode.USER_UPDATE_ERROR.toString());
+         message += ": original errorCode=" + errorCode;
+         code = ErrorCode.USER_UPDATE_ERROR;
+      }
+
+      this.updateReturnException = new XmlBlasterException(this.glob, code, ME, message);
+      this.updateReturnLatch.release();
+      if (log.CALL) log.call(ME, "setUpdateException() called");
+   }
+
+   /**
+    * Access a Properties object to be used later for initialize(). 
     * @return We create a new instance for you
     */
    public Properties createPropertiesInstance() {
       return new Properties();
    }
    
+   /**
+    * Initialize the environment. 
+    */
    public void initialize(Properties properties) {
       this.glob.init(properties);
    }
 
    /**
+    * Initialize the environment. 
+    * If you use the initialize(Properties) variant or this method makes no difference.
     * @param args Command line arguments for example { "-protocol", SOCKET, "-trace", "true" }
     */
    public void initArgs(String[] args) {
       this.glob.init(args);
    }
 
+   /**
+    * Access the handle of this xmlBlaster connection. 
+    */
    public Global getGlobal() {
       return this.glob;
    }
@@ -136,6 +263,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    /**
     * Send xml encoded requests to the xmlBlaster server. 
     * @exception All caught exceptions are thrown as RuntimeException
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">client.script requirement</a>
     */
    public String sendRequest(String xmlRequest) {
       try {
@@ -179,6 +307,8 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
 
    /**
     * Leaves the connection to the server. 
+    * The server side resources are not freed if the client has connected fail save
+    * and messages are queued until we login again with the same name and publicSessionId
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#leaveServer(java.util.Map)
     */
    public void leaveServer() {
@@ -194,6 +324,8 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    }
 
    /**
+    * If no communication takes place longer the the lifetime of the session
+    * we can refresh the session to avoid auto logout
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#refreshSession()
     */
    public void refreshSession() throws XmlBlasterException {
@@ -312,10 +444,8 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * Enforced by I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      log.info(ME, "Callback update arrived: " + updateKey.getOid());
+      if (log.CALL) log.call(ME, "Callback update arrived: " + updateKey.getOid());
       UpdateMsgUnit msgUnit = new UpdateMsgUnit(cbSessionId, updateKey, content, updateQos);
-      if (this.updateStack != null)
-         this.updateStack.add(msgUnit);
       return notifyUpdateEvent(cbSessionId, updateKey, content, updateQos);
    }
 
@@ -328,45 +458,12 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    }
 
    /**
-    * Poll for updated message. 
-    * <br />
-    * NOTE: This is a work around until we have fixed sending events to ActiveX
-    * clients directly
-    * <br />
-    * TODO: Change linked list holding the updated messages to a I_Queue
-    * which supports persistence to not loose pending messages on shutdown.
-    * @return Never null
-    */
-   public UpdateMsgUnit[] consumeUdateMessages() {
-      if (this.updateStack == null) return new UpdateMsgUnit[0];
-      UpdateMsgUnit[] ret = (UpdateMsgUnit[])this.updateStack.toArray(new UpdateMsgUnit[this.updateStack.size()]);
-      this.updateStack.clear();
-      log.info(ME, "Consuming " + ret.length + " updated messages");
-      return ret;
-   }
-
-   /**
-    * Switch on/off if you want to access updated messages with consumeUdateMessages(). 
-    * Currently default to act=true until the event bug is fixed
-    */
-   public void activateUpdateConsumer(boolean act) {
-      if (act) {
-         if (this.updateStack == null) {
-            this.updateStack = new LinkedList();
-         }
-      }
-      else {
-         this.updateStack = null;
-      }
-   }
-
-   /**
     * For testing: java org.xmlBlaster.client.activex.XmlScriptAccess
     */
    public static void main(String args[]) {
       try {
-         XmlScriptAccess access = new XmlScriptAccess();
-         access.activateUpdateConsumer(true);
+         final XmlScriptAccess access = new XmlScriptAccess();
+         //access.activateUpdateConsumer(true);
          Properties props = access.createPropertiesInstance();
          props.put("protocol", "SOCKET");
          //props.put("trace", "true");
@@ -374,7 +471,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          class TestUpdateListener implements UpdateListener {
             public void update(UpdateEvent updateEvent) {
                System.out.println("TestUpdateListener.update: " + updateEvent.getKey());
-               updateEvent.setReturn("<qos><state id='OK'/></qos>");
+               access.setUpdateReturn("<qos><state id='OK'/></qos>");
             }
          }
          TestUpdateListener listener = new TestUpdateListener();
@@ -391,17 +488,18 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
                           "</xmlBlaster>";
          String response = access.sendRequest(request);
          System.out.println("Response is: " + response);
-         UpdateMsgUnit[] msgs = access.consumeUdateMessages();
-         for(int i=0; i<msgs.length; i++) {
-            System.out.println("Access queued update message '" + msgs[i].getUpdateKey().toXml() + "'");
-         }
-         msgs = access.consumeUdateMessages();
-         if (msgs.length != 0)
-            System.out.println("ERROR: queued update message not consumed properly");
+         //UpdateMsgUnit[] msgs = access.consumeUdateMessages();
+         //for(int i=0; i<msgs.length; i++) {
+         //   System.out.println("Access queued update message '" + msgs[i].getUpdateKey().toXml() + "'");
+         //}
+         //msgs = access.consumeUdateMessages();
+         //if (msgs.length != 0)
+         //   System.out.println("ERROR: queued update message not consumed properly");
 
          System.out.println("***** Publishing ...");
          PublishReturnQos ret = access.publish("<key oid='test'/>", "Bla", "<qos/>");
          System.out.println("***** Published message ret=" + ret.getState());
+         Thread.currentThread().sleep(2000);
          response = access.sendRequest("<xmlBlaster>disconnect/></xmlBlaster>");
       }
       catch (Throwable e) {

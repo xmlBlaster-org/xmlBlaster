@@ -18,7 +18,6 @@ public class UpdateEvent extends java.util.EventObject {
    UpdateKey key;
    byte[] content;
    UpdateQos qos;
-   String ret;
    public UpdateEvent(Object source, String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) {
       super(source);
       this.cbSessionId = cbSessionId;
@@ -40,12 +39,6 @@ public class UpdateEvent extends java.util.EventObject {
    }
    public UpdateQos getQos() {
       return this.qos;
-   }
-   public String getReturn() {
-      return this.ret;
-   }
-   public void setReturn(String ret) {
-      this.ret = ret;
    }
 }
 
