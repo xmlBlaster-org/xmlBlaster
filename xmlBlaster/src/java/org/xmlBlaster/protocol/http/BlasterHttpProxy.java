@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.11 2000/05/06 16:37:30 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.12 2000/05/09 16:40:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -24,7 +25,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class BlasterHttpProxy
 {
@@ -121,6 +122,9 @@ public class BlasterHttpProxy
     */
    public static ProxyConnection getProxyConnectionBySessionId( String sessionId ) throws XmlBlasterException
    {
+      if (sessionId == null) {
+         throw new XmlBlasterException(ME+".NoSessionId", "Sorry, no valid session ID, are cookies disabled?");
+      }
       synchronized( proxyConnections ) {
          for( Enumeration e = proxyConnections.elements(); e.hasMoreElements() ; ) {
             ProxyConnection pc = (ProxyConnection) e.nextElement();
@@ -155,13 +159,26 @@ public class BlasterHttpProxy
     * gives a corbaConnection by sessionId.
     * <p />
     * This CorbaConnection holds the CORBA connection to the XmlBlaster server
+    * @param req Servlet request, only for error handling
     * @param sessionId
+    * @return The CorbaConnection object or null if sessionId is unknown
     */
-   public static CorbaConnection getCorbaConnection(String sessionId) throws XmlBlasterException
+   public static CorbaConnection getCorbaConnection(HttpServletRequest req, String sessionId) throws XmlBlasterException
    {
+      if (sessionId == null && !req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
+         throw new XmlBlasterException(ME+".NoCookies", "Sorry, your browser\n" +
+            "    " + req.getHeader("User-Agent") + "\n" +
+            "does not support 'cookies or has switched them off.\n" +
+            "We need cookies to handle your login session ID.\n" +
+            "You will not get updates from xmlBlaster.");
+      }
+      else if (sessionId == null) {
+         throw new XmlBlasterException(ME+".NoSessionId", "Sorry, no valid session ID");
+      }
+
       ProxyConnection pc = getProxyConnectionBySessionId(sessionId);
       if( pc == null ) {
-         Log.trace(ME, "getCorbaConnection(" + sessionId + ") returned null");
+         Log.warning(ME, "getCorbaConnection(sessionId=" + sessionId + ") returned null");
          return null;
       }
       return pc.getCorbaConnection();
@@ -176,6 +193,9 @@ public class BlasterHttpProxy
     */
    public static HttpPushHandler getHttpPushHandler(String sessionId) throws XmlBlasterException
    {
+      if (sessionId == null) {
+         throw new XmlBlasterException(ME+".NoSessionId", "Sorry, no valid session ID, are cookies disabled?");
+      }
       ProxyConnection proxyConnection = getProxyConnectionBySessionId(sessionId);
       if( proxyConnection == null ) {
          throw new XmlBlasterException(ME+".SessionNotKnown", "Session not registered yet (sessionId="+sessionId+")");
