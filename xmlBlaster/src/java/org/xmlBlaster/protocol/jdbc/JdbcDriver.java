@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.19 2002/04/19 11:07:22 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.20 2002/04/19 13:54:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -80,6 +80,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public String getRawAddress()
    {
+      Log.warn(ME+".getRawAddress()", "No external access address available");
       if (Log.TRACE) Log.trace(ME+".getRawAddress()", "No external access address available");
       return null;
    }
@@ -125,6 +126,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       ConnectQos connectQos = new ConnectQos(callback);
       connectQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+      connectQos.setSessionTimeout(0L);
 
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
       sessionId = returnQos.getSessionId();
