@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * Parsing xml QoS (quality of service) of return status. 
@@ -23,6 +24,7 @@ import org.xmlBlaster.util.RcvTimestamp;
  * @see org.xmlBlaster.util.qos.StatusQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
  * @author xmlBlaster@marcelruff.info
+ * TODO: implement the parsing from the method name
  */
 public class StatusQosQuickParseFactory implements I_StatusQosFactory
 {
@@ -44,7 +46,7 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
     * @param the XML based ASCII string
     */
    public synchronized StatusQosData readObject(String xmlQos) throws XmlBlasterException {
-      statusQosData = new StatusQosData(glob, this, xmlQos);
+      statusQosData = new StatusQosData(glob, this, xmlQos, MethodName.UNKNOWN);
       if (xmlQos != null && xmlQos.length() > 15) { // "<qos/>" or "<qos></qos>"
 
          statusQosData.setState(parseOurself(xmlQos, "<state id="));

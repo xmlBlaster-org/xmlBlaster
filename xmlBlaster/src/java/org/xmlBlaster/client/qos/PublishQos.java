@@ -13,6 +13,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.property.PropEntry;
+import org.xmlBlaster.util.enum.MethodName;
 
 
 /**
@@ -58,13 +59,14 @@ public final class PublishQos
     */
    public PublishQos(Global glob) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.msgQosData = new MsgQosData(glob, glob.getMsgQosFactory()); 
+      this.msgQosData = new MsgQosData(glob, glob.getMsgQosFactory(), MethodName.PUBLISH); 
 
       // TODO: use local glob
       long lt = org.xmlBlaster.util.Global.instance().getProperty().get("message.lifeTime", -1L);
       if (lt != -1L) {
          this.msgQosData.getLifeTimeProp().setValue(lt, PropEntry.CREATED_BY_PROPFILE);
       }
+      this.msgQosData.setMethod(MethodName.PUBLISH);
    }
 
    /**

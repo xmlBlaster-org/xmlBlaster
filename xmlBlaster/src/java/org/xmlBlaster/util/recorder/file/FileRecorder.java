@@ -22,6 +22,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
+import org.xmlBlaster.util.enum.MethodName;
 
 import java.io.IOException;
 
@@ -92,10 +93,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
       this.serverCallback = serverCallback;
       //this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
-      StatusQosData statRetQos = new StatusQosData(glob);
+      StatusQosData statRetQos = new StatusQosData(glob, MethodName.PUBLISH);
       statRetQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
-      StatusQosData subRetQos = new StatusQosData(glob);
+      StatusQosData subRetQos = new StatusQosData(glob, MethodName.SUBSCRIBE);
       subRetQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummySubRet = new SubscribeReturnQos(glob, subRetQos);
 

@@ -84,6 +84,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    # Funny stuff for speech synthetizer ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/speech.jar:${CLASSPATH}
 
+   # Even funnier things for graphics with xmlBlaster ...
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jhotdraw.jar:${CLASSPATH}
+
    # this stuff is only needed for Xindice (former dbXML) integration as a persistence Driver
    # using Xindice 1.0rc1 (DarkHorse); cvs from http://www.dbxml.org
    CLASSPATH=${XMLBLASTER_HOME}/lib/Xindice/xmldb.jar:${CLASSPATH}

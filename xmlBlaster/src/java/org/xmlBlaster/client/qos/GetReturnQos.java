@@ -14,6 +14,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.enum.MethodName;
 
 
 /**
@@ -53,6 +54,7 @@ public final class GetReturnQos
       this.glob = (glob==null) ? Global.instance() : glob;
       this.log = glob.getLog("client");
       this.msgQosData = msgQosData;
+      this.msgQosData.setMethod(MethodName.GET);
    }
 
    /**

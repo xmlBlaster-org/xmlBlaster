@@ -11,6 +11,7 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * This class encapsulates the QoS (quality of service) of a get() request. 
@@ -51,7 +52,8 @@ public final class GetQos
     */
    public GetQos(Global glob, QueryQosData queryQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.queryQosData = (queryQosData==null) ? new QueryQosData(this.glob, this.glob.getQueryQosFactory()) : queryQosData;
+      this.queryQosData = (queryQosData==null) ? new QueryQosData(this.glob, this.glob.getQueryQosFactory(), MethodName.GET) : queryQosData;
+      this.queryQosData.setMethod(MethodName.GET);
    }
 
    /**

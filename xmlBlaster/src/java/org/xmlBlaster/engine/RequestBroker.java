@@ -736,7 +736,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKey.getOid(), false);
             if (vec != null && vec.size() > 0) {
                log.warn(ME, "Ignoring duplicate subscription '" + xmlKey.getOid() + "' as you have set multiSubscribe to false");
-               StatusQosData qos = new StatusQosData(glob);
+               StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
                SubscriptionInfo i = (SubscriptionInfo)vec.elementAt(0);
                qos.setState(Constants.STATE_WARN);
                qos.setSubscriptionId(i.getSubscriptionId());
@@ -807,7 +807,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          }
 
          //if (qos == null) { Currently we can't use the cluster subId, as it is not unique in another cluster node
-            qos = new StatusQosData(glob);
+            qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          //}
          return qos.toXml();
@@ -1307,7 +1307,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
          // Build the return values ...
          String[] oidArr = new String[subscriptionIdSet.size()];
-         StatusQosData qos = new StatusQosData(glob);
+         StatusQosData qos = new StatusQosData(glob, MethodName.UNSUBSCRIBE);
          qos.setState(Constants.STATE_OK);
          Iterator it = subscriptionIdSet.iterator();
          int ii = 0;
@@ -1542,7 +1542,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          publishReturnQos = topicHandler.publish(sessionInfo, msgUnit, publishQos);
 
          if (publishReturnQos == null) {  // assert only
-            StatusQosData qos = new StatusQosData(glob);
+            StatusQosData qos = new StatusQosData(glob, MethodName.PUBLISH);
             qos.setKeyOid(msgKeyData.getOid());
             qos.setState(Constants.STATE_OK);
             publishReturnQos = new PublishReturnQos(glob, qos);
@@ -1736,7 +1736,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          // Build the return values ...
          String[] oidArr = new String[oidSet.size()];
          //oidSet.toArray(oidArr);
-         StatusQosData qos = new StatusQosData(glob);
+         StatusQosData qos = new StatusQosData(glob, MethodName.ERASE);
          qos.setState(Constants.STATE_OK);
          Iterator it = oidSet.iterator();
          int ii = 0;

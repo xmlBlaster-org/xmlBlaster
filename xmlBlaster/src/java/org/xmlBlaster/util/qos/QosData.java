@@ -12,6 +12,7 @@ import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import java.util.ArrayList;
@@ -53,10 +54,13 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    protected transient RouteInfo[] routeNodes;
    private static RouteInfo[] ROUTE_INFO_ARR_DUMMY = new RouteInfo[0];
 
+   private MethodName methodName;
+
    /**
     * Constructor, it does not parse the data, use a factory for this. 
     */
-   public QosData(Global glob, String serialData) {
+   public QosData(Global glob, String serialData, MethodName methodName) {
+      this.methodName = methodName;
       setGlobal(glob);
       this.serialData = serialData;
    }
@@ -295,6 +299,38 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 
    public final Global getGlobal() {
       return this.glob;
+   }
+
+   public final MethodName getMethod() {
+      return this.methodName;
+   }
+
+   public final void setMethod(MethodName methodName) {
+      this.methodName = methodName;
+   }
+
+   public final boolean isPublish() {
+      return this.methodName == MethodName.PUBLISH;
+   }
+
+   public final boolean isSubscribe() {
+      return this.methodName == MethodName.SUBSCRIBE;
+   }
+
+   public final boolean isUnSubscribe() {
+      return this.methodName == MethodName.UNSUBSCRIBE;
+   }
+
+   public final boolean isErase() {
+      return this.methodName == MethodName.ERASE;
+   }
+
+   public final boolean isGet() {
+      return this.methodName == MethodName.GET;
+   }
+
+   public final boolean isUpdate() {
+      return this.methodName == MethodName.UPDATE;
    }
 
    /**

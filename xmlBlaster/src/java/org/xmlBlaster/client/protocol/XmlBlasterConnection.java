@@ -44,6 +44,7 @@ import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.MsgUnit;
@@ -1512,7 +1513,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                qos = sq.toXml();
             }
             recorder.subscribe(xmlKey, qos);
-            StatusQosData subRetQos = new StatusQosData(glob);
+            StatusQosData subRetQos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             subRetQos.setStateInfo(getQueuedInfo());
             retQos = new SubscribeReturnQos(glob, subRetQos);
             // TODO: Generate a unique subscritpionId -> pass to client and later to server as well
@@ -1602,7 +1603,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             if (recorder != null) {
                String oid = getAndReplaceOid(msgUnit);
                recorder.publish(msgUnit);
-               StatusQosData statRetQos = new StatusQosData(glob);
+               StatusQosData statRetQos = new StatusQosData(glob, MethodName.PUBLISH);
                statRetQos.setStateInfo(Constants.INFO_QUEUED);
                statRetQos.setKeyOid(oid);
                retQos = new PublishReturnQos(glob, statRetQos);
@@ -1847,7 +1848,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             EraseReturnQos retQos = null;
             if (recorder != null) {
                recorder.erase(xmlKey, qos);
-               StatusQosData statRetQos = new StatusQosData(glob);
+               StatusQosData statRetQos = new StatusQosData(glob, MethodName.ERASE);
                statRetQos.setStateInfo(Constants.INFO_QUEUED);
                retQos = new EraseReturnQos(glob, statRetQos);
             }

@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * This class encapsulates the QoS of an unSubcribe() request. 
@@ -42,7 +43,8 @@ public final class UnSubscribeQos
     */
    public UnSubscribeQos(Global glob, QueryQosData queryQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.queryQosData = (queryQosData==null) ? new QueryQosData(this.glob, this.glob.getQueryQosFactory()) : queryQosData;
+      this.queryQosData = (queryQosData==null) ? new QueryQosData(this.glob, this.glob.getQueryQosFactory(), MethodName.UNSUBSCRIBE) : queryQosData;
+      this.queryQosData.setMethod(MethodName.UNSUBSCRIBE);
    }
 
    /**

@@ -115,7 +115,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) {
-      super(glob, serialData);
+      super(glob, serialData, org.xmlBlaster.util.enum.MethodName.CONNECT);
       this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side

@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
+import org.xmlBlaster.util.enum.MethodName;
 
 
 /**
@@ -37,6 +38,7 @@ public final class EraseReturnQos
     */
    public EraseReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
       this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData.setMethod(MethodName.ERASE);
    }
 
    /**
@@ -44,6 +46,7 @@ public final class EraseReturnQos
     */
    public EraseReturnQos(Global glob, StatusQosData statusQosData) {
       this.statusQosData = statusQosData;
+      this.statusQosData.setMethod(MethodName.ERASE);
    }
 
    /**

@@ -14,7 +14,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
-
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
@@ -67,6 +67,7 @@ public final class UpdateQos
       this.glob = (glob==null) ? Global.instance() : glob;
       this.log = glob.getLog("client");
       this.msgQosData = msgQosData;
+      this.msgQosData.setMethod(MethodName.UPDATE);
    }
 
    /**

@@ -7,6 +7,7 @@ package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 
 
 /**
@@ -45,8 +46,8 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * </p>
     * @param The factory which knows how to serialize and parse me
     */
-   public StatusQosData(Global glob) {
-      this(glob, null, null);
+   public StatusQosData(Global glob, MethodName methodName) {
+      this(glob, null, null, methodName);
    }
 
    /**
@@ -54,8 +55,8 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * e.g. for a return of a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
-   public StatusQosData(Global glob, I_StatusQosFactory factory) {
-      this(glob, factory, null);
+   public StatusQosData(Global glob, I_StatusQosFactory factory, MethodName methodName) {
+      this(glob, factory, null, methodName);
    }
 
    /**
@@ -64,8 +65,8 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * @param the XML based ASCII string
     * @param true
     */
-   public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData) {
-      super(glob, serialData);
+   public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData, MethodName methodName) {
+      super(glob, serialData, methodName);
       this.factory = (factory==null) ? glob.getStatusQosFactory() : factory;
    }
 

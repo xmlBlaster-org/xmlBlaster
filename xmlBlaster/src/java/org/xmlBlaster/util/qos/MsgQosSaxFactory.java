@@ -13,6 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
@@ -157,7 +158,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          xmlQos = "<qos/>";
       }
 
-      msgQosData = new MsgQosData(glob, this, xmlQos);
+      msgQosData = new MsgQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
          init(xmlQos);      // use SAX parser to parse it (is slow)
@@ -534,6 +535,25 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          log.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
          return;
       }
+
+      if (name.equalsIgnoreCase("isPublish")) {
+         if (!inQos)
+            return;
+         msgQosData.setMethod(MethodName.PUBLISH);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUpdate")) {
+         if (!inQos)
+            return;
+         msgQosData.setMethod(MethodName.UPDATE);
+         return;
+      }
+      if (name.equalsIgnoreCase("isGet")) {
+         if (!inQos)
+            return;
+         msgQosData.setMethod(MethodName.GET);
+         return;
+      }
    }
 
    /**
@@ -703,6 +723,19 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if (name.equalsIgnoreCase("isPublish")) {
+         this.character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUpdate")) {
+         this.character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isGet")) {
+         this.character.setLength(0);
+         return;
+      }
+
       character.setLength(0); // reset data from unknown tags
    }
 
@@ -822,6 +855,16 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             sb.append(routeInfoArr[ii].toXml(extraOffset+Constants.INDENT));
          }
          sb.append(offset).append(" </route>");
+      }
+
+      if (msgQosData.getMethod() == MethodName.PUBLISH) {
+         sb.append(offset).append(" <isPublish/>");
+      }
+      else if (msgQosData.getMethod() == MethodName.UPDATE) {
+         sb.append(offset).append(" <isUpdate/>");
+      }
+      else if (msgQosData.getMethod() == MethodName.GET) {
+         sb.append(offset).append(" <isGet/>");
       }
 
       if (msgQosData.hasTopicProperty()) {

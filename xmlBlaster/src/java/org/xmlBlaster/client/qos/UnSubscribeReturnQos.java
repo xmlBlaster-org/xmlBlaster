@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
-
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * Handling the returned QoS (quality of service) of a unSubscribe() call. 
@@ -37,6 +37,7 @@ public final class UnSubscribeReturnQos
     */
    public UnSubscribeReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
       this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData.setMethod(MethodName.UNSUBSCRIBE);
    }
 
    /**
@@ -44,6 +45,7 @@ public final class UnSubscribeReturnQos
     */
    public UnSubscribeReturnQos(Global glob, StatusQosData statusQosData) {
       this.statusQosData = statusQosData;
+      this.statusQosData.setMethod(MethodName.UNSUBSCRIBE);
    }
 
    /**

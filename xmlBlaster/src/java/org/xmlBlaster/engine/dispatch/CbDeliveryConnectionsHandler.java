@@ -55,7 +55,7 @@ public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandl
          MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
          if (!msgQueueEntry.wantReturnObj())
             continue;
-         StatusQosData statRetQos = new StatusQosData(glob);
+         StatusQosData statRetQos = new StatusQosData(glob, MethodName.UPDATE);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
          if (MethodName.UPDATE == msgQueueEntry.getMethodName()) {

@@ -17,6 +17,7 @@ import org.xmlBlaster.util.property.PropBoolean;
 
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 
 import java.util.ArrayList;
 
@@ -127,8 +128,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
     */
-   public MsgQosData(Global glob) {
-      this(glob, null, null);
+   public MsgQosData(Global glob, MethodName methodName) {
+      this(glob, null, null, methodName);
    }
 
    /**
@@ -143,8 +144,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Constructs the specialized quality of service object for a publish() or update() call.
     * @param factory The factory which knows how to serialize and parse me
     */
-   public MsgQosData(Global glob, I_MsgQosFactory factory) {
-      this(glob, factory, null);
+   public MsgQosData(Global glob, I_MsgQosFactory factory, MethodName methodName) {
+      this(glob, factory, null, methodName);
    }
 
    /**
@@ -152,8 +153,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * For internal use only, this message is sent from the persistence layer
     * @param the XML based ASCII string
     */
-   public MsgQosData(Global glob, I_MsgQosFactory factory, String serialData) {
-      super(glob, serialData);
+   public MsgQosData(Global glob, I_MsgQosFactory factory, String serialData, MethodName methodName) {
+      super(glob, serialData, methodName);
       this.factory = (factory == null) ? this.glob.getMsgQosFactory() : factory;
    }
 

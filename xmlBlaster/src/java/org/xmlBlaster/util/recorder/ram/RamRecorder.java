@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.14 2003/03/22 12:28:16 laghi Exp $
+Version:   $Id: RamRecorder.java,v 1.15 2003/05/09 17:30:18 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -26,7 +26,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-
+import org.xmlBlaster.util.enum.MethodName;
 import java.util.*;
 
 
@@ -87,10 +87,10 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
    {
       this.glob = glob;
       this.log = glob.getLog("recorder");
-      StatusQosData statRetQos = new StatusQosData(glob);
+      StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
       statRetQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
-      StatusQosData subQos = new StatusQosData(glob);
+      StatusQosData subQos = new StatusQosData(glob, MethodName.SUBSCRIBE);
       subQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummySubRet = new SubscribeReturnQos(glob, subQos);
 

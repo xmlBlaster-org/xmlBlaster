@@ -72,7 +72,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
          MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
          if (!msgQueueEntry.wantReturnObj())
             continue;
-         StatusQosData statRetQos = new StatusQosData(glob);
+         StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
          if (log.TRACE) log.trace(ME, "Creating faked return for '" + msgQueueEntry.getMethodName() + "' invocation");

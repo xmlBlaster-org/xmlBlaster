@@ -9,7 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.Timestamp;
-
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * Handling the returned QoS (quality of service) of a publish() call.
@@ -39,6 +39,7 @@ public final class PublishReturnQos
     */
    public PublishReturnQos(Global glob, String xmlQos) throws XmlBlasterException {
       this.statusQosData = glob.getStatusQosFactory().readObject(xmlQos);
+      this.statusQosData.setMethod(MethodName.PUBLISH);
    }
 
    /**
@@ -46,6 +47,7 @@ public final class PublishReturnQos
     */
    public PublishReturnQos(Global glob, StatusQosData statusQosData) {
       this.statusQosData = statusQosData;
+      this.statusQosData.setMethod(MethodName.PUBLISH);
    }
 
    /**

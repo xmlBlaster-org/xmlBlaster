@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 
@@ -71,7 +72,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          xmlQos = "<qos/>";
       }
 
-      statusQosData = new StatusQosData(glob, this, xmlQos);
+      statusQosData = new StatusQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
          init(xmlQos);      // use SAX parser to parse it (is slow)
@@ -142,6 +143,38 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
         inRcvTimestamp = true;
         return;
      }
+
+     if (name.equalsIgnoreCase("isErase")) {
+        if (!inQos)
+           return;
+        statusQosData.setMethod(MethodName.ERASE);
+        return;
+     }
+     if (name.equalsIgnoreCase("isPublish")) {
+        if (!inQos)
+           return;
+        statusQosData.setMethod(MethodName.PUBLISH);
+        return;
+     }
+     if (name.equalsIgnoreCase("isSubscribe")) {
+        if (!inQos)
+           return;
+        statusQosData.setMethod(MethodName.SUBSCRIBE);
+        return;
+     }
+     if (name.equalsIgnoreCase("isUnSubscribe")) {
+        if (!inQos)
+           return;
+        statusQosData.setMethod(MethodName.UNSUBSCRIBE);
+        return;
+     }
+     if (name.equalsIgnoreCase("isUpdate")) {
+        if (!inQos)
+           return;
+        statusQosData.setMethod(MethodName.UPDATE);
+        return;
+     }
+
   }
 
    /**
@@ -177,6 +210,27 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          return;
       }
 
+      if (name.equalsIgnoreCase("isErase")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isPublish")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isSubscribe")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUnSubscribe")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUpdate")) {
+         character.setLength(0);
+         return;
+      }
+     
       character.setLength(0); // reset data from unknown tags
    }
 
@@ -210,6 +264,22 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       if (statusQosData.getRcvTimestamp() != null)
          sb.append(statusQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, false));
 
+      if (statusQosData.getMethod() == MethodName.ERASE) {
+         sb.append(offset).append("<isErase/>");
+      }
+      else if (statusQosData.getMethod() == MethodName.PUBLISH) {
+         sb.append(offset).append("<isPublish/>");
+      }
+      else if (statusQosData.getMethod() == MethodName.SUBSCRIBE) {
+         sb.append(offset).append("<isSubscribe/>");
+      }
+      else if (statusQosData.getMethod() == MethodName.UNSUBSCRIBE) {
+         sb.append(offset).append("<isUnSubscribe/>");
+      }
+      else if (statusQosData.getMethod() == MethodName.UPDATE) {
+         sb.append(offset).append("<isUpdate/>");
+      }
+     
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

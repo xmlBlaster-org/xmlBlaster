@@ -4,6 +4,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
@@ -476,7 +477,7 @@ public class MsgQosFactoryTest extends TestCase {
       System.out.println("***MsgQosFactoryTest: testAdministrative ...");
       
       //try {
-         MsgQosData msgQosData = new MsgQosData(glob);
+         MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
          msgQosData.setAdministrative(true);
          assertEquals("", PriorityEnum.MAX_PRIORITY.getInt(), msgQosData.getPriority().getInt());
          String xml = msgQosData.toXml();

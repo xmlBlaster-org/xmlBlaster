@@ -8,7 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.StatusQosData;
-
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * Handling the returned QoS (quality of service) of an update() call. 
@@ -42,7 +42,7 @@ public final class UpdateReturnQos
     * @param state The state to return to the server. See Constants.java
     */
    public UpdateReturnQos(Global glob, String state) {
-      this.statusQosData = new StatusQosData(glob);
+      this.statusQosData = new StatusQosData(glob, MethodName.UPDATE);
       this.statusQosData.setState(state);
    }
 

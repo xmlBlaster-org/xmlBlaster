@@ -3,7 +3,7 @@ Name:      DisconnectQosData.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQosData.java,v 1.3 2003/05/06 16:08:42 ruff Exp $
+Version:   $Id: DisconnectQosData.java,v 1.4 2003/05/09 17:30:15 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
@@ -36,7 +36,7 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * Parses the given ASCII logout QoS. 
     */
    public DisconnectQosData(Global glob, I_DisconnectQosFactory factory, String serialData) {
-      super(glob, serialData);
+      super(glob, serialData, org.xmlBlaster.util.enum.MethodName.DISCONNECT);
       this.factory = (factory == null) ? this.glob.getDisconnectQosFactory() : factory;
    }
 

@@ -10,6 +10,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 
 import java.util.ArrayList;
 
@@ -72,8 +73,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * e.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
-   public QueryQosData(Global glob) {
-      this(glob, null, null);
+   public QueryQosData(Global glob, MethodName methodName) {
+      this(glob, null, null, methodName);
    }
 
    /**
@@ -81,8 +82,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * e.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
-   public QueryQosData(Global glob, I_QueryQosFactory factory) {
-      this(glob, factory, null);
+   public QueryQosData(Global glob, I_QueryQosFactory factory, MethodName methodName) {
+      this(glob, factory, null, methodName);
    }
 
    /**
@@ -91,8 +92,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @param the XML based ASCII string
     * @param true
     */
-   public QueryQosData(Global glob, I_QueryQosFactory factory, String serialData) {
-      super(glob, serialData);
+   public QueryQosData(Global glob, I_QueryQosFactory factory, String serialData, MethodName methodName) {
+      super(glob, serialData, methodName);
       this.factory = (factory==null) ? glob.getQueryQosFactory() : factory;
    }
 

@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import org.xml.sax.*;
@@ -80,7 +81,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          xmlQos = "<qos/>";
       }
 
-      queryQosData = new QueryQosData(glob, this, xmlQos);
+      queryQosData = new QueryQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
          init(xmlQos);      // use SAX parser to parse it (is slow)
@@ -225,6 +226,33 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
             tmpHistory = null;
          return;
       }
+
+
+      if (name.equalsIgnoreCase("isErase")) {
+         if (!inQos)
+            return;
+         queryQosData.setMethod(MethodName.ERASE);
+         return;
+      }
+      if (name.equalsIgnoreCase("isGet")) {
+         if (!inQos)
+            return;
+         queryQosData.setMethod(MethodName.GET);
+         return;
+      }
+      if (name.equalsIgnoreCase("isSubscribe")) {
+         if (!inQos)
+            return;
+         queryQosData.setMethod(MethodName.SUBSCRIBE);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUnSubscribe")) {
+         if (!inQos)
+            return;
+         queryQosData.setMethod(MethodName.UNSUBSCRIBE);
+         return;
+      }
+
    }
 
    /**
@@ -308,6 +336,23 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
+      if (name.equalsIgnoreCase("isErase")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isGet")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isSubscribe")) {
+         character.setLength(0);
+         return;
+      }
+      if (name.equalsIgnoreCase("isUnSubscribe")) {
+         character.setLength(0);
+         return;
+      }
+
       character.setLength(0); // reset data from unknown tags
    }
 
@@ -384,6 +429,19 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       HistoryQos historyQos = queryQosData.getHistoryQos();
       if (historyQos != null) {
          sb.append(historyQos.toXml(extraOffset+Constants.INDENT));
+      }
+
+      if (queryQosData.getMethod() == MethodName.ERASE) {
+         sb.append(offset).append(" <isErase/>");
+      }
+      else if (queryQosData.getMethod() == MethodName.GET) {
+         sb.append(offset).append(" <isGet/>");
+      }
+      else if (queryQosData.getMethod() == MethodName.SUBSCRIBE) {
+         sb.append(offset).append(" <isSubscribe/>");
+      }
+      else if (queryQosData.getMethod() == MethodName.UNSUBSCRIBE) {
+         sb.append(offset).append(" <isUnSubscribe/>");
       }
 
       sb.append(offset).append("</qos>");

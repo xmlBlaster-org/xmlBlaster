@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -380,7 +381,7 @@ public final class TopicHandler implements I_Timeout
                   log.error(ME, "Can't create useful TopicEntry in state=" + getStateStr() + " no QoS is available");
                   return null;
                }
-               MsgQosData msgQosData = new MsgQosData(glob);
+               MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
                msgQosData.setTopicProperty(this.topicProperty);
                msgQosData.setAdministrative(true);
                msgQosData.touchRcvTimestamp();
@@ -438,7 +439,7 @@ public final class TopicHandler implements I_Timeout
       MsgQosData msgQosData = null;
 
       synchronized (this) {
-         StatusQosData qos = new StatusQosData(glob);
+         StatusQosData qos = new StatusQosData(glob, MethodName.PUBLISH);
          qos.setKeyOid(this.uniqueKey);
          qos.setState(Constants.STATE_OK);
          qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
@@ -1626,7 +1627,7 @@ public final class TopicHandler implements I_Timeout
     */
    final void fireMessageEraseEvent(SessionInfo sessionInfo, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
-      eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob)) : eraseQos;
+      eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob, MethodName.ERASE)) : eraseQos;
 
       synchronized (this) {
          if (isAlive() || isUnconfigured()) {
