@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.6 2000/03/02 11:22:25 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.7 2000/03/27 22:02:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -17,7 +17,7 @@ import java.util.Vector;
  * This class encapsulates the qos of a publish() message.
  * <p />
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCCI-XML string with the toXml() method.
+ * After construction access the ASCII-XML string with the toXml() method.
  * <br />
  * A typical <b>publish</b> qos could look like this:<br />
  * <pre>
