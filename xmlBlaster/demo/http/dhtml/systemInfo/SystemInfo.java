@@ -3,8 +3,8 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.8 2002/11/26 12:36:22 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: SystemInfo.java,v 1.9 2002/12/18 13:52:46 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
@@ -15,7 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
 import org.xmlBlaster.protocol.http.HttpPushHandler;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
