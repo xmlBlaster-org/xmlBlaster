@@ -16,6 +16,9 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -98,6 +101,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private boolean isValid = true;
 
    private boolean firstWarn = true;
+
+   private Timestamp sessionRefreshTimeoutHandle;
 
    /**
     * Create an xmlBlaster accessor. 
@@ -254,6 +259,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }
       } // synchronized
 
+      if (this.connectQos.getRefreshSession()) {
+         startSessionRefresher();
+      }
+
       if (isAlive()) {
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
@@ -284,6 +293,45 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public boolean isConnected() {
       return this.connectReturnQos != null;
    }
+
+   private void startSessionRefresher() {
+      if (this.connectQos == null) return;
+      long sessionTimeout = this.connectQos.getSessionQos().getSessionTimeout();
+      final long MIN = 2000L; // Sessions which live less than 2 seconds are not supported
+      if (sessionTimeout >= MIN) {
+         long gap = (sessionTimeout < 60*1000L) ? sessionTimeout/2 : sessionTimeout-30*1000L;
+         final long refreshTimeout = sessionTimeout - gap;
+         final Timeout timeout = this.glob.getPingTimer();
+         this.sessionRefreshTimeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+               public void timeout(Object userData) {
+                  if (isAlive()) {
+                     log.info(ME, "Refreshing session to not expire");
+                     try {
+                        refreshSession();
+                     }
+                     catch (XmlBlasterException e) {
+                        log.warn(ME, "Can't refresh the login session '" + getId() + "': " + e.toString());
+                     }
+                  }
+                  else {
+                     log.info(ME, "Can't refresh session as we have no connection");
+                  }
+                  try {
+                     sessionRefreshTimeoutHandle = timeout.addOrRefreshTimeoutListener(this, refreshTimeout, null, sessionRefreshTimeoutHandle) ;
+                  }
+                  catch (XmlBlasterException e) {
+                     log.warn(ME, "Can't refresh the login session '" + getId() + "': " + e.toString());
+                  }
+               }
+            },
+            refreshTimeout, null);
+      }
+      else {
+         log.warn(ME, "Auto-refreshing session is not supported for session timeouts smaller " + MIN + " seconds");
+      
+      }
+   }
+
 
    /**
     * @see I_XmlBlasterAccess#refreshSession()
@@ -837,6 +885,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             }
          }
          return;
+      }
+
+      if (this.clientQueue == null || this.clientQueue.getNumOfEntries() == 0) {
+         dispatchManager.trySyncMode(true);
       }
 
       if (this.connectReturnQos == null || !this.connectReturnQos.isReconnected()) {
