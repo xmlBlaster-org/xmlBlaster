@@ -53,9 +53,13 @@ public final class ClusterManager
       return this.mapMsgToMasterPluginManager;
    }
 
+   /**
+    * @return null if no forwarding is done
+    */
    public String forwardPublish(SessionInfo sessionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
-      log.error(ME, "forwardPublish() is not implemented!");
-      return Constants.RET_FORWARD_ERROR; // "<qos><state>FORWARD_ERROR</state></qos>"
+      //log.error(ME, "forwardPublish() is not implemented!");
+      return null;
+      //return Constants.RET_FORWARD_ERROR; // "<qos><state>FORWARD_ERROR</state></qos>"
    }
 
    /**
