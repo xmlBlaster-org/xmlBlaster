@@ -3,7 +3,7 @@ Name:      TimeHelper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some Date formatting
-Version:   $Id: TimeHelper.java,v 1.1 1999/11/22 09:29:24 ruff Exp $
+Version:   $Id: TimeHelper.java,v 1.2 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,17 +12,17 @@ import java.text.DateFormat;
 import java.util.Locale;
 
 /**
- * Measure the elapsed time
+ * Some static helper methods to get nice formatted time. 
  */
 public class TimeHelper
 {
    /**
-    * Generates a nice Date and Time string using the given look and feel
-    * <br>
-    * Example
+    * Generates a nice Date and Time string using the given look and feel. 
+    * <p />
+    * Example:
     * <br>
     *   <code>TimeHelper.getDateTime(0, DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.GERMAN);</code><br>
-    *   -> return "08.03.1999 15:28:19"
+    *   -> return "08.12.1999 16:30:01"
     * @param timestamp       elapsed millis since 1972<br>
     *                        or 0 to get the current date/time
     * @param lookAndFeelDate java.text.DateFormat.SHORT<br>
@@ -36,7 +36,7 @@ public class TimeHelper
     * @param country         java.util.Locale.GERMAN<br>
     *                        java.util.Locale.US
     * @return
-    *        The nice formatted date/tim string
+    *        The nice formatted date/time string
     */
    public static final String getDateTime(final long timestamp, final int lookAndFeelDate, final int lookAndFeelTime, final java.util.Locale country)
    {

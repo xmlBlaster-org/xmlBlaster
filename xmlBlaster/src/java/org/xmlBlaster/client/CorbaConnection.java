@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.3 1999/12/09 10:16:34 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.4 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -26,10 +26,12 @@ import java.util.Properties;
  * This is a little helper class, helping a Java client to connect to xmlBlaster
  * using IIOP (CORBA).
  * <p>
+ * There is a constructor for applets, servlets and standalone Java clients.
+ * <p />
  * If you have a servlet development kit installed (http://java.sun.com/products/servlet/index.html)
  * you may remove the comments from all servlets based code.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -252,12 +254,11 @@ public class CorbaConnection
     *    <li>Give the authentication service string-IOR at command line, e.g.<br />
     *        <code>   -ior "IOR:0000..."</code><br />
     *        or giving a file name<br />
-    *        <code>   -iorFile yourIorFile</li>
+    *        <code>   -iorFile yourIorFile</code></li>
     *    <li>Give the xmlBlaster host and iorPort where xmlBlaster-Authenticate serves the IOR via http, give at command line e.g.
-    *        <code>   -iorHost server.xmlBlaster.org  -iorPort 7609</li>
+    *        <code>   -iorHost server.xmlBlaster.org  -iorPort 7609</code></li>
     *    <li>Try to find a naming service which knows about 'xmlBlaster-Authenticate'</li>
     * </ul>
-    * -
     * <p />
     * @return a handle on the AuthServer IDL interface
     *

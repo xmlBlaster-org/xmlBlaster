@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.1 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -15,10 +15,14 @@ import java.io.*;
 
 
 /**
- * Delivering the Authentication Service IOR over HTTP
+ * Delivering the Authentication Service IOR over HTTP. 
  * <p />
+ * This little HTTP server is always running in the xmlBlaster on the
+ * default port 7609.<br />
+ * Clients may access through this port the AuthServer IOR if they
+ * don't want to use a naming service
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -57,7 +61,7 @@ public class HttpIORServer extends Thread
       }
    }
 
-   
+
 }
 
 
@@ -79,7 +83,7 @@ class HandleRequest extends Thread
       this.ior = ior;
       start();
    }
-   
+
    /**
     */
    public void run()

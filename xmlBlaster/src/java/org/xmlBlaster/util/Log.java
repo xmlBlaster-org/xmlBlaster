@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.19 1999/12/06 16:17:38 kron Exp $
+Version:   $Id: Log.java,v 1.20 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -16,16 +16,32 @@ public class Log
    private final static String ME = "Log";
 
    /**
-    * Switch CALLS mode on or of for performance reasons
-    * if (Log.CALLS) Log.trace(....); -> dead code elimination
+    * Produce logging output on important method calls. 
+    * <p />
+    * Switch CALLS mode to <code>false</code> for performance reasons<br />
+    * or switch it to <code>true</code> for debugging reasons. 
+    * <p />
+    * Setting to false:<br />
+    * <code>if (Log.CALLS) Log.trace(....); </code> -> dead code elimination
+    * <p />
+    * The same applies for TIME, TRACE and DUMP
     */
    public final static boolean CALLS = true;  // trace method calls
+   /**
+    * Performance logging output true/false
+    */
    public final static boolean TIME  = true;  // trace performance
+   /**
+    * Fine grained code logging output true/false
+    */
    public final static boolean TRACE = true;  // trace application flow
+   /**
+    * Dump internal xmlBlaster state in xml format, true/false
+    */
    public final static boolean DUMP  = true;  // dump internal state
 
    /**
-    * Loglevels
+    * Logging levels
     */
    private static final int L_NOLOG = 0;
    private static final int L_PANIC = 10;  // Abbruch der Aktion
@@ -38,14 +54,14 @@ public class Log
    private static int LOGLEVEL = 60;
 
    /**
-    * Adjust her your local look and feel
+    * Adjust here your local look and feel
     */
    private final static int lookAndFeelDate = java.text.DateFormat.MEDIUM;
    private final static int lookAndFeelTime = java.text.DateFormat.MEDIUM;
    private final static java.util.Locale country = java.util.Locale.US;
 
    /**
-    * Counter for occured warnings/errors
+    * Counter for occurred warnings/errors
     */
    private static int numWarnInvocations = 0;
    private static int numErrorInvocations = 0;
@@ -112,15 +128,15 @@ public class Log
    }
 
    /**
-    * Sets the loglevel 
+    * Sets the loglevel
     */
    public final static void setLogLevel(int LEVEL)
    {
     LOGLEVEL = LEVEL;
-   } 
+   }
 
   /**
-   * gets the loglevel 0,10,20,30,40,50,60
+   * Gets the loglevel 0,10,20,30,40,50,60
    */
   public final static int getLogLevel()
   {
@@ -188,7 +204,7 @@ public class Log
 
 
    /**
-    * exit without errors
+    * Exit without errors
     */
    public final static void exit(String instance, String text)
    {
@@ -198,6 +214,9 @@ public class Log
    }
 
 
+   /**
+    * Use this for normal logging output
+    */
    public final static void info(String instance, String text)
    {
       if(LOGLEVEL >= L_INFO)
@@ -207,6 +226,10 @@ public class Log
    }
 
 
+   /**
+    * Use this for logging output where the xmlBlaster administrator shall be informed<br />
+    * for example a login denied event
+    */
    public final static void warning(String instance, String text)
    {
       if(LOGLEVEL >= L_WARN)
@@ -223,6 +246,9 @@ public class Log
    }
    */
 
+   /**
+    * Use this for internal xmlBlaster errors reporting
+    */
    public final static void error(String instance, String text)
    {
       if(LOGLEVEL >= L_ERROR)
@@ -267,7 +293,7 @@ public class Log
    }
 
    /**
-    * tracing when entering methods
+    * Tracing when entering methods
     */
    public final static void calls(String instance, String text)
    {
@@ -303,7 +329,7 @@ public class Log
       }
    }
 
-	
+
 
 
    /**
@@ -313,9 +339,9 @@ public class Log
    public static void main(String args[]) throws Exception
    {
       String me = "Log-Tester";
-			System.out.println("LOGLEVEL : "+getLogLevel());
+                        System.out.println("LOGLEVEL : "+getLogLevel());
       setLogLevel(20);
-			System.out.println("LOGLEVEL : "+getLogLevel());
+                        System.out.println("LOGLEVEL : "+getLogLevel());
          Log.panic(me, "Panic is not shown");
          Log.error(me, "Error ...");
       setLogLevel(60);

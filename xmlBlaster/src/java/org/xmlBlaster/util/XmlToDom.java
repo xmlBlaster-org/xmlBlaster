@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.4 1999/12/01 16:04:46 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.5 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,10 +15,8 @@ import java.util.StringTokenizer;
 
 
 /**
- * XmlToDom.
+ * Helper which parses a XML ASCII string into a DOM tree. 
  * <p>
- * Helper which parses a XML ASCII string into a DOM tree
- *
  */
 public class XmlToDom
 {
@@ -43,7 +41,9 @@ public class XmlToDom
 
 
    /**
-    * Creates the DOM tree, this is done delayed when the first access is done
+    * Creates the DOM tree, this is done delayed when the first access is done. 
+    * <p />
+    * @param xmlKey_literal The ASCII XML string
     */
    public final void create(String xmlKey_literal) throws XmlBlasterException
    {
@@ -65,6 +65,7 @@ public class XmlToDom
 
 
    /**
+    * Access the unparsed, literal ASCII xmlKey. 
     * @return the literal ASCII xmlKey
     */
    public final String toString()
@@ -74,6 +75,7 @@ public class XmlToDom
 
 
    /**
+    * Access the unparsed, literal ASCII xmlKey. 
     * @return the literal ASCII xmlKey
     */
    public final String literal()
@@ -83,7 +85,7 @@ public class XmlToDom
 
 
    /**
-    * The syntax of the XmlKey_literal String
+    * The syntax of the XmlKey_literal String. 
     */
    public final NamedNodeMap getRootAttributes() throws XmlBlasterException
    {

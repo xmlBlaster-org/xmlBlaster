@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.4 1999/11/18 16:59:56 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.5 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -12,7 +12,41 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 
 /**
- * XmlKey
+ * This class encapsulates the Message meta data and unique identifier. 
+ * <p />
+ * A typical <b>publish</b> key could look like this:<br />
+ * <pre>
+ *     &lt;key oid='4711' contentMime='text/xml'>
+ *        &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
+ *           &lt;DRIVER id='FileProof' pollingFreq='10'>
+ *           &lt;/DRIVER>
+ *        &lt;/AGENT>
+ *     &lt;/key>
+ * </pre>
+ * <br />
+ * Note that the AGENT and DRIVER tags are application know how, which you have to supply.<br />
+ * A well designed xml hierarchy of your problem domain is essential for a proper working xmlBlaster
+ * <p />
+ * A typical <b>subscribe</b> key could look like this:<br />
+ * <pre>
+ *     &lt;key oid='4711' queryType='EXACT'>
+ *     &lt;/key>
+ * </pre>
+ * <br />
+ * In this example you would subscribe on message 4711.
+ * <p />
+ * A typical <b>subscribe</b> using a query syntax could look like this:<br />
+ * <pre>
+ *     &lt;key oid='' queryType='XPATH'>
+ *        //DRIVER[@id='FileProof']
+ *     &lt;/key>
+ * </pre>
+ * <br />
+ * In this example you would subscribe on all DRIVERs which have the attribute 'FileProof'
+ * 
+ * @see org.xmlBlaster.util.XmlKeyBase
+ * @see xmlBlaster/src/dtd/XmlKey.xml
+ * @see http://www.w3.org/TR/xpath
  */
 public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 {

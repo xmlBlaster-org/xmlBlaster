@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.8 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.9 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -19,10 +19,10 @@ import java.io.*;
 
 
 /**
- * Handling subscriptions, collected for each Client
- *
- * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.8 1999/12/09 00:11:05 ruff Exp $
+ * Handling subscriptions, collected for each Client. 
+ * <p />
+ * The interface SubscriptionListener informs about subscribe/unsubscribe events
+ * @version: $Id: ClientSubscriptions.java,v 1.9 1999/12/09 13:28:36 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -117,9 +117,9 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * if you have the ingredients for a unique id of a subscription, you may access the
-    * SubscriptionInfo object here
-    *
+    * If you have the ingredients to construct a unique id of a subscription, you may access the
+    * SubscriptionInfo object here. 
+    * <p />
     * @param clientInfo All infos about the client
     * @param xmlKey     The XML based message key
     * @param qos        The base QoS class
@@ -176,7 +176,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked on message erase() invocation (interface MessageEraseListener)
+    * Event invoked on message erase() invocation (interface MessageEraseListener). 
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
@@ -188,7 +188,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Event invoked on new subscription (interface SubscriptionListener)
+    * Event invoked on new subscription (interface SubscriptionListener). 
     */
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException
    {
@@ -237,7 +237,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked when a subscription is canceled (interface SubscriptionListener).
+    * Invoked when a subscription is canceled (interface SubscriptionListener). 
+    * <p />
     * Note that the subscriptionInfo object carried in SubscriptionEvent
     * is not the real known subscription, but rather misused as a container to
     * carry the clientInfo and subscriptionInfoUniqueKey

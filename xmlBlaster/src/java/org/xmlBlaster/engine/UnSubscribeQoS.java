@@ -3,7 +3,7 @@ Name:      UnSubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UnSubscribeQoS.java,v 1.1 1999/12/09 00:11:06 ruff Exp $
+Version:   $Id: UnSubscribeQoS.java,v 1.2 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,8 +16,8 @@ import java.util.Vector;
 /**
  * Handling of unSubscribe() quality of services.
  * <p />
- * QoS Informations sent from the client to the server via the unSubscribe() Method<br />
- * The are needed to control the xmlBlaster behavior
+ * QoS Informations sent from the client to the server via the unSubscribe() method<br />
+ * They are needed to control the xmlBlaster behavior
  */
 public class UnSubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 {

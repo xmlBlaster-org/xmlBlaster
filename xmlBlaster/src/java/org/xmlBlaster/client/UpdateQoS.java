@@ -3,9 +3,9 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.1 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine;
+package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
@@ -16,7 +16,7 @@ import org.xml.sax.AttributeList;
  * QoS (quality of service) informations sent from server to client<br />
  * via the update() method from the BlasterCallback interface.
  * <p />
- * You may use this if you are a Java client to parse the QoS argument.
+ * If you are a Java client you may use this class to parse the QoS argument.
  */
 public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 {

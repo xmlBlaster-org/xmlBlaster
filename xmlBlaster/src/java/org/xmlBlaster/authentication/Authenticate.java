@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.19 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.20 1999/12/09 13:28:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -248,9 +248,10 @@ public class Authenticate
 
 
    /**
-    * Access a clientInfo with the unique login name
+    * Access a clientInfo with the unique login name. 
+    * <p />
+    * If the client is yet unknown, there will be instantiated a dummy ClientInfo object
     * @return the ClientInfo object<br />
-    *         null if not found
     */
    public final ClientInfo getOrCreateClientInfoByName(String loginName) throws XmlBlasterException
    {
@@ -407,7 +408,9 @@ public class Authenticate
 
 
    /**
-    * Adds the specified client listener to receive login/logout events
+    * Adds the specified client listener to receive login/logout events. 
+    * <p />
+    * This listener needs to implement the ClientListener interface.
     */
    public void addClientListener(ClientListener l) {
       if (l == null) {

@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.13 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.14 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,28 +16,30 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 
 
 /**
- * SubscriptionInfo
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageUnit of exactly one Client
+ * concerning a subscription of exactly one MessageUnit of exactly one Client. 
+ * <p />
  */
 public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
-   private ClientInfo clientInfo;     // reference on ClientInfo
-   private XmlKey xmlKey;             // reference to xmlKey
-   private XmlQoSBase xmlQoSBase = null; // reference to 'Quality of Service' base class
+   private ClientInfo clientInfo;            // reference on ClientInfo
+   private XmlKey xmlKey;                    // reference to xmlKey
+   private XmlQoSBase xmlQoSBase = null;     // reference to 'Quality of Service' base class
    private SubscribeQoS subscribeQoS = null; // reference to 'Quality of Service' of subscription
    private UnSubscribeQoS unSubscribeQoS = null; // reference to 'Quality of Service' of unsubscription
    private String uniqueKey=null;
 
-   private MessageUnitHandler myHandler;  // reference to my managing container
+   private MessageUnitHandler myHandler;     // reference to my managing container
 
    private long creationTime = System.currentTimeMillis();
 
 
    /**
-    * @param qos This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
+    * @param clientInfo The client we deal with
+    * @param xmlKey     The message meta info
+    * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
     */
    public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
@@ -55,7 +57,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Clean up everything, since i will be deleted now
+    * Clean up everything, since i will be deleted now. 
     */
    private void erase()
    {
@@ -70,7 +72,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * This must be called as soon as my MessageUnitHandler handles me!
+    * This must be called as soon as my MessageUnitHandler handles me. 
+    * @param myHandler I'm handled (lifetime) by this handler
     */
    public void addMessageUnitHandler(MessageUnitHandler myHandler)
    {
@@ -82,6 +85,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
+    * Time when this Subscription is invoked. 
     * @return the creation time of this subscription (in millis)
     */
    public long getCreationTime()
@@ -91,7 +95,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Telling my container that i am not subscribing any more
+    * Telling my container that i am not subscribing any more. 
     */
    public void removeSubscribe() throws XmlBlasterException
    {
@@ -125,22 +129,37 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
    */
 
+   /**
+    * Access on ClientInfo object
+    * @return ClientInfo object
+    */
    public ClientInfo getClientInfo()
    {
       return clientInfo;
    }
 
+
+   /**
+    * Access on XmlKey object
+    * @return XmlKey object
+    */
    public XmlKey getXmlKey()
    {
       return xmlKey;
    }
 
+
+   /**
+    * Access on SubscribeQoS object
+    * @return SubscribeQoS object
+    */
    public SubscribeQoS getSubscribeQoS()
    {
       return subscribeQoS;
    }
 
    /**
+    * Accessing a unique id generated for this SubscriptionInfo. 
     * @return A unique key for this particular subscription
     */
    public String getUniqueKey() throws XmlBlasterException
@@ -154,8 +173,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * This static method may be used from external objects to get the unique key
-    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS)
-    *
+    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS). 
+    * <p />
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
     */
@@ -174,7 +193,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into XML. 
     * <br>
     * @return XML state of SubscriptionInfo
     */
@@ -185,7 +204,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into XML. 
     * <br>
     * @param extraOffset indenting of tags
     * @return XML state of SubscriptionInfo

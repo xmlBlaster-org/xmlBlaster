@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.36 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.37 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,7 +28,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -110,22 +110,23 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Setting attributes for a client.
+    * Setting attributes for a client. 
     * <p>
+    * NOTE: This method is under construction, don't use it yet.
     *
     * @param clientName  The client which shall be administered
     * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
     *                    They are later queryable with XPath syntax<p>
-    *     <pre>
-    *        &lt;client name='tim'>
-    *           &lt;group>
-    *              Marketing
-    *           &lt;/group>
-    *           &lt;role>
-    *              Managing director
-    *           &lt;/role>
-    *        &lt;/client>
-    *     </pre>
+    *    <pre>
+    *       &lt;client name='tim'>
+    *          &lt;group>
+    *             Marketing
+    *          &lt;/group>
+    *          &lt;role>
+    *             Managing director
+    *          &lt;/role>
+    *       &lt;/client>
+    *    </pre>
     * @param qos         Quality of Service, flags for additional informations to control administration
     */
    public void setClientAttributes(String clientName, String xmlAttr_literal,
@@ -137,7 +138,38 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked by a client, to subscribe to one/many MessageUnit
+    * Invoked by a client, to subscribe to one/many MessageUnit. 
+    * <p />
+    * Asynchronous read-access method.
+    * <p>
+    * In CORBA connection mode, the results are returned to the
+    * Client-Callback interface via the update() method.
+    * You need to implement the method BlasterCallback.update()<br />
+    * This is the push modus.
+    * <p>
+    * Duplicate subscriptions are silently ignored (no Exception is thrown)
+    * <br>
+    *
+    * @param xmlKey  Key allowing XPath or exact selection<br>
+    *                See XmlKey.dtd for a description
+    * @param qos     Quality of Service, flags to control subscription<br>
+    *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
+    *         Example (note that the qos are not yet fully implemented):<p />
+    *    <pre>
+    *       &lt;qos>
+    *          &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *          &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *          &lt;NoLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+    *       &lt;/qos>
+    *    </pre>
+    * @return oid    The oid of your subscribed Message<br>
+    *                If you subscribed using a query, the subscription ID of this<br>
+    *                query handling object is returned.<br>
+    *                You should use this oid if you wish to unSubscribe()<br>
+    *                If no match is found, an empty string "" is returned.
+    *
+    * @see addListener in Java event model
+    * @see addObserver in Java observer pattern
     */
    public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
@@ -164,7 +196,23 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked by a client, to subscribe to one/many MessageUnit
+    * Invoked by a client, to access one/many MessageUnit. 
+    * <p />
+    * Synchronous read-access method.
+    * <p>
+    *
+    * @param xmlKey  Key allowing XPath or exact selection<br>
+    *                See XmlKey.dtd for a description
+    * @param qos     Quality of Service, flags to control subscription<br>
+    *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
+    *         Example (note that the qos are not yet fully implemented):<p />
+    *    <pre>
+    *       &lt;qos>
+    *          &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *          &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *       &lt;/qos>
+    *    </pre>
+    * @return A sequence of 0 - n MessageUnit structs
     */
    public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
@@ -222,7 +270,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Try to access the XmlKey by its oid.
     *
-    * @param oid == XmlKey.uniqueKey
+    * @param oid  This is the XmlKey.uniqueKey
     * @return the XmlKey object if found in the Map<br />
     *         or null if not found
     */
@@ -237,7 +285,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * @param oid == XmlKey:uniqueKey
+    * @param oid  This is the XmlKey:uniqueKey
     * @return null if not found
     */
    public final MessageUnitHandler getMessageHandlerFromOid(String oid)
@@ -287,10 +335,23 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Incoming un subscribe request from a client.
-    * <p>
-    * @param clientInfo
+    * Incoming unsubscribe request from a client. 
+    * <p />
+    * If you have subscribed before, you can cancel your
+    * subscription with this method again
     *
+    * @param clientInfo
+    * @param xmlKey    Key with the oid to unSubscribe<br>
+    *                  See XmlKey.dtd for a description<br>
+    *                  If you subscribed with XPath, you need to pass the oid you got from your subscription
+    * @param qos       Quality of Service, flags to control unsubscription<br>
+    *                  See XmlQoS.dtd for a description
+    *         Example (note that the qos are not yet fully implemented):<p />
+    *    <pre>
+    *       &lt;qos>
+    *          &lt;NoNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
+    *       &lt;/qos>
+    *    </pre>
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
@@ -314,18 +375,86 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Publishing a new message.
+    * Write-Access method to publish a new message from a data source. 
     * <p />
-    * PubSub style:<br />
+    * There are to MoM styles supported:
+    * <p />
+    * <ul>
+    * <li>PubSub style:<br />
     * If MessageUnit is created from subscribe or the MessageUnit is new, we need to add the
-    * DOM here once; XmlKeyBase takes care of that
+    * DOM here once; XmlKeyBase takes care of that</li>
+    * <li>PTP style:<br />
+    * Send message directly to all destinations, ignore if same message is known from Pub/Sub style</li>
+    * </ul>
     * <p />
-    * PTP style:<br />
-    * Send message directly to all destinations, ignore if same message is known from Pub/Sub style
+    * This triggers the method update() if observed by somebody
+    * <p />
+    * If the given key doesn't exist, it will be automatically added, <br>
+    * so this covers the SQL'ish INSERT and UPDATE.
+    * <p />
+    * If MessageUnit is created from subscribe or MessageUnit is new, the key meta
+    * data are added to the big DOM tree once (XmlKeyBase takes care of that).
     *
     * @param clientInfo  The ClientInfo object, describing the publishing client
     * @param messageUnit The CORBA MessageUnit struct
-    * @param publishQoS  Quality of Service, flags to control the publishing
+    * @param publishQoS  Quality of Service, flags to control the publishing<p />
+    *         Example for Pub/Sub style (note that the qos are not yet fully implemented):<p />
+    *    <pre>
+    *       &lt;qos>
+    *          &lt;expires>        &lt;!-- Expires after given milliseconds, clients will get a notify about expiration -->
+    *             12000         &lt;!-- Default is no expiration (similar to pass 0 milliseconds) -->
+    *          &lt;/expires>
+    *    
+    *          &lt;erase>          &lt;!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
+    *             24000         &lt;!-- Default is no erasing (similar to pass 0 milliseconds) -->
+    *          &lt;/erase>
+    *    
+    *          &lt;IsDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+    *                           &lt;!-- Default is transient -->
+    *    
+    *          &lt;ForceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
+    *                           &lt;!-- Default is that identical published messages aren't sent to clients again -->
+    *    
+    *          &lt;Readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
+    *                           &lt;!-- Default is Read/Write -->
+    *    
+    *          &lt;DefaultContent> &lt;!-- Used content if the content given is null -->
+    *             Empty
+    *          &lt;/DefaultContent>
+    *    
+    *          &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->
+    *             $content GE 100 &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+    *          &lt;/check>
+    *    
+    *          &lt;alter lang='TCL'> &lt;!-- Allow content manipulation with a scripting language -->
+    *             set content [$key('4711') * 1.2 + $content] &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+    *          &lt;/alter>
+    *       &lt;/qos>
+    *    </pre><p />
+    *    Example for PtP addressing style (note that the qos are not yet fully implemented):<p />
+    *    <pre>
+    *       &lt;qos>
+    *          &lt;destination queryType='EXACT'>
+    *             Tim
+    *          &lt;/destination>
+    *    
+    *          &lt;destination queryType='EXACT'>
+    *             Ben
+    *          &lt;/destination>
+    *    
+    *          &lt;destination queryType='XPATH'>
+    *             //[GROUP='Manager']
+    *          &lt;/destination>
+    *    
+    *          &lt;destination queryType='XPATH'>
+    *             //ROLE/[@id='Developer']
+    *          &lt;/destination>
+    *       &lt;/qos>
+    *    </pre>
+    * @return String with the key oid of the messageUnit<br />
+    *         If you let the oid be generated, you need this information
+    *         for further publishing to the same MessageUnit<br />
+    *         Rejected Messages will contain an empty string ""
     *
     * @see xmlBlaster.idl for comments
     */
@@ -337,8 +466,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
       }
-
-      // !!! TODO: handling of qos
 
       XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
 
@@ -435,10 +562,19 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * if MessageUnit is created from subscribe or MessageUnit is new, we need to add the
-    * DOM here once; XmlKeyBase takes care of that
+    * Write-Access method to publish many messages from a data source. 
+    * <p />
+    * This method invokes the other publish() method for every message in the array.<br />
+    * Please consult this method for more informations
+    * <p />
     *
-    * @see xmlBlaster.idl for comments
+    * @param messageUnitArr Contains an array of MessageUnit structs
+    * @param qosArr         Quality of Service for every MessageUnit
+    *
+    * @return Array of Strings with the key oid of the messageUnit<br />
+    *         If you let the oid be generated, you need this information
+    *         for further publishing to the same MessageUnit<br />
+    *         Rejected Messages will contain an empty string ""
     */
    public String[] publish(ClientInfo clientInfo, MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
@@ -448,8 +584,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
       }
-
-      // !!! TODO: handling of qos
 
       String[] returnArr = new String[messageUnitArr.length];
       for (int ii=0; ii<messageUnitArr.length; ii++) {
@@ -509,7 +643,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Client wants to erase a message
+    * Client wants to erase a message. 
+    * <p />
+    * @param clientInfo  The ClientInfo object, describing the invoking client
+    * @param xmlKey      Key allowing XPath or exact selection<br>
+    *                    See XmlKey.dtd for a description
+    * @param eraseQoS    Quality of Service, flags to control the erasing 
+    *
+    * @return String array with the key oid's which are deleted
     */
    public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
@@ -541,7 +682,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked on message erase() invocation (interface MessageEraseListener)
+    * Event invoked on message erase() invocation (interface MessageEraseListener). 
     */
    public void messageErase(MessageEraseEvent e) throws XmlBlasterException
    {
@@ -560,7 +701,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked on successful client login (interface ClientListener)
+    * Event invoked on successful client login (interface ClientListener). 
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
@@ -570,7 +711,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Invoked when client does a logout (interface ClientListener)
+    * Event invoked when client does a logout (interface ClientListener). 
     */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
@@ -580,7 +721,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Adds the specified subscription listener to receive subscribe/unSubscribe events
+    * Adds the specified subscription listener to receive subscribe/unSubscribe events. 
     */
    public void addSubscriptionListener(SubscriptionListener l) {
       if (l == null) {
@@ -593,7 +734,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Removes the specified listener
+    * Removes the specified listener. 
     */
    public void removeSubscriptionListener(SubscriptionListener l) {
       if (l == null) {
@@ -606,7 +747,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Is fired on unSubscribe() and several times on erase()
+    * Is fired on unSubscribe() and several times on erase(). 
     */
    public final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
@@ -633,7 +774,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Adds the specified messageErase listener to receive subscribe/unSubscribe events
+    * Adds the specified messageErase listener to receive subscribe/unSubscribe events. 
     */
    public void addMessageEraseListener(MessageEraseListener l) {
       if (l == null) {
@@ -646,7 +787,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Removes the specified listener
+    * Removes the specified listener. 
     */
    public void removeMessageEraseListener(MessageEraseListener l) {
       if (l == null) {
@@ -659,7 +800,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Notify all Listeners that a message is erased.
+    * Notify all Listeners that a message is erased. 
     *
     * @param clientInfo
     * @param messageUnitHandler

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl_example.java,v 1.1 1999/11/30 11:19:28 ruff Exp $
+Version:   $Id: BlasterCallbackImpl_example.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 
@@ -16,8 +16,8 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 /**
  * Client implementation of the callback
- *
- * YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
+ * <p />
+ * YOU MAY USE THIS AS A BASE FOR YOUR Java based callback implementation, JUST TAKE A COPY OF IT
  */
 //public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach
 public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approach

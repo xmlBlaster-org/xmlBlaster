@@ -3,16 +3,19 @@ Name:      MessageEraseEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The erase() event object
-Version:   $Id: MessageEraseEvent.java,v 1.1 1999/11/29 07:07:59 ruff Exp $
+Version:   $Id: MessageEraseEvent.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 
 /**
- * An event which indicates that a new message erase() occurred
- * It carries the MessageUnitHandler reference inside
+ * An event which indicates that the given message will be erased. 
+ * <p />
+ * This is triggered usually when the erase() method is called from a client.
+ * <p />
+ * This EventObject carries the MessageUnitHandler reference inside.
  *
- * @version $Id: MessageEraseEvent.java,v 1.1 1999/11/29 07:07:59 ruff Exp $
+ * @version $Id: MessageEraseEvent.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
  * @author Marcel Ruff
  */
 public class MessageEraseEvent extends java.util.EventObject

@@ -3,7 +3,7 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.1 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,8 +16,8 @@ import java.util.Vector;
 /**
  * Handling of subscribe() quality of services.
  * <p />
- * QoS Informations sent from the client to the server via the subscribe() Method<br />
- * The are needed to control the xmlBlaster
+ * QoS Informations sent from the client to the server via the subscribe() method<br />
+ * They are needed to control the xmlBlaster
  */
 public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 {
@@ -42,7 +42,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Does client wants to have the XmlKey meta tags on update? 
+    * Does client wants to have the XmlKey meta tags on update?
     *
     * @return true if full XmlKey is sent
     *         false if only <key> tag with its attributes is sent
@@ -54,7 +54,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Does client wish the content data on updates? 
+    * Does client wish the content data on updates?
     *
     * @return true if clients wishes the content on message update
     *         false if client wishes empty content updates (NOTIFICATION style)
@@ -66,7 +66,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    * Inhibit the delivery of messages to myself if i have published it (and am a subscriber as well)? 
+    * Inhibit the delivery of messages to myself if i have published it (and am a subscriber as well)?
     * @return true/false
     */
    public final boolean sendLocal()

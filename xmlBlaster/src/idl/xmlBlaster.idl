@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.28 1999/12/01 15:40:11 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.29 1999/12/09 13:28:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -189,7 +189,7 @@ module serverIdl
        * Duplicate subscriptions are silently ignored (no Exception is thrown)
        * <br>
        *
-       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       * @param xmlKey  Key with attributes allowing Regex/XPath/SQL selection<br>
        *                See xmlKey.dtd for a description
        * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
@@ -210,7 +210,7 @@ module serverIdl
        * Synchronic read-access methods
        * This is the pull modus.
        *
-       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       * @param xmlKey  Key with attributes allowing Regex/XPath/SQL selection<br>
        *                See xmlKey.dtd for a description
        * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
@@ -224,7 +224,7 @@ module serverIdl
        * if a key was subscribed forever, you can cancel your
        * subscription with following method
        *
-       * @param xmlKey    Key with attributes allowing Regex/XQL/SQL selection<br>
+       * @param xmlKey    Key with attributes allowing Regex/XPath/SQL selection<br>
        *                  See xmlKey.dtd for a description
        * @param qos       Quality of Service, flags to control unsubscription<br>
        *                  See qosSubscribe.dtd for a description

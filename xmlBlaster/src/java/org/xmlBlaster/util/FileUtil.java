@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.1 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.2 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -11,7 +11,7 @@ import java.io.*;
 
 
 /**
- * Some helper methods for file handling. 
+ * Some helper methods for file handling.
  * May be used for test clients etc.
  */
 public class FileUtil
@@ -20,7 +20,8 @@ public class FileUtil
 
 
    /**
-    * Read a file into <code>String</code><br>
+    * Read a file into <code>String</code>. 
+    * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
     * <br><b>Example:</b><br>
@@ -37,7 +38,8 @@ public class FileUtil
 
 
    /**
-    * Read a file into <code>byte[]</code><br>
+    * Read a file into <code>byte[]</code>. 
+    * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
     * <br><b>Example:</b><br>
@@ -97,7 +99,8 @@ public class FileUtil
 
 
    /**
-    * Write data from <code>byte[]</code> into a file<br>
+    * Write data from <code>byte[]</code> into a file. 
+    * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
     * <br><b>Example:</b><br>
@@ -126,7 +129,8 @@ public class FileUtil
 
 
    /**
-    * Write data from <code>StringBuffer</code> into a file<br>
+    * Write data from <code>StringBuffer</code> into a file. 
+    * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
     * <br><b>Example:</b><br>
@@ -144,7 +148,8 @@ public class FileUtil
 
 
    /**
-    * Append data from into a file <br>
+    * Append data from into a file. 
+    * <p />
     * Nice function for testing
     * @param outName  name of file including path
     * @param str      Text
@@ -169,10 +174,11 @@ public class FileUtil
 
 
    /**
-    * rename a file
+    * Rename a file. 
+    * <p />
     * @return true if succeeded
     */
-   static boolean renameFile(String oldName, String newName)
+   static boolean rename(String oldName, String newName)
    {
       File f_old = new File(oldName);
       File f_new = new File(newName);

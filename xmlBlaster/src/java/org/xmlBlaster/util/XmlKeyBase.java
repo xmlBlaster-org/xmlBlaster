@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.16 1999/12/02 16:48:06 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.17 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -33,9 +33,9 @@ import org.w3c.dom.Attr;
  * <p>
  * A typical <b>publish()</b> would look like:
  * <pre>
- *    &lt;lt;?xml version='1.0' encoding='ISO-8859-1' ?>
- *    &lt;lt;key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'>
- *    &lt;lt;/key>
+ *    &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    &lt;key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'>
+ *    &lt;/key>
  * </pre>
  * <br>
  * or
@@ -64,6 +64,8 @@ import org.w3c.dom.Attr;
  *    &lt;/key>
  * </pre>
  *
+ * @see xmlBlaster/src/dtd/XmlKey.xml
+ * @see http://www.w3.org/TR/xpath
  */
 public class XmlKeyBase
 {
@@ -121,6 +123,8 @@ public class XmlKeyBase
    }
 
 
+   /**
+    */
    private void init(String xmlKey_literal, boolean isPublish) throws XmlBlasterException
    {
       this.isPublish = isPublish;
@@ -146,6 +150,7 @@ public class XmlKeyBase
 
 
    /**
+    * Access the literal ASCII xmlKey. 
     * @return the literal ASCII xmlKey
     */
    public String toString()
@@ -155,6 +160,7 @@ public class XmlKeyBase
 
 
    /**
+    * Access the literal ASCII xmlKey. 
     * @return the literal ASCII xmlKey
     */
    public String literal()
@@ -164,7 +170,7 @@ public class XmlKeyBase
 
 
    /**
-    * Synonym for getKeyOid()
+    * Synonym for getKeyOid(). 
     *
     * @return oid
     */
@@ -187,7 +193,8 @@ public class XmlKeyBase
 
 
    /**
-    * The syntax of the XmlKey_literal String
+    * Find out which mime type (syntax) of the XmlKey_literal String. 
+    * @return "text/xml" only XML is supported
     */
    public String getMimeType() throws XmlBlasterException
    {
@@ -202,7 +209,7 @@ public class XmlKeyBase
 
 
    /**
-    * Accessing the unique oid of <key oid="...">
+    * Accessing the unique oid of <key oid="...">. 
     *
     * @return oid
     */
@@ -214,7 +221,7 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used. 
     */
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
@@ -224,7 +231,7 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used. 
     */
    public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
    {
@@ -233,6 +240,10 @@ public class XmlKeyBase
    }
 
 
+   /**
+    * The mode how a subscribe() or get() is formulated. 
+    * @return EXACT_QUERY or XPATH_QUERY
+    */
    public final int getQueryType() throws XmlBlasterException
    {
       loadDomTree();
@@ -362,7 +373,8 @@ public class XmlKeyBase
 
 
    /**
-    * Generates a unique key
+    * Generates a unique key. 
+    * <p />
     * TODO: include IP adress and PID for global uniqueness
     */
    private String generateKeyOid()
@@ -383,7 +395,7 @@ public class XmlKeyBase
 
 
    /**
-    * Little helper method, which is synchronized
+    * Little helper method, which is synchronized. 
     */
    synchronized private void generateKeyOidCounter(StringBuffer oid)
    {
@@ -393,7 +405,7 @@ public class XmlKeyBase
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into XML. 
     * <br>
     * @return XML state of MessageUnitHandler
     */
@@ -404,7 +416,7 @@ public class XmlKeyBase
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into XML. 
     * <br>
     * @param extraOffset indenting of tags
     * @return XML state of MessageUnitHandler

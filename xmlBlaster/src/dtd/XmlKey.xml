@@ -56,7 +56,7 @@
    <!-- Accessing message with XPath query asynchronous -->
    <subscribe>
       <key oid='' queryType='XPATH'>
-      /xmlBlaster/key/AGENT
+      //AGENT
       </key>
    </subscribe>
 

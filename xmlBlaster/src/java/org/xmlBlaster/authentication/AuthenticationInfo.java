@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.5 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.6 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -86,8 +86,9 @@ public class AuthenticationInfo
 
 
    /**
-    * This is the unique identifier of the client
-    * it is currently the byte[] oid from the POA active object map.
+    * This is the unique identifier of the client. 
+    * <p />
+    * It is currently the byte[] oid from the POA active object map.
     * @return oid
     */
    public final String getUniqueKey() throws XmlBlasterException
@@ -107,7 +108,7 @@ public class AuthenticationInfo
 
 
    /**
-    * email callbacks are not yet supported
+    * email callbacks are not yet supported. 
     * @return false
     */
    public final boolean useEmailCB()
@@ -118,7 +119,7 @@ public class AuthenticationInfo
 
 
    /**
-    * Http callbacks are not yet supported
+    * Http callbacks are not yet supported. 
     * @return false
     */
    public final boolean useHttpCB()
@@ -129,8 +130,8 @@ public class AuthenticationInfo
 
 
    /**
-    * Only CORBA callbacks are supported this version
-    * @return false
+    * Only CORBA callbacks are supported in this version. 
+    * @return true/false
     */
    public final boolean useCorbaCB()
    {

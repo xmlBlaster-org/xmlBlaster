@@ -3,7 +3,7 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.3 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.4 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -130,15 +130,16 @@ public class ClientUpdateQueue
 
 
    /**
-    * The total amount of bytes consumed by all messages in the queue.
-    * TODO: !!! how to calculate???
+    * The total amount of bytes consumed by all message - contents in the queue. 
     * <p />
-    * @return the number of MessageUnitWrapper object waiting in the queue
+    * TODO: !!! how to calculate more exactly the overhead of the message objects?
+    * <p />
+    * @return the consumed bytes of the content of all messages in the queue
     */
    public final long getBytesUsed() throws XmlBlasterException
    {
       Log.warning(ME, "Sorry, getBytesUsed() not yet implemented");
-      return 0;
+      return currentBytes;
    }
 
 

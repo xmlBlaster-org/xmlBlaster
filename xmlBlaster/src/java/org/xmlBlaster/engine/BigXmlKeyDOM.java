@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.4 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.5 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -22,8 +22,13 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Building a huge DOM tree for all known MessageUnit.xmlKeys
- * <p>
+ * Building a huge DOM tree for all known MessageUnit.xmlKeys. 
+ * <p />
+ * This huge DOM tree contains all meta data about the known messages.<br />
+ * Since the message content is a BLOB, messages may only be queried through<br />
+ * this DOM tree using XPath.
+ * <p />
+ * Full text search scanning the content BLOB may be available through MIME based plugins.
  */
 public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_MergeDomNode
 {
@@ -136,7 +141,10 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Adding a new node to the xmlBlaster xmlKey tree
+    * Adding a new node to the xmlBlaster xmlKey tree. 
+    * <p />
+    * This method will be invoked when a new message is arriving to
+    * make its describing meta data available for XPath queries.
     * @param the node to merge into the DOM tree
     * @return the node added
     */

@@ -3,7 +3,7 @@ Name:      ClientEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Listens on clientRemove and clientAdded events
-Version:   $Id: ClientEvent.java,v 1.2 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: ClientEvent.java,v 1.3 1999/12/09 13:28:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -11,10 +11,10 @@ import org.xmlBlaster.engine.ClientInfo;
 
 
 /**
- * An event which indicates that a client did a login or logout. 
+ * An event which indicates that a client did a login or logout.
  * It carries the ClientInfo reference inside
  *
- * @version $Id: ClientEvent.java,v 1.2 1999/11/18 16:59:55 ruff Exp $
+ * @version $Id: ClientEvent.java,v 1.3 1999/12/09 13:28:36 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientEvent extends java.util.EventObject
@@ -22,7 +22,7 @@ public class ClientEvent extends java.util.EventObject
    /**
     * Constructs a ClientEvent object.
     *
-    * @param source the ClientInfo object
+    * @param the client which does the login or logout
     */
    public ClientEvent(ClientInfo clientInfo)
    {
@@ -32,7 +32,7 @@ public class ClientEvent extends java.util.EventObject
    /**
     * Returns the originator of the event.
     *
-    * @return the Authentication object that originated the event
+    * @return the client which does the login or logout
     */
    public ClientInfo getClientInfo() {
        return (ClientInfo)source;

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.13 1999/12/09 10:16:34 ruff Exp $
+Version:   $Id: Main.java,v 1.14 1999/12/09 13:28:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -17,13 +17,31 @@ import org.omg.CosNaming.*;
 
 
 /**
- * Main class to invoke the xmlBlaster server
+ * Main class to invoke the xmlBlaster server. 
+ * <p />
+ * Startparameters supported
+ * <p />
+ * <ul>
+ *    <li><code>-iorFile 'file name'   </code>default is no dumping of IOR<br />
+ *        Specify a file where to dump the IOR of the AuthServer (for client access)
+ *    </li>
+ *    <li><code>-iorPort 'port number'   </code>default is port 7609<br />
+ *        Specify a port number where the builtin http server publishes its AuthServer IOR<br />
+ *        the port -1 switches this feature off
+ *    </li>
+ * </ul>
+ * <p />
+ * Examples hot to start the xmlBlaster server:
+ * <p />
+ * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 8080</code>
+ * <p />
+ * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref</code>
  */
 public class Main
 {
    final private String ME = "Main";
-   static public org.omg.CORBA.ORB orb;
-   private HttpIORServer httpIORServer = null;  // if xmlBlaster publish his AuthServer IOR
+   private org.omg.CORBA.ORB orb;
+   private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
 
    public Main( String[] args )
    {
@@ -84,10 +102,11 @@ public class Main
 
 
    /**
-    * Locate the CORBA Name Service.
+    * Locate the CORBA Naming Service.
     * <p />
-    * The found name service is cached, for better performance in subsequent calls
-    * @return NamingContext, reference on name service
+    * The found naming service is cached, for better performance in subsequent calls
+    * @return NamingContext, reference on name service<br />
+    *         Note that this reference may be invalid, because the naming service is not running any more
     * @exception XmlBlasterException
     *                    CORBA error handling if no naming service is found
     */

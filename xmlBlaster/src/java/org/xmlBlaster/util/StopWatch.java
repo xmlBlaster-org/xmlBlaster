@@ -3,13 +3,15 @@ Name:      StopWatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: StopWatch.java,v 1.3 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: StopWatch.java,v 1.4 1999/12/09 13:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 
 /**
- * Measure the elapsed time
+ * Measure the elapsed time. 
+ * <p />
+ * Use this helper class if you want to measure elapsed time in some code fragment
  */
 public class StopWatch
 {
@@ -23,7 +25,9 @@ public class StopWatch
 
 
    /**
-    * @return elapsed Millisekonds since creation or restart()
+    * Return the elapsed milliseconds since creation or since the last restart(). 
+    * <p />
+    * @return elapsed Milliseconds since creation or restart()
     */
    public final long elapsed()
    {
@@ -35,8 +39,9 @@ public class StopWatch
 
 
    /**
-    * Returns a nice string with elapsed time
-    * Resets the stop watch
+    * Returns a nice string with elapsed time. 
+    * Resets the stop watch.
+    * @return The elapsed time in a nice formatted string
     */
    public final String nice()
    {
@@ -50,7 +55,9 @@ public class StopWatch
 
    /**
     * Nicely formatted output containing elapsed time since
-    * Construction or since last restart()
+    * Construction or since last restart(). 
+    * <p />
+    * @return The elapsed time in a nice formatted string
     */
    public final String toString()
    {
@@ -79,6 +86,10 @@ public class StopWatch
    }
 
 
+   /**
+    * Reset and start the stop watch for a new measurement cycle. 
+    * <p />
+    */
    public final void restart()
    {
       startTime = System.currentTimeMillis();
@@ -87,8 +98,9 @@ public class StopWatch
 
 
    /**
-    * Only for testing
-    *    java org.xmlBlaster.util.StopWatch
+    * Only for testing. 
+    * <p />
+    * Invoke:    java org.xmlBlaster.util.StopWatch
     */
    public static void main(String args[]) throws Exception
    {
