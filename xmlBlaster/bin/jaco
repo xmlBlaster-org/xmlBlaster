@@ -33,12 +33,15 @@ if ! [ ${JDK_HOME} ] ; then
    #echo -e "\033[32;40m  Using JDK_HOME=${JDK_HOME}\033[0m"
 fi
 
+# Uncomment to switch of JIT:
+#JIT_COMPILER="-Djava.compiler="
+
 if [ -f ${JDK_HOME}/lib/classes.zip ]; then
    echo -e "\033[32;40m  Running JacORB with JDK 1.1\033[0m"
-   java -native -Djava.compiler= -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
+   java -native $JIT_COMPILER -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
 else
-   echo -e "\033[32;40m  Running JacORB with JDK 1.2\033[0m"
-   java -native -Djava.compiler= -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
+   echo -e "\033[32;40m  Running JacORB with JDK 1.2 and JIT=$JIT_COMPILER\033[0m"
+   java -native $JIT_COMPILER -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
 fi
 
 
