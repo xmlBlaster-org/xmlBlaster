@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.19 2003/12/07 13:26:41 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.20 2004/01/14 14:34:06 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.19 2003/12/07 13:26:41 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.20 2004/01/14 14:34:06 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -270,9 +270,37 @@ Dll_Export void xmlBlasterFree(char *p)
 }
 
 /**
+ * Frees everything inside QosArr and the struct QosArr itself
+ * @param qosArr The struct to free, passing NULL is OK
+ */
+Dll_Export void freeQosArr(QosArr *qosArr)
+{
+   size_t i;
+   if (qosArr == (QosArr *)0) return;
+   for (i=0; i<qosArr->len; i++) {
+      free((char *)qosArr->qosArr[i]);
+   }
+   free(qosArr->qosArr);
+   qosArr->len = 0;
+   free(qosArr);
+}
+
+/**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself
+ * @param msgUnitArr The struct to free, passing NULL is OK
  */
 Dll_Export void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
+{
+   if (msgUnitArr == (MsgUnitArr *)0) return;
+   freeMsgUnitArrInternal(msgUnitArr);
+   free(msgUnitArr);
+}
+
+/**
+ * Frees everything inside MsgUnitArr but NOT the struct MsgUnitArr itself
+ * @param msgUnitArr The struct internals to free, passing NULL is OK
+ */
+Dll_Export void freeMsgUnitArrInternal(MsgUnitArr *msgUnitArr)
 {
    size_t i;
    if (msgUnitArr == (MsgUnitArr *)0) return;
@@ -281,7 +309,6 @@ Dll_Export void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
    }
    free(msgUnitArr->msgUnitArr);
    msgUnitArr->len = 0;
-   free(msgUnitArr);
 }
 
 /**
@@ -291,20 +318,20 @@ Dll_Export void freeMsgUnitData(MsgUnit *msgUnit)
 {
    if (msgUnit == (MsgUnit *)0) return;
    if (msgUnit->key != 0) {
-      free(msgUnit->key);
+      free((char *)msgUnit->key);
       msgUnit->key = 0;
    }
    if (msgUnit->content != 0) {
-      free(msgUnit->content);
+      free((char *)msgUnit->content);
       msgUnit->content = 0;
    }
    msgUnit->contentLen = 0;
    if (msgUnit->qos != 0) {
-      free(msgUnit->qos);
+      free((char *)msgUnit->qos);
       msgUnit->qos = 0;
    }
    if (msgUnit->responseQos != 0) {
-      free(msgUnit->responseQos);
+      free((char *)msgUnit->responseQos);
       msgUnit->responseQos = 0;
    }
    /* free(msgUnit); -> not in this case, as the containing array has not allocated us separately */
@@ -343,7 +370,7 @@ Dll_Export char *messageUnitToXml(MsgUnit *msg)
          free(contentStr);
          return 0;
       }
-      SNPRINTF(xml, len, "%s\n<content><![CDATA[%s]]></content>\n%s",
+      SNPRINTF(xml, len, "%s\n <content><![CDATA[%s]]></content>%s",
                          msg->key, contentStr, msg->qos);
       free(contentStr);
       return xml;
