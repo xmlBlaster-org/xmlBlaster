@@ -91,7 +91,6 @@ public class HtPasswd {
     */
    public boolean checkPassword( String userName, String userPassword )
                 throws XmlBlasterException {
-      Log.error(ME,"At checking password");
       Vector pws = new Vector();
       if ( useFullUsername == 3 ) {
         return true;
@@ -127,7 +126,6 @@ public class HtPasswd {
    boolean readHtpasswordFile( String htpasswdFilename )
         throws XmlBlasterException {
 
-      Log.error(ME,"Read htpasswdFile");
       Log.trace( ME, "readHtpasswordFile : "+htpasswdFilename );
       File            htpasswdFile ;
 
