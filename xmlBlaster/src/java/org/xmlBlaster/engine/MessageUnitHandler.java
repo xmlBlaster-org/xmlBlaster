@@ -9,6 +9,7 @@ package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
@@ -26,6 +27,9 @@ public class MessageUnitHandler
 
    /** The broker which manages me */
    private RequestBroker requestBroker;
+
+   // Default is that a single client can subscribe the same message multiple times
+   // private boolean allowMultiSubscriptionPerClient = XmlBlasterProperty.get("Engine.allowMultiSubscriptionPerClient", true);
 
 
    /**
@@ -247,7 +251,8 @@ public class MessageUnitHandler
          oldOne = subscriberMap.put(sub.getUniqueKey(), sub);
       }
 
-      if (oldOne != null) {
+      /* 2002-01-30: ruff: changed behavior to allow multi subscriptions
+      if (!allowMultiSubscriptionPerClient && oldOne != null) {
          subscriberMap.put(((SubscriptionInfo)oldOne).getUniqueKey(), oldOne);  // restore the original one ...
          if (Log.TRACE) Log.trace(ME + ".DuplicateSubscription", "Client " + sub.getClientInfo().toString() + " has already subscribed to " + uniqueKey);
          //No exception, since it would cancel other subscription requests as well
@@ -255,6 +260,7 @@ public class MessageUnitHandler
          //throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
          return false;
       }
+      */
 
       sub.addMessageUnitHandler(this);
 
