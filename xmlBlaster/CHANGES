@@ -3,7 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
- o C client: Fixed publishOneway() to be a real 'oneway'
+ o C client: 
+     Fixed publishOneway() to be a real 'oneway'
+     Fixed reusingConnectionSocket check on shutdown of callback server
    Thanks to Michal Masa <xmasam@sgi.felk.cvut.cz> for reporting
 
  o Python client: Added missing return values for remote calls, added publishArr()
