@@ -475,7 +475,7 @@ UserInfo: joe:mypasswd
             <td>R</td>
             <td>Get the number of seconds the user is logged in
             </td>
-            <td><img src="ok.gif" border="0" alt="yes" /> (telnet)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       
          <tr>
@@ -485,7 +485,7 @@ UserInfo: joe:mypasswd
             <td>Monitor or change the <i>trace</i> log level, but
             only for authentication issues
             </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -526,7 +526,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.24 $</revision>
+   <revision>$Revision: 1.25 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
