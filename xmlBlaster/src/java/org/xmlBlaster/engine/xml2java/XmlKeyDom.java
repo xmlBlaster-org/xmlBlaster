@@ -152,9 +152,12 @@ public class XmlKeyDom implements I_MergeDomNode
             String uniqueKey = getKeyOid(node);
             if (log.TRACE) log.info(ME, "Client " + clientName + " is accessing message oid='" + uniqueKey + "' after successful query");
             list.add(uniqueKey);
+         } catch (XmlBlasterException e) {
+            throw e;
          } catch (Exception e) {
             e.printStackTrace();
             log.error(ME, e.getMessage());
+            XmlBlasterException.convert(glob, ME, "XPath DOM lookup problems", e);
          }
       }
       if (log.TRACE) log.info(ME, n + " MsgUnits matched to subscription \"" + xpathQuery + "\"");
@@ -176,9 +179,9 @@ public class XmlKeyDom implements I_MergeDomNode
 
       String nodeName = node.getNodeName();
 
-      if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
+      if (nodeName.equals("xmlBlaster") && node.getParentNode() == null) {       // ERROR: the root node, must be specially handled
          log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
-         throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "<xmlBlaster> node not allowed");
       }
 
       // check if we have found the <documentRoot><xmlBlaster><key oid=''> element
@@ -210,7 +213,7 @@ public class XmlKeyDom implements I_MergeDomNode
       }
 
       log.warn(ME+".InternalKeyOid", "Internal getKeyOid() error");
-      throw new XmlBlasterException(ME+".InternalKeyOid", "Internal getKeyOid() error");
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal getKeyOid() error");
    }
 
 
