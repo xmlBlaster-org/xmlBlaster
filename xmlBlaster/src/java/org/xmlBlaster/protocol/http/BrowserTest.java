@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.4 2000/03/19 22:56:06 kkrafft2 Exp $
+Version:   $Id: BrowserTest.java,v 1.5 2000/04/26 21:34:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -138,7 +138,7 @@ public class BrowserTest extends HttpServlet
                out.println("</HEAD>");
                out.println("<BODY>");
                out.println("<BIG>Hello World - GET - multipart No." + val++ + "</BIG>");
-               out.println("<A HREF='http://www.doubleslash.de'>doubleSlash Net-Business GmbH</A> <-- click to abort");
+               out.println("<p /><A HREF='http://www.xmlBlaster.org'>XmlBlaster</A> <-- click to abort");
                /*
                out.println("<script language='JavaScript'>");
                out.println("alert('Konrad Konradowitsch');");
