@@ -78,7 +78,7 @@ JUTILS_PACKGS =
 TEST_PACKGS = testsuite.org.xmlBlaster classtest clustertest
 
 # We use special notation demo/javaclients/*.java because of HelloWorld.java is without package name
-DEMO_PACKGS = demo/javaclients/*.java javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet http.dhtml.systemInfo
+DEMO_PACKGS = demo/javaclients/*.java javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.svg.rhino javaclients.HelloWorldApplet http.dhtml.systemInfo
 
 DOC_PACKGS = doc.requirements
 
