@@ -509,80 +509,112 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    /**
     * Serialize the complete exception
+    * Take care when changing!!!
+    * Is used e.g. in CallbackServerUnparsed.c
     */
    public static XmlBlasterException parseByteArr(Global glob, byte[] data) {
       if (data == null)
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "XmlBlasterException", "Can't parse given serial XmlBlasterException data");
       int start = 0;
       int end = start;
-      
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String errorCodeStr = new String(data, start, end-start);
+      String errorCodeStr = null;
+      String node = null;
+      String location = null;
+      String lang = null;
+      String message = null;
+      String versionInfo = null;
+      String timestampStr = null;
+      String stackTrace = null;
+      String embeddedMessage = null;
+      String transactionInfo = null;
+      Boolean exceptionFromServer = new Boolean(true);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String node = new String(data, start, end-start);
+      try {
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         errorCodeStr = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String location = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         node = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String lang = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         location = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String message = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         lang = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String versionInfo = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         message = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String timestampStr = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         versionInfo = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String stackTrace = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         timestampStr = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String embeddedMessage = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         stackTrace = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      String transactionInfo = new String(data, start, end-start);
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         embeddedMessage = new String(data, start, end-start);
 
-      start = end+1;
-      for (end=start; end<data.length; end++)
-         if (data[end] == 0)
-            break;
-      Boolean exceptionFromServer = new Boolean(new String(data, start, end-start));
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         transactionInfo = new String(data, start, end-start);
 
-      return new XmlBlasterException(glob, ErrorCode.toErrorCode(errorCodeStr),
-                               node, location, lang, message, versionInfo, Timestamp.valueOf(timestampStr),
+         start = end+1;
+         for (end=start; end<data.length; end++)
+            if (data[end] == 0)
+               break;
+         exceptionFromServer = new Boolean(new String(data, start, end-start));
+      }
+      catch (java.lang.StringIndexOutOfBoundsException e) {
+         glob.getLog("core").error("XmlBlasterException", "Receiving invalid format for XmlBlasterException in '" + new String(data) + "'");
+      }
+      ErrorCode errorCode = ErrorCode.INTERNAL_UNKNOWN;
+      try {
+         errorCode = ErrorCode.toErrorCode(errorCodeStr);
+      }
+      catch (Throwable e) {
+         glob.getLog("core").error("XmlBlasterException", "Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "'");
+         message = "Can't parse XmlBlasterException in method parseByteArr(). original message is '" + new String(data) + "'";
+      }
+      Timestamp ti = new Timestamp();
+      try {
+         ti = Timestamp.valueOf(timestampStr);
+      }
+      catch (Throwable e) {
+         glob.getLog("core").trace("XmlBlasterException", "Receiving invalid timestamp in XmlBlasterException in '" + new String(data) + "'");
+      }
+      return new XmlBlasterException(glob, errorCode,
+                               node, location, lang, message, versionInfo, ti,
                                stackTrace, embeddedMessage, transactionInfo, exceptionFromServer.booleanValue());
    }
 
