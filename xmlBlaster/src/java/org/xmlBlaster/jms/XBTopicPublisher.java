@@ -5,15 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 
@@ -23,24 +20,16 @@ import org.xmlBlaster.util.enum.ErrorCode;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBTopicPublisher implements TopicPublisher {
+public class XBTopicPublisher extends XBMessageProducer implements TopicPublisher {
 
    private final static String ME = "XBTopicPublisher";
-   private I_XmlBlasterAccess access;
-   private Topic topic;
-   private int deliveryMode = DeliveryMode.PERSISTENT;
-   private int priority = 5;
-   private long timeToLive = -1L;
-   private PublishReturnQos publishReturnQos;      
-      
-   
+
    XBTopicPublisher(I_XmlBlasterAccess access, Topic topic) {
-      this.access = access;
-      this.topic = topic;
+      super(access, topic);
    }
 
    public Topic getTopic() throws JMSException {
-      return this.topic;
+      return (Topic)this.destination;
    }
 
    public void publish(Message message) throws JMSException {
@@ -56,9 +45,9 @@ public class XBTopicPublisher implements TopicPublisher {
             msg.setJMSExpiration(this.timeToLive, false);
          }
          if (!msg.isDestinationSet()) {
-            if (topic == null) 
+            if (destination == null) 
                throw new JMSException(ME + ".publish of message needs a destination topic to be set", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-            msg.setJMSDestination(this.topic, false);
+            msg.setJMSDestination(this.destination, false);
          }
          
          try {
@@ -79,7 +68,6 @@ public class XBTopicPublisher implements TopicPublisher {
    public void publish(Message arg0, int arg1, int arg2, long arg3)
       throws JMSException {
       // TODO Auto-generated method stub
-
    }
 
    /* (non-Javadoc)
@@ -87,7 +75,6 @@ public class XBTopicPublisher implements TopicPublisher {
     */
    public void publish(Topic arg0, Message arg1) throws JMSException {
       // TODO Auto-generated method stub
-
    }
 
    /* (non-Javadoc)
@@ -96,108 +83,6 @@ public class XBTopicPublisher implements TopicPublisher {
    public void publish(Topic arg0, Message arg1, int arg2, int arg3, long arg4)
       throws JMSException {
       // TODO Auto-generated method stub
-
-   }
-
-   public void close() throws JMSException {
-      // only the administrator should erase the topic
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDeliveryMode()
-    */
-   public int getDeliveryMode() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDisableMessageID()
-    */
-   public boolean getDisableMessageID() throws JMSException {
-      // TODO Auto-generated method stub
-      return false;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getDisableMessageTimestamp()
-    */
-   public boolean getDisableMessageTimestamp() throws JMSException {
-      // TODO Auto-generated method stub
-      return false;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getPriority()
-    */
-   public int getPriority() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#getTimeToLive()
-    */
-   public long getTimeToLive() throws JMSException {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setDeliveryMode(int)
-    */
-   public void setDeliveryMode(int arg0) throws JMSException {
-      // TODO Auto-generated method stub
-
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setDisableMessageID(boolean)
-    */
-   public void setDisableMessageID(boolean arg0) throws JMSException {
-      // TODO Auto-generated method stub
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setDisableMessageTimestamp(boolean)
-    */
-   public void setDisableMessageTimestamp(boolean arg0) throws JMSException {
-      // TODO Auto-generated method stub
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setPriority(int)
-    */
-   public void setPriority(int arg0) throws JMSException {
-      // TODO Auto-generated method stub
-   }
-
-   /* (non-Javadoc)
-    * @see javax.jms.MessageProducer#setTimeToLive(long)
-    */
-   public void setTimeToLive(long arg0) throws JMSException {
-      // TODO Auto-generated method stub
-   }
-
-
-   public void send(Message message, int deliveryMode, int priority, long timeToLive)  
-      throws JMSException {
-   }
-
-   public void send(Message message) throws JMSException {
-   }
-
-   public void send(Destination dest, Message message)
-      throws JMSException {
-   }
-
-   public void send(Destination dest, Message message, int deliveryMode, int priority, long timeToLive)
-      throws JMSException {
-   }
-
-   // TODO
-   public Destination getDestination() {
-      return null;
    }
 
 }
