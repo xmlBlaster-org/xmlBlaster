@@ -5,7 +5,7 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.12 2000/05/31 17:51:05 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.13 2001/01/07 15:02:48 ruff Exp $
 -->
 
 <!ELEMENT requirement (
@@ -21,13 +21,14 @@ Version:   $Id: requirement.dtd,v 1.12 2000/05/31 17:51:05 ruff Exp $
    date,
    revision,
    log?,
-   testcase*
+   testcase*,
+   changerequest*
    )>
 
 <!ENTITY % text "#PCDATA">
 
 <!ELEMENT topic  (%text;)>
-<!ELEMENT description  (%text;)> 
+<!ELEMENT description  (%text;)>
 <!ELEMENT example  (%text;)> <!-- a nice example for the users -->
 <!ELEMENT todo  (%text;)>    <!-- even in CLOSED mode, is there something left to do? -->
 <!ELEMENT done  (%text;)>    <!-- change the 'todo' element to 'done' if it is implemented -->
@@ -35,9 +36,20 @@ Version:   $Id: requirement.dtd,v 1.12 2000/05/31 17:51:05 ruff Exp $
 <!ELEMENT author  (%text;)>  <!-- who wrote the requirement -->
 <!ELEMENT hacker  (%text;)>  <!-- who coded it -->
 <!ELEMENT effort  (%text;)>  <!-- how many days you expect / you needed to implement -->
-<!ELEMENT date  (%text;)> 	  <!-- date you setup this requirement -->
+<!ELEMENT date  (%text;)>         <!-- date you setup this requirement -->
 <!ELEMENT revision  (%text;)> <!-- the cvs revision number -->
-<!ELEMENT log  (%text;)> 	  <!-- the cvs log informations (optional) -->
+<!ELEMENT log  (%text;)>          <!-- the cvs log informations (optional) -->
+
+<!-- if the requirement needs to be changed (optional) -->
+<!ELEMENT changerequest (
+   name,
+   comment
+   )>
+
+<!ATTLIST changerequest
+          prio  (LOW | MEDIUM | HIGH) "LOW"
+          type (NEW | BUG) "NEW"
+          status (OPEN | INWORK | CLOSED) "OPEN">
 
 <!ELEMENT testcase (
    name,
@@ -45,17 +57,17 @@ Version:   $Id: requirement.dtd,v 1.12 2000/05/31 17:51:05 ruff Exp $
    test
    )>
 
-<!ELEMENT name  (%text;)> 
-<!ELEMENT comment  (%text;)> 
-<!ELEMENT test  (%text;)> 
+<!ELEMENT name  (%text;)>
+<!ELEMENT comment  (%text;)>
+<!ELEMENT test  (%text;)>
 
 <!ATTLIST requirement
           id ID #REQUIRED
           prio  (LOW | MEDIUM | HIGH) "LOW"
-          type (NEW | BUG | CHANGE_REQUEST) "BUG"
-          status (OPEN | INWORK | CLOSED) "OPEN">  
+          type (NEW | BUG) "NEW"
+          status (OPEN | INWORK | CLOSED) "OPEN">
 
-<!ATTLIST example lang (Java | C | CPP | Perl | Python | TCL | Javascript) "Java">  
+<!ATTLIST example lang (Java | C | CPP | Perl | Python | TCL | Javascript) "Java">
 
 <!--
    The type API allows the XSL to create a link into the xmlBlaster javadoc
@@ -65,7 +77,7 @@ Version:   $Id: requirement.dtd,v 1.12 2000/05/31 17:51:05 ruff Exp $
  -->
 <!ATTLIST see type (API | REQ | OTHER) "API">
 
-<!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">  
+<!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">
 
 <!-- The type SUITE allows the XSL to create a link into the xmlBlaster testsuite -->
-<!ATTLIST test tool (SUITE | MANUAL) "SUITE">  
+<!ATTLIST test tool (SUITE | MANUAL) "SUITE">
