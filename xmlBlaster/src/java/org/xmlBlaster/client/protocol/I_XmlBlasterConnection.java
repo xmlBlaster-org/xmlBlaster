@@ -3,7 +3,7 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlasterConnection.java,v 1.1 2000/10/18 20:45:42 ruff Exp $
+Version:   $Id: I_XmlBlasterConnection.java,v 1.2 2001/02/14 00:46:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -32,6 +32,8 @@ public interface I_XmlBlasterConnection
    public void loginRaw() throws XmlBlasterException, ConnectionException;
 
    public boolean logout();
+
+   public boolean shutdown();
 
    public void init();
 

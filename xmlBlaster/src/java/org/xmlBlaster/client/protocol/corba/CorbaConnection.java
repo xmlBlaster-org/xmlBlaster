@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.14 2000/11/09 23:34:43 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.15 2001/02/14 00:47:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -64,7 +64,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -466,7 +466,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "logout() ...");
 
       if (xmlBlaster == null) {
-         if (this.callback != null) this.callback.shutdown();
+         shutdown(); // the callback server
          // Thread leak !!!
          // orb.shutdown(true);
          // orb = null;
@@ -475,7 +475,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
       try {
          authServer.logout(xmlBlaster);
-         if (this.callback != null) this.callback.shutdown();
+         shutdown(); // the callback server
          // Thread leak !!!
          // orb.shutdown(true);
          // orb = null;
@@ -488,7 +488,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          e.printStackTrace();
       }
 
-      if (this.callback != null) this.callback.shutdown();
+      shutdown(); // the callback server
       // Thread leak !!!
       // orb.shutdown(true);
       // orb = null;
@@ -496,6 +496,18 @@ public class CorbaConnection implements I_XmlBlasterConnection
       return false;
    }
 
+   /**
+    * Shut down the callback server. 
+    * Is called by logout()
+    */
+   public boolean shutdown()
+   {
+      if (this.callback != null) {
+         this.callback.shutdown();
+         this.callback = null;
+      }
+      return true;
+   }
 
    /**
     * @return true if you are logged in

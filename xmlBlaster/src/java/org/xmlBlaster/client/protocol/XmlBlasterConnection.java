@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.6 2000/10/30 22:56:11 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.7 2001/02/14 00:46:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -70,7 +70,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -462,7 +462,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Logout from the server.
-    * The callback server is removed as well, releasing all CORBA threads.
+    * The callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
     * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
     *         false failure on logout
@@ -491,6 +491,24 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
 
       return false;
+   }
+
+   /**
+    * Shut down the callback server. 
+    * Is called by logout() automatically.
+    *
+    * @return true CB server successfully shut down
+    *         false failure on shutdown
+    */
+   public synchronized boolean shutdown()
+   {
+      try {
+         return driver.shutdown();
+      } catch(Exception e) {
+         Log.warn(ME, e.toString());
+         e.printStackTrace();
+         return false;
+      }
    }
 
 

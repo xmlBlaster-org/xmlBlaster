@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.6 2000/10/27 12:28:15 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.7 2001/02/14 00:46:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -183,6 +183,8 @@ class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlasterCallb
       try {
          if (callbackRmiServerBindName != null)
             Naming.unbind(callbackRmiServerBindName);
+            // force shutdown, even if we still have calls in progress:
+            java.rmi.server.UnicastRemoteObject.unexportObject(this, true);
       } catch (Exception e) {
          ;
       }
