@@ -5,9 +5,10 @@
 #
 # Example (copy this into your .profile or .bashrc):
 #   export JDK_HOME=/usr/local/jdk
-#   export XMLBLASTER_HOME=/home/paul/xmlBlaster
 #   export JacORB_HOME=/usr/local/JacORB
-#   export MICO_HOME=/usr/local/mico
+#   export XMLBLASTER_HOME=${HOME}/xmlBlaster
+#   export MICO_HOME=/usr/local/mico           (optional)
+#   export JIKES_HOME=/usr/local/jikes         (optional)
 #   . ${XMLBLASTER_HOME}/.bashrc
 #
 # If you want to access xmlBlaster using cvs:
@@ -103,7 +104,7 @@ fi
 
 
 #-------- Checking MICO --------
-if ! [ ${MICO_HOME} ] ; then
+if ! [ -d ${MICO_HOME} ] ; then
    echo -e "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
    echo -e "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
@@ -117,8 +118,10 @@ if [ ${JDK_HOME} ] ; then
    if [ -d ${JDK_HOME} ] ; then
       CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
       export CLASSPATH
+      PATH=${PATH}:${JDK_HOME}/bin
+      export PATH
    else
-      echo -e "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
+      echo -e "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
    fi
 else
    echo -e "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
@@ -126,6 +129,20 @@ else
    echo -e "$BLACK_LTGREEN               export CLASSPATH=JDK_HOME/jre/lib/rt.jar       $ESC"
    echo -e "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
    echo -e "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'       $ESC"
+fi
+
+
+
+#-------- Checking jikes version -
+# use jikes 1.06 or better
+if [ ${JIKES_HOME} ] ; then
+   if [ -d ${JIKES_HOME} ] ; then
+      PATH=${PATH}:${JIKES_HOME}
+      export PATH
+      echo -e "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
+   else
+      echo -e "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
+   fi
 fi
 
 
