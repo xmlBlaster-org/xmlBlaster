@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<!-- xmlBlaster.org Demo -->
+<!-- Example how to query internal state of xmlBlaster -->
+
+
+<!-- Exapmples how to subscribe to MessageUnits: -->
+
+<!-- Accessing the current xmlBlaster allocated memory
+        java testsuite.org.xmlBlaster.query.DomQueryTest Internal.xml "xmlBlaster/key[@oid='__sys__TotalMem']" -->
+
+<!-- Accessing all xmlBlaster internal data
+        java testsuite.org.xmlBlaster.query.DomQueryTest Internal.xml xmlBlaster/key/__sys__internal -->
+
+<xmlBlaster>
+
+   <key oid='__sys__TotalMem'>
+      <__sys__internal>
+      </__sys__internal>
+   </key>
+
+   <key oid='__sys__FreeMem'>
+      <__sys__internal>
+      </__sys__internal>
+   </key>
+
+</xmlBlaster>
+
+
