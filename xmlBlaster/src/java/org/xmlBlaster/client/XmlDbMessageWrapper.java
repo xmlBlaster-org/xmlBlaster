@@ -3,7 +3,7 @@ Name:      XmlDbMessageWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping a SQL request with XML.
-Version:   $Id: XmlDbMessageWrapper.java,v 1.1 2000/07/02 18:04:28 ruff Exp $
+Version:   $Id: XmlDbMessageWrapper.java,v 1.2 2000/07/03 13:44:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -41,6 +41,31 @@ public class XmlDbMessageWrapper
       this.user = user;
       this.passwd = passwd;
       this.url = url;
+   }
+
+
+   /**
+    * Set the query properties.
+    * <p />
+    * @param limit    Maximum results to deliver, 50, used to limit the number of result rows
+    * @param confirm  true/false, when set to true, you get an answer
+    * @param queryStr Any valid SQL syntax, "select * from intrauser"
+    */
+   public void initQuery(int limit, boolean confirm, String queryStr)
+   {
+      init("query", limit, confirm, queryStr);
+   }
+
+
+   /**
+    * Set the update/insert/delete properties.
+    * <p />
+    * @param confirm  true/false, when set to true, you get an answer
+    * @param updateStr Any valid SQL syntax, e.g. "INSERT INTO person VALUES(name='Peter')"
+    */
+   public void initUpdate(boolean confirm, String updateStr)
+   {
+      init("update", 1, confirm, updateStr);
    }
 
 
@@ -85,7 +110,7 @@ public class XmlDbMessageWrapper
 
 
    /**
-    * Creates the complete message for you, which you can publish to xmlBlaster. 
+    * Creates the complete message for you, which you can publish to xmlBlaster.
     * <p />
     * You will receive the result set wrapped in XML with a asynchronous update().
     */
