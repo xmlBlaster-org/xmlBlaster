@@ -60,7 +60,7 @@ public class StreamCallback implements I_Callback {
     */
    protected void writeContent(byte[] content, StringBuffer buf) {
       buf.append(this.offset).append("   ").append("<content>");
-      buf.append("<![CDATA [").append(new String(content)).append("]]>"); // here you can change according to your needs
+      buf.append("<![CDATA[").append(new String(content)).append("]]>"); // here you can change according to your needs
       buf.append("</content>");
    }
 
