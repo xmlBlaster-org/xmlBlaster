@@ -71,8 +71,8 @@ import org.xmlBlaster.util.MsgUnit;
 public class VolatileTest
 {
    private static String ME = "VolatileTest";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private int numReceived = 0;         // error checking
    public static long startTime;
    public static long elapsed;
