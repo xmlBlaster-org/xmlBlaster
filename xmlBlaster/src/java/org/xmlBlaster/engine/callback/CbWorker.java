@@ -3,7 +3,7 @@ Name:      CbWorker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbWorker.java,v 1.7 2002/05/26 16:32:36 ruff Exp $
+Version:   $Id: CbWorker.java,v 1.8 2002/05/30 16:28:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -40,29 +40,25 @@ public class CbWorker implements Runnable
       if (log.CALL) log.call(ME, "Starting callback job with " + msgQueue.size() + " entries.");
       MsgQueueEntry[] entries = null;
       try {
-         CbInfo cbInfo = this.msgQueue.getCbInfo();
-         if (cbInfo != null) {
-            synchronized (this.msgQueue.getMonitor()) {
-               entries = this.msgQueue.takeMsgs();
-            }
-            if (entries == null || entries.length < 1) {
-               log.warn(ME, "Got zero messages from queue, expected at least one");
-               return;
-            }
-            
-            //log.info(ME, "Sending now " + entries.length + " messages back ...");
-            
-            cbInfo.sendUpdate(entries, this.msgQueue.getErrorCounter()); // redeliver == errorCounter
-            
-            this.msgQueue.resetErrorCounter(); // callback is fine
-
-            // Delete volatile messages ...
-            this.msgQueue.checkForVolatileErase(entries);
-
-            //log.info(ME, "Sending of " + entries.length + " messages done");
+         CbManager cbManager = this.msgQueue.getCbManager();
+         synchronized (this.msgQueue.getMonitor()) {
+            entries = this.msgQueue.takeMsgs();
          }
-         else
-            log.error(ME, "No CbInfo available");
+         if (entries == null || entries.length < 1) {
+            log.warn(ME, "Got zero messages from queue, expected at least one");
+            return;
+         }
+         
+         //log.info(ME, "Sending now " + entries.length + " messages back ...");
+         
+         String[] returnVals = cbManager.sendUpdate(entries, this.msgQueue.getErrorCounter()); // redeliver == errorCounter
+
+         this.msgQueue.resetErrorCounter(); // callback is fine
+
+         // Delete volatile messages ...
+         this.msgQueue.checkForVolatileErase(entries);
+
+         //log.info(ME, "Sending of " + entries.length + " messages done");
       }
       catch(Throwable e) {
          if (e instanceof XmlBlasterException) {
@@ -90,7 +86,7 @@ public class CbWorker implements Runnable
             if (msgQueue.size() > 0 && !msgQueue.isShutdown()) {
                // log.info(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
                if (log.TRACE) log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.size() + " messages.");
-               try{ msgQueue.activateCallbackWorker(); } catch(Throwable e) { log.error(ME, e.toString()); }// Assure the queue is flushed with another worker
+               try{ msgQueue.activateCallbackWorker(); } catch(Throwable e) { log.error(ME, e.toString()); e.printStackTrace(); }// Assure the queue is flushed with another worker
             }
          //}
       }
