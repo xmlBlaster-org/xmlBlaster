@@ -12,6 +12,78 @@ Comment:   The client driver for the socket protocol
 #include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
 #include <util/qos/ConnectQosFactory.h>
 #include <string>
+#include <stdarg.h> // va_start
+
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...);
+
+/**
+ * Customized logging output is handled by this method. 
+ * <p>
+ * We register this function with 
+ * </p>
+ * <pre>
+ * xa->log = myLogger;
+ * </pre>
+ * @param currLevel The actual log level of the client
+ * @param level The level of this log entry
+ * @param location A string describing the code place
+ * @param fmt The formatting string
+ * @param ... Other variables to log, corresponds to 'fmt'
+ * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
+ *      implementation
+ */
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...)
+{
+   /* Guess we need no more than 200 bytes. */
+   int n, size = 200;
+   char *p = 0;
+   va_list ap;
+   org::xmlBlaster::client::protocol::socket::SocketDriver *sd =
+         (org::xmlBlaster::client::protocol::socket::SocketDriver *)logUserP;
+   org::xmlBlaster::util::I_Log& log = sd->getLog();
+
+   if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
+      return;
+   }
+   if ((p = (char *)malloc (size)) == NULL)
+      return;
+
+   for (;;) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = VSNPRINTF(p, size, fmt, ap); /* UNIX: vsnprintf(), WINDOWS: _vsnprintf() */
+      va_end(ap);
+      /* If that worked, print the string to console. */
+      if (n > -1 && n < size) {
+         if (level == LOG_INFO)
+            log.info(location, p);
+         else if (level == LOG_WARN)
+            log.warn(location, p);
+         else if (level == LOG_ERROR)
+            log.error(location, p);
+         else if (level == LOG_CALL)
+            log.call(location, p);
+         else
+            log.trace(location, p);
+         free(p);
+         return;
+      }
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      if ((p = (char *)realloc (p, size)) == NULL) {
+         return;
+      }
+   }
+}
 
 namespace org {
  namespace xmlBlaster {
@@ -126,7 +198,7 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
      connection_(NULL),
      ME(string("SocketDriver-") + instanceName), 
      global_(global), 
-     log_(global.getLog("socket")),
+     log_(global.getLog("org.xmlBlaster.client.protocol.socket")),
      statusQosFactory_(global),
      msgKeyFactory_(global),
      msgQosFactory_(global),
@@ -138,6 +210,8 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
    try {
       connection_ = getXmlBlasterAccessUnparsed(argc, argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
+      connection_->log = myLogger;    // Register our own logging function
+      connection_->logUserP = this;   // Pass ourself to myLogger()
    } catch_MACRO("::Constructor", true)
 }
 
@@ -589,7 +663,7 @@ string SocketDriver::usage()
    char usage[XMLBLASTER_MAX_USAGE_LEN];
    ::xmlBlasterAccessUnparsedUsage(usage);
    return  "\nThe SOCKET plugin configuration:" +
-           string(usage) + "\n";
+           string(usage);
 }
 
 // Exception conversion ....
