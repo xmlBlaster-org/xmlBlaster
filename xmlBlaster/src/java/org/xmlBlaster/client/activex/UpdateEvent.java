@@ -15,10 +15,11 @@ import org.xmlBlaster.client.qos.UpdateQos;
  */
 public class UpdateEvent extends java.util.EventObject {
    String cbSessionId;
-   String key;
+   UpdateKey key;
    byte[] content;
-   String qos;
-   public UpdateEvent(Object source, String cbSessionId, String key, byte[] content, String qos) {
+   UpdateQos qos;
+   String ret;
+   public UpdateEvent(Object source, String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) {
       super(source);
       this.cbSessionId = cbSessionId;
       this.key = key;
@@ -28,14 +29,23 @@ public class UpdateEvent extends java.util.EventObject {
    public String getCbSessionId() {
       return this.cbSessionId;
    }
-   public String getKey() {
+   public UpdateKey getKey() {
       return this.key;
+   }
+   public byte[] getContent() {
+      return this.content;
    }
    public String getContentStr() {
       return new String(this.content);
    }
-   public String getQos() {
+   public UpdateQos getQos() {
       return this.qos;
+   }
+   public String getReturn() {
+      return this.ret;
+   }
+   public void setReturn(String ret) {
+      this.ret = ret;
    }
 }
 

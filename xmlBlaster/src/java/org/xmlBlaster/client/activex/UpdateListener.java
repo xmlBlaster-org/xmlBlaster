@@ -10,6 +10,6 @@ package org.xmlBlaster.client.activex;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public interface UpdateListener extends java.util.EventListener {
-   String update(UpdateEvent updateEvent);
+   void update(UpdateEvent updateEvent);
 }
 

@@ -64,8 +64,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    private Reader reader;
    private OutputStream outStream;
    private UpdateListener updateListener;
-
-   private List updateStack = new LinkedList();
+   private List updateStack = null;
 
    /**
     * Create a new access bean. 
@@ -98,14 +97,15 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    /**
     * Fire an event into C# / VisualBasic containing an updated message. 
     */
-   protected String notifyUpdateEvent(String cbSessionId, String key, byte[] content, String qos) {
+   protected String notifyUpdateEvent(String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) {
       if (this.updateListener == null) {
-         log.warn(ME, "No updateListener is registered, ignoring " + key);
+         log.warn(ME, "No updateListener is registered, ignoring " + key.toXml());
          return "<qos><state id='WARNING'/></qos>";
       }
       UpdateEvent ev = new UpdateEvent(this, cbSessionId, key, content, qos);
-      log.info(ME, "Notifying updateListener with new message " + key);
-      String ret = this.updateListener.update(ev);
+      log.info(ME, "Notifying updateListener with new message " + key.toXml());
+      this.updateListener.update(ev);
+      String ret = ev.getReturn();
       log.info(ME, "Notifying updateListener done: returned '" + ret + "'");
       return ret;
    }
@@ -302,7 +302,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
       UpdateMsgUnit msgUnit = new UpdateMsgUnit(cbSessionId, updateKey, content, updateQos);
       if (this.updateStack != null)
          this.updateStack.add(msgUnit);
-      return notifyUpdateEvent(cbSessionId, updateKey.toXml(), content, updateQos.toXml());
+      return notifyUpdateEvent(cbSessionId, updateKey, content, updateQos);
    }
 
    /**
@@ -358,9 +358,9 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          //props.put("trace", "true");
          access.initialize(props);
          class TestUpdateListener implements UpdateListener {
-            public String update(UpdateEvent updateEvent) {
+            public void update(UpdateEvent updateEvent) {
                System.out.println("TestUpdateListener.update: " + updateEvent.getKey());
-               return "<qos><state id='OK'/></qos>";
+               updateEvent.setReturn("<qos><state id='OK'/></qos>");
             }
          }
          TestUpdateListener listener = new TestUpdateListener();
