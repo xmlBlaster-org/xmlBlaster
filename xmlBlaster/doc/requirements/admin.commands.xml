@@ -34,26 +34,66 @@
       <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
       <port>3412</port>
 
-      <plugin id='ProtocolPlugin:SOCKET:admin' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <!-- runLevel=0 HALTED -->
+      <!-- runLevel=1 ADMIN -->
+      <!-- runLevel=2 CLEANUP -->
+      <!-- runLevel=3 RUNNING -->
+
+      <plugin id='protocol:SOCKET:admin' className='org.xmlBlaster.protocol.socket.SocketDriver'>
          <port>69000</port>
       </plugin>
 
-      <plugin id='DispatchPlugin[Priority][1.0]'>
+      <!-- A typical plugin which is loaded by client request -->
+      <plugin id='dispatch:priority' className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+              jar='/tmp/my.jar'>
+         <attribute id='config'>
+            &lt;![CDATA[
+            <msgDispatch defaultStatus='64k' defaultAction='send'>
+            <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'>
+               <action do='send'  ifPriority='7-9'/>
+               <action do='queue'  ifPriority='2-6'/>
+            </onStatus>
+            <onStatus oid='_bandwidth.status' content='2M'>
+               <action do='send'  ifPriority='0-9'/>
+            </onStatus>
+            </msgDispatch>
+            ]]&gt;
+         </attribute>
       </plugin>
 
-      <!-- /node/heron/plugin/SOCKET:users/port=69001 -->
-      <plugin id='SOCKET:users'>
-         <port>69001</port>
+      <!-- /node/heron/plugin/protocol:SOCKET:users/attribute/port=6901 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/onStartupRunlevel=3 -->
+      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/sequence=5 -->
+      <plugin id='protocol:SOCKET:users' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+         <attribute id='port'>6901</attribute>
+         <action do='LOAD' onStartupRunlevel='3' sequence='5'/>  <!-- 0 first -->
+         <action do='STOP' onShutdownRunlevel='2' sequence='4'/> <!-- 0 first -->
       </plugin>
 
-      <plugin id='QueuePlugin:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
-         <plugin refid='${QueuePlugin:RAM}'/>
-         <plugin refid='${QueuePlugin:JDBC}'/>
+      <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+         <attribute id='transientQueue'>queue:RAM</attribute>
+         <attribute id='persistentQueue'>queue:JDBC</attribute>
       </plugin>
 
-      <plugin id='QueuePlugin:RAM' className='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'/>
+      <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
 
-      <plugin id='QueuePlugin:JDBC' className='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'>
+      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
+      </plugin>
+
+
+      <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+         <attribute id='transientQueue'>storage:RAM</attribute>
+         <attribute id='persistentQueue'>storage:JDBC</attribute>
+      </plugin>
+
+      <plugin id='storage:RAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
+
+      <plugin id='storage:JDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
          <attribute id='password'>secret</attribute>
@@ -620,7 +660,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.38 $</revision>
+   <revision>$Revision: 1.39 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
