@@ -1838,13 +1838,14 @@ public class Global implements Cloneable
    public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig) 
       throws XmlBlasterException {
       try {
-         String ret = pluginConfig == null ? defaultValue : pluginConfig.getParameters().getProperty(shortKey, defaultValue);
-         String prefix = pluginConfig == null ? "" : pluginConfig.getPrefix(); 
+         if (shortKey == null) {
+            return defaultValue;
+         }
+         String ret = (pluginConfig == null) ? defaultValue : pluginConfig.getParameters().getProperty(shortKey, defaultValue);
+         String prefix = (pluginConfig == null) ? "" : pluginConfig.getPrefix(); 
          ret = getProperty().get(prefix + shortKey, ret);
          if (map != null)
             ret = map.getProperty(shortKey, ret);
-         if (ret == null)
-            return null;
          return getProperty().replaceVariableWithException(shortKey, ret);
       }
       catch (JUtilsException ex) {
