@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.18 2000/02/01 12:48:20 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.19 2000/02/01 15:38:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -346,7 +346,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       if (isShowing()) {
          Log.addLogListener(null);
          Log.info(ME, "Press <g> and <Enter> to popup the GUI again (press ? for other options).");
-         hide();     // dispose(); would clean up all resources
+         setVisible(false); // dispose(); would clean up all resources
       }
    }
 
