@@ -107,7 +107,7 @@ void PublishDemo::initEnvironment()
    priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
    persistent = global_.getProperty().get("persistent", true);
    lifeTime = global_.getProperty().get("lifeTime", -1L);
-   forceUpdate = global_.getProperty().get("forceUpdate", false);
+   forceUpdate = global_.getProperty().get("forceUpdate", true);
    forceDestroy = global_.getProperty().get("forceDestroy", false);
    readonly = global_.getProperty().get("readonly", false);
    destroyDelay = global_.getProperty().get("destroyDelay", 60000L);
