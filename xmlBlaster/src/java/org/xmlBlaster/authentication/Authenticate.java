@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.15 1999/12/01 15:40:11 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.16 1999/12/01 16:49:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -24,7 +24,7 @@ import jacorb.poa.util.POAUtil;
 
 
 /**
- * Authenticate a client via login. 
+ * Authenticate a client via login.
  * <p>
  * The login method serves as a factory for a xmlBlaster.Server Reference
  */
@@ -151,7 +151,7 @@ public class Authenticate
 
 
    /**
-    * Authentication of a client. 
+    * Authentication of a client.
     * <p>
     * @param xmlQoS_literal
     *     <pre>
@@ -208,7 +208,7 @@ public class Authenticate
 
 
    /**
-    * Logout of a client. 
+    * Logout of a client.
     * <p>
     * @exception XmlBlasterException If client is unknown
     */
@@ -258,14 +258,21 @@ public class Authenticate
    private final void fireClientEvent(ClientInfo clientInfo, boolean login) throws XmlBlasterException
    {
       synchronized (clientListenerSet) {
+         if (clientListenerSet.size() == 0)
+            return;
+
+         ClientEvent event = new ClientEvent(clientInfo);
          Iterator iterator = clientListenerSet.iterator();
+
          while (iterator.hasNext()) {
             ClientListener cli = (ClientListener)iterator.next();
             if (login)
-               cli.clientAdded(new ClientEvent(clientInfo));
+               cli.clientAdded(event);
             else
-               cli.clientRemove(new ClientEvent(clientInfo));
+               cli.clientRemove(event);
          }
+
+         event = null;
       }
    }
 

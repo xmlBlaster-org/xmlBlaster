@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.29 1999/12/01 16:04:46 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.30 1999/12/01 16:49:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -20,9 +20,12 @@ import java.util.*;
 import java.io.*;
 
 /**
- * RequestBroker
- *
- * The interface ClientListener informs about Client login/logout
+ * This is the central message broker, all requests are routed through this singleton. 
+ * <p>
+ * The interface ClientListener informs about Client login/logout<br />
+ * The interface MessageEraseListener informs when a MessageUnit is erased<br />
+ * <p>
+ * Most events are fired from the RequestBroker
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
 {
@@ -534,15 +537,23 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    public final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent() ...");
+      
       synchronized (subscriptionListenerSet) {
+         if (subscriptionListenerSet.size() == 0)
+            return;
+         
+         SubscriptionEvent event = new SubscriptionEvent(subscriptionInfo);
          Iterator iterator = subscriptionListenerSet.iterator();
+         
          while (iterator.hasNext()) {
             SubscriptionListener subli = (SubscriptionListener)iterator.next();
             if (subscribe)
-               subli.subscriptionAdd(new SubscriptionEvent(subscriptionInfo));
+               subli.subscriptionAdd(event);
             else
-               subli.subscriptionRemove(new SubscriptionEvent(subscriptionInfo));
+               subli.subscriptionRemove(event);
          }
+         
+         event = null;
       }
    }
 
@@ -574,23 +585,34 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
+    * Notify all Listeners that a message is erased. 
+    *
+    * @param clientInfo
+    * @param messageUnitHandler
     */
    private final void fireMessageEraseEvent(ClientInfo clientInfo, MessageUnitHandler messageUnitHandler) throws XmlBlasterException
    {
       synchronized (messageEraseListenerSet) {
+         if (messageEraseListenerSet.size() == 0)
+            return;
+
+         MessageEraseEvent event = new MessageEraseEvent(clientInfo, messageUnitHandler);
          Iterator iterator = messageEraseListenerSet.iterator();
+
          while (iterator.hasNext()) {
             MessageEraseListener erLi = (MessageEraseListener)iterator.next();
-            erLi.messageErase(new MessageEraseEvent(clientInfo, messageUnitHandler));
+            erLi.messageErase(event);
          }
+         
+         event = null;
       }
    }
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into a XML ASCII string. 
     * <br>
-    * @return XML state of RequestBroker
+    * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final StringBuffer printOn() throws XmlBlasterException
    {
@@ -599,10 +621,10 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Dump state of this object into XML.
+    * Dump state of this object into a XML ASCII string. 
     * <br>
-    * @param extraOffset indenting of tags
-    * @return XML state of RequestBroker
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
    {
