@@ -153,11 +153,20 @@ persistence/session/maxEntries = 200
    <author><a ref='laghi@swissinfo.org'>Michele Laghi</a></author>
    <hacker><a ref='laghi@swissinfo.org'>Michele Laghi</a></hacker>
    <date>2004 02 19</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE">org.xmlBlaster.test.client.TestPersistentSession</test>
    </testcase>
+
+   <todo>
+      A flag to the ConnectQos must be added for the initial status of the DispatcherManager belonging to
+      this session: 'dispatcherActive'. Additionally, everytime an invocation on 
+      SessionInfo.setDispatcherActive(boolean) is done, an update on the DB must be done to ensure the status
+      will be correct when reconnecting after a server crash.
+   </todo>
+
+
 </requirement>
 
