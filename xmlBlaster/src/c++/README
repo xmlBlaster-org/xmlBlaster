@@ -33,6 +33,12 @@ HOW TO BUILD THE CLIENT CLASSES:
      gmake
      gmake install
      Installs the necessary stuff in /opt/local/mico
+- If you want to use mico with STLport
+  Just remove  '#include <algorithm>' from the .cc
+  files. There were a few cc files where this needed doing. 
+  Nothing from algortithm is used in any of these files.
+  [ shaun.goldsworthy@str.com.au ]
+
 
 [ 
   Currently NOT necessary (just that i dont forget it):
