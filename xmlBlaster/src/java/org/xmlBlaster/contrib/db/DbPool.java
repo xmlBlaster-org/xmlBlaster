@@ -320,26 +320,20 @@ public class DbPool implements I_DbPool, I_PoolManager {
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(String, I_ResultCb)
     */
    public void select(String command, I_ResultCb cb) throws Exception {
-      Connection conn = select(null, command, cb, true);
+      Connection conn = select(null, command, true, cb);
    }
 
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(java.sql.Connection, String, I_ResultCb)
     */
    public Connection select(Connection connection, String command, I_ResultCb cb) throws Exception {
-      return select(connection, command, cb, false);
+      return select(connection, command, false, cb);
    }
    
    /**
-    * @param connection
-    * @param command
-    * @param cb
-    * @param autoCommit
-    * @return JDBC connection or null
-    * @throws Exception
-    * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(java.sql.Connection, String, I_ResultCb)
+    * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(java.sql.Connection, String, I_ResultCb, boolean)
     */
-   private Connection select(Connection connection, String command, I_ResultCb cb, boolean autoCommit) throws Exception {
+   public Connection select(Connection connection, String command, boolean autoCommit, I_ResultCb cb) throws Exception {
       Statement stmt = null;
       ResultSet rs = null;
       Connection conn = null;
@@ -363,16 +357,18 @@ public class DbPool implements I_DbPool, I_PoolManager {
          String str = "SQLException in query '" + command + "' : " + e;
          log.warning(str + ": sqlSTATE=" + e.getSQLState() + " we destroy the connection in case it's stale");
          // To be on the save side we always destroy the connection:
-         if (connection == null && !conn.getAutoCommit()) conn.rollback();
+         if (connection == null && conn != null && !conn.getAutoCommit()) conn.rollback();
          erase(conn);
          conn = null;
          throw e;
       }
       catch (Throwable e) {
-         e.printStackTrace();
+         if (e instanceof NullPointerException) {
+            e.printStackTrace();
+         }
          String str = "Unexpected exception in query '" + command + "' : " + e;
          log.severe(str + ": We destroy the connection in case it's stale");
-         if (connection == null && !conn.getAutoCommit()) conn.rollback();
+         if (connection == null && conn != null && !conn.getAutoCommit()) conn.rollback();
          erase(conn);
          conn = null;
          throw new Exception(e);

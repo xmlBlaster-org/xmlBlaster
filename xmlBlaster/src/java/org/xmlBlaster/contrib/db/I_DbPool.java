@@ -50,7 +50,7 @@ public interface I_DbPool {
     */ 
    int update(String command) throws Exception;
 
-   public int update(Connection conn, String command) throws Exception;
+   int update(Connection conn, String command) throws Exception;
    
    /**
     * Convenience method to execute a SELECT SQL command in auto commit mode.  
@@ -100,7 +100,18 @@ public interface I_DbPool {
     * @throws Exception Typically a SQLException
     * @return If not null you need to put the connection back to the pool yourself
     */
-   public Connection select(Connection connection, String command, I_ResultCb cb) throws Exception;
+   Connection select(Connection connection, String command, I_ResultCb cb) throws Exception;
+
+   /**
+    * To have full control. 
+    * @param connection If null a connection is created
+    * @param command for example <tt>SELECT * FROM TEST_POLL</tt>
+    * @param autoCommit if true force auto commit and cleanup the connection, in this case we return null
+    * @param cb The callback handle for the retrieved ResultSet
+    * @throws Exception Typically a SQLException
+    * @return If not null you need to put the connection back to the pool yourself
+    */
+   Connection select(Connection connection, String command, boolean autoCommit, I_ResultCb cb) throws Exception;
 
    /**
     * Close all open connections and destroy the pool. 
