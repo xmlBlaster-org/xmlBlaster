@@ -107,7 +107,7 @@ public class PluginInfo {
 
       if (rawString==null) {
          if (this.type != null)
-            log.warn(ME, "Plugin type=" + this.type + " version=" + this.version + " not found, choosing default plugin");
+            log.warn(ME, "Plugin '" + toString() + "' not found, choosing default plugin");
          rawString = manager.getDefaultPluginName(this.type, this.version);   // "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
       }
 
