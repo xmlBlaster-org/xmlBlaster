@@ -1657,7 +1657,7 @@ synchronized (this) {
    public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+      String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
@@ -1666,12 +1666,12 @@ synchronized (this) {
       sb.append(offset + "<RequestBroker>");
       while (iterator.hasNext()) {
          MessageUnitHandler msgUnitHandler = (MessageUnitHandler)iterator.next();
-         sb.append(msgUnitHandler.toXml(extraOffset + "   "));
+         sb.append(msgUnitHandler.toXml(extraOffset));
       }
-      sb.append(bigXmlKeyDOM.printOn(extraOffset + "   ").toString());
-      sb.append(clientSubscriptions.toXml(extraOffset + "   "));
+      sb.append(bigXmlKeyDOM.printOn(extraOffset).toString());
+      sb.append(clientSubscriptions.toXml(extraOffset));
       if (useCluster) {
-         sb.append(glob.getClusterManager().toXml(extraOffset + "   "));
+         sb.append(glob.getClusterManager().toXml(extraOffset));
       }
       sb.append(offset + "</RequestBroker>\n");
 
@@ -1711,7 +1711,7 @@ synchronized (this) {
       return glob.getBuildJavaVersion();
    }
    public String getDump() throws XmlBlasterException {
-      return glob.getAuthenticate().toXml() + glob.getAuthenticate().getXmlBlaster().toXml();
+      return glob.getDump();
    }
    public void setDump(String fn) throws XmlBlasterException{
       try {
