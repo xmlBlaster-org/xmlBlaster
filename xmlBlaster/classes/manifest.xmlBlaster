@@ -4,6 +4,7 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar
  concurrent.jar 
  gnu-regexp.jar 
  remotecons.jar 
+ jax.jar 
  jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
  jndi-jdk1_3_1.jar jutils.jar mail.jar activation.jar 
  batik/batik-awt-util.jar batik/batik-bridge.jar 
