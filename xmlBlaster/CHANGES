@@ -39,6 +39,9 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - Changed to generate key oid without special characters which
+    prevents oid to be used as file name, bug reported by
+    Doug.Palmer@csiro.au
 
   - Fixed isVolatile() memory leak reported by liuwen@onewaveinc.com
 
