@@ -680,6 +680,18 @@
             </td>
             <td>yes</td>
          </tr>
+
+         <tr>
+            <td>passwd[bilbo]</td>
+            <td>secret</td>
+            <td>
+            Allows to set the password for cluster node <code>bilbo</code>. Bilbo uses
+            this password when it logs in to another xmlBlaster node.<br />
+            You can't change the loginName of a cluster node. Every cluster node
+            logs in to remote nodes with its cluser node id as the loginName.
+            </td>
+            <td>yes</td>
+         </tr>
       </table>
    </configuration>
 
@@ -693,7 +705,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.29 $</revision>
+   <revision>$Revision: 1.30 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
