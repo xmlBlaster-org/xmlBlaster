@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o ClientProperty: Forcing Base64 for & character in string client property
+
  o XPath mime plugin extension
    It is now configurable for which mime types the XPath plugin takes affect, see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
