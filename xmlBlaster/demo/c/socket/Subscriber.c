@@ -151,6 +151,7 @@ int main(int argc, char** argv)
       bool local = xa->props->getBool(xa->props, "local", true);
       bool initialUpdate = xa->props->getBool(xa->props, "initialUpdate", true);
       int historyNumUpdates = xa->props->getInt(xa->props, "historyNumUpdates", 1);
+      bool historyNewestFirst = xa->props->getBool(xa->props, "historyNewestFirst", true);
       bool wantContent = xa->props->getBool(xa->props, "wantContent", true);
       const char *filterType = xa->props->getString(xa->props, "filter.type", "GnuRegexFilter");
       const char *filterVersion = xa->props->getString(xa->props, "filter.version", "1.0");
@@ -184,7 +185,7 @@ int main(int argc, char** argv)
                    " <initialUpdate>%.20s</initialUpdate>"
                    " <notify>%.20s</notify>"
                    "%.2048s"
-                   " <history numEntries='%d'/>"
+                   " <history numEntries='%d' newestFirst='%.20s'/>"
                    "</qos>",
                    wantContent?"true":"false",
                    multiSubscribe?"true":"false",
@@ -193,7 +194,8 @@ int main(int argc, char** argv)
                    initialUpdate?"true":"false",
                    notifyOnErase?"true":"false",
                    filterQos,
-                   historyNumUpdates
+                   historyNumUpdates,
+                   historyNewestFirst?"true":"false"
                    );
       printf("[client] Subscribe key: %s\n", key);
       printf("[client] Subscribe qos: %s\n", qos);
