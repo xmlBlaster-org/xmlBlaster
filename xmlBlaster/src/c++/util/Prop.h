@@ -3,7 +3,7 @@ Name:      Prop.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding data for a property
-Version:   $Id: Prop.h,v 1.1 2002/12/26 22:36:23 laghi Exp $
+Version:   $Id: Prop.h,v 1.2 2002/12/31 11:55:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -66,7 +66,7 @@ public:
       if (origin_ >= CREATED_BY_SETTER) return false;
       if (prop.getTypedProperty(propName, value_, false)) {
          origin_ = CREATED_BY_CMDLINE;
-	 return true;
+         return true;
       }
       if (origin_ > CREATED_BY_JVMENV) return false;
       if (prop.getTypedProperty(propName, value_, true)) return true;
@@ -89,6 +89,14 @@ public:
    T getValue() const 
    {
       return value_;
+   }
+
+   /**
+    * Is unmanipulated default value?
+    */
+   const bool isModified() const
+   {
+      return origin_ != CREATED_BY_DEFAULT;
    }
 
    /**
