@@ -1,15 +1,15 @@
 The xmlBlaster-autoconf.tar.gz is a autoconf patch for the CVS tree to let us
-test the gnu auto-tools.  
+test the gnu auto-tools.
 
 What 'configure' does:
-    It will configure the CVS tree to build all the java files into 
+    It will configure the CVS tree to build all the java files into
     class files (under the classes directory) and make the jar file (
     xmlBlaster.jar) placing the final jar file in $XMLBLASTER_HOME/lib
     It will now try to build the c++ clients if you use --with-cpp
-    
+
 What 'configure' does not:
-    It does not make the javadoc documentation.  We will have to 
-    hook up some kind of 'make test' also, and I doubt 'make install' 
+    It does not make the javadoc documentation.  We will have to
+    hook up some kind of 'make test' also, and I doubt 'make install'
     will do anything useful. Currently configure only works with mico
     and xerces-c.  The Orbacus option has to be created and integrated.
 
@@ -19,14 +19,16 @@ To try it out:
     configure
         if you do not have $JAVA_HOME set, you can specify the configure
             option --with-jdk-home=DIR
-        if you want to compile the c++ clients, use 
+        if you want to compile the c++ clients, use
             --with-cpp
             and if you are using mico and xerces use
             --with-mico=DIR
             --with-xerces-c=DIR
-        
+        for example enter:
+            configure --with-cpp --with-mico=/usr/local/mico --with-xerces-c=/opt/xerces
+
     gmake
-    
+
 To get rid of it:
     gmake clean
     find . -name Makefile\* -exec rm -f {} \;
