@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.21 2001/08/30 21:41:31 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.22 2001/09/04 15:15:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -187,6 +187,7 @@ public class ClientSub implements I_Callback
       if (showUsage) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSub].");
+         Log.plain("   -passwd             The login name [secret].");
          XmlBlasterConnection.usage();
          Log.usage();
          Log.exit(ME, "Example: jaco javaclients.ClientSub -name Jeff\n");
