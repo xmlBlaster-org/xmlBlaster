@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
+ o #13291 c++ in MsgQosData.toXml the forceDestroy flag is written out (if modified).
+
  o #13280 Removed outdated SOAP protocol plugins
 
 Changes for 1.0.2 [2005-02-24] #13271 "Xmas release patch 2"
