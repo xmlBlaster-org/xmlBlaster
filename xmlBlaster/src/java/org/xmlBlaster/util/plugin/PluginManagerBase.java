@@ -32,7 +32,7 @@ import java.net.URL;
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-abstract public class PluginManagerBase {
+abstract public class PluginManagerBase implements I_PluginManager{
 
    private static String ME = "PluginManagerBase";
    protected Hashtable managers = new Hashtable(); // currently loaded plugins
@@ -93,6 +93,10 @@ abstract public class PluginManagerBase {
    * for "Security.Server.Plugin[simple][1.0]"
    */
    abstract protected String getPluginPropertyName();
+
+   public String getName() {
+      return getPluginPropertyName();
+   }
 
    /**
     * @return e.g. "Security.Server.Plugin[simple][1.0]"
