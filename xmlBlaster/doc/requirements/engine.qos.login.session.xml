@@ -27,13 +27,20 @@
       XmlBlaster allows to check clients with a ping to the callback server.
       The ping frequency is adjustable at login time by the client itself.
       A client session disappears when it does a logout or on failure (no response to the ping)
-      or on session-timeout or when killOldSessions=true is set.
+      or on session-timeout or when clearSessions='true' is set.
       </p>
       <p>
       Interested parties can subscribe on Login/Logout events, to find out if
       a client arrives or disappears (message oid="__sys__Logout" or oid="__sys__Login").
       </p>
    </description>
+
+   <changerequest>
+      <p>
+      We should support a mode where callbacks (or callback pings) may for example fail 5 times
+      until we drop the session (requested by Heinrich Goetzger)
+      </p>
+   </changerequest>
 
    <example lang="Java">
       <![CDATA[
@@ -52,7 +59,7 @@
             <passwd>secret</passwd>
          </securityService>
 
-         <session timeout='3600000' maxSessions='20'/>
+         <session timeout='3600000' maxSessions='20' clearSessions='false'/>
 
          <callback type='IOR'> <!-- Use CORBA to callback messages for this session -->
             IOR:00011200070009990000....
@@ -64,11 +71,13 @@
                        This update mode is a 'transaction' for all collected messages -->
          </callback>
 
-         <callback type='XML-RPC' sessionId='sldg03loQ22'>
+         <callback type='XML-RPC' sessionId='sldg03loQ22' pingInterval='60000' useForSubjectQueue='false'>
             http:/www.mars.universe:8080/RPC2
          </callback>
               <!-- The session id is passed to the client callback server, he can check
-              if he trusts this sender, it defaults to the login name of the sender -->
+              if he trusts this sender, it defaults to the login name of the sender
+              The callback address is not used for queued subject messages
+               -->
 
          <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
             <!-- Qualifies the session based queue, with a maximum of 1000 messages
@@ -88,11 +97,11 @@
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
    <author>ruff@swand.lake.de</author>
    <author>krafft@doubleslash.de</author>
-   <date>2002 03 10</date>
-   <revision>$Revision: 1.1 $</revision>
-   <testcase status="OPEN">
-      <name>-</name>
-      <comment>-</comment>
-      <test tool="SUITE"></test>
+   <date>2002 03 11</date>
+   <revision>$Revision: 1.2 $</revision>
+   <testcase status="CLOSED">
+      <name>Marcel Ruff</name>
+      <comment>All specified requirements are tested</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSession</test>
    </testcase>
 </requirement>
