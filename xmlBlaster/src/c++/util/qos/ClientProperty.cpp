@@ -86,7 +86,7 @@ std::string ClientProperty::getEncoding() const {
    return encoding_;
 }
 
-bool ClientProperty::isBase64() {
+bool ClientProperty::isBase64() const {
    return encoding_ == Constants::ENCODING_BASE64;
 }
 
@@ -178,7 +178,6 @@ std::string ClientProperty::toXml(std::string extraOffset) const {
 # include <iostream>
 int main(int argc, char **argv) {
    try {
-      /*
       {
          ClientProperty cp("key", string("string"));
          cout << "name=" << cp.getName() 
@@ -189,7 +188,6 @@ int main(int argc, char **argv) {
               << cp.toXml("")
               << endl << endl;
       }
-      */
       {
          vector<unsigned char> v;
          v.push_back('H');
@@ -217,11 +215,6 @@ int main(int argc, char **argv) {
    catch(bad_cast b) {
       cout << "EXCEPTION: " << b.what() << endl;
    }
-   
-   ClientProperty cp1("A", 1);
-   ClientProperty cp2("B", 2);
-   cp1 = cp2;
-   //clientPropertyMap[clientPropertyKey] = cp1;
    return 0;
 }
 #endif

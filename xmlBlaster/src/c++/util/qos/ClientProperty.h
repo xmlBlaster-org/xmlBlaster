@@ -120,7 +120,7 @@ public:
    /**
     * Check if getValueRaw() is Base64 encoded
     */
-   bool isBase64();
+   bool isBase64() const;
 
    /**
     * The raw, possibly still Base64 encoded value
@@ -140,6 +140,7 @@ public:
    
    /**
     * @param value OUT parameter: The value in the desired data type. 
+    *        It is decoded (readable) in case it was base64 encoded,
     */
    template <typename T_VALUE> void getValue(T_VALUE& value) const;
    
@@ -240,7 +241,21 @@ template <typename T_VALUE> void ClientProperty::guessType(const T_VALUE& value)
 }
 
 template <typename T_VALUE> void ClientProperty::getValue(T_VALUE& value) const {
-   value = lexical_cast<T_VALUE>(value_);
+   if (isBase64()) {
+      if (type_ == org::xmlBlaster::util::Constants::TYPE_BLOB) {
+         // TODO: detect it on compile time
+         std::cerr << "Sorry, binary data type '" << typeid(value).name()
+                   << "' is not supported using getValue(value), please use 'std::vector<unsigned char> getValue()' instead"
+                   << std::endl;
+         value = lexical_cast<T_VALUE>(getStringValue());
+      }
+      else {
+         value = lexical_cast<T_VALUE>(getStringValue());
+      }
+   }
+   else {
+      value = lexical_cast<T_VALUE>(value_);
+   }
 }
 
 }}}}
