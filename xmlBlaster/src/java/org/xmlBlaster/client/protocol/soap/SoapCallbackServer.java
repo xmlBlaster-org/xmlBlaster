@@ -121,20 +121,20 @@ public class SoapCallbackServer implements I_CallbackServer
                   manager = new WebServer(callbackPort, inetAddr);
                   break;
                } catch(java.net.BindException e) {
-                  log.warn(ME, "Port " + callbackPort + " for XML-RCP callback server is in use already, trying with port " +  (callbackPort+1) + ": " + e.toString());
+                  log.warn(ME, "Port " + callbackPort + " for XMLRPC callback server is in use already, trying with port " +  (callbackPort+1) + ": " + e.toString());
                   callbackPort++;
                } catch(java.io.IOException e) {
                   if (e.getMessage().indexOf("Cannot assign requested address") != -1) {
-                     if (log.TRACE) log.warn(ME, "Host " + hostname + " for XML-RCP callback server is invalid: " + e.toString());
-                     throw new XmlBlasterException(ME, "Local host IP '" + hostname + "' for XML-RCP callback server is invalid: " + e.toString());
+                     if (log.TRACE) log.warn(ME, "Host " + hostname + " for XMLRPC callback server is invalid: " + e.toString());
+                     throw new XmlBlasterException(ME, "Local host IP '" + hostname + "' for XMLRPC callback server is invalid: " + e.toString());
                   }
                   else {  // e.getMessage() = "Address already in use"
-                     log.warn(ME, "Port " + callbackPort + " for XML-RCP callback server is in use already, trying with port " +  (callbackPort+1) + ": " + e.toString());
+                     log.warn(ME, "Port " + callbackPort + " for XMLRPC callback server is in use already, trying with port " +  (callbackPort+1) + ": " + e.toString());
                   }
                   callbackPort++;
                }
                if (ii == (numTries-1)) {
-                  log.error(ME, "Can't find free port " + callbackPort + " for XML-RCP callback server, please use -soap.portCB=<port> to specify a free one.");
+                  log.error(ME, "Can't find free port " + callbackPort + " for XMLRPC callback server, please use -soap.portCB=<port> to specify a free one.");
                }
             }
             manager.addHandler("$default", new SoapCallbackImpl(this)); // register update() method
