@@ -211,7 +211,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       initHelperQos();
 
-      this.unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
+      org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
+      connectQos.setSessionName(myselfLoginName);
+      connectQos.getSessionQos().setSessionTimeout(0L);  // Lasts forever
+      this.unsecureSessionInfo = authenticate.unsecureCreateSession(connectQos);
 
       try {
          CommandManager manager = glob.getCommandManager(this.unsecureSessionInfo);
