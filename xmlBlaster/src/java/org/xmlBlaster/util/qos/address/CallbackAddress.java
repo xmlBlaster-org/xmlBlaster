@@ -110,6 +110,30 @@ public class CallbackAddress extends AddressBase
       return getAddress();
    }
 
+   public final String usage() {
+      String text = "\nControl xmlBlaster server side callback (if we install a local callback server):\n";
+      text += super.usage();
+      text += "   -dispatch/" + this.instanceName + "/sessionId       The session ID which is passed to our callback server\n";
+      text += "                                      update() method.\n";
+      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTime  Number of milliseconds xmlBlaster shall collect\n";
+      text += "                                      callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
+      text += "                                      The burst mode allows performance tuning, try set it to 200.\n";
+      text += "   -dispatch/" + this.instanceName + "/oneway          Shall the update() messages be send oneway (no\n";
+      text += "                                      application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0\n";
+      text += "                                      number of retries) [" + getDefaultRetries() + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/delay           Delay between callback retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/compress/type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/compress/minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/protocol        You can choose another protocol for the callback server\n";
+      text += "                                      [defaults to -dispatch/clientSide/protocol]\n";
+      //text += "   -dispatch/callback/DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+      return text;
+   }
+
+
    /** For testing: java org.xmlBlaster.util.qos.address.CallbackAddress */
    public static void main(String[] argsDefault) {
       try {

@@ -87,6 +87,21 @@ public class Address extends AddressBase
       return getAddress();
    }
 
+   public final String usage() {
+      String text = "\nControl fail save connection to xmlBlaster server:\n";
+      text += super.usage();
+    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
+    //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
+      text += "   -dispatch/" + this.instanceName + "/burstMode/collectTimeOneway\n";
+      text += "                                      Number of milliseconds we shall collect oneway\n";
+      text += "                                      publish messages [" + Address.DEFAULT_collectTime + "].\n";
+      text += "                                      This allows performance tuning, try set it to 200.\n";
+    //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+    //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
+    //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
+      return text;
+   }
+
 
    /** For testing: java org.xmlBlaster.util.qos.address.Address */
    public static void main(String[] argsDefault)

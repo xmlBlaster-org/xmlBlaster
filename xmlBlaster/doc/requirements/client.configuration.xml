@@ -221,14 +221,17 @@ java HelloWorld2 -help
      <![CDATA[
 <xmlBlaster>
    <node id='heron'>
-      <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+      <plugin id='queue:CACHE' 
+              className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
          <attribute id='transientQueue'>queue:RAM</attribute>
          <attribute id='persistentQueue'>queue:JDBC</attribute>
       </plugin>
 
-      <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
+      <plugin id='queue:RAM' 
+              className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
 
-      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+      <plugin id='queue:JDBC' 
+              className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
 	 <attribute id='password'>secret</attribute>
@@ -355,13 +358,17 @@ Old style:
       the maximum number of entries for the client side queue also to 100 and to put all ping intervals
       both on client and server side since no prefix is specified) to 20 seconds.
       <pre>
-    java HelloWorld2 -queue/callback/maxEntries 100 -queue/clientSide/maxEntries 100 -pingInterval 20000
+    java HelloWorld2 -queue/callback/maxEntries 100   \
+                     -queue/clientSide/maxEntries 100 \
+                     -pingInterval 20000
       </pre>
       The following command line has the same effect since it sets the maximum number of entries for 
       all queues (so it automatically sets it for callback and client side queue) to 100 and sets 
       individually the ping interval for 
       <pre>
-    java HelloWorld2 -maxEntries 100 -dispatch/callback/pingInterval 20000 -dispatch/clientSide/pingInterval 20000
+    java HelloWorld2 -maxEntries 100                        \
+                     -dispatch/callback/pingInterval 20000  \
+		     -dispatch/clientSide/pingInterval 20000
       </pre>
 
       </p>
@@ -385,6 +392,6 @@ Old style:
 
    <author>laghi@swisscom.com</author>
    <date>2003 03 25</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 </requirement>
 
