@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.43 $
+# $Revision: 1.44 $
 #-----------------------------------------------------------
 
 
@@ -38,6 +38,11 @@ else
    ECHO="echo"
 fi
 
+
+if [ ${CLASSPATH:=""} = "" ] ; then
+	CLASSPATH=
+	export CLASSPATH
+fi
 
 #-------- Checking xmlBlaster --------
 if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
