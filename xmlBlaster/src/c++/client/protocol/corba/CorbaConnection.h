@@ -59,7 +59,6 @@ namespace org {
       string                          passwd_;
 //      LoginQosWrapper                 loginQos_;
       int                             numLogins_;
-      bool                            orbOwner_;
       DefaultCallback*                defaultCallback_;
       ConnectReturnQos                connectReturnQos_;
       string                          sessionId_;
@@ -72,21 +71,6 @@ namespace org {
       MsgQosFactory                   msgQosFactory_;
 
    public:
-      /**
-       * CORBA client access to xmlBlaster (default behavior).
-       */
-/*        CorbaConnection(bool orbOwner = false) : log_(),  */
-/*      loginQos_() , implObj_() { */
-/*      int  args = 0; */
-/*      char *argc[0]; */
-/*      orb_ = CORBA::ORB_init(args, argc); */
-/*      nameServerControl_ = 0; */
-/*      numLogins_         = 0; */
-/*      authServer_        = getAuthenticationService(); */
-/*      callback_          = createCallbackServer(); */
-/*      orbOwner_          = orbOwner; */
-/*        } */
-
       /**
        * CORBA client access to xmlBlaster for <strong>normal client 
        * applications
@@ -102,7 +86,7 @@ namespace org {
        *    <li>-ns true/false, if a naming service shall be used</li>
        * </ul>
        */
-      CorbaConnection(Global& global, bool orbOwner=false, CORBA::ORB_ptr orb=NULL);
+      CorbaConnection(Global& global, CORBA::ORB_ptr orb=NULL);
 
       ~CorbaConnection();
 
@@ -119,6 +103,7 @@ namespace org {
       
       /**
        * Is used to perform work on the orb (if necessary).
+       * @return true if some work was done
        */
       bool orbPerformWork() {
          if (orb_ != NULL) {
@@ -140,12 +125,12 @@ namespace org {
       }
     
 
-      /**
+      /*
        * Accessing the xmlBlaster handle.
        * @return Server
        * @exception if not logged in
-       */
       serverIdl::Server_ptr getXmlBlaster();
+       */
       
 
       /**
@@ -223,6 +208,9 @@ namespace org {
         */
        bool disconnect(const string& qos="");
 
+       /**
+        * Shutdown the connection without disconnecting (xmlBlaster does not know that we have disappeared)
+        */
        bool shutdown();
 
        bool shutdownCb();
@@ -254,12 +242,12 @@ namespace org {
       }
       
       
-      /**
+      /*
        * Logout from the server.
        * @return true successfully logged out
        *         false failure on logout
-       */
       bool logout();
+       */
       
       
       /**

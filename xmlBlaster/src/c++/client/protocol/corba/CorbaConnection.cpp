@@ -37,7 +37,7 @@ namespace org {
     namespace corba {
 
 
-CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr orb)
+CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
   : /* loginQos_(), */
     connectReturnQos_(global), 
     global_(global), 
@@ -53,7 +53,7 @@ CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr o
      else {
         int args                 = global_.getArgs();
         const char * const* argc = global_.getArgc();
-        orb_ = CORBA::ORB_init(args, const_cast<char **>(argc));
+        orb_ = CORBA::ORB_init(args, const_cast<char **>(argc)); //, "XmlBlaster-C++-Client");
      }
   }
   else {
@@ -69,30 +69,28 @@ CorbaConnection::CorbaConnection(Global& global, bool orbOwner, CORBA::ORB_ptr o
   callback_          = 0;
   defaultCallback_   = 0;
   sessionId_         = "";
-  orbOwner_          = orbOwner;
   xmlBlasterIOR_     = "";
 }
 
 
 CorbaConnection::~CorbaConnection() 
 {
-  if (log_.call()) log_.call(me(), "CorbaConnection destructor ...");
-  numOfSessions_--;
-//  if (isLoggedIn()) logout();
-  disconnect();
+   if (log_.call()) log_.call(me(), "CorbaConnection destructor ...");
+   numOfSessions_--;
 
-  if (nameServerControl_) delete nameServerControl_;
-  if (orbOwner_) orb_->destroy();
-  CORBA::release(authServer_);
-  CORBA::release(xmlBlaster_);
-  CORBA::release(callback_  );
-  if (numOfSessions_ == 0) {
-     CORBA::release(orb_);
-     CORBA::release(poa_);
-     orb_ = 0;
-     poa_ = 0;
-  }
-  if (defaultCallback_) delete defaultCallback_;
+   delete nameServerControl_;
+   
+   shutdown();
+   
+   shutdownCb();
+   delete defaultCallback_;
+
+   if (numOfSessions_ == 0) {
+      CORBA::release(orb_);
+      CORBA::release(poa_);
+      orb_ = 0;
+      poa_ = 0;
+   }
 }
 
 string
@@ -110,15 +108,24 @@ CorbaConnection::getCbAddress() const
 CORBA::ORB_ptr
 CorbaConnection::getOrb() 
 {
+   if ( CORBA::is_nil(orb_)) {
+      string msg = "Sorry, no ORB handle ";
+      msg       += "available, please check CORBA plugin.";
+      string txt = me();
+      txt += ".NotLoggedIn";
+      throw serverIdl::XmlBlasterException("communication.noConnection", 
+                                          "client", me().c_str(), "en",
+                                          txt.c_str(), "", "", "", "", "", "");
+   }
    return CORBA::ORB::_duplicate(orb_);
 }
 
 
-
+/*
 serverIdl::Server_ptr 
 CorbaConnection::getXmlBlaster() 
 {
-  if ( !CORBA::is_nil(xmlBlaster_ /*.in()*/ )) {
+  if ( CORBA::is_nil(xmlBlaster_)) {
      string msg = "Sorry, no xmlBlaster handle ";
      msg       += "available, please login first.";
      string txt = me();
@@ -127,9 +134,9 @@ CorbaConnection::getXmlBlaster()
                                           "client", me().c_str(), "en",
                                           txt.c_str(), "", "", "", "", "", "");
   }
-  return serverIdl::Server::_duplicate(xmlBlaster_);
+  return serverIdl::Server::_duplicate(xmlBlaster_.in());
 }
-
+*/
 
 CosNaming::NamingContext_ptr 
 CorbaConnection::getNamingService() 
@@ -146,7 +153,7 @@ authenticateIdl::AuthServer_ptr
 CorbaConnection::getAuthenticationService() 
 {
   if (log_.call()) log_.call(me(), "getAuthenticationService() ...");
-  if (!CORBA::is_nil(authServer_ /*.in()*/ ))
+  if (!CORBA::is_nil(authServer_))
      return authenticateIdl::AuthServer::_duplicate(authServer_);
 
   // 1) check if argument -IOR at program startup is given
@@ -155,7 +162,7 @@ CorbaConnection::getAuthenticationService()
   if (authServerIOR != "") {
      CORBA::Object_var
         obj = orb_->string_to_object(authServerIOR.c_str());
-     authServer_ = authenticateIdl::AuthServer::_narrow(obj);
+     authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
      log_.info(me(),"Accessing xmlBlaster using your given IOR string");
      return authenticateIdl::AuthServer::_duplicate(authServer_);
   }
@@ -172,7 +179,7 @@ CorbaConnection::getAuthenticationService()
      in.close();
      CORBA::Object_var
         obj = orb_->string_to_object(authServerIOR.c_str());
-     authServer_ = authenticateIdl::AuthServer::_narrow(obj);
+     authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
      string msg  = "Accessing xmlBlaster using your given IOR file ";
      msg += authServerIORFile;
      log_.info(me(), msg);
@@ -239,7 +246,7 @@ CorbaConnection::getAuthenticationService()
      }
      if (!authServerIOR.empty()) {
         CORBA::Object_var obj = orb_->string_to_object(authServerIOR.c_str());
-        authServer_ = authenticateIdl::AuthServer::_narrow(obj);
+        authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
         string msg  = "Accessing xmlBlaster using -hostname "+iorHost;
         log_.info(me(), msg);
         return authenticateIdl::AuthServer::_duplicate(authServer_);
@@ -265,7 +272,7 @@ CorbaConnection::getAuthenticationService()
         if (!nameServerControl_) getNamingService();
         CORBA::Object_var obj =
            nameServerControl_->resolve("xmlBlaster-Authenticate.MOM");
-        authServer_ = authenticateIdl::AuthServer::_narrow(obj);
+        authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
         log_.info(me(),"Accessing xmlBlaster using a naming service.");
         return authenticateIdl::AuthServer::_duplicate(authServer_);
      }
@@ -321,8 +328,10 @@ clientIdl::BlasterCallback_ptr
 CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj) 
 {
   if (implObj) {
+     if (log_.trace()) log_.trace(me(), "Trying resolve_initial_references ...");
      CORBA::Object_var obj = orb_->resolve_initial_references("RootPOA");
-     poa_ = PortableServer::POA::_narrow(obj);
+     if (log_.trace()) log_.trace(me(), "Trying narrowing POA ...");
+     poa_ = PortableServer::POA::_narrow(obj.in());
      PortableServer::POAManager_var poa_mgr = poa_->the_POAManager();
      callback_ = implObj->_this();
      callbackIOR_ = orb_->object_to_string(callback_);
@@ -382,7 +391,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
 
       CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR_.c_str());
-      xmlBlaster_ = serverIdl::Server::_narrow(obj);
+      xmlBlaster_ = serverIdl::Server::_narrow(obj.in());
 
       numLogins_++;
       if (log_.trace()) log_.trace(me(),"Success, connect for "+loginName_);
@@ -396,7 +405,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
    }
 }
 
-
+/*
 bool
 CorbaConnection::logout() 
 {
@@ -422,7 +431,7 @@ CorbaConnection::logout()
   xmlBlaster_ = 0;
   return false;
 }
-
+*/
 bool
 CorbaConnection::shutdown()
 {
@@ -458,11 +467,6 @@ CorbaConnection::disconnect(const string& qos)
 {
    if (log_.call()) log_.call(me(), "disconnect() ...");
    if (log_.dump()) log_.dump(me(), string("disconnect: the qos: ") + qos);
-
-   if (CORBA::is_nil(xmlBlaster_)) {
-      shutdown();
-      return false;
-   }
 
    try {
       if (!CORBA::is_nil(authServer_)) {
