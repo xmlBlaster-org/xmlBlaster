@@ -460,7 +460,7 @@ Else add it manually.
   <target name="cpp-lib" depends="prepare">
 
      <echo message="Adjust following settings in build.properties if necessary:"/>
-     <echo message=" STL_HOME      = ${STL_HOME}"/>
+     <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
      <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
      <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
      <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
@@ -481,7 +481,7 @@ Else add it manually.
            <property name="WIN_TOKEN" value="" />
         </case>
         <default value="dummy">
-	        <property name="WIN_TOKEN" value="win32-" />
+           <property name="WIN_TOKEN" value="win32-" />
         </default>
      </switch>
 
@@ -535,14 +535,14 @@ Else add it manually.
            <defineset><define name="_WINDOWS" value="1" /></defineset>
         </compiler>
         <compiler name="gcc" if="BUILD_UNIX"> <!-- is set in build.sh -->
-           <defineset><define name="dummyX" value="1" /></defineset>
+           <!-- defineset><define name="dummyX" value="1" /></defineset -->
         </compiler>
 
         <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
         <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
         <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
         <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${STL_HOME}/stlport" />
+        <!-- sysincludepath location="${STL_HOME}/stlport" /-->
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/src" /> <!-- win32 -->
         <sysincludepath location="${XMLCPP_HOME}/include" />
@@ -550,13 +550,11 @@ Else add it manually.
            <define name="MICO" value="1" />
            <!-- undefine name="UNWANTEDDEF" / -->
         </defineset>
-        <compilerarg value="-GX" />
+        <!-- compilerarg value="-GX" / -->  <!-- Windows -->
         <linkerarg value="${linkerarg.1}" />
         <linkerarg value="${warnlevel}" />
-		  <!--
-        <linkerarg value="-Wimplicit-int" />
-        <linkerarg value="-Werror-implicit-function-declaration" / 
-		  -->
+        <linkerarg value="-Wimplicit-int" /> <!-- UNIX/g++ -->
+        <linkerarg value="-Werror-implicit-function-declaration" />  <!-- UNIX/g++ -->
      </cc>
   </target>
 
@@ -566,7 +564,7 @@ Else add it manually.
   </target>
 
   <target name="setWinCpp">
-     <echo message="Please add the binary directory of ${CORBACPP_HOME} to your path environment"/>
+     <echo message="Please check if the binary directory of ${CORBACPP_HOME} is in your path environment"/>
   </target>
 
 
@@ -597,7 +595,7 @@ Else add it manually.
 
      <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
         <!-- libstlport_gcc, -->
-        <libpath location="${STL_HOME}/lib"/>
+        <!-- libpath location="${STL_HOME}/lib"/ -->
         <libpath location="${CORBACPP_HOME}/lib"/>
         <libpath location="${XMLCPP_HOME}/lib"/>
         <libpath location="${lib.dir}"/>
@@ -606,13 +604,16 @@ Else add it manually.
      <cc debug="true" link="executable"
          outfile="${testsuite.dir}/c++/bin/${exeName}"
          objdir="build/obj">
-        <compiler name="msvc" if="windows">
+        <compiler name="msvc" if="BUILD_WINDOWS">
            <defineset define="DLL_EXPORT"/>
+           <defineset><define name="_WINDOWS" value="1" /></defineset>
         </compiler>
-        <compiler name="gcc"/>
+        <compiler name="gcc" if="BUILD_UNIX"> <!-- is set in build.sh -->
+           <!-- defineset><define name="dummyX" value="1" /></defineset -->
+        </compiler>
         <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
         <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${STL_HOME}/stlport" />
+        <!-- sysincludepath location="${STL_HOME}/stlport" / -->
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
         <libset refid="libs"/>
