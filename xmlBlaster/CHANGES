@@ -24,6 +24,9 @@ BUGS:
 
 
 DONE:
+ - Added runlevel listener framework to allow in future different
+   run levels like RUNNING, STANDBY and HALTED
+
  - Added framework for xmlBlaster administration (SNMP/JMX/telnet/message based).
    Added readonly access from telnet on properties and xmlBlaster core attributes
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.html
