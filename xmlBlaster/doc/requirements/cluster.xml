@@ -6,12 +6,12 @@
    <description>
       <p>
       We define a cluster as a configuration where more than one xmlBlaster
-      server instance is running. The instances may run on the same host or
-      distributed over the internet.
+      server instance is running and those instances know of each other.
+      The instances may run on the same host or distributed over the internet.
       </p>
       <p>
       All clustering abilities for xmlBlaster reduce to the simple master/slave approach.
-      The cluster approach is easy to understand as we are not leaving the MoM paradigm
+      This cluster approach is easy to understand as we are not leaving the MoM paradigm
       to support clustering.
       </p>
       <p>
@@ -48,7 +48,7 @@
       <ol>
       <li><h4>Scalability:</h4><br />
       An xmlBlaster server instance allows to have any number of slave xmlBlaster server instances
-      for specific message types. These slaves can have further slaves again.
+      for specific message domains. These slaves can have further slaves again.
       This allows distributing messages to an almost unlimited number of clients.
       Note that one xmlBlaster node can be a master for some messages and a slave for
       other message types simultaneously.
@@ -85,13 +85,13 @@
       <img src="cluster.domain.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
       <p>
-      As we can see the node <i>golan</i> is master of messages of the domain "STOCK_EXCHANGE" but
+      As we can see the node <i>heron</i> is master of messages of the domain "STOCK_EXCHANGE" but
       caches "RUGBY_NEWS" as well.
       </p>
       </li>
       <li><h4>Load balancing:</h4><br />
       An xmlBlaster cluster allows to have more than one master server for
-      a specific message type. The master nodes are <i>mirrored</i> instances
+      a specific message domain. The master nodes are <i>mirrored</i> instances
       for those messages.
       Published messages reach all master nodes.
       Subscribed messages are retrieved using a load balance algorithm.
@@ -124,7 +124,12 @@
          message &lt;key> tag, for example:<br />
          <pre>&lt;key domain='STOCK_EXCHANGE'/></pre>
          The domain based approach maps domain names to cluster node IDs.
-         Please see the examples below.
+         Please see the examples below.<br />
+         Note that this simple domain name approach has severe drawbacks:
+         The clients need to know beforehand to which domain a message belongs. If the
+         domains change, all clients need to be recompiled/restarted/reconfigured.
+         A rule based approach (see the XPATH example in the Example section)
+         is generic and addresses this issue.
          </li>
          <li><h4>Map a cluster node ID to the physical xmlBlaster instance</h4><br />
          After step 1. we need to find out how to reach the physical xmlBlaster instance.
@@ -150,7 +155,8 @@
       This login is done in 'lazy' mode. As soon as a client requests a message
       for which the local server is not master, this server does a login to the master
       and subscribes the message from there. The message is than cached locally and further
-      local requests from clients are handled locally.
+      local requests from clients are handled locally. The cache is always up to date, as
+      the slave has subscribed that info from the master.
       An adjustable expire date clears the cached message.
       </li>
 
@@ -158,7 +164,8 @@
       If a message is published from a data source to a slave server, the message is routed directly
       to the master server (which may be a slave as well, forwarding the message to the real master).
       If the master server is currently offline, it is queued
-      for this 'client' until it logs in.
+      for this 'client' until it logs in.<br />
+
       </li>
 
       <li>Plugin interface for master discovery<br />
@@ -178,93 +185,191 @@
       explicitly specified domain, the messages are handled in the local
       xmlBlaster instance (as if no cluster is existing).
       If domain='NO_DEFAULT' is set another node is searched which
-      accepts default messages.
+      accepts default messages. A node can set domain="GLOBAL_DEFAULT" to
+      accept messages with default domain from other nodes.
       </li>
+
       <li>Master unknown<br />
-      If a node receives a messages and can't find the master,
+      If a node receives a message and can't find the master,
       the message is accepted and queued for the master.
       If later a master appears the messages are flushed.
       </li>
+
+      <li>PtP messages<br />
+      To allow global delivery we introduce a unique naming schema,
+      it is based on the URL naming synstax and allows addressing
+      any client at any node.
+      The routing setup for such messages is not specified yet.
+      </li>
+
       <li>Multiple masters for same domain<br />
       If multiple nodes acquire the master mode for a certain domain
-      there are to approaches.<br />
+      there are two approaches.<br />
       Messages which are published are sent to all masters.<br />
       Messages which are accessed with get() or subscribe() are handled
       by the load balancing algorithm. The default implementation is a round robin.
       </li>
+
+      <li>Behavior of the different xmlBlaster methods<br />
+      XmlBlaster supports only a small number of methods to invoke.
+      In the context of clustering they can be categorized into these groups:
+        <ol>
+         <li>Methods with local scope:<br />
+           These are connect(), disconnect() and ping(). The have only
+           a local scope between a client and its direct xmlBlaster node.
+         </li>
+         <li>Write access:<br />
+           These are publish(), publishOneway() and erase(). Such invocations are passed
+           to the master node. The new state than cascades the usual way
+           to the connected slaves.
+         </li>
+         <li>Read access:<br />
+           These are get() and subscribe() and unSubscribe().
+           Such invocations are usually handled by the local xmlBlaster node,
+           which itself forwards appropriate requests to the master.
+         </li>
+         <li>Callbacks:<br />
+           These are update(), updateOneway() and ping().
+           The behavior in a cluster is not specified yet.
+         </li>
+        </ol>
+      </li>
       </ul>
+
    </description>
-   <example lang="Java">
-      <![CDATA[
-      <key oid='__sys__cluster.node:heron'>
-         <__sys__cluster.node/>
-      </key>
-
-   content=
-      <clusternode id='heron'>
-         <address type='IOR'>IOR:00044550005...</address>
-         <address type='XML-RPC'>http:/www.mars.universe:8080/RPC2</address>
-         <callback type='XML-RPC'>http:/www.mars.universe:8081/RPC2</callback>
-         <backupnode>
-            <clusternode id='avalon'/>  <!-- first failover node -->
-            <clusternode id='golan'/>   <!-- second backup node -->
-         </backupnode>
-         <nameservice>true</nameservice>
-      </clusternode>
 
 
+   <example lang="Java" type="HTML">
+      Here are xmlBlaster internal messages which support clustering:
+      <p>
+      <table border="1">
+         <tr><td>1</td><td>Mapping of a cluster node ID to a physical xmlBlaster instance</td></tr>
+         <tr><td>key</td><td><pre>
+   &lt;key oid='__sys__cluster.node:heron'>
+      &lt;__sys__cluster.node/>
+   &lt;/key>
+         </pre></td></tr>
+         <tr><td>content</td><td><pre>
+   &lt;clusternode id='heron'>
+      &lt;address type='IOR'>IOR:00044550005...&lt;/address>
+      &lt;address type='XML-RPC'>http:/www.mars.universe:8080/RPC2&lt;/address>
+      &lt;callback type='XML-RPC'>http:/www.mars.universe:8081/RPC2&lt;/callback>
+      &lt;backupnode>
+         &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
+         &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
+      &lt;/backupnode>
+      &lt;nameservice>true&lt;/nameservice>
+   &lt;/clusternode>
+         </pre></td></tr>
+      </table>
+      </p>
 
-      <key oid='__sys__cluster.node.state:heron'>
-         <__sys__cluster.node.state/>
-      </key>
- 
-   content=
-      <clusternode id='heron'>
-         <state>
-            <cpu id='0' idle='40'/>            <!-- currently 60% load on first CPU -->
-            <cpu id='1' idle='44'/>
-            <ram free='12000'/>                <!-- xmlBlaster server instance has 12 MB free memory -->
-            <performance bogomips='1205.86'/>
-         </state>
-      </clusternode>
+      <p>
+      <table border="1">
+         <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs</td><td>Comments</td></tr>
+         <tr><td>key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
+      &lt;__sys__cluster.node.domainmapping/>
+   &lt;/key>
+         </pre></td>
+         <td> </td>
+         </tr>
+         <tr><td>content</td><td><pre>
+   // This is a master for domainless messages, for football and rugby
+   &lt;clusternode id='heron'>
+      &lt;master>
+         &lt;key domain=''/>           &lt;!-- default setting -->
+         &lt;key domain='football'/>
+         &lt;key domain='rugby'/>
+      &lt;/master>
+   &lt;/clusternode>
+         </pre></td>
+         <td>This cluster node is the master of the domain 'football' and 'rugby'.
+         Messages without a domain specified are treated locally as well.</td>
+         </tr>
 
+         <tr><td>key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.domainmapping:frodo'>
+      &lt;__sys__cluster.node.domainmapping/>
+   &lt;/key>
+         </pre></td>
+         <td> </td>
+         </tr>
+         <tr><td>content</td><td><pre>
+   // This is a slave for everything
+   &lt;clusternode id='frodo'>
+      &lt;master>
+         &lt;key domain='NO_DEFAULT'/> &lt;!-- forward empty domains -->
+      &lt;/master>
+   &lt;/clusternode>
+         </pre></td>
+         <td>Messages without a domain specified are normally treated
+         by its local xmlBlaster node. Here this is switched off</td>
+         </tr>
 
+         <tr><td>key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
+      &lt;__sys__cluster.node.domainmapping/>
+   &lt;/key>
+         </pre></td>
+         <td> </td>
+         </tr>
+         <tr><td>content</td><td><pre>
+   // The master is determined in a generic way (no explicit domain)
+   &lt;clusternode id='heron'>
+      &lt;master>
+         &lt;key oid='radar.track'/>
+         &lt;key queryType='XPATH'>
+            //STOCK_EXCHANGE
+         &lt;/key>
+      &lt;/master>
+   &lt;/clusternode>
+         </pre></td>
+         <td>Approach without domains. Every message is filtered
+         with the given rules. If one of the rules matches, we are the master
+         of this message</td>
+         </tr>
+      </table>
+      </p>
 
-      <key oid='__sys__cluster.node.master:heron'>
-         <__sys__cluster.node.master/>
-      </key>
- 
-   content=
-      <clusternode id='heron'>
-         <master>
-            <key domain=''/>           <!-- default setting -->
-            <key domain='football'/>
-            <key domain='rugby'/>
-         </master>
-      </clusternode>
+      <p>
+         A message can specify its domain as a key attribute:
+      </p>
+      <pre>
+      &lt;key oid='football.49.results' domain='football'/>
+      </pre>
 
-      <clusternode id='frodo'>
-         <master>
-            <key domain='NO_DEFAULT'/> <!-- forward empty domains -->
-            <key oid='radar.track'/>
-            <key queryType='XPATH'>
-               //STOCK_EXCHANGE
-            </key>
-         </master>
-      </clusternode>
+      <br />
 
-
-   A message can specify its domain as a key attribute:
-
-      <key oid='football.49.results' domain='football'/>
-
-   One or many domains are mapped to a cluster node ID (the master name).
-      ]]>
+      <p>
+      <table border="1">
+         <tr><td>3</td><td>The current status of a cluster node</td></tr>
+         <tr><td>key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.state:heron'>
+      &lt;__sys__cluster.node.state/>
+   &lt;/key>
+         </pre></td></tr>
+         <tr><td>content</td><td><pre>
+   &lt;clusternode id='heron'>
+      &lt;state>
+         &lt;cpu id='0' idle='40'/>            &lt;!-- currently 60% load on first CPU -->
+         &lt;cpu id='1' idle='44'/>
+         &lt;ram free='12000'/>                &lt;!-- xmlBlaster server instance has 12 MB free memory -->
+         &lt;performance bogomips='1205.86' idleIndex='20'/>
+      &lt;/state>
+   &lt;/clusternode>
+         </pre></td></tr>
+      </table>
+      We need to investigate how other clusters communicate their
+      current load in a standardized way.
+      </p>
    </example>
+
+
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
-   <date>2000 04 03</date>
-   <revision>$Revision: 1.10 $</revision>
+   <date>2000 04 10</date>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
