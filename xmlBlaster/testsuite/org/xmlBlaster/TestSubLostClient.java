@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.1 2001/02/14 00:06:37 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.2 2001/02/14 00:35:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -29,9 +29,9 @@ import test.framework.*;
 
 /**
  * This client tests if a subscribe still works when an other subcriber
- * on the same messages disappears. 
+ * on the same messages disappears.
  * <p>
- * This bug was reported by 
+ * This bug was reported by
  *       "Stefan Nickisch" <nickisch.stefan@stn-atlas.de>
  * <p>
  * Invoke examples:<br />
@@ -212,7 +212,8 @@ public class TestSubLostClient extends TestCase implements I_Callback
          assertEquals("Wrong publishOid1", publishOid1, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
-         Log.info(ME, "XmlBlasterException is OK and expected: " + e.reason);
+         Log.error(ME, "XmlBlasterException in publish: " + e.reason);
+         assert("XmlBlasterException in publish: " + e.reason, true);
       }
    }
 
