@@ -35,9 +35,9 @@ COMMENT:
          function initialize() {
             top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
             top.xmlBlasterWindow.addUpdateListener( self );
-            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"), " ");
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"));
             top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
-            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("meminfo"), " ");
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("meminfo"));
             top.xmlBlasterWindow.Log.trace("OK, subscribed to meminfo");
             top.xmlBlasterWindow.setReady( self, true );
             top.xmlBlasterWindow.Log.trace("OK, i am ready");
