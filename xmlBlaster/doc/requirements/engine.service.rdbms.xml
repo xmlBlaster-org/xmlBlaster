@@ -138,7 +138,7 @@ The result looks like this:
      </results>
    </dbadapterresults>
 
-Note that the result values are encapsulated by CDATA sections.
+Note that the result values are encapsulated by CDATA sections (not shown here).
       ]]>
    </example>
    <todo>
@@ -154,7 +154,7 @@ Note that the result values are encapsulated by CDATA sections.
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>

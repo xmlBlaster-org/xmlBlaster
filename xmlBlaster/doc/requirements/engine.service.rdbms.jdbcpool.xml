@@ -17,7 +17,7 @@
       since the clients are not permanently connected.<br />
       </p>
       <p>
-      Unused connection pools are freed after some time, 
+      Unused connection pools are freed after some time,
       the timeout parameters and pool size is adjustable (see example below).
       </p>
       <p>
@@ -34,15 +34,16 @@
    </description>
    <example lang="Java">
       <![CDATA[
-      Following parameters are adjustable in xmlBlaster.properties:
-      <pre>
-         # If a user disappears for one hour, delete his pool (msec):
-         JdbcPool.eraseUnusedPoolTimeout=60*60*1000L
-         # Max. number of simultaneous connections per user:
-         JdbcPool.maxInstances=20
-         # An unused connection is shutdown after 10 min, freeing resources after peak usage:
-         JdbcPool.idleToEraseTimeout=10*60*1000L
-      </pre>
+   Following parameters are adjustable in xmlBlaster.properties:
+
+     # If a user disappears for one hour, delete his pool (msec):
+     JdbcPool.eraseUnusedPoolTimeout=60*60*1000L
+
+     # Max. number of simultaneous connections per user:
+     JdbcPool.maxInstances=20
+
+     # An unused connection is shutdown after 10 min, freeing resources after peak usage:
+     JdbcPool.idleToEraseTimeout=10*60*1000L
       ]]>
    </example>
    <todo>
@@ -53,7 +54,7 @@
    <hacker>ruff@swand.lake.de</hacker>
    <effort>2</effort>
    <date>2000 07 07</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="DONE">
       <name>-</name>
       <comment>The test is included in NamedConnectionPool.java main()</comment>
