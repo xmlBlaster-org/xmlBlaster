@@ -59,7 +59,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
 ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
 {
    ME = string("XmlBlasterAccess-") + qos.getSessionQos().getAbsoluteName();
-   log_.call(ME, "::connect");
+   if (log_.call()) log_.call(ME, "::connect");
    connectQos_ = qos;
    SecurityQos securityQos = connectQos_.getSecurityQos();
 //   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
