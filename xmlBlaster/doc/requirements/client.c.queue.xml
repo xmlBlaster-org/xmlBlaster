@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 
-<requirement id='client.c.queue' type='NEW' prio='MEDIUM' status='INWORK'>
+<requirement id='client.c.queue' type='NEW' prio='MEDIUM' status='CLOSED'>
    <topic>
       XmlBlaster provides a persistent queue implementation for ANSI C
    </topic>
@@ -21,7 +21,7 @@
           </li>
 
         <li> The code is tested on memory leaks with valgrind and partially statically
-             checked with splint.
+             checked with flawfinder.
           </li>
 
           <li> Can be used standalone outside of xmlBlaster</li>
@@ -58,6 +58,9 @@ Solaris:
    </description>
    <example lang="C" type="HTML">
       <p><a NAME="example"></a></p>
+      <p>
+      See the test file <code>xmlBlaster/testsuite/src/c/TestQueue.c</code>
+      </p>
    </example>
 
    <configuration where="client">
@@ -71,8 +74,6 @@ Solaris:
        <th>Compiler</th>
        <th>xmlBlaster</th>
        <th>Thread library</th>
-       <th>Protocol library</th>
-       <th>XML library</th>
        <th>Date</th>
        <th>Author</th>
        <th>Comment</th>
@@ -84,11 +85,20 @@ Solaris:
        <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 3.3.1</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9+</a></td>
        <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
-       <td>-</td>
-       <td>-</td>
        <td>2004-04-09</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td>-</td>
+       <td>build -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c</td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>Linux 2.4.21</td>
+       <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit applications, Version 8.0 (icc)</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
+       <td>2004-04-22</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>build -Duse-icc=true -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c</td>
        </tr>
 
       </table>
@@ -105,11 +115,33 @@ Solaris:
          </tr>
 
          <tr>
+            <td>-queue/connection/dbName</td>
+            <td>/var/xmlBlasterClient.db</td>
+            <td>The location and file name of the database (for SQLite)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/tablePrefix</td>
+            <td>XB_</td>
+            <td>The prefix used for database table names</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>-queue/connection/maxEntries</td>
             <td>2147483647</td>
             <td>The maximum allowed number of messages</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>-queue/connection/maxBytes</td>
+            <td>2147483647</td>
+            <td>The maximum allowed bytes of all messages in the queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
 
          <h3>Testing</h3>
@@ -119,31 +151,28 @@ Solaris:
          </p>
          <pre>
 cd xmlBlaster
-build c-test
+build  -DXMLBLASTER_PERSISTENT_QUEUE=1 c-test
          </pre>
         <p>
-        To run the testsuite invoke
+        To run the tests invoke
         </p>
         <pre>
-build runTests
-build reportShow
+TestQueue
         </pre>
-        <p>
-        And go for a cup of coffee as the complete testsuite will run.
-        </p>
 
    </configuration>
 
    <todo type='HTML'>
-      <h2>This release is stable, but we need to:</h2>
+      <h2>The persistent queue implementation is finished and tested, but we need to:</h2>
       <p>
       <ul>
+      <li> Embed the queue into C client library (see first try in <code>XmlBlasterConnectionUnparsed.c</code>)</li>
+      <li> Embed the queue into C++ client library as a persistent queue plugin.</li>
+      <li> Deliver sqlite library (.dll,.so,.sl) in directory
+           xmlBlaster/lib at least for Linux/Win for ease of use?</li>
       <li> Adding mutex to every function call?<br />
-      Currently you can have many
-      connections to xmlBlaster from one client where each connection may
-      be used by a different thread. But running multi threads on one connection
-      instance is currently not synchronized, this design decision is pending.
-      If you have such a case just add your own mutex to the function calls.</li>
+      Currently you need to add your own mutex to the function calls
+      to support multi threaded access.</li>
       <li> Improve BLOB performance and max BLOB size<br />
       The message itself is serialized (see SOCKET protocol) and stored as a BLOB in
       the database.
@@ -164,6 +193,7 @@ build reportShow
    </todo>
 
    <see type="CODE" lang="C">util/queue/I_Queue.h</see>
+   <!-- see type="INTERNET" label="TestQueue.c">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c/TestQueue.c.html</see -->
    <see type="INTERNET">http://www.sqlite.org/</see>
    <see type="INTERNET" label="SQLite performance">http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html</see>
    <see type="REQ">client.c.socket</see>
@@ -172,7 +202,7 @@ build reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
