@@ -12,9 +12,13 @@ import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.engine.helper.QueuePropertyBase;
+import org.xmlBlaster.engine.helper.HistoryQueueProperty;
+import org.xmlBlaster.engine.helper.TopicCacheProperty;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -36,15 +40,18 @@ import org.xml.sax.helpers.*;
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
- *     &lt;expiration lifeTime='129595811'/> <!-- Only for persistence layer -->
- *     &lt;isVolatile>false&lt;/isVolatile>
+ *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
+ *     &lt;isVolatile>false&lt;/isVolatile> <!-- deprecated, use lifeTime==0&&forceDestroy==false instead-->
  *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
  *     &lt;isDurable/>
- *     &lt;readonly/>
  *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
  *     &lt;route>
  *        &lt;node id='heron'/>
  *     &lt;/route>
+ *     &lt;topic readonly='false' destroyDelay='60000'>
+ *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'/>
+ *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'/>
+ *     &lt;/topic>
  *  &lt;/qos>
  * </pre>
  * Example for PtP addressing style:&lt;p />
@@ -77,7 +84,7 @@ import org.xml.sax.helpers.*;
  * The receive timestamp can be delivered in human readable form as well
  * by setting on server command line:
  * <pre>
- *   -cb.recieveTimestampHumanReadable true
+ *   -cb.receiveTimestampHumanReadable true
  *
  *   &lt;rcvTimestamp nanos='1015959656372000000'>
  *     2002-03-12 20:00:56.372
@@ -85,7 +92,7 @@ import org.xml.sax.helpers.*;
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.PtP.html">The engine.qos.publish.destination.PtP requirement</a>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_MsgQosFactory
 {
@@ -99,7 +106,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean inState = false;
    private boolean inSubscriptionId = false;
    private boolean inRedeliver = false;
+   private boolean inTopic = false;
    private boolean inQueue = false;
+   private boolean inMsgstore = false;
    private boolean inDestination = false;
    private boolean inSender = false;
    private boolean inPriority = false;
@@ -112,6 +121,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
    private  Destination destination;
    private  RouteInfo routeInfo;
+
+   private boolean sendRemainingLife = true;
 
    /**
     * Can be used as singleton. 
@@ -246,12 +257,42 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                log.warn(ME, "QoS <expiration> misses lifeTime attribute, setting default of " + msgQosData.getMaxLifeTime());
                msgQosData.setLifeTime(msgQosData.getMaxLifeTime());
             }
+
+            tmp = attrs.getValue("forceDestroy");
+            if (tmp != null) {
+               msgQosData.setForceDestroy(new Boolean(tmp.trim()).booleanValue());
+            }
             
             tmp = attrs.getValue("remainingLife");
             if (tmp != null) {
+               try { 
+                 long l = Long.parseLong(tmp.trim());
+                 log.error(ME, "ReminaingLife long=" + l + " str=" + tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
                try { msgQosData.setRemainingLifeStatic(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
             }
          }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("topic")) {
+         if (!inQos)
+            return;
+         inTopic = true;
+
+         TopicProperty tmpProp = new TopicProperty(glob);
+         
+         String tmp = attrs.getValue("readonly");
+         if (tmp != null) {
+            tmpProp.setReadonly(new Boolean(tmp.trim()).booleanValue());
+         }
+         
+         tmp = attrs.getValue("destroyDelay");
+         if (tmp != null) {
+            try { tmpProp.setDestroyDelay(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.warn(ME, "Invalid topic destroyDelay - millis =" + tmp); };
+         }
+         
+         msgQosData.setTopicProperty(tmpProp);
+
          return;
       }
 
@@ -260,18 +301,57 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             return;
          inQueue = true;
          if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               if( attrs.getQName(i).equalsIgnoreCase("index") ) {
-                 String tmp = attrs.getValue(i).trim();
-                 try { msgQosData.setQueueIndex(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
+            String indexVal = attrs.getValue("index");
+
+            // UpdateQos contains queue informations
+            if (indexVal != null) {
+               try { msgQosData.setQueueIndex(Integer.parseInt(indexVal)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + indexVal); };
+               String tmp = attrs.getValue("size");
+               if (tmp != null) {
+                  try { msgQosData.setQueueSize(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
                }
-               if( attrs.getQName(i).equalsIgnoreCase("size") ) {
-                 String tmp = attrs.getValue(i).trim();
-                 try { msgQosData.setQueueSize(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
-               }
+               return;
             }
-            // if (log.TRACE) log.trace(ME, "Found queue tag");
+
+            if (inTopic) {
+               String relatedVal = attrs.getValue("relating");
+               if (relatedVal == null)
+                  relatedVal = "topic";
+
+               relatedVal = relatedVal.trim();
+               if ("topic".equalsIgnoreCase(relatedVal)) {   // msgstore related='topic' is deprecated here! (is parsed now as msgstore, see below)
+                  TopicCacheProperty tmpProp = new TopicCacheProperty(glob, glob.getId());
+                  tmpProp.startElement(uri, localName, name, attrs);
+                  msgQosData.getTopicProperty().setTopicCacheProperty(tmpProp);
+               }
+               else { // assuming related="history"
+                  HistoryQueueProperty tmpProp = new HistoryQueueProperty(glob, glob.getId());
+                  tmpProp.startElement(uri, localName, name, attrs);
+                  msgQosData.getTopicProperty().setHistoryQueueProperty(tmpProp);
+               }
+               return;
+            }
+
+            log.warn(ME, "Found queue tag but don't know how to handle it: " + xmlLiteral);
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("msgstore")) {
+         if (!inQos)
+            return;
+         inMsgstore = true;
+         if (attrs != null) {
+            if (inTopic) {
+               String relatedVal = attrs.getValue("relating");
+               //relatedVal = relatedVal.trim();  //   relatedVal = "topic";
+               TopicCacheProperty tmpProp = new TopicCacheProperty(glob, glob.getId());
+               tmpProp.startElement(uri, localName, name, attrs);
+               msgQosData.getTopicProperty().setTopicCacheProperty(tmpProp);
+               return;
+            }
+
+            log.warn(ME, "Found msgstore tag but don't know how to handle it: " + xmlLiteral);
          }
          return;
       }
@@ -383,7 +463,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("isVolatile")) {
+      if (name.equalsIgnoreCase("isVolatile")) { // deprecated
          if (!inQos)
             return;
          inIsVolatile = true;
@@ -415,6 +495,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (!inQos)
             return;
          msgQosData.setReadonly(true);
+         log.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
          return;
       }
    }
@@ -473,8 +554,20 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
+      if(name.equalsIgnoreCase("topic")) {
+         inTopic = false;
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("queue")) {
          inQueue = false;
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("msgstore")) {
+         inMsgstore = false;
          character.setLength(0);
          return;
       }
@@ -503,12 +596,12 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if(name.equalsIgnoreCase("isVolatile")) {
+      if(name.equalsIgnoreCase("isVolatile")) { // deprecated
          inIsVolatile = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setVolatile(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found isVolatile = " + msgQosData.getIsVolatile());
+         log.warn(ME, "Found isVolatile = " + msgQosData.isVolatile() + " which is deprecated, use lifeTime==0&&forceDestroy==false instead");
          character.setLength(0);
          return;
       }
@@ -564,15 +657,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     */
    public final String writeObject(MsgQosData msgQosData, String extraOffset) {
       StringBuffer sb = new StringBuffer(1024);
-      String offset = (extraOffset != null) ? "\n " + extraOffset : "\n ";
-      extraOffset = (extraOffset != null) ? extraOffset + " "  : " ";
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
 
       // WARNING: This dump must be valid, as it is used by the
       //          persistent store
       sb.append(offset).append("<qos>");
 
-      if (msgQosData.getState() != null && msgQosData.getState().length() > 0 ||
-          msgQosData.getStateInfo() != null && msgQosData.getStateInfo().length() > 0) {
+      if (!msgQosData.isOk() || msgQosData.getStateInfo() != null && msgQosData.getStateInfo().length() > 0) {
          sb.append(offset).append(" <state id='").append(msgQosData.getState());
          if (msgQosData.getStateInfo() != null)
             sb.append("' info='").append(msgQosData.getStateInfo());
@@ -593,19 +685,26 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(offset).append(" <sender>").append(msgQosData.getSender().getAbsoluteName()).append("</sender>");
       }
 
-      if (PriorityEnum.NORM_PRIORITY != msgQosData.getPriority())
+      if (PriorityEnum.NORM_PRIORITY != msgQosData.getPriority()) {
+         if (PriorityEnum.NORM_PRIORITY.toString().equals(msgQosData.getPriority().toString())) {
+            int hash1 = PriorityEnum.NORM_PRIORITY.hashCode();
+            int hash2 = msgQosData.getPriority().hashCode();
+            log.error(ME, "The strings should not equal: PriorityEnum.NORM_PRIORITY=" + PriorityEnum.NORM_PRIORITY + " hash1=" + hash1 +
+                          " msgQosData.getPriority()=" + msgQosData.getPriority() + " hash2=" + hash2);
+         }
          sb.append(offset).append(" <priority>").append(msgQosData.getPriority()).append("</priority>");
+      }
 
       if (msgQosData.getSubscriptionId() != null) {
          sb.append(offset).append(" <subscriptionId>").append(msgQosData.getSubscriptionId()).append("</subscriptionId>");
       }
 
-      if (msgQosData.getLifeTime() > 0L) {
+      if (msgQosData.getLifeTime() != MsgQosData.DEFAULT_lifeTime) {
          sb.append(offset).append(" <expiration lifeTime='").append(msgQosData.getLifeTime());
-         boolean sendRemainingLife = true; // make it configurable !!!
-         if (sendRemainingLife) {
-            if (msgQosData.getRemainingLife() > 0)
-               sb.append("' remainingLife='").append(msgQosData.getRemainingLife());
+         if (sendRemainingLife()) {
+            long remainCached = msgQosData.getRemainingLife();
+            if (remainCached > 0)
+               sb.append("' remainingLife='").append(remainCached);
             else if (msgQosData.getRemainingLifeStatic() > 0)
                sb.append("' remainingLife='").append(msgQosData.getRemainingLifeStatic());
          }
@@ -613,15 +712,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if (msgQosData.getRcvTimestamp() != null)
-         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset, false));
+         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, false));
 
       if(msgQosData.getQueueSize() > 0)
          sb.append(offset).append(" <queue index='").append(msgQosData.getQueueIndex()).append("' size='").append(msgQosData.getQueueSize()).append("'/>");
-      if (msgQosData.getRedeliver() > 0)
-         sb.append(offset).append(" <redeliver>").append(msgQosData.getRedeliver()).append("</redeliver>");
 
-      if (!msgQosData.isVolatileDefault())
-         sb.append(offset).append(" <isVolatile>").append(msgQosData.isVolatile()).append("</isVolatile>");
+      //if (!msgQosData.isVolatileDefault())
+      //   sb.append(offset).append(" <isVolatile>").append(msgQosData.isVolatile()).append("</isVolatile>");
 
       if (msgQosData.isDurable())
          sb.append(offset).append(" <isDurable/>");
@@ -629,8 +726,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (!msgQosData.isForceUpdateDefault())
          sb.append(offset).append(" <forceUpdate>").append(msgQosData.isForceUpdate()).append("</forceUpdate>");
 
-      if (msgQosData.isReadonly())
-         sb.append(offset).append(" <readonly/>");
+      //if (msgQosData.isReadonly()) -> see topic attribute
+      //   sb.append(offset).append(" <readonly/>");
 
       if(msgQosData.getRedeliver() > 0) {
          sb.append(offset).append(" <redeliver>").append(msgQosData.getRedeliver()).append("</redeliver>");
@@ -640,15 +737,19 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (routeInfoArr.length > 0) {
          sb.append(offset).append(" <route>");
          for (int ii=0; ii<routeInfoArr.length; ii++) {
-            sb.append(routeInfoArr[ii].toXml(extraOffset));
+            sb.append(routeInfoArr[ii].toXml(extraOffset+Constants.INDENT));
          }
          sb.append(offset).append(" </route>");
+      }
+
+      if (msgQosData.hasTopicProperty()) {
+         sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)
-         return "";  // minimal footprint
+         return "<qos/>";  // minimal footprint
 
       return sb.toString();
    }
@@ -660,4 +761,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    public String getName() {
       return "MsgQosSaxFactory";
    }
+
+   /** Configure if remaingLife is sent in Qos (redesign approach to work with all QoS attributes */
+   public void sendRemainingLife(boolean sendRemainingLife) { this.sendRemainingLife = sendRemainingLife; }
+   public boolean sendRemainingLife() { return this.sendRemainingLife; }
+
 }
