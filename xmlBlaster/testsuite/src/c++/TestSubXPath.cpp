@@ -62,7 +62,8 @@ public:
    {
       TestSuite::setUp();
       try {   
-         ConnectQos connQos(global_, "Tim", "secret");
+//         ConnectQos connQos(global_, "Tim", "secret");
+         ConnectQos connQos(global_);
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
 
          ConnectReturnQos retQos = connection_.connect(connQos, this);

@@ -29,6 +29,7 @@ private:
    PublishKey       *pubKey_;
    Mutex            updateMutex_;
    int              numOfUpdates_;
+   Address          *address_;
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -41,17 +42,21 @@ public:
       subKey_         = NULL;
       pubQos_         = NULL;
       pubKey_         = NULL;
+      address_        = NULL;
       numOfUpdates_   = 0;
    }
 
    virtual ~TestFailsafe()
    {
+      if (log_.CALL) log_.call(ME, "destructor");
       delete connQos_;
       delete connRetQos_;
       delete subQos_;
       delete subKey_;
       delete pubQos_;
       delete pubKey_;
+      delete address_;
+      if (log_.TRACE) log_.trace(ME, "destructor ended");
    }
 
    bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
@@ -76,11 +81,11 @@ public:
       try {   
          connection_.initFailsafe(this);
 
-         Address address(global_);
-         address.setDelay(10000);
-         address.setPingInterval(10000);
+         address_  = new Address(global_);
+         address_->setDelay(10000);
+         address_->setPingInterval(10000);
          connQos_ = new ConnectQos(global_, "guy", "secret");
-         connQos_->setAddress(address);
+         connQos_->setAddress(*address_);
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
          connRetQos_ = new ConnectReturnQos(connection_.connect(*connQos_, this));  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
@@ -117,6 +122,7 @@ public:
       }
       log_.info(ME, "the communication is now down: ready to start the tests");
       ConnectQos connQos(global_);
+      connQos.setAddress(*address_);
       SessionQos sessionQos(global_,"client/Fritz/-2");
       connQos.setSessionQos(sessionQos);
       bool wentInException = false;
@@ -189,7 +195,7 @@ public:
 
       // making  a subscription now should work ...
       SubscribeKey subKey(global_);
-      subKey.setOid("TestRecconnect");
+      subKey.setOid("TestReconnect");
       SubscribeQos subQos(global_);
       wentInException = false;
       try {
@@ -197,10 +203,25 @@ public:
       }
       catch (XmlBlasterException &ex) {
          wentInException = true;
+         log_.info(ME, string("exception when subscribing: ") + ex.toXml());
       }   
       assertEquals(log_, ME, false, wentInException, "subscribing when communication should not give an exception");
 
+      log_.info(ME, "disconnecting now the newly established connection");
+      connection_.disconnect(DisconnectQos(global_));
+      log_.info(ME, "going to call setUp to reestablish the initial setup");
+
       setUp();
+
+      // publishing something to make it happy
+      PublishQos pubQos(global_);
+      PublishKey pubKey(global_);
+      pubKey.setOid("TestFailsafe");
+
+      string msg = "dummy";
+      MessageUnit msgUnit(pubKey, msg, pubQos);
+      connection_.publish(msgUnit);
+
       log_.info(ME, "testReconnect END");
    }
 
@@ -303,13 +324,16 @@ using namespace org::xmlBlaster::test;
  */
 int main(int args, char ** argv)
 {
+   TestFailsafe *testFailsafe = NULL;
    try {
-      TestFailsafe testFailsafe(args, argv);
-      testFailsafe.setUp();
-      testFailsafe.testReconnect();
+      testFailsafe = new TestFailsafe(args, argv);
+      testFailsafe->setUp();
+      testFailsafe->testReconnect();
       
       // testFailsafe.testFailsafe();
-      testFailsafe.tearDown();
+      testFailsafe->tearDown();
+      delete testFailsafe;
+      testFailsafe = NULL; 
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;

@@ -36,12 +36,14 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
+   if (log_.CALL) log_.call(ME, "destructor");
    if (cbServer_) {
       CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
       CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
       cbServer_ = NULL;
    }
+   if (log_.TRACE) log_.trace(ME, "destructor: going to delete the connection");
    if (connection_) {
       connection_->shutdown();
       delete connection_;
@@ -50,6 +52,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
    deliveryManager_    = NULL;
    updateClient_       = NULL;
    connectionProblems_ = NULL;
+   if (log_.TRACE) log_.trace(ME, "destructor ended");
 }
 
 
@@ -137,11 +140,18 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
             if (shutdown) ret2 = connection_->shutdown();
    }
    else {
-                ret1 = false;
+      ret1 = false;
       ret2 = false;
    }
    if (shutdownCb) {
-      if (cbServer_) ret3 = cbServer_->shutdownCb();
+      if (cbServer_) {
+         ret3 = cbServer_->shutdownCb();
+
+         CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+         CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
+         global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
+         cbServer_ = NULL;
+      }
       else ret3 = false;
    }
    return ret1 && ret2 && ret3;

@@ -44,6 +44,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
 
 ConnectionsHandler::~ConnectionsHandler()
 {
+   if (log_.CALL) log_.call(ME, "destructor");
    doStopPing_ = true;
    while (pingIsStarted_) {
       Thread::sleep(200);
@@ -66,9 +67,11 @@ ConnectionsHandler::~ConnectionsHandler()
    }
    delete adminQueue_;
    adminQueue_ = NULL;
+   if (log_.TRACE) log_.trace(ME, "destructor: going to delete the connectQos");
    delete connectQos_;
    delete connectReturnQos_;
    status_ = END;
+   if (log_.TRACE) log_.trace(ME, "destructor ended");
 } 
 
 
@@ -110,6 +113,10 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    catch (XmlBlasterException &ex) {
       if (log_.TRACE) log_.trace(ME, "exception occured when connecting");
       if ( ex.isCommunication() ) return queueConnect();
+      else {
+         if (log_.TRACE) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
+         throw ex;
+      }
    }                                                                                                                                                                                                                                                                                    
    
    lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
@@ -406,10 +413,10 @@ void ConnectionsHandler::toPollingOrDead()
 void ConnectionsHandler::timeout(void *userData)
 {
 
-//  Lock lock(publishMutex_);
+  Lock lock(connectMutex_);
    pingIsStarted_ = false;
-   if (doStopPing_) return; // then it must stop
    timestamp_ = 0;
+   if (doStopPing_) return; // then it must stop
    if ( log_.CALL ) log_.call(ME, "ping timeout occured");
    if (status_ == CONNECTED) { // then I am pinging
       if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
@@ -635,6 +642,7 @@ bool ConnectionsHandler::isConnected() const
 
 ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
 {
+   if (log_.CALL) log_.call(ME, "::connectRaw");
    ConnectReturnQos retQos = connection_->connect(connectQos);
    if (connectQos_) {
       delete connectQos_;
@@ -646,6 +654,8 @@ ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
       connectReturnQos_ = NULL;
    }
    connectReturnQos_ = new ConnectReturnQos(retQos);
+   lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
+   log_.info(ME, string("::connectRaw: successfully connected with sessionId = '") + lastSessionId_ + "'");
    return *connectReturnQos_;
 }
 

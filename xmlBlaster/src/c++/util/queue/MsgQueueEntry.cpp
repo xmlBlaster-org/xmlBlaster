@@ -146,7 +146,7 @@ string MsgQueueEntry::getEmbeddedType() const
    return embeddedType_;
 }
 
-string MsgQueueEntry::toXml(const string& indent)
+string MsgQueueEntry::toXml(const string& indent) const
 {
    return "<notImplemented/>\n";
 }

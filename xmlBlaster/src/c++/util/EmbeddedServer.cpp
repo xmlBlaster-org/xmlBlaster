@@ -14,7 +14,7 @@ EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const s
    : Thread(),
      ME("EmbeddedServer"), 
      global_(glob), 
-     log_(glob.getLog())
+     log_(glob.getLog("core"))
 {
    isRunning_      = false;
    applArguments_  = applArguments;
@@ -30,12 +30,11 @@ EmbeddedServer::~EmbeddedServer()
    externalAccess_ = NULL;
    stop(false, false);
    log_.trace(ME, "destructor: stopped the server");
-   this->join();
-   log_.trace(ME, "destructor: the server ist stopped");
 }
 
 void EmbeddedServer::run()
 {  
+   if (log_.CALL) log_.call(ME, "::run");
    if (isRunning_) {
       log_.warn(ME, "the current server is already running. ignoring the start command.");
       return;
@@ -87,10 +86,10 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    if (true) {
       XmlBlasterAccess conn(global_, "embedded");
       try {
-         SessionQos sessionQos(global_);
-         sessionQos.setAbsoluteName("embeddedKiller");
+//         SessionQos sessionQos(global_);
+//         sessionQos.setAbsoluteName("embeddedKiller");
          ConnectQos connQos(global_, "embeddedKiller", "secret");
-         connQos.setSessionQos(sessionQos);
+//         connQos.setSessionQos(sessionQos);
          // to be sure not to store the kill msg in a client queue ...
          Address address(global_);
          address.setDelay(0);
@@ -107,7 +106,7 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
       conn.publish(msgUnit);
    }
    else externalAccess_->publish(msgUnit);
-
+   this->join();
    return true;
 }
 

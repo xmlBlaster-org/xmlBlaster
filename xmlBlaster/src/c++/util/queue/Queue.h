@@ -52,7 +52,7 @@ public:
 
    Queue& operator =(const Queue& queue);
    
-   ~Queue();
+   virtual ~Queue();
     
    /**
     * puts a new entry into the queue. 

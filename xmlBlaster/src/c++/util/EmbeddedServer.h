@@ -74,6 +74,7 @@ public:
     * method will make a try to kill it only if the 'shutdownExternal' flag has been set to 'true'. This
     * flag defaults to 'false'.
     * The method returns 'true' if a server was shutdown, 'false' otherwise.
+    * It blocks until the thread really has stopped (it joins the thread)
     */
    bool stop(bool shutdownExternal=false, bool warnIfNotRunning=true);
 

@@ -130,8 +130,10 @@ public:
 
    virtual ~TestSuite()
    {
-      cout << "destructor for TestSuite invoked" << endl;
+      if (log_.CALL) log_.call(ME, "destructor");
       delete embeddedServer_;
+      embeddedServer_ = NULL;
+      if (log_.TRACE) log_.trace(ME, "destructor ended");
    }
 
    virtual void setUp()
@@ -149,6 +151,7 @@ public:
    void startEmbeddedServer()
    {
       if (embeddedServer_) {
+         log_.trace(ME, "starting now the embedded server");
          embeddedServer_->start();
       }
       else {

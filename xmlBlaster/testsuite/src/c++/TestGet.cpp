@@ -207,7 +207,7 @@ public:
 
    void usage() const
    {
-   		TestSuite::usage();
+                TestSuite::usage();
       log_.plain(ME, "----------------------------------------------------------");
       log_.plain(ME, "Testing C++/CORBA access to xmlBlaster with a synchronous get()");
       log_.plain(ME, "Usage:");
@@ -226,13 +226,18 @@ using namespace org::xmlBlaster::test;
   
 int main(int args, char *argc[]) 
 {
-   TestGet *testObj = new TestGet(args, argc, "Tim");
-   testObj->setUp();
-   testObj->testMany();
-   testObj->testGet();
-   testObj->tearDown();
-   delete testObj;
-   testObj = NULL;
+   try {
+      TestGet *testObj = new TestGet(args, argc, "Tim");
+      testObj->setUp();
+      testObj->testMany();
+      testObj->testGet();
+      testObj->tearDown();
+      delete testObj;
+      testObj = NULL;
+   }
+   catch (...) {
+      cout << "exception occurred in main"<< endl;
+   }
    return 0;
 }
 

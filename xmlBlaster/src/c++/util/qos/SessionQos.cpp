@@ -29,6 +29,7 @@ SessionQosData::SessionQosData(Global& global, const string& defaultUserName, lo
 SessionQosData::SessionQosData(Global& global, const string& absoluteName)
     : ME("SessionQosData"), global_(global)
 {
+
    initialize(absoluteName, "", -1);
 }
 

@@ -211,8 +211,14 @@ CorbaConnection::getAuthenticationService()
               }
               if (log_.DUMP) log_.dump(me(), "Received IOR data: '" + authServerIOR + "'");
               size_t pos = authServerIOR.find("IOR:");
-              if (pos > 0)
-                 authServerIOR = authServerIOR.substr(pos);
+//              if (pos > 0)
+              if (pos != authServerIOR.npos) authServerIOR = authServerIOR.substr(pos);
+              else {
+                 throw serverIdl::XmlBlasterException("communication.noConnection", 
+                                                      "client", me().c_str(), "en",
+                                                      "can't access authentication Service", "", "", "", "", 
+                                                      "", "");
+              }
               if (log_.TRACE) log_.trace(me(), "Received IOR data: '" + authServerIOR + "'");
            }
            else {
