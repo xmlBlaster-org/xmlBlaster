@@ -397,15 +397,14 @@ public class JdbcQueueTest extends TestCase {
          testSub.setUp();
          testSub.testMultiplePut();
          testSub.tearDown();
-/*
-         testSub.setUp();
-         testSub.testInitialEntries();
-         testSub.tearDown();
 
          testSub.setUp();
          testSub.testPutWithBreak();
          testSub.tearDown();
-*/
+
+         testSub.setUp();
+         testSub.testInitialEntries();
+         testSub.tearDown();
       }
    }
 }

@@ -3,6 +3,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o BUGFIX: PersistentStore and PersistentQueue have now separate pools. Avoids
+   deadlocks when configured with only 1 connection AND msg store AND
+   other queues are peeking objects from persistence (for example when both caching).
+
+ o JdbcConnectionPool works now with wait/notify instead of sleep/interrupt
+
+ o Better exception handling in JdbcManagerCommonTable to catch even 
+   throwables
+
  o BUGFIX: Fixed subject id to be without public sessionId in all cases.
    Had severe impact on PtP messages as subject queue name was sometimes
    identical to session queue name.
@@ -21,6 +30,8 @@ Changes for 0.846 [26, Apr 2003]
 
  o BUGFIX: sync gap in SubjectInfo.java for PtP messages and offline clients
 
+ o removed I_Queue.take methods
+ 
  o removed JdbcQueuePlugin. Now only JdbcQueueCommonTablePlugin available. This was
    necessary since maintenance of double code became prohibitive.
 

@@ -1554,7 +1554,7 @@ public class Global implements Cloneable
       String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
       if (this.jdbcQueueManagersCommonTable == null) this.jdbcQueueManagersCommonTable = new Hashtable();
 
-      String managerName = pluginInfo.getTypeVersion();
+      String managerName = pluginInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
 
       // it is OK to use the same Hashtable since there should never be a JdbcCommonTableQueueManager 
       // having the same  managerName as a JdbcQueueManager
@@ -1650,13 +1650,8 @@ public class Global implements Cloneable
          // then it is a JdbcManager
          JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null);
          pool.registerStorageProblemListener(manager);
-         try {
-            manager.setUp();
-            manager.wipeOutDB(setupNewTables);
-         }
-         catch (SQLException ex) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB", ex);
-         }
+         manager.setUp();
+         manager.wipeOutDB(setupNewTables);
       }
       else {
          throw new XmlBlasterException(this, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");

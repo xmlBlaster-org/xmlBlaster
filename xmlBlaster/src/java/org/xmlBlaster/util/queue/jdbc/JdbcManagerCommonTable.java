@@ -140,7 +140,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.error(ME, "the database '" + dbName + "' does not support transactions, unpredicted results may happen");
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "constructor: failed to get the metadata", ex);
       }
       finally {
@@ -249,7 +252,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
          return true;
       }
-      catch (SQLException ex) {
+      catch (Throwable ex) {
          this.log.warn(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
          return false;
       }
@@ -257,7 +260,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             if (st != null) st.close();
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             this.log.warn(ME, "ping exception when closing the statement " + e.toString());
          }
       }
@@ -325,10 +328,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * @see #handleSQLException(Connection, String, SQLException, String)
+    * @see #checkIfDBLoss(Connection, String, Throwable, String)
     */
-   protected final boolean handleSQLException(Connection conn, String location, SQLException ex) {
-      return handleSQLException(conn, location, ex, null);
+   protected final boolean checkIfDBLoss(Connection conn, String location, Throwable ex) {
+      return checkIfDBLoss(conn, location, ex, null);
    }
 
    /**
@@ -340,7 +343,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @return boolean true if it was a communication exception
     * 
     */
-   protected final boolean handleSQLException(Connection conn, String location, SQLException ex, String trace) {
+   protected final boolean checkIfDBLoss(Connection conn, String location, Throwable ex, String trace) {
       boolean ret = false;
 
       if (conn != null) ret = !ping(conn);
@@ -360,7 +363,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *         least one of the required tables is missing after the invocation to this method.
     */
    public final boolean tablesCheckAndSetup(boolean createTables)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "tablesCheckAndSetup");
 
       if (!this.isConnected)
@@ -442,13 +445,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          return true;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".tablesCheckAndSetup", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".tablesCheckAndSetup", "", ex); 
       }
       finally {
-         if (query !=null) query.close();
+         try {
+            if (query !=null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -457,7 +469,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * performance.
     * @return boolean false if the node already existed, true otherwise.
     */
-   public final boolean addNode(String nodeId) throws SQLException, XmlBlasterException {
+   public final boolean addNode(String nodeId) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "addNode '" + nodeId + "'");
       if (this.nodesCache.contains(nodeId)) {
          if (this.log.DUMP) {
@@ -503,14 +515,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 */
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(null, nodeId, "addNode"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, nodeId, "addNode"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addNode", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addNode", "", ex); 
       }
       finally {
-         if (preStatement !=null) preStatement.close();
-         if (query != null) query.close();
+         try {
+            if (preStatement !=null) preStatement.close();
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "addNode: exception occured when closing statement and query, reason: " + ex1.toString());
+         }
       }
    }
 
@@ -518,7 +538,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * Removes a node from the DB.
     * @return boolean false if the node was not on the DB, true if it has been successfully removed.
     */
-   public final boolean removeNode(String nodeId) throws SQLException, XmlBlasterException {
+   public final boolean removeNode(String nodeId) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "removeNode");
       // to be sure remove it from cache as first thing ...
 
@@ -539,13 +559,21 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             update(req, query.conn);
             return true;
          }
-         catch (SQLException ex) {
-            if (handleSQLException(query != null ? query.conn : null, getLogId(null, nodeId, "removeNode"), ex))
+         catch (XmlBlasterException ex) {
+            throw ex;
+         }
+         catch (Throwable ex) {
+            if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, nodeId, "removeNode"), ex))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeNode", "", ex); 
-            else throw ex;
+            else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeNode", "", ex);
          }
          finally {
-            if (query != null) query.close();
+            try {
+               if (query != null) query.close();
+            }
+            catch (Throwable ex1) {
+               this.log.error(ME, "addNode: exception occured when closing statement and query, reason: " + ex1.toString());
+            }
          }
       }
 
@@ -555,7 +583,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * Adds a queue to the DB. If the node to which the queue belongs does not exist one is created.
     * @return boolean false if the node already existed, true otherwise.
     */
-   public final boolean addQueue(String queueName, String nodeId, long numOfBytes, long numOfEntries) throws SQLException, XmlBlasterException {
+   public final boolean addQueue(String queueName, String nodeId, long numOfBytes, long numOfEntries) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "addQueue");
       addNode(nodeId); // returns immediately if in cache ...
       String req = "SELECT count(*) from " + this.queuesTableName + " where (queueName='" + queueName + "' AND nodeId='" + nodeId + "')";
@@ -582,23 +610,31 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          preStatement.executeUpdate();
          return true;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "addQueue"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "addQueue"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addQueue", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addQueue", "", ex);
       }
       finally {
-         if (preStatement !=null) preStatement.close();
-         if (query != null) query.close();
+         try {
+            if (preStatement !=null) preStatement.close();
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
-
    }
 
    /**
     * Removes a node from the DB.
     * @return boolean false if the node was not on the DB, true if it has been successfully removed.
     */
-   public final boolean removeQueue(String queueName, String nodeId) throws SQLException, XmlBlasterException {
+   public final boolean removeQueue(String queueName, String nodeId) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "removeQueue");
       String postfix = this.queuesTableName + " where (queueName='" + queueName + "' AND nodeId='" + nodeId + "')";
       String req = "SELECT count(*) from " + postfix;
@@ -614,13 +650,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          update(req, query.conn);
          return true;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "removeQueue"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "removeQueue"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeQueue", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeQueue", "", ex);
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -645,7 +690,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
 
-      Connection conn = this.pool.getConnection();
+      Connection conn = null;
       PreparedStatement preStatement = null;
       Statement exStatement = null;
       boolean ret = false;
@@ -661,6 +706,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          this.log.dump(ME, "modification dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
 
       try {
+         conn = this.pool.getConnection();
          String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , byteSize = ? , blob = ? WHERE  dataId = ? AND nodeId = ? AND queueName = ?";
 
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), req);
@@ -682,10 +728,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), "Modified " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
       }
-      catch (SQLException ex) {
-         
-         if (this.log.TRACE) this.log.trace(ME, "modifyEntry: sql exception, the sql state: '" + ex.getSQLState() );
-         if (this.log.TRACE) this.log.trace(ME, "modifyEntry: sql exception, the error code: '" + ex.getErrorCode() );
+      catch (Throwable ex) {
+         if (this.log.TRACE) {
+            if (ex instanceof SQLException) {
+               this.log.trace(ME, "modifyEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
+               this.log.trace(ME, "modifyEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
+            }
+            else this.log.trace(ME, "modifyEntry: exception, the error reason: '" + ex.toString());
+         }
+
          try {
             preStatement.close();
          }
@@ -695,7 +746,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
          this.log.warn(getLogId(queueName, nodeId, "modifyEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "modifyEntry"), ex)) {
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "modifyEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", "", ex); 
          }
          else {
@@ -728,7 +779,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
    private final boolean addSingleEntry(String queueName, String nodeId, I_Entry entry, Connection conn)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addSingleEntry"), "Entering");
 
       if (!this.isConnected) {
@@ -773,15 +824,24 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), "Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
       }
-      catch (SQLException ex) {
-         
-         if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the sql state: '" + ex.getSQLState() );
-         if (this.log.TRACE) this.log.trace(ME, "addEntry: sql exception, the error code: '" + ex.getErrorCode() );
-         preStatement.close();
+      catch (Throwable ex) {
+         if (this.log.TRACE) {
+            if (ex instanceof SQLException) {
+               this.log.trace(ME, "addEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
+               this.log.trace(ME, "addEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
+            }
+         }
+         try {
+            preStatement.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing statement: " + ex1.toString());
+            ex1.printStackTrace();
+         }
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
          this.log.warn(getLogId(queueName, nodeId, "addEntry"), "Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex)) {
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
          }
          // check if the exception was due to an existing entry. If yes, no exception will be thrown
@@ -795,11 +855,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             int size = rs.getInt(1);
             if (size < 1) throw ex;
          }
-         catch (SQLException ex1) {
+         catch (Throwable ex1) {
             if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
-            if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex1))
+            if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntry"), ex1))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex1); 
-            else throw ex1;
+            else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntry", "", ex1); 
          }
          ret = false;
       }
@@ -827,9 +887,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
    public final boolean addEntry(String queueName, String nodeId, I_Entry entry)
-      throws SQLException, XmlBlasterException {
-      Connection conn = this.pool.getConnection();
+      throws XmlBlasterException {
+      Connection conn = null;
       try {
+         conn = this.pool.getConnection();
          return addSingleEntry(queueName, nodeId, entry, conn);
       }
       finally {
@@ -850,7 +911,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @throws XmlBlasterException if an error occured when trying to get a connection
     */
    public int[] addEntries(String queueName, String nodeId, I_Entry[] entries)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
 
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addEntries"), "Entering");
 
@@ -895,14 +956,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (!conn.getAutoCommit()) conn.commit();
          return ret;
       }
-      catch (SQLException ex) {
+      catch (Throwable ex) {
          int i = 0;
-         if (!conn.getAutoCommit()) {
-            conn.rollback(); // rollback the original request ...
-            conn.setAutoCommit(true); // since if an exeption occurs it infects future queries within the same transaction
+         try {
+            if (!conn.getAutoCommit()) {
+               conn.rollback(); // rollback the original request ...
+               conn.setAutoCommit(true); // since if an exeption occurs it infects future queries within the same transaction
+            }
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "error occured when trying to rollback after exception: reason: " + ex1.toString());
          }
          this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " + ex.toString());
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
          else { // check if the exception was due to an already existing entry by re
 
@@ -917,18 +983,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (!conn.getAutoCommit()) conn.commit();
                return ret;
             }
-            catch (SQLException ex1) {
-               // conn.rollback();
-               try {
-                  for (int ii=0; ii < i; ii++) {
-                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
-                  }
-               }
-               catch (Exception ex2) {
-                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
-               }
-               throw ex1;
-            }
             catch (XmlBlasterException ex1) {
                // conn.rollback();
                try {
@@ -936,10 +990,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                      if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
                   }
                }
-               catch (Exception ex2) {
+               catch (Throwable ex2) {
                   this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
                }
                throw ex1;
+            }
+            catch (Throwable ex1) {
+               // conn.rollback();
+               try {
+                  for (int ii=0; ii < i; ii++) {
+                     if (ret[ii] > 0) deleteEntry(queueName, nodeId, entries[ii].getUniqueId()); // this could be collected and done in one shot
+                  }
+               }
+               catch (Throwable ex2) {
+                  this.log.error(ME, "addEntries exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+               }
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntries", "", ex1); 
             }
          }
       }
@@ -962,7 +1028,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * all entries in the 'entries' table associated to this queue.
     * @return the number of queues deleted (not the number of entries).
     */
-   public final int cleanUp(String queueName, String nodeId) throws XmlBlasterException, SQLException {
+   public final int cleanUp(String queueName, String nodeId) throws XmlBlasterException {
 
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "cleanUp"), "Entering");
 
@@ -978,17 +1044,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.trace(getLogId(queueName, nodeId, "cleanUp"), " request is '" + req + "'");
          return update(req);
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
          Connection conn = null;
          try {
             conn = this.pool.getConnection();
-            if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
+            if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
          }
-         throw ex;
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntries", "", ex);
       }
    }
 
@@ -1018,7 +1087,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (SQLException ex) {
-            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+            if (checkIfDBLoss(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped. Reason: " + ex.toString());
@@ -1031,8 +1100,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.update(req, conn);
             count++;
          }
-         catch (SQLException ex) {
-            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+         catch (Throwable ex) {
+            if (checkIfDBLoss(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.queuesTableName + "', it probably is already dropped. Reason " + ex.toString());
@@ -1045,8 +1114,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.update(req, conn);
             count++;
          }
-         catch (SQLException ex) {
-            if (handleSQLException(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
+         catch (Throwable ex) {
+            if (checkIfDBLoss(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped. Reason " + ex.toString());
@@ -1054,11 +1123,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          if (!conn.getAutoCommit()) conn.commit();
       }
-      catch (Exception ex) {
+      catch (Throwable ex) {
          try {
             if (conn != null) conn.rollback();
          }
-         catch (SQLException ex1) {
+         catch (Throwable ex1) {
             this.log.error(ME, "wipeOutDB: exception occurred when rolling back: " + ex1.toString());
          }
          if (ex instanceof XmlBlasterException) throw (XmlBlasterException)ex;
@@ -1070,7 +1139,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             }
          }
-         catch (Exception ex) {
+         catch (Throwable ex) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
          }
          finally {
@@ -1081,7 +1150,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          if (doSetupNewTables) setUp();
       }
-      catch (SQLException ex) {
+      catch (Throwable ex) {
          this.log.error(ME, "SQLException occured when cleaning up the table. Reason " + ex.toString()); 
       }
       return count;
@@ -1104,7 +1173,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @return the current amount of bytes used in the table.
     */
    public long getNumOfBytes(String queueName, String nodeId)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
 
       if (!this.isConnected)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(queueName, nodeId, "getNumOfBytes"), "The DB is disconnected. Handling queue '" + queueName + "' is currently not possible");
@@ -1120,10 +1189,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          rs.next();
          return rs.getLong(1);
       }
-      catch (SQLException ex) {
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "getNumOfBytes"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "getNumOfBytes"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfBytes", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfBytes", "", ex); 
       }
       finally {
          try {
@@ -1144,28 +1216,28 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * a new table is taken from the free tables. If no free tables are available,
     * a certain amount of such tables are created.
     */
-   public final void setUp() throws SQLException, XmlBlasterException {
+   public final void setUp() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "setUp");
 
       try {
-//         if (!this.dbInitialized) {
          if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
-//         tablesCheckAndSetup(this.hasAdminPermission);
          tablesCheckAndSetup(this.pool.isDbAdmin());
          this.dbInitialized = true;
-//         }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
          Connection conn = null;
          try {
             conn = this.pool.getConnection();
-            if (handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems"))
+            if (checkIfDBLoss(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems"))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".setUp", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
          }
-         throw ex;
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".setUp", "", ex);
       }
    }
 
@@ -1343,7 +1415,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     * deletes all transient messages
     */
-   public int deleteAllTransient(String queueName, String nodeId) throws XmlBlasterException, SQLException {
+   public int deleteAllTransient(String queueName, String nodeId) throws XmlBlasterException {
       try {
          if (this.log.CALL) 
             this.log.call(getLogId(queueName, nodeId, "deleteAllTransient"), "deleteAllTransient");
@@ -1356,17 +1428,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          String req = "delete from " + this.entriesTableName  + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='F'";
          return update(req);
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
          Connection conn = null;
          try {
             conn = this.pool.getConnection();
-            if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex))
+            if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteAllTransient", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
          }
-         throw ex;
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteAllTransient", "", ex); 
       }
    }
 
@@ -1443,7 +1518,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @see org.xmlBlaster.util.queue.I_Queue#takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)
     */
    public ReturnDataHolder getAndDeleteLowest(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes,
-      int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete) throws XmlBlasterException, SQLException {
+      int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete) throws XmlBlasterException {
 
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getAndDeleteLowest"), "Entering");
@@ -1533,14 +1608,30 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (!query.conn.getAutoCommit()) query.conn.commit();
          return ret;
       }
-      catch (SQLException ex) {
-         query.conn.rollback();
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         try {
+            query.conn.rollback();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "could not rollback: " + ex.toString());
+            ex1.printStackTrace();
+         }
+
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAndDeleteLowest", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getAndDeleteLowest", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1556,7 +1647,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
    public boolean[] deleteEntries(String queueName, String nodeId, long[] uniqueIds)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntries"), "Entering");
 
       if (!this.isConnected) {
@@ -1589,10 +1680,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
 
       }
-      catch (SQLException ex) {
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
-            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
+      catch (XmlBlasterException ex) {
          throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntries", "", ex); 
       }
       finally {
          if (conn != null) {
@@ -1601,6 +1695,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
             catch (Throwable ex) {
                this.log.error(ME, "error when setting autocommit to 'true'. reason: " + ex.toString());
+               ex.printStackTrace();
             }
             this.pool.releaseConnection(conn);
          }
@@ -1621,7 +1716,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
    public int[] deleteEntriesBatch(String queueName, String nodeId, long[] uniqueIds)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntriesBatch"), "Entering");
 
       if (!this.isConnected) {
@@ -1651,14 +1746,29 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (BatchUpdateException ex) {
-         if (!conn.getAutoCommit()) conn.commit();
+         try {
+            if (!conn.getAutoCommit()) conn.commit();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "could not commit correclty: " + ex1.toString());
+            ex1.printStackTrace();
+         }
          return ex.getUpdateCounts();
       }
-      catch (SQLException ex) {
-         if (!conn.getAutoCommit()) conn.rollback();
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         try {
+            if (!conn.getAutoCommit()) conn.commit();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "could not rollback correclty: " + ex1.toString());
+            ex1.printStackTrace();
+         }
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", "", ex); 
       }
       finally {
          try {
@@ -1668,16 +1778,17 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
          }
          if (conn != null) {
-            if (!conn.getAutoCommit()) conn.setAutoCommit(true);
+            try {
+               if (!conn.getAutoCommit()) conn.setAutoCommit(true);
+            }
+            catch (Throwable ex1) {
+               this.log.error(ME, "could not rollback correclty: " + ex1.toString());
+               ex1.printStackTrace();
+            }
             this.pool.releaseConnection(conn);
          }
       }
    }
-
-
-
-
-
 
 
    /**
@@ -1687,7 +1798,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
    public int deleteEntry(String queueName, String nodeId, long uniqueId)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntry"), "Entering");
 
       if (!this.isConnected) {
@@ -1708,10 +1819,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          st.setLong(3, uniqueId);
          return st.executeUpdate();
       }
-      catch (SQLException ex) {
-         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", "", ex); 
       }
       finally {
          try {
@@ -1737,7 +1851,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *        fit into this size, the first entry is taken anyway (to avoid deadlocks)
     */
    public ReturnDataHolder deleteFirstEntries(String queueName, String nodeId, long numOfEntries, long amount)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteFirstEntries called"), "Entering");
 
       ReturnDataHolder ret = new ReturnDataHolder();
@@ -1786,13 +1900,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
 
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "deleteFirstEntries"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "deleteFirstEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteFirstEntries", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteFirstEntries", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1812,7 +1935,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *
     */
    public ArrayList getEntriesByPriority(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
 
       String queueName = storageId.getStrippedId();
 
@@ -1835,13 +1958,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Found " + ret.size() + " entries");
          return ret;
       }
-      catch (SQLException ex) {
-        if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesByPriority"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+        if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesByPriority"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesByPriority", "", ex); 
-        else throw ex;
+        else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesByPriority", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1855,7 +1987,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *
     */
    public ArrayList getEntriesBySamePriority( StorageId storageId, String nodeId, int numOfEntries, long numOfBytes)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       // 65 ms (for 10000 msg)
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Entering");
@@ -1880,13 +2012,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesBySamePriority", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesBySamePriority", "", ex); 
       }
       finally {
-         if(query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1900,7 +2041,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *
     */
    public ArrayList getEntries(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntries"), "Entering");
 
@@ -1919,12 +2060,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1936,7 +2083,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     */
    public ArrayList getEntriesWithLimit(StorageId storageId, String nodeId, I_Entry limitEntry)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Entering");
 
@@ -1956,13 +2103,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Found " + ret.size() + " entries");
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesWithLimit"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesWithLimit"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesWithLimit", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesWithLimit", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -1971,27 +2127,31 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     */
    public long removeEntriesWithLimit(StorageId storageId, String nodeId, I_Entry limitEntry, boolean inclusive)
-      throws XmlBlasterException, SQLException {
-      String queueName = storageId.getStrippedId();
-      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Entering");
-
-      if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Currently not possible. No connection to the DB");
-         return 0L;
+      throws XmlBlasterException {
+      try {
+         String queueName = storageId.getStrippedId();
+         if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Entering");
+        
+         if (!this.isConnected) {
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Currently not possible. No connection to the DB");
+            return 0L;
+         }
+        
+         int limitPrio = limitEntry.getPriority();
+         long limitId = limitEntry.getUniqueId();
+        
+         String req = null;
+         if (inclusive) 
+            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
+         else
+            req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
+         int ret = update(req);
+         if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
+         return (long)ret;
       }
-
-      int limitPrio = limitEntry.getPriority();
-      long limitId = limitEntry.getUniqueId();
-
-      String req = null;
-      if (inclusive) 
-         req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId <= "  + limitId + ") )";
-      else
-         req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") )";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeEntriesWithLimit"), "Request: '" + req + "'");
-      int ret = update(req);
-      if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
-      return (long)ret;
+      catch (SQLException ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeEntriesWithLimit", "", ex); 
+      }
    }
 
 
@@ -2000,7 +2160,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * If the list is empty or null, an empty ArrayList object is returned.
     */
    public ArrayList getEntries(StorageId storageId, String nodeId, long[] dataids)
-      throws XmlBlasterException, SQLException {
+      throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntries"), "Entering");
       if (!this.isConnected) {
@@ -2033,13 +2193,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
 
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
 
    }
@@ -2050,7 +2219,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * how big the size is.
     */
    public final long getNumOfEntries(String queueName, String nodeId)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
       if (!this.isConnected) {
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Currently not possible. No connection to the DB");
          return 0L;
@@ -2067,13 +2236,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Num=" + ret);
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfEntries"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfEntries", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfEntries", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -2083,7 +2261,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * how big the size is.
     */
    public final long getNumOfPersistents(String queueName, String nodeId)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
 
       if (!this.isConnected) {
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistents"), "Currently not possible. No connection to the DB");
@@ -2099,13 +2277,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          long ret = query.rs.getLong(1);
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfPersistents", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfPersistents", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 
@@ -2115,7 +2302,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * how big the size is.
     */
    public final long getSizeOfPersistents(String queueName, String nodeId)
-      throws SQLException, XmlBlasterException {
+      throws XmlBlasterException {
       if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getSizeOfPersistent"), "Entering");
 
       if (!this.isConnected) {
@@ -2132,13 +2319,22 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          long ret = query.rs.getLong(1);
          return ret;
       }
-      catch (SQLException ex) {
-         if (handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfPersistents", "", ex); 
-         else throw ex;
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfPersistents", "", ex); 
       }
       finally {
-         if (query != null) query.close();
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
       }
    }
 

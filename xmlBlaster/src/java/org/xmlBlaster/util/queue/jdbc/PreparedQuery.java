@@ -70,7 +70,7 @@ public class PreparedQuery {
             catch (Throwable ex2) {
                this.log.warn(ME, "constructor exception occured: " + ex2.toString());
             }
-            this.pool.releaseConnection(this.conn);
+            if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -89,7 +89,7 @@ public class PreparedQuery {
             catch (Throwable ex2) {
                this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
             }
-            this.pool.releaseConnection(this.conn);
+            if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -108,7 +108,7 @@ public class PreparedQuery {
             catch (Throwable ex2) {
                this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
             }
-            this.pool.releaseConnection(this.conn);
+            if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -173,10 +173,10 @@ public class PreparedQuery {
             else this.conn.commit();
             this.conn.setAutoCommit(true);
          }
-        if (this.st != null) {
-           st.close();
-           this.st = null;
-        }
+         if (this.st != null) {
+            st.close();
+            this.st = null;
+         }
      }
      catch (Throwable ex) {
         this.log.warn(ME, "close: exception when closing statement: " + ex.toString());

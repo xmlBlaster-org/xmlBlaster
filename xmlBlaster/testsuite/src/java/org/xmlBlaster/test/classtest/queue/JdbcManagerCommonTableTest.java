@@ -14,7 +14,7 @@ import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import java.util.Properties;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
-import java.sql.SQLException;
+// import java.sql.SQLException;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import java.util.ArrayList;
 
@@ -104,7 +104,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
             // this implicilty creates a node called "Fritz" too
             this.manager.addQueue(queueName, "Fritz", 1000, 3000);
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             assertTrue(me + " an exception here should not occur since addQueue adds also a node if it does not exist", false);
          }
  
@@ -131,7 +131,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
             this.manager.addEntry(queueName, "Fritz", entry);
             assertTrue(me + " adding an entry with no queue nor node associated should fail", false);         
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             this.log.info(me, "the previous exception is expected and is OK in this context");
          }
          this.manager.addNode("Fritz");
@@ -139,7 +139,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
             this.manager.addEntry(queueName, "Fritz", entry);
             assertTrue(me + " adding an entry with no queue associated should fail", false);
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             this.log.info(me, "the previous exception is expected and is OK in this context");
          }
          ret = this.manager.addQueue(queueName, "Fritz", 200000, 1000);

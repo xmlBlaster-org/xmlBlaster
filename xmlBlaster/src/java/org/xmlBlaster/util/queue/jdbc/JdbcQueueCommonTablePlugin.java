@@ -27,7 +27,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
+// import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfEntries = getNumOfEntries_();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "resetCoutners exception occured: " + ex.getMessage());
+         this.log.error(ME, "resetCounters exception occured: " + ex.getMessage());
       }
    }
 
@@ -135,34 +135,27 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       throws XmlBlasterException
    {
       if (this.isDown) {
-         try {
-            this.property = null;
-            setProperties(userData);
-            this.glob = this.property.getGlobal();
-            this.log = this.glob.getLog("jdbc");
-            this.ME = this.getClass().getName() + "-" + uniqueQueueId;
-            this.storageId = uniqueQueueId;
+         this.property = null;
+         setProperties(userData);
+         this.glob = this.property.getGlobal();
+         this.log = this.glob.getLog("jdbc");
+         this.ME = this.getClass().getName() + "-" + uniqueQueueId;
+         this.storageId = uniqueQueueId;
 
-            this.manager = this.glob.getJdbcQueueManagerCommonTable(this.pluginInfo);
-            this.manager.setUp();
+         this.manager = this.glob.getJdbcQueueManagerCommonTable(this.pluginInfo);
+         this.manager.setUp();
 
-//            this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
-            String nodeId = this.glob.getStrippedId();
-            this.manager.addNode(nodeId);
-            this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxEntries());
+         String nodeId = this.glob.getStrippedId();
+         this.manager.addNode(nodeId);
+         this.manager.addQueue(this.storageId.getStrippedId(), nodeId, this.property.getMaxBytes(), this.property.getMaxEntries());
 
-            this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
-            this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
+         this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
 
-            this.isDown = false;
-            if (log.TRACE) log.trace(ME, "Successful initialized");
-         }
-         catch (SQLException ex) {
-            ex.printStackTrace();
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "sql exception in initialize(" + uniqueQueueId + ")", ex);
-         }
+         this.isDown = false;
+         if (log.TRACE) log.trace(ME, "Successful initialized");
       }
 
       boolean dbg = this.glob.getProperty().get("queue/debug", false);
@@ -246,12 +239,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#getEntries()
     */
    public ArrayList getEntries() throws XmlBlasterException {
-      try {
-         return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), -1, -1L);
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getEntries() caught sql exception, status is" + toXml(""), ex);
-      }
+      return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), -1, -1L);
    }
 
    /**
@@ -306,9 +294,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                return true;
             }
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             resetCounters();
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "put(entry) caught sql exception, status is" + toXml(""), ex);
+            throw ex;
          }
       }
       return false;
@@ -319,7 +307,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public void put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
       throws XmlBlasterException {
-      SQLException ex0 =  null;
+      XmlBlasterException ex0 =  null;
 
       if (queueEntries == null) return;
 
@@ -358,13 +346,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                }
             }
          }
-         catch (SQLException ex) {
-            this.log.error(ME, "put: sql exception: " + ex.getMessage() + " state: " + toXml(""));
+         catch (XmlBlasterException ex) {
             ex0 = ex;
             resetCounters();
          }
          if (ex0 != null)
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "put(entry[]) caught sql exception, status is" + toXml(""), ex0);
+            throw ex0;
       }
 
       if (this.putListener != null && !ignorePutInterceptor) {
@@ -428,9 +415,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return ret;
          }
       }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "take(int,long) caught sql exception, status is" + toXml(""), ex);
-      }
       finally {
          resetCounters();
       }
@@ -469,9 +453,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return ret.list;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "takeLowest() caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -489,13 +473,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          maxPriority = limitEntry.getPriority();
       }
 
-      try {
-         ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, false);
-         return ret.list;
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekLowest() caught sql exception, status is" + toXml(""), ex);
-      }
+      ReturnDataHolder ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, false);
+      return ret.list;
    }
 
 
@@ -504,14 +483,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public I_QueueEntry peek() throws XmlBlasterException
    {
-      try {
-         ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), 1, -1L);
-         if (ret.size() < 1) return null;
-         return (I_QueueEntry)ret.get(0);
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peek() caught sql exception, status is" + toXml(""), ex);
-      }
+      ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), 1, -1L);
+      if (ret.size() < 1) return null;
+      return (I_QueueEntry)ret.get(0);
    }
 
 
@@ -520,13 +494,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      try {
-         ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
-         return ret;
-      }
-      catch (SQLException ex)  {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peek(int,long) caught sql exception, status is" + toXml(""), ex);
-      }
+      ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+      return ret;
    }
 
    /**
@@ -534,13 +503,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      try {
-         ArrayList ret = this.manager.getEntriesBySamePriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
-         return ret;
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekSamePriority(int,long) caught sql exception, status is" + toXml(""), ex);
-      }
+      ArrayList ret = this.manager.getEntriesBySamePriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
+      return ret;
    }
 
    /**
@@ -548,13 +512,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      try {
-         ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
-         return ret;
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithPriority() caught sql exception, status is" + toXml(""), ex);
-      }
+      ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, minPriority, maxPriority);
+      return ret;
    }
 
 
@@ -565,12 +524,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
       if (limitEntry == null) return new ArrayList();
-      try {
-         return this.manager.getEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry);
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
-      }
+      return this.manager.getEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry);
    }
 
    /**
@@ -588,9 +542,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return ret;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -604,7 +558,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public int remove() throws XmlBlasterException {
       try {
-
          synchronized(this.modificationMonitor) {
             ReturnDataHolder ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
             this.numOfEntries -= (int)ret.countEntries;
@@ -617,9 +570,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return (int)ret.countEntries;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "remove() caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -646,9 +599,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return ret.countEntries;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "remove(long,long) caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -674,13 +627,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @param msgQueueEntry the entry to erase.
     */
    public boolean[] removeRandom(long[] dataIdArray) throws XmlBlasterException {
-      try {
-         ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), dataIdArray);
-         return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeRandom(long[]) caught sql exception, status is" + toXml(""), ex);
-      }
+      ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), dataIdArray);
+      return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
    }
 
 
@@ -689,34 +637,25 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public int removeRandom(I_Entry entry) throws XmlBlasterException {
       if (entry == null) return 0;
-//      I_Entry[] arr = new I_Entry[1];
-//      arr[0] = entry;
-//      return (int)removeRandom(arr);
+      long id = entry.getUniqueId();
+      long currentAmount = entry.getSizeInBytes();
+      long currentPersistentSize = 0L;
+      long currentPersistentEntries = 0L;
 
-      try {
-         long id = entry.getUniqueId();
-         long currentAmount = entry.getSizeInBytes();
-         long currentPersistentSize = 0L;
-         long currentPersistentEntries = 0L;
-
-         if (entry.isPersistent()) {
-            currentPersistentSize += currentAmount;
-            currentPersistentEntries = 1L;
-         }
-
-         synchronized(this.modificationMonitor) {
-            int ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
-            this.numOfEntries--;
-            if (ret > 0) { // then we need to retrieve the values
-               this.numOfBytes -= currentAmount;
-               this.numOfPersistentBytes -= currentPersistentSize;
-               this.numOfPersistentEntries -= currentPersistentEntries;
-            }
-            return ret;
-         }
+      if (entry.isPersistent()) {
+         currentPersistentSize += currentAmount;
+         currentPersistentEntries = 1L;
       }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeRandom(entry) caught sql exception, status is" + toXml(""), ex);
+
+      synchronized(this.modificationMonitor) {
+         int ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
+         this.numOfEntries--;
+         if (ret > 0) { // then we need to retrieve the values
+            this.numOfBytes -= currentAmount;
+            this.numOfPersistentBytes -= currentPersistentSize;
+            this.numOfPersistentEntries -= currentPersistentEntries;
+         }
+         return ret;
       }
    }
 
@@ -767,13 +706,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                this.numOfPersistentBytes -= currentPersistentSize;
                this.numOfPersistentEntries -= currentPersistentEntries;
             }
-//            return ret;
             return tmp;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeRandom(entry[]) caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -805,9 +743,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             return ret;
          }
       }
-      catch (SQLException ex) {
+      catch (XmlBlasterException ex) {
          resetCounters();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeTransient() caught sql exception, status is" + toXml(""), ex);
+         throw ex;
       }
    }
 
@@ -827,21 +765,16 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private final long getNumOfEntries_() throws XmlBlasterException {
       if (this.numOfEntries > -1L && !this.debug) return this.numOfEntries;
       synchronized (this.modificationMonitor) {
-         try {
-            long oldValue = this.numOfEntries;
-            this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.debug) {
-               if (oldValue != this.numOfEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  String txt = "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'";
-                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
-               }
+         long oldValue = this.numOfEntries;
+         this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         if (this.debug) {
+            if (oldValue != this.numOfEntries && oldValue != -999L) {  // don't log if explicitly set the oldValue
+               String txt = "getNumOfEntries: an inconsistency occured between the cached value and the real value of 'numOfEntries': it was '" + oldValue + "' but should have been '" + this.numOfEntries + "'";
+               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
-            else if (this.log.TRACE) this.log.warn(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
-            return this.numOfEntries;
          }
-         catch (SQLException ex) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfEntries_() caught sql exception, status is" + toXml(""), ex);
-         }
+         else if (this.log.TRACE) this.log.warn(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
+         return this.numOfEntries;
       }
    }
 
@@ -890,9 +823,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
             return this.numOfPersistentEntries;
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             if (verbose) { // If called from toXml() we need to suppress this exeption because we here call toXml() again
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfPersistentEntries_() caught sql exception, status is" + toXml(""), ex);
+               throw ex;   // the verbose flag is probably not needed anymore ...
             }
             return -1L;
          }
@@ -939,21 +872,16 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private long getNumOfBytes_() throws XmlBlasterException {
       if (this.numOfBytes > -1L && !this.debug) return this.numOfBytes;
       synchronized (this.modificationMonitor) {
-         try {
-            long oldValue = this.numOfBytes;
-            this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
-            if (this.debug) {
-               if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
-                  String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
-                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
-               }
+         long oldValue = this.numOfBytes;
+         this.numOfBytes = this.manager.getNumOfBytes(getStorageId().getStrippedId(), this.glob.getStrippedId());
+         if (this.debug) {
+            if (oldValue != this.numOfBytes && oldValue != -999L) {  // don't log if explicitly set the oldValue
+               String txt = "getNumOfBytes: an inconsistency occured between the cached value and the real value of 'numOfPersistentEntries': it was '" + oldValue + "' but should have been '" + this.numOfBytes + "'";
+               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
-            else if (this.log.TRACE) this.log.warn(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
-            return this.numOfBytes;
          }
-         catch (SQLException ex) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfBytes_() caught sql exception, status is" + toXml(""), ex);
-         }
+         else if (this.log.TRACE) this.log.warn(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
+         return this.numOfBytes;
       }
    }
 
@@ -1002,9 +930,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
             return this.numOfPersistentBytes;
          }
-         catch (SQLException ex) {
+         catch (XmlBlasterException ex) {
             if (verbose) { // If called from toXml() we need to suppress this exeption because we here call toXml() again
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getNumOfPersistentBytes_() caught sql exception, status is" + toXml(""), ex);
+               throw ex; // probably verbose is not needed anymore ...
             }
             return -1L;
          }
@@ -1067,13 +995,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfPersistentBytes = 0L;
          return ret.countEntries;
       }
-      catch (SQLException ex)
-      {
-         this.log.error(ME, "sql exception: " + ex.getMessage());
-         return 0;
-      }
-      catch (XmlBlasterException ex)
-      {
+      catch (XmlBlasterException ex) {
          this.log.error(ME, "exception: " + ex.getMessage());
          return 0;
       }
@@ -1186,32 +1108,21 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * database.
     */
    public void destroy() throws XmlBlasterException {
-      try {
-         this.clear();
-         this.shutdown();
-//         long ret = this.manager.releaseTable(this.storageId.getStrippedId(), this.associatedTable);
-         this.property = null;
-         this.manager.cleanUp(this.storageId.getStrippedId(), this.glob.getStrippedId());
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "destroy() caught sql exception, status is" + toXml(""), ex);
-      }
+      this.clear();
+      this.shutdown();
+      this.property = null;
+      this.manager.cleanUp(this.storageId.getStrippedId(), this.glob.getStrippedId());
    }
 
 
    /////////////////////////// I_Map implementation ///////////////////////
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
-      try {
-         long[] idArr = new long[] { uniqueId };
-         ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), idArr);
-         if (list.size() < 1) {
-            return null;
-         }
-         return (I_MapEntry)list.get(0);
+      long[] idArr = new long[] { uniqueId };
+      ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), idArr);
+      if (list.size() < 1) {
+         return null;
       }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "sql exception in get(" + uniqueId + ")", ex);
-      }
+      return (I_MapEntry)list.get(0);
    }
 
    /**
