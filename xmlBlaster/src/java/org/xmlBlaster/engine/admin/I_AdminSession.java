@@ -26,7 +26,7 @@ public interface I_AdminSession {
    /** How many messages are max. allowed in this clients session callback queue */
    public long getCbQueueMaxMsgs();
    /** Comma separated list of all subscriptionId of this login session */
-   public String getSubscribeList() throws XmlBlasterException;
+   public String getSubscriptionList() throws XmlBlasterException;
    /** Destroy the session (force logout) */
    public String getKillSession() throws XmlBlasterException;
 }
