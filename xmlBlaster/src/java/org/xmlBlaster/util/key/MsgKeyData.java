@@ -142,7 +142,7 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
    /** java org.xmlBlaster.util.key.MsgKeyData */
    public static void main(String[] args) {
       MsgKeyData key = new MsgKeyData(null);
-      String clientTags = "<agent>\n" +
+      String clientTags = "<agent xmlns:aa='http://XX'>\n" +
                           "<![CDATA[ Hello\n" +
                           " world\n]]>" +
                           "</agent>";
