@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.10 2002/06/02 21:38:23 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.11 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,6 +19,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -69,7 +70,7 @@ public class TestCallback extends TestCase implements I_Callback
          ConnectQos qos = new ConnectQos(glob, "admin", passwd);
          conAdmin.connect(qos, this);
 
-         subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null);
+         subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeDeadLetterOid + " done");
       }
       catch (Exception e) {
@@ -87,7 +88,7 @@ public class TestCallback extends TestCase implements I_Callback
    {
       try {
          if (conAdmin != null) {
-            String[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
+            EraseRetQos[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) Log.error(ME, "ERROR: Erased " + strArr.length + " messages");
             conAdmin.disconnect(new DisconnectQos());
          }
@@ -112,7 +113,7 @@ public class TestCallback extends TestCase implements I_Callback
 
          con.shutdownCb(); // Destroy the callback server
 
-         String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null);
+         String subscribeOid = con.subscribe("<key oid='testCallbackMsg'/>", null).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
 
          MessageUnit msgUnit = new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);

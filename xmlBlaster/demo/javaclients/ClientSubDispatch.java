@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.9 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.10 2002/06/03 09:39:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -125,7 +126,7 @@ public class ClientSubDispatch implements I_Callback
          // cleaning up .... erase() the previous published message
          xmlKey = "<key oid='" + publishOid1 + "' queryType='EXACT'>\n" +
                   "</key>";
-         String[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
+         EraseRetQos[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " message.");
 
          xmlKey = "<key oid='" + publishOid2 + "' queryType='EXACT'>\n" +

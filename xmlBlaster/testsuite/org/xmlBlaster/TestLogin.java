@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.25 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.26 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -118,21 +119,19 @@ public class TestLogin extends TestCase implements I_Callback
       {
          String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
-         String[] strArr = null;
          try {
-            strArr = callbackConnection.erase(xmlKey, qos);
+            EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
+            if (arr != null && arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
-         if (strArr != null && strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
 
       {
          String xmlKey = "<key oid='" + secondOid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
-         String[] strArr = null;
          try {
-            strArr = callbackConnection.erase(xmlKey, qos);
+            EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
+            if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
-         if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       }
 
       callbackConnection.disconnect(null);
@@ -154,16 +153,15 @@ public class TestLogin extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       numReceived = 0;
-      String subscribeOid = null;
       try {
-         subscribeOid = callbackConnection.subscribe(xmlKey, qos);
+         String subscribeOid = callbackConnection.subscribe(xmlKey, qos).getSubscriptionId();
+         assertTrue("returned null subscribeOid", subscribeOid != null);
+         assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assertTrue("returned null subscribeOid", subscribeOid != null);
-      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 

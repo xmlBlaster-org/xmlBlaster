@@ -270,7 +270,7 @@ public class PublishTest extends TestCase {
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
          sk.setDomain(domain);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeRetQos subId = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                assertInUpdate = heronGlob.getId() + ": Reveiving unexpected asynchronous update message";
                assertEquals(assertInUpdate, oid, updateKey.getOid());
@@ -345,7 +345,7 @@ public class PublishTest extends TestCase {
          updateCounterBilbo = 0;
 
          System.err.println("->Check unSubscribe from client frodo ...");
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subId);
+         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subId.getSubscriptionId());
          UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
          frodoCon.unSubscribe(uk.toXml(), uq.toXml());
 

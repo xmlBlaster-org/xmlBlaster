@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.34 2002/06/02 21:38:23 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.35 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,6 +17,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.I_Callback;
 
 import junit.framework.*;
@@ -121,11 +122,10 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
       try {
-         strArr = senderConnection.erase(xmlKey, qos);
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       senderConnection.logout();
    }
@@ -148,7 +148,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

@@ -72,11 +72,11 @@ public class HelloWorld4
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("SomeOtherMessage");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId1 = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeRetQos sr1 = con.subscribe(sk.toXml(), sq.toXml());
 
          sk = new SubscribeKeyWrapper("HelloWorld4");
          sq = new SubscribeQosWrapper();
-         String subId2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeRetQos sr2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld4"))
                   log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in HelloWorld4 handler");
@@ -113,10 +113,10 @@ public class HelloWorld4
                EraseQosWrapper eq = new EraseQosWrapper();
 
                EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
-               con.erase(ek.toXml(), eq.toXml());
+               EraseRetQos[] er = con.erase(ek.toXml(), eq.toXml());
                
                ek = new EraseKeyWrapper("SomeOtherMessage");
-               con.erase(ek.toXml(), eq.toXml());
+               er = con.erase(ek.toXml(), eq.toXml());
             }
             catch (XmlBlasterException e) {
                log.error(ME, "Houston, we have a problem: " + e.toString());

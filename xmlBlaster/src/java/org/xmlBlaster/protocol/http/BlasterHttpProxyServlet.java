@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.59 2002/06/02 21:32:46 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.60 2002/06/03 09:38:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -16,6 +16,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.*;
 
@@ -422,12 +424,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             if (oid != null) {
                SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(oid);
                //SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-               String ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);
-               Log.info(ME, "Subscribed to simple key.oid=" + oid + ": " + ret);
+               SubscribeRetQos ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);
+               Log.info(ME, "Subscribed to simple key.oid=" + oid + ": " + ret.getSubscriptionId());
             }
             else if (key != null) {
-               String ret = xmlBlaster.subscribe(key, qos);
-               Log.info(ME, "Subscribed to " + key + ": SubscriptionId=" + ret + " qos=" + qos);
+               SubscribeRetQos ret = xmlBlaster.subscribe(key, qos);
+               Log.info(ME, "Subscribed to " + key + ": SubscriptionId=" + ret.getSubscriptionId() + " qos=" + qos);
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
@@ -488,14 +490,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             if (oid != null) {
                EraseKeyWrapper xmlKey = new EraseKeyWrapper(oid);
                //EraseQosWrapper xmlQos = new EraseQosWrapper();
-               String[] ret = xmlBlaster.erase(xmlKey.toXml(), qos);
+               EraseRetQos[] ret = xmlBlaster.erase(xmlKey.toXml(), qos);
                for (int ii=0; ii<ret.length; ii++)
-                  Log.info(ME, "Erased " + ret[ii]);
+                  Log.info(ME, "Erased " + ret[ii].getOid());
             }
             else if (key != null) {
-               String ret[] = xmlBlaster.erase(key, qos);
+               EraseRetQos ret[] = xmlBlaster.erase(key, qos);
                for (int ii=0; ii<ret.length; ii++)
-                  Log.info(ME, "Erased " + ret[ii]);
+                  Log.info(ME, "Erased " + ret[ii].getOid());
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";

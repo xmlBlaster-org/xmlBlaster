@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.33 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.34 2002/06/03 09:39:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -94,7 +95,7 @@ public class ClientSub implements I_Callback
             SubscribeQosWrapper qos = new SubscribeQosWrapper();
 
             try {
-               subscriptionId = blasterConnection.subscribe(key.toXml(), qos.toXml());
+               subscriptionId = blasterConnection.subscribe(key.toXml(), qos.toXml()).getSubscriptionId();
                Log.info(ME, "Subscribe done, there should be no Callback, subcriptionId=" + subscriptionId);
             } catch(XmlBlasterException e) {
                Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -160,11 +161,10 @@ public class ClientSub implements I_Callback
          //----------- cleaning up .... erase() the previous message OID -------
          {
             String xmlKey = "<key oid='" + pubRetQos.getOid() + "' queryType='EXACT'/>";
-            String[] strArr = new String[0];
             try {
-               strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
+               EraseRetQos[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
+               if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
             } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-            if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
          }
       }
       catch (Exception e) {

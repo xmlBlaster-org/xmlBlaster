@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.21 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.22 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,6 +18,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.Address;
@@ -133,11 +134,10 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
                       "   //TestFailSavePing-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
       try {
-         strArr = con.erase(xmlKey, qos);
+         EraseRetQos[] arr = con.erase(xmlKey, qos);
+         assertEquals("Wrong number of message erased", 1, arr.length);
       } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.reason, false); }
-      assertEquals("Wrong number of message erased", 1, strArr.length);
 
       Util.delay(500L);    // Wait some time
       con.logout();
@@ -161,15 +161,14 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
                       "   //TestFailSavePing-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      String subscribeOid = null;
       try {
-         subscribeOid = con.subscribe(xmlKey, qos);
+         String subscribeOid = con.subscribe(xmlKey, qos).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assertTrue("returned null subscribeOid", subscribeOid != null);
    }
 
 

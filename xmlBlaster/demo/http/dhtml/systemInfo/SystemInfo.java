@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.5 2001/12/17 16:42:51 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.6 2002/06/03 09:39:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
@@ -107,7 +107,7 @@ public class SystemInfo extends HttpServlet
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
 
-         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml());
+         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml()).getSubscriptionId();
          Log.info(ME, "Subscribed to " + actionType + "=" + ret);
       }
       catch (XmlBlasterException e) {

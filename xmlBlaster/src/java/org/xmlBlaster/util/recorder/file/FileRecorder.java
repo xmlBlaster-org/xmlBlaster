@@ -15,6 +15,8 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.I_CallbackRaw;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
@@ -56,6 +58,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private final String dummyS = "";
    private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
    private PublishRetQos dummyPubRet;
+   private SubscribeRetQos dummySubRet;
+   private final EraseRetQos[] dummyEraseRetQosArr = new EraseRetQos[0];
 
    private long maxEntries;
 
@@ -84,6 +88,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
       this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+      this.dummySubRet = new SubscribeRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
 
       fileName = createPathString(fn);
 
@@ -420,7 +425,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing subscribe request
    */
-  public String subscribe(String xmlKey, String qos) throws XmlBlasterException
+  public SubscribeRetQos subscribe(String xmlKey, String qos) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = "subscribe";
@@ -432,7 +437,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
     }
-    return dummyS;
+    return dummySubRet;
   }
 
   /**
@@ -505,7 +510,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing erase request
    */
-  public String[] erase(String xmlKey, String qos) throws XmlBlasterException
+  public EraseRetQos[] erase(String xmlKey, String qos) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
     cont.method = "erase";
@@ -517,7 +522,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
     }
-    return dummySArr;
+    return dummyEraseRetQosArr;
   }
 
   /**

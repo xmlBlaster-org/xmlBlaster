@@ -23,6 +23,7 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.InvocationRecorderTest.class));
       suite.addTest(new TestSuite(classtest.PublishRetQosTest.class));
       suite.addTest(new TestSuite(classtest.EraseRetQosTest.class));
+      suite.addTest(new TestSuite(classtest.SubscribeRetQosTest.class));
       return suite;
    }
 }

@@ -3,7 +3,7 @@ Name:      TestSessionCb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSessionCb.java,v 1.2 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestSessionCb.java,v 1.3 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -19,10 +19,12 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.SubscribeRetQos;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.EraseKeyWrapper;
 import org.xmlBlaster.client.EraseQosWrapper;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -97,7 +99,7 @@ public class TestSessionCb extends TestCase
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId1 = con1.subscribe(sk.toXml(), sq.toXml());
+         SubscribeRetQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
@@ -115,11 +117,11 @@ public class TestSessionCb extends TestCase
 
          sk = new SubscribeKeyWrapper(oid);
          sq = new SubscribeQosWrapper();
-         String subId2 = con2.subscribe(sk.toXml(), sq.toXml());
+         SubscribeRetQos sr2 = con2.subscribe(sk.toXml(), sq.toXml());
 
          sk = new SubscribeKeyWrapper(Constants.OID_DEAD_LETTER);
          sq = new SubscribeQosWrapper();
-         String subIdDeadLetter = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeRetQos srDeadLetter = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadLetterCounter++;
                log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in deadLetter handler, content=" + new String(content));

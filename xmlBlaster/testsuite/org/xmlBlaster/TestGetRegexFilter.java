@@ -3,7 +3,7 @@ Name:      TestGetRegexFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetRegexFilter.java,v 1.5 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestGetRegexFilter.java,v 1.6 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.GetQosWrapper;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
@@ -110,11 +111,10 @@ public class TestGetRegexFilter extends TestCase
    {
       Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
 
-      String[] strArr = null;
       try {
-         strArr = con.erase("<key oid='MSG'/>", null);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", null);
+         assertEquals("Erased", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("XmlBlasterException: " + e.reason); }
 
       con.disconnect(null);
 

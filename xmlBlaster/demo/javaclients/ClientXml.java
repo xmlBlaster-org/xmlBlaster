@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.21 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.22 2002/06/03 09:39:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -91,8 +91,8 @@ public class ClientXml implements I_Callback
                   "</key>";
          stop.restart();
          try {
-            publishOid = blasterConnection.subscribe(xmlKey, "<qos></qos>");
-            Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
+            String subId = blasterConnection.subscribe(xmlKey, "<qos></qos>").getSubscriptionId();
+            Log.trace(ME, "Subscribed to '" + subId + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
             Log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
          }

@@ -51,7 +51,7 @@ public class HelloWorld3 implements I_Callback
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld3");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeRetQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
          msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
@@ -62,13 +62,13 @@ public class HelloWorld3 implements I_Callback
          catch( InterruptedException i) {} // wait a second to receive update()
 
 
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subId);
+         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subRet.getSubscriptionId());
          UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
          con.unSubscribe(uk.toXml(), uq.toXml());
 
          EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld3");
          EraseQosWrapper eq = new EraseQosWrapper();
-         con.erase(ek.toXml(), eq.toXml());
+         EraseRetQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
          DisconnectQos dq = new DisconnectQos();
          con.disconnect(dq);

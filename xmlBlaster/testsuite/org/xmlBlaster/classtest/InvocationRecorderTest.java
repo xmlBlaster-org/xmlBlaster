@@ -10,6 +10,8 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -355,11 +357,11 @@ public class InvocationRecorderTest extends TestCase {
     */
    class Tester implements I_XmlBlaster, I_CallbackRaw
    {
-      public java.lang.String subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
+      public SubscribeRetQos subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
          assertEquals("Wrong message key", "<key oid='subscribe'/>", xmlKey);
          assertEquals("Wrong message qos", "<qos/>", qos);
          numSubscribe++;
-         return "";
+         return null;
       }
       
       public org.xmlBlaster.engine.helper.MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
@@ -415,12 +417,12 @@ public class InvocationRecorderTest extends TestCase {
          return new PublishRetQos[0];
       }
       
-      public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
+      public EraseRetQos[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException {
          assertEquals("Wrong message key", "<key oid='erase'/>", xmlKey);
          assertEquals("Wrong message qos", "<qos/>", qos);
  
          numErase++;
-         return new String[0];
+         return new EraseRetQos[0];
       }
 
       public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException {

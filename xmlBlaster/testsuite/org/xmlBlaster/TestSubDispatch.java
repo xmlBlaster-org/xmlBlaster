@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.10 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.11 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,6 +14,8 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -40,7 +42,6 @@ public class TestSubDispatch extends TestCase implements I_Callback
    private final Global glob;
    private boolean messageArrived = false;
 
-   private String subscribeOid;
    private String publishOid = "dummy";
    private XmlBlasterConnection senderConnection;
    private String senderName;
@@ -50,6 +51,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
+
+   private SubscribeRetQos subscribeRetQos = null; // declare here to allow inner class access
+
 
    /**
     * Constructs the TestSubDispatch object.
@@ -97,11 +101,10 @@ public class TestSubDispatch extends TestCase implements I_Callback
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
       try {
-         strArr = senderConnection.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.logout();
    }
@@ -121,15 +124,14 @@ public class TestSubDispatch extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       numReceived = 0;
-      subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
+         subscribeRetQos = senderConnection.subscribe(xmlKey, qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   Log.info(ME, "Receiving message with specialized update() ...");
                   numReceived += 1;
 
                   assertEquals("Wrong sender", senderName, updateQos.getSender());
-                  assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
+                  assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeRetQos.getSubscriptionId(), updateQos.getSubscriptionId());
                   assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
                   assertEquals("Message content is corrupted", new String(senderContent), new String(content));
                   assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
@@ -139,13 +141,14 @@ public class TestSubDispatch extends TestCase implements I_Callback
                   return "";
                }
             });
-         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
+         assertTrue("returned null subscribeRetQos", subscribeRetQos != null);
+         assertTrue("returned null subscribeId", subscribeRetQos.getSubscriptionId() != null);
+         assertTrue("returned subscribeId is empty", 0 != subscribeRetQos.getSubscriptionId().length());
+         Log.info(ME, "Success: Subscribe subscription-id=" + subscribeRetQos.getSubscriptionId() + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assertTrue("returned null subscribeOid", subscribeOid != null);
-      assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
    }
 
 

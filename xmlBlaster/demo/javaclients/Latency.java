@@ -55,7 +55,7 @@ public class Latency implements I_Callback
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("Latency");
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = con.subscribe(sk.toXml(), sq.toXml());
+         String subId = con.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          int numSend = glob.getProperty().get("numSend", 10);
 

@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.25 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestGet.java,v 1.26 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.GetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -91,12 +92,11 @@ public class TestGet extends TestCase
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
       try {
-         strArr = connection.erase(xmlKey, qos);
+         EraseRetQos[] arr = connection.erase(xmlKey, qos);
+         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
          Log.info(ME, "Success, erased a message");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       connection.logout();
       // Give the server some millis to finish the iiop handshake ...

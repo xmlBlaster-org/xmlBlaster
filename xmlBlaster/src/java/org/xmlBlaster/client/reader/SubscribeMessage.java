@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.15 2002/05/11 09:36:24 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.16 2002/06/03 09:36:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -17,6 +17,7 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.SubscribeRetQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -134,7 +135,8 @@ public class SubscribeMessage implements I_Callback
       try {
          SubscribeKeyWrapper xmlKeyWr = new SubscribeKeyWrapper(xmlKey, queryType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         String subscriptionId = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         SubscribeRetQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         String subscriptionId = ret.getSubscriptionId();
          Log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {

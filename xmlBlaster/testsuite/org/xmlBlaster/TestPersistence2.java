@@ -26,6 +26,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -112,11 +113,10 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
-      String[] strArr = new String[0];
       try {
-         strArr = senderConnection.erase(xmlKey, qos);
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       checkContent(false);
 
       senderConnection.logout();

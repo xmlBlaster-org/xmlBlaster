@@ -147,16 +147,16 @@ public class TestSubXPathMany extends TestCase
       try {
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("//key[@oid = 'command-navigation']", Constants.XPATH);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = con1.subscribe(sk.toXml(), sq.toXml());
+         String subId = con1.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          String xpath2 = "//key[starts-with(@oid,'command-radar')]";
          sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
          sq = new SubscribeQosWrapper();
-         subId = con2.subscribe(sk.toXml(), sq.toXml());
+         subId = con2.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
          sq = new SubscribeQosWrapper();
-         subId = con3.subscribe(sk.toXml(), sq.toXml());
+         subId = con3.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
       }
       catch (XmlBlasterException e) {
          fail("doPublish failed: " + e.toString());

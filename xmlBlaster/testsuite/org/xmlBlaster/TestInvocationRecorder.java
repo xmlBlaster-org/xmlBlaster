@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.22 2002/06/02 21:38:23 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.23 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,6 +20,8 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -148,13 +150,13 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    /**
     * @return dummy to match I_InvocationRecorder interface
     */
-   public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public SubscribeRetQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "subscribe() ...");
       numSubscribe++;
       assertEquals("subscribe(xmlKey): ", xmlKey_subscribe, xmlKey_literal);
       assertEquals("subscribe(xmlKey): ", qos_subscribe, qos_literal);
-      return dummyS;
+      return null;
    }
 
 
@@ -208,11 +210,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public EraseRetQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "erase() ...");
       numErase++;
-      return dummySArr;
+      return new EraseRetQos[0];
    }
 
 

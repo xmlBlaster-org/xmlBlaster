@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.19 2002/06/02 21:38:23 ruff Exp $
+Version:   $Id: RamTest.java,v 1.20 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.jutils.runtime.Memory;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
@@ -104,11 +105,10 @@ public class RamTest extends TestCase
          String xmlKey = "<key oid='RamTest-" + (ii+1) + "'>\n" +
                          "</key>";
          String qos = "<qos></qos>";
-         String[] strArr = null;
          try {
-            strArr = senderConnection.erase(xmlKey, qos);
-            assertTrue("returned erased oid array == null", null != strArr);
-            assertEquals("num erased messages is wrong", 1, strArr.length);
+            EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+            assertTrue("returned erased oid array == null", null != arr);
+            assertEquals("num erased messages is wrong", 1, arr.length);
          } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       }
 

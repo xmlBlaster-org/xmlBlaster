@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.13 2002/05/17 13:45:02 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.14 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -110,7 +111,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
-         String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml());
+         String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -127,11 +128,10 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    {
       Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
 
-      String[] strArr = null;
       try {
-         strArr = con.erase("<key oid='MSG'/>", null);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       con.disconnect(null);
 

@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.16 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.17 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,6 +14,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -94,13 +95,10 @@ public class TestSubXPath extends TestCase implements I_Callback
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   /xmlBlaster/key/AGENT" +
                       "</key>";
-      String qos = "<qos></qos>";
-      String[] strArr = new String[0];
       try {
-         Log.info(ME, "Erasing the " + numPublish + " messages again");
-         strArr = senderConnection.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      assertEquals("Couldn't erase the correct number of messages", numPublish, strArr.length);
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         assertEquals("Erase", numPublish, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.logout();
    }
@@ -120,7 +118,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       numReceived = 0;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

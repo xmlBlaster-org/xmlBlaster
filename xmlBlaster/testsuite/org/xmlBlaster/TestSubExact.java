@@ -14,6 +14,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -96,12 +97,10 @@ public class TestSubExact extends TestCase implements I_Callback
    {
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
-      String qos = "<qos></qos>";
-      String[] strArr = new String[0];
       try {
-         strArr = senderConnection.erase(xmlKey, qos);
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.logout();
    }
@@ -122,7 +121,7 @@ public class TestSubExact extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);

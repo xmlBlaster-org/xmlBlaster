@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.12 2002/06/02 21:35:59 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.13 2002/06/03 09:39:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -16,6 +16,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -164,11 +165,10 @@ public class ClientSubEmail implements I_Callback
             String xmlKey = // optional: "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
-            String[] strArr = null;
             try {
-               strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
+               EraseRetQos[] arr = blasterConnection.erase(xmlKey, "<qos></qos>");
+               if (arr.length != 1) Log.error(ME, "Erased " + arr.length + " messages:");
             } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-            if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
          }
 
          blasterConnection.logout();

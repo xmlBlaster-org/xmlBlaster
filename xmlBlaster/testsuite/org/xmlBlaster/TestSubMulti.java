@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.11 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.12 2002/06/03 09:40:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.client.PublishKeyWrapper;
@@ -97,11 +98,10 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      String[] strArr = new String[0];
       try {
-         strArr = con.erase("<key oid='"+publishOid+"'/>", "<qos></qos>");
-      } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         EraseRetQos[] arr = con.erase("<key oid='"+publishOid+"'/>", "<qos/>");
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       con.logout();
    }
@@ -117,13 +117,13 @@ public class TestSubMulti extends TestCase implements I_Callback
         {
           SubscribeKeyWrapper key = new SubscribeKeyWrapper("//key/location[@dest='agent-192.168.10.218']", "XPATH");
           SubscribeQosWrapper qos = new SubscribeQosWrapper();
-          String subscriptionId = con.subscribe(key.toXml(), qos.toXml(),this);
+          con.subscribe(key.toXml(), qos.toXml(),this);
         }
 
         {
           SubscribeKeyWrapper key = new SubscribeKeyWrapper("//key[@contentMimeExtended='action']/location[@dest='agent-192.168.10.218' and @driver='PSD1']", "XPATH");
           SubscribeQosWrapper qos = new SubscribeQosWrapper();
-          String subscriptionId = con.subscribe(key.toXml(), qos.toXml(), this);
+          con.subscribe(key.toXml(), qos.toXml(), this);
         }
       }
       catch(XmlBlasterException e) {

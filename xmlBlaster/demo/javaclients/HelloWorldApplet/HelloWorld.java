@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.16 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.17 2002/06/03 09:39:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -153,9 +153,8 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       if (corbaConnection != null) {
          String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
-         String[] strArr = null;
          try {
-            strArr = corbaConnection.erase(xmlKey, qos);
+            corbaConnection.erase(xmlKey, qos);
          } catch(XmlBlasterException e) { Log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
       }
 

@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.5 2002/06/02 21:18:46 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.6 2002/06/03 09:38:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -20,6 +20,8 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.util.*;
@@ -64,6 +66,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    private final String dummyS = new String();
    private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
    private PublishRetQos dummyPubRet;
+   private SubscribeRetQos dummySubRet;
+   private final EraseRetQos[] dummyEraseRetQosArr = new EraseRetQos[0];
 
 
    /** Empty constructor for plugin manager */
@@ -78,6 +82,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    {
       this.log = glob.getLog("recorder");
       this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+      this.dummySubRet = new SubscribeRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+
       if (log.CALL) log.call(ME, "Initializing new RamRecorder(" + maxEntries + ") ...");
       if (maxEntries >= Integer.MAX_VALUE) {
          log.warn(ME, "Stripping queue size to Integer.MAX_VALUE");
@@ -315,7 +321,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full with id="<driverName>.MaxSize"
     */
-   public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public SubscribeRetQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "subscribe";
@@ -327,7 +333,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
-      return dummyS;
+      return dummySubRet;
    }
 
 
@@ -410,7 +416,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public EraseRetQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "erase";
@@ -422,7 +428,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
-      return dummySArr;
+      return dummyEraseRetQosArr;
    }
 
 

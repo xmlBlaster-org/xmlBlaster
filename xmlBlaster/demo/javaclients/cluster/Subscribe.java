@@ -48,10 +48,10 @@ public class Subscribe implements I_Callback
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("PublishToSlave", Constants.EXACT);
          sk.setDomain(domain);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         String subId = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeRetQos subId = con.subscribe(sk.toXml(), sq.toXml());
          Log.info(ME, "Subscribed message of domain='" + sk.toXml() + //domain +
                       "' from xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
-                      ", the returned subscriptionId is: " + subId);
+                      ", the returned subscriptionId is: " + subId.getSubscriptionId());
       }
       catch (Exception e) {
          Log.error("Subscribe-Exception", e.toString());
