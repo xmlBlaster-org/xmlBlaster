@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.68 2000/06/04 19:13:24 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.69 2000/06/04 21:13:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.68 $
+ * @version $Revision: 1.69 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -108,7 +108,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
 
    /**
-    * One instance of this represent one xmlBlaster server.
+    * One instance of this represents one xmlBlaster server.
     * @param authenticate The authentication service
     */
    public RequestBroker(Authenticate authenticate) throws XmlBlasterException
@@ -781,19 +781,18 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *         for further publishing to the same MessageUnit<br />
     *         Rejected Messages will contain an empty string ""
     */
-   public String[] publish(ClientInfo clientInfo, MessageUnit[] msgUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
+   public String[] publish(ClientInfo clientInfo, MessageUnit[] msgUnitArr, PublishQoS[] qosArr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish(array.length='" + msgUnitArr.length + "') ...");
 
-      if (msgUnitArr == null || qos_literal_Arr==null || msgUnitArr.length != qos_literal_Arr.length) {
+      if (msgUnitArr == null || qosArr==null || msgUnitArr.length != qosArr.length) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publishArr() are invalid");
       }
 
       String[] returnArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         PublishQoS publishQoS = new PublishQoS(qos_literal_Arr[ii]);
-         returnArr[ii] = publish(clientInfo, msgUnitArr[ii], publishQoS);
+         returnArr[ii] = publish(clientInfo, msgUnitArr[ii], qosArr[ii]);
       }
 
       return returnArr;

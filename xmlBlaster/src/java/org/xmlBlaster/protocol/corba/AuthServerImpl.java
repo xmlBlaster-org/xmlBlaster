@@ -3,13 +3,14 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.5 2000/06/04 19:13:24 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.6 2000/06/04 21:13:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
@@ -17,7 +18,6 @@ import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientQoS;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.engine.RequestBroker;
 
 import org.omg.PortableServer.*;
 import jacorb.poa.util.POAUtil;
@@ -60,12 +60,14 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * - Only a few threads are enough to serve many clients
     *
     * @param The orb
+    * @parma authenticate The authentication service
+    * @param blaster The interface to access xmlBlaster
     */
-   public AuthServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate, RequestBroker requestBroker)
+   public AuthServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate, I_XmlBlaster blaster)
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
       this.orb = orb;
-                this.authenticate = authenticate;
+      this.authenticate = authenticate;
 
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -91,7 +93,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          // USING TIE:
          // xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
          // NOT TIE:
-         xmlBlasterServant = new ServerImpl(orb, authenticate, requestBroker);
+         xmlBlasterServant = new ServerImpl(orb, blaster);
 
          xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
          poaMgr.activate();

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.7 2000/06/04 19:13:24 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.8 2000/06/04 21:13:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -12,15 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
-import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQoS;
-import org.xmlBlaster.engine.xml2java.SubscribeQoS;
-import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
-import org.xmlBlaster.engine.xml2java.EraseQoS;
-import org.xmlBlaster.engine.xml2java.GetQoS;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.*;
 
 
@@ -35,38 +27,27 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
    private final String ME = "ServerImpl";
    private org.omg.CORBA.ORB orb;
-   private RequestBroker requestBroker;
-   private Authenticate authenticate;
+   private I_XmlBlaster blaster;
 
 
    /**
     * Construct a persistently named object.
     */
-   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate, RequestBroker requestBroker) throws XmlBlasterException
+   public ServerImpl(org.omg.CORBA.ORB orb, I_XmlBlaster blaster) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
-      this.authenticate = authenticate;
       this.orb = orb;
-      this.requestBroker = requestBroker;
-   }
-
-
-   /**
-    * Access the authentication server
-    */
-   public Authenticate getAuthenticate()
-   {
-      return authenticate;
+      this.blaster = blaster;
    }
 
 
    /**
     * Get a handle on the request broker singleton (the engine of xmlBlaster).
-    * @return RequestBroker
+    * @return I_XmlBlaster
     */
-   public RequestBroker getRequestBroker()
+   public I_XmlBlaster getXmlBlaster()
    {
-      return requestBroker;
+      return blaster;
    }
 
 
@@ -76,17 +57,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + blaster.toXml());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      ClientInfo clientInfo = authenticate.check(getSessionId());
-
-      XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      SubscribeQoS subscribeQoS = new SubscribeQoS(qos_literal);
-      String oid = requestBroker.subscribe(clientInfo, xmlKey, subscribeQoS);
+      String oid = blaster.subscribe(getSessionId(), xmlKey_literal, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + blaster.toXml());
 
       return oid;
    }
@@ -98,17 +75,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + blaster.toXml());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      ClientInfo clientInfo = authenticate.check(getSessionId());
-
-      XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      UnSubscribeQoS xmlQoS = new UnSubscribeQoS(qos_literal);
-      requestBroker.unSubscribe(clientInfo, xmlKey, xmlQoS);
+      blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-unSubscribe()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-unSubscribe()---------\n" + blaster.toXml());
    }
 
 
@@ -118,14 +91,11 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + blaster.toXml());
 
-      ClientInfo clientInfo = authenticate.check(getSessionId());
+      String retVal = blaster.publish(getSessionId(), msgUnit, qos_literal);
 
-      PublishQoS publishQoS = new PublishQoS(qos_literal);
-      String retVal = requestBroker.publish(clientInfo, msgUnit, publishQoS);
-
-      if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + blaster.toXml());
 
       return retVal;
    }
@@ -137,8 +107,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + requestBroker.toXml());
-      ClientInfo clientInfo = authenticate.check(getSessionId());
+      if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + blaster.toXml());
 
       String[] returnArr = new String[0];
 
@@ -148,9 +117,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       }
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
 
-      String[] strArr = requestBroker.publish(clientInfo, msgUnitArr, qos_literal_Arr);
+      String[] strArr = blaster.publishArr(getSessionId(), msgUnitArr, qos_literal_Arr);
 
-      if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + blaster.toXml());
       return strArr;
    }
 
@@ -161,16 +130,11 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + requestBroker.toXml());
-      ClientInfo clientInfo = authenticate.check(getSessionId());
+      if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + blaster.toXml());
 
-      XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      EraseQoS xmlQoS = new EraseQoS(qos_literal);
-      if (Log.CALLS) Log.calls(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
+      String [] retArr = blaster.erase(getSessionId(), xmlKey_literal, qos_literal);
 
-      String [] retArr = requestBroker.erase(clientInfo, xmlKey, xmlQoS);
-
-      if (Log.DUMP) Log.dump(ME, "-------END-erase()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-erase()---------\n" + blaster.toXml());
 
       return retArr;
    }
@@ -184,17 +148,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + blaster.toXml());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      ClientInfo clientInfo = authenticate.check(getSessionId());
-
-      XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      GetQoS xmlQoS = new GetQoS(qos_literal);
-      MessageUnitContainer[] msgUnitContainerArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
+      MessageUnitContainer[] msgUnitContainerArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + blaster.toXml());
 
       return msgUnitContainerArr;
    }
@@ -231,14 +191,13 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      ClientInfo clientInfoAdmin = authenticate.check(getSessionId());
-
       // !!! TODO
-      Log.warning(ME, "Checking administrator privileges is not yet implemented, admin access for " + clientInfoAdmin.toString() + " accepted");
+      Log.warning(ME, "Checking administrator privileges is not yet implemented");
+      throw new XmlBlasterException("NotImplemented", "Checking administrator privileges is not yet implemented");
 
-      requestBroker.setClientAttributes(clientName, xmlAttr_literal, qos_literal);
+      // !? blaster.setClientAttributes(clientName, xmlAttr_literal, qos_literal);
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in setClientAttributes()" + stop.nice());
+      //if (Log.TIME) Log.time(ME, "Elapsed time in setClientAttributes()" + stop.nice());
    }
 
 
@@ -267,7 +226,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
 
    /**
-    * Converts an oid into a string as a hex dump with an unique identifier "IIOP:" in front. 
+    * Converts an oid into a string as a hex dump with an unique identifier "IIOP:" in front.
     * <p />
     * Copied from JacORB POAUtil.java
     * <br />

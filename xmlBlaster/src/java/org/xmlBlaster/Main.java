@@ -3,12 +3,13 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.37 2000/06/04 19:13:23 ruff Exp $
+Version:   $Id: Main.java,v 1.38 2000/06/04 21:13:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
@@ -61,7 +62,7 @@ public class Main
    /** The singleton handle for this xmlBlaster server */
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
-   private RequestBroker requestBroker = null;
+   private I_XmlBlaster xmlBlasterImpl = null;
    private org.omg.PortableServer.POA rootPOA = null;
    private org.omg.CORBA.Object authRef = null;
 
@@ -103,10 +104,10 @@ public class Main
          rootPOA.the_POAManager().activate();
 
          authenticate = new Authenticate();
-         requestBroker = new RequestBroker(authenticate);
+         xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
-         // !!!!!!!!! This is all protocol specific !!! move away 
-         authServer = new AuthServerImpl(orb, authenticate, requestBroker);
+         // !!!!!!!!! This is all protocol specific !!! move away
+         authServer = new AuthServerImpl(orb, authenticate, xmlBlasterImpl);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
@@ -256,11 +257,11 @@ public class Main
 
 
    /**
-    * Access the requestBroker singleton.
+    * Access the xmlBlaster singleton.
     */
-   public RequestBroker getRequestBroker()
+   public I_XmlBlaster getXmlBlaster()
    {
-      return requestBroker;
+      return xmlBlasterImpl;
    }
 
 
@@ -309,12 +310,12 @@ public class Main
 
                   if (fileName == null) {
                      Log.plain(ME, authenticate.toXml());
-                     Log.plain(ME, requestBroker.toXml());
+                     Log.plain(ME, xmlBlasterImpl.toXml());
                      Log.info(ME, "Dump done");
                   }
                   else {
                      FileUtil.writeFile(fileName, authenticate.toXml());
-                     FileUtil.appendToFile(fileName, requestBroker.toXml());
+                     FileUtil.appendToFile(fileName, xmlBlasterImpl.toXml());
                      Log.info(ME, "Dumped internal state to '" + fileName + "'");
                   }
                }
