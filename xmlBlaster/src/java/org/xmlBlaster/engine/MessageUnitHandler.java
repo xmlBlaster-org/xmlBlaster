@@ -7,8 +7,7 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.util.Log;
-
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -30,6 +29,7 @@ public class MessageUnitHandler
 {
    private final static String ME = "MessageUnitHandler";
    private final Global glob;
+   private final LogChannel log;
 
    /** The broker which manages me */
    private final RequestBroker requestBroker;
@@ -74,15 +74,16 @@ public class MessageUnitHandler
    public MessageUnitHandler(RequestBroker requestBroker, String uniqueKey) throws XmlBlasterException
    {
       if (requestBroker == null || uniqueKey == null) {
-         Log.error(ME, "Invalid constructor parameter");
+         Global.instance().getLog("core").error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
 
       this.glob = requestBroker.getGlobal();
+      this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
 
-      if (Log.CALL) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
+      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
 
       // mimeType and content remains unknown until first data is fed
    }
@@ -97,22 +98,23 @@ public class MessageUnitHandler
    public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
    {
       if (requestBroker == null || xmlKey == null || msgUnitWrapper == null) {
-         Log.error(ME, "Invalid constructor parameters");
+         Global.instance().getLog("core").error(ME, "Invalid constructor parameters");
          throw new XmlBlasterException(ME, "Invalid constructor parameters");
       }
       this.glob = requestBroker.getGlobal();
+      this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
       this.xmlKey = xmlKey;
       this.msgUnitWrapper = msgUnitWrapper;
       this.msgUnitWrapper.setMessageUnitHandler(this);
       this.uniqueKey = this.xmlKey.getUniqueKey();
 
-      if (Log.CALL) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
+      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
    }
 
    public void finalize()
    {
-      if (Log.TRACE) Log.trace(ME, "finalize - garbage collect " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
    public RequestBroker getRequestBroker()
@@ -145,7 +147,7 @@ public class MessageUnitHandler
    public final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (msgUnitWrapper == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.runtime.StackTrace.getStackTrace());
+         log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.runtime.StackTrace.getStackTrace());
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnitWrapper = null");
       }
       return msgUnitWrapper;
@@ -177,9 +179,9 @@ public class MessageUnitHandler
     */
    public void erase() throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Entering erase()");
+      if (log.TRACE) log.trace(ME, "Entering erase()");
 
-      Log.warn(ME, "No subscribed client notification about message erase() yet implemented");
+      log.warn(ME, "No subscribed client notification about message erase() yet implemented");
 
       /*
       SubscriptionInfo[] arr = null; // to avoid deadlock in subscriberMap, copy subs into this array
@@ -196,7 +198,7 @@ public class MessageUnitHandler
 
       for (int ii=0; ii<arr.length; ii++) {
          if (arr[ii].isQuery()) {
-            Log.info(ME, "Query subscription is not deleted when messages is erased");
+            log.info(ME, "Query subscription is not deleted when messages is erased");
          }
          else {
             // !!!! Keep subscriptions ruff 2002-04-26
@@ -213,7 +215,7 @@ public class MessageUnitHandler
          getMessageUnitWrapper().erase();
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Problems erasing message: " + e.reason);
+         log.error(ME, "Problems erasing message: " + e.reason);
       }
 
       setIsNotPublishedWithData();
@@ -238,11 +240,11 @@ public class MessageUnitHandler
     */
    public boolean setContent(XmlKey unparsedXmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Setting content of xmlKey " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "Setting content of xmlKey " + uniqueKey);
       if (this.xmlKey == null) this.xmlKey = unparsedXmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
 
       if (publishQos.readonly() && isPublishedWithData()) {
-         Log.warn(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
+         log.warn(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
          throw new XmlBlasterException(ME+".Readonly", "Sorry, published message '" + xmlKey.getUniqueKey() + "' rejected, message is readonly.");
       }
 
@@ -291,7 +293,7 @@ public class MessageUnitHandler
 
       sub.addMessageUnitHandler(this);
 
-      if (Log.TRACE) Log.trace(ME, "You have successfully subscribed to " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "You have successfully subscribed to " + uniqueKey);
 
       if (invokeCallback(null, sub) == false) {
          Set removeSet = new HashSet();
@@ -313,7 +315,7 @@ public class MessageUnitHandler
          Iterator iterator = removeSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            Log.info(ME, "Removed subcriber [" + sub.getSessionInfo().getLoginName() + "] from message '" + sub.getXmlKey().getKeyOid() + "'");
+            log.info(ME, "Removed subcriber [" + sub.getSessionInfo().getLoginName() + "] from message '" + sub.getXmlKey().getKeyOid() + "'");
             sub.removeSubscribe();
          }
          removeSet.clear();
@@ -327,16 +329,16 @@ public class MessageUnitHandler
     */
    SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey)
    {
-      if (Log.TRACE) Log.trace(ME, "Before size of subscriberMap = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "Before size of subscriberMap = " + subscriberMap.size());
 
       SubscriptionInfo subs = null;
       synchronized(subscriberMap) {
          subs = (SubscriptionInfo)subscriberMap.remove(subscriptionInfoUniqueKey);
       }
       if (subs == null)
-         Log.warn(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+         log.warn(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
 
-      if (Log.TRACE) Log.trace(ME, "After size of subscriberMap = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + subscriberMap.size());
       return subs;
    }
 
@@ -386,7 +388,7 @@ public class MessageUnitHandler
     */
    public final void invokeCallback(SessionInfo publisherSessionInfo) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
+      if (log.TRACE) log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
       Set removeSet = null;
       synchronized(subscriberMap) {
@@ -412,7 +414,7 @@ public class MessageUnitHandler
    private final boolean invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub) throws XmlBlasterException
    {
       if (!isPublishedWithData()) {
-         if (Log.TRACE) Log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
+         if (log.TRACE) log.trace(ME, "invokeCallback() not supported, this MessageUnit was created by a subscribe() and not a publish()");
          return true;
       }
 
@@ -435,7 +437,7 @@ public class MessageUnitHandler
       }
       catch(XmlBlasterException e) {
          if (e.id.equals("CallbackFailed")) {
-            Log.warn(ME, e.toString());
+            log.warn(ME, e.toString());
             // Error handling is to unsubscribe this client
             return false;
          }
