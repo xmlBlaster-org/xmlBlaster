@@ -3,6 +3,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Current cvs
 ===========
 
+ o C++ client: Added UDP datagram support via SOCKET protocol, try
+    java org.xmlBlaster.Main -plugin/socket/useUdpForOneway true
+    PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
+    SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
+
+ o C++ client: Fixed publishOnewa()
+
+ o C++ client: Added <updateOneway/> support to SubscribeQos
+
  o Fixed to deliver correct queue size in UpdateQos
 
  o Server side SOCKET plugin: Added support to choose between UDP or TCP
