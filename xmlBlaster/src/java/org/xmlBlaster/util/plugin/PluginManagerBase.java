@@ -9,6 +9,7 @@ package org.xmlBlaster.util.plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.PluginClassLoader;
 
@@ -213,16 +214,16 @@ abstract public class PluginManagerBase implements I_PluginManager{
       }
       catch (IllegalAccessException e) {
          log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
-         throw new XmlBlasterException(ME+".NoClass", "The Plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoClass", "The Plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
       }
       catch (SecurityException e) {
          log.error(ME, "No right to access the plugin class or initializer '" + pluginName + "'");
-         throw new XmlBlasterException(ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'");
       }
       catch (Throwable e) {
          log.error(ME, "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: \n'" + e.toString() + "'");
          e.printStackTrace();
-         throw new XmlBlasterException(ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
       }
 
       // Initialize the plugin
@@ -234,7 +235,7 @@ abstract public class PluginManagerBase implements I_PluginManager{
             //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
          } catch (XmlBlasterException e) {
             //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
-            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
          }
       }
 
