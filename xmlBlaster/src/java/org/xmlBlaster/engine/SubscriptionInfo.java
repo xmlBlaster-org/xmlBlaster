@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.27 2000/09/15 17:16:15 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.28 2001/01/30 14:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -258,9 +258,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * <br>
     * @return XML state of SubscriptionInfo
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -270,7 +270,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @param extraOffset indenting of tags
     * @return XML state of SubscriptionInfo
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -291,7 +291,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       sb.append(offset + "</SubscriptionInfo>\n");
-      return sb;
+      return sb.toString();
    }
 
 }
