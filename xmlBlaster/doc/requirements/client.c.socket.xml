@@ -9,7 +9,51 @@
    <description>
      <p>
      For C client applications you can use the header XmlBlasterAccessUnparsed.h which provides access to
-     xmlBlaster in an easy way. All invocations to xmlBlaster are done by invoking function pointers
+     xmlBlaster in an easy way.
+     </p>
+     <h3>Features</h3>
+     <ul>
+        <li> Support on many OS like Windows, Windows-CE / Pocket PC,
+             UNIX, Linux and the code is easy portable to embedded devices</li>
+
+        <li> Compiles with C or with C++ compiler</li>
+
+        <li> Object/executable size is only 25 - 40 KBytes</li>
+        
+        <li> Supports synchronous xmlBlaster access with
+          connect(), disconnect(), get(), publish(), erase(), ping()<br/>
+          See example: XmlBlasterConnectionUnparsedMain.c</li>
+        
+        <li> Supports asynchronous access with client callback update()<br/>
+          See example: CallbackServerUnparsed.c</li>
+
+        <li> Supports sync and async communications with pthreads.<br/>
+          Tested on Linux and Solaris and Windows, see example <i>XmlBlasterAccessUnparsed.c</i><br/>
+          Uses posix threads DLL for Win, PocketPC, WinCE from
+             http://sources.redhat.com/pthreads-win32<br/>
+             This LGPL lib is included in our distribution 
+             xmlBlaster/src/c/socket/pthreadVC.lib</li>
+
+        <li> Reports exceptions nicely back to the client</li>
+
+        <li> The client side xmlBlasterAccessUnparsed structure has function pointers
+          for all methods to have object oriented like access,
+          see HelloWorld.c as a usage example</li>
+
+        <li> You can create multiple independant instances of client connections or callback servers
+          and they can run in parallel.</li>
+
+        <li> The access library and the callback library is thread safe (no global variables).
+          </li>
+
+        <li> The callback messages reuse the synchronous socket connection to tunnel
+             messages back to the client. This makes possible a simple fire wall tunneling.
+          </li>
+    </ul>
+
+     
+     <p>
+     All invocations to xmlBlaster are done by invoking function pointers
      on struct XmlBlasterAccessUnparsed.
      </p>
      <p>
@@ -48,15 +92,19 @@
    /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
      </pre>
      <p>
-     A demo using XmlRpc is available as well (see xmlBlaster/demo/c/xmlrpc/README).
+     Compilation hints are in the source files 
+     <i>xmlBlaster/src/c/XmlBlasterConnectionUnparsedMain.c</i> (for synchronous access)
+     <i>xmlBlaster/src/c/socket/XmlBlasterAccessUnparsed.c</i> (for complete multi threaded access including callbacks).
      </p>
      <p>
-     This documentation is under construction, see
-     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README" target="others">/xmlBlaster/src/c/README</a> for the time being!
+     A demo using XmlRpc is available as well (see xmlBlaster/demo/c/xmlrpc/README).
      </p>
    </description>
-   <example lang="C">
+   <example lang="C" type="HTML">
       <p><a NAME="example"></a></p>
+      <p>
+      This example shows a single threaded synchronous access:
+      </p>
    <pre><![CDATA[
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,7 +138,8 @@ int main(int argc, char** argv)
    response = xb->connect(xb, connectQos, &exception);
    free(response);
    if (strlen(exception.errorCode) > 0) {
-      printf("[client] Caught exception during connect, errorCode=%s, message=%s", exception.errorCode, exception.message);
+      printf("[client] Caught exception during connect, errorCode=%s, message=%s",
+             exception.errorCode, exception.message);
       exit(1);
    }
 
@@ -99,13 +148,15 @@ int main(int argc, char** argv)
    msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
 
    if (msgUnitArr != (MsgUnitArr *)0 && msgUnitArr->len > 0) {
-      char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[0].content, msgUnitArr->msgUnitArr[0].contentLen);
+      char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[0].content,
+                                          msgUnitArr->msgUnitArr[0].contentLen);
       printf("[HelloWorld] xmlBlaster has currently %s bytes of free memory\n", contentStr);
       free(contentStr);
       freeMsgUnitArr(msgUnitArr);
    }
    else {
-      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s", exception.errorCode, exception.message);
+      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s",
+              exception.errorCode, exception.message);
       exit(1);
    }
    
@@ -113,6 +164,237 @@ int main(int argc, char** argv)
 
    freeXmlBlasterConnectionUnparsed(xb);
    printf("[HelloWorld] Good bye.\n");
+   exit(0);
+}
+        ]]>
+   </pre>
+   </example>
+
+   <example lang="C" type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>
+      This example shows a multi threaded access with asynchronous callbacks:
+      </p>
+   <pre><![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <XmlBlasterAccessUnparsed.h>
+
+/**
+ * Here we receive the callback messages from xmlBlaster
+ */
+bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
+{
+   size_t i;
+   bool testException = false;
+   for (i=0; i<msgUnitArr->len; i++) {
+      char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
+      printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
+      free(xml);
+      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      /* Return QoS: Everything is OK */
+   }
+   if (testException) {
+      strncpy0(xmlBlasterException->errorCode, "user.notWanted",
+                              XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(xmlBlasterException->message, "I don't want these messages",
+                                XMLBLASTEREXCEPTION_MESSAGE_LEN);
+      return false;
+   }
+   return true;
+}
+
+/**
+ * Invoke: XmlBlasterAccessUnparsedMain -debug true
+ */
+int main(int argc, char** argv)
+{
+   int iarg;
+   char *response = (char *)0;
+   /*
+    * callbackSessionId:
+    * Is created by the client and used to validate callback messages in update. 
+    * This is sent on connect in ConnectQos.
+    * (Is different from the xmlBlaster secret session ID)
+    */
+   const char *callbackSessionId = "topSecret";
+   XmlBlasterException xmlBlasterException;
+   XmlBlasterAccessUnparsed *xa = 0;
+   bool debug = false;
+
+   printf("[client] Try option '-help' if you need usage informations\n");
+
+   for (iarg=0; iarg < argc; iarg++) {
+      if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
+         char usage[XMLBLASTER_MAX_USAGE_LEN];
+         const char *pp =
+         "\n  -debug               true/false [false]"
+         "\n\nExample:"
+         "\n  XmlBlasterAccessUnparsedMain";
+         "\n     -debug true";
+         "\n     -dispatch/connection/plugin/socket/hostname server.mars.universe";
+         printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
+         exit(1);
+      }
+   }
+
+   for (iarg=0; iarg < argc-1; iarg++) {
+      if (strcmp(argv[iarg], "-debug") == 0)
+         debug = !strcmp(argv[++iarg], "true");
+   }
+
+   xa = getXmlBlasterAccessUnparsed(argc, argv);
+   if (xa->initialize(xa, myUpdate) == false) {
+      printf("[client] Connection to xmlBlaster failed, please start the server"
+             " or check your configuration\n");
+      exit(1);
+   }
+
+   {  /* connect */
+      char connectQos[2048];
+      char callbackQos[1024];
+      sprintf(callbackQos,
+               "<queue relating='callback' maxEntries='100'>"
+               "  <callback type='SOCKET' sessionId='%s'>"
+               "    socket://%s:%d"
+               "  </callback>"
+               "</queue>", callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+      sprintf(connectQos,
+             "<qos>"
+             " <securityService type='htpasswd' version='1.0'>"
+             "   <user>fritz</user>"
+             "   <passwd>secret</passwd>"
+             " </securityService>"
+             "%s"
+             "</qos>", callbackQos);
+
+      response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception during connect errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+      free(response);
+      printf("[client] Connected to xmlBlaster, do some tests ...\n");
+   }
+
+
+   response = xa->ping(xa, 0);
+   if (response == (char *)0) {
+      printf("[client] ERROR: Pinging a connected server failed\n");
+   }
+   else {
+      printf("[client] Pinging a connected server, response=%s\n", response);
+      free(response);
+   }
+
+   { /* subscribe ... */
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      printf("[client] Subscribe message 'HelloWorld' ...\n");
+      response = xa->subscribe(xa, key, qos, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in subscribe errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+      printf("[client] Subscribe success, returned status is '%s'\n", response);
+      free(response);
+   }
+
+   {  /* publish ... */
+      MsgUnit msgUnit;
+      printf("[client] Publishing message 'HelloWorld' ...\n");
+      msgUnit.key = "<key oid='HelloWorld'/>";
+      msgUnit.content = "Some message payload";
+      msgUnit.contentLen = strlen("Some message payload");
+      msgUnit.qos = "<qos><persistent/></qos>";
+      response = xa->publish(xa, &msgUnit, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in publish errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+      printf("[client] Publish success, returned status is '%s'\n", response);
+      free(response);
+   }
+
+   {  /* unSubscribe ... */
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      printf("[client] UnSubscribe message 'HelloWorld' ...\n");
+      response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
+      if (response) {
+         printf("[client] Unsubscribe success, returned status is '%s'\n", response);
+         free(response);
+      }
+      else {
+         printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+   {  /* get synchnronous ... */
+      size_t i;
+      const char *key = "<key queryType='XPATH'>//key</key>";
+      const char *qos = "<qos/>";
+      MsgUnitArr *msgUnitArr;
+      printf("[client] Get synchronous messages with XPath '//key' ...\n");
+      msgUnitArr = xa->get(xa, key, qos, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in get errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+      if (msgUnitArr != (MsgUnitArr *)0) {
+         for (i=0; i<msgUnitArr->len; i++) {
+            char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
+                                                msgUnitArr->msgUnitArr[i].contentLen);
+            const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ? " ..." : "";
+            printf("\n[client] Received message#%u/%u:\n"
+                   "-------------------------------------"
+                   "%s\n <content>%.100s%s</content>%s\n"
+                   "-------------------------------------\n",
+                   i+1, msgUnitArr->len,
+                   msgUnitArr->msgUnitArr[i].key,
+                   contentStr, dots,
+                   msgUnitArr->msgUnitArr[i].qos);
+            free(contentStr);
+         }
+         freeMsgUnitArr(msgUnitArr);
+      }
+      else {
+         printf("[client] Caught exception in get errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+
+   {  /* erase ... */
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      printf("[client] Erasing message 'HelloWorld' ...\n");
+      response = xa->erase(xa, key, qos, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in erase errorCode=%s, message=%s",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+      printf("[client] Erase success, returned status is '%s'\n", response);
+      free(response);
+   }
+
+   if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
+      printf("[client] Caught exception in disconnect, errorCode=%s, message=%s",
+             xmlBlasterException.errorCode, xmlBlasterException.message);
+      exit(1);
+   }
+
+   freeXmlBlasterAccessUnparsed(xa);
+   printf("[client] Good bye.\n");
    exit(0);
 }
         ]]>
@@ -190,18 +472,122 @@ int main(int argc, char** argv)
        </tr>
 
       </table>
+
+      <p>
+      These parameters allow to configure the C-client on command line:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/plugin/socket/hostname</td>
+            <td>localhost</td>
+            <td>Where to find the server</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/plugin/socket/port</td>
+            <td>7607</td>
+            <td>The port where xmlBlaster listens</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/plugin/socket/localHostname</td>
+            <td>localhost</td>
+            <td>Force the local host name of the socket connection.
+                Can be useful on multi homed hosts</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/plugin/socket/localPort</td>
+            <td>9911</td>
+            <td>Force the local port of the socket connection.
+               Can be useful with firewalls</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+
+         <!-- A separate callback server is not yet supported
+              we reuse the sync connection to tunnel callback messages back
+         <tr>
+            <td>-dispatch/callback/plugin/socket/hostname</td>
+            <td>localhost</td>
+            <td>The IP (or host name) where to establish the callback server.
+                Can be useful on multi homed hosts</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/callback/plugin/socket/port</td>
+            <td>7607</td>
+            <td>The port of the callback server</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         -->
+
+         <tr>
+            <td>-debug</td>
+            <td>false</td>
+            <td>true switches logging output on</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+
    </configuration>
+
+   <todo type='HTML'>
+      <h3>This is a first alpha release, we need to:</h3>
+      <p>
+      <ul>
+      <li> Throwing an XmlBlasterException from CallbackServer
+        back to xmlBlaster: The exception is buggy encoded</li>
+
+      <li> Adding mutex to every function call</li>
+
+      <li> Invoking xmlBlaster from within the callback thread (in update() function)
+        will deadlock (i believe so).
+        Probably we need to add a thread pool</li>
+
+      <li> Add logging redirection (using a configurable function pointer)</li>
+
+      <li> Add extended property support (parsing command line and getenv())</li>
+
+      <li> Add another layer which parses the QoS with Expat</li>
+
+      <li> Use it as a SOCKET protocol plugin for our C++ client library to 
+           get all the nice fail safe features for the C++ lib and to
+           make the C++ lib smaller (the CORBA plugin is quite big).</li>
+
+      <li> Add ant task c-lib</li>
+
+      <li> Add some demo in xmlBlaster/demo/c</li>
+
+      <li> Add testsuite (with ant)</li>
+
+      <li> Write requirement documentation in xmlBlaster/doc/requirements/client.c.socket.xml</li>
+      </ul>
+      </p>
+   </todo>
 
    <see type="CODE" lang="C">HelloWorld.c</see>
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
-   <see type="OTHER">http://www.xmlBlaster.org/src/c/README</see>
-   <see type="OTHER">http://xmlrpc-c.sourceforge.net/</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/src/c/README</see>
+   <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
+   <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
    <see type="REQ">protocol.socket</see>
    <see type="REQ">interface</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 </requirement>
 
