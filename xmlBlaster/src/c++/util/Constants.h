@@ -193,7 +193,7 @@ class Constants {
    /** XmlKey queryType enum */
    static const char * const XPATH;
    static const char * const EXACT;
-   static const char * const DOMAIN;
+   //static const char * const DOMAIN; // doesn't compile with g++ 3.1.1
    static const char * const REGEX;
 
 };

@@ -50,7 +50,7 @@ const char * const Constants::OID_DEAD_LETTER = "__sys__deadLetter";
 
 const char * const Constants::XPATH = "XPATH";
 const char * const Constants::EXACT = "EXACT";
-const char * const Constants::DOMAIN = "DOMAIN";
+//const char * const Constants::DOMAIN = "DOMAIN"; // doesn't compile with g++ 3.1.1
 const char * const Constants::REGEX = "REGEX";
 
 }}}; // namespace 
