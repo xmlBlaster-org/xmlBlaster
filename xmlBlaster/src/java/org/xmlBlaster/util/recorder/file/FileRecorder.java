@@ -52,7 +52,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
-   private long numLost = 0L;
+   private long maxEntries;
   
 
    /**
@@ -69,7 +69,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    *      /home/michelle/tmp/fileRecorder/tailback-heron.frc
    * </pre>
    */
-   public void initialize(Global glob, int maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
+   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
    {
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
@@ -82,11 +82,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          fileName = glob.getProperty().get("Persistence.Path", System.getProperty("user.home") + System.getProperty("file.separator") + "tmp");
          fileName += System.getProperty("file.separator") + "fileRecorder";
       }
-      fileName += System.getProperty("file.separator") + "tailback-" + glob.getId() + ".frc";
+      fileName += System.getProperty("file.separator") + "tailback-" + glob.getStrippedId() + ".frc";
 
       log.info(ME, "FileRecorder will use '" + fileName + "' for tail back messages.");
       try {
-         this.rb = new RecorderBuffer(fileName);
+         this.rb = new RecorderBuffer(fileName, maxEntries);
       }
       catch(IOException ex) {
          log.error(ME,"Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
@@ -130,11 +130,13 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       if (mode == null) return;
 
       if (mode.equals(Constants.ONOVERFLOW_DISCARDOLDEST))
-         log.warn(ME, "DiscardOldest messages onOverflow is not supported, using default mode 'exception'."); // default
+         this.rb.setModeDiscardOldest();
       else if (mode.equals(Constants.ONOVERFLOW_DISCARD))
-         log.warn(ME, "Discard messages onOverflow is not supported, using default mode 'exception'."); // default
-      else if (mode.equals(Constants.ONOVERFLOW_EXCEPTION))
+         this.rb.setModeDiscard();
+      else if (mode.equals(Constants.ONOVERFLOW_EXCEPTION)) {
+         this.rb.setModeException();
          log.trace(ME, "Setting onOverflow mode to exception"); // default
+      }
       else
          log.warn(ME, "Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
    }
@@ -216,8 +218,9 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    * deletes the file
    */
    public void reset()
-   { try
-      {  rb.close();
+   { 
+      try {
+         rb.close();
          rb.initialize();
       }
       catch(IOException ex)
@@ -229,7 +232,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     */
    public long getNumLost()
    {
-      return numLost;
+      return rb.getNumLost();
    }
 
   /**
@@ -291,7 +294,6 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     }
 
     log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
-    numLost++;
     throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
   }
 
@@ -423,7 +425,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    /**
     * storing update request
     */
-   public String[] update(String cbSessionId, MessageUnit[] msgUnitArr)
+   public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
       RequestContainer cont = new RequestContainer();
       cont.method = "update";
@@ -433,8 +435,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          rb.writeRequest(cont);
       }
       catch(IOException ex) {
-         log.error(ME,"Can't push update(): "+ex.toString());
-         numLost++;
+         throw new XmlBlasterException(ME,ex.toString());
       }
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";
@@ -453,9 +454,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     try
     { rb.writeRequest(cont);
     }
-    catch(IOException ex)
+    catch(Exception ex)
     { log.error(ME,"Can't push updateOneway(): "+ex.toString());
-      numLost++;
     }
   }
 }

@@ -14,12 +14,14 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
 
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * Is responsible for the client request storage. Data is written
- * on a DataOutputStream. This class is very similar to the 
- * FileConnection of Pavol (pixelpark).
+ * on a DataOutputStream.
+ * <p />
+ * TODO: If the file is never fully emptied, it grows and grows ...
  * @author pavol.hrnciarik@pixelpark.com
  * @author astelzl@avitech.de
  */
@@ -33,30 +35,68 @@ public class RecorderBuffer
   private int size;
 
   private long skipBytes;
+  private long maxEntries;
   private boolean emptyStorage = false;
+
+   private final int modeException = 0;
+   private final int modeDiscardOldest = 1;
+   private final int modeDiscard = 2;
+   private int mode = modeException;
+
+   private long numLost = 0L;
+
    
   /**
    * Creating file and initialization
+   * @maxEntries if < 1 no limit is assumed
    */
-  public RecorderBuffer(String fileName) throws IOException
+  public RecorderBuffer(String fileName, long maxEntries) throws IOException
   {
     this.fileName = fileName;
+    if (maxEntries < 1)
+       this.maxEntries = Long.MAX_VALUE;
+    else
+       this.maxEntries = maxEntries;
     f = new File(this.fileName);
-    size = 0;
     initialize();
   }
 
-  /**
-   * initializations
-   */
-  public void initialize() throws IOException
-  { if ((f.exists()) && (f.length() > 0))
+   /**
+    * initializations
+    */
+   public void initialize() throws IOException
+   {
+      close();
+      size = 0;
+      skipBytes = 0;
+      numLost = 0L;
       emptyStorage = false;
-    else {
-      emptyStorage = true;
       f.createNewFile();
-    }
-  }
+      if ((f.exists()) && (f.length() > 0))
+        emptyStorage = false;
+      else
+        emptyStorage = true;
+   }
+
+   /** Throw the message away if queue is full - the message is silently lost! */
+   public void setModeDiscard() {
+      this.mode = modeDiscard;
+   }
+   /** Throw the oldest message away if queue is full - the message is silently lost! */
+   public void setModeDiscardOldest() {
+      this.mode = modeDiscardOldest;
+   }
+   /** Default you get an Exception if queue is full */
+   public void setModeException() {
+      this.mode = modeException;
+   }
+
+   /**
+    * Counter for lost messages in 'discard' or 'discardOldest' mode
+    */
+   public long getNumLost() {
+      return this.numLost;
+   }
 
   //File is read here. Objects are read out one after another. The position
   //of the last written item is remembered to start at that position at the 
@@ -208,7 +248,7 @@ public class RecorderBuffer
   /**
    * Reading RequestContainer
    */
-  public RequestContainer readRequest() throws IOException
+  public synchronized RequestContainer readRequest() throws IOException
   { if (size == 0)
     { close();
       initialize();
@@ -221,9 +261,25 @@ public class RecorderBuffer
 
   /**
    * Writing request to file
+   * @exception XmlBlasterException if file is full with id="<driverName>.MaxSize"
    */
-  public void writeRequest(RequestContainer rc) throws IOException
-  { size++;
+  public synchronized void writeRequest(RequestContainer rc) throws IOException, XmlBlasterException
+  { 
+    if (size >= maxEntries) {
+      if (this.mode == modeDiscardOldest) {
+         readRequest(); // !!! TODO: This does not shrink the file !!!
+         numLost++;
+      }
+      else if (this.mode == modeDiscard) {
+         numLost++;
+         return;
+      }
+      else {
+         System.out.println("########FileDriver.MaxSize size=" + size + " Maximun size=" + maxEntries + " of '" + fileName + "' reached");
+         throw new XmlBlasterException("FileDriver.MaxSize", "Maximun size=" + maxEntries + " of '" + fileName + "' reached");
+      }
+    }
+    size++;
     writeObject(rc);
   }
 
@@ -237,12 +293,16 @@ public class RecorderBuffer
   /**
    * deleting file
    */
-  public void close() throws IOException
+  public synchronized void close() throws IOException
   { 
-    if (dis != null)
+    if (dis != null) {
       dis.close();
-    if (dos != null)
+      dis = null;
+    }
+    if (dos != null) {
       dos.close();
+      dos = null;
+    }
     f.delete();
     size = 0;
   }
