@@ -315,7 +315,7 @@ public class SubjectInfo implements I_AdminSubject
          }
          this.callbackAddressCache = (CallbackAddress[])set.toArray(new CallbackAddress[set.size()]);
       }
-      if (log.TRACE) log.trace(ME, "Accessing " + this.callbackAddressCache.length + " callback addresses for '" + getLoginName() + "' queue");
+      if (log.TRACE) log.trace(ME, "Accessing " + this.callbackAddressCache.length + " callback addresses from " + getSessions().size() + " sessions for '" + getLoginName() + "' queue");
       return this.callbackAddressCache;
    }
 
