@@ -2,6 +2,16 @@
 Name:      DbWatcherPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+
+Switch on finer logging in xmlBlaster.properties:
+trace[org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter]=true
+trace[org.xmlBlaster.contrib.db.DbPool]=true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector]=true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler]=true
+trace[org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector]=true
+trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin]=true
+trace[org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher]=true
+trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher.plugin;
 
