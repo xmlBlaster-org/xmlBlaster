@@ -3,6 +3,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
+  - Changed subscribe() return value to be always a unique subscription ID
+    (thanks to Wolfgang Kleinertz)
+
   - IANA has assigned following ports for us:
       xmlblaster      3412/tcp                        # xmlBlaster
       xmlblaster      3412/udp                        # xmlBlaster
