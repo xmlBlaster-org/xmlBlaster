@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.24 2004/04/09 17:22:08 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.25 2004/04/09 18:05:18 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.24 2004/04/09 17:22:08 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.25 2004/04/09 18:05:18 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -874,7 +874,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
 #  else
    const char * const * logText = LOG_TEXT_ESCAPE;
 #  endif
-   if (logUserP) {}  // To avoid "logUserP was never referenced" compiler warning
+   if (logUserP) {}  /* To avoid "logUserP was never referenced" compiler warning */
 
    if (level > currLevel) {
       return;
