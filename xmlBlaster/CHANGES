@@ -3,7 +3,6 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes svn
 ===========
- o #12743 C++: lexical_cast from string (or char*) to bool is now handled on a special implementation
 
  o #12706,#12709 Added subversion revision number as exception text prefix, for example
      ex.getMessage()="#12702 Can't load your plugin"
@@ -132,6 +131,7 @@ Changes svn
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - #12746 Windows flag '/YX' added for precompiled headers
    - #12710 Added subversion revision number, see getXmlBlasterVersion()
    - Added zlib:stream compression support
    - Added C client API documentation with doxygen, see
@@ -146,6 +146,8 @@ Changes svn
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - #12746 Windows flag '/YX' added for precompiled headers
+   - #12743 BUGIFX: lexical_cast from string (or char*) to bool is now handled on a special implementation
    - #12711 Added subversion revision number, see Global::getRevisionNumber()
    - Fixed setting of XmlBlasterAccess::getServerNodeId()
    - Modified Log4Cplus logging:
