@@ -8,7 +8,10 @@ Changes for 0.80 [???, ? 2000]
      org.omg.CORBA.ORBClass=jacorb.orb.ORB
      org.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
    in our CORBA drivers (if not set differently from environment).
- 
+
+ - Severe bugfix with CORBA POA sessionId.
+   This bug caused sometimes the POA sessionId to be not unique,
+   causing a subscequent login to auto logout another client.
 
 Changes for 0.79 [Nov, 3 2000]
 ==============================
