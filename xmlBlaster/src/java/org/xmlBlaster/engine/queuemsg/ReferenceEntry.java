@@ -9,6 +9,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.TopicHandler;
+import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -149,40 +150,44 @@ public class ReferenceEntry extends MsgQueueEntry
       return this.glob;
    }
 
-   /** @return the MsgUnitWrapper or null if not found */
+   /**
+    * The caller needs to synchronize over msgCache
+    *  @return the MsgUnitWrapper or null if not found
+    */
    public MsgUnitWrapper getMsgUnitWrapper() {
       Object referent = null;
-      if (this.weakMsgUnitWrapper != null)
+      if (this.weakMsgUnitWrapper != null) {
          referent = this.weakMsgUnitWrapper.get();
-      if (referent == null) {  // message was swapped away
-         referent = lookup();
-         if (referent == null)
-            return null;
+         if (referent == null || ((MsgUnitWrapper)referent).isSwapped()) {  // message was swapped away
+            this.weakMsgUnitWrapper = null;
+            referent = lookup();
+            if (referent == null) return null;
+         }
          this.weakMsgUnitWrapper = new WeakReference(referent);
       }
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
       return msgUnitWrapper;
    }
 
+   private I_Map getMsgUnitCache() {
+      RequestBroker rb = this.glob.getRequestBroker();
+      if (rb == null) return null;
+      TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
+      if (topicHandler == null) return null;
+      return topicHandler.getMsgUnitCache();
+   }
+
    private void incrementReferenceCounter(int incr, StorageId storageId) {
       try {
-         RequestBroker rb = this.glob.getRequestBroker();
-         if (rb == null) return;
-         TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
-         if (topicHandler == null) return;
-
+         I_Map cache = getMsgUnitCache();
+         if (cache == null) return;
          // we need to synchronize it over the caching process
-         synchronized(topicHandler.getMsgUnitCache()) {
+         synchronized(cache) {
             MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
             if (msgUnitWrapper != null) {
                boolean done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
                if (!done) {
-                  this.weakMsgUnitWrapper = null;
-                  msgUnitWrapper = getMsgUnitWrapper(); // reload
-                  done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
-                  if (!done) {
-                     log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
-                  }
+                  log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
                }
             }
             else {
@@ -229,16 +234,25 @@ public class ReferenceEntry extends MsgQueueEntry
     *         or for msgUnitWrapper in state=DESTROYED
     */
    public boolean isDestroyed() {
-      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-      if (msgUnitWrapper == null)
-         return true;
-      return msgUnitWrapper.isDestroyed();
+      I_Map cache = getMsgUnitCache();
+      if (cache == null) return true;
+      synchronized(cache) {
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+         if (msgUnitWrapper == null)
+            return true;
+         return msgUnitWrapper.isDestroyed();
+      }
    }
 
    public MsgQosData getMsgQosData() throws XmlBlasterException {
       return (MsgQosData)getMsgUnit().getQosData();
    }
 
+   /**
+    * Gets the message unit but is for read only (dirty read) 
+    * @return
+    * @throws XmlBlasterException
+    */
    public MsgUnit getMsgUnit() throws XmlBlasterException {
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
       if (msgUnitWrapper == null) {
