@@ -19,6 +19,7 @@ package org.xmlBlaster.j2ee.k2.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 
@@ -31,6 +32,12 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
  */
 
 public interface BlasterConnection  {
+   /**
+    * The the preconfigured global of the connection, good to have to be able to
+    * create Qos and keys for example.
+    * Ought to be readonly!.
+    */
+   public Global getGlobal() throws XmlBlasterException;
     
     /**
        Don't know yet if we really should allow asyncronous stuff here
