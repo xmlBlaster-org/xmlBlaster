@@ -48,7 +48,7 @@ You need JDK 2 or better to run xmlBlaster.
 
        /usr/local/JacORB/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
 
-       [/usr/local/JacORB/bin/jaco org.xmlBlaster.Main]
+       [/usr/local/JacORB/bin/jaco org.xmlBlaster.MainGUI]
 
        (or for better debugging: jaco -Djava.compiler= org.xmlBlaster.Main)
 
