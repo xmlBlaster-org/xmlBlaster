@@ -3,11 +3,13 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.8 2002/04/26 21:31:51 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.9 2002/05/09 11:50:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
+import org.xmlBlaster.client.PublishKeyWrapper;
+import org.xmlBlaster.client.PublishQosWrapper;
 
 /**
  * Encapsulates the xmlKey, content and qos.
@@ -16,12 +18,25 @@ package org.xmlBlaster.engine.helper;
  * qos contains the literal, XML based ASCII string.
  * <p />
  * Keep this class slim, it is serialized and passed with RMI
+ * <p />
+ * The constructor arguments are checked to be not null and corrected
+ * to "" or 'new byte[0]' if they are null
  */
 public class MessageUnit implements java.io.Serializable
 {
    public String xmlKey;
    public byte[] content;
    public String qos;
+
+   /**
+    * The normal constructor. 
+    */
+   public MessageUnit(String xmlKey, byte[] content, String qos)
+   {
+      setKey(xmlKey);
+      setContent(content);
+      setQos(qos);
+   }
 
    /**
     * This is a temporary constructor used for the javascript (rhino) client
@@ -34,13 +49,23 @@ public class MessageUnit implements java.io.Serializable
    }
 
    /**
-    * The only constructor guarantees any attribute to be not null
+    * This is a constructor suitable for clients. 
     */
-   public MessageUnit(String xmlKey, byte[] content, String qos)
+   public MessageUnit(PublishKeyWrapper xmlKey, String contentAsString, PublishQosWrapper qos)
    {
-      setKey(xmlKey);
+      setKey(xmlKey.toXml());
+      setContent(contentAsString.getBytes());
+      setQos(qos.toXml());
+   }
+
+   /**
+    * This is a constructor suitable for clients. 
+    */
+   public MessageUnit(PublishKeyWrapper xmlKey, byte[] content, PublishQosWrapper qos)
+   {
+      setKey(xmlKey.toXml());
       setContent(content);
-      setQos(qos);
+      setQos(qos.toXml());
    }
 
    public final void setKey(String xmlKey){
