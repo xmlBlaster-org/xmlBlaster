@@ -98,7 +98,7 @@ ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_r
 
 # if on, the ORB's version number is printed
 # any time the ORB is initialized
-jacorb.orb.print_version=on
+jacorb.orb.print_version=off
 
 ##################################
 #                                #
@@ -112,7 +112,7 @@ jacorb.orb.print_version=on
 # 1 = important messages and exceptions
 # 2 = informational messages and exceptions
 # >= 3 = debug-level output (may confuse the unaware user :-)
-jacorb.verbosity=1
+jacorb.verbosity=0
 
 # where does output go? Terminal is default
 #jacorb.logfile=LOGFILEPATH
