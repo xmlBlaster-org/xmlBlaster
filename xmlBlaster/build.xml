@@ -377,6 +377,7 @@ TODO
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
       <echo message="Creating ${soapdeploy.dir}/webservices/${name}.sar"/>
+      <mkdir dir="${soapdeploy.dir}/webservices"/>
       <jar destfile="${soapdeploy.dir}/webservices/${name}.sar" manifest="${build.dest}/manifest.xmlBlaster"
            basedir="${build.dest}"
            includes="org/**/soap/*,service.xml"/>
