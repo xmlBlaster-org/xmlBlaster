@@ -1,36 +1,40 @@
-$Id: README,v 1.5 2002/03/01 13:20:05 goetzger Exp $
+$Id: README,v 1.6 2002/03/02 17:43:46 goetzger Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
 
 STATE:      - beta
             - runs stable, afaik
-	    - no experience till now, except in development environment
-	    - needs own classloader to be implemented, conflicts with more
-	      ORBs in CLASSPATH. see Mailinglist 
+            - no experience till now, except in development environment
+            - needs own classloader to be implemented, conflicts with more
+              ORBs in CLASSPATH. see Mailinglist
 
 
 RESOURCES:  http://www.xindice.org or
-	    http://xml.apache.org/xindice/
-	    http://www.xmlBlaster.org
-            
+            http://xml.apache.org/xindice/
+            http://www.xmlBlaster.org
+
 
 TRAPS/BUGS: What is with BLOBs?
             How can we store best binary data?
-	    Xindice has been tested succsefully on following platforms:
+            Xindice-persistence-plugin has been tested successfully on following platforms:
+            OS                                  JDK
+            Linux SuSE 7.2                      1.3.1_02 HotSpot(TM) (build 1.3.1_02-b02, mixed mode) // needs: 'ulimit -s 2048'
+            Linux SuSE 7.2/3                    1.4.0 HotSpot(TM) (build 1.4.0-b92, mixed mode)
+            9000/785/B2000 HP-UX B.11.00 A      JavaVM-1.3.0.01
 
 
 TODO:       Need to finish Test-case! (need to implemet CLASSLOADER before)
             Run Xindice embedded
 
 
-EXAMPLE:    Find a example in the section "See another example here:" later in this file.
+EXAMPLE:    Find an example in the section 'See another example here:' later in this file.
 
 
 
 To use it, you need a Xindice installed and running
-(tested and developed with Xindice 1.0rc1 (DarkHorse)). 
-It its planned to run xindice ebedded in xmlBlaster so you don't
+(tested and developed with Xindice 1.0rc2 (Pepper)).
+It its planned to run xindice ebedded in xmlBlaster so you do not
 need to care where and how to get it. Unfortunately, this is not done by now.
 
 Till then you need to get Xindice by yourself.
@@ -49,14 +53,14 @@ Where to get:
 
    Can be checked out as follows:
 
-	Xindice is also available via Anonymous CVS access.
-	You can perform a checkout with the following settings:
+        Xindice is also available via Anonymous CVS access.
+        You can perform a checkout with the following settings:
 
-	CVSROOT=:pserver:anoncvs@cvs.apache.org:/home/cvspublic
-	cvs login (password is anoncvs)
-	cvs co xml-xindice
+        CVSROOT=:pserver:anoncvs@cvs.apache.org:/home/cvspublic
+        cvs login (password is anoncvs)
+        cvs co xml-xindice
 
-	Build Xindice as described in $XINDICE_HOME/INSTALL
+        Build Xindice as described in $XINDICE_HOME/INSTALL
 
 
 Start and prepare Xindice:
@@ -68,18 +72,18 @@ Start and prepare Xindice:
 
    you should see something like:
 
-	Starting Xindice
-	----------------
+        Starting Xindice
+        ----------------
 
-	Xindice 1.0rc2 (Pepper)
+        Xindice 1.0rc2 (Pepper)
 
-	Database: 'db' initializing
-	Script: 'GET' added to script storage
-	Service: 'db' started
-	Service: 'HTTPServer' started @ http://localhost:4080/
-	Service: 'APIService' started
+        Database: 'db' initializing
+        Script: 'GET' added to script storage
+        Service: 'db' started
+        Service: 'HTTPServer' started @ http://localhost:4080/
+        Service: 'APIService' started
 
-	Server Running
+        Server Running
 
    Everything is ok now.
 
@@ -87,20 +91,20 @@ Start and prepare Xindice:
 
    Create a collection manually by:
 
-	xindiceadmin ac -c /db -n xmlBlaster
+        xindiceadmin ac -c /db -n xmlBlaster
 
-	Created : /db/xmlBlaster
+        Created : /db/xmlBlaster
 
 3. List the created collection
 
    List collections:
 
-	xindice lc -c /db
+        xindice lc -c /db
 
-	        xmlBlaster
-	        system
+                xmlBlaster
+                system
 
-	Total collections: 2
+        Total collections: 2
 
 
 Prepare and start xmlBlaster:
@@ -111,31 +115,31 @@ Prepare and start xmlBlaster:
    Copy the config/xmlblaster.properties.templates to $HOME/xmlBlaster.properties and/or edit
    it manually. You need to activate:
 
-	Persistence.LazyRecovery=true
+        Persistence.LazyRecovery=true
 
-	Persistence.Driver.Type=xmldb
-	Persistence.Driver.Version=xindice
-	Persistence.Path=xmldb:xindice:///db
-	Persistence.Collection=xmlBlaster
+        Persistence.Driver.Type=xmldb
+        Persistence.Driver.Version=xindice
+        Persistence.Path=xmldb:xindice:///db
+        Persistence.Collection=xmlBlaster
 
 
 2. Start xmlBlaster
-   
+
    Start the xmlBlaster as described in $XMLBLASTER_HOME/INSTALL
 
-	if you can see something like:
-	.
-	.
-	[Feb 7, 2002 10:50:36 PM INFO  XMLDBPlugin] using collectionPath 'xmldb:xindice:///db/xmlBlaster'
-	[Feb 7, 2002 10:50:37 PM INFO  PluginManagerBase] Plugin 'org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin' successfully initialized!
-	[Feb 7, 2002 10:50:37 PM INFO  RequestBroker] Loaded persistence driver '[xmldb][xindice]'
-	[Feb 7, 2002 10:50:37 PM INFO  XMLDBPlugin] Successfully got 1 stored message-oids from xmldb:xindice:///db/xmlBlaster
-	.
-	.
+        if you can see something like:
+        .
+        .
+        [Feb 7, 2002 10:50:36 PM INFO  XMLDBPlugin] using collectionPath 'xmldb:xindice:///db/xmlBlaster'
+        [Feb 7, 2002 10:50:37 PM INFO  PluginManagerBase] Plugin 'org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin' successfully initialized!
+        [Feb 7, 2002 10:50:37 PM INFO  RequestBroker] Loaded persistence driver '[xmldb][xindice]'
+        [Feb 7, 2002 10:50:37 PM INFO  XMLDBPlugin] Successfully got 1 stored message-oids from xmldb:xindice:///db/xmlBlaster
+        .
+        .
 
-   you're on the right way ;-)
-   It says which plugin the persistence layer is using and that it got 1
-   message restored from it. This may differ on your system. In fact it is 0, if you
+   you are on the right way ;-)
+   It says which plugin the persistence layer is using and that it got 1 message
+   restored from it. This may differ on your system. In fact it is 0, if you
    try this the very first time (of course ;-).
 
 
@@ -144,7 +148,7 @@ How to use it from the client:
 
 1. set the isDurable in qos
 
-   Publish some messages which are tagged 'siDurable', you can do this by using
+   Publish some messages which are tagged 'isDurable', you can do this by using
    the qos-tag:
 
       String qos = "<qos>" +
@@ -155,7 +159,7 @@ How to use it from the client:
 
    Check, if you want, by using for example
    $ xindice ld -c /db/xmlBlaster
-																		
+
         amIdurable-XmlCon.xml
         amIdurable-XmlKey.xml
         amIdurable-XmlQos.xml
@@ -184,90 +188,104 @@ See another example here:
 
 1. Feed some messages to the xmlBlaster
 
-	cd $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/feeder
+        cd $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/feeder
 
-	java org.xmlBlaster.client.feeder.PublishFile -c Hello.txt -k Hello-Key.xml -q Hello-Qos.xml
+        java org.xmlBlaster.client.feeder.PublishFile -c Hello.txt -k Hello-Key.xml -q Hello-Qos.xml
+
+   Check the message in the persistence layer if you want with the this command, if you like:
+
+   $ xindice ld -c /db/xmlBlaster
+
+        Hello.txt-XmlCon.xml
+        Hello.txt-XmlKey.xml
+        Hello.txt-XmlQos.xml
+
+   Total documents: 3
 
 2. Read the message from xmlBlaster
 
-	cd $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/reader
+        cd $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/reader
 
-	java org.xmlBlaster.client.reader.SubscribeMessage -name Tim -passwd secret -oid Hello.txt
+        java org.xmlBlaster.client.reader.SubscribeMessage -name Tim -passwd secret -oid Hello.txt
 
-	============= START Hello.txt =======================
-	[Feb 7, 2002 10:55:50 PM INFO  SubscribeMessage] Receiving update of a message ...
-	<xmlBlaster>
-	<?xml version="1.0"?>
-	<key oid="Hello.txt" contentMime="text/plain">
-	      
-	     <TestTag>
-	      </TestTag>
-	   </key>
+        ============= START Hello.txt =======================
+        [Feb 7, 2002 10:55:50 PM INFO  SubscribeMessage] Receiving update of a message ...
+        <xmlBlaster>
+        <?xml version="1.0"?>
+        <key oid="Hello.txt" contentMime="text/plain">
 
-	<content>
-	Hello world
+             <TestTag>
+              </TestTag>
+           </key>
 
-	</content>
+        <content>
+        Hello world
 
-	   <qos> <!-- UpdateQoS -->
-	      <state>
-	         OK
-	      </state>
-	      <sender>
-	         PublishFile
-	      </sender>
-	      <subscriptionId>
-	         Hello.txt
-	      </subscriptionId>
-	      <rcvTimestamp millis='1013118850714' nanos='0'>
-	         2002-02-07 22:54:10.714
-	      </rcvTimestamp>
-	      <expiration timeToLive='129287067'/>
-	   </qos>
+        </content>
 
-	</xmlBlaster>
-	============= END Hello.txt =========================
+           <qos> <!-- UpdateQoS -->
+              <state>
+                 OK
+              </state>
+              <sender>
+                 PublishFile
+              </sender>
+              <subscriptionId>
+                 Hello.txt
+              </subscriptionId>
+              <rcvTimestamp millis='1013118850714' nanos='0'>
+                 2002-02-07 22:54:10.714
+              </rcvTimestamp>
+              <expiration timeToLive='129287067'/>
+           </qos>
+
+        </xmlBlaster>
+        ============= END Hello.txt =========================
 
 
 3. restart xmlBlaster
 
-   After restarting the xmlBlaster the reading of the message should just
+   After restarting the xmlBlaster reading of the message should just
    bring the same result.
 
    See $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/feeder/README and
-   $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/reader/README for 
+   $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/reader/README for
    more details on this example.
 
 4. check manual
 
-   You can check the content of the Xindice databes by using the commandline interface:
+   You can check the content of the Xindice database by using the commandline interface:
 
    See the collections:
 
-	xindice lc -c /db
+        xindice lc -c /db
 
-	        xmlBlaster
-	        system
+                xmlBlaster
+                system
 
-	Total collections: 2
+        Total collections: 2
 
    See the content/documents of the xmlBlaster-collection:
 
-	xindice ld -c /db/xmlBlaster
+        xindice ld -c /db/xmlBlaster
 
-	        Hello.txt-XmlCon.xml
-	        Hello.txt-XmlKey.xml
-	        Hello.txt-XmlQos.xml
+                Hello.txt-XmlCon.xml
+                Hello.txt-XmlKey.xml
+                Hello.txt-XmlQos.xml
 
-	Total documents: 3
+        Total documents: 3
 
    See the document with the key Hello.txt-XmlCon.xml
 
-	xindice rd -c /db/xmlBlaster -n Hello.txt-XmlCon.xml
+        xindice rd -c /db/xmlBlaster -n Hello.txt-XmlCon.xml
 
-	<?xml version="1.0"?>
-	<content><![CDATA[Hello world
-	]]></content>
+        <?xml version="1.0"?>
+        <content><![CDATA[Hello world
+        ]]></content>
+
+   You can see here that the data 'Hello world' are stored within a CDATA-Section.
+   This works for 99% of all cases but what happens with BLOBs or other binary data,
+   if a ']]' comes before the datapart is finished?
 
 
 ### end of README
