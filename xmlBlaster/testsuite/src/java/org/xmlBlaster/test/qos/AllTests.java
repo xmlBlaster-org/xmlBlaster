@@ -67,9 +67,6 @@ public class AllTests
       suite.addTest(TestErase.suite());
       suite.addTest(TestUpdateClientException.suite());
       suite.addTest(TestInvocationRecorder.suite());
-      suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestFailSave.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestFailSavePing.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestFailSaveAsync.class));
       return suite;
    }
 }

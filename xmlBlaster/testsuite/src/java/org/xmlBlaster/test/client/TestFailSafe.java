@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestFailSave.java
+Name:      TestFailSafe.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.test.qos;
+package org.xmlBlaster.test.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -39,14 +39,14 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   java junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSave
- *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSave
+ *   java junit.textui.TestRunner -noloading org.xmlBlaster.test.client.TestFailSafe
+ *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.TestFailSafe
  * </pre>
  * @see org.xmlBlaster.client.I_XmlBlasterAccess
  */
-public class TestFailSave extends TestCase implements I_ConnectionStateListener
+public class TestFailSafe extends TestCase implements I_ConnectionStateListener
 {
-   private static String ME = "TestFailSave";
+   private static String ME = "TestFailSafe";
    private Global glob;
    private LogChannel log;
 
@@ -64,11 +64,11 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
 
    private final long reconnectDelay = 2000L;
 
-   public TestFailSave(String testName) {
+   public TestFailSafe(String testName) {
       this(null, testName);
    }
 
-   public TestFailSave(Global glob, String testName) {
+   public TestFailSafe(Global glob, String testName) {
       super(testName);
       this.glob = glob;
       this.senderName = testName;
@@ -125,7 +125,7 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
    protected void tearDown() {
       log.info(ME, "Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSave-AGENT" +
+                      "   //TestFailSafe-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       try {
@@ -165,7 +165,7 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSave-AGENT" +
+                      "   //TestFailSafe-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       try {
@@ -186,8 +186,8 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
       String oid = "Message" + "-" + counter;
       log.info(ME, "Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
-                      "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                      "   </TestFailSave-AGENT>" +
+                      "   <TestFailSafe-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "   </TestFailSafe-AGENT>" +
                       "</key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
@@ -201,7 +201,7 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
    /**
     * TEST: <br />
     */
-   public void testFailSave()
+   public void testFailSafe()
    {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
@@ -259,10 +259,10 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.TestFailSave
+    * Invoke: java org.xmlBlaster.test.client.TestFailSafe
     * <p />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestFailSave</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.client.TestFailSafe</pre>
     */
    public static void main(String args[])
    {
@@ -271,9 +271,9 @@ public class TestFailSave extends TestCase implements I_ConnectionStateListener
          System.out.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestFailSave testSub = new TestFailSave(glob, "TestFailSave");
+      TestFailSafe testSub = new TestFailSafe(glob, "TestFailSafe");
       testSub.setUp();
-      testSub.testFailSave();
+      testSub.testFailSafe();
       testSub.tearDown();
    }
 }

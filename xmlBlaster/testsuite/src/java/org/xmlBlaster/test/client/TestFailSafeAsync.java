@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestFailSaveAsync.java
+Name:      TestFailSafeAsync.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.test.qos;
+package org.xmlBlaster.test.client;
 
 import org.jutils.init.Property;
 
@@ -46,13 +46,13 @@ import junit.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *   java junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSaveAsync
- *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSaveAsync
+ *   java junit.textui.TestRunner -noloading org.xmlBlaster.test.client.TestFailSafeAsync
+ *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.TestFailSafeAsync
  * </pre>
  */
-public class TestFailSaveAsync extends TestCase implements I_Callback, I_ConnectionStateListener
+public class TestFailSafeAsync extends TestCase implements I_Callback, I_ConnectionStateListener
 {
-   private static String ME = "TestFailSaveAsync";
+   private static String ME = "TestFailSafeAsync";
    private Global glob;
    private LogChannel log;
    private boolean messageArrived = false;
@@ -86,11 +86,11 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    PublishKey publishKeyWrapper;
    PublishQos publishQosWrapper;
 
-   public TestFailSaveAsync(String testName) {
+   public TestFailSafeAsync(String testName) {
       this(null, testName);
    }
 
-   public TestFailSaveAsync(Global glob, String testName) {
+   public TestFailSafeAsync(Global glob, String testName) {
       super(testName);
       this.glob = glob;
       this.senderName = testName;
@@ -149,11 +149,11 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       }
 
       publishKeyWrapper = new PublishKey(glob, "emptyOid", contentMime);
-      publishKeyWrapper.setClientTags("<TestFailSaveAsync-AGENT id='192.168.124.10' subId='1' type='generic'/>");
+      publishKeyWrapper.setClientTags("<TestFailSafeAsync-AGENT id='192.168.124.10' subId='1' type='generic'/>");
       /*
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
-                         "   <TestFailSaveAsync-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                         "   </TestFailSaveAsync-AGENT>" +
+                         "   <TestFailSafeAsync-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                         "   </TestFailSafeAsync-AGENT>" +
                          "</key>";
       */
       publishQosWrapper = new PublishQos(glob); // == "<qos></qos>"
@@ -168,7 +168,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    {
       log.info(ME, "Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSaveAsync-AGENT" +
+                      "   //TestFailSafeAsync-AGENT" +
                       "</key>";
       //String eraseQos = "<qos><notify>false</notify></qos>";
       EraseQos eraseQos = new EraseQos(glob);
@@ -217,7 +217,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSaveAsync-AGENT" +
+                      "   //TestFailSafeAsync-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
       try {
@@ -257,7 +257,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    /**
     * TEST: Sendin 0-19 directly, sending 20-39 to recorder (no connection), sending 40-100 directly
     */
-   public void testFailSave() {
+   public void testFailSafe() {
       // subscribe(); see reachedAlive()
 
       for (int ii=0; ii<maxEntries; ii++) {
@@ -370,9 +370,9 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.TestFailSaveAsync
+    * Invoke: java org.xmlBlaster.test.client.TestFailSafeAsync
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestFailSaveAsync</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.client.TestFailSafeAsync</pre>
     */
    public static void main(String args[]) {
       Global glob = new Global();
@@ -380,9 +380,9 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          glob.getLog(null).error(ME, "Init failed");
          System.exit(1);
       }
-      TestFailSaveAsync testSub = new TestFailSaveAsync(glob, "TestFailSaveAsync");
+      TestFailSafeAsync testSub = new TestFailSafeAsync(glob, "TestFailSafeAsync");
       testSub.setUp();
-      testSub.testFailSave();
+      testSub.testFailSafe();
       testSub.tearDown();
    }
 }

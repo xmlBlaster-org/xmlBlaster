@@ -25,6 +25,9 @@ public class AllTests
    public static Test suite() {
       TestSuite suite= new TestSuite("All xmlBlaster message client side tests");
       suite.addTest(TestSynchronousCache.suite());
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafe.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafePing.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafeAsync.class));
       return suite;
    }
 }

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      TestFailSavePing.java
+Name:      TestFailSafePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.test.qos;
+package org.xmlBlaster.test.client;
 
 import org.jutils.init.Property;
 
@@ -41,13 +41,13 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   java junit.textui.TestRunner org.xmlBlaster.test.qos.TestFailSavePing
- *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSavePing
+ *   java junit.textui.TestRunner org.xmlBlaster.test.client.TestFailSafePing
+ *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.TestFailSafePing
  * </pre>
  */
-public class TestFailSavePing extends TestCase implements I_ConnectionStateListener
+public class TestFailSafePing extends TestCase implements I_ConnectionStateListener
 {
-   private static String ME = "TestFailSavePing";
+   private static String ME = "TestFailSafePing";
    private Global glob;
    private LogChannel log;
 
@@ -62,12 +62,16 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
 
    private final String contentMime = "text/plain";
 
+   public TestFailSafePing(String testName) {
+      this(null, testName);
+   }
+
    /**
-    * Constructs the TestFailSavePing object.
+    * Constructs the TestFailSafePing object.
     * <p />
     * @param testName  The name used in the test suite
     */
-   public TestFailSavePing(Global glob, String testName)
+   public TestFailSafePing(Global glob, String testName)
    {
       super(testName);
       this.glob = glob;
@@ -83,7 +87,7 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
    {
       this.glob = (this.glob == null) ? new Global() : this.glob;
       this.log = this.glob.getLog("test");
-      this.senderName = "TestFailSavePing-joe/97";
+      this.senderName = "TestFailSafePing-joe/97";
 
       this.glob.init(Util.getOtherServerPorts(serverPort));
 
@@ -145,7 +149,7 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSavePing-AGENT" +
+                      "   //TestFailSafePing-AGENT" +
                       "</key>";
       String qos = "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
@@ -169,8 +173,8 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
 
       String oid = "Message" + "-" + counter;
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
-                      "   <TestFailSavePing-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                      "   </TestFailSavePing-AGENT>" +
+                      "   <TestFailSafePing-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "   </TestFailSafePing-AGENT>" +
                       "</key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
@@ -183,7 +187,7 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
    /**
     * TEST: <br />
     */
-   public void testFailSave()
+   public void testFailSafe()
    {
       for (int i=0; i<3; i++) {
          this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
@@ -238,14 +242,14 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestFailSavePing(null, "testFailSave"));
+       suite.addTest(new TestFailSafePing(null, "testFailSafe"));
        return suite;
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.TestFailSavePing
+    * Invoke: java org.xmlBlaster.test.client.TestFailSafePing
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestFailSavePing</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.client.TestFailSafePing</pre>
     */
    public static void main(String args[])
    {
@@ -254,9 +258,9 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
          System.err.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestFailSavePing testSub = new TestFailSavePing(glob, "TestFailSavePing");
+      TestFailSafePing testSub = new TestFailSafePing(glob, "TestFailSafePing");
       testSub.setUp();
-      testSub.testFailSave();
+      testSub.testFailSafe();
       testSub.tearDown();
    }
 }
