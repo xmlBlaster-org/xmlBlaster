@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.9 2002/02/18 21:39:45 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.10 2002/02/25 13:46:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
 
 
 /**
@@ -60,7 +59,7 @@ public class HandleClient extends Executor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Schutdown connection ...");
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Schutdown connection ...");
       if (sessionId != null) {
          String tmp = sessionId;
          sessionId = null;
@@ -105,7 +104,7 @@ public class HandleClient extends Executor implements Runnable
          }
          else {
             Object response = execute(parser, WAIT_ON_RESPONSE);
-            if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got update response " + response.toString());
+            if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got update response " + response.toString());
             String[] arr = (String[])response; // return the QoS
             return arr[0]; // Hack until every update uses arrays (one qos for each message
          }
@@ -133,8 +132,8 @@ public class HandleClient extends Executor implements Runnable
                //iStream = sock.getInputStream();
                receiver.parse(iStream);  // blocks until a message arrive
 
-               if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-               if (Log.DUMP) Log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+               if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+               if (SOCKET_DEBUG>1) Log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
                // receive() processes all invocations, only connect()/disconnect() we do locally ...
                if (receive(receiver) == false) {
@@ -187,7 +186,7 @@ public class HandleClient extends Executor implements Runnable
          try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
-         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Deleted thread for '" + loginName + "'.");
+         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
 }

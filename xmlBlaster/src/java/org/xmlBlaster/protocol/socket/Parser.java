@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.14 2002/02/18 21:40:07 ruff Exp $
+Version:   $Id: Parser.java,v 1.15 2002/02/25 13:46:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -15,7 +15,6 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 
 import java.util.Vector;
@@ -430,20 +429,13 @@ public class Parser extends Converter
     * This parses the raw message from an InputStream (typically from a socket).
     * Use the get...() methods to access the data.
     */
-   public void parse(InputStream inputStream) throws IOException {
+   public void parse(InputStream in) throws IOException {
 
       initialize();
-      /*
-      for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
-         Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli [" + ii + "]...");
-         org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
-      }
-      */
-      BufferedInputStream in = new BufferedInputStream(inputStream);
 
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Entering wait on inputStream");
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Entering wait on inputStream");
       msgLength = toLong(in);
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got first 10 bytes of total length=" + msgLength);
 
       if (msgLength == 10) {
          setMethodName(Constants.PING);
@@ -474,26 +466,26 @@ public class Parser extends Converter
       String xmlKey = null;
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
-         //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit qos index=" + index);
+         //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit qos index=" + index);
          qos = toString(in);
          MessageUnit msgUnit = new MessageUnit(null, null, qos);
          addMessage(msgUnit);
          if (index >= msgLength) break;
 
-         //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit key index=" + index);
+         //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit key index=" + index);
          msgUnit.setKey(toString(in));
          if (index >= msgLength) break;
 
-         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Getting messageUnit content index=" + index);
+         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Getting messageUnit content index=" + index);
          msgUnit.setContent(toByte(in));
          if (index >= msgLength) break;
       }
-      if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "messageUnit OK index=" + index);
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "messageUnit OK index=" + index);
 
       if (checksum)
          checkSumResult = toLong0(in, -1);
 
-      //if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Got complete messageUnit index=" + index);
+      //if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got complete messageUnit index=" + index);
 
       if (index != msgLength) {
          String str = "Format mismatch, read index=" + index + " expected message length=" + msgLength + " we need to disconnect the client, can't recover.";
@@ -562,10 +554,32 @@ public class Parser extends Converter
       }
 
       try {
-         long len = getUserDataLen() + 100;
+         long len = getUserDataLen() + 500;
          if (len > Integer.MAX_VALUE)
             throw new IllegalArgumentException("Message size is limited to " + Integer.MAX_VALUE + " bytes");
          ByteArray out = new ByteArray((int)len);
+
+            /*
+         int lenProxyHeader = 0;
+         if (proxyHost != null) {
+             telnet proxy 3128
+             
+             GET http://192.121.221.46:8080 HTTP/1.0
+
+
+             POST /path/script.cgi HTTP/1.0
+             From: frog@jmarshall.com
+             User-Agent: HTTPxmlBlaster/1.0
+             Content-Type: application/x-www-form-urlencoded
+             Content-Length: 32
+
+             home=Cosby&favorite+flavor=flies
+            final byte[] CRLF = {13, 10};
+            final String CRLFstr = new String(CRLF);
+            StringBuffer buf = new StringBuffer(256);
+            buf.append("POST http://").append(hostname).append(":").append(port).append(" HTTP/1.0").append(CRLFstr);
+         }
+            */
 
          out.write(EMPTY10, 0, EMPTY10.length); // Reserve 10 bytes at the beginning ...
 

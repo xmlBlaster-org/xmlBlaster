@@ -3,7 +3,7 @@ Name:      Converter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter class for raw socket messages
-Version:   $Id: Converter.java,v 1.6 2002/02/18 21:38:32 ruff Exp $
+Version:   $Id: Converter.java,v 1.7 2002/02/25 13:46:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -20,7 +20,7 @@ public class Converter
    public static final int FLAG_FIELD_LEN = 6;
    public static final int MAX_STRING_LEN = Integer.MAX_VALUE;
    /** Set debug level */
-   public boolean SOCKET_DEBUG=false;
+   public int SOCKET_DEBUG=0;
 
    protected long index = 0L;
 
