@@ -1,8 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes svn
-===========
+Changes for 1.RC1 [2004-10-28] #12758
+=====================================
 
  o #12706,#12709 Added subversion revision number as exception text prefix, for example
      ex.getMessage()="#12702 Can't load your plugin"
@@ -147,6 +147,7 @@ Changes svn
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - #12755 "user.name" is used instead of "user" to find out the default user
    - #12746 Windows flag '/YX' added for precompiled headers
    - #12743 BUGIFX: lexical_cast from string (or char*) to bool is now handled on a special implementation
    - #12711 Added subversion revision number, see Global::getRevisionNumber()
