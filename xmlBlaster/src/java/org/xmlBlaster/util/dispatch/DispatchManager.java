@@ -236,7 +236,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
       if (this.isShutdown) return;
-      ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
+      if (ex != null) {
+         ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
+      }
+      else {
+         ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME,
+                  "Switch from " + oldState + " to DEAD, reason is not known");
+      }
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
       if (this.connectionStatusListeners.size() > 0) {
@@ -836,7 +842,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       sb.append(offset).append("<DispatchManager id='").append(getId());
       if (this.msgQueue != null)
-         sb.append(offset).append("' numEntries='").append(this.msgQueue.getNumOfEntries());
+         sb.append("' numEntries='").append(this.msgQueue.getNumOfEntries());
       sb.append("' isShutdown='").append(this.isShutdown).append("'>");
       sb.append(this.dispatchConnectionsHandler.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append(" <dispatchWorkerIsActive>").append(dispatchWorkerIsActive).append("</dispatchWorkerIsActive>");
