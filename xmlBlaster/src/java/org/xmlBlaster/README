@@ -18,7 +18,9 @@ Howto start the xmlBlaster server:
 
    Specify the IP address for the CORBA server (multi homed hosts):
 
-     java -DOAIAddr=196.197.24.11 org.xmlBlaster.Main
+     java -DOAIAddr=196.197.24.11 org.xmlBlaster.Main -iorHost 196.197.24.11
+
+     (the first option is for JacORB CORBA, the second for our http-IOR server)
 
    This example redirects the logging output to a file:
 
