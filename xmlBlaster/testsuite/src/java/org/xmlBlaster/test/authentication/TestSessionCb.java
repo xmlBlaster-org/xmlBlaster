@@ -129,6 +129,7 @@ public class TestSessionCb extends TestCase
 
          assertInUpdate = null;
          con2 = new XmlBlasterConnection(glob);
+         qos = new ConnectQos(glob);  // force a new session
          con2.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
