@@ -142,10 +142,10 @@ vector<ServerRef> ConnectQosData::getServerReferences() const
    return serverReferences_;
 }
 
-ServerRef ConnectQosData::getServerRef() const
+ServerRef ConnectQosData::getServerRef()
 {
    if (serverReferences_.empty()) {
-      return ServerRef("IOR");
+      addServerRef(ServerRef(Global::getDefaultProtocol()));
    }
    return *(serverReferences_.begin());
 }
@@ -157,9 +157,11 @@ void ConnectQosData::setAddress(const Address& address)
    addresses_.insert(addresses_.begin(), address);
 }
 
-Address ConnectQosData::getAddress() const
+Address& ConnectQosData::getAddress()
 {
-   if (addresses_.empty()) return Address(global_);
+   if (addresses_.empty()) {
+      setAddress(Address(global_));
+   }
    return *(addresses_.begin());
 }
 
@@ -168,9 +170,11 @@ void ConnectQosData::addCbAddress(const CallbackAddress& cbAddress)
    cbAddresses_.insert(cbAddresses_.begin(), cbAddress);
 }
 
-CallbackAddress ConnectQosData::getCbAddress() const
+CallbackAddress& ConnectQosData::getCbAddress()
 {
-   if (cbAddresses_.empty()) return CallbackAddress(global_);
+   if (cbAddresses_.empty()) {
+      addCbAddress(CallbackAddress(global_));
+   }
    return *(cbAddresses_.begin());
 }
 
@@ -179,10 +183,11 @@ void ConnectQosData::addClientQueueProperty(const ClientQueueProperty& prop)
    clientQueueProperties_.insert(clientQueueProperties_.begin(), prop);
 }
 
-ClientQueueProperty ConnectQosData::getClientQueueProperty() const
+ClientQueueProperty& ConnectQosData::getClientQueueProperty()
 {
-   if (clientQueueProperties_.empty())
-      return ClientQueueProperty(global_, "");
+   if (clientQueueProperties_.empty()) {
+      addClientQueueProperty(ClientQueueProperty(global_, ""));
+   }
    return *(clientQueueProperties_.begin());
 }
 
@@ -191,7 +196,7 @@ void ConnectQosData::setSessionCbQueueProperty(const CbQueueProperty& prop)
    sessionCbQueueProperty_ = prop;
 }
 
-CbQueueProperty ConnectQosData::getSessionCbQueueProperty() const
+CbQueueProperty& ConnectQosData::getSessionCbQueueProperty()
 {
    return sessionCbQueueProperty_;
 }
@@ -200,7 +205,7 @@ void ConnectQosData::setClientProperty(const std::string& key, const std::string
 {
    clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
 }
-	
+        
 const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() const
 {
    return clientProperties_;
@@ -214,52 +219,54 @@ const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() c
  */
 string ConnectQosData::toXml(const string& extraOffset) const
 {
-   string offset = "\n" + extraOffset;
+   string offset = Constants::OFFSET + extraOffset;
+   string offset2 = offset + Constants::INDENT;
+   string indent = extraOffset+Constants::INDENT;
    string ret;
    ret += offset + string("<qos>");
 
    // <securityService ...
-   ret += securityQos_.toXml(extraOffset);
-   ret += offset + string("   <ptp>") + getBoolAsString(ptp_)  + string("</ptp>");
+   ret += securityQos_.toXml(indent);
+   ret += offset2 + string("<ptp>") + getBoolAsString(ptp_)  + string("</ptp>");
 
    if (isClusterNode())
-      ret += offset + string("   <clusterNode>") + getBoolAsString(isClusterNode()) + string("</clusterNode>");
+      ret += offset2 + string("<clusterNode>") + getBoolAsString(isClusterNode()) + string("</clusterNode>");
 
-      if (isDuplicateUpdates() == false)
-         ret += offset + string("   <duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
+   if (isDuplicateUpdates() == false)
+      ret += offset2 + string("<duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
 
-      ret += sessionQos_.toXml(extraOffset);
+   ret += sessionQos_.toXml(indent);
 
-      {  // client queue properties 
-         vector<ClientQueueProperty>::const_iterator
-            iter = clientQueueProperties_.begin();
-         while (iter != clientQueueProperties_.end()) {
-            ret += (*iter).toXml(extraOffset);
-            iter++;
-         }
-      }
-
-      ret += sessionCbQueueProperty_.toXml(extraOffset);
-
-      {  //serverReferences
-         vector<ServerRef>::const_iterator
-            iter = serverReferences_.begin();
-         while (iter != serverReferences_.end()) {
-            ret += (*iter).toXml(extraOffset);
-            iter++;
-         }
-      }
-
-      ConnectQosData::ClientPropertyMap::const_iterator 
-         iter = clientProperties_.begin();
-      while (iter != clientProperties_.end()) {
-         offset + "   <clientProperty name='" + (*iter).first + "'><![CDATA[" + (*iter).second + "]]></clientProperty>";
+   {  // client queue properties 
+      vector<ClientQueueProperty>::const_iterator
+         iter = clientQueueProperties_.begin();
+      while (iter != clientQueueProperties_.end()) {
+         ret += (*iter).toXml(indent);
          iter++;
       }
-
-      ret += offset + string("</qos>");
-      return ret;
    }
+
+   ret += sessionCbQueueProperty_.toXml(indent);
+
+   {  //serverReferences
+      vector<ServerRef>::const_iterator
+         iter = serverReferences_.begin();
+      while (iter != serverReferences_.end()) {
+         ret += (*iter).toXml(indent);
+         iter++;
+      }
+   }
+
+   ConnectQosData::ClientPropertyMap::const_iterator 
+      iter = clientProperties_.begin();
+   while (iter != clientProperties_.end()) {
+      offset2 + "<clientProperty name='" + (*iter).first + "'><![CDATA[" + (*iter).second + "]]></clientProperty>";
+      iter++;
+   }
+
+   ret += offset + string("</qos>");
+   return ret;
+}
 
 }}}} // namespaces
 

@@ -92,7 +92,7 @@ private:
    }
 
 protected:
-   ClientPropertyMap clientProperties_;	
+   ClientPropertyMap clientProperties_; 
 
 public:
    ConnectQosData(org::xmlBlaster::util::Global& global, const std::string& user="", const std::string& passwd="", long publicSessionId=0);
@@ -114,23 +114,46 @@ public:
    bool isDuplicateUpdates() const;
    void addServerRef(const org::xmlBlaster::util::ServerRef& serverRef);
    std::vector<ServerRef> getServerReferences() const;
-   /** returns the first found server reference */
-   org::xmlBlaster::util::ServerRef getServerRef() const;
+   /**
+    * returns the first found server reference
+    * delivered with return QoS of a connect() call.
+    */
+   org::xmlBlaster::util::ServerRef getServerRef();
 
    std::string toXml(const std::string& extraOffset="") const;
 
    // methods for queues and addresses ...
+   /**
+    * @param address We take a copy of this so you can destroy your address after setting.
+    *                Note that if you work on your address object later it does not change
+    *                the address in ConnectQos
+    */
    void setAddress(const org::xmlBlaster::util::qos::address::Address& address);
-   org::xmlBlaster::util::qos::address::Address getAddress() const;
+   org::xmlBlaster::util::qos::address::Address& getAddress();
 
+   /**
+    * @param cbAddress We take a copy of this so you can destroy your address after setting.
+    *                Note that if you work on your address object later it does not change
+    *                the address in ConnectQos
+    */
    void addCbAddress(const org::xmlBlaster::util::qos::address::CallbackAddress& cbAddress);
-   org::xmlBlaster::util::qos::address::CallbackAddress getCbAddress() const;
+   org::xmlBlaster::util::qos::address::CallbackAddress& getCbAddress();
 
+   /**
+    * @param prop We take a copy of this so you can destroy your property after setting.
+    *             Note that if you work on your object later it does not change
+    *             the setting in ConnectQos
+    */
    void addClientQueueProperty(const org::xmlBlaster::util::qos::storage::ClientQueueProperty& prop);
-   org::xmlBlaster::util::qos::storage::ClientQueueProperty getClientQueueProperty() const;
+   org::xmlBlaster::util::qos::storage::ClientQueueProperty& getClientQueueProperty();
 
+   /**
+    * @param prop We take a copy of this so you can destroy your property after setting.
+    *             Note that if you work on your object later it does not change
+    *             the setting in ConnectQos
+    */
    void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
-   org::xmlBlaster::util::qos::storage::CbQueueProperty getSessionCbQueueProperty() const;
+   org::xmlBlaster::util::qos::storage::CbQueueProperty& getSessionCbQueueProperty();
 
    void setClientProperty(const std::string& key, const std::string& value);
    const ClientPropertyMap& getClientProperties() const;
