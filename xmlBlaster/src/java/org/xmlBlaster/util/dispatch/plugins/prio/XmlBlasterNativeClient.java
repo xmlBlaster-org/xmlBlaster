@@ -111,17 +111,15 @@ public final class XmlBlasterNativeClient implements I_Callback
       CallbackAddress cbAddress = new CallbackAddress(this.glob);
       cbAddress.setDispatchPlugin("undef");  // To avoid recursive loading of this PRIO plugin
       cbAddress.setSecretSessionId(this.cbSessionId); // to protect our callback server - see method update()
-      cbAddress.setDispatchPlugin("undef");
       this.connectQos.addCallbackAddress(cbAddress);
 
       this.xmlBlasterCon.registerConnectionListener(new I_ConnectionStateListener() {
             
-            public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+            public void reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                connected = true;
                conRetQos = connectionHandler.getConnectReturnQos();
                log.info(ME, "I_ConnectionProblems: We were lucky, connected to " + 
                             connectionHandler.getGlobal().getId() + " as " + conRetQos.getSessionName());
-               return true;
             }
 
             public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
