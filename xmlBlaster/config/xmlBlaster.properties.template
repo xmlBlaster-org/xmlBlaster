@@ -79,7 +79,8 @@ Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
 
 
 #------------------------------------------------------------------------------
-# Adjust if you want to use the EMAIL plugin:
+# Adjust if you want to use the EMAIL plugin.
+# See xmlBlaster/demo/javaclients/email/README
 EmailDriver.smtpHost=localhost
 EmailDriver.from=xmlblast@localhost
 #------------------------------------------------------------------------------
