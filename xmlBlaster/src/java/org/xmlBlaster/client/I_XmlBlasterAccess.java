@@ -98,9 +98,18 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Logout from the server.
     * <p />
     * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
-    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection#disconnect(DisconnectQos, boolean, boolean, boolean)
+    * @see org.xmlBlaster.client.XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
     */
    boolean disconnect(DisconnectQos qos);
+
+   /**
+    * Note that this contains no information about the current connection state. 
+    * @return true If the connection() method was invoked without exception
+    * @see I_ConnectionHandler#isAlive()
+    * @see I_ConnectionHandler#isPolling()
+    * @see I_ConnectionHandler#isDead()
+    */
+   boolean isConnected();
 
    /**
     * Logout from the server. 
@@ -119,7 +128,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    boolean disconnect(DisconnectQos disconnectQos, boolean flush, boolean shutdown, boolean shutdownCb);
 
    /**
-    * Access the callback server. 
+    * Access the callback server which is currently used in I_XmlBlasterAccess. 
     * @return null if no callback server is established
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
     */
@@ -133,12 +142,16 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * The public session ID of this login session. 
+    * This is a convenience method only, the information is from ConnectReturnQos or if not available
+    * from ConnectQos.
+    * @return null if not known
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe requirement</a>
     */
    SessionName getSessionName();
 
    /**
-    * Allows to set the node name for nicer logging.
+    * Allows to set the node name for nicer logging. 
+    * Used for clustering.
     */
    void setServerNodeId(String nodeId);
 
@@ -161,8 +174,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * This subscribe variant allows to specify a specialized callback
     * for updated messages.
     * <p />
-    * Implementing for every subscription a callback, you don't need to
-    * dispatch updates when they are received in one central
+    * This way you can implement for every subscription a specific callback,
+    * so you don't need to dispatch updates when they are received in only one central
     * update method.
     * <p />
     * Example:<br />
@@ -185,16 +198,15 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * <p />
     * NOTE: You need to pass a callback handle on login as well (even if you
     * never use it). It allows to setup the callback server and is the
-    * default callback deliver channel.
+    * default callback deliver channel for PtP messages.
     * <p />
     * NOTE: On logout we automatically unSubscribe() this subscription
     * if not done before.
     * @param cb      Your callback handling implementation
-    * @return oid    A unique subscription Id<br>
+    * @return SubscribeReturnQos with the unique subscriptionId<br>
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
-    *                You should use this ID if you wish to unSubscribe()<br>
-    *                If no match is found, an empty string "" is returned.
+    *                You should use this ID if you wish to unSubscribe()
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException;
