@@ -3,13 +3,14 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.5 2000/06/20 13:32:58 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.6 2000/06/26 13:56:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.jutils.log.Log;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
+import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.CorbaConnection;
