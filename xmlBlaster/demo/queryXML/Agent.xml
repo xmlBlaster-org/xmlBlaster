@@ -13,8 +13,30 @@
 <!-- Accessing all FileProof drivers
         java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] -->
 
+<!-- Accessing all drivers not named FileProff
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id!=\"FileProof\"] -->
+
 <!-- Accessing everything from host 192.168.124.10
         java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] -->
+
+<!-- Accessing all attributes of AGENT: doesn't work properly (selects all)
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT[attribute::type] -->
+
+<!-- Selecting the second last key
+        java DomQueryTest Agent.xml "xmlBlaster/key[position()=last()-1]" -->
+
+<!-- Selecting the 6. key
+        java DomQueryTest Agent.xml xmlBlaster/key[6] -->
+
+<!-- Selecting all FileProof Drivers (knowing that no DRIVER tag exists in other context)
+        java DomQueryTest Agent.xml "//DRIVER[@id='FileProof']" -->
+
+
+<!-- Selecting all DRIVER which have an AGENT as parent (child:: is optional and default)
+        java DomQueryTest Agent.xml "//descendant::AGENT/child::DRIVER" -->
+        
+<!-- Selecting all import / export EXECUTABLE
+        java DomQueryTest Agent.xml "//DRIVER[EXECUTABLE='import' or EXECUTABLE='export']" -->
 
 <xmlBlaster>
 

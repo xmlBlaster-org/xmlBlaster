@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.2 1999/11/16 22:13:29 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.3 1999/11/17 08:53:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -33,10 +33,10 @@ import com.fujitsu.xml.omquery.XtOmQueryMgr;
 class XtOmQueryTest
 {
    static private final String parser_name = "com.sun.xml.parser.Parser";
+   static private final String ME = "XtOmQueryTest";
 
-   public static void main(String argv[])
+   public XtOmQueryTest(String argv[])
    {
-      final String ME = "XtOmQueryTester";
 
       if (argv.length < 2)
          Log.panic(ME, "Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
@@ -68,7 +68,7 @@ class XtOmQueryTest
 
          {
             StopWatch loadTime = new StopWatch();
-            Node node = query_mgr.load(input);                  // [ 738 millis ] [ 1 sec 987 millis ]
+            com.jclark.xsl.om.Node node = query_mgr.load(input);// [ 738 millis ] [ 1 sec 987 millis ]
             Log.info(ME, "Load nodes" + loadTime.nice());
 
             if (argv.length > 1) {
@@ -132,23 +132,46 @@ class XtOmQueryTest
       }
    }
 
-   static private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
+   private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
    {
       int n = 0;
+
+      //com.jclark.xsl.om.Name key_id = new com.jclark.xsl.om.Name("oid");
 
       while (nodeIter.hasMoreElements())
       {
          n++;
          Object obj = nodeIter.nextElement();
          Node node = (Node)obj;
-         if (dumpIt)
+         if (dumpIt) {
+            //NameTableImpl nti = (NameTableImpl) node.getCreator();
+ 
             System.out.println("Processing node " + node.getName() + ": " + node.getData());
+            System.out.println("Processing node " + node.toString());
+            
+            SafeNodeIterator siter = node.getAttributes();
+
+            Object aobj = siter.next();
+            while (aobj != null) {
+               Log.info(ME, "Attibutes:  " + aobj.toString());
+
+               aobj = siter.next();
+            }
+
+            com.jclark.xsl.om.Node parent = node.getParent();
+            
+            if (parent == null)
+               Log.warning(ME, "No parent");
+            else {
+               Log.warning(ME, "Got parent");
+            }
+         }
       }
 
       return n;
    }
 
-   private static String createURL(String path)
+   private String createURL(String path)
    {
       File f = new File(path);
       String uri = f.getAbsolutePath();
@@ -161,5 +184,10 @@ class XtOmQueryTest
       uri = "file://" + uri;
 
       return uri;
+   }
+
+   public static void main(String argv[])
+   {
+      new XtOmQueryTest(argv);
    }
 }
