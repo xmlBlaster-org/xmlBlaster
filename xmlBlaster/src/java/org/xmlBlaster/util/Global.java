@@ -98,6 +98,8 @@ public class Global implements Cloneable
    private String versionDefault = "0.91";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
+   /** This will be replaced by build.xml with the current subversion revision number */
+   private String revisionNumber = "@revision.number@";
    /** This will be replaced by build.xml with the build timestamp */
    private String buildTimestamp = "@build.timestamp@";
    /** This will be replaced by build.xml with the compiling JDK vendor */
@@ -268,6 +270,15 @@ public class Global implements Cloneable
       return versionDefault;
    }
 
+   /**
+    * See @revision.number@ which will be replaced by build.xml with the current subversion revision
+    * @return e.g. "12702" or "12702M". If no subversion is available getVersion() is returned
+    */
+   public String getRevisionNumber() {
+      if (this.revisionNumber.indexOf("@") == -1 && !"${revision.number}".equals(this.revisionNumber)) // Check if replaced
+         return this.revisionNumber;
+      return versionDefault;
+   }
 
    /**
     * See @build.timestamp@ which will be replaced by build.xml with the current timestamp
