@@ -1659,7 +1659,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (Log.CALL) Log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         Log.info(ME, "Pinging " + getServerNodeId() + " server everey " + PING_INTERVAL + " millis.");
+         Log.info(ME, "Pinging " + getServerNodeId() + " server every " + PING_INTERVAL + " millis.");
          while (pingRunning) {
             try {
                con.ping();
