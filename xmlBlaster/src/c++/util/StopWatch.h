@@ -14,7 +14,7 @@ Comment:   Handling the Client data
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster {
 namespace util {

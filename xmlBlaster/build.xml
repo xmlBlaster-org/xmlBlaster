@@ -1423,7 +1423,7 @@ TODO
          <linker name="gcc"  if="use-gcc" />
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="aced.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
             <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
