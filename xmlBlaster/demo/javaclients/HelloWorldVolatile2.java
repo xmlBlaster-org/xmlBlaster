@@ -31,10 +31,8 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 /**
  * This client connects to xmlBlaster and publishes a volatile message. 
  * <p>
- * Volatile messages are messages which expire instantly after they are received
- * by xmlBlaster. Subscribers which are there already will receive the message even
- * if the message is hanging in a clients callback queue for an hour.
- * The publish QoS settings for volatile messages are
+ * Additionally the topic destroyDelay is reduced to 4 seconds, we can
+ * see in the xmlBlaster dump that the topic disappeared 4 seconds later.
  * <pre>
  * &lt;qos>
  *   &lt;expiration lifeTime='0' forceDestroy='true'/>
