@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.7 2002/05/02 19:08:38 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.8 2002/05/03 10:33:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -108,9 +108,9 @@ public abstract class AddressBase
    /**
     * Show some important settings for logging
     */
-   public final String getSettings() {
+   public String getSettings() {
       StringBuffer buf = new StringBuffer(126);
-      buf.append("type=").append(type).append(" retries=").append(retries).append(" oneway=").append(oneway).append(" burstMode.collectTime=").append(getCollectTime());
+      buf.append("type=").append(type).append(" oneway=").append(oneway).append(" burstMode.collectTime=").append(getCollectTime());
       return buf.toString();
    }
 
@@ -285,6 +285,10 @@ public abstract class AddressBase
       this.ptpAllowed = ptpAllowed;
    }
 
+   public boolean isPtpAllowed() {
+      return this.ptpAllowed;
+   }
+
    public void setCompressType(String compressType) {
       if (compressType == null) compressType = "";
       this.compressType = compressType;
@@ -294,7 +298,10 @@ public abstract class AddressBase
          Log.warn(ME, "Compression of messages is not yet supported");
    }
 
-   /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
+   /**
+    * The identifier sent to the callback client, the client can decide if he trusts this invocation
+    * @return never null
+    */
    public String getSessionId() {
       return sessionId;
    }

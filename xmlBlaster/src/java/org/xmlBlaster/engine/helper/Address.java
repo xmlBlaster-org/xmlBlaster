@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.4 2002/05/02 19:08:38 ruff Exp $
+Version:   $Id: Address.java,v 1.5 2002/05/03 10:33:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -29,7 +29,12 @@ import org.xml.sax.Attributes;
 public class Address extends AddressBase
 {
    private static final String ME = "Address";
+
+   /** The node id to which we want to connect */
    private String nodeId = null;
+
+   /** TODO: Move this attribute to QueueProperty.java */
+   private int maxMsg;
 
    /**
     */
@@ -45,6 +50,14 @@ public class Address extends AddressBase
       super(glob, "address");
       initialize();
       setType(type);
+   }
+
+   public void setMaxMsg(int maxMsg) {
+      this.maxMsg = maxMsg;
+   }
+
+   public int getMaxMsg() {
+      return this.maxMsg;
    }
 
     /*
@@ -93,29 +106,42 @@ public class Address extends AddressBase
       setMinSize(glob.getProperty().get("compress.minSize", DEFAULT_minSize));
       setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
+      setMaxMsg(glob.getProperty().get("queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
       if (nodeId != null) {
          setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
-         setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", collectTime));
-         setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));
-         setPingInterval(glob.getProperty().get("pingInterval["+nodeId+"]", pingInterval));
-         setRetries(glob.getProperty().get("retries["+nodeId+"]", retries));
-         setDelay(glob.getProperty().get("delay["+nodeId+"]", delay));
-         setOneway(glob.getProperty().get("oneway["+nodeId+"]", oneway));
-         setCompressType(glob.getProperty().get("compress.type["+nodeId+"]", compressType));
-         setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", minSize));
-         setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", ptpAllowed));
-         setSessionId(glob.getProperty().get("sessionId["+nodeId+"]", sessionId));
+         setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", getCollectTime()));
+         setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", getCollectTimeOneway()));
+         setPingInterval(glob.getProperty().get("pingInterval["+nodeId+"]", getPingInterval()));
+         setRetries(glob.getProperty().get("retries["+nodeId+"]", getRetries()));
+         setDelay(glob.getProperty().get("delay["+nodeId+"]", getDelay()));
+         setOneway(glob.getProperty().get("oneway["+nodeId+"]", oneway()));
+         setCompressType(glob.getProperty().get("compress.type["+nodeId+"]", getCompressType()));
+         setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", getMinSize()));
+         setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", isPtpAllowed()));
+         setSessionId(glob.getProperty().get("sessionId["+nodeId+"]", getSessionId()));
+         setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
       }
    }
 
    /** How often to retry if connection fails: defaults to -1 (retry forever) */
    public int getDefaultRetries() { return -1; }
 
-   /** Delay between connection retries in milliseconds: defaults to 5 seconds */
-   public long getDefaultDelay() { return 5 * 1000L; };
+   /** Delay between connection retries in milliseconds (5000 is a good value): defaults to 0, a value bigger 0 switches fails save mode on */
+   public long getDefaultDelay() { return 0; }
+   // /* Delay between connection retries in milliseconds: defaults to 5000 (5 sec), a value of 0 switches fails save mode off */
+   // public long getDefaultDelay() { return 5 * 1000L; };
 
    /** Ping interval: pinging every given milliseconds, defaults to 10 seconds */
    public long getDefaultPingInterval() { return 10 * 1000L; }
+
+   /** For logging only */
+   public String getSettings() {
+      StringBuffer buf = new StringBuffer(126);
+      buf.append(super.getSettings());
+      if (getDelay() > 0)
+         buf.append(" delay=").append(getDelay()).append(" retries=").append(getRetries()).append(" maxMsg=").append(getMaxMsg()).append(" pingInterval=").append(getPingInterval());
+      return buf.toString();
+   }
 
    /**
     * Get a usage string for the connection parameters
@@ -123,7 +149,7 @@ public class Address extends AddressBase
    public final String usage()
    {
       String text = "\n";
-      text += "Control connection to xmlBlaster server\n";
+      text += "Control fail save connection to xmlBlaster server\n";
       text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
       //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
       //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
@@ -131,8 +157,9 @@ public class Address extends AddressBase
       text += "                       This allows performance tuning, try set it to 200.\n";
       //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
       text += "   -pingInterval       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
-      text += "   -retries            How often to retry if connection fails [" + getDefaultRetries() + "]\n";
+      text += "   -retries            How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
       text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
+      text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
       //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
       //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
       text += "\n";
