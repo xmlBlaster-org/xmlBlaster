@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.50 $
+# $Revision: 1.51 $
 #-----------------------------------------------------------
 
 
@@ -32,12 +32,18 @@ ESC="\033[0m"
 
 OS="`uname -s`"
 
-if [ `basename ${SHELL}` = "bash" ]; then
-   ECHO="echo -e"
-else
-   ECHO="echo"
-fi
+#if [ `basename ${SHELL}` = "bash" ]; then
+#   ECHO="echo -e"
+#else
+#   ECHO="echo"
+#fi
 
+if test "`echo -e xxx`" = "xxx"
+then
+    ECHO="echo -e"
+else
+    ECHO=echo
+fi
 
 if [ ${CLASSPATH:=""} = "" ] ; then
 	CLASSPATH=
