@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.7 2003/03/25 22:09:37 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.8 2003/04/21 17:23:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -26,7 +26,7 @@ import junit.framework.*;
  * Note that the two clients (client logins) are simulated in this class.<br />
  * William is the 'sender' and Averell the 'receiver'<br />
  * Averell is not online when William sends the message, and will receive the message
- * from her queue in the xmlBlaster when she logs in.
+ * from his queue in the xmlBlaster when he logs in.
  * <p>
  * A second test checks if there is an Exception thrown, if the receiver
  * is not logged in and the <forceQueuing> is not set.
@@ -34,7 +34,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestPtDQueue
  *
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestPtDQueue
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtDQueue
  * </pre>
  */
 public class TestPtDQueue extends TestCase implements I_Callback
@@ -80,8 +80,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = glob.getXmlBlasterAccess();
-         senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
+         senderConnection = glob.getClone(null).getXmlBlasterAccess();
+         senderConnection.connect(new ConnectQos(senderConnection.getGlobal(), senderName, passwd), this);
          log.info(ME, "Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
@@ -126,12 +126,12 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          try {
-            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
+            MsgUnit msgUnit = new MsgUnit(senderConnection.getGlobal(), xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
-            log.info(ME, "Exception is correct, client is not logged in");
+            log.info(ME, "Exception is correct, client is not logged in: " + e.getMessage());
          }
 
          waitOnUpdate(1000L);
@@ -154,7 +154,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          try {
-            MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
+            MsgUnit msgUnit = new MsgUnit(senderConnection.getGlobal(), xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
@@ -170,8 +170,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
          // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
-            receiverConnection = glob.getXmlBlasterAccess();
-            ConnectQos connectQos = new ConnectQos(glob, receiverName, passwd);
+            receiverConnection = glob.getClone(null).getXmlBlasterAccess();
+            ConnectQos connectQos = new ConnectQos(receiverConnection.getGlobal(), receiverName, passwd);
             receiverConnection.connect(connectQos, this); // Login to xmlBlaster
          } catch (XmlBlasterException e) {
              log.error(ME, e.toString());
