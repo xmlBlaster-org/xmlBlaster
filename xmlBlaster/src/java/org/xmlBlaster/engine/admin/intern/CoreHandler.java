@@ -182,7 +182,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/?freeMem"
          String ret = ""+setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+         return cmd.getValue();
       }
 
       String loginName = cmd.getUserNameLevel();
@@ -201,7 +201,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/joe/?uptime"
          String ret = ""+setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+         return cmd.getValue();
       }
 
       String sessionAttr = cmd.getSessionAttrLevel();
@@ -215,7 +215,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+         return cmd.getValue();
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
