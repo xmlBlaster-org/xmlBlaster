@@ -23,7 +23,6 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
 			org.xmlBlaster.engine.xml2java \
 			org.xmlBlaster.engine.xmldb.file \
-			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.feeder \
@@ -52,7 +51,7 @@ JUTILS_PACKGS = org.jutils \
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
-DEMO_PACKGS = javaclients html.systemInfo
+DEMO_PACKGS = javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.HelloWorldApplet html.systemInfo
 
 DOC_PACKGS = doc.requirements
 

@@ -257,7 +257,7 @@ It´s a pretty basic kind of chat-application but worth a try.
 
 Compile it (make all) and start it like that:
 
-   jaco javaclients.corba.chat.SimpleChat -name "Nickname"
+   jaco javaclients.chat.SimpleChat -name "Nickname"
 
 where "Nickname" should be different for each client you start.
 Don´t forget to start the server (jaco org.xmlBlaster.Main) first.
