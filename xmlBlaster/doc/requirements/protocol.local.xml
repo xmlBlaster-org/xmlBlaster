@@ -1,14 +1,9 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='protocol.local' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='protocol.local' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster supports native client server communication in the same JVM</topic>
    <description>
-      <p>
-      It is possible to start xmlBlaster clients with the runlevel manager of xmlBlaster.
-      Like this the client is started on xmlBlaster startup in the same JVM as the server
-      in a configurable sequence with other services (see our runlevel manager requirement).
-      </p>
       <p>
       If a client connects to XmlBlaster with the <code>XmlBlasterAccess</code> client interface
       it can choose the communication protocol like Corba, SOCKET, XmlRpc and more.
@@ -16,12 +11,36 @@
       by choosing the <b>LOCAL</b> protocol plugin. This improves speed and 
       avoids using OS resources like ports and threads.<br />
       Switching the protocol is just a configuration setting, so any existing
-      client can choose to communicate locally. Note that the client must implement the
+      client can choose to communicate locally. </p>
+      <p>Client that want's to be able to use the local protocol must however have access to the serverside "singleton" org.xmlBlaster.engine.Global, either directly or through a global wich contains the serverside global i is ObjectEntry under the key: <code>ServerNodeScope</code>. Futhermore, it must see to it than any cloning it does of its global (for example to be able to use more than one XmlBlasterAccess) contians this ServerNodeScope entry. The <code>org.xmlBlaster.j2ee.util.GlobalUtil</code> may be used to do just that.</p>
+    <p>There are currently three ways to do this.</p>
+      <p>
+      It is possible to start xmlBlaster clients with the runlevel manager of xmlBlaster.
+      Like this the client is started on xmlBlaster startup in the same JVM as the server
+      in a configurable sequence with other services (see our runlevel manager requirement).Note that the client must implement the
       <code>I_Plugin</code> interface to be loadable as a plugin, this is described in
       the <i>engine.runlevel</i> requirement.
       </p>
+    <p>If one starts an embedded XmlBlaster it is also possible to access the engine.Global: <code>serverThread.getMain().getGlobal()</code></p>
+    <p>When using the JBoss/JMX service to start XmlBlaster it is also possible to specify a JNDIname where an instance of GlobalUtil should be bound. This GlobalUtil instance will contain a reference to the engine global as long as its looked up in the same VM.</p>
    </description>
    <example lang="Java">
+    <p>Looking up a GlobalUtil and using it in a JBoss environment:</p>
+    <pre>
+      Global Util globalUtil = (GlobalUtil)new InitialContext().lookup(jndiName);
+      Global glob = globalUtil.newGlobal( propFile, props );
+      I_XmlBlasterAccess conOne = glob.getXmlBlasterAccess();
+      I_XmlBlasterAccess conTwo = globalUtil.getClone( glob ).getXmlBlasterAccess();
+    </pre>
+    <p>Using it when embedding XmlBlaster:</p>
+    <pre>
+      EmbeddedXmlBlaster serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
+      GlobalUtil globalUtil = new GlobalUtil( serverThread.getMain().getGlobal() );
+      Global runglob = globalUtil.getClone( glob );
+      con = runglob.getXmlBlasterAccess();
+      ConnectQos qos = new ConnectQos(runglob, name, passwd);
+      I_XmlBlasterAccess con.connect(qos, this); // Login to xmlBlaster
+    </pre>
    </example>
 
    <configuration where="client">
@@ -55,24 +74,48 @@
 
       </table>
    </configuration>
+  <configuration where="server">
+    <p>On <b>serverside side</b> we need to register the <b>LOCAL</b> protocol serverside callback driver.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>CbProtocolPlugin[LOCAL][1.0]</td>
+            <td>org.xmlBlaster.protocol.local.CallbackLocalDriver</td>
+            <td>Specify the callback driver on the serverside.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+  </configuration>
    <todo type="HTML">
    <ol>
-      <li>
+      <li>Example of a I_Plugin client.
       </li>
    </ol>
    </todo>
-   <see type="REQ">protocol</see>
-   <see type="REQ">engine.runlevel.howto</see>
-   <see type="API">org.xmlBlaster.client.protocol.local.LocalConnection</see>
-   <see type="API">org.xmlBlaster.client.protocol.local.LocalCallbackImpl</see>
-   <see type="API">javaclients.HelloWorldLocal</see>
+  <see type="REQ">protocol</see>
+  <see type="REQ">engine.runlevel.howto</see>
+  <see type="API">org.xmlBlaster.client.protocol.local.LocalConnection</see>
+  <see type="API">org.xmlBlaster.client.protocol.local.LocalCallbackImpl</see>
+  <see type="API">org.xmlBlaster.protocol.local.CallbackLocalDriver</see>
+  <see type="API">org.xmlBlaster.j2ee.util.GlobalUtil</see>
+  <see type="API">org.xmlBlaster.j2ee.jmx.XmlBlasterService</see>
    <author>xmlBlaster@marcelruff.info</author>
-   <date>2003 06 28</date>
-   <revision>$Revision: 1.3 $</revision>
+  <author>pra@tim.se</author>
+   <date>2003 09 18</date>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.</test>
+      <test tool="SUITE">org.xmlBlaster.test.client.TestLocalProtocol</test>
    </testcase>
 </requirement>
 

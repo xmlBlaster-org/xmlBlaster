@@ -39,9 +39,15 @@
          &lt;/resource-ref&gt;
 </pre>
    </example>
-   <see type="LOCAL">../../demo/javaclients/j2ee/k2</see>
-   <see type="INTERNET">http://jboss.sourceforge.net/doc-24/ch06s20.html</see>
+   <configuration where="client">
+    <p>If the resource adapter is running in the same server as an XmlBlasterService it is possible to use the in vm LOCAL protocol. To do this a JNDIName must be specifyed where it may lookup a GlobalUtil.</p>
+    </configuration>
+  <see type="REQ">j2ee.jmx</see>
+  <see type="REQ">protocol.local</see>
+  <see type="API">org.xmlBlaster.j2ee.k2.BlasterManagedConnectionFactory</see>
+  <see type="LOCAL">../../demo/javaclients/j2ee/k2</see>
+  <see type="INTERNET">http://jboss.sourceforge.net/doc-24/ch06s20.html</see>
    <author>pra@tim.se</author>
    <date>2002 09 16</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
 </requirement>
