@@ -3,7 +3,7 @@ Name:      CallbackServletDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: CallbackServletDriver.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: CallbackServletDriver.java,v 1.4 2000/03/03 15:48:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -36,7 +36,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster.client.I_Callback, org.xmlBlaster.util.LogListener
 {
@@ -98,16 +98,16 @@ public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster
 
       StringBuffer retStr = new StringBuffer();
       try {
-         String actionType = req.getParameter("ActionType");
+         String actionType = Util.getParameter(req, "ActionType", "NONE");
 
-         if (actionType!=null && actionType.equals("logout")) {
+         if (actionType.equals("logout")) {
             Log.info(ME, "Logout ActionType arrived ...");
             servletConnection.logout();
             sessionIdHash.remove(sessionId);
             loginNameHash.remove(servletConnection.getLoginName());
          }
 
-         else if (actionType!=null && actionType.equals("subscribe")) {
+         else if (actionType.equals("subscribe")) {
             Log.info(ME, "subscribe arrived ...");
             String xmlKey =
                       "<key oid='' queryType='XPATH'>\n" +
@@ -122,15 +122,15 @@ public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster
             }
          }
 
-         else if (actionType!=null && actionType.equals("unSubscribe")) {
+         else if (actionType.equals("unSubscribe")) {
             Log.info(ME, "unSubscribe arrived ...");
          }
 
-         else if (actionType!=null && actionType.equals("get")) {
+         else if (actionType.equals("get")) {
             throw new Exception("Synchronous ActionType=get is not supported");
          }
 
-         else if (actionType!=null && actionType.equals("publish")) {
+         else if (actionType.equals("publish")) {
             Log.info(ME, "publish arrived ...");
             String xmlKey =
                       "<key oid='HelloWorld' contentMime='text/plain' contentMimeExtended='-'>\n" +
@@ -146,7 +146,7 @@ public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster
             }
          }
 
-         else if (actionType!=null && actionType.equals("erase")) {
+         else if (actionType.equals("erase")) {
             Log.info(ME, "erase arrived ...");
          }
 
@@ -179,17 +179,17 @@ public class CallbackServletDriver extends HttpServlet implements org.xmlBlaster
       HttpSession session = req.getSession(true);
 
       String sessionId = req.getRequestedSessionId();
-      String loginName = req.getParameter("loginName");    // "Joe";
-      String passwd = req.getParameter("passwd");  // "secret";
+      String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
+      String passwd = Util.getParameter(req, "passwd", null);  // "secret";
       Log.info(ME, "Entering CallbackServletDriver servlet for '" + loginName + "', sessionId=" + sessionId);
 
       ServletConnection servletConnection = null;
       Server xmlBlaster = null;
 
       try {
-         String actionType = req.getParameter("ActionType");
+         String actionType = Util.getParameter(req, "ActionType", "NONE");
 
-         if (actionType!=null && actionType.equals("login")) {
+         if (actionType.equals("login")) {
             Log.info(ME, "Login action ...");
 
             if (loginName == null || loginName.length() < 1)
