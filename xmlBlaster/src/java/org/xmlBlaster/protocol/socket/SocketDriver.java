@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.26 2002/09/15 11:16:55 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.27 2002/09/15 11:20:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -306,7 +306,6 @@ public class SocketDriver extends Thread implements I_Driver
       text += "   -socket.responseTimeout Max wait for the method return value/exception [60000] msec.\n";
       text += "   -socket.backlog     Queue size for incoming connection request [50].\n";
       text += "   -socket.threadPrio  The priority 1=min - 10=max of the listener thread [5].\n";
-      text += "   -socket.cb.multiThreaded False switches off multi threaded callback (update() invocations) [true].\n";
       text += "   -dump[socket]       true switches on detailed SOCKET debugging [false].\n";
       text += "\n";
       return text;
