@@ -125,11 +125,6 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
          iter++;
       }
 
-      StringTrim::trim(character_);
-      if (!character_.empty()) {
-         destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before inner tags
-         character_.erase();
-      }
       return;
    }
    if (name.compare("sender") == 0) {
