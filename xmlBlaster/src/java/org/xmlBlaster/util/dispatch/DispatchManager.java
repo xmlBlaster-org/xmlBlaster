@@ -68,7 +68,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private final Object ALIVE_TRANSITION_MONITOR = new Object();
 
    /**
-    * @param msgQueue The message queue witch i use (!!! TODO: this changes, we should pass it on every method where needed)
+    * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */

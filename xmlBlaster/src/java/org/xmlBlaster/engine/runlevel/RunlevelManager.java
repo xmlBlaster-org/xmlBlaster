@@ -225,33 +225,34 @@ public final class RunlevelManager
     */
    private void startupPlugins(int from, int to) throws XmlBlasterException {
       TreeSet pluginSet = this.glob.getPluginHolder().getStartupSequence(this.glob.getStrippedId(), from+1, to);
-      if (this.log.CALL) this.log.call(ME, "fireRunlevelEvent. the size of the plugin set is '" + pluginSet.size() + "'");
+      if (this.log.CALL) this.log.call(ME, "startupPlugins. the size of the plugin set is '" + pluginSet.size() + "'");
       Iterator iter = pluginSet.iterator();
       while (iter.hasNext()) {
          PluginConfig pluginConfig = (PluginConfig)iter.next();
          if (pluginConfig == null) 
-            this.log.warn(ME, "fireRunlevelEvent. the pluginConfig object is null");
+            this.log.warn(ME, "startupPlugins. the pluginConfig object is null");
          else {
-            if (this.log.DUMP) this.log.dump(ME, "fireRunlevelEvent " + pluginConfig.toXml());
+            if (this.log.DUMP) this.log.dump(ME, "startupPlugins " + pluginConfig.toXml());
          }
          try {
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
             if (this.log.CALL) {
                if (pluginInfo != null) {
-                  this.log.call(ME,"fireRunlevelEvent pluginInfo object: " + pluginInfo.getId() + " classname: " + pluginInfo.getClassName());
+                  this.log.call(ME,"startupPlugins pluginInfo object: " + pluginInfo.getId() + " classname: " + pluginInfo.getClassName());
                }
-               else this.log.call(ME, "fireRunlevelEvent: the pluginInfo is null");
+               else this.log.call(ME, "startupPlugins: the pluginInfo is null");
             }
             this.glob.getPluginManager().getPluginObject(pluginInfo);
-            this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
+            this.log.info(ME, "startupPlugins: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
             if (code == null) {
-               this.log.warn(ME, ".fireRunlevelEvent. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               this.log.warn(ME, "startupPlugins. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               Thread.dumpStack();
             }
             else {
-               throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  "Can't load plugin '" + pluginConfig.getId() + "'", ex);
+               throw new XmlBlasterException(this.glob, code, ME + ".startupPlugins",  "Can't load plugin '" + pluginConfig.getId() + "'", ex);
             }
          }
       }
