@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.39 2003/05/23 11:38:08 ruff Exp $
+Version:   $Id: Parser.java,v 1.40 2003/06/16 19:57:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -30,7 +30,7 @@ import java.util.Vector;
  * Parser instances may be reused, but are NOT reentrant (there are many 'global' variables)
  * <br />
  * Please read the requirement specification
- * <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirement/protocol.socket.html">protocol.socket</a>
+ * <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">protocol.socket</a>
  *
  * <pre>
  *  msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkSum[10]
