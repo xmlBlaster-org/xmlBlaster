@@ -63,6 +63,7 @@ public class FileIOTest extends TestCase {
       FileIO fileIO = null;
 
       try {
+         log.info(ME, "Opening file '" + fileName + "' num=" + num + " sync=" + sync + " ...");
          fileIO = new FileIO(glob, fileName, userDataHandler, num, sync);
          File f = new File(fileName);
          long emptyLength = f.length();
@@ -79,7 +80,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumUnread", num, fileIO.getNumUnread());
             assertEquals("NumLost", 0L, fileIO.getNumLost());
             File file = new File(fileName);
-            assertTrue("File size", file.length() > emptyLength);
+            assertTrue("File size emptyLength=" + emptyLength + " file.length()=" + file.length(), file.length() > emptyLength);
          }
 
          {
@@ -100,7 +101,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumUnread", 0L, fileIO.getNumUnread());
             assertEquals("NumLost", 0L, fileIO.getNumLost());
             File file = new File(fileName);
-            assertEquals("File size", emptyLength, file.length());
+            assertEquals("File size emptyLength=" + emptyLength + " file.length()=" + file.length(), emptyLength, file.length());
          }
       }
       catch(IOException e) {
@@ -384,5 +385,22 @@ public class FileIOTest extends TestCase {
       public final Object readData(final RandomAccessFile ra) throws IOException {
          return ra.readUTF();
       }
+   }
+
+   /**   
+    * Invoke: java org.xmlBlaster.test.qos.FileIOTest
+    * @deprecated Use the TestRunner from the testsuite to run it:<p />
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.classtest.FileIOTest</pre>
+    */
+   public static void main(String args[])
+   {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         System.err.println("******* FileIOTest: Init failed");
+      }
+      FileIOTest testSub = new FileIOTest("FileIOTest");
+      testSub.setUp();
+      testSub.testBasic();
+      testSub.tearDown();
    }
 }
