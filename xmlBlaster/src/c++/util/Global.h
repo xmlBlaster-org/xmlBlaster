@@ -143,10 +143,12 @@ public:
    void freeArgs(ArgsStruct_T &args);
 
    /**
-    * This method delivers the singleton instance. 
-    * @return Always the same first Global instance
+    * This method delivers the singleton instance or the named instance. 
+    * @param name If specified the named global instance, "default" is the default
+    *              setting and will return the first singleton instance
+    * @return As default the same first Global instance
     */
-   static Global& getInstance();
+   static Global& getInstance(std::string name="default");
 
    /**
     * Get or create another instance. 

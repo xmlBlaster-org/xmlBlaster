@@ -159,13 +159,26 @@ thread::Mutex Global::globalMutex_;
 
 //-----------------
 // Global.cpp modification
-Global& Global::getInstance()
+Global& Global::getInstance(string name)
 {
-   if(global_ == NULL) {
-      global_ = new Global();
-      Object_Lifetime_Manager::instance()->manage_object(Constants::XB_GLOBAL_KEY, global_);  // if not pre-allocated.
+   if (name == "" || name == "default") {
+      if (global_ == NULL) {
+         global_ = new Global();
+         Object_Lifetime_Manager::instance()->manage_object(Constants::XB_GLOBAL_KEY, global_);  // if not pre-allocated.
+      }
+      return *global_;
    }
-   return *global_;
+
+   GlobalMap::iterator iter = globalMap_.find(name);
+   if (iter != globalMap_.end()) {
+      Global* glP = (*iter).second;
+      return *glP;
+   }
+
+   throw XmlBlasterException(USER_ILLEGALARGUMENT,
+         "UNKNOWN NODE",
+         string("Global::getInstance"),
+            "The Global instance '" + name + "' is not known");
 }
 
 GlobalRef Global::createInstance(const string& name, const Property::MapType *propertyMapP, bool holdReferenceCount)
