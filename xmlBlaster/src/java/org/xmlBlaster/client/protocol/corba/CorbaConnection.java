@@ -307,6 +307,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          return this.authServer;
       }
 
+      address = (address == null) ? new Address(glob) : address;
+
       try {
          // 1) check if argument -IOR at program startup is given
          String authServerIOR = glob.getProperty().get("ior", (String)null);  // -ior IOR string is directly given
