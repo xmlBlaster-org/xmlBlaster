@@ -149,6 +149,9 @@ public class HelloWorldPublish
                log.info(ME, "   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
             }
          }
+         else {
+            log.info(ME, "   -clientProperty[]   ");
+         }
          log.info(ME, " Topic settings");
          log.info(ME, "   -readonly       " + readonly);
          log.info(ME, "   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
@@ -224,10 +227,10 @@ public class HelloWorldPublish
                Iterator it = clientPropertyMap.keySet().iterator();
                while (it.hasNext()) {
                   String key = (String)it.next();
-                  pq.setClientProperty(key, clientPropertyMap.get(key).toString());
+                  pq.addClientProperty(key, clientPropertyMap.get(key).toString());
                }
                //Example for a typed property:
-               //pq.getData().setClientProperty("ALONG", (new Long(12)));
+               //pq.getData().addClientProperty("ALONG", (new Long(12)));
             }
             
             if (i == 0) {
@@ -322,6 +325,7 @@ public class HelloWorldPublish
          System.out.println(glob.usage());
          System.err.println("\nExample:");
          System.err.println("  java javaclients.HelloWorldPublish -interactive false -sleep 1000 -numPublish 10 -oid Hello -persistent true -erase true\n");
+         System.err.println("  java javaclients.HelloWorldPublish  -clientProperty[myString] Hello -clientProperty[correlationId] 100\n");
          System.exit(1);
       }
 

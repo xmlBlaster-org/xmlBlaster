@@ -70,7 +70,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
             if (!sub.getSessionInfo().getDispatchManager().getDispatchConnectionsHandler().isAlive()) continue;
          
             // modify the qos to see if it has passed this plugin ...
-            msgUnitWrapper.getMsgQosData().setClientProperty("MsgDistributorPlugin", this.getType() + "," + this.getVersion());
+            msgUnitWrapper.getMsgQosData().addClientProperty("MsgDistributorPlugin", this.getType() + "," + this.getVersion());
             if (this.topicHandler.invokeCallback(null, sub, msgUnitWrapper) < 1) continue;
             else {
                count++;

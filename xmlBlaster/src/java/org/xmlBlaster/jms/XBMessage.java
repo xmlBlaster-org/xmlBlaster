@@ -26,6 +26,7 @@ import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * XBMessage.
@@ -68,7 +69,7 @@ public class XBMessage implements Message {
       if (this.qos == null) this.qos = new MsgQosData(this.global, MethodName.PUBLISH);
       if (this.key == null) this.key = new MsgKeyData(this.global);
       this.type = type;
-      this.qos.setClientProperty("jmsMessageType", "" + this.type);
+      this.qos.addClientProperty("jmsMessageType", "" + this.type);
       if (this.content == null) this.writeOnly = true;
       else {
          this.readOnly = true;
@@ -98,7 +99,8 @@ public class XBMessage implements Message {
          Enumeration enum = this.extraHeader.keys();
          while (enum.hasMoreElements()) {
             String key = (String)enum.nextElement();
-            this.qos.setClientProperty("jms/" + key, this.extraHeader.get(key));
+            Object value = this.extraHeader.get(key);
+            this.qos.addClientProperty("jms/" + key, ClientProperty.getPropertyType(value), (String)value);
          }
       }
    }
@@ -273,32 +275,32 @@ public class XBMessage implements Message {
    public void setBooleanProperty(String key, boolean value)
       throws JMSException {
       checkPropertiesReadOnly("setBooleanProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setByteProperty(String key, byte value) throws JMSException {
       checkPropertiesReadOnly("setByteProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setDoubleProperty(String key, double value)
       throws JMSException {
       checkPropertiesReadOnly("setDoubleProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setFloatProperty(String key, float value) throws JMSException {
       checkPropertiesReadOnly("setFloatProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setIntProperty(String key, int value) throws JMSException {
       checkPropertiesReadOnly("setIntProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setJMSCorrelationID(String correlationId) throws JMSException {
-      this.qos.setClientProperty("correlationId", correlationId);
+      this.qos.addClientProperty("correlationId", correlationId);
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationId) throws JMSException {
@@ -350,7 +352,7 @@ public class XBMessage implements Message {
     * This method is invoked by the send method
     */
    public void setJMSMessageID(String messageId) throws JMSException {
-      this.qos.setClientProperty("JMSMessageID", messageId);
+      this.qos.addClientProperty("JMSMessageID", messageId);
    }
 
    /**
@@ -370,7 +372,7 @@ public class XBMessage implements Message {
     * This method is normally invoked by the provider
     */
    public void setJMSRedelivered(boolean redelivered) throws JMSException {
-      this.qos.setClientProperty("JMSRedelivered", redelivered);
+      this.qos.addClientProperty("JMSRedelivered", redelivered);
    }
 
    public void setJMSReplyTo(Destination sender) throws JMSException {
@@ -393,17 +395,17 @@ public class XBMessage implements Message {
     */
    public void setJMSTimestamp(long timestamp) throws JMSException {
       // not processed by xmlBlaster, only transported for jms purposes (we have an own set on server side)
-      this.qos.setClientProperty("jmsTimestamp", "" + timestamp);
+      this.qos.addClientProperty("jmsTimestamp", "" + timestamp);
    }
 
    public void setJMSType(String jmsType) throws JMSException {
       // this.key.setContentMime(jmsType);
-      this.qos.setClientProperty("JMSType", jmsType);
+      this.qos.addClientProperty("JMSType", jmsType);
    }
 
    public void setLongProperty(String key, long value) throws JMSException {
       checkPropertiesReadOnly("setLongProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setObjectProperty(String key, Object value)
@@ -421,12 +423,12 @@ public class XBMessage implements Message {
 
    public void setShortProperty(String key, short value) throws JMSException {
       checkPropertiesReadOnly("setShortProperty", key);
-      this.qos.setClientProperty(key, value);   
+      this.qos.addClientProperty(key, value);   
    }
 
    public void setStringProperty(String key, String value)
       throws JMSException {
-         this.qos.setClientProperty(key, value);   
+         this.qos.addClientProperty(key, value);   
    }
 
    // own package protected helper methods
