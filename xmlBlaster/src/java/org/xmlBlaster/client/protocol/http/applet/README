@@ -31,7 +31,7 @@ Todo:
 =====
 
   o Define a protocol which supports binary data (Hashtables with resialized Java objects, or SOCKET style?)
-  o Optimize message flow
+  o Optimize message flow (no 'browserIsReady' acknowledges etc.)
   o Reconnect if e.g. a proxy closes the connection
   o and much more
 
