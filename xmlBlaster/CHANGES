@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
+ o XmlBlasterException now dumps an online URL with
+   detailed informations
+   Please use new xmlBlaster.properties.template
 
  o Protected core authentication against unwanted access by
    plugin developers and native client developers
