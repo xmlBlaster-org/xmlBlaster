@@ -67,6 +67,7 @@ bool ClientProperty::needsEncoding() const {
       return true;
    else if (
         value_.find("<") != std::string::npos ||
+        value_.find("&") != std::string::npos ||
         value_.find("]]>") != std::string::npos
       ) {
       return true;
