@@ -85,15 +85,17 @@ public class TestSessionCb extends TestCase
     */
    protected void tearDown() {
       if (isSocket) return;
-      try {
-         EraseKey ek = new EraseKey(glob, oid);
-         EraseQos eq = new EraseQos(glob);
-         con2.erase(ek.toXml(), eq.toXml());
-      } catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
-      }
+      if (con2 != null) {
+         try {
+            EraseKey ek = new EraseKey(glob, oid);
+            EraseQos eq = new EraseQos(glob);
+            con2.erase(ek.toXml(), eq.toXml());
+         } catch (XmlBlasterException e) {
+            log.error(ME, e.toString());
+         }
 
-      con2.disconnect(null);
+         con2.disconnect(null);
+      }
    }
 
    /**
