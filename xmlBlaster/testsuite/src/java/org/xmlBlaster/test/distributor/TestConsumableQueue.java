@@ -60,9 +60,9 @@ public class TestConsumableQueue extends TestCase {
 
    
    /**
-    * Two subscribers log subcribe and then a publisher publishes
+    * Two subscribers log subscribe and then a publisher publishes
     * Only one of the subscribers should get the message.
-    * This should test synchroneous distribution
+    * This should test synchronous distribution
     */
    public void testSubSubPub() {
       try {
@@ -131,9 +131,9 @@ public class TestConsumableQueue extends TestCase {
    }
 
    /**
-    * A publisher publishes and then one subscriber subcribe 
+    * A publisher publishes and then one subscriber subscribe 
     * The subscriber should get the message.
-    * This should test asynchroneous distribution
+    * This should test asynchronous distribution
     */
    public void testPubSub() {
       try {
@@ -165,9 +165,9 @@ public class TestConsumableQueue extends TestCase {
    }
 
    /**
-    * A publisher publishes and then two subscribers log subcribe 
+    * A publisher publishes and then two subscribers log subscribe 
     * Only one of the subscribers should get the message.
-    * This should test asynchroneous distribution
+    * This should test asynchronous distribution
     */
    public void testPubSubSub() {
       try {
