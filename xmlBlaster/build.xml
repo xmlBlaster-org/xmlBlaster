@@ -689,6 +689,7 @@ TODO
          <arg line="whitepaper.xml ${docbook.dir}/html/docbook.xsl whitepaper.html"/>
       </java>
       <!-- pdf -->
+      <echo message="Creating whitepaper pdf variant (excepting docbook formatting objects under ${docbook.dir}/fo and apache fop in CLASSPATH)"/>
       <java classname="com.jclark.xsl.sax.Driver" classpath="${cp}" dir="${doc.dir}/whitepaper" failonerror="false" fork="true">
          <sysproperty key="com.jclark.xsl.sax.parser" value="com.jclark.xsl.dom.SunXMLProcessorImpl"/>
          <arg line="whitepaper.xml ${docbook.dir}/fo/docbook.xsl whitepaper.fo"/>
