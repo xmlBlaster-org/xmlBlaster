@@ -22,7 +22,7 @@
       $XMLBLASTER_HOME/.bashrc into your environment.
 
       export JDK_HOME=/usr/local/jdk
-		export PATH=${JDK_HOME}/bin:$PATH
+      export PATH=${JDK_HOME}/bin:$PATH
       export XMLBLASTER_HOME=${HOME}/xmlBlaster 
 
       source  ${XMLBLASTER_HOME}/.bashrc
@@ -30,7 +30,7 @@
     This is the recommended way, since you will automatically
     source all enhancements of new xmlBlaster releases.
 
-	 Now the installation is finished.
+    Now the installation is finished.
     After a new login you are ready to start the xmlBlaster (see below).
 
 
@@ -55,9 +55,9 @@
 
 2. Notes on adjusting your environment setup.
    You may wish to change the default environment setup for example
-	if you have JacORB installed already, or to include your MICO C++ Corba library.
-	You may do this with setting following variables before you source
-	${XMLBLASTER_HOME}/.bashrc (Note this is optional):
+   if you have JacORB installed already, or to include your MICO C++ Corba library.
+   You may do this with setting following variables before you source
+   ${XMLBLASTER_HOME}/.bashrc (Note this is optional):
 
       export JacORB_HOME=/usr/local/JacORB       (to use your own JacORB installation)
       export MICO_HOME=/usr/local/mico           (to use C++ demo clients with mico)
