@@ -7,18 +7,17 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/08 22:23:11 $)
  */
 
-public interface I_Manager {
-   // --- - - - - - - - - -----------------------------------------------------
-
+public interface I_Manager
+{
    /**
     * This method is called by the PluginManager.
     * <p/>
     * @param String[] Some arguments from xmlBlaster.properties.
     */
-   public void init(String[] options) throws org.xmlBlaster.util.XmlBlasterException;
+   public void init(String[] options) throws XmlBlasterException;
 
    public String getType();
    public String getVersion();
@@ -34,7 +33,7 @@ public interface I_Manager {
     * <p/>
     * @param String sessionId
     */
-   public I_Session reserveSession(String sessionId);
+   public I_Session reserveSession(String sessionId) throws XmlBlasterException;
 
    /**
     * Releases a reserved I_Session.
@@ -42,7 +41,7 @@ public interface I_Manager {
     * @param String The id of the session, which has to be released.
     * @param String This qos literal could contain a proof of authenticity, etc.
     */
-   public void releaseSession(String sessionId, String qos_literal);
+   public void releaseSession(String sessionId, String qos_literal) throws XmlBlasterException;
 
    /**
     * Get the I_Session which corresponds to the given sessionId
@@ -50,6 +49,6 @@ public interface I_Manager {
     * @param String The sessionId
     * @return I_Session
     */
-   public I_Session getSessionById(String id);
+   public I_Session getSessionById(String id) throws XmlBlasterException;
 
 }
