@@ -147,7 +147,7 @@ Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties, Exceptio
    }
    stateOk = queueP->initialize(queueP, queueProperties, exception);
    if (stateOk) {
-      LOG __FILE__, "Persistent queue is created");
+      LOG __FILE__, "Persistent queue SQLite version " SQLITE_VERSION " is created");
    }
    else {
       ExceptionStruct ex;
