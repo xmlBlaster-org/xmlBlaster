@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.1 2002/12/20 19:37:17 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/31 11:45:37 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -52,9 +52,10 @@ Dll_Export long DEFAULT_expires;
  * Configure property settings, add your own defaults in the derived class
  * @param propertyPrefix e.g. "history" or "cb"
  */
-void QueuePropertyBase::initialize(const string propertyPrefix)
+void QueuePropertyBase::initialize(const string& propertyPrefix)
 {
    string prefix = getPrefix();
+   if (!propertyPrefix.empty()) prefix = propertyPrefix;
 
    // Do we need this range settings?
    setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
