@@ -61,6 +61,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->reusingConnectionSocket = false; /* is true if we tunnel callback through the client connection socket */
    cb->logLevel = parseLogLevel(cb->props->getString(cb->props, "logLevel", "WARN"));
    cb->log = xmlBlasterDefaultLogging;
+   cb->logUserP = 0;
    cb->hostCB = strcpyAlloc(cb->props->getString(cb->props, "dispatch/callback/plugin/socket/hostname", 0));
    cb->portCB = cb->props->getInt(cb->props, "dispatch/callback/plugin/socket/port", DEFAULT_CALLBACK_SERVER_PORT);
    cb->update = update;
@@ -84,7 +85,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
    socklen_t size = (socklen_t)sizeof(localAddr);
    memset((char *)&localAddr, 0, (size_t)size);
    if (getsockname(socketToUse, (struct sockaddr *)&localAddr, &size) == -1) {
-      if (cb->logLevel>=LOG_WARN) cb->log(cb->logLevel, LOG_WARN, __FILE__,
+      if (cb->logLevel>=LOG_WARN) cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__,
          "Can't determine the local socket host and port, errno=%d", errno);
       return false;
    }
@@ -96,7 +97,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse)
 
    cb->reusingConnectionSocket = true; /* we tunnel callback through the client connection socket */
 
-   if (cb->logLevel>=LOG_INFO) cb->log(cb->logLevel, LOG_INFO, __FILE__,
+   if (cb->logLevel>=LOG_INFO) cb->log(cb->logUserP, cb->logLevel, LOG_INFO, __FILE__,
       "Forced callback server to reuse socket descriptor '%d' on localHostname=%s localPort=%d",
                          socketToUse, cb->hostCB, cb->portCB);
    return true;
@@ -121,12 +122,12 @@ static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const c
          cb->responseListener[i].userP = userP;
          cb->responseListener[i].requestId = requestId;
          cb->responseListener[i].responseEventFp = responseEventFp;
-         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+         if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
             "addResponseListener(i=%d, requestId=%s)", i, requestId);
          return true;
       }
    }
-   cb->log(cb->logLevel, LOG_ERROR, __FILE__,
+   cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
       "PANIC too many requests (%d) are waiting for a response, you are not registered", MAX_RESPONSE_LISTENER_SIZE);
    return false;
 }
@@ -144,7 +145,7 @@ static ResponseListener *getResponseListener(CallbackServerUnparsed *cb, const c
          return &cb->responseListener[i];
       }
    }
-   cb->log(cb->logLevel, LOG_ERROR, __FILE__, "RequestId '%s' is not registered", requestId);
+   cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "RequestId '%s' is not registered", requestId);
    return 0;
 }
 
@@ -159,7 +160,7 @@ static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, cons
          return &cb->responseListener[i];
       }
    }
-   cb->log(cb->logLevel, LOG_ERROR, __FILE__, "Can't remove requestId '%s', requestId is not registered", requestId);
+   cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "Can't remove requestId '%s', requestId is not registered", requestId);
    return (ResponseListener *)0;
 }
 
@@ -180,7 +181,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          return 1;
    }
    else {
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Reusing connection socket to tunnel callback messages");
    }
 
@@ -193,19 +194,19 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
 
       /* Here we block until a message arrives, see parseSocketData() */
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Going to block on socket read until a new message arrives ...");
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
 
       if (success == false) { /* EOF */
          if (!cb->reusingConnectionSocket)
-            cb->log(cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
+            cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__, "Lost callback socket connection to xmlBlaster (EOF)");
          closeAcceptSocket(cb);
          break;
       }
 
       if (*xmlBlasterException.errorCode != 0) {
-         cb->log(cb->logLevel, LOG_ERROR, __FILE__,
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
             "Couldn't read message from xmlBlaster: errorCode=%s message=%s",
                    xmlBlasterException.errorCode, xmlBlasterException.message);
          continue;
@@ -219,12 +220,12 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             ResponseListener *r = removeResponseListener(cb, socketDataHolder.requestId);
             listener->responseEventFp(r->userP, &socketDataHolder);
             freeXmlBlasterBlobContent(&socketDataHolder.blob);
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                "Forwarded message with requestId '%s' to response listener", socketDataHolder.requestId);
             continue;
          }
          else {
-            cb->log(cb->logLevel, LOG_ERROR, __FILE__,
+            cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
                "PANIC: Did not expect an INVOCATION '%c'='%d' as a callback",
                    socketDataHolder.type, (int)socketDataHolder.type);
          }
@@ -232,7 +233,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
       msgUnitArr = parseMsgUnitArr(socketDataHolder.blob.dataLen, socketDataHolder.blob.data);
 
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Received requestId '%s' callback %s()",
          socketDataHolder.requestId, socketDataHolder.methodName);
 
@@ -247,7 +248,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       else if (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE) == 0 ||
                strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
          if (cb->update != 0) { /* Client has registered to receive callback messages? */
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                "Calling client %s() for requestId '%s' ...",
                socketDataHolder.methodName, socketDataHolder.requestId);
             
@@ -257,23 +258,23 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          }
       }
       else {
-         cb->log(cb->logLevel, LOG_ERROR, __FILE__,
+         cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
          "Received unknown callback methodName=%s", socketDataHolder.methodName);
       }
 
       if (! (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0)) {
          if (success == true) {
-            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+            if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                "update(): Sending response for requestId '%s'", socketDataHolder.requestId);
             sendResponse(cb, &socketDataHolder, msgUnitArr);
          }
          else {
             if (*xmlBlasterException.errorCode == 0) {
-               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                   "update(): We don't return anything for requestId '%s', the return message will come later by the client update dispatcher thread", socketDataHolder.requestId);
             }
             else {
-               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+               if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                   "update(): Throwing the XmlBlasterException '%s' back to the server:\n%s",
                       xmlBlasterException.errorCode, xmlBlasterException.message);
                sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);
@@ -308,7 +309,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
          strcpyRealloc(&cb->hostCB, serverHostName);
    }   
 
-   if (cb->logLevel>=LOG_INFO) cb->log(cb->logLevel, LOG_INFO, __FILE__,
+   if (cb->logLevel>=LOG_INFO) cb->log(cb->logUserP, cb->logLevel, LOG_INFO, __FILE__,
       "Starting callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d ...",
                cb->hostCB, cb->portCB);
 
@@ -316,7 +317,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       * Get a socket to work with.
       */
    if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-      if (cb->logLevel>=LOG_WARN) cb->log(cb->logLevel, LOG_WARN, __FILE__,
+      if (cb->logLevel>=LOG_WARN) cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__,
          "Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
          cb->isShutdown = true;
@@ -337,7 +338,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
    serv_addr.sin_port = htons((u_short)cb->portCB);
 
    if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-      if (cb->logLevel>=LOG_WARN) cb->log(cb->logLevel, LOG_WARN, __FILE__,
+      if (cb->logLevel>=LOG_WARN) cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__,
          "Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
       cb->isShutdown = true;
@@ -348,14 +349,14 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       * Listen on the socket.
       */
    if (listen(cb->listenSocket, 5) < 0) {
-      if (cb->logLevel>=LOG_WARN) cb->log(cb->logLevel, LOG_WARN, __FILE__,
+      if (cb->logLevel>=LOG_WARN) cb->log(cb->logUserP, cb->logLevel, LOG_WARN, __FILE__,
          "Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d",
             cb->hostCB, cb->portCB);
       cb->isShutdown = true;
       return false;
    }
 
-   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
       "[CallbackServerUnparsed] Waiting for xmlBlaster to connect ...");
 
    /*
@@ -369,7 +370,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
          cb->isShutdown = true;
          return false;
    }
-   if (cb->logLevel>=LOG_INFO) cb->log(cb->logLevel, LOG_INFO, __FILE__,
+   if (cb->logLevel>=LOG_INFO) cb->log(cb->logUserP, cb->logLevel, LOG_INFO, __FILE__,
       "[CallbackServerUnparsed] XmlBlaster connected from %s:%hd",
                            inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port);
    return true;
@@ -418,7 +419,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    for (i=0; i<msgUnitArr->len; i++) {
       size_t num;
       char *tmp;
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Returning the UpdateReturnQos '%s' to the server.",
             msgUnitArr->msgUnitArr[i].responseQos);
 
@@ -503,7 +504,7 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
       (void)close(cb->acceptSocket);
 #     endif
       cb->acceptSocket = -1;
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Closed accept socket");
    }
 }
@@ -531,7 +532,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
       (void)close(cb->listenSocket);
 #  endif
       cb->listenSocket = -1;
-      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Closed listener socket");
    }
 

@@ -88,7 +88,7 @@ typedef struct ResponseListenerStruct {
 typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
 typedef ResponseListener * ( * RemoveResponseListener)(CallbackServerUnparsed *cb, const char *requestId);
 
-typedef void  ( * CallbackServerUnparsedLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
+typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 /**
  * This structure holds a complete callback server instance. 
@@ -107,6 +107,7 @@ struct CallbackServerUnparsedStruct {
    bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
    XMLBLASTER_LOG_LEVEL logLevel;
    CallbackServerUnparsedLogging log;
+   void *logUserP;               /* For outside users to pass a user object back to their logging implementation */
    /*
     * Is created by the client and used to validate callback messages in update. 
     * This is sent on connect in ConnectQos.

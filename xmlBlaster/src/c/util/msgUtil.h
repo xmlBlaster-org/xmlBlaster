@@ -46,7 +46,8 @@ typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    LOG_DUMP,   /* supported, use for debugging purposes */
    LOG_PLAIN   /* don't use */
 } XMLBLASTER_LOG_LEVEL;
-Dll_Export extern void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+Dll_Export extern void xmlBlasterDefaultLogging(void *logUserP, 
+                              XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...);
 Dll_Export extern XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr);

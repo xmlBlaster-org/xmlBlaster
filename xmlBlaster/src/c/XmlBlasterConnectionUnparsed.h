@@ -42,7 +42,7 @@ typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionU
 typedef void  ( * XmlBlasterConnectionUnparsedShutdown)(XmlBlasterConnectionUnparsed *xb);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
-typedef void  ( * XmlBlasterConnectionUnparsedLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
+typedef void  ( * XmlBlasterConnectionUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
@@ -73,6 +73,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    void *postSendEvent_userP;
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterConnectionUnparsedLogging log;
+   void *logUserP;               /* For outside users to pass a user object back to the logging implementation */
 };
 
 

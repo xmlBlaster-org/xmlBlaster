@@ -17,7 +17,8 @@ See:      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.
 #include <ctype.h>
 #include <XmlBlasterAccessUnparsed.h>
 
-static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
 static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
@@ -54,6 +55,8 @@ int main(int argc, char** argv)
 
    /* Register our own logging function */
    xa->log = myLogger;
+   /* Optionally pass a pointer which we can use in myLogger again */
+   xa->logUserP = xa;
 
    /* connect */
    sprintf(connectQos,
@@ -110,6 +113,7 @@ int main(int argc, char** argv)
  * <pre>
  * xa->log = myLogger;
  * </pre>
+ * @param logUserP 0 or pointing to one of your supplied data struct
  * @param currLevel The actual log level of the client
  * @param level The level of this log entry
  * @param location A string describing the code place
@@ -118,7 +122,8 @@ int main(int argc, char** argv)
  * @see xmlBlaster/src/c/msgUtil.c: xmlBlasterDefaultLogging() is the default
  *      implementation
  */
-static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...)
 {
@@ -126,6 +131,7 @@ static void myLogger(XMLBLASTER_LOG_LEVEL currLevel,
    int n, size = 200;
    char *p = 0;
    va_list ap;
+   /*XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)logUserP;*/
 
    if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
       return;

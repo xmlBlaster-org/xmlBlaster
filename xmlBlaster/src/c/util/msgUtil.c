@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.21 2004/01/14 22:41:25 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.22 2004/02/09 09:41:40 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.21 2004/01/14 22:41:25 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.22 2004/02/09 09:41:40 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -844,7 +844,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
  * @param fmt The formatting string
  * @param ... Other variables to log, corresponds to 'fmt'
  */
-Dll_Export void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
+Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...)
 {
@@ -965,7 +965,7 @@ int main()
    const char *location = __FILE__;
    const char *p = "OOOO";
    int i = 3;
-   xmlBlasterDefaultLogging(currLevel, LOG_WARN, location, "%s i=%d\n", p, i);
+   xmlBlasterDefaultLogging(0, currLevel, LOG_WARN, location, "%s i=%d\n", p, i);
 
    printf("Sleeping now for %ld millis\n", millisecs);
    sleepMillis(millisecs);

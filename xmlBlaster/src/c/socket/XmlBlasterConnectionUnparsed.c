@@ -74,6 +74,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->postSendEvent_userP = 0;
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
+   xb->logUserP = 0;
    return xb;
 }
 
@@ -112,7 +113,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    if ( err != 0 ) {
       strncpy0(exception->errorCode, "resource.unavailable", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't find a usable WinSock DLL", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
@@ -121,7 +122,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       WSACleanup( );
       strncpy0(exception->errorCode, "resource.unavailable", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Couldn't find a usable WinSock DLL which supports version 2.2", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false; 
    }
 # endif
@@ -138,7 +139,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    memmove(serverHostName, xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName), 250);
    memmove(serverHostName, xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName), 250);
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...",
       serverHostName, servTcpPort);
 
@@ -195,19 +196,19 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                localAddr.sin_port = htons((unsigned short)localPort);
             }
             if (bind(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
-               if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
+               if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
                   "Failed binding local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
                      localHostName, localPort);
             }
             else {
-               xb->log(xb->logLevel, LOG_INFO, __FILE__,
+               xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__,
                   "Bound local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
                      localHostName, localPort);
             }
          }
 
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
-            if (xb->logLevel>=LOG_INFO) xb->log(xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
+            if (xb->logLevel>=LOG_INFO) xb->log(xb->logUserP, xb->logLevel, LOG_INFO, __FILE__, "Connected to xmlBlaster");
          }
          else {
             char errnoStr[MAX_ERRNO_LEN];
@@ -220,7 +221,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                      "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, ret=%d, %s",
                      __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
-            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
             return false;
          }
       }
@@ -304,7 +305,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
 
    if (exception == 0) {
-      xb->log(xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
+      xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception to sendData()", __FILE__, __LINE__);
       return false;
    }
    initializeXmlBlasterException(exception);
@@ -312,18 +313,18 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    if (!xb->isConnected(xb)) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
    if (strcmp(XMLBLASTER_CONNECT, methodName) && strlen(xb->secretSessionId) < 1) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please call connect() before invoking '%s'", __FILE__, __LINE__, methodName);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "sendData() requestId '%ld' increment to '%ld', dataLen=%d",
       xb->requestId, xb->requestId+1, dataLen_);
    xb->requestId++;
@@ -342,14 +343,14 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       requestInfo.blob.data = blob.data;
       requestInfoP = xb->preSendEvent(xb->preSendEvent_userP, &requestInfo, exception);
       if (*exception->message != 0) {
-         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "Re-throw exception from preSendEvent errorCode=%s message=%s", exception->errorCode, exception->message);
          return false;
       }
       if (requestInfoP == 0) {
          strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR: returning requestInfo 0 without exception is not supported, please correct your preSendEvent() function.", __FILE__, __LINE__);
-         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
          return false;
       }
       if (blob.data != requestInfoP->blob.data) {
@@ -369,7 +370,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    numSent = writen(xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
 
    if (numSent == -1) {
-      if (xb->logLevel>=LOG_WARN) xb->log(xb->logLevel, LOG_WARN, __FILE__,
+      if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
                                    "Lost connection to xmlBlaster server");
       xmlBlasterConnectionShutdown(xb);
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -379,7 +380,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
 
    if (numSent != (int)rawMsgLen) {
-      if (xb->logLevel>=LOG_ERROR) xb->log(xb->logLevel, LOG_ERROR, __FILE__,
+      if (xb->logLevel>=LOG_ERROR) xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__,
          "Sent only %d bytes from %u", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Sent only %ld bytes from %lu", __FILE__, __LINE__, (long)numSent, (unsigned long)rawMsgLen);
@@ -407,7 +408,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          /* Here the thread blocks until a response from CallbackServer arrives */
          requestInfoP = xb->postSendEvent(xb->postSendEvent_userP, &requestInfo, exception);
          if (*exception->message != 0) {
-            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
                "Re-throw exception from preSendEvent errorCode=%s message=%s", exception->errorCode, exception->message);
             return false;
          }
@@ -429,13 +430,13 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
             responseSocketDataHolder->blob.dataLen = requestInfoP->blob.dataLen;
             responseSocketDataHolder->blob.data = requestInfoP->blob.data;     /* The responseSocketDataHolder is now responsible to free(responseSocketDataHolder->blob.data) */
          }
-         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+         if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "requestId '%s' returns dataLen=%d", requestIdStr, requestInfoP->blob.dataLen);
       }
       else {
          /* Wait on the response ourself */
          if (getResponse(xb, responseSocketDataHolder, exception) == false) {  /* false on EOF */
-            xb->log(xb->logLevel, LOG_WARN, __FILE__, "Lost connection to xmlBlaster server");
+            xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, "Lost connection to xmlBlaster server");
             xmlBlasterConnectionShutdown(xb);
             strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
@@ -444,7 +445,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          if (responseSocketDataHolder->type == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException */
             convertToXmlBlasterException(&responseSocketDataHolder->blob, exception, xb->logLevel >= LOG_DUMP);
             freeXmlBlasterBlobContent(&responseSocketDataHolder->blob);
-            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+            if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
                "Re-throw exception from response errorCode=%s message=%s", exception->errorCode, exception->message);
             return false;
          }
@@ -452,7 +453,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 
       if (xb->logLevel>=LOG_TRACE) {
          rawMsgStr = blobDump(&responseSocketDataHolder->blob);
-         xb->log(xb->logLevel, LOG_TRACE, __FILE__, "Received response msgLen=%u type=%c version=%c requestId=%s methodName=%s dateLen=%u data='%.100s ...'",
+         xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Received response msgLen=%u type=%c version=%c requestId=%s methodName=%s dateLen=%u data='%.100s ...'",
                   responseSocketDataHolder->msgLen, responseSocketDataHolder->type, responseSocketDataHolder->version, responseSocketDataHolder->requestId,
                   responseSocketDataHolder->methodName, responseSocketDataHolder->blob.dataLen, rawMsgStr);
          free(rawMsgStr);
@@ -497,7 +498,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    if (qos == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterConnect()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
 
@@ -527,14 +528,14 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
             if (len >= MAX_SECRETSESSIONID_LEN) {
                strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
                SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", __FILE__, __LINE__, len);
-               if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+               if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
             }
             strncpy0(xb->secretSessionId, pStart, len);
          }
       }
    }
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Got response for connect(secretSessionId=%s)", xb->secretSessionId);
 
    return response;
@@ -674,7 +675,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterSubscribe()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
 
@@ -704,7 +705,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Got response for subscribe(): %s", response);
 
    return response;
@@ -730,7 +731,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterUnSubscribe()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (QosArr *)0;
    }
 
@@ -763,7 +764,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    if (xb->logLevel>=LOG_TRACE) {
       size_t ii;
       for (ii=0; ii<response->len; ii++) {
-         xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+         xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "Got response for unSubscribe(): %s", response->qosArr[ii]);
       }
    }
@@ -792,7 +793,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterErase()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (QosArr *)0;
    }
 
@@ -825,7 +826,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    if (xb->logLevel>=LOG_TRACE) {
       size_t ii;
       for (ii=0; ii<response->len; ii++) {
-         xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+         xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "Got response for erase(): %s", response->qosArr[ii]);
       }
    }
@@ -856,7 +857,7 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Got response for ping '%s'", response);
    return response;
 }
@@ -879,7 +880,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Please provide valid arguments to xmlBlasterGet()", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (MsgUnitArr *)0;
    }
 
@@ -909,7 +910,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    msgUnitArr = parseMsgUnitArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 
-   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__,
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Returned %u messages for get()", msgUnitArr->len);
 
    return msgUnitArr;
@@ -927,7 +928,7 @@ static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, 
 
    if (exception == 0) {
       char *stack = getStackTrace(10);
-      xb->log(xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
+      xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__, "[%s:%d] Please provide valid exception pointer to %s() %s",
               __FILE__, __LINE__, methodName, stack);
       free(stack);
       return false;
@@ -940,7 +941,7 @@ static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, 
                "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
                 __FILE__, __LINE__, methodName, stack);
       free(stack);
-      xb->log(xb->logLevel, LOG_WARN, __FILE__, exception->message);
+      xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
       return false;
    }
 
