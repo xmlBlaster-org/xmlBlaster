@@ -1,0 +1,32 @@
+#!/bin/sh
+# call appletviewer with appropriate options
+appletviewer -J"-Xbootclasspath:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${JacORB_HOME}:${CLASSPATH}"    "$@"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+${JacORB_HOME}
+
+
+
+
+
+${JacORB_LIB}
