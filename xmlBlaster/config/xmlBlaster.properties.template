@@ -45,10 +45,12 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 
 # Switch on the CORBA, RMI and XML-RPC driver the EMAIL callback and the JDBC service:
 Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
                  RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
                  XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
                  JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
 Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
                          RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
                          XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
                          JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
