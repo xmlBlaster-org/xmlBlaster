@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.19 2002/05/09 14:04:09 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.20 2002/05/16 15:34:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -330,7 +330,7 @@ public final class XmlKey
     *         or "" (empty string) if not known
     */
    public final String getContentMimeExtended() throws XmlBlasterException {
-      if (contentMimeExtended == null) {
+      if (contentMimeExtended == null || contentMimeExtended.length() < 1) {
          parseRaw();
       }
       if (contentMimeExtended != null) {
@@ -509,13 +509,13 @@ public final class XmlKey
    public final String getQueryTypeStr() throws XmlBlasterException {
       int type = getQueryType();
       if (type == XPATH_QUERY)
-         return "XPATH";
+         return Constants.XPATH;
       else if (type == EXACT_QUERY)
-         return "EXACT";
+         return Constants.EXACT;
       else if (type == DOMAIN_QUERY)
-         return "DOMAIN";
+         return Constants.DOMAIN;
       else if (type == REGEX_QUERY)
-         return "REGEX";
+         return Constants.REGEX;
       return "";
    }
 
@@ -562,13 +562,13 @@ public final class XmlKey
    }
 
    private final void setQueryType(String val) throws XmlBlasterException {
-      if (val.equalsIgnoreCase("EXACT"))
+      if (val.equalsIgnoreCase(Constants.EXACT))
          queryType = EXACT_QUERY;
-      else if (val.equalsIgnoreCase("XPATH"))
+      else if (val.equalsIgnoreCase(Constants.XPATH))
          queryType = XPATH_QUERY;
-      else if (val.equalsIgnoreCase("DOMAIN"))
+      else if (val.equalsIgnoreCase(Constants.DOMAIN))
          queryType = DOMAIN_QUERY;
-      else if (val.equalsIgnoreCase("REGEX"))
+      else if (val.equalsIgnoreCase(Constants.REGEX))
          queryType = REGEX_QUERY;
       else {
          Log.warn(ME+".UnknownQueryType", "Unknown queryType " + val + ", setting default to EXACT");
