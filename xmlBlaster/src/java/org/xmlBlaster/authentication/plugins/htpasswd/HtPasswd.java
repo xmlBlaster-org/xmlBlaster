@@ -170,7 +170,8 @@ public class HtPasswd {
          fis = new FileInputStream( htpasswdFile );
          Reader r = new BufferedReader( new InputStreamReader( fis ) );
          StreamTokenizer st = new StreamTokenizer(r);
-
+         st.slashSlashComments(true);
+         //st.slashStarComments(true);
          st.ordinaryChars( 0,255 );
          st.eolIsSignificant(true);
 
