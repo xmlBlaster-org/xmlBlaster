@@ -71,7 +71,7 @@ Else add it manually.
    <property name="version" value="0.79dev"/>
    <property name="year" value="1999-2002"/>
  
-   <property name="build.compiler" value="classic"/>
+   <!-- property name="build.compiler" value="classic"/ -->
    <property name="debug" value="on"/>
    <property name="JVM.target" value="1.1" />
    <property name="optimize" value="off" />
