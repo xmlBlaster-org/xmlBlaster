@@ -181,6 +181,13 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    boolean isConnected();
 
    /**
+    * Send an event to xmlBlaster to refresh the login session life time.
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html">session requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
+    */
+   void refreshSession() throws XmlBlasterException;
+
+   /**
     * Access the returned QoS of a connect() call. 
     * @return is null if connect() was not called before
     */
@@ -257,6 +264,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param subscribeQos Control the behavior and further filter messages with mime based filter plugins
     * @see org.xmlBlaster.client.I_Callback#update(String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos) throws XmlBlasterException;
 
@@ -298,6 +306,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException;
 
@@ -306,6 +315,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    SubscribeReturnQos subscribe(String xmlKey, String xmlQos, I_Callback cb) throws XmlBlasterException;
 
@@ -337,6 +347,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @exception XmlBlasterException if <i>createSynchronousCache()</i> was not used to establish a cache first
     * @see #createSynchronousCache(int)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    public MsgUnit[] getCached(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
@@ -346,6 +357,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">interface.get requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
@@ -355,6 +367,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param unSubscribeKey Which messages to cancel
     * @param unSubscribeQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    UnSubscribeReturnQos[] unSubscribe(UnSubscribeKey unSubscribeKey, UnSubscribeQos unSubscribeQos) throws XmlBlasterException;
 
@@ -368,6 +381,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Publish messages. 
     * @param msgUnitArr The messages to send to the server
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
 
@@ -376,6 +390,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param eraseKey The topics to erase
     * @param eraseQos Control the erase behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
+    * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException;
 

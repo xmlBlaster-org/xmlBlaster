@@ -255,6 +255,15 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * @see I_XmlBlasterAccess#refreshSession()
+    */
+   public void refreshSession() throws XmlBlasterException {
+      GetKey gk = new GetKey(glob, "__refresh");
+      GetQos gq = new GetQos(glob);
+      get(gk, gq);
+   }
+
+   /**
     * Extracts address data from ConnectQos (or adds default if missing)
     * and instantiate a callback server as specified in ConnectQos
     */
