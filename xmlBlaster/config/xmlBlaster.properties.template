@@ -2,7 +2,7 @@
 # Name:      xmlBlaster.properties
 # Project:   xmlBlaster.org
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-# Comment:   Properties for xmlBlaster MOM server, copy into you home directory
+# Comment:   Properties for xmlBlaster MOM server, copy into your home directory
 #
 #All JVM system variables are supported, e.g.
 #   ${user.dir}
