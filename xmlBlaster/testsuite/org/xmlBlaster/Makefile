@@ -50,6 +50,7 @@ java: $(LOCAL_FILES)
 clean: clean_SUB_DIRS
 	@echo "Removing all in $(CLASS_DIR) ..."
 	$(RM) $(CLASS_DIR)/*.*
+	$(RM) *.html
 
 doc:
 	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
@@ -78,4 +79,13 @@ testsuite-console:
 test: xmlBlaster sleep4 testsuite
 
 test-console: xmlBlaster-console sleep4 testsuite-console
+
+#------- Generate syntax highlighted html files from java files for reference manual
+objects := $(patsubst %.java,%.html,$(wildcard *.java))
+
+$(objects): %.html: %.java
+	code2html -ljava $< $@
+
+html: $(objects)
+	@echo "Generated syntax highlighted html files from java files"
 
