@@ -23,6 +23,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.TopicProperty;
@@ -67,14 +68,21 @@ public class TestConsumableQueue extends TestCase {
          if (this.log.CALL) this.log.call(ME, "constructor");
       }
 
-      public void init(String publishOid, String subscribeOid, boolean consumable) throws XmlBlasterException {
+      public void init(String publishOid, String subscribeOid, boolean consumable, int session) throws XmlBlasterException {
          if (this.log.CALL) this.log.call(ME, "init");
          this.consumable = consumable;
-         this.accessor.connect(new ConnectQos(this.global, name, "secret"), this);
+         ConnectQos connectQos = new ConnectQos(this.global, name, "secret");
+         if (session > 0) {
+         	SessionName sessionName = new SessionName(this.global, name + "/" + session);
+				connectQos.setSessionName(sessionName);
+         } 
+         this.accessor.connect(connectQos, this);
          this.publishOid = publishOid;
          this.subscribeOid = subscribeOid;
-         if (this.subscribeOid != null) 
-            this.accessor.subscribe(new SubscribeKey(this.global, this.subscribeOid), new SubscribeQos(this.global));
+         if (this.subscribeOid != null) {
+         	SubscribeQos subQos = new SubscribeQos(this.global);
+				this.accessor.subscribe(new SubscribeKey(this.global, this.subscribeOid), subQos);
+         }
       }
 
       public void publish(String content) throws XmlBlasterException {
@@ -146,14 +154,15 @@ public class TestConsumableQueue extends TestCase {
     */
    public void testSubSubPub() {
       try {
-         boolean consumable = true; 
+         boolean consumable = true;
+         int session = 1;
          Client pub1 = new Client(this.global, "pub1");
-         pub1.init("testConsumableQueue", null, consumable);
+         pub1.init("testConsumableQueue", null, consumable, session);
 
          Client sub1 = new Client(this.global, "sub1");
-         sub1.init(null, "testConsumableQueue", consumable);
+         sub1.init(null, "testConsumableQueue", consumable, session);
          Client sub2 = new Client(this.global, "sub2");
-         sub2.init(null, "testConsumableQueue", consumable);
+         sub2.init(null, "testConsumableQueue", consumable, session);
          
          assertEquals("wrong number of initial responses", 0, responses.size());
 
@@ -181,9 +190,10 @@ public class TestConsumableQueue extends TestCase {
     */
    public void testPubSub() {
       try {
-         boolean consumable = true; 
+         boolean consumable = true;
+         int session = 1; 
          Client pub1 = new Client(this.global, "pub1");
-         pub1.init("testConsumableQueue", null, consumable);
+         pub1.init("testConsumableQueue", null, consumable, session);
 
          pub1.publish("firstMessage");
 
@@ -191,7 +201,7 @@ public class TestConsumableQueue extends TestCase {
          assertEquals("wrong number of initial responses", 0, responses.size());
 
          synchronized(responses) {
-            sub1.init(null, "testConsumableQueue", consumable);
+            sub1.init(null, "testConsumableQueue", consumable, session);
 
             responses.wait(5000L);
             Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
@@ -215,8 +225,9 @@ public class TestConsumableQueue extends TestCase {
    public void testPubSubSub() {
       try {
          boolean consumable = true; 
+         int session = 1;
          Client pub1 = new Client(this.global, "pub1");
-         pub1.init("testConsumableQueue", null, consumable);
+         pub1.init("testConsumableQueue", null, consumable, session);
 
          pub1.publish("firstMessage");
 
@@ -225,8 +236,8 @@ public class TestConsumableQueue extends TestCase {
          assertEquals("wrong number of initial responses", 0, responses.size());
 
          synchronized(responses) {
-            sub1.init(null, "testConsumableQueue", consumable);
-            sub2.init(null, "testConsumableQueue", consumable);
+            sub1.init(null, "testConsumableQueue", consumable, session);
+            sub2.init(null, "testConsumableQueue", consumable, session);
 
             responses.wait(5000L);
             Thread.sleep(1000L); // wait in case an unexpected update comes in betweeen
