@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxx, xx 2003]
 ================================
 
+ o One big step further to unify the command line properties, try
+     java HelloWorld2 -help
+
  o Embedded queue framework into Java client library.
    Please port your code, typical changes you should make are:
       org.xmlBlaster.client.protocol.XmlBlasterConnection ->  org.xmlBlaster.client.I_XmlBlasterAccess
@@ -20,6 +23,8 @@ Changes for 0.xxx [xxx, xx 2003]
 
    NOTE: If you use mutliple clients to connect to xmlBlaster
          you need a seperate util.Global instance for each of them (see HelloWorld5 example).
+           Global globAnother = this.glob.getClone(null);
+           globAnother.getXmlBlasterAccess()
 
    NOTE: Please copy the new config/xmlBlaster.properties.template
          to $HOME/xmlBlaster.properties
