@@ -1,0 +1,649 @@
+/*------------------------------------------------------------------------------
+Name:      Sql92Selector.cup
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+
+
+/* ----------------------Preliminary Declarations Section--------------------*/
+   
+package org.xmlBlaster.util.lexical;
+import java_cup.runtime.*;
+import org.xmlBlaster.util.Global;
+import org.jutils.log.LogChannel;   
+   
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+
+	protected final static String ME = "SqlParser";
+	protected Global global;
+	protected LogChannel log;
+	protected java.util.Map regexMap;
+	
+    /* Constructor used inside xmlBlaster */
+    public Sql92Parser(Global global, /*java.util.Map regexMap,*/ java_cup.runtime.Scanner s) {
+       this(s);
+       this.global = global;
+       log = this.global.getLog("lexical");
+       if (this.log.CALL) this.log.call(ME, "constructor");
+//       if (regexMap != null) this.regexMap = regexMap;
+//       else
+          this.regexMap = new java.util.HashMap();
+    }
+
+	public LikeOpWrapper getExpression(String expression, char escape, boolean simple) {
+	   String key = expression;
+	   if (escape != (char)0) {
+	      key += escape;
+	   }
+	   LikeOpWrapper wrapper = (LikeOpWrapper)this.regexMap.get(key);
+	   if (wrapper == null) {
+	      synchronized(this.regexMap) {
+	         wrapper = (LikeOpWrapper)this.regexMap.get(key);
+	         if (wrapper != null) return wrapper;
+	         try {
+   	            wrapper = new LikeOpWrapper(this.global, expression, escape, simple);
+   	            this.regexMap.put(key, wrapper);
+   	            return wrapper;
+	         }
+	         catch (org.xmlBlaster.util.XmlBlasterException ex) {
+	            ex.printStackTrace();
+	            throw new IllegalArgumentException(ex.getMessage());
+	         }
+	      }
+	   }
+           else return wrapper;
+	}
+
+    /* 
+       Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. 
+     */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuffer called 'm' with the string 'Error' in it. */
+        StringBuffer m = new StringBuffer("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. 
+         */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. 
+             */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuffer error message
+                   the line number of the error in the input. 
+                 */
+                m.append(" in line "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. 
+                 */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuffer error message
+                       the column number of the error in the input. 
+                     */
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuffer error message created in
+           this method the message that was passed into this method. 
+         */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuffer 'm', which contains
+           an error message, out on a line. 
+         */
+        System.err.println(m);
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.
+     */
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        throw new IllegalArgumentException(message);
+        // System.exit(1);
+    }
+:};
+               
+
+   
+/* ------------Declaration of Terminals and Non Terminals Section----------- */
+   
+/* Terminals (tokens returned by the scanner).  
+   Terminals that have no value are listed first and then terminals
+   that do have an value, in this case an integer value, are listed on
+   the next line down. 
+*/
+terminal    PLUS, MINUS, TIMES, DIV, L_BRACKET, R_BRACKET, 
+            OR, AND, EQUAL, GT, LT, GET, LET, NOT, BETWEEN, IN, LIKE, DIFF,
+            NULL, COMMA, IS, UMINUS, ESCAPE, REGEX;
+
+/*            , L_SBRACKET, R_SBRACKET, L_FBRACKET, R_FBRACKET; */
+
+terminal String STRING;
+terminal Double NUMBER;
+terminal Object NULL_OBJECT;
+
+/* Non terminals used in the grammar section.  
+   Non terminals that have an object value are listed first and then
+   non terminals that have an integer value are listed.  An object
+   value means that it can be any type, it isn't set to a specific
+   type.  So it could be an Integer or a String or whatever. 
+*/ 
+non terminal Boolean logic_term, logic_factor, pred, basic_pred, between_pred,
+                     null_pred, like_pred, in_pred, regex_pred;
+
+non terminal Object in_value, expr;
+non terminal java.util.Set in_term;
+non terminal Double math_term, math_factor, math_pred;
+non terminal Character ESC;
+
+/* 
+  Precedence of non terminals could be defined here. If you do define
+  precedence here you won't need to worry about precedence in the
+  Grammar Section, i.e. that TIMES should have a higher precedence
+  than PLUS. The precedence defined here would look something like this 
+  where the lower line always will have higher precedence than the line 
+  before it.
+ */
+   
+ /* don't know where to put BETWEEN, IN, LIKE */
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+
+precedence left NULL;
+precedence left LIKE, ESCAPE, REGEX;
+
+precedence left EQUAL, GT, LT, GET, LET;
+precedence left PLUS, MINUS; 
+precedence left TIMES, DIV; 
+precedence left UMINUS;
+precedence left L_BRACKET, R_BRACKET;
+
+/* ----------------------------Grammar Section-------------------- */
+
+/* a pred can never be null, so this check is not needed */
+
+logic_term  ::=   
+        logic_term:p1 OR logic_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_term(logic_term OR logic_term): '" + p1 + " OR " + p2 + "'");
+            if (p1 == null) {
+               RESULT = p2;
+            }
+            else if (p2 == null) {
+               RESULT = p1;
+            }
+            else {
+               RESULT = new Boolean(p1.booleanValue() || p2.booleanValue()); 
+            }   
+        :}
+      | logic_factor:p
+        {:
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_term(logic_factor) '" +  p + "'");
+	    if (p == null) {
+	       RESULT  = new Boolean(false);
+	    }   
+	    else {
+               RESULT = p;
+            }
+        :}  
+      ;
+      
+logic_factor ::=   
+        logic_factor:p1 AND logic_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(logic_factor AND logic_term): '" + p1 + " AND " + p2 + "'");
+	    if (p1 == null || p2 == null) {
+	       RESULT  = new Boolean(false);
+	    }   
+	    else {
+               RESULT = new Boolean(p1.booleanValue() && p2.booleanValue()); 
+            }
+        :}
+      | pred:p
+        {:
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(pred) '" +  p + "'");
+	    if (p == null) {
+	       RESULT  = new Boolean(false);
+	    }   
+	    else {
+               RESULT = p;
+            }
+        :}  
+      ;
+
+pred 
+  ::=
+      NOT pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(!pred) '!" + p + "'");
+          if (p == null) {
+             RESULT = new Boolean(true);
+          }
+          else {   
+             RESULT = new Boolean(!p.booleanValue()); 
+          }   
+       :}
+    | L_BRACKET logic_term:p R_BRACKET
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred((logic_term)) '(" + p + ")'");
+          RESULT = p; 
+       :}
+    | basic_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(basic_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    | between_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(between_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    | null_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(null_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    | like_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(like_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    | in_pred:p 
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(in_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    | regex_pred:p 
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(regex_pred) '" + p + "'");
+          RESULT = p; 
+       :}
+    ;
+
+/* relop ::= =  | <> | != | ^= | <  | <=  | >  | >=
+relop ::= EQUAL |     DIFF     | LT | LET | GT | GET; */
+
+basic_pred ::=   
+        expr:e1 EQUAL expr:e2
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " = " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(false);
+            }   
+            else {
+               if (e1 instanceof String) RESULT = new Boolean(e1.equals(e2)); 
+               else RESULT = new Boolean(((Double)e1).doubleValue() == ((Double)e2).doubleValue());
+            }
+          :}
+      | expr:e1 DIFF expr:e2 
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " != " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(true);
+            }
+            else {   
+               if (e1 instanceof String) RESULT = new Boolean(!e1.equals(e2)); 
+               else RESULT = new Boolean(!(((Double)e1).doubleValue() == ((Double)e2).doubleValue()));
+            }   
+          :}
+      | expr:e1 LT expr:e2
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " < " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(false);
+            }
+            else {   
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) < 0); 
+               else RESULT = new Boolean( ((Double)e1).doubleValue() < ((Double)e2).doubleValue());
+            }   
+          :}
+      | expr:e1 LET expr:e2
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " <= " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(false);
+            }
+            else {   
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) <= 0); 
+               else RESULT = new Boolean( ((Double)e1).doubleValue() <= ((Double)e2).doubleValue());
+            }   
+          :}
+      | expr:e1 GT expr:e2
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " > " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(false);
+            }
+            else {   
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) > 0); 
+               else RESULT = new Boolean( ((Double)e1).doubleValue() > ((Double)e2).doubleValue());
+            }   
+          :}
+      | expr:e1 GET expr:e2
+         {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " >= " + e2 + "'");
+            if (e1 == null || e2 == null) {
+               RESULT = new Boolean(false);
+            }
+            else {   
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) >= 0); 
+               else RESULT = new Boolean( ((Double)e1).doubleValue() >= ((Double)e2).doubleValue());
+            }   
+         :}
+       ;  
+
+
+
+/* between_pred ::= expr [ NOT ] BETWEEN expr AND expr */
+between_pred ::= 
+        expr:e1 BETWEEN expr:e2 AND expr:e3 
+           {:
+              if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "between_pred: '" + e1 + " BETWEEN " + e2 + " AND " + e3 + "'");
+              if (e1 == null || e2 == null || e3 == null) {
+                 RESULT = new Boolean(false);
+              }
+              else {
+                 if (e1 instanceof String) {
+                    RESULT = new Boolean((((String)e1).compareTo(e2) >= 0) && (((String)e1).compareTo(e3) <= 0));
+                 }
+                 else {
+                    RESULT = new Boolean(((Double)e1).doubleValue() >= ((Double)e2).doubleValue() && ((Double)e1).doubleValue() <= ((Double)e3).doubleValue());
+                 }
+              }   
+           :}
+           ;
+
+
+null_pred ::=  
+        STRING:l IS NULL 
+           {: RESULT = new Boolean(l == null); :}
+      | STRING:l IS NOT NULL
+           {: RESULT = new Boolean(l != null); :}
+      | NUMBER:l IS NULL 
+           {: RESULT = new Boolean(l == null); :}
+      | NUMBER:l IS NOT NULL
+           {: RESULT = new Boolean(l != null); :}
+      | NULL_OBJECT IS NULL
+           {: RESULT = new Boolean(true); :}
+      | NULL_OBJECT IS NOT NULL
+           {: RESULT = new Boolean(false); :}
+      ;
+
+like_pred ::=  STRING:p1 LIKE STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + "'");
+           LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, true);
+           if (wrapper != null) {
+              RESULT = new Boolean(wrapper.match(p1));
+           }
+           else {
+              RESULT = new Boolean(false);
+           }
+        :}
+     | NULL_OBJECT:p1 LIKE STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + "'");
+           RESULT = new Boolean(false);     
+        :}
+     | STRING:p1 NOT LIKE STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
+           LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, true);
+           if (wrapper != null) {
+              RESULT = new Boolean(!wrapper.match(p1));
+           }
+           else {
+              RESULT = new Boolean(true);
+           }
+        :}
+     | NULL_OBJECT:p1 NOT LIKE STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
+           RESULT = new Boolean(true);
+        :}
+     | STRING:p1 LIKE STRING:p2 ESCAPE ESC:esc
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
+           LikeOpWrapper wrapper = parser.getExpression(p2, esc.charValue(), true);
+           if (wrapper != null) {
+              RESULT = new Boolean(wrapper.match(p1));
+           }
+           else {
+              RESULT = new Boolean(false);
+           }
+        :}
+     | NULL_OBJECT:p1 LIKE STRING:p2 ESCAPE ESC:esc
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
+           RESULT = new Boolean(false);
+        :}
+     | STRING:p1 NOT LIKE STRING:p2 ESCAPE ESC:esc
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
+           LikeOpWrapper wrapper = parser.getExpression(p2, esc.charValue(), true);
+           if (wrapper != null) {
+              RESULT = new Boolean(!wrapper.match(p1));
+           }
+           else {
+              RESULT = new Boolean(true);
+           }
+        :}
+     | NULL_OBJECT:p1 NOT LIKE STRING:p2 ESCAPE ESC:esc
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
+           RESULT = new Boolean(true);
+        :}
+     ;
+
+/* This is not jms specific. It is a special xmlBlaster extention */
+regex_pred ::=  STRING:p1 REGEX STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "regex_pred: '" + p1 + " REGEX " + p2 + "'");
+           LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, false);
+           if (wrapper != null) {
+              RESULT = new Boolean(wrapper.match(p1));
+           }
+           else {
+              RESULT = new Boolean(false);
+           }
+        :}                
+     | NULL_OBJECT:p1 REGEX STRING:p2
+        {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "regex_pred: '" + p1 + " REGEX " + p2 + "'");
+           RESULT = new Boolean(false);
+        :}
+     ;
+
+
+/* in_pred ::= expr [ NOT ] IN { (constant , constant [ , ... ] ) } */
+in_value ::= 
+       STRING:v
+          {: RESULT = v; :}
+     | NUMBER:v
+          {: RESULT = v; :}
+     ;
+
+in_term ::= 
+       in_value:v1 COMMA in_value:v2
+         {: 
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_term '" + v1 + ", " + v2 + "'");
+           java.util.Set set = new java.util.HashSet();
+           if (v1 != null) set.add(v1);
+           if (v2 != null) set.add(v2);
+           RESULT = set;
+         :}   
+     | in_value:v COMMA in_term:s
+       {:
+          if (s == null) s = new java.util.HashSet();
+          if (v != null) s.add(v);
+          RESULT = s;
+       :}
+     ;
+
+in_pred ::= 
+       expr:e IN L_BRACKET in_value:v R_BRACKET 
+         {:
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_pred '" + e + "IN(" + v + ")'");
+           if (e == null || v == null) RESULT = new Boolean(false);
+           else {
+              if (e instanceof String) RESULT = new Boolean(e.equals(v));
+              else RESULT = new Boolean(((Double)e).doubleValue() == ((Double)v).doubleValue());
+           }
+         :}
+     | expr:e IN L_BRACKET in_term:s R_BRACKET 
+        {:
+           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_pred '" + e + " IN (" + s + ")'");
+           if (e == null || s == null) RESULT = new Boolean(false);
+           else {
+              RESULT = new Boolean(s.contains(e));
+           }
+        :}
+/*
+     | NOT in_pred:p
+       {:
+         if (p == null) {
+            RESULT = new Boolean(true);
+         }
+         else {   
+            RESULT = new Boolean(!p.booleanValue());
+         }   
+       :};
+*/
+       ;
+
+expr ::=
+       math_term:e
+          {: 
+             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "expr(math_term) '" + e + "'");
+             RESULT = e; 
+          :}
+     | STRING:l
+          {: 
+             RESULT = l; 
+          :}
+     ;      
+
+math_term  ::=   
+        math_term:p1 PLUS math_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term + math_term): '" + p1 + " + " + p2 + "'");
+       	    if (p1 == null) {
+       	       RESULT = p2;
+       	    }
+            else if (p2 == null) {
+               RESULT = p1;
+            }
+       	    else {                          
+       	       RESULT = new Double(p1.doubleValue() + p2.doubleValue());
+       	    }   
+        :}
+      | math_term:p1 MINUS math_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term - math_term): '" + p1 + " - " + p2 + "'");
+       	    if (p1 == null) {
+       	       RESULT = p2;
+       	    }
+            else if (p2 == null) {
+               RESULT = p1;
+            }
+       	    else {                          
+       	       RESULT = new Double(p1.doubleValue() - p2.doubleValue());
+       	    }   
+        :}
+      | math_factor:p
+        {:
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_factor) '" +  p + "'");
+            RESULT = p;
+        :}  
+      ;
+      
+math_factor ::=   
+        math_factor:p1 TIMES math_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_factor * math_term): '" + p1 + " * " + p2 + "'");
+            if (p1 == null || p2 == null) {
+               RESULT = null;
+            }   
+            else {
+               RESULT = new Double(p1.doubleValue() * p2.doubleValue());
+            }   
+        :}
+      | math_factor:p1 DIV math_term:p2
+        {: 
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_factor / math_term): '" + p1 + " / " + p2 + "'");
+            if (p1 == null || p2 == null) {
+               RESULT = null;
+            }   
+            else {
+               RESULT = new Double(p1.doubleValue() / p2.doubleValue());
+            }   
+        :}
+      | math_pred:p
+        {:
+            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_pred) '" +  p + "'");
+            RESULT = p;
+        :}  
+      ;
+
+math_pred 
+  ::=
+      MINUS math_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(-math_pred) '-" + p + "'");
+          if (p == null) {
+             RESULT = null;
+          }
+          else {   
+             RESULT = new Double(-p.doubleValue()); 
+          }   
+       :}  %prec UMINUS
+    | PLUS math_pred:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(+math_pred) '+" + p + "'");
+          RESULT = p;
+       :}  %prec UMINUS
+    | L_BRACKET math_term:p R_BRACKET
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred((math_term)) '(" + p + ")'");
+          RESULT = p; 
+       :}
+    | NUMBER:p
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(NUMBER) '" + p + "'");
+          RESULT = p; 
+       :}
+    | NULL_OBJECT:p 
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(NULL_OBJECT) '" + p + "'");
+          RESULT = (Double)null; 
+       :}
+    ;
+
+
+ESC ::=
+    | STRING:p 
+       {: 
+          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "ESC(STRING) '" + p + "'");
+          RESULT = new Character(p.charAt(0));
+       :}
+    ;
+
+
+
