@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.12 2003/12/15 15:39:42 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.13 2004/01/20 15:03:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -157,7 +157,9 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
       }
       iter++;
    }
-   if (!found) log_.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
+   if (!found) {
+      if (log_.trace()) log_.trace(ME, "Missing 'relating' attribute in connect QoS <queue>");
+   }
 }
 
 
