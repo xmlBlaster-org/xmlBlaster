@@ -214,4 +214,73 @@ public final class OrbInstanceFactory
          return orbInstanceWrapper;
       }
    }
+
+   /**
+    * Obtain the host information from the given CORBA object.
+    * This is accomplished by parsing the object's IOR using CORBA classes
+    * org.omg.IOP.IORHelper and org.omg.IIOP.ProfileBody_1_1Helper.
+    * Consequently, CORBA version is 2.x (or higher) is required.
+    * @param obj the CORBA object to interrogate
+    * @param orb the ORB to use during interrogation
+    * @returns the host where the given object resides, or null on error.
+    * @author Code from adavis@cadrc.calpoly.edu from JacORB mailing list
+    */
+   public static String extractHost(org.omg.CORBA.Object obj, org.omg.CORBA.ORB orb)
+   {
+      String host = null;
+      if ( obj != null && orb != null )
+      {
+         try
+         {
+            String objRef = orb.object_to_string(obj);
+            org.omg.CORBA.portable.OutputStream out =
+               orb.create_output_stream();
+            int cnt = (objRef.length() - 4) / 2;
+            int o1;
+            int o2;
+            Integer b;
+            for (int i=0; i<cnt; i++)
+            {
+               o1 = i*2+4;
+               o2 = o1+2;
+               try
+               {
+                  b = Integer.valueOf(objRef.substring(o1,o2), 16);
+                  out.write_octet(b.byteValue());
+               }
+               catch (NumberFormatException nfe)
+               {
+                  //ErrorLog.logWarning("ObjectUtil", "extractHost",
+                  //   "'"+objRef.substring(o1,o2)+"' not a valid integer");
+                  throw nfe;
+               }
+            }
+            org.omg.CORBA.portable.InputStream in = out.create_input_stream();
+            boolean littleEndian = in.read_boolean();
+            org.omg.IOP.IOR ior = org.omg.IOP.IORHelper.read(in);
+            org.omg.IIOP.ProfileBody_1_1 body;
+            for (int i=0; host==null && i<ior.profiles.length; i++)
+            {
+               if ( ior.profiles[i].tag == org.omg.IOP.TAG_INTERNET_IOP.value )
+               {
+                  org.omg.CORBA.portable.OutputStream prof_out =
+                     orb.create_output_stream();
+                  byte[] prof_data = ior.profiles[i].profile_data;
+                  prof_out.write_octet_array(prof_data, 0, prof_data.length);
+                  org.omg.CORBA.portable.InputStream prof_in =
+                     prof_out.create_input_stream();
+                  body = org.omg.IIOP.ProfileBody_1_1Helper.read(prof_in);
+                  host = body.host;
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            //ErrorLog.logWarning("ObjectUtil", "extractHost",
+            //   "exception '"+e+"' during hostname extraction");
+            System.out.println("OrbInstanceFactory:" + e.toString());
+         }
+      }
+      return host;
+   }
 }
