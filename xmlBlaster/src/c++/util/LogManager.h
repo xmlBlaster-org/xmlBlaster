@@ -13,6 +13,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/I_LogFactory.h>
 #include <util/I_Log.h>
 
+namespace org { namespace xmlBlaster { namespace util {
+   
+class DefaultLogFactory; // forward declaration
+
+
 /**
  * Manages the logging framework. 
  * <p />
@@ -23,11 +28,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-namespace org { namespace xmlBlaster { namespace util {
-   
-   class DefaultLogFactory;
-
-   class Dll_Export LogManager {
+class Dll_Export LogManager {
    
    public:
       typedef org::xmlBlaster::util::I_LogFactory::PropMap PropMap;
@@ -72,14 +73,15 @@ namespace org { namespace xmlBlaster { namespace util {
        */
       void setLogFactory(const std::string& name, I_LogFactory* logFactory);
 
-   }; // end of class LogManager
+}; // end of class LogManager
 
 
-   /**
-    * Default implementation of our log factory. 
-    * It returns the xmlBlaster native console logger with colored output on UNIX
-    */
-   class Dll_Export DefaultLogFactory : public I_LogFactory {
+
+/**
+ * Default implementation of our log factory. 
+ * It returns the xmlBlaster native console logger with colored output on UNIX
+ */
+class Dll_Export DefaultLogFactory : public I_LogFactory {
    public:
       typedef std::map<std::string, org::xmlBlaster::util::I_Log *> LogMap;
    private:
@@ -90,7 +92,8 @@ namespace org { namespace xmlBlaster { namespace util {
       virtual ~DefaultLogFactory();
       I_Log& getLog(const std::string& name="");
       void releaseLog(const std::string& name="");
-   }; // end of class DefaultLogFactory
+}; // end of class DefaultLogFactory
+
 
 }}} // end of namespace util
 
