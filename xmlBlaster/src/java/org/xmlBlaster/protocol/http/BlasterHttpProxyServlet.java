@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.42 2000/07/11 17:25:39 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.43 2000/07/11 17:45:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -39,7 +39,7 @@ import javax.servlet.http.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogListener
 {
@@ -226,8 +226,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          //------------------ logout ---------------------------------------------------------
          else if (actionType.equals("logout")) {
             Log.info(ME, "Logout for sessionId '" + sessionId + "' arrived ...");
-            ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
-            pc.cleanup(sessionId);
+            try {
+               ProxyConnection pc = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
+               pc.cleanup(sessionId);
+            } catch(XmlBlasterException e) {
+               Log.error(ME, e.toString());
+            }
 
             // Otherwise the browser (controlFrame) complains 'document contained no data'
             PrintWriter out = res.getWriter();
