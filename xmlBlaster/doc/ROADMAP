@@ -21,6 +21,6 @@ src/c++          -- the c++-classes for the xmlBlaster client
 
 src/java         -- the core written in pure Java C-MOM-S
 
-src/dtd          -- definitions of the MessageUnit/QoS/Key
+src/dtd          -- definitions of the MsgUnit/QoS/Key
 
 testsuite        -- some test cases to check the xmlBlaster features
