@@ -357,20 +357,18 @@ abstract public class DeliveryConnectionsHandler
     * @param extraOffset indenting of tags for nice output
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException {
-      StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(1000);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<DeliveryConnectionsHandler>");
-      if (conList.size() < 1)
-         sb.append(offset).append("   <noDeliveryConnection/>");
+      sb.append(offset).append("<DeliveryConnectionsHandler>");
+      if (this.conList.size() < 1)
+         sb.append(offset).append(" <noDeliveryConnection/>");
       else {
-         synchronized(conList) {
-            for (int ii=0; ii<conList.size(); ii++) {
-               sb.append(offset).append("   <" + ((DeliveryConnection)conList.get(ii)).getDriverName() + " />");
-            }
+         DeliveryConnection[] arr = getConnectionsArrCopy();
+         for (int ii=0; ii<arr.length; ii++) {
+            sb.append(offset).append(" <" + arr[ii].getDriverName() + " />");
          }
       }
       sb.append(offset).append("</DeliveryConnectionsHandler>");

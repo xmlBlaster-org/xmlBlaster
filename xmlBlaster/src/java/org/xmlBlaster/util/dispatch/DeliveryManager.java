@@ -619,15 +619,14 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @param extraOffset indenting of tags for nice output
     * @return internal state as a XML ASCII string
     */
-   public String toXml(String extraOffset) throws XmlBlasterException {
-      StringBuffer sb = new StringBuffer(256);
-      String offset = "\n   ";
+   public String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(2000);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<DeliveryManager id='").append(getId()).append("'>");
-      deliveryConnectionsHandler.toXml(offset);
-      sb.append(offset).append("   <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
+      sb.append(deliveryConnectionsHandler.toXml(offset));
+      sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
       sb.append(offset).append("</DeliveryManager>");
 
       return sb.toString();
