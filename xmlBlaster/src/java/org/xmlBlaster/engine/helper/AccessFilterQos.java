@@ -3,7 +3,7 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.2 2002/05/06 07:29:54 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.3 2002/05/06 12:31:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -50,8 +50,9 @@ public class AccessFilterQos
    }
 
    /**
-    * @param type    The plugin name
-    * @param version The plugin version
+    * @param glob The global handle holding environment and logging objects
+    * @param type The plugin name, as used in xmlBlaster.properties e.g. "ContentLenFilter".
+    * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
    public AccessFilterQos(Global glob, String type, String version, String query)
@@ -63,8 +64,9 @@ public class AccessFilterQos
    }
 
    /**
-    * @param type    The plugin name
-    * @param version The plugin version
+    * @param glob The global handle holding environment and logging objects
+    * @param type The plugin name, as used in xmlBlaster.properties e.g. "ContentLenFilter".
+    * @param version The plugin version, defaults to "1.0"
     * @param query   Your filter rule
     */
    public AccessFilterQos(Global glob, String type, String version, Query query)
