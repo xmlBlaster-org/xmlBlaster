@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.17 2001/09/30 13:49:22 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.18 2001/12/07 23:53:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -30,6 +30,9 @@ import org.xml.sax.Attributes;
  *     &lt;subscriptionId>
  *        __sys__TotalMem
  *     &lt;/subscriptionId>
+ *     &lt;rcvTimestamp millis='1007764305862'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call -->
+ *           2001-12-07 23:31:45.862   &lt;!-- The millis from above but human readable -->
+ *     &lt;/rcvTimestamp>
  *     &lt;queue index='0' of='1'> &lt;!-- If queued messages are flushed on login -->
  *     &lt;/queue>
  *  &lt;/qos>
@@ -51,6 +54,11 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean inSubscriptionId = false;
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId = null;
+   /** helper flag for SAX parsing: parsing inside <rcvTimestamp> ? */
+   private boolean inRcvTimestamp = false;
+   private long rcvTimestamp = 0L;
+   private int rcvNanos = 0;
+   private String rcvTime = null;
 
    private int queueIndex = -1;
    private int queueSize = -1;
@@ -115,6 +123,26 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       return queueIndex;
    }
 
+   /** 
+    * The approximate receive timestamp (UTC time),
+    * when message was created - arrived at xmlBlaster server.<br />
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    */
+   public final long getRcvTimestamp()
+   {
+      return rcvTimestamp;
+   }
+
+   /**
+    * Human readable form of message receive time in xmlBlaster server,
+    * in SQL representation e.g.:<br />
+    * 2001-12-07 23:31:45.862
+    */
+   public final String getRcvTime()
+   {
+      return rcvTime;
+   }
+
    /**
     * Start element, event from SAX parser.
     * <p />
@@ -169,6 +197,27 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if (name.equalsIgnoreCase("rcvTimestamp")) {
+         if (!inQos)
+            return;
+         inRcvTimestamp = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               if( attrs.getQName(i).equalsIgnoreCase("millis") ) {
+                 String tmp = attrs.getValue(i).trim();
+                 try { rcvTimestamp = Long.parseLong(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
+                 String tmp = attrs.getValue(i).trim();
+                 try { rcvNanos = Integer.parseInt(tmp); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+               }
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found rcvTimestamp tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("queue")) {
          if (!inQos)
             return;
@@ -189,7 +238,6 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          }
          return;
       }
-
    }
 
 
@@ -228,6 +276,14 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if(name.equalsIgnoreCase("rcvTimestamp")) {
+         inRcvTimestamp = false;
+         rcvTime = character.toString().trim();
+         // if (Log.TRACE) Log.trace(ME, "Found message rcvTimestamp = " + rcvTimestamp);
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("queue")) {
          inQueue = false;
          character.setLength(0);
@@ -261,29 +317,34 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<qos> <!-- UpdateQoS -->");
+      sb.append(offset).append("<qos> <!-- UpdateQoS -->");
       if (state != null) {
-         sb.append(offset + "   <state>");
-         sb.append(offset + "      " + state);
-         sb.append(offset + "   </state>");
+         sb.append(offset).append("   <state>");
+         sb.append(offset).append("      ").append(state);
+         sb.append(offset).append("   </state>");
       }
       if (sender != null) {
-         sb.append(offset + "   <sender>");
-         sb.append(offset + "      " + sender);
-         sb.append(offset + "   </sender>");
+         sb.append(offset).append("   <sender>");
+         sb.append(offset).append("      ").append(sender);
+         sb.append(offset).append("   </sender>");
       }
       if (subscriptionId != null) {
-         sb.append(offset + "   <subscriptionId>");
-         sb.append(offset + "      " + subscriptionId);
-         sb.append(offset + "   </subscriptionId>");
+         sb.append(offset).append("   <subscriptionId>");
+         sb.append(offset).append("      ").append(subscriptionId);
+         sb.append(offset).append("   </subscriptionId>");
       }
+
+      sb.append(offset).append("   <rcvTimestamp millis='").append(getRcvTimestamp()).append("' nanos='").append(rcvNanos).append("'>");
+      sb.append(offset).append("      ").append(getRcvTime());
+      sb.append(offset).append("   </rcvTimestamp>");
+
       if(getQueueSize() > 0) {
-         sb.append(offset + "   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'");
-         sb.append(offset + "   </queue>");
+         sb.append(offset).append("   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'");
+         sb.append(offset).append("   </queue>");
       }
 
 
-      sb.append(offset + "</qos>\n");
+      sb.append(offset).append("</qos>\n");
 
       return sb.toString();
    }
@@ -310,6 +371,9 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <subscriptionId>\n" +
                    "      1234567890\n" +
                    "   </subscriptionId>\n" +
+                   "   <rcvTimestamp millis='1007764305862'>\n" +
+                   "      2001-12-07 23:31:45.862\n" +
+                   "   </rcvTimestamp>\n" +
                    "   <queue index='0' size='1'>\n" +
                    "   </queue>\n" +
                    "</qos>";
