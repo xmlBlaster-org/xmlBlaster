@@ -1624,7 +1624,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       java.util.Properties properties = new java.util.Properties();
       properties.put("tableNamePrefix", tableNamePrefix);
       try {
-         glob.wipeOutDB("JDBC", "1.0", properties);
+         glob.wipeOutDB("JDBC", "1.0", properties, false);
       }
       catch (XmlBlasterException e) {
          e.printStackTrace();

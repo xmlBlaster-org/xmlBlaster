@@ -100,7 +100,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String entriesTableName = null;
    private boolean hasAdminPermission = true;
 
-   private final int queueIncrement;
+//   private final int queueIncrement;
    private java.util.HashSet nodesCache;
 
 
@@ -171,7 +171,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.tableNameTxt == null) tableNameTxt = "tablename";
 
       this.tableNamePrefix = this.pool.getTableNamePrefix();
-      this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
+      // this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
 
       String errorCodesTxt = (String)names.get("connectionErrorCodes");
       if (errorCodesTxt == null) errorCodesTxt = "1089:17002";
@@ -223,6 +223,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 // isClosed() does not work
    private boolean ping(Connection conn) {
       if (this.log.CALL) this.log.call(ME, "ping");
+      if (conn == null) return false; // this could occur if it was not possible to create the connection
+
       try {
          // conn.isClosed();
          Statement st = conn.createStatement();
@@ -338,7 +340,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(ME, location + ": additional info: " + trace);
       }
       */
-      boolean ret = !ping(conn);
+
+
+      boolean ret = false;
+
+      if (conn != null) ret = !ping(conn);
+      else ret = !ping();
+
       if (ret) {
          this.log.error(ME, location + ": the connection to the DB has been lost. Going in polling modus");
          this.pool.setConnectionLost();
@@ -436,7 +444,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return true;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req);
+         handleSQLException(query != null ? query.conn : null, getLogId(null, null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req);
          throw ex;
       }
       finally {
@@ -450,8 +458,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @return boolean false if the node already existed, true otherwise.
     */
    public final boolean addNode(String nodeId) throws SQLException, XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "addNode");
-      if (this.nodesCache.contains(nodeId)) return false;
+      if (this.log.CALL) this.log.call(ME, "addNode '" + nodeId + "'");
+      if (this.nodesCache.contains(nodeId)) {
+         if (this.log.DUMP) {
+            Object[] objs = this.nodesCache.toArray();
+            for (int i=0; i < this.nodesCache.size(); i++) {
+               this.log.dump(ME, "addNode: node '" + (String)objs[i] + "' is in cache");
+            }
+         }
+         return false;
+      }
+      if (this.log.TRACE) this.log.trace(ME, "addNode: the node did not exist in cache. Will add it now");
+
       // add it to cache after the db invocation to be on the safe side ...
 
       String req = "SELECT count(*) from " + this.nodesTableName + " where nodeId='" + nodeId + "'";
@@ -475,13 +493,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ret = true;
          }
 
+// Currently don't add it to the cache since the manager on which wipeOutDB is invoked is another (and clearing of cache is not possible)
+/*
          synchronized (this.nodesCache) {
             if (!this.nodesCache.contains(nodeId)) this.nodesCache.add(nodeId);
          }
+*/
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(null, nodeId, "addNode"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(null, nodeId, "addNode"), ex);
           throw ex;
       }
       finally {
@@ -518,7 +539,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             return true;
          }
          catch (SQLException ex) {
-            handleSQLException(query.conn, getLogId(null, nodeId, "removeNode"), ex);
+            handleSQLException(query != null ? query.conn : null, getLogId(null, nodeId, "removeNode"), ex);
              throw ex;
          }
          finally {
@@ -535,6 +556,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final boolean addQueue(String queueName, String nodeId, long numOfBytes, long numOfEntries) throws SQLException, XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "addQueue");
+      addNode(nodeId); // returns immediately if in cache ...
       String req = "SELECT count(*) from " + this.queuesTableName + " where (queueName='" + queueName + "' AND nodeId='" + nodeId + "')";
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addQueue"), "Request: '" + req + "'");
       PreparedQuery query = null;
@@ -559,7 +581,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return true;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "addQueue"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "addQueue"), ex);
           throw ex;
       }
       finally {
@@ -591,7 +613,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return true;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "removeQueue"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "removeQueue"), ex);
           throw ex;
       }
       finally {
@@ -710,20 +732,31 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          Connection conn = this.pool.getConnection();
          handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
-         this.pool.releaseConnection(conn);
+         if (conn != null) this.pool.releaseConnection(conn);
          throw ex;
       }
    }
 
 
-   public int wipeOutDB() throws XmlBlasterException {
+   /**
+    * wipes out the entire DB, i.e. it deletes the three tables from the DB. IMPORTANT: 
+    * @param doSetupNewTables if set to 'true' it recreates the necessary empty tables.
+    */
+   public int wipeOutDB(boolean doSetupNewTables) throws XmlBlasterException {
       // retrieve all tables to delete
+      if (this.log.CALL)  log.call(ME, "wipeOutDB");
+
+      // reset the cached nodes 
+      this.nodesCache = new java.util.HashSet();
+
+
       PreparedQuery query = null;
       int count = 0;
       Connection conn = null;
       try {
         try {
            String req = "DROP TABLE " + this.entriesTableName;
+            if (log.CALL)  log.call(ME, "wipeOutDB " + req + " will be invoked on the DB");
             conn = this.pool.getConnection();
             conn.setAutoCommit(false);
             this.update(req, conn);
@@ -739,6 +772,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
         try {
             String req = "DROP TABLE " + this.queuesTableName;
+            if (log.CALL)  log.call(ME, "wipeOutDB " + req + " will be invoked on the DB");
             this.update(req, conn);
             count++;
          }
@@ -752,6 +786,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          try {
            String req = "DROP TABLE " + this.nodesTableName;
+            if (log.CALL)  log.call(ME, "wipeOutDB " + req + " will be invoked on the DB");
             this.update(req, conn);
             count++;
          }
@@ -762,7 +797,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.nodesTableName + "', it probably is already dropped");
             }
          }
-         return count;
       }
       catch (Exception ex) {
          if (ex instanceof XmlBlasterException) throw (XmlBlasterException)ex;
@@ -779,6 +813,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, null, "wipeOutDB"), "wipeOutDB: exception when closing the query", ex);
          }
       }
+
+      try {
+         if (doSetupNewTables) setUp();
+      }
+      catch (SQLException ex) {
+         this.log.error(ME, "SQLException occured when cleaning up the table"); 
+      }
+      return count;
    }
 
 
@@ -835,16 +877,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.CALL) this.log.call(ME, "setUp");
 
       try {
-         if (!this.dbInitialized) {
-            if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
-            tablesCheckAndSetup(this.hasAdminPermission);
-            this.dbInitialized = true;
-         }
+//         if (!this.dbInitialized) {
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
+         tablesCheckAndSetup(this.hasAdminPermission);
+         this.dbInitialized = true;
+//         }
       }
       catch (SQLException ex) {
          Connection conn = this.pool.getConnection();
          handleSQLException(conn, getLogId(null, null, "setUp"), ex, "Table name giving Problems");
-         this.pool.releaseConnection(conn);
+         if (conn != null) this.pool.releaseConnection(conn);
          throw ex;
       }
    }
@@ -1032,7 +1074,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          Connection conn = this.pool.getConnection();
          handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex);
-         this.pool.releaseConnection(conn);
+         if (conn != null) this.pool.releaseConnection(conn);
          throw ex;
       }
    }
@@ -1178,7 +1220,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex);
          throw ex;
       }
       finally {
@@ -1224,7 +1266,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          Connection conn = this.pool.getConnection();
          handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex);
-         this.pool.releaseConnection(conn);
+         if (conn != null) this.pool.releaseConnection(conn);
          throw ex;
       }
    }
@@ -1292,7 +1334,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "deleteFirstEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "deleteFirstEntries"), ex);
          throw ex;
       }
       finally {
@@ -1340,7 +1382,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getEntriesByPriority"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesByPriority"), ex);
          throw ex;
       }
       finally {
@@ -1384,7 +1426,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex);
          throw ex;
       }
       finally {
@@ -1421,7 +1463,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1458,7 +1500,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getEntriesWithLimit"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesWithLimit"), ex);
          throw ex;
       }
       finally {
@@ -1506,7 +1548,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1539,7 +1581,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getNumOfEntries"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfEntries"), ex);
          throw ex;
       }
       finally {
@@ -1570,7 +1612,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1602,7 +1644,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(query.conn, getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
+         handleSQLException(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1655,7 +1697,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       try {
-         glob.wipeOutDB(type, version, null);
+         glob.wipeOutDB(type, version, null, false);
       }
       catch (Exception ex) {
          System.err.println("Main" + ex.toString());

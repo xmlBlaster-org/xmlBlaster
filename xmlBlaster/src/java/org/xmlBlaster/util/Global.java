@@ -1554,8 +1554,10 @@ public class Global implements Cloneable
     * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
     * @param properties the properties to use to overwrite the default properties. If you pass null, no 
     *        properties will be overwritten, and the default will be used.
+    * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
+    *        has effect if the JdbcManagerCommonTable is used.
     */
-   public void wipeOutDB(String confType, String confVersion, java.util.Properties properties) 
+   public void wipeOutDB(String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
@@ -1605,7 +1607,7 @@ public class Global implements Cloneable
          pool.registerStorageProblemListener(manager);
          try {
             manager.setUp();
-            manager.wipeOutDB();
+            manager.wipeOutDB(setupNewTables);
          }
          catch (SQLException ex) {
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB", ex);

@@ -57,20 +57,25 @@ public class PreparedQuery {
       }
       catch (XmlBlasterException ex) {
          this.log.trace(ME, "Constructor. Exception: " + ex.getMessage());
-         if (!this.conn.getAutoCommit()) this.conn.rollback();
-         this.conn.setAutoCommit(true);
-
-         if (this.st != null) st.close();
-         if (this.conn != null) this.pool.releaseConnection(this.conn);
+         if (this.conn != null) {
+            if (!this.conn.getAutoCommit()) this.conn.rollback();
+            this.conn.setAutoCommit(true);
+            if (this.st != null) st.close();
+            this.pool.releaseConnection(this.conn);
+            this.conn = null;
+         }
          this.isClosed = true;
          throw ex;
       }
       catch (SQLException ex) {
          this.log.trace(ME, "Constructor. SQLException: " + ex.getMessage());
-         if (!this.conn.getAutoCommit()) this.conn.rollback();
-         this.conn.setAutoCommit(true);
-         if (this.st != null) st.close();
-         if (this.conn != null) this.pool.releaseConnection(this.conn);
+         if (this.conn != null) {
+            if (!this.conn.getAutoCommit()) this.conn.rollback();
+            this.conn.setAutoCommit(true);
+            if (this.st != null) st.close();
+            this.pool.releaseConnection(this.conn);
+            this.conn = null;
+         }
          this.isClosed = true;
          throw ex;
       }
@@ -100,8 +105,6 @@ public class PreparedQuery {
       return this.rs;
 
    }
-
-
 
 
    public PreparedQuery(JdbcConnectionPool pool, String request, LogChannel log, int fetchSize)

@@ -52,7 +52,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          pool.initialize(this.glob, prop);
 
          this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(pluginInfo.getTypeVersion()));
-         this.manager.wipeOutDB();
+         this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
          log.error(me, "exception occured " + ex.toString());
@@ -243,7 +243,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
    public void tearDown() {
       String me = ME + ".tearDown";
       try {
-         this.manager.wipeOutDB();
+         this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
          this.log.error(me, "exception occured " + ex.toString());

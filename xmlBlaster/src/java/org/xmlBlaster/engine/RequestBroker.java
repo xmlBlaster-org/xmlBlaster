@@ -371,7 +371,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          try {
             java.util.Properties prop = new java.util.Properties();
             prop.put("tableNamePrefix", tableNamePrefix);
-            glob.wipeOutDB("JDBC", "1.0", prop);
+            glob.wipeOutDB("JDBC", "1.0", prop, true);
          }
          catch (XmlBlasterException e) {
             log.error(ME, "Wipe out of JDBC database entries failed: " + e.getMessage());
