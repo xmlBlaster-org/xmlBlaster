@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.9 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.10 2002/03/17 07:30:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -16,7 +16,10 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
+import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -46,9 +49,11 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 {
    private final static String ME = "TestCorbaThreads";
 
+   private Global glob;
    private final String loginName = "Manuel";
    private String publishOid = "";
    private CorbaConnection corbaConnection = null;
+   private I_CallbackServer cbServer = null;
    private String corbaContent;
    private int numReceived = 0;
 
@@ -59,9 +64,10 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestCorbaThreads(String testName)
+   public TestCorbaThreads(Global glob, String testName)
    {
        super(testName);
+       this.glob = glob;
    }
 
 
@@ -78,8 +84,12 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       try {
          String passwd = "secret";
 
-         corbaConnection = new CorbaConnection(new String[0]);
-         corbaConnection.login(loginName, passwd, new ConnectQos(), this);
+         cbServer = new CorbaCallbackServer();
+         cbServer.initialize(this.glob, loginName, this);
+
+         corbaConnection = new CorbaConnection(glob);
+         //cbServer = new CorbaCallbackServer(this.glob, loginName, this, corbaConnection.getOrb());
+         corbaConnection.login(loginName, passwd, new ConnectQos());
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -99,6 +109,11 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
          corbaConnection.logout();
          corbaConnection = null;
+         System.gc();
+      }
+      if (cbServer != null) {
+         try { cbServer.shutdownCb(); } catch(Exception e) { Log.error(ME, "shutdownCb(): " + e.toString()); }
+         cbServer = null;
          System.gc();
       }
    }
@@ -156,7 +171,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestCorbaThreads("testThread"));
+       suite.addTest(new TestCorbaThreads(new Global(), "testThread"));
        return suite;
    }
 
@@ -169,12 +184,10 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     */
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      TestCorbaThreads testSub = new TestCorbaThreads("TestCorbaThreads");
+      Global glob = new Global(); // initializes args etc.
+      if (glob.init(args) < 0)  Log.panic(ME, "Bye");
+
+      TestCorbaThreads testSub = new TestCorbaThreads(glob, "TestCorbaThreads");
       testSub.testThread();
       Log.exit(TestCorbaThreads.ME, "Good bye");
    }
