@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.51 2003/02/26 20:50:07 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.52 2003/02/27 07:41:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -232,25 +232,23 @@ public class CorbaDriver implements I_Driver
                      }
                   }
                   catch (org.omg.CosNaming.NamingContextPackage.AlreadyBound ex) {
-                     if (log.TRACE) log.trace(ME, "Can't register CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + ": " + ex.toString());
+                     if (log.TRACE) log.trace(ME, "Can't register CORBA NameService context '" +
+                                    getString(nameXmlBlaster) + "': " + ex.toString());
                      try {
                         org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                         relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
                         break;
                      }
                      catch (Throwable e) {
-                        log.error(ME, "Can't register CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + ", #"+i+"/"+numTries+": " + e.toString());
+                        log.error(ME, "Can't register CORBA NameService context '" +
+                                   getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
                      }
                   }
                }
                if (relativeContext != null) {
                   String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
                   String clusterKind = glob.getProperty().get("NameService.node.kind", "MOM");
-                  nameNode = new NameComponent[1];
-                  nameNode[0] = new NameComponent();
-                  nameNode[0].id = clusterId;
-                  nameNode[0].kind = clusterKind;
-
+                  nameNode = new NameComponent[] { new NameComponent(clusterId, clusterKind) };
                   relativeContext.rebind(nameNode, authRef);
                }
                else {
@@ -259,8 +257,7 @@ public class CorbaDriver implements I_Driver
                }
 
                log.info(ME, "Published AuthServer IOR to NameService '" + System.getProperty("ORBInitRef.NameService") +
-                            "' with name '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
-                                    nameNode[0].id + "." + nameNode[0].kind + "'");
+                            "' with name '" + getString(nameXmlBlaster) + "/" + getString(nameNode) + "'");
             }
             catch (XmlBlasterException e) {
                log.warn(ME + ".NoNameService", e.getMessage());
@@ -323,7 +320,7 @@ public class CorbaDriver implements I_Driver
                relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
             }
             catch (Throwable e) {
-               log.warn(ME, "Can't unregister as resolve CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + " failed: " + e.toString());
+               log.warn(ME, "Can't unregister CORBA NameService context id=" + nameXmlBlaster[0].id + " kind=" + nameXmlBlaster[0].kind + " failed: " + e.toString());
             }
             if (relativeContext != null) {
                relativeContext.unbind(nameNode);
