@@ -283,7 +283,7 @@ void MsgQosFactory::endElement(const string &name)
       return;
    }
 
-   if( name.compare("destination") ) {
+   if( name.compare("destination") == 0) {
       inDestination_ = false;
       StringTrim::trim(character_); // The address or XPath query string
       if (!character_.empty() == 0) {
