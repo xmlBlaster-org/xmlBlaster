@@ -356,8 +356,10 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
                Figure oldFigure = (Figure)this.timestampFigureTable.get(uniqueId);
                add(uniqueId, fig);
                super.replace(oldFigure, fig);
-               FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
-               figureRequestUpdate(ev);
+               if (oldFigure != null) {
+                  FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
+                  figureRequestUpdate(ev);
+               }
                FigureChangeEvent ev1 = new FigureChangeEvent(fig);
                figureRequestUpdate(ev1);
             }
