@@ -4,21 +4,23 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for 0.79 [?, ? 2000]
 ==============================
   - NOTE: You need to use the new xmlBlaster.properties file.
+    Remove your old in your HOME directory and use the
+    new template from xmlBlaster/config as a base.
 
   - NOTE: JDK_HOME is not used anymore, use JAVA_HOME instead.
 
   - build.xml:  Target 'all' collects demo and testuite classes
     into xmlBlaster.jar as well.
 
-  - NEW: Installation and ready to go in 30 seconds!
+  - NEW: Easy installation: Ready to go in 30 seconds!
     Added customized MANIFEST to xmlBlaster.jar, allowing
     to start xmlBlaster without any CLASSPATH setting:
-		java -jar lib/xmlBlaster.jar
-	 See INSTALL file.
+       java -jar lib/xmlBlaster.jar
+    See INSTALL file.
 
   - RMI driver looks for xmlBlaster.polcy now in CLASSPATH as well, e.g.
        export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
-	 whith $XMLBLASTER_HOME/config/xmlBlaster.policy
+    whith $XMLBLASTER_HOME/config/xmlBlaster.policy
 
   - Migrated to Ant 1.1
 
@@ -28,10 +30,12 @@ Changes for 0.79 [?, ? 2000]
       Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
 
   - Changed logging to use jutils Log classes
+    NOTE: you need to change in your code:
+       import org.jutils.log.Log;
+    to
+       import org.xmlBlaster.util.Log;
 
   - Michele completed xml-rpc support
-
-  - Using now JAVA_HOME instead of JDK_HOME
 
   - Moved xmlBlaster.properties.template to config directory
 
