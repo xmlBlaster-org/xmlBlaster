@@ -143,7 +143,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended implements 
     * and instantiate a callback server as specified in ConnectQos
     */
    private void createDefaultCbServer() throws XmlBlasterException {
-      CbQueueProperty prop = connectQos.getCbQueueProperty(); // Creates a default property for us if none is available
+      CbQueueProperty prop = connectQos.getSessionCbQueueProperty(); // Creates a default property for us if none is available
       CallbackAddress addr = prop.getCurrentCallbackAddress(); // may return null
       if (addr == null)
          addr = new CallbackAddress(glob);
