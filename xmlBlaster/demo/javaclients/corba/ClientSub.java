@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.3 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.4 2000/10/13 07:48:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -51,15 +51,19 @@ public class ClientSub implements I_Callback
    public ClientSub(String args[])
    {
       // Initialize command line argument handling (this is optional)
+      boolean showUsage = false;
       try {
-         XmlBlasterProperty.init(args);
+         showUsage = XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
+         showUsage = true;
+         Log.error(ME, e.toString());
+      }
+      if (showUsage) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [ClientSub].");
          CorbaConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.corba.ClientXml -name Jeff\n");
-         Log.panic(ME, e.toString());
+         Log.exit(ME, "Example: jaco javaclients.corba.ClientSub -name Jeff\n");
       }
 
       try {
