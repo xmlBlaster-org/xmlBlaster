@@ -55,7 +55,7 @@ struct PropertiesStruct {
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeProperties().
  */
-extern Properties *createProperties(int argc, char** argv);
+extern Properties *createProperties(int argc, const char* const* argv);
 
 /**
  * Free your instance after accessing xmlBlaster. 

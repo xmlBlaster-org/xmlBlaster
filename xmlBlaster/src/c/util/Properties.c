@@ -26,7 +26,7 @@ static long getLong(Properties *props, const char *key, long defaultValue);
  *             name of the process, argv[1] should start with '-' and 
  *             argv[2] is the value of the argv[1] key ...
  */
-Properties *createProperties(int argc, char** argv) {
+Properties *createProperties(int argc, const char* const* argv) {
    int iarg;
    Properties *props = (Properties *)calloc(1, sizeof(Properties));
    props->argc = 0;
@@ -43,11 +43,11 @@ Properties *createProperties(int argc, char** argv) {
       props->argv = (char **)calloc(props->argc, sizeof(char *));
       for (iarg=1; iarg < argc; iarg++) {
          if (argv[iarg] == 0 || strlen(argv[iarg]) == 0)
-            props->argv[iarg-1] = argv[iarg];
+            props->argv[iarg-1] = (char *)argv[iarg];
          else if ((iarg % 2) == 1 && *argv[iarg] == '-')
-            props->argv[iarg-1] = argv[iarg]+1;
+            props->argv[iarg-1] = (char *)argv[iarg]+1;
          else
-            props->argv[iarg-1] = argv[iarg];
+            props->argv[iarg-1] = (char *)argv[iarg];
       }
    }
    /*
