@@ -1,5 +1,0 @@
-Questions:
-
-1. Is the callback queue attached to a session or client ?
-  a) pup/sub: is logged in     : queue attached to the session
-  b) pub/sub: is not logged in : 
