@@ -14,12 +14,56 @@ Comment:   Interface (virtual class)
 #ifndef _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 #define _CLIENT_PROTOCOL_I_XMLBLASTERCONNECTION_H
 
+#include <string>
+#include <vector>
 #include <util/xmlBlasterDef.h>
 #include <util/MessageUnit.h>
 #include <util/qos/ConnectQos.h>
-#include <string>
-#include <vector>
-#include <client/xmlBlasterClient.h>
+#include <util/qos/DisconnectQos.h> 
+#include <client/qos/EraseQos.h>
+#include <client/qos/EraseReturnQos.h>
+#include <client/qos/GetQos.h>
+#include <client/qos/GetReturnQos.h>
+#include <client/qos/PublishQos.h>
+#include <client/qos/PublishReturnQos.h>
+#include <client/qos/SubscribeQos.h>
+#include <client/qos/SubscribeReturnQos.h>
+#include <client/qos/UnSubscribeQos.h>
+#include <client/qos/UnSubscribeReturnQos.h>
+#include <client/key/EraseKey.h>
+#include <client/key/GetKey.h>
+#include <client/key/GetReturnKey.h>
+#include <client/key/PublishKey.h>
+#include <client/key/SubscribeKey.h>
+#include <client/key/UnSubscribeKey.h>
+
+/* Would be nicer to declare only instead of including them all:
+namespace org { namespace xmlBlaster { namespace util {
+   class MessageUnit;
+}}}
+
+namespace org { namespace xmlBlaster { namespace client { namespace qos {
+   class EraseQos;
+   class EraseReturnQos;
+   class GetQos;
+   class GetReturnQos;
+   class PublishQos;
+   class PublishReturnQos;
+   class SubscribeQos;
+   class SubscribeReturnQos;
+   class UnSubscribeQos;
+   class UnSubscribeReturnQos;  // is a typedef -> would all compilers eat it?
+}}}}
+
+namespace org { namespace xmlBlaster { namespace client { namespace key {
+   class EraseKey;
+   class GetKey;
+   class GetReturnKey;
+   class PublishKey;
+   class SubscribeKey;
+   class UnSubscribeKey;
+}}}}
+*/
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
@@ -38,7 +82,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
       virtual org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos) = 0;
 
       /**
-       * org::xmlBlaster::util::Logout from xmlBlaster.
+       * Logout from xmlBlaster.
        * @param qos The QoS or null
        */
       virtual bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos) = 0;
