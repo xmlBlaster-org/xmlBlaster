@@ -1,6 +1,6 @@
-This is an example to access xmlBlaster from a C++ client
+These are examples on how to access xmlBlaster from a C++ client
 
-- client.cc uses the MICO (C++) CORBA library
+- clientBOA.cc and clientPOA.cc use the MICO (C++) CORBA library
 
 - xmlBlaster runs with JacORB (Java)
 
@@ -10,9 +10,16 @@ This is an example to access xmlBlaster from a C++ client
    export MICO_HOME=/usr/local/mico
 
 
-2) Compile the client with
+2) Compile the clients with
 
    make all
+
+
+
+To run the clients:
+
+
+Using BOA (clientBOA.cc):
 
 
 3) Start the xmlBlaster server
@@ -22,4 +29,22 @@ This is an example to access xmlBlaster from a C++ client
 
 4) And connect with the C++ client
 
-	 ./client `cat /tmp/NS_Ref`
+	 ./clientBOA `cat /tmp/NS_Ref`
+
+
+Using POA (clientPOA.cc):
+
+
+3) Start the xmlBlaster server 
+
+	jaco org.xmlBlaster.Main
+
+
+4) And connect with the C++ client
+
+	./clientPOA -ORBNamingIOR `cat /tmp/ior.dat`
+
+
+NOTE: change /tmp/ior.dat with the name of the file containing the IOR for the
+naming service (which you must have started before xmlBlaster).
+

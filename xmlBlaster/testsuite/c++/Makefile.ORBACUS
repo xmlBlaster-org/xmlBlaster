@@ -1,0 +1,38 @@
+#
+
+CFLAGS   = -I. -I$(ORBACUS_HOME)/include -I$(JTC_HOME)/include -DWITH_ORBACUS 
+DEB      = -g
+LIBS_ORB = -L$(ORBACUS_HOME)/lib -lOB -lCosNaming -L$(JTC_HOME)/lib -lJTC -lpthread
+LIBS     = $(LIBS_ORB) -lstdc++
+
+NAME1    = clientPOA
+OBJS1	 = $(NAME1).o xmlBlaster.o xmlBlaster_skel.o
+
+CC       = gcc
+IDL      = $(ORBACUS_HOME)/bin/idl
+RM       = rm
+
+#
+.SUFFIXES: .cpp
+#
+
+.c.o:
+	$(CC) $(CFLAGS) $(DEB) -c $<
+.cc.o:
+	$(CC) $(CFLAGS) $(DEB) -c $<
+.cpp.o:
+	$(CC) $(CFLAGS) $(DEB) -c $<
+
+
+all: xmlBlaster.cpp $(NAME1)
+
+$(NAME1): $(OBJS1)
+	$(CC) $(DEB) -o$(NAME1) $(CFLAGS) $(OBJS1) $(LIBS) 
+
+clean: 
+	$(RM) xmlBlaster*.h xmlBlaster*.c* *.o $(NAME1) wrap? wrap?.c
+
+xmlBlaster.h xmlBlaster.cpp xmlBlaster_skel.h xmlBlaster_skel.cpp: $(XMLBLASTER_HOME)/src/idl/xmlBlaster.idl
+	$(IDL) $(XMLBLASTER_HOME)/src/idl/xmlBlaster.idl
+
+
