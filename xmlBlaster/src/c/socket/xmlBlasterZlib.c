@@ -204,12 +204,13 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
       if (zlibReadBufP->debug) printf("[%s:%d] Entering readnCompressed ...\n", __FILE__, __LINE__);
 
       /* Initialize zlib buffer pointers */
+      zlibP->next_out = (Bytef*)ptr;
+      zlibP->avail_out = nbytes;
+
       if (zlibReadBufP->currCompBytes == 0)
          zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
       zlibP->next_in  = zlibReadBufP->currCompBufferP;
       zlibP->avail_in = zlibReadBufP->currCompBytes;
-      zlibP->next_out = (Bytef*)ptr;
-      zlibP->avail_out = nbytes;
 
       if (zlibReadBufP->debug) dumpZlib("readn(): Before do", zlibReadBufP, 0);
 
