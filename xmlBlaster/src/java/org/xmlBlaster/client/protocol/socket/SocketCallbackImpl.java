@@ -88,8 +88,18 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          
          this.sockCon.registerCbReceiver(this);
 
+         java.net.Socket sock = null;
          try {
-            super.initialize(this.sockCon.getGlobal(), this.sockCon.getSocket(), null);
+            sock = this.sockCon.getSocket();
+         }
+         catch (XmlBlasterException e) {
+            log.trace(ME, "There is no client socket connection which i could use: " + e.getMessage());
+            return ;
+         }
+
+
+         try {
+            super.initialize(this.sockCon.getGlobal(), sock, null);
          }
          catch (IOException e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Creation of SOCKET callback handler failed", e);
@@ -133,7 +143,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public void run()
    {
-      log.info(ME, "Started callback receiver");
+      log.info(ME, "Started callback receiver plugin on '" + this.callbackAddressStr + "'");
       boolean multiThreaded = glob.getProperty().get("socket.cb.multiThreaded", true);
 
       while(running) {
@@ -156,11 +166,16 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             }
          }
          catch(XmlBlasterException e) {
-            log.error(ME, e.toString());
+            log.warn(ME, e.toString());
          }
          catch(Throwable e) {
             if (running == true) {
-               log.error(ME, "Closing connection to server: " + e.toString());
+               if (e instanceof IOException) {
+                  log.warn(ME, "Closing connection to server: " + e.toString());
+               }
+               else {
+                  log.error(ME, "Closing connection to server: " + e.toString());
+               }
                try {
                   sockCon.shutdown();
                }

@@ -133,6 +133,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       if (this.sock == null) {
          if (log.TRACE) log.trace(ME, "No socket connection available.");
+         //Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "No plain SOCKET connection available.");
       }
@@ -200,15 +201,15 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
          if (localPort > -1) {
             this.sock = new Socket(inetAddr, port, localInetAddr, localPort);
-            log.info(ME, "Created socket client connected to " + hostname + " on port " + port);
-            log.info(ME, "Local parameters are " + localHostname + " on port " + localPort);
+            log.info(ME, "Created SOCKET client connected to '" + hostname + "' on port " + port +
+                         ", your configured local parameters are '" + localHostname + "' on port " + localPort);
          }
          else {
             if (log.TRACE) log.trace(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
             this.sock = new Socket(inetAddr, port);
             this.localPort = this.sock.getLocalPort();
             this.localHostname = this.sock.getLocalAddress().getHostAddress();
-            log.info(ME, "Created socket client connected to " + hostname + " on port " + port + ", callback address is " + getLocalAddress());
+            log.info(ME, "Created SOCKET client connected to '" + hostname + "' on port " + port + ", callback address is " + getLocalAddress());
          }
          oStream = this.sock.getOutputStream();
          iStream = this.sock.getInputStream();
@@ -240,7 +241,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
 
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin and connect to xmlBlaster server");
+      if (log.TRACE) log.trace(ME, "Created '" + getProtocol() + "' protocol plugin and connect to xmlBlaster server");
    }
 
 
@@ -265,8 +266,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public String getLocalAddress() {
       if (this.sock == null) {
-         log.error(ME, "Can't determine client address, no socket connection available");
-         Thread.currentThread().dumpStack();
+         // Happens if on client startup an xmlBlaster server is not available
+         if (log.TRACE) log.trace(ME, "Can't determine client address, no socket connection available");
          return null;
       }
       return "" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort();
@@ -304,7 +305,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          //      "Sorry, SOCKET callback handler is not available but is necessary if client connection is of type 'SOCKET', please do not mix 'SOCKET' with other protocols in the same client connection.");
          log.info(ME, "Creating default callback server type=" + getType());
          I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
-         server.initialize(this.glob, getLoginName(), null);
+         server.initialize(this.glob, getLoginName(), this.cbClient);
          // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
       }
 
@@ -410,6 +411,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    final void registerCbReceiver(SocketCallbackImpl cbReceiver) {
       this.cbReceiver = cbReceiver;
+      if (this.cbReceiver != null) {
+         this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
+      }
    }
 
    /**
