@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.cpp.orbix' type='NEW' prio='LOW' status="CLOSED">
+   <topic>C++ clients can access xmlBlaster with the ORBIX Corba library</topic>
+
+   <description>
+     <p>
+     There is support for ORBIX to access xmlBlaster from CORBA clients.
+     </p>
+     <p>
+     Support was developed against ORBIX ASP 5.1. Other ORBIX versions
+     should work as well. Make sure to follow the ORBIX installation instructions.
+     </p>
+   </description>
+
+   <configuration where="client">
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+      <p>
+         To compile you can use the xmlBlaster/build.xml file.
+      </p>
+      <p>
+         Please take a copy from xmlBlaster/build.properties into
+         your home directory (it has precedence there) and adjust
+         the path settings to find CORBA and the XML parser. Example:
+      </p>
+      <pre>
+#------------------------------------------------------------------------------
+# C++ SunOS 5.8 sparc example with Orbix ASP 5.1 and xerces 1.6 with OMNITHREAD
+# compiled with CC: Forte Developer 7 C++ 5.4 2002/03/09
+use-CC        = 1
+XMLCPP_HOME   = /opt/xerces-c1_6_0-SolForCC
+XMLCPP_VER    = 1_6_0
+CORBACPP_HOME = /opt/iona
+corba.product = ORBIX
+CORBACPP_VER  = asp/5.1
+thread.impl   = OMNITHREAD
+CXX           =
+#------------------------------------------------------------------------------
+      </pre>
+      <p>
+         Compile it with ant:
+      </p>
+      <pre>
+cd xmlBlaster
+build.sh -verbose cpp
+
+This creates:
+   xmlBlaster/lib/libmlBlasterClient.so
+and some test clients in
+   xmlBlaster/demo/c++/bin
+   xmlBlaster/testsuite/src/c++/bin
+      </pre>
+     <p>
+     After compilation please set the environment that the C++ test clients
+     can find the shared libraries.
+     <br />
+     Windows you should add all directories containing dll libraries to you path setting.
+     <br />
+     On Solaris you should add the shared libraries to your LD_LIBRARY path and
+     set the ORBIX specific environment settings:
+     </p>
+     <pre>
+# Example for sh, ksh or bash on UNIX
+cd /opt/xmlBlaster/demo/c++/bin
+. /opt/iona/etc/bin/XXX_env
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/xmlBlaster/lib:/opt/xerces-c1_6_0/lib
+
+# Start xmlBlaster server somewhere and try a C++ client:
+HelloWorld2
+     </pre>
+   </configuration>
+
+   <todo type='HTML'>
+      <p>
+      Testsuite is missing.
+      </p>
+   </todo>
+
+   <see type="INTERNET">http://www.iona.com</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.compile</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+
+   <date>2003 03 03</date>
+
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
