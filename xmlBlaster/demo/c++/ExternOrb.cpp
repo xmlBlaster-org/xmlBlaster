@@ -27,11 +27,11 @@
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::protocol::corba;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
-using namespace org::xmlBlaster;
 
 namespace org { namespace xmlBlaster { namespace demo {
 
