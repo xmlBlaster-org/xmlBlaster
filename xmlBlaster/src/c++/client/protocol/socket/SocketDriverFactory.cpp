@@ -49,12 +49,12 @@ SocketDriverFactory::SocketDriverFactory(const SocketDriverFactory& factory)
   mutex_(),
   getterMutex_()
 {
-   throw new util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
+   throw util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
 }
 
 SocketDriverFactory& SocketDriverFactory::operator =(const SocketDriverFactory&)
 {
-   throw new util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private assignement operator");
+   throw util::XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private assignement operator");
 }
 
 SocketDriverFactory::~SocketDriverFactory()
@@ -77,7 +77,7 @@ SocketDriverFactory& SocketDriverFactory::getFactory(Global& global)
    if(factory_ == NULL)
    {
      factory_ = new SocketDriverFactory(global);
-     org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object(factory_);  // if not pre-allocated.
+     org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object("XB_SocketDriverFactory", factory_);  // if not pre-allocated.
    }
    return *factory_;
 }

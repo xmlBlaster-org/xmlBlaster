@@ -17,6 +17,7 @@ Comment:   The client driver for the socket protocol
 #include <util/XmlBlasterException.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
+#include <util/key/MsgKeyFactory.h>
 /* Don't include this in this header to avoid dependency: */
 //#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
 
@@ -39,12 +40,15 @@ namespace org {
       org::xmlBlaster::util::thread::Mutex& mutex_;
       std::string instanceName_;
       struct ::XmlBlasterAccessUnparsed* connection_;
-      const std::string ME;
+      std::string ME;
       org::xmlBlaster::util::Global& global_;
       org::xmlBlaster::util::Log& log_;
       org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
       std::string secretSessionId_;
       std::string loginName_;
+      org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
+      org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
+      I_Callback* callbackClient_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -74,13 +78,18 @@ namespace org {
       void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client);
       std::string getCbProtocol();
       std::string getCbAddress();
+      /**
+       * @return 0 if the client has not registered its update()
+       */
+      I_Callback* getCallbackClient();
       bool shutdownCb();
 
       //bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       //               ::XmlBlasterException *exception);
 
       // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
-      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos)
+            throw (org::xmlBlaster::util::XmlBlasterException);
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();
       bool shutdown();
@@ -100,16 +109,20 @@ namespace org {
 
       void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
-      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
+      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
       std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
-
+      const std::string& me() { return ME; }
+      org::xmlBlaster::util::Global& getGlobal() { return global_; }
+      org::xmlBlaster::util::Log& getLog() { return log_; }
+      org::xmlBlaster::util::key::MsgKeyFactory& getMsgKeyFactory() { return msgKeyFactory_; }
+      org::xmlBlaster::util::qos::MsgQosFactory& getMsgQosFactory() { return msgQosFactory_; }
 
       // following methods are not defined in any parent class
       static std::string usage();
       // Exception conversion ....
-      static org::xmlBlaster::util::XmlBlasterException
+      org::xmlBlaster::util::XmlBlasterException
         convertFromSocketException(const struct ::XmlBlasterException & ex);
       static struct ::XmlBlasterException
         convertToSocketException(org::xmlBlaster::util::XmlBlasterException& ex);
