@@ -2,6 +2,9 @@
 
 Changes for 0.74 [Feb.??, 2000]
 ==============================
+   - Added a guide line for xmlBLaster core developer, see
+	  xmlBlaster/doc/developer-guidelines.html
+
    - Set up xmlBLaster to use Ant as it's build system
 
    - Added the revolutionary XML based JDBC database gateway.
