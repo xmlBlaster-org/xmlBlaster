@@ -243,9 +243,10 @@ static char *all_tests()
 
 int main(int argc_, char **argv_)
 {
+   char *result = all_tests();
    argc = argc_;
    argv = argv_;
-   char *result = all_tests();
+
    if (result != 0) {
       printf("%s\n", result);
    }
