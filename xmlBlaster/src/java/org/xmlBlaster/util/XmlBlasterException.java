@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.12 2002/12/20 15:29:53 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.13 2002/12/25 18:27:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -388,17 +388,17 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<exception errorCode='").append(getErrorCodeStr()).append("'>\n");
-      sb.append(offset).append(" <class>").append(getClass().getName()).append("</class>\n");
-      sb.append(offset).append(" <node>").append(getNode()).append("</node>\n");
-      sb.append(offset).append(" <location>").append(getLocation()).append("</location>\n");
-      sb.append(offset).append(" <lang>").append(getLang()).append("</lang>\n");
-      sb.append(offset).append(" <message><![CDATA[").append(getRawMessage()).append("]]></message>\n");
-      sb.append(offset).append(" <versionInfo>").append(getVersionInfo()).append("</versionInfo>\n");
-      sb.append(offset).append(" <timestamp>").append(getTimestamp().toString()).append("</timestamp>\n");
-      sb.append(offset).append(" <stackTrace><![CDATA[").append(getStackTraceStr()).append("]]></stackTrace>\n");
-      sb.append(offset).append(" <embeddedMessage><![CDATA[").append(getEmbeddedMessage()).append("]]></embeddedMessage>\n");
-      //sb.append(offset).append(" <transactionInfo><![CDATA[").append(getTransactionInfo()).append("]]></transactionInfo>\n");
+      sb.append(offset).append("<exception errorCode='").append(getErrorCodeStr()).append("'>");
+      sb.append(offset).append(" <class>").append(getClass().getName()).append("</class>");
+      sb.append(offset).append(" <node>").append(getNode()).append("</node>");
+      sb.append(offset).append(" <location>").append(getLocation()).append("</location>");
+      sb.append(offset).append(" <lang>").append(getLang()).append("</lang>");
+      sb.append(offset).append(" <message><![CDATA[").append(getRawMessage()).append("]]></message>");
+      sb.append(offset).append(" <versionInfo>").append(getVersionInfo()).append("</versionInfo>");
+      sb.append(offset).append(" <timestamp>").append(getTimestamp().toString()).append("</timestamp>");
+      sb.append(offset).append(" <stackTrace><![CDATA[").append(getStackTraceStr()).append("]]></stackTrace>");
+      sb.append(offset).append(" <embeddedMessage><![CDATA[").append(getEmbeddedMessage()).append("]]></embeddedMessage>");
+      //sb.append(offset).append(" <transactionInfo><![CDATA[").append(getTransactionInfo()).append("]]></transactionInfo>");
       sb.append(offset).append("</exception>");
       return sb.toString();
    }
