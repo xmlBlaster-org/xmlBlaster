@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.24 2002/03/20 13:26:21 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.25 2002/03/22 09:47:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -45,7 +45,6 @@ public class LoadTestSub extends TestCase implements I_Callback
    private String publishOid = "LoadTestSub";
    private XmlBlasterConnection senderConnection;
    private String senderName;
-   private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
    private String passwd;
 
@@ -56,7 +55,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
    private int lastContentNumber = -1;
-   private final String someContent = "Yeahh, i'm the new content number ";
+   private final String someContent = "Yeahh, i'm the new content, my total length is big an bigger but still i want to be longer and longer until i have reached some 180 bytes, here is remaining blahh to fill the last";
 
    /**
     * Constructs the LoadTestSub object.
@@ -89,7 +88,11 @@ public class LoadTestSub extends TestCase implements I_Callback
       try {
          senderConnection = new XmlBlasterConnection(glob);
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
-         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " burstMode.collectTime=" + XmlBlasterProperty.get("burstMode.collectTime", 0L));
+         if (burstModePublish > numPublish)
+            burstModePublish = numPublish;
+         if ((numPublish % burstModePublish) != 0)
+            Log.error(ME, "numPublish should by dividable by publish.burstMode");
+         Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " cb.burstMode.collectTime=" + XmlBlasterProperty.get("cb.burstMode.collectTime", 0L));
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -171,11 +174,10 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "      </LoadTestSub-DRIVER>"+
                       "   </LoadTestSub-AGENT>" +
                       "</key>";
-      senderContent = "Yeahh, i'm the new content";
       MessageUnit[] arr = new MessageUnit[burstModePublish];
       String[] publishOids;
       for (int kk=0; kk<burstModePublish; kk++)
-         arr[kk] = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
+         arr[kk] = new MessageUnit(xmlKey, someContent.getBytes(), "<qos></qos>");
       stopWatch = new StopWatch();
       try {
          for (int ii=0; ii<numPublish; ) {
@@ -189,7 +191,7 @@ public class LoadTestSub extends TestCase implements I_Callback
                publishOids = senderConnection.publishArr(arr);
             /*
             if (((ii+1) % 1) == 0)
-               Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
+               Log.info(ME, "Success: Publishing done: '" + someContent + "'");
             */
          }
          long avg = 0;
@@ -231,8 +233,10 @@ public class LoadTestSub extends TestCase implements I_Callback
 
       numReceived++;
       if ((numReceived % 1000) == 0) {
-         long avg = numReceived / (stopWatch.elapsed()/1000L);
-         Log.info(ME, "Success: Update #" + numReceived + " received: '" + new String(content) + "', average messages/second = " + avg);
+         long avg = (long)((double)numReceived / (double)(stopWatch.elapsed()/1000.));
+         String contentStr = new String(content);
+         String tok = "... " + contentStr.substring(contentStr.length() - 10);
+         Log.info(ME, "Success: Update #" + numReceived + " received: '" + tok + "', average messages/second = " + avg);
       }
       messageArrived = true;
       String currentContent = new String(content);
@@ -318,7 +322,8 @@ public class LoadTestSub extends TestCase implements I_Callback
       int ret = glob.init(args);
       if (ret != 0) {
          usage();
-         Log.exit(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
+         Log.exit(ME, "Oneway Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -publish.oneway true -client.publishOneway.collectTime 500 -cb.oneway true -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
+         Log.exit(ME, "Syn    Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
       }
 
       int numPublish = XmlBlasterProperty.get("numPublish", 5000);
