@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.21 2002/06/27 11:10:38 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.22 2002/07/21 13:11:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -14,6 +14,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -166,17 +167,14 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    {
       if (property != null) {
          if (property.onFailureDeadLetter()) {
-            if (msg == null) {
+            if (msg == null)
                msg = takeMsgs();
-               glob.getRequestBroker().deadLetter(msg);
-               checkForVolatileErase(msg);
-            }
-            else
-               glob.getRequestBroker().deadLetter(msg);
+            glob.getRequestBroker().deadLetter(msg);
+            checkForVolatileErase(msg);
             return true;
          }
          else {
-            log.error(ME, "PANIC: Only onFailure='deadLetter' is implemented, " + msg.length + " messages are lost.");
+            log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADLETTER + "' is implemented, " + msg.length + " messages are lost.");
             return false;
          }
       }
@@ -399,12 +397,13 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
                   else
                      log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
                }
-               else if (property.onOverflowDeadLetter()) { // not tested yet!!!
-                  glob.getRequestBroker().deadLetter(msg);
-                  return;
-               }
                else {
-                  log.error(ME, "PANIC: onOverflow='" + property.getOnOverflow() + "' is not implemented, messages are lost.");
+                  boolean handled = handleFailure(msg);
+                  if (!handled) {
+                     Thread.currentThread().dumpStack();
+                     log.error(ME, "PANIC: onOverflow='" + property.getOnOverflow() + "' is not implemented, messages are lost.");
+                  }
+                  return;
                }
             }
             for (int ii=0; ii<msg.length; ii++) {
@@ -507,6 +506,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             disconnectSession(deadCon);
          }
          catch (XmlBlasterException e) {
+            Thread.currentThread().dumpStack();
             log.error(ME, "Internal error - is not addressed: " + e.toString());
          }
       }
