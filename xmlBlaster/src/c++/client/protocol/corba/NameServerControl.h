@@ -159,12 +159,6 @@ namespace client { namespace protocol { namespace corba {
             }
             catch (const CORBA::Exception & ex) {
                string msg="Corba Exception " + to_string(ex);
-#ifdef XMLBLASTER_ORBACUS // FUTURE_CHECK
-               msg = ex._name();
-               msg += ex._rep_id();
-               cerr << msg << endl;
-//             throw NSControlException(20, msg);
-#endif
                string txt = me() + ".NameServerControl()";
                throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
                       msg.c_str(), "", "", "", "", "", "");
