@@ -240,6 +240,7 @@ public abstract class AddressBase
       else {
          this.pluginInfoParameters = parameters;
       }
+      initialize();
    }
 
    public String getEnvPrefix() {
