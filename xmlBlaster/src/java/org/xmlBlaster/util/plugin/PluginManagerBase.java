@@ -28,7 +28,7 @@ import java.net.URL;
  * </pre>
  * @author W. Kleinertz (wkl) H. Goetzger
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 abstract public class PluginManagerBase implements I_PluginManager{
 
@@ -214,7 +214,8 @@ abstract public class PluginManagerBase implements I_PluginManager{
          try {
             plugin.init(glob, pluginInfo);
             postInstantiate(plugin, pluginInfo);
-            log.info(ME, "Plugin '" + pluginName + "' successfully initialized.");
+            if (log.TRACE) log.trace(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
+            //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
          } catch (XmlBlasterException e) {
             //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
             throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
