@@ -140,6 +140,13 @@ If you want to compile with the Make utility:
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/gun-regexp-1.0.8.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
+     # EJB/J2EE connector support (only with JDK1.3 because of javax.naming):
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jaas.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jms.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
+
     You can do this automatically from your startup shell script.
     After a new login you are ready to start the xmlBlaster (see below).
 

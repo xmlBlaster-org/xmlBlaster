@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.78 $
+# $Revision: 1.79 $
 #-----------------------------------------------------------
 
 
@@ -88,6 +88,14 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
+
+   # EJB connector (J2EE) support:
+   CLASSPATH=${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jaas.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jms.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
+
    if [ ${USE_ANT:=""} = "true" ] ; then
       ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
       CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
