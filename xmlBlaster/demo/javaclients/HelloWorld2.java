@@ -32,7 +32,7 @@ public class HelloWorld2 implements I_Callback
          // A similar subscription with XPATH:
          //con.subscribe("<key oid='' queryType='XPATH'>//key[@oid='HelloWorld2']</key>", "<qos/>");
 
-         con.publish(new MsgUnit("<key oid='HelloWorld2'/>", "Hi".getBytes(),
+         con.publish(new MsgUnit(glob, "<key oid='HelloWorld2'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
          try {

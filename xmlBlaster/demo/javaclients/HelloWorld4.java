@@ -54,12 +54,12 @@ public class HelloWorld4
                
                public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
                   connected = true;
-                  conRetQos = con.getConnectReturnQos();
+                  conRetQos = connectionHandler.getConnectReturnQos();
                   log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   try {
-                     con.flushQueue();    // send all tailback messages
-                     // con.resetQueue(); // or discard them (it is our choice)
+                     connectionHandler.flushQueue();    // send all tailback messages
+                     // connectionHandler.getQueue().clear(); // or discard them (it is our choice)
                   } catch (XmlBlasterException e) {
                      log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                   }
@@ -155,7 +155,7 @@ public class HelloWorld4
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (con != null) {
+         if (con != null && con.isConnected()) {
             try {
                EraseQos eq = new EraseQos(glob);
 

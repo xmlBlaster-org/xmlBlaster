@@ -168,7 +168,7 @@ public class HelloWorld6
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (con != null) {
+         if (con != null && con.isConnected()) {
             try {
                EraseQos eq = new EraseQos(glob);
 

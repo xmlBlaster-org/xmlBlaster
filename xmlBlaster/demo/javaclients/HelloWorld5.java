@@ -112,8 +112,8 @@ public class HelloWorld5
          log.info(ME, "Success, hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          
-         if (sender != null) { sender.disconnect(new DisconnectQos(sender.getGlobal())); }
-         if (receiver != null) { receiver.disconnect(new DisconnectQos(receiver.getGlobal())); }
+         if (sender != null && sender.isConnected()) { sender.disconnect(new DisconnectQos(sender.getGlobal())); }
+         if (receiver != null && receiver.isConnected()) { receiver.disconnect(new DisconnectQos(receiver.getGlobal())); }
       }
    }
 
