@@ -53,13 +53,11 @@
             joe
          </sender>
 
-         <expires>        <!-- Expires after given milliseconds, clients will get a notify about expiration -->
-            12000         <!-- Default is no expiration (similar to pass 0 milliseconds) -->
-         </expires>
-
-         <erase>          <!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
-            24000         <!-- Default is no erasing (similar to pass 0 milliseconds) -->
-         </erase>
+         <expiration timeToLive='12000' />  <!-- Expires after given milliseconds (message is erased), clients will get a notify about expiration
+                                            This value is calculated relative to the rcvTimestamp in the xmlBlaster server -->
+                          <!-- Default is no expiration (similar to pass 0 milliseconds) -->
+                          <!-- A second attribute timestamp='' may be added in a future version,
+                               allowing to pass absolute UTC millis since 1970 instead of the relative timeToLive -->
 
          <isVolatile>false</isVolatile> 
                           <!-- A non-volatile messages stays in memory as long as the server runs or until it is erased explicitly -->
@@ -137,6 +135,11 @@
          <subscriptionId> <!-- The same id which you got returned from your previous subscribe() call -->
             Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
          </subscriptionId>
+         <rcvTimestamp millis='1007764305862' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call, nanos currently not supported -->
+            2001-12-07 23:31:45.862 <!-- The millis from above human readable -->
+         </rcvTimestamp>
+         <queue index='0' of='1'> <!-- If queued messages are flushed on login -->
+         </queue>
       </qos>
    </update>
 
