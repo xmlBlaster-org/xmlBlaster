@@ -134,7 +134,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     * @param args Your command line arguments
     */
    public XmlBlasterAccess(String[] args) {
-      super(new Global(args));
+      super(new Global(args, true, false));
       //if (glob.wantsHelp()) {
       //   usage();
       //}
