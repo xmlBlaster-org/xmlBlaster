@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.17 2000/02/01 12:08:06 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.18 2000/02/01 12:48:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -12,6 +12,7 @@ import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
@@ -42,6 +43,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private Button exitButton;
    private Button hideButton;
    private Button clearLogButton;
+   private Button dumpButton;
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
@@ -94,7 +96,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    public MainGUI()
    {
       setTitle("XmlBlaster Control Panel");
-      
+
       init();
 
       // Poll xmlBlaster internal states
@@ -296,6 +298,30 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.gridx=4; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
       gbc.weightx = gbc.weighty = 0.0;
       add(clearLogButton, gbc);
+
+
+      // Dump internal state - Button
+      dumpButton = new Button("Dump State");
+      class DumpListener implements ActionListener {
+         public void actionPerformed(ActionEvent e) {
+            // logOutput.setText("");  // clear log window
+            try {
+               Log.info(ME, "Dump start");
+               Authenticate auth = Authenticate.getInstance();
+               StringBuffer buf = auth.printOn();
+               buf.append(RequestBroker.getInstance(auth).printOn().toString());
+               log(buf.toString());
+               Log.info(ME, "Dump end");
+            }
+            catch(XmlBlasterException ee) {
+               Log.error(ME, "Sorry, dump failed: " + ee.reason);
+            }
+         }
+      }
+      dumpButton.addActionListener(new DumpListener());
+      gbc.gridx=5; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
+      gbc.weightx = gbc.weighty = 0.0;
+      add(dumpButton, gbc);
 
 
       // TextArea for log outputs
