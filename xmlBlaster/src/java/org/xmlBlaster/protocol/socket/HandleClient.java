@@ -208,7 +208,7 @@ public class HandleClient extends Executor implements Runnable
                      ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
                      Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
-                     this.ME += "-" + this.loginName;
+                     this.ME = "HandleClientRequest-" + this.loginName;
                      log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
