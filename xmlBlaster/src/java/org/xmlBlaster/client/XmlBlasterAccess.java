@@ -506,7 +506,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    private Object queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       try {
          this.clientQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-         if (log.TRACE) log.trace(ME, "Sent one message");
+         if (log.TRACE) log.trace(ME, "Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
       }
       catch (Throwable e) {
@@ -790,6 +790,15 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public I_Queue getQueue() {
       return this.clientQueue;
+   }
+
+   /**
+    * <p>Enforced by interface I_ConnectionHandler</p>
+    * @return The current state of the connection
+    */
+   public ConnectionStateEnum getState() {
+      if (!isConnected()) return ConnectionStateEnum.UNDEF;
+      return this.deliveryManager.getDeliveryConnectionsHandler().getState();
    }
 
    /**
