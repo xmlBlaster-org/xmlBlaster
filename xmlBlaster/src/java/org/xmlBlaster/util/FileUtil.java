@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.3 1999/12/21 12:02:55 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.4 1999/12/22 19:12:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -28,11 +28,13 @@ public class FileUtil
     *    <code>String data=FileUtil.readAsciiFile("/tmp/hello");</code>
     * @param fileName name of file
     * @return String
-    *       ASCII data from the file
+    *       ASCII data from the file<br />
+    *       null on error
     */
    public static final String readAsciiFile(String fileName)
    {
       byte[] bb = FileUtil.readFile(fileName);
+      if (bb == null) return null;
       return new String(bb);
    }
 
@@ -46,7 +48,8 @@ public class FileUtil
     *    <code>byte[] data=FileUtil.readFile("/tmp/hello");</code>
     * @param fileName name of file
     * @return
-    *       data from the file
+    *       data from the file<br />
+    *       null on error
     */
    public static final byte[] readFile(String fileName)
    {
