@@ -50,6 +50,8 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
+ * All function pointers return exception.errorCode="user.notConnected" if connection
+ * to xmlBlaster is lost.
  */
 struct XmlBlasterAccessUnparsedStruct {
    int argc;
