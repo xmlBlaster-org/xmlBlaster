@@ -62,6 +62,33 @@ public:
    virtual long randomRemove(const std::vector<EntryType>::const_iterator &start, const std::vector<EntryType>::const_iterator &end) = 0;
 
    /**
+    * Access the current number of entries. 
+    * @return The number of entries in the queue
+    */                                  
+   virtual long getNumOfEntries() const = 0;
+
+   /**
+    * Access the configured maximum number of elements for this queue. 
+    * @return The maximum number of elements in the queue
+    */
+   virtual long getMaxNumOfEntries() const = 0;
+
+   /**
+    * Returns the amount of bytes currently in the queue. 
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return The amount of bytes currently in the queue, returns -1 on error
+    */
+   virtual int64_t getNumOfBytes() const = 0;
+
+   /**
+    * Access the configured capacity (maximum bytes) for this queue. 
+    * @return The maximum capacity for the queue in bytes
+    */
+   virtual int64_t getMaxNumOfBytes() const = 0;
+
+   /**
     * Clears (removes all entries) this queue
     * @throws XmlBlasterException on problems
     */
@@ -72,6 +99,15 @@ public:
      * @throws XmlBlasterException on problems
      */                                  
    virtual bool empty() const = 0;
+
+   /**
+    * Removes all entries and cleans up the storage,
+    * for example with a database it would remove all tables and relating database files. 
+    * This is an administrative task.
+    * The class instance calling <code>destroy()</code> is invalid after this call
+    * @throws XmlBlasterException if failed
+    */
+   virtual void destroy() = 0;
 };
 
 }}}} // namespace

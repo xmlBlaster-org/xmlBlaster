@@ -11,6 +11,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
+#include <util/qos/StatusQosFactory.h>
+#include <util/qos/MsgQosFactory.h>
+#include <util/key/MsgKeyFactory.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Log.h>
 #include <util/queue/QueueInterface.h> // The C implementation interface
@@ -39,7 +42,10 @@ protected:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log& log_;
    org::xmlBlaster::util::qos::storage::QueuePropertyBase property_;
-   ::I_Queue *queueP_;
+   ::I_Queue *queueP_; // The C based xmlBlaster SQLite queue implementation
+   mutable org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
+   mutable org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
+   mutable org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
    org::xmlBlaster::util::thread::Mutex accessMutex_;
 
 public:
@@ -79,6 +85,33 @@ public:
    long randomRemove(const std::vector<EntryType>::const_iterator &start, const std::vector<EntryType>::const_iterator &end);
 
    /**
+    * Access the current number of entries. 
+    * @return The number of entries in the queue
+    */                                  
+   long getNumOfEntries() const;
+
+   /**
+    * Access the configured maximum number of elements for this queue. 
+    * @return The maximum number of elements in the queue
+    */
+   long getMaxNumOfEntries() const;
+
+   /**
+    * Returns the amount of bytes currently in the queue. 
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return The amount of bytes currently in the queue, returns -1 on error
+    */
+   int64_t getNumOfBytes() const;
+
+   /**
+    * Access the configured capacity (maximum bytes) for this queue. 
+    * @return The maximum capacity for the queue in bytes
+    */
+   int64_t getMaxNumOfBytes() const;
+
+   /**
     * Clears (removes all entries) this queue
     */
    void clear();
@@ -92,6 +125,14 @@ public:
     * Converts the C ExceptionStruct into our XmlBlasterException class. 
     */
    org::xmlBlaster::util::XmlBlasterException convertFromQueueException(const ::ExceptionStruct& ex) const;
+
+   /**
+    * Parse the embedded type information. 
+    * @param embeddedType The input, for example "MSG_RAW|publish"
+    * @param type Output: "MSG_RAW" (the SOCKET serialization format)
+    * @param methodName Output: "publish" (see MethodName.cpp)
+    */
+   static void parseEmbeddedType(const std::string& embeddedType, std::string &type, std::string &methodName);
 
    static std::string usage();
 
@@ -108,6 +149,8 @@ public:
     * @enforcedBy I_Plugin
     */
    std::string getVersion() { static std::string version = "1.0"; return version; }
+
+   void destroy();
 };
 
 }}}} // namespace

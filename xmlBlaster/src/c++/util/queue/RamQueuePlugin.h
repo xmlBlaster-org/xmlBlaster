@@ -74,14 +74,41 @@ public:
    long randomRemove(const std::vector<EntryType>::const_iterator &start, const std::vector<EntryType>::const_iterator &end);
 
    /**
+    * Access the current number of entries. 
+    * @return The number of entries in the queue
+    */                                  
+   long getNumOfEntries() const;
+
+   /**
+    * Access the configured maximum number of elements for this queue. 
+    * @return The maximum number of elements in the queue
+    */
+   long getMaxNumOfEntries() const;
+
+   /**
+    * Returns the amount of bytes currently in the queue. 
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return The amount of bytes currently in the queue, returns -1 on error
+    */
+   int64_t getNumOfBytes() const;
+
+   /**
+    * Access the configured capacity (maximum bytes) for this queue. 
+    * @return The maximum capacity for the queue in bytes
+    */
+   int64_t getMaxNumOfBytes() const;
+
+   /**
     * Clears (removes all entries) this queue
     */
-    void clear();
+   void clear();
 
     /**
      * returns true if the queue is empty, false otherwise
      */                                  
-     bool empty() const;
+    bool empty() const;
 
    /**
     * Get the name of the plugin. 
@@ -96,6 +123,8 @@ public:
     * @enforcedBy I_Plugin
     */
    std::string getVersion() { static std::string version = "1.0"; return version; }
+
+   void destroy() { return; }
 };
 
 }}}} // namespace

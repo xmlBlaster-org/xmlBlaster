@@ -30,7 +30,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    : ReferenceCounterBase(), 
      ME("MsgQueueEntry"), 
      global_(global), 
-     log_(global.getLog("queue"))
+     log_(global.getLog("org.xmlBlaster.util.queue"))
 {
    connectQos_       = NULL;
    connectReturnQos_ = NULL;
@@ -47,7 +47,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
 }
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& embeddedType, int priority, bool persistent)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
 {
    connectQos_       = new ConnectQos(connectQos);
    msgUnit_          = NULL;
@@ -65,7 +65,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
 
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& embeddedType, int priority, bool persistent)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("queue"))
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
 {
    connectQos_       = NULL;
    msgUnit_          = NULL;
@@ -129,7 +129,7 @@ Timestamp MsgQueueEntry::getUniqueId() const
    return uniqueId_;
 }
 
-string MsgQueueEntry::getLogId()
+string MsgQueueEntry::getLogId() const
 {
    return logId_;
 }

@@ -34,6 +34,7 @@ public:
     * Normally the entry has the priority specified in the org::xmlBlaster::client::qos::PublishQos of the message unit. However, if you
     * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
     * priority of the message unit will be ignored.
+    * @param type Only "MSG_RAW|publish" is supported
     */
    PublishQueueEntry(org::xmlBlaster::util::Global& global,
                      const org::xmlBlaster::util::MessageUnit& msgUnit,
@@ -42,6 +43,16 @@ public:
                      bool persistent=false);
 
    ~PublishQueueEntry();
+
+   /**
+    * copy constructor
+    */
+   PublishQueueEntry(const PublishQueueEntry& entry);
+
+   /**
+    * assignement constructor
+    */
+   PublishQueueEntry& operator =(const PublishQueueEntry& entry);
 
    MsgQueueEntry *getClone() const;
 

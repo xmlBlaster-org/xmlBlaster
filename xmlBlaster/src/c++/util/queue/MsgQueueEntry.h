@@ -49,16 +49,16 @@ typedef struct {
 class Dll_Export MsgQueueEntry : public ReferenceCounterBase
 {
 protected:
-   std::string        ME;
-   org::xmlBlaster::util::Global&       global_;
-   org::xmlBlaster::util::I_Log&          log_;
-   int           priority_;
-   bool          persistent_;
-   org::xmlBlaster::util::Timestamp     uniqueId_;
-   std::string        embeddedType_;
-   std::string        logId_;
-   org::xmlBlaster::util::MessageUnit*  msgUnit_;
-   org::xmlBlaster::util::qos::ConnectQos*   connectQos_;
+   std::string ME;
+   mutable org::xmlBlaster::util::Global& global_;
+   org::xmlBlaster::util::I_Log& log_;
+   int priority_;
+   bool persistent_;
+   org::xmlBlaster::util::Timestamp uniqueId_;
+   std::string embeddedType_;
+   std::string logId_;
+   org::xmlBlaster::util::MessageUnit* msgUnit_;
+   org::xmlBlaster::util::qos::ConnectQos* connectQos_;
    org::xmlBlaster::util::qos::QueryQosData* queryQosData_;
    org::xmlBlaster::util::key::QueryKeyData* queryKeyData_;
 
@@ -71,6 +71,7 @@ public:
 
     /**
      * Constructor suited for operations like publishes
+     * @param msgUnit We take a clone of it
      * @param embeddedType Describes the type of serialization of the embedded object to be able
      *        to restore it later, something like "MSG_RAW|publish"
      */
@@ -102,6 +103,8 @@ public:
 
 
     virtual ~MsgQueueEntry();
+
+    Global& getGlobal() const { return global_; }
 
     inline void copy(const MsgQueueEntry& entry)
     {
@@ -226,7 +229,7 @@ public:
     * See the derived class for a syntax description.
     * </p>
     */
-   std::string getLogId();
+   std::string getLogId() const;
 
    /**
     * returns the size in bytes of this entry.

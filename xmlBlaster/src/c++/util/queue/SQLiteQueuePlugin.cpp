@@ -7,22 +7,27 @@ Author:    xmlBlaster@marcelruff.info
 #include <util/queue/SQLiteQueuePlugin.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <stdarg.h> // va_start for logging
-#include <stdio.h>  // vsnprintf for g++ 2.9x only
+#include <stdarg.h>           // va_start for logging
+#include <stdio.h>            // vsnprintf for g++ 2.9x only
 #include <util/lexical_cast.h>
+#include <util/MessageUnit.h>
+#include <util/queue/PublishQueueEntry.h>
+#include <socket/xmlBlasterSocket.h> // C xmlBlaster client library
 
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
-extern "C" {
 //static ::XmlBlasterLogging loggingFp = ::xmlBlasterDefaultLogging;
 static void myLogger(void *logUserP, 
                      XMLBLASTER_LOG_LEVEL currLevel,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
-} // "C"
 
 /**
  * Customized logging output is handled by this method. 
@@ -30,6 +35,7 @@ static void myLogger(void *logUserP,
  * <p>
  * Please compile with <code>XMLBLASTER_PERSISTENT_QUEUE</code> defined.
  * </p>
+ * @param queueP
  * @param currLevel The actual log level of the client
  * @param level The level of this log entry
  * @param location A string describing the code place
@@ -47,9 +53,17 @@ static void myLogger(void *logUserP,
    int n, size = 200;
    char *p = 0;
    va_list ap;
-   org::xmlBlaster::util::queue::SQLiteQueuePlugin *pluginP =
-         (org::xmlBlaster::util::queue::SQLiteQueuePlugin *)logUserP;
-   org::xmlBlaster::util::I_Log& log = pluginP->getLog();
+   ::I_Queue *queueP = (::I_Queue *)logUserP;
+
+   //org::xmlBlaster::util::queue::SQLiteQueuePlugin *pluginP =
+   //      (org::xmlBlaster::util::queue::SQLiteQueuePlugin *)queueP->userObject;
+   //org::xmlBlaster::util::I_Log& log = pluginP->getLog();
+
+   if (queueP->userObject == 0) {
+      std::cout << "myLogger not initialized" << std::endl;
+      return;
+   }
+   org::xmlBlaster::util::I_Log& log = *((org::xmlBlaster::util::I_Log*)queueP->userObject);
 
    if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
       return;
@@ -94,8 +108,12 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
      log_(global.getLog("org.xmlBlaster.util.queue")), 
      property_(property), 
      queueP_(0), 
+     statusQosFactory_(global_),
+     msgKeyFactory_(global_),
+     msgQosFactory_(global_),
      accessMutex_()
 {
+   if (log_.call()) log_.call(ME, "Constructor queue [" + getType() + "][" + getVersion() + "] ...");
    /*
     TODO: Pass basic configuration from plugin key/values similar to (see xmlBlaster.properties)
      QueuePlugin[SQLite][1.0]=SQLiteQueuePlugin,
@@ -127,6 +145,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
 
    ::ExceptionStruct exception;
    ::QueueProperties queueProperties;
+   memset(&queueProperties, 0, sizeof(QueueProperties));
 
    strncpy0(queueProperties.dbName, dbName.c_str(), QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, nodeId.c_str(), QUEUE_ID_MAX);
@@ -134,14 +153,17 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    strncpy0(queueProperties.tablePrefix, tableNamePrefix.c_str(), QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = property.getMaxEntries();
    queueProperties.maxNumOfBytes = property.getMaxBytes();
+   queueProperties.logFp = myLogger;
+   queueProperties.logLevel = (log_.call() || log_.trace()) ? LOG_TRACE : LOG_INFO;
+   queueProperties.userObject = &log_;
 
-   XMLBLASTER_LOG_LEVEL logLevel = (log_.call() || log_.trace()) ? LOG_TRACE : LOG_INFO;
-
-   queueP_ = createQueue(&queueProperties, myLogger, logLevel, &exception);
+   queueP_ = createQueue(&queueProperties, &exception); // &log_ Used in myLogger(), see above
    if (*exception.errorCode != 0) throw convertFromQueueException(exception);
-   queueP_->userObject = this; // Used in myLogger(), see above
+
+   log_.info(ME, "Created queue [" + getType() + "][" + getVersion() + "]");
 }
 
+/*
 SQLiteQueuePlugin::SQLiteQueuePlugin(const SQLiteQueuePlugin& queue)
    : ME("SQLiteQueuePlugin"), 
      global_(queue.global_), 
@@ -160,6 +182,7 @@ SQLiteQueuePlugin& SQLiteQueuePlugin::operator =(const SQLiteQueuePlugin& queue)
    return *this;
 
 }
+*/
 
 SQLiteQueuePlugin::~SQLiteQueuePlugin()
 {
@@ -179,26 +202,31 @@ SQLiteQueuePlugin::~SQLiteQueuePlugin()
 void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
 {
    if (log_.call()) log_.call(ME, "::put");
-   if (log_.dump()) log_.dump(ME, string("::put, the entry is: ")  + entry.toXml());
+   if (log_.dump()) log_.dump(ME+".put()", string("The msg entry is: ")  + entry.toXml());
 
    Lock lock(accessMutex_);
-   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available");
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, put() failed");
 
    ::ExceptionStruct exception;
    ::QueueEntry queueEntry;
 
-   std::string embeddedType = "MSG_RAW|" + entry.getEmbeddedType(); // "MSG_RAW|publish";
-
    queueEntry.priority = entry.getPriority();
    queueEntry.isPersistent = entry.isPersistent();
    queueEntry.uniqueId = entry.getUniqueId();
-   strncpy0(queueEntry.embeddedType, embeddedType.c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+   strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish"
    queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
 
    // dump MsgQueueEntry with SOCKET protocol into C ::MsgUnit
    const BlobHolder *blob = (const BlobHolder *)entry.getEmbeddedObject();
+   if (blob == 0) throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "put() failed, the entry " + entry.getLogId() + " returned NULL for embeddedObject");
    queueEntry.embeddedBlob.data = blob->data;
    queueEntry.embeddedBlob.dataLen = blob->dataLen;
+
+   if (log_.dump()) {
+      char *dumpP = blobDump(&queueEntry.embeddedBlob);
+      log_.dump(ME+".put()", string("Put blob to queue:") + dumpP);
+      ::xmlBlasterFree(dumpP);
+   }
 
    queueP_->put(queueP_, &queueEntry, &exception);
 
@@ -208,38 +236,85 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
 const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
 {
    Lock lock(accessMutex_);
-   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available");
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, peekWithSamePriority() failed");
    vector<EntryType> ret;
    if (queueP_->empty(queueP_)) return ret;
    if (log_.call()) log_.call(ME, "peekWithSamePriority maxNumOfEntries=" + lexical_cast<std::string>(maxNumOfEntries) + " maxNumOfBytes=" + lexical_cast<std::string>(maxNumOfBytes));
-   /*
 
-   Dll_Export extern MsgUnitArr *::parseMsgUnitArr(size_t dataLen, char *data);
+   ::ExceptionStruct exception;
+   ::QueueEntryArr *entriesC = queueP_->peekWithSamePriority(queueP_, maxNumOfEntries, maxNumOfBytes, &exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
 
+   // Now we need to copy the C results into C++ classes ...
 
-   StorageType::const_iterator iter = queueP_->begin();
-   long numOfEntries = 0;
-   long numOfBytes = 0;
-   int referencePriority = (**iter).getPriority();
-   while (iter != queueP_->end()) {
-      numOfBytes += (**iter).getSizeInBytes();
-      numOfEntries++;
-      if (numOfBytes > maxNumOfBytes && maxNumOfBytes > -1) break;
-      if (numOfEntries > maxNumOfEntries && maxNumOfBytes > -1) break;
-      if ((**iter).getPriority() != referencePriority ) break;
-      EntryType entry = (*iter);
-      ret.insert(ret.end(), entry); 
-      iter++;
+   for (size_t i=0; i<entriesC->len; i++) {
+      ::QueueEntry &queueEntryC = entriesC->queueEntryArr[i];
+      string type, methodName;
+      parseEmbeddedType(queueEntryC.embeddedType, type, methodName);
+
+      if (type != Constants::ENTRY_TYPE_MSG_RAW) {
+         string embedded = queueEntryC.embeddedType;
+         freeQueueEntryArr(entriesC);
+         throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::peekWithSamePriority", string("The queue entry embeddedType '") + embedded + "' type='" + type + "' is not supported");
+      }
+
+      if (log_.dump()) {
+         char *dumpP = blobDump(&queueEntryC.embeddedBlob);
+         log_.dump(ME+".peekWithSamePriority()", string("Retrieved blob from queue:") + dumpP);
+         ::xmlBlasterFree(dumpP);
+      }
+
+      ::MsgUnitArr *msgUnitArrC = ::parseMsgUnitArr(queueEntryC.embeddedBlob.dataLen, queueEntryC.embeddedBlob.data);
+
+      for (size_t i=0; msgUnitArrC!=0 && i<msgUnitArrC->len; i++) { // TODO: Collect a PUBLISH_ARR !!! (currently we transform it to single publish()es)
+         ::MsgUnit &msgUnit = msgUnitArrC->msgUnitArr[i];
+         if (log_.dump()) {
+            char *dumpP = ::messageUnitToXmlLimited(&msgUnit, 128);
+            log_.dump(ME+".peekWithSamePriority()", string("Retrieved and parsed C message from queue:") + dumpP);
+            ::xmlBlasterFree(dumpP);
+         }
+         if (methodName == MethodName::PUBLISH) {
+            MsgKeyData msgKeyData = msgKeyFactory_.readObject(string(msgUnit.key));
+            MsgQosData msgQosData = msgQosFactory_.readObject(string(msgUnit.qos));
+            MessageUnit messageUnit(msgKeyData, msgUnit.contentLen, (const unsigned char*)msgUnit.content, msgQosData);
+            PublishQueueEntry *pq = new PublishQueueEntry(global_, messageUnit, queueEntryC.embeddedType,
+                                           queueEntryC.priority, queueEntryC.isPersistent);
+            if (log_.trace()) log_.trace(ME, "Got PublishQueueEntry from queue");
+            ret.insert(ret.end(), EntryType(*pq));
+            if (log_.trace()) log_.trace(ME, "PublishQueueEntry is reference countet");
+         }
+         //else if (methodName == MethodName::CONNECT) {
+         //}
+         else {  // TODO: How to handle: throw exception or remove the buggy entry?
+            log_.error(ME + "::peekWithSamePriority", string("The queue entry embeddedType '") + queueEntryC.embeddedType + "' methodName='" + methodName + "' is not supported, we ignore it.");
+         }
+      }
+
+      freeMsgUnitArr(msgUnitArrC);
    }
-   */
+
+   freeQueueEntryArr(entriesC);
    return ret;
 }
 
+void SQLiteQueuePlugin::parseEmbeddedType(const string& embeddedType, string &type, string &methodName)
+{
+   string::size_type pos = embeddedType.find("|");
+   if (pos == string::npos) {
+      type = embeddedType;
+      methodName = "";
+      return;
+   }
+   type = embeddedType.substr(0, pos);
+   if (pos < embeddedType.size())
+      methodName = embeddedType.substr(pos+1);
+   // No trim(): we assume no white spaces
+}
 
 long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &start, const vector<EntryType>::const_iterator &end) 
 {
    Lock lock(accessMutex_);
-   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available");
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, randomRemove() failed");
    if (start == end || queueP_->empty(queueP_)) return 0;
    vector<EntryType>::const_iterator iter = start;
    long count = 0;
@@ -258,10 +333,34 @@ long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &st
    return count;
 }
 
+long SQLiteQueuePlugin::getNumOfEntries() const
+{
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, getNumOfEntries() failed");
+   return queueP_->getNumOfEntries(queueP_);
+}
+
+long SQLiteQueuePlugin::getMaxNumOfEntries() const
+{
+   if (queueP_ == 0) return property_.getMaxEntries(); // throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, getNumOfEntries() failed");
+   return queueP_->getMaxNumOfEntries(queueP_);
+}
+
+int64_t SQLiteQueuePlugin::getNumOfBytes() const
+{
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, getNumOfBytes() failed");
+   return queueP_->getNumOfBytes(queueP_);
+}
+
+int64_t SQLiteQueuePlugin::getMaxNumOfBytes() const
+{  
+   if (queueP_ == 0) return property_.getMaxBytes(); // throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, getMaxNumOfBytes() failed");
+   return queueP_->getMaxNumOfEntries(queueP_);
+}
+
 void SQLiteQueuePlugin::clear()
 {
    Lock lock(accessMutex_);
-   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available");
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, clear() failed");
    ::ExceptionStruct exception;
    queueP_->clear(queueP_, &exception);
 }
@@ -269,8 +368,16 @@ void SQLiteQueuePlugin::clear()
 
 bool SQLiteQueuePlugin::empty() const
 {
-   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available");
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, empty() failed");
    return queueP_->empty(queueP_);
+}
+
+void SQLiteQueuePlugin::destroy()
+{
+   if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, destroy() failed");
+   ::ExceptionStruct exception;
+   queueP_->destroy(&queueP_, &exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
 }
 
 // Exception conversion ....

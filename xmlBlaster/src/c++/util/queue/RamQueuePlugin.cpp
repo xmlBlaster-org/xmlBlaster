@@ -24,6 +24,7 @@ RamQueuePlugin::RamQueuePlugin(Global& global, const ClientQueueProperty& proper
      accessMutex_()
 {
    numOfBytes_ = 0;
+   log_.info(ME, "Created queue [" + getType() + "][" + getVersion() + "]");
 }
 
 RamQueuePlugin::RamQueuePlugin(const RamQueuePlugin& queue)
@@ -123,6 +124,26 @@ long RamQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &start
       iter++;
    }
    return count;
+}
+
+long RamQueuePlugin::getNumOfEntries() const
+{
+   return storage_.size();
+}
+
+long RamQueuePlugin::getMaxNumOfEntries() const
+{
+   return property_.getMaxEntries();
+}
+
+int64_t RamQueuePlugin::getNumOfBytes() const
+{
+   return numOfBytes_;
+}
+
+int64_t RamQueuePlugin::getMaxNumOfBytes() const
+{
+   return property_.getMaxBytes();
 }
 
 void RamQueuePlugin::clear()

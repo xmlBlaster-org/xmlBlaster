@@ -65,7 +65,7 @@ QueueFactory::~QueueFactory()
 
 I_Queue& QueueFactory::getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property) //, const string& type, const string& version)
 {
-   if (log_.trace()) log_.trace(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
+   if (log_.call()) log_.call(ME, string("getPlugin: type: '") + property.getType() + string("', version: '") + property.getVersion() + "' ...");
 
    if (property.getType() == Constants::RAM ||
        property.getType() == Constants::CACHE) { // HACK! The default in QueuePropertyBase is CACHE, so we use our RAM in this case, see ClientQueueProperty.cpp for another hack
