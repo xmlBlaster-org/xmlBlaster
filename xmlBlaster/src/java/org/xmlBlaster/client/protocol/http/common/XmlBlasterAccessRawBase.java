@@ -156,16 +156,14 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "subscribe(key="+xmlKey+")");
-      String keyEnc = encode(xmlKey, "UTF-8");
-      String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable)postRequest("ActionType=subscribe&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
+      return (Hashtable)postRequest("subscribe", xmlKey, qos, null, !ONEWAY);
    }
 
    public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "get(key="+xmlKey+")");
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
-      Vector list = (Vector)postRequest("ActionType=get&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
+      Vector list = (Vector)postRequest("get", xmlKey, qos, null, !ONEWAY);
       Msg[] msgs = new Msg[list.size()/3];
       for (int i=0; i<list.size()/3; i++) {
          log("DEBUG", "Synchronous get is not implented");
@@ -179,31 +177,23 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public Hashtable[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "unSubscribe(key="+xmlKey+")");
-      String keyEnc = encode(xmlKey, "UTF-8");
-      String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable[])postRequest("ActionType=unSubscribe&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
+      return (Hashtable[])postRequest("unSubscribe", xmlKey, qos, null, !ONEWAY);
    }
 
    public Hashtable publish(String xmlKey, byte[] content, String qos) throws Exception {
       log("DEBUG", "publish(key="+xmlKey+")");
-      String keyEnc = encode(xmlKey, "UTF-8");
-      String qosEnc = encode(qos, "UTF-8");
-      byte[] serial = encodeBase64(content);
-      return (Hashtable)postRequest("ActionType=publish&key="+keyEnc+"&qos="+qosEnc+"&content="+new String(serial), !ONEWAY);
+      return (Hashtable)postRequest("publish", xmlKey, qos, content, !ONEWAY);
    }
 
    public Hashtable[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "erase(key="+xmlKey+")");
-      String keyEnc = encode(xmlKey, "UTF-8");
-      String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable[])postRequest("ActionType=erase&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
+      return (Hashtable[])postRequest("erase", xmlKey, qos, null, !ONEWAY);
    }
 
    public void disconnect(String qos) {
       log("DEBUG", "disconnect()");
-      String qosEnc = encode(qos, "UTF-8");
       try {
-         postRequest("ActionType=disconnect&qos="+qosEnc, !ONEWAY);
+         postRequest("disconnect", null, qos, null, !ONEWAY);
          log("INFO", "Successfully disconnected from xmlBlaster");
       }
       catch (Exception e) {
@@ -218,11 +208,18 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param oneway true for requests returning void
     * @return The returned value for the given request, "" on error or for oneway messages
     */
-   Object postRequest(String request, boolean oneway) throws Exception {
+   //Object postRequestX(String request, boolean oneway) throws Exception {
+   Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
+      String request = "ActionType=" + actionType;
       try {
          boolean doPost = true;
          // applet.getAppletContext().showDocument(URL url, String target);
          //String url = (doPost) ? this.xmlBlasterServletUrl : this.xmlBlasterServletUrl + request;
+
+         if (key != null) request += "&key=" + encode(key, "UTF-8");
+         if (qos != null) request += "&qos=" + encode(qos, "UTF-8");
+         if (content != null) request += "&content=" + new String(encodeBase64(content));
+
          String url = (doPost) ? this.xmlBlasterServletUrl + "?" + request : this.xmlBlasterServletUrl + request;
       
          I_Connection conn = createConnection(url);      
