@@ -3,7 +3,7 @@ Name:      XmlDbMessageWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping a SQL request with XML.
-Version:   $Id: XmlDbMessageWrapper.java,v 1.4 2000/07/11 09:26:24 ruff Exp $
+Version:   $Id: XmlDbMessageWrapper.java,v 1.5 2001/02/14 21:02:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -85,7 +85,7 @@ public class XmlDbMessageWrapper
       if (type.equalsIgnoreCase("insert") || type.equalsIgnoreCase("delete"))
          type = "update";
 
-      content = "" + "<database:adapter>" + " <database:url>" + url
+      content = "" + "<database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>" + " <database:url>" + url
                      + "</database:url>" + " <database:username>" + user
                      + "</database:username>" + " <database:password>"
                      + passwd + "</database:password>"
