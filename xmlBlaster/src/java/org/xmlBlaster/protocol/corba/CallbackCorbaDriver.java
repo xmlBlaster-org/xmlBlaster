@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.29 2002/08/26 11:04:22 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.30 2002/09/10 18:56:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -101,8 +101,6 @@ public class CallbackCorbaDriver implements I_CallbackDriver
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal update argument");
       }
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      //log.info(ME, "xmlBlaster.update(" + msg.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
       for (int ii=0; ii<msg.length; ii++) {
@@ -110,7 +108,10 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
 
       try {
-         return cb.update(callbackAddress.getSessionId(), updateArr);
+         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+         String[] arr = cb.update(callbackAddress.getSessionId(), updateArr);
+         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") done.");
+         return arr;
       } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (callbackAddress == null)
             throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length +
