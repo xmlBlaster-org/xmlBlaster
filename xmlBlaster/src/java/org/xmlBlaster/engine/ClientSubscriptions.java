@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.5 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.6 1999/11/23 15:31:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,10 +21,10 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.5 1999/11/22 16:12:21 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.6 1999/11/23 15:31:42 ruff Exp $
  * @author Marcel Ruff
  */
-public class ClientSubscriptions implements ClientListener, SubscriptionListener
+public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
 {
    final private static String ME = "ClientSubscriptions";
 
@@ -33,15 +33,15 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
    private final RequestBroker requestBroker;
 
    /**
-    * All exact subscriptions of a Client are in this map. 
+    * All exact subscriptions of a Client are in this map.
     * <p>
     * These are the subscriptions which are referenced from a MessageUnitHandler<br>
     * including those with a query (XPATH).
     * <p>
     * A multimap would be appropriate, but since this is not supported
-    * by the Collections API, a map with a set as value is used. 
+    * by the Collections API, a map with a set as value is used.
     * <br>
-    * Used for performant logout.
+    * Used for performing logout.
     * <p>
     * key   = client.getUniqueKey()
     * value = aboMap (Collections.synchronizedMap(new HashMap());)
@@ -51,11 +51,11 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * All generic subscriptions are collected here. 
+    * All generic subscriptions are collected here.
     * Generic are all subscriptions who don't subscribe a precise key-oid,
-    * but rather subscribe all MessageUnits matching a XPath query match.
+    * but rather subscribe all MessageUnit matching a XPath query match.
     * <br>
-    * If new MessageUnits are published, this set is consulted to check
+    * If new MessageUnit are published, this set is consulted to check
     * if some older subscriptions would match as well
     * <p>
     * value = SubscriptionInfo objects with generic subscriptions, but not
@@ -100,6 +100,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
    {
       this.requestBroker = requestBroker;
       requestBroker.addSubscriptionListener(this);
+      requestBroker.addMessageEraseListener(this);
       authenticate.addClientListener(this);
    }
 
@@ -115,7 +116,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * if you have the ingredients for a unique id of a subscription, you may acces the
+    * if you have the ingredients for a unique id of a subscription, you may access the
     * SubscriptionInfo object here
     *
     * @param clientInfo
@@ -141,7 +142,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked on successfull client login (interface ClientListener)
+    * Invoked on successful client login (interface ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
    {
@@ -152,7 +153,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
    /**
     * Invoked when client does a logout (interface ClientListener)
-    */    
+    */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
       if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + requestBroker.printOn().toString());
@@ -170,6 +171,18 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       }
 
       if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + requestBroker.printOn().toString());
+   }
+
+
+   /**
+    * Invoked on message erase() invocation (interface MessageEraseListener)
+    */
+   public void messageErase(MessageEraseEvent e) throws XmlBlasterException
+   {
+      ClientInfo clientInfo = e.getClientInfo();
+      if (Log.TRACE) Log.trace(ME, "Erase event for client " + clientInfo.toString());
+      MessageUnitHandler messageUnitHandler = e.getMessageUnitHandler();
+      String uniqueKey = messageUnitHandler.getUniqueKey();
    }
 
 
@@ -223,11 +236,11 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Invoked when a subscription is canceled (interface SubscriptionListener). 
+    * Invoked when a subscription is canceled (interface SubscriptionListener).
     * Note that the subscriptionInfo object carried in SubscriptionEvent
     * is not the real known subscription, but rather misused as a container to
     * carry the clientInfo and subscriptionInfoUniqueKey
-    */    
+    */
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException
    {
       String subscriptionInfoUniqueKey = e.getSubscriptionInfo().getUniqueKey();
@@ -309,7 +322,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     *                                  !=null: Remove only the given subscription
     */
    private void removeFromSubscribeRequestsSet(ClientInfo clientInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
-   {  
+   {
       if (Log.TRACE) Log.trace(ME, "removing client " + clientInfo.toString() + " from querySubscribeRequestsSet ...");
       String uniqueKey = clientInfo.getUniqueKey();
 
@@ -359,8 +372,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<ClientSubscriptions>"); 
-      sb.append(offset + "   <PENDING/>"); 
+      sb.append(offset + "<ClientSubscriptions>");
+      sb.append(offset + "   <PENDING/>");
       sb.append(offset + "</ClientSubscriptions>\n");
       return sb;
    }

@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.10 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.11 1999/11/23 15:31:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -41,6 +41,19 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (Log.CALLS) Log.trace(ME, "Created new SubscriptionInfo " + xmlKey.getUniqueKey());
    }
 
+   
+   /**
+    * Clean up everything, since i will be deleted now
+    */
+   private void erase()
+   {
+      if (Log.TRACE) Log.trace(ME, "Entering erase()");
+      // clientInfo = null; not my business
+      xmlKey = null;
+      xmlQoS = null;
+      uniqueKey = null;
+   }
+
 
    /**
     * This must be called as soon as my MessageUnitHandler handles me!
@@ -64,7 +77,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Telling my container that i'm not enteristing any more
+    * Telling my container that i am not subscribing any more
     */
    public void removeSubscribe() throws XmlBlasterException
    {
@@ -73,11 +86,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          return;
       }
       myHandler.removeSubscriber(uniqueKey);
+      erase();
    }
 
 
    /**
-    * Compare method needed for Interface Comparable. 
+    * Compare method needed for Interface Comparable.
     *
     * This determines the sorting order, by which the
     * client receive their updates.

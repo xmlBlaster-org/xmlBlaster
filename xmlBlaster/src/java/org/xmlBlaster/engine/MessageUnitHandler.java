@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.15 1999/11/23 13:59:16 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.16 1999/11/23 15:31:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -106,6 +106,39 @@ public class MessageUnitHandler
    public XmlKey getXmlKey()
    {
       return xmlKey;
+   }
+
+
+   /**
+    * Clean up everything, since i will be deleted now
+    */
+   public void erase() throws XmlBlasterException
+   {
+      if (Log.TRACE) Log.trace(ME, "Entering erase()");
+
+      SubscriptionInfo[] arr = null; // to avoid deadlock in subscriberMap, copy subs into this array
+      synchronized(subscriberMap) {
+         arr = new SubscriptionInfo[subscriberMap.size()];
+         Iterator iterator = subscriberMap.values().iterator();
+         int jj=0;
+         while (iterator.hasNext()) {
+            SubscriptionInfo subs = (SubscriptionInfo)iterator.next();
+            arr[jj] = subs;
+            jj++;
+         }
+      }
+
+      for (int ii=0; ii<arr.length; ii++)
+         requestBroker.fireSubscriptionEvent(arr[ii], false);
+
+      Log.warning(ME, "No subscribed client notifiction about message erase() yet implemented");
+
+      subscriberMap.clear();
+      // subscriberMap = null;    is final, can't assign null
+
+      // xmlKey = null; not my business
+      messageUnit = null;
+      uniqueKey = null;
    }
 
 
@@ -291,7 +324,7 @@ public class MessageUnitHandler
 
 
    /**
-    * This sends the update to the client. 
+    * This sends the update to the client.
     * TODO: 1. Create a singleton UpdateHandler.java, supporting CORBA,http,email
     *       2. change arguments?
     */
