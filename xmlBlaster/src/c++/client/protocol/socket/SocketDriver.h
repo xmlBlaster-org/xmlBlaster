@@ -45,7 +45,7 @@ namespace org {
    friend class SocketDriverFactory; // To be able to create a SocketDriver instance
 
    private:
-      org::xmlBlaster::util::thread::Mutex& mutex_;
+      org::xmlBlaster::util::thread::Mutex mutex_;
       std::string instanceName_;
       struct ::XmlBlasterAccessUnparsed* connection_;
       std::string ME;
@@ -73,12 +73,10 @@ namespace org {
       /**
        * The only constructor. 
        * @param global
-       * @param mutex   org::xmlBlaster::util::Global thread synchronization (to avoid static variable)
-       *                
        * @param isRunning    Feedback is doRun has stopped
        * @param instanceName
        */
-      SocketDriver(org::xmlBlaster::util::Global& global, org::xmlBlaster::util::thread::Mutex& mutex, const std::string instanceName);
+      SocketDriver(org::xmlBlaster::util::Global& global, const std::string instanceName);
 
       SocketDriver(const SocketDriver& socketDriver);
 

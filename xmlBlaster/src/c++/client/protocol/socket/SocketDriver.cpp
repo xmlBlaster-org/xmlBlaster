@@ -203,8 +203,8 @@ SocketDriver& SocketDriver::operator =(const SocketDriver& /*socketDriver*/)
 }
 
 
-SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceName)
-   : mutex_(mutex),
+SocketDriver::SocketDriver(Global& global, const string instanceName)
+   : mutex_(),
      instanceName_(instanceName),
      connection_(NULL),
      ME(string("SocketDriver-") + instanceName), 
