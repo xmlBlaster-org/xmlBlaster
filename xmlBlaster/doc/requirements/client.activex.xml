@@ -9,7 +9,7 @@
    <description>
    <h2>Overview</h2>
      <p>
-     With the free ActiveX bridge from SUN (JDK 1..4.2 and 1.5) we can export
+     With the free ActiveX bridge from SUN (Java JDK 1.5) we can export
      the Java client library into an ActiveX control (Windows only). With this
      control easy access to xmlBlaster is possible from C# or Visual Basic .net
      </p>
