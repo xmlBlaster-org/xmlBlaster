@@ -13,14 +13,13 @@ Comment:   Testing the Timeout Features
 #include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
 
+namespace org { namespace xmlBlaster { namespace test {
+
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster;
 using namespace org::xmlBlaster::util::qos::storage;
-
-
-namespace org { namespace xmlBlaster { namespace test {
+using namespace org::xmlBlaster::util::qos::address;
 
 class TestConnectQos
 {

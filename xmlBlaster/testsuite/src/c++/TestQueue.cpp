@@ -8,23 +8,22 @@ Comment:   Testing the Timeout Features
 #include "TestSuite.h"
 #include <vector>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
-using namespace org::xmlBlaster::util::queue;
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
-
-
 /**
  * Tests the queue entry and queue functionality. The following is tested here:
  * - PublishQueueEntry comparison operators
  * - ConnectQueueEntry comparison operators
  * - Intermixed comparisons (between PublishQueueEntry and ConnectQueueEntry).
  */
-
 namespace org { namespace xmlBlaster { namespace test {
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::queue;
+using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 
 class TestQueue
 {

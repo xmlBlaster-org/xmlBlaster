@@ -7,15 +7,16 @@ Comment:   Testing the Timeout Features
 
 #include "TestSuite.h"
 
+namespace org { namespace xmlBlaster { namespace test {
+
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::util::qos::address;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
-using namespace org::xmlBlaster;
-
-namespace org { namespace xmlBlaster { namespace test {
 
 class TestFailsafe : public virtual I_Callback, public virtual I_ConnectionProblems, public TestSuite
 {
