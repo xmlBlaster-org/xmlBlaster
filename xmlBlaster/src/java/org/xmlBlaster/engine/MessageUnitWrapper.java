@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.41 2002/05/26 20:03:54 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.42 2002/06/17 05:40:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -173,7 +173,7 @@ public class MessageUnitWrapper implements I_Timeout
       synchronized (this) {
          isExpired = true;
          timerKey = null;
-         log.warn(ME, "Message " + getUniqueKey() + " is expired, timeout event occurred - tests are missing!");
+         log.warn(ME, "Message " + getUniqueKey() + " is expired, timeout event occurred - not implemented, tests are missing!");
       }
    }
 
