@@ -82,7 +82,7 @@ ParserFactory& ParserFactory::getFactory()
 ParserFactory::ParserFactory() :
      ME("ParserFactory")
 {
-   isUsingXerces_ = false;
+   isInitialized_ = false;
 }
 
 ParserFactory::ParserFactory(const ParserFactory& factory) :
@@ -98,24 +98,27 @@ ParserFactory& ParserFactory::operator =(const ParserFactory&)
 
 ParserFactory::~ParserFactory()
 {
-   if (isUsingXerces_) {
+   if (isInitialized_) {
       //std::cerr << "ParserFactory destructor" << std::endl;
       XMLPlatformUtils::Terminate();
    }
 }
 
-/**
-   * Creates a parser implementation. It is the responsibility of the user to delete the I_Parser
-   * object once it is not needed anymore.
-   */
-I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler)
+std::string ParserFactory::getLocale(org::xmlBlaster::util::Global& global)
+{
+   locale_ = global.getProperty().getStringProperty("xmlBlaster/locale", "de_DE.iso-8859-1");
+	return locale_;
+}
+
+
+void ParserFactory::initialize(org::xmlBlaster::util::Global& global)
 {
    try {
-      if (!isUsingXerces_) {
-         std::cerr << "initializing xerces with '" << handler->getLocale() << "'" << std::endl;
+      if (!isInitialized_) {
+         //std::cerr << "Initializing xerces with '" << getLocale(global) << "'" << std::endl;
          // "en_US" is default inside xerces
-         XMLPlatformUtils::Initialize(handler->getLocale().c_str(), 0, &xmlBlasterPanicHandler, 0);
-         isUsingXerces_ = true;
+         XMLPlatformUtils::Initialize(getLocale(global).c_str(), 0, &xmlBlasterPanicHandler, 0);
+         isInitialized_ = true;
       }
    }
    catch (const XMLException& e) {
@@ -128,6 +131,11 @@ I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, Xml
       std::string txt = std::string("XMLPlatformUtils::Initialize() - std::exception during initialization. Exception message is: ") + std::string(e.what());
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
+}
+
+I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler)
+{
+	initialize(global);
 
    try {
       return new Sax2Parser(global, handler);

@@ -29,7 +29,8 @@ class Dll_Export ParserFactory {
 
    private:
    const std::string ME;
-   bool isUsingXerces_;
+   bool isInitialized_;
+   std::string locale_;
 
    static ParserFactory* factory_;
    
@@ -45,6 +46,24 @@ class Dll_Export ParserFactory {
     * @exception XmlBlasterException
     */
    static ParserFactory& getFactory();
+
+   /**
+    * The locale used to initialize the parser. 
+    * Xerces defaults to "en_US", configurable with
+    * for example <tt>-xmlBlaster/locale</tt> "de_DE.iso-8859-1" or "en_US.UTF-8"
+    */
+   std::string getLocale(org::xmlBlaster::util::Global& global);
+
+   /**
+    * Initialize the used parser. 
+	 * The locale is set if the Initialize() is invoked for the very first time,
+	 * to ensure that each and every message loaders, in the process space, share the same locale.
+	 *
+    * All subsequent invocations of Initialize(), with a different locale,
+	 * have no effect on the message loaders, either instantiated, or to be instantiated. 
+	 * @see http://xml.apache.org/xerces-c/apiDocs/classXMLPlatformUtils.html#z489_0
+    */
+   void initialize(org::xmlBlaster::util::Global& global);
 
    /**
     * Creates a parser implementation. 
