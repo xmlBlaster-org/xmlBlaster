@@ -5,17 +5,22 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.9 2000/03/24 23:44:39 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.10 2000/04/28 21:40:04 ruff Exp $
 -->
 
 <!ELEMENT requirement (
 	topic,
 	description,
 	example*,
+	todo*,
+	done*,
 	see*,
 	author,
+	hacker?,
+   effort?,
 	date,
 	revision,
+	log?,
 	testcase*
 	)>
 
@@ -23,11 +28,16 @@ Version:   $Id: requirement.dtd,v 1.9 2000/03/24 23:44:39 ruff Exp $
 
 <!ELEMENT topic  (%text;)>
 <!ELEMENT description  (%text;)> 
-<!ELEMENT example  (%text;)> 
-<!ELEMENT see  (%text;)> 
-<!ELEMENT author  (%text;)> 
-<!ELEMENT date  (%text;)> 
-<!ELEMENT revision  (%text;)> 
+<!ELEMENT example  (%text;)> <!-- a nice example for the users -->
+<!ELEMENT todo  (%text;)>    <!-- even in CLOSED mode, is there something left to do? -->
+<!ELEMENT done  (%text;)>    <!-- change the 'todo' element to 'done' if it is implemented -->
+<!ELEMENT see  (%text;)>     <!-- a link to related topics -->
+<!ELEMENT author  (%text;)>  <!-- who wrote the requirement -->
+<!ELEMENT hacker  (%text;)>  <!-- who coded it -->
+<!ELEMENT effort  (%text;)>  <!-- how many days you expect / you needed to implement -->
+<!ELEMENT date  (%text;)> 	  <!-- date you setup this requirement -->
+<!ELEMENT revision  (%text;)> <!-- the cvs revision number -->
+<!ELEMENT log  (%text;)> 	  <!-- the cvs log informations (optional) -->
 
 <!ELEMENT testcase (
 	name,
