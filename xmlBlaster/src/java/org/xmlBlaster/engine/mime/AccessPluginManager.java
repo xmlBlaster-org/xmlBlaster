@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.8 2002/05/11 08:08:50 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.9 2002/05/16 11:55:58 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -33,6 +33,8 @@ public class AccessPluginManager extends PluginManagerBase {
 
    private final Global glob;
    private final Log log;
+
+   private boolean isLoaded = false;
 
    public AccessPluginManager(Global glob)
    {
@@ -130,20 +132,44 @@ public class AccessPluginManager extends PluginManagerBase {
    public final I_AccessFilter getAccessFilter(String type, String version, String mime, String mimeExtended)
    {
       try {
+         // Try to find it in the cache...
          StringBuffer key = new StringBuffer(80);
          key.append(type).append(version).append(mime).append(mimeExtended);
          Object obj = accessFilterMap.get(key.toString());
-         if (obj != null)
+         if (obj != null) {
+            if (Log.TRACE) Log.trace(ME, "Found filter for key=" + key.toString());
             return (I_AccessFilter)obj;
+         }
 
          // Check if the plugin is for all mime types
          key.setLength(0);
          key.append(type).append(version).append("*");
          obj = accessFilterMap.get(key.toString());
-         if (obj != null)
+         if (obj != null) {
             return (I_AccessFilter)obj;
+         }
 
-         return addAccessFilterPlugin(type, version); // try to load it
+         if (!isLoaded) {
+         addAccessFilterPlugin(type, version); // try to load it
+         isLoaded = true;
+
+         key.setLength(0);
+         key.append(type).append(version).append(mime).append(mimeExtended);
+         obj = accessFilterMap.get(key.toString());
+         if (obj != null) {
+            if (Log.TRACE) Log.trace(ME, "Found filter for key=" + key.toString());
+            return (I_AccessFilter)obj;
+         }
+
+         // Check if the plugin is for all mime types
+         key.setLength(0);
+         key.append(type).append(version).append("*");
+         obj = accessFilterMap.get(key.toString());
+         if (obj != null) {
+            return (I_AccessFilter)obj;
+         }
+         }
+         return null;
 
       } catch (Exception e) {
          Log.error(ME, "Problems accessing subscribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
