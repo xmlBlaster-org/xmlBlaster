@@ -898,16 +898,24 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                   if (obj == null) {
                      MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
-                     /* !!!
-                     XmlBlasterConnection con = getGlobal().getClusterManager().getMaster(sessionInfo, msgUnitWrapper);
-                        return getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+
+                     { // cluster support - forward message to master
+                        String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                        if (ret != null) return ret;
                      }
-                     */
+                     
                      msgUnitHandler = new MessageUnitHandler(this, xmlKey, msgUnitWrapper);
                      messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                   }
                   else {
                      msgUnitHandler = (MessageUnitHandler)obj;
+
+                     { // cluster support - forward message to master
+                        MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                        String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                        if (ret != null) return ret;
+                     }
+
                      messageExisted = true;
                   }
                }
