@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.11 1999/12/09 13:28:35 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.12 1999/12/14 10:30:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
@@ -54,7 +54,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
 
    /**
-    * Authentication of a client. 
+    * Authentication of a client.
     * @param cb The Callback interface of the client
     * @return The Server reference
     */
@@ -62,7 +62,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
                        BlasterCallback cb,
                        String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal + ")"*/);
+      if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal +*/ ")");
 
       if (loginName==null || passwd==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
@@ -86,7 +86,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
 
    /**
-    * Logout of a client. 
+    * Logout of a client.
     * @param xmlServer The handle you got from the login call
     */
    public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
