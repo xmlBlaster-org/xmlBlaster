@@ -1,21 +1,30 @@
 import xmlrpclib
 
-#  Start with: python hello.py
+# Start with: python hello.py
 
+# Change the url to your hostname (see the output of xmlBlaster server):
+server_url = 'http://myHost:8080/';
+
+print "\nTrying to connect to xmlBlaster server on ", server_url, " ...\n"
 
 # Create an object to represent our server.
-server_url = 'http://swand.lake.de:8080/';
 server = xmlrpclib.Server(server_url);
-print "SUCCESS: Connected to", server_url;
+print "Connected to xmlBlaster server on ", server_url;
 
 # Login to xmlBlaster
-sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "mySessionId");
-print "login success with sessionId=", sessionId;
+sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "");
+print "\nLogin success with sessionId=", sessionId;
 
 # Call the server and get our result.
-message = server.xmlBlaster.get( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
-print "get result=", message;
+message = server.xmlBlaster.get( sessionId, "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+print "\nResult for a get():\n\n", message;
 
 # Asynchronous access - not yet implemented
-#server.xmlBlaster.subscribe( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+#server.xmlBlaster.subscribe( sessionId, "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+
+
+# Logout from xmlBlaster
+server.authenticate.logout( sessionId );
+#server.authenticate.logout( sessionId, "<qos></qos>" );
+print "\nLogout done, bye.\n";
 
