@@ -112,20 +112,6 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>queue.cache.transientQueue</td>
-            <td>RAM,1.0</td>
-            <td>The implementation to be used for the transient portion of the cache queue.</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-         <tr>
-            <td>queue.cache.persistentQueue</td>
-            <td>JDBC,1.0</td>
-            <td>The implementation to be used for the persistent portion of the cache queue.</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-         <tr>
             <td>queue.defaultPlugin</td>
             <td>CACHE,1.0</td>
             <td>The default implementation to be used for queues, it defaults to the here described cache plugin.</td>
@@ -135,6 +121,29 @@
          
         </table>
         Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+
+      <p>
+      These parameters allow to configure a cache queue statically when declared, for example in xmlBlaster.properties:
+      </p>
+      <pre>
+StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
+      </pre>
+      <table border="1">
+         <tr>
+            <td>transientQueue</td>
+            <td>RAM,1.0</td>
+            <td>The implementation to be used for the transient portion of the cache queue.</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>persistentQueue</td>
+            <td>JDBC,1.0</td>
+            <td>The implementation to be used for the persistent portion of the cache queue.</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+        </table>
    </configuration>
 
    <see type="REQ">queue</see>
@@ -151,7 +160,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
