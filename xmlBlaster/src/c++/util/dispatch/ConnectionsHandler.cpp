@@ -176,11 +176,6 @@ bool ConnectionsHandler::shutdown()
    return connection_->shutdown();
 }
 
-void ConnectionsHandler::resetConnection()
-{
-   return connection_->resetConnection();
-}
-
 string ConnectionsHandler::getLoginName() 
 {
    return connection_->getLoginName();

@@ -93,9 +93,6 @@ public:
 
    bool shutdown();
 
-   /** Reset the driver on problems */
-   void resetConnection();
-
    std::string getLoginName();
 
    bool isLoggedIn();

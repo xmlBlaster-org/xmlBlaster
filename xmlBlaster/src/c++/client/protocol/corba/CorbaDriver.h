@@ -99,7 +99,6 @@ namespace org {
       std::string getProtocol();
 //      std::string loginRaw();
       bool shutdown();
-      void resetConnection();
       std::string getLoginName();
       bool isLoggedIn();
 

@@ -27,18 +27,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
    {
    public:
 
-/*
-      virtual ~I_XmlBlasterConnection() 
-      {
-      }
-*/
       /**
        * connect() is a login or authentication as well, the authentication schema
        * is transported in the qos.
-       * It is more general then the login() method, since it allows
-       * to transport any authentication info in the xml based qos.
-       *
-       * You can still use login() for simple name/password based authentication.
        *
        * @param qos The authentication and other informations
        * @param client A handle to your callback if desired or null
@@ -61,14 +52,10 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
       virtual std::string getProtocol() = 0;
 
       /**
-       * Is invoked when we poll for the server, for example after we have lost the connection.
+       * Is called when we disconnect or automatically when
+       * are going to POLLING mode. 
        */
-//      virtual std::string loginRaw() = 0;
-
       virtual bool shutdown() = 0;
-
-      /** Reset the driver on problems */
-      virtual void resetConnection() = 0;
 
       virtual std::string getLoginName() = 0;
 

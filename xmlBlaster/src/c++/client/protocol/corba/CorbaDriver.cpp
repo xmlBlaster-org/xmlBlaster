@@ -277,11 +277,6 @@ bool CorbaDriver::shutdown()
    _COMM_CATCH("::shutdown", false, false)
 }
 
-void CorbaDriver::resetConnection()
-{
-   log_.error(ME, "'CorbaDriver::resetConnection' not implemented");
-}
-
 string CorbaDriver::getLoginName()
 {
    _COMM_TRY
