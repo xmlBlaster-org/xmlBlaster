@@ -21,6 +21,11 @@ BUGS:
 
 
 DONE:
+  - Added invocation recorder plugin framework to queue
+    messages on client side on failure:
+    1. RamRecorder.java
+    2. FileRecorder.java
+
   - Bugfix for similar XPath subscriptions of many clients
 
   - Bugfix for volatile message deletion with multiple subscribers
