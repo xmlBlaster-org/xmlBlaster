@@ -795,6 +795,8 @@ TODO
       <echo message=""/>
       <echo message="   Start the persistent HTTP applet demo with:"/>
       <echo message="      http://localhost:8080/xmlBlaster/HelloWorld3.html"/>
+      <echo message="      http://localhost:8080/xmlBlaster/SystemInfoApplet.html"/>
+      <echo message="      http://localhost:8080/xmlBlaster/XmlScript.html"/>
    </target>
 
    <!-- =================================================================== -->
