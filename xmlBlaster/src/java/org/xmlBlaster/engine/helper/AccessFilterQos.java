@@ -3,7 +3,7 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.8 2002/09/13 23:18:00 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.9 2002/10/25 18:10:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -51,7 +51,7 @@ public class AccessFilterQos
    {
       this.glob = glob;
       this.log = this.glob.getLog("mime");
-      version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
+      setVersion(glob.getProperty().get("accessFilter.version", DEFAULT_version));
    }
 
    /**
@@ -64,7 +64,6 @@ public class AccessFilterQos
    {
       this.glob = glob;
       this.log = this.glob.getLog("mime");
-      version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
       setType(type);
       setVersion(version);
       setQuery(new Query(glob, query));
@@ -80,7 +79,6 @@ public class AccessFilterQos
    {
       this.glob = glob;
       this.log = this.glob.getLog("mime");
-      version = glob.getProperty().get("accessFilter.version", DEFAULT_version);
       setType(type);
       setVersion(version);
       setQuery(query);
