@@ -7,7 +7,7 @@ UTIL_DIR   =$(SRC_DIR)/util
 JUTIL_DIR  =$(SRC_DIR)/jutil
 TEST_DIR   =$(XMLBLASTER_HOME)/testsuite/c++
 BIN_DIR    =$(TEST_DIR)/bin
-XMLCPP_INC =-I$(XMLCPP_HOME)
+XMLCPP_INC =-I$(XMLCPP_HOME)/include
 XMLCPP_LIB =-L$(XMLCPP_HOME)/lib -lxerces-c$(XMLCPP_VER) -lpthread
 CLIENT_OBJ =$(CLIENT_DIR)/CorbaConnection.o $(UTIL_DIR)/CompatibleCorba.o $(UTIL_DIR)/Log.o
 

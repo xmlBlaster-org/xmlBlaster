@@ -39,3 +39,4 @@ if [ $MICO_VER ] ; then
   export CORBACPP_VER=${MICO_VER}
 fi
 
+export PATH=$PATH:${MICO_HOME}/bin
