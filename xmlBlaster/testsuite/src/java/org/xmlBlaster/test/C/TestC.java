@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Execute;
+import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.test.Util;
 
 import java.io.*;
@@ -31,7 +32,7 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.C.TestC
  * </pre>
  */
-public class TestC extends TestCase
+public class TestC extends TestCase implements I_ExecuteListener
 {
    private static String ME = "TestC";
    private final Global glob;
@@ -115,6 +116,7 @@ public class TestC extends TestCase
       log.info(ME, "######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
 
       Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
       e.run();
 
       if (e.getExitValue() != 0) {
@@ -148,6 +150,7 @@ public class TestC extends TestCase
       log.info(ME, "######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
 
       Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
       e.run();
 
       if (e.getExitValue() != 0) {
@@ -181,6 +184,7 @@ public class TestC extends TestCase
       log.info(ME, "######## Start test_C_Stress('" + commandArr[0] + "')");
 
       Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
       e.run();
 
       if (e.getExitValue() != 0) {
@@ -214,6 +218,7 @@ public class TestC extends TestCase
       log.info(ME, "######## Start test_C_Util('" + commandArr[0] + "')");
 
       Execute e = new Execute(glob, commandArr, envArr);
+      e.setExecuteListener(this);
       e.run();
 
       if (e.getExitValue() != 0) {
@@ -233,6 +238,13 @@ public class TestC extends TestCase
 
       log.info(ME, "######## SUCCESS test_C_Util('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
+   }
+
+   public void stdout(String data) {
+      log.info(ME, "Native C output: " + data);
+   }
+   public void stderr(String data) {
+      log.error(ME, "Native C output: " + data);
    }
 
    /**
