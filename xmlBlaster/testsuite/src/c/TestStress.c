@@ -61,7 +61,7 @@ static const char * test_stress()
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccessUnparsed *xa = 0;
    bool retBool;
-   int iPub, iWait, numPublish;
+   int iPub, iWait, numPublish, maxQueueEntries;
 
    xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
@@ -69,7 +69,8 @@ static const char * test_stress()
       mu_fail("[TEST FAIL] Connection to xmlBlaster failed, please start the server or check your configuration");
    }
 
-   numPublish = xa->props->getInt(xa->props, "numPublish", 2500);
+   numPublish      = xa->props->getInt(xa->props, "numPublish", 2500);
+   maxQueueEntries = xa->props->getInt(xa->props, "maxQueueEntries", numPublish);
 
    {  /* connect */
       char connectQos[2048];
@@ -80,7 +81,7 @@ static const char * test_stress()
                "    socket://%.120s:%d"
                "  </callback>"
                "</queue>",
-               numPublish, numPublish, callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+               maxQueueEntries, maxQueueEntries, callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
       sprintf(connectQos,
                "<qos>"
                " <securityService type='htpasswd' version='1.0'>"
@@ -153,7 +154,7 @@ static const char * test_stress()
    }
 
    mu_assert("No update arrived", *updateContent != '\0');
-   if (updateCounter != numPublish ) {
+   if (updateCounter != numPublish) {
       freeXmlBlasterAccessUnparsed(xa);
       mu_assert("Missing updates", updateCounter == numPublish);
    }
