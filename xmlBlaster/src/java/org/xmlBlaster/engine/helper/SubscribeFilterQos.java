@@ -3,9 +3,9 @@ Name:      SubscribeFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: SubscribeFilterQos.java,v 1.1 2002/03/15 07:57:19 ruff Exp $
+Version:   $Id: SubscribeFilterQos.java,v 1.2 2002/03/15 13:05:49 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine.xml2java;
+package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -22,7 +22,7 @@ import org.xml.sax.Attributes;
  * </pre>
  * This example addresses the plugin in xmlBlaster.properties file
  * <pre>
- *   SubscribeMimePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+ *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
  * </pre>
  */
 public class SubscribeFilterQos
@@ -48,11 +48,13 @@ public class SubscribeFilterQos
    /**
     * @param type    The plugin name
     * @param version The plugin version
+    * @param query   Your filter rule
     */
-   public SubscribeFilterQos(String type, String version)
+   public SubscribeFilterQos(String type, String version, String query)
    {
       setType(type);
       setVersion(version);
+      setQuery(query);
    }
 
    /**
@@ -110,8 +112,9 @@ public class SubscribeFilterQos
 
    /**
     * Called for SAX filter start tag
+    * @return true if ok, false on error
     */
-   public final void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs)
+   public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs)
    {
       String tmp = character.toString().trim(); // The query
       if (tmp.length() > 0) {
@@ -130,16 +133,19 @@ public class SubscribeFilterQos
                   setVersion(attrs.getValue(i).trim());
                }
                else {
-                  Log.error(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in filter section.");
+                  Log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in filter section.");
                }
             }
          }
          if (getType() == null) {
-            Log.error(ME, "Missing 'filter' attribute 'type' in QoS, ignoring the filter request");
+            Log.warn(ME, "Missing 'filter' attribute 'type' in QoS, ignoring the filter request");
             setType(null);
+            return false;
          }
-         return;
+         return true;
       }
+
+      return false;
    }
 
 
@@ -149,7 +155,7 @@ public class SubscribeFilterQos
    public final void endElement(String uri, String localName, String name, StringBuffer character)
    {
       if (name.equalsIgnoreCase("filter")) {
-         String tmp = character.toString().trim(); // The query (if after inner tags)
+         String tmp = character.toString().trim();
          if (tmp.length() > 0)
             setQuery(tmp);
          else if (getQuery() == null)
@@ -186,7 +192,7 @@ public class SubscribeFilterQos
       if (!DEFAULT_version.equals(getVersion()))
           sb.append(" version='").append(getVersion()).append("'");
       sb.append(">");
-      sb.append(offset).append("   ").append(getQuery());
+      sb.append(offset).append("   <![CDATA[").append(getQuery()).append("]]>");
       sb.append(offset).append("</filter>");
 
       return sb.toString();

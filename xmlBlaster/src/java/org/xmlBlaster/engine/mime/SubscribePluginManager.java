@@ -3,7 +3,7 @@ Name:      SubscribePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: SubscribePluginManager.java,v 1.2 2002/03/14 19:18:32 ruff Exp $
+Version:   $Id: SubscribePluginManager.java,v 1.3 2002/03/15 13:04:33 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -24,7 +24,7 @@ public class SubscribePluginManager extends PluginManagerBase {
 
    private static final String ME = "SubscribePluginManager";
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
-   private static final String pluginPropertyName = "MimeSubscribePlugin";
+   public static final String pluginPropertyName = "MimeSubscribePlugin";
 
    private static SubscribePluginManager me = null;
 
@@ -33,21 +33,8 @@ public class SubscribePluginManager extends PluginManagerBase {
 
    public SubscribePluginManager() throws XmlBlasterException
    {
-         /*
-      try {
-         // super.choosePlugin reads pluginName and parameters from porperties
-         // so read property file, if it's not there, write it to the properties
-         XmlBlasterProperty.set(pluginPropertyName + "[filestore][1.0]",
-            XmlBlasterProperty.get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
-
-         XmlBlasterProperty.set(pluginPropertyName + "[xmldb][xindice]",
-            XmlBlasterProperty.get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
-      } catch (org.jutils.JUtilsException e) {
-         throw new XmlBlasterException( e.id, e.reason );
-      }
-         */
+      // No default plugin to initialize
    }
-
 
    /**
     * Return an instance of this singleton. 
@@ -64,50 +51,31 @@ public class SubscribePluginManager extends PluginManagerBase {
       return me;
    }
 
-
    /**
     * Return a specific MIME based message filter plugin. 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return The SubscribeFilter for this mime and version or null if none is specified
+    * @return The SubscribeFilter for this type and version or null if none is specified
     */
    public I_SubscribeFilter getPlugin(String type, String version) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
-      I_SubscribeFilter persistencePlugin = null;
+      I_SubscribeFilter filterPlugin = null;
       String[] pluginNameAndParam = null;
 
       pluginNameAndParam = choosePlugin(type, version);
 
-      if((pluginNameAndParam!=null) &&
-         (pluginNameAndParam[0]!=null) &&
-         (!pluginNameAndParam.equals("")))
-      {
-         persistencePlugin = (I_SubscribeFilter)managers.get(pluginNameAndParam[0]);
-         if (persistencePlugin!=null) return persistencePlugin;
-
-         persistencePlugin = loadPlugin(pluginNameAndParam);
+      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
+         filterPlugin = (I_SubscribeFilter)managers.get(pluginNameAndParam[0]);
+         if (filterPlugin!=null) return filterPlugin;
+         filterPlugin = loadPlugin(pluginNameAndParam);
       }
       else {
          //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
       }
 
-      return persistencePlugin;
+      return filterPlugin;
    }
-
-
-   /**
-    * Check if the requested plugin is supported. 
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return boolean true, if supported. else -> false
-    */
-   public boolean isSupported(String type, String version) {
-      Log.error(ME, "Not implemented yet");
-      return false;
-   }
-
 
    /**
    * @return The name of the property in xmlBlaster.property "MimeSubscribePlugin"
@@ -117,14 +85,12 @@ public class SubscribePluginManager extends PluginManagerBase {
       return pluginPropertyName;
    }
 
-
    /**
     * @return please return your default plugin classname or null if not specified
     */
    public String getDefaultPluginName() {
       return defaultPluginName;
    }
-
 
    /**
     * Resolve type and version to the plugins name. 
