@@ -32,6 +32,7 @@ public class MsgInterceptor extends Assert implements I_Callback
    private I_Callback testsuite = null;
    //private Msgs msgs = null;
    private int verbosity = 2;
+   private boolean countErased = false;
 
    /**
     * @param testsuite If != null your update() variant will be called as well
@@ -72,6 +73,13 @@ public class MsgInterceptor extends Assert implements I_Callback
     */
 
    /**
+    * @param countErased Set to true to count the erased notifications as well
+    */
+   public void countErased(boolean countErased) {
+      this.countErased = countErased;
+   }
+
+   /**
     * This is the callback method (I_Callback) invoked from xmlBlaster
     * It directly calls the update method from the testsuite (delegation)
     */
@@ -90,7 +98,7 @@ public class MsgInterceptor extends Assert implements I_Callback
                       updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       }
 
-      if (!updateQos.isErased()) {
+      if (this.countErased || !updateQos.isErased()) {
          add(new Msg(cbSessionId, updateKey, content, updateQos));
       }
       if (testsuite != null)
@@ -194,6 +202,7 @@ public class MsgInterceptor extends Assert implements I_Callback
    
    public void clear() { 
       this.updateVec.clear();
+      this.countErased = false;
    }
 
    /**
