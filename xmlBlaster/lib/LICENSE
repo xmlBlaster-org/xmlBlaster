@@ -187,6 +187,8 @@ only the SNMP subagent module jax.jar is GPL only!
     ./src/net/sf/antcontrib/cpptasks/types/LibrarySet.java:
     throw new BuildException("Library names should not contain periods: "+libnames[i]);
 
+  See:  http://ant-contrib.sourceforge.net/cc.html
+
   ant-contrib.jar  cvs from Feb 12, 2003
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
