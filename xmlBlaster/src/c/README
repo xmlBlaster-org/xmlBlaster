@@ -1,0 +1,71 @@
+---------------------------------------------------------------------
+  C based SOCKET access to xmlBlaster, May 2003
+---------------------------------------------------------------------
+
+This is a first, tiny quick hack of a C based SOCKET client.
+It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
+
+Features:
+
+  o Support on many OS and easy portable
+
+  o Object size only ~20 KBytes
+  
+  o Supports synchronous xmlBlaster access with
+    connect(), disconnect(), get(), publish(), erase(), ping()
+  
+  o Asynchronous access with client callback update() is under
+    development
+    Posix threads DLL for Win, PocketPC, WinCE
+
+  o Reports exception nicely back to the client
+
+  o The client side xmlBlasterAccess structure has function pointers
+    for all methods to have object oriented like access,
+    see client.c as a usage example
+
+
+COMPILE:
+========
+
+cd xmlBlaster/demo/c/socket   (see client.c)
+
+Linux:    gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
+
+Windows:  cl /MT /W3 /Wp64 -D_WINDOWS client.c msgUtil.c socket\*.c ws2_32.lib
+
+
+Now start xmlBlaster:
+=====================
+
+   java org.xmlBlaster.Main -dump[socket] true -trace[socket] true -call[socket] true  -call[core] true
+
+and the C client:
+
+   client
+
+The client connects and does some invocations (see the main() in client.c).
+
+
+Next steps:
+===========
+
+o Clean up the code
+ - make a lib from it
+ - add callback support
+   with pthreads on UNIX and
+   http://sources.redhat.com/pthreads-win32 on Windows
+
+o Make layers of functionality
+ - raw communication
+ - adding threading support to allow callbacks in the same process.
+ - expat parsing
+
+o Add some demo in xmlBlaster/demo/c
+
+o Wrap it as a C++ protocol plugin to be independend of CORBA and
+ use the C++ testsuite for this C implementation 
+
+
+
+mr@marcelruff.info 05/2003

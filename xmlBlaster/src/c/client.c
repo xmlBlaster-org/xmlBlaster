@@ -6,7 +6,7 @@ Comment:   client connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
 Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS client.c callbackServer.c ws2_32.lib
-Invoke:    client -socket.hostCB develop -socket.portCB 7607
+Invoke:    client -dispatch/callback/protocol/socket/hostname develop -dispatch/callback/protocol/socket/port 7607
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -65,9 +65,9 @@ int main(int argc, char** argv)
    cbArgs.update = update;
 
    for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-socket.hostCB") == 0)
+      if (strcmp(argv[iarg], "-dispatch/callback/protocol/socket/hostname") == 0)
          cbArgs.hostCB = argv[++iarg];
-      else if (strcmp(argv[iarg], "-socket.portCB") == 0)
+      else if (strcmp(argv[iarg], "-dispatch/callback/protocol/socket/port") == 0)
          cbArgs.portCB = atoi(argv[++iarg]);
       else if (strcmp(argv[iarg], "-startCallback") == 0)
          startCallback = true;

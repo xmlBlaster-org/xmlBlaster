@@ -104,11 +104,11 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-socket.host") == 0)
          strcpy(serverHostName, argv[++iarg]);
-      else if (strcmp(argv[iarg], "-socket.port") == 0)
+      else if (strcmp(argv[iarg], "-dispatch/clientSide/protocol/socket/port") == 0)
          servTcpPort = argv[++iarg];
    }
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Lookup xmlBlaster on -socket.host %s -socket.port %s ...\n", serverHostName, servTcpPort);
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Lookup xmlBlaster on -socket.host %s -dispatch/clientSide/protocol/socket/port %s ...\n", serverHostName, servTcpPort);
 
    memset(xb->secretSessionId, 0, sizeof(xb->secretSessionId));
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
@@ -140,17 +140,17 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
             if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Connected to xmlBlaster\n");
          }
          else {
-            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (connect failed) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (connect failed) -socket.host %s -dispatch/clientSide/protocol/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
             return false;
          }
       }
       else {
-         if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (socket=-1) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+         if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (socket=-1) -socket.host %s -dispatch/clientSide/protocol/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
          return false;
       }
    }
    else {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (hostP=0) -socket.host %s -socket.port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (hostP=0) -socket.host %s -dispatch/clientSide/protocol/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
       return false;
    }
    xb->isInitialized = true;
