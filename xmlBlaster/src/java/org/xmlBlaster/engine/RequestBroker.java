@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.99 2002/02/16 18:42:31 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.100 2002/02/26 10:44:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -34,7 +34,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.99 $
+ * @version $Revision: 1.100 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -291,10 +291,10 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *       &lt;noLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
     *    &lt;/qos>
     * </pre>
-    * @return oid    The oid of your subscribed Message<br>
+    * @return oid    A unique subscription ID<br>
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
-    *                You should use this oid if you wish to unSubscribe()<br>
+    *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
     *
     * @see addListener in Java event model
@@ -324,7 +324,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
             subscribeToOid(subs);                // fires event for subscription
 
-            if (returnOid.equals("")) returnOid = xmlKeyExact.getUniqueKey();
+            if (returnOid.equals("")) returnOid = subs.getUniqueKey(); // old:  returnOid = xmlKeyExact.getUniqueKey();
          }
 
          return returnOid;

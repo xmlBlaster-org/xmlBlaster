@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.30 2002/01/30 17:37:19 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.31 2002/02/26 10:44:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -230,7 +230,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (querySub != null) {
          return querySub.getUniqueKey();
       }
-      return xmlKey.getUniqueKey();  // Exact subscriptions deliver the key oid
+      return getUniqueKey();
    }
 
 
