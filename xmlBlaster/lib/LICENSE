@@ -305,3 +305,9 @@ only the SNMP subagent module jax.jar is GPL only!
   http://xmlunit.sourceforge.net/
   XMLUnit - JUnit and NUnit testing for XML
   Version 1.0
+
+35) log4cplus 
+=============
+  http://log4cplus.sourceforge.net for C++ logging, Version 1.0.1
+  (Apache license)
+  See src/c++/log4cplus
