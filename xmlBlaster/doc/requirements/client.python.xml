@@ -4,28 +4,28 @@
 
 <requirement id='client.python' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>
-      XmlBlaster provides a client library written in Python using XmlRpc.
+      XmlBlaster provides a client library written in Python.
    </topic>
    <description>
+     We have three Python client variants available.
      <p>
-     You find the python client code in the directory <i>xmlBlaster/src/python</i>.
-     Please use the file <i>pyBlaster.py</i> which provides access to
-     xmlBlaster in an easy and even interactive way.
-     </p>
-     <p>
-     Following access methods are supported:
-     </p>
-     <p>
-     <ul>
-     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
-     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
-     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
-     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
-     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
-     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
-     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
-     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
-     </ul>
+     <ol>
+     <li>pyBlaster from Peter Arwanitis (spex66 @ gmx . net)
+         This is a fairly complete python client to xmlBlaster
+         using XmlRpc as access protocol.
+         It is simple and brilliant.
+         See <a href="client.python.xmlrpc.html">XmlRpc access</a>.
+     </li>
+     <li>CORBA access with omniORBpy by Oleg Orlov (orlov@diasoft.ru)
+         This is a smart and powerful example how to access xmlBlaster from Python
+         with CORBA.
+         See <a href="client.python.corba.html">Corba access</a>
+     </li>
+     <li>A simple XmlRpc based access client from Marcel Ruff
+         This is outdated and was a first step for access verification.
+         See <a href="http://www.xmlBlaster.org/xmlBlaster/demo/python/deprecated/README">README</a>
+     </li>
+     </ol>
      </p>
    </description>
 
@@ -38,12 +38,22 @@
    <configuration where="client">
    </configuration>
 
-   <see type="CODE" lang="PYTHON">pyBlaster/pyBlaster.py</see>
-   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/src/python/README</see>
-   <see type="REQ">interface</see>
+   <todo where="client">
+      <p>
+     We need to cleanup all above approaches and layer the protocol
+     (like CORBA or XmlRpc) below some general python classes
+     to simplify xmlBlaster access from Python
+     </p>
+   </todo>
 
-   <author><a href="mailto:spex66@gmx.net">Peter Arwanitis</a></author>
-   <date>2003 05 01</date>
-   <revision>$Revision: 1.2 $</revision>
+   <see type="REQ">interface</see>
+   <see type="REQ">client.python.xmlrpc</see>
+   <see type="REQ">client.python.corba</see>
+   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/src/python/README</see>
+   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/demo/python/README</see>
+
+   <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
+   <date>2004 01 24</date>
+   <revision>$Revision: 1.3 $</revision>
 </requirement>
 

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.python.corba' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      XmlBlaster provides a client library written in Python using Corba.
+   </topic>
+   <description>
+     <p>
+     You find the python client code in the directory <i>xmlBlaster/demo/python/corba</i>.
+     </p>
+     <p>
+     Following access methods are supported:
+     </p>
+     <p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
+     </ul>
+     </p>
+   </description>
+
+   <example lang="PYTHON">
+      <p><a NAME="example"></a></p>
+   <pre>
+   </pre>
+   </example>
+
+   <configuration where="client">
+   </configuration>
+
+   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/demo/python/corba/README</see>
+   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/demo/python/corba/simple.py.html</see>
+   <see type="REQ">client.python</see>
+   <see type="REQ">interface</see>
+
+   <author><a href="mailto:orlov@inetcomm.ru">Oleg Orlov</a></author>
+   <date>2003 10 01</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
