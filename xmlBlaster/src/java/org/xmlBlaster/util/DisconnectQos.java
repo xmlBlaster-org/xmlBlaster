@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.2 2002/03/13 16:41:34 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.3 2002/06/27 11:01:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -26,7 +26,8 @@ import java.io.Serializable;
  * A typical <b>logout</b> qos could look like this:<br />
  * <pre>
  *  &lt;qos>
- *    &lt;deleteSubjectQueue>false&lt;/deleteSubjectQueue>
+ *    &lt;deleteSubjectQueue>true&lt;/deleteSubjectQueue>
+ *    &lt;clearSessions>false&lt;/clearSessions>
  *  &lt;/qos>
  * </pre>
  * <p />
@@ -36,6 +37,7 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
 {
    private String ME = "DisconnectQos";
    private boolean deleteSubjectQueue = true;
+   private boolean clearSessions = false;
 
    /**
     * Default constructor
@@ -81,6 +83,23 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
       this.deleteSubjectQueue = del;
    }
 
+   /**
+    * Return true if we shall kill all other sessions of this user on logout (defaults to false). 
+    * @return false
+    */
+   public boolean clearSessions()
+   {
+      return clearSessions;
+   }
+
+   /**
+    * @param true if we shall kill all other sessions of this user on logout (defaults to false). 
+    */
+   public void clearSessions(boolean del)
+   {
+      this.clearSessions = del;
+   }
+
    public void startElement(String uri, String localName, String name, Attributes attrs)
    {
       if (super.startElementBase(uri, localName, name, attrs) == true)
@@ -89,6 +108,12 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
 
       if (name.equalsIgnoreCase("deleteSubjectQueue")) {
          deleteSubjectQueue = true;
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("clearSessions")) {
+         clearSessions = true;
          character.setLength(0);
          return;
       }
@@ -105,6 +130,14 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             deleteSubjectQueue(new Boolean(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("clearSessions")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            clearSessions(new Boolean(tmp).booleanValue());
          character.setLength(0);
          return;
       }
@@ -136,17 +169,22 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append("<qos>").append("<deleteSubjectQueue>").append(deleteSubjectQueue).append("</deleteSubjectQueue>").append("</qos>");
+      sb.append(offset).append("<qos>");
+      sb.append(offset).append("  <deleteSubjectQueue>").append(deleteSubjectQueue).append("</deleteSubjectQueue>");
+      sb.append(offset).append("  <clearSessions>").append(clearSessions).append("</clearSessions>");
+      sb.append(offset).append("</qos>");
 
       return sb.toString();
    }
 
-   /** For testing: java org.xmlBlaster.client.DisconnectQos */
+   /** For testing: java org.xmlBlaster.util.DisconnectQos */
    public static void main(String[] args)
    {
       try {
          org.xmlBlaster.util.XmlBlasterProperty.init(args);
          DisconnectQos qos = new DisconnectQos();
+         qos.clearSessions(true);
+         qos.deleteSubjectQueue(false);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {
