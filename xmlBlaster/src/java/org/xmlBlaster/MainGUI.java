@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.11 1999/12/22 23:11:50 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.12 1999/12/27 13:18:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -22,9 +22,15 @@ import jacorb.poa.gui.beans.FillLevelBar;
 
 
 /**
- * Start xmlBlaster with a stop button.
+ * Start xmlBlaster with a GUI based control panel. 
  * <p />
- * A little AWT button pops up, where you can stop the xmlBlaster<br />
+ * A control panel pops up, where you can<br />
+ * <ul>
+ *   <li>Stop xmlBlaster</li>
+ *   <li>View the performance monitor</li>
+ *   <li>See and adjust logging output</li>
+ *   <li>Invoke XPath queries on messages in xmlBlaster</li>
+ * </ul>
  * The available start parameters are similar to Main
  * @see Main
  */
@@ -33,32 +39,43 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";
 
-   private Button beepButton;
+   private Button exitButton;
 
+   /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
+   /** To save memory consumption, limit number of logging lines to this value. */
    private final long MAX_LOG_LINES = 3000;
+   /** The actual number of logged lines in the TextArea. */
    private long numLogLines = 0;
 
+   /** Approximate elapsed time since startup of this server. */
    private long elapsedTime = 0L;
 
+   /** Performance monitor for number of published messages. */
    private FillLevelBar publishedMessagesBar = new FillLevelBar();
    private Label publishedLabel = new Label(); // display total count
    private long publishedMessages = 0L;
    private long lastPublishedMessages = 0L;
 
+   /** Performance monitor for number of update messages (callbacks to clients). */
    private FillLevelBar sentMessagesBar = new FillLevelBar();
    private Label sentLabel = new Label();
    private long sentMessages = 0L;
    private long lastSentMessages = 0L;
 
+   /** Performance monitor for number of synchronous accessed messages. */
    private FillLevelBar getMessagesBar = new FillLevelBar();
    private Label getLabel = new Label();
    private long getMessages = 0L;
    private long lastGetMessages = 0L;
 
+   /** XPath query input field. */
    private TextField  inputTextField = new TextField();
+   /** Display XPath query results. */
    private TextArea queryOutput = null;
+   /** A client accessing xmlBlaster to do some XPath query. */
    private ClientQuery clientQuery = null;
+   /** Remember previous query strings. */
    private QueryHistory queryHistory;
 
 
@@ -167,7 +184,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.insets = new Insets(5,5,5,5);
 
       // Exit Button
-      beepButton = new Button("Exit");
+      exitButton = new Button("Exit");
       class BeepListener implements ActionListener {
          public void actionPerformed(ActionEvent e) {
             toolkit.beep();
@@ -177,10 +194,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             Log.exit(ME, "Good bye!");
          }
       }
-      beepButton.addActionListener(new BeepListener());
+      exitButton.addActionListener(new BeepListener());
       gbc.gridx=0; gbc.gridy=0; gbc.gridwidth=1; gbc.gridheight=1;
       gbc.weightx = gbc.weighty = 0.0;
-      add(beepButton, gbc);
+      add(exitButton, gbc);
 
       // Statistic display with fill level bars
       int offset = 0;
@@ -381,7 +398,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Access the query history. 
+    * Access the query history.
     */
    private QueryHistory getQueryHistory()
    {
@@ -392,7 +409,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    *  Invoke: jaco org.xmlBlaster.MainGUI
+    *  Invoke: <pre>jaco org.xmlBlaster.MainGUI</pre><br />
+    * to start xmlBlaster with a control panel
     */
    static public void main(String[] args)
    {
@@ -406,7 +424,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Polls the state of xmlBlaster
+    * Polls the state of xmlBlaster.
     */
    private class PollingThread extends Thread
    {
@@ -505,6 +523,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    }
 
 
+   /**
+    * Scrolling with key arrow up/down your last XPath queries. 
+    * @param stmt The XPath stmt to display
+    */
    private void displayHistory(String stmt)
    {
       if (stmt.length() < 1) return;
@@ -542,7 +564,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
       /**
-       * query xmlBlaster
+       * Query xmlBlaster. 
        */
       MessageUnit[] get(String queryString)
       {
@@ -602,7 +624,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access previous. 
+      * Access previous XPath query. 
       */
      String getPrev()
      {
@@ -613,7 +635,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access next. 
+      * Access next XPath query. 
       */
      String getNext()
      {
@@ -635,7 +657,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access first (the oldest), sets current to first. 
+      * Access first (the oldest), sets current to first.
       */
      String getFirst()
      {
