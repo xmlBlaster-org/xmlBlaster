@@ -6,13 +6,33 @@ Howto start the Perl/XmlRpc demo:
       java -jar lib/xmlBlaster.jar
 
 
- - Run the Perl demo client
+ - Run first Perl demo client : hello.pl
+
    (Pass as argument the url where xmlBlaster listens,
     xmlBlaster logs this url on your console)
 
       cd xmlBlaster/demo/perl/xmlrpc
       perl  hello.pl  http://myhost:8080
 
+ - Run a second Perl demo client : xmlBlasterClient.pl
+
+      1/ cd xmlBlaster/demo/perl/xmlrpc
+
+      perl  xmlBlasterClient.pl  http://myhost:port
+
+      2/ if it doesn't work, look at the file xmlBlasterClient.pl
+      to make change as writed in section 'Required configuration'.
+      The only 2 configuration stuff are :
+      	authentification type (plugin default is simple )
+      	two valid users on xmlBlaster server (default users are mad & yann ).
+
+ - Run another Perl demo client : messagesList.pl
+
+      1/ cd xmlBlaster/demo/perl/xmlrpc
+
+      perl  messagesList.pl  http://myhost:port
+
+      It will try to get all messages actually in xmlBlaster server.
 
 Thats it!
 
@@ -32,7 +52,7 @@ Get more informations about INSTALLATION at
 This is the simplest Perl client code:
 -------------------------------------------------------------------
 use Frontier::Client;
-    
+
 # Make an object to represent the XML-RPC server.
 $server_url = 'http://myHost:8080/';
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
@@ -52,3 +72,18 @@ print "\nResult for a get():\n----------------\n $message \n----------------\n";
 See
    xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
 with all allowed server-methods you can invoke.
+
+-------------------------------------------------------------------
+CHANGES :
+
+2002-02-12 cyrille@ktaland.com
+
+add demo scripts :
+	xmlBlasterClient.pl
+	messagesList.pl
+
+and some packages to help in managing xmlBlaster stuff :
+	messageUnit.pm : manage MessageUnit
+	connectQos.pm : manage connectQos
+	Exception.pm : not xmlBlaster specific, it's my Exception like management package.
+
