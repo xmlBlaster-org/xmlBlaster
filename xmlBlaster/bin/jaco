@@ -21,7 +21,7 @@
 #       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
 
 
-# Variant loading the xmlBlaster.policy via CLASSPATH:
+# Variant loading the xmlBlaster.policy via CLASSPATH (if you use RMI):
 #export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/config
 
 java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy "$@"
