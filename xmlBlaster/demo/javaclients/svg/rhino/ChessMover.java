@@ -9,19 +9,9 @@ package javaclients.svg.rhino;
 
 import org.xmlBlaster.util.XmlBlasterException;
 
-import java.io.Reader;
-import java.io.BufferedReader;
-import java.io.Writer;
-import java.io.IOException;
-
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import java.util.Random;
 
@@ -61,7 +51,7 @@ public class ChessMover
       MsgUnit msg = new MsgUnit(key, content.getBytes(), qos);
       this.connection.publish(msg);
       try {
-         Thread.currentThread().sleep(this.sleepTime);
+         Thread.sleep(this.sleepTime);
       }
       catch (Exception ex) {}
    }

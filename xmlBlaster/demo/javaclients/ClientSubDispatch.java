@@ -101,7 +101,7 @@ public class ClientSubDispatch implements I_Callback
          publishOid1 = blasterConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Publishing done, returned oid=" + publishOid1);
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          String publishOid2 = "";
          xmlKey = "<key oid='A message id' contentMime='text/xml'>\n" +
@@ -112,7 +112,7 @@ public class ClientSubDispatch implements I_Callback
          log.info(ME, "Publishing done, returned oid=" + publishOid2);
 
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived1 == 1)
             log.info(ME, "Success, got Callback #1 after publishing");

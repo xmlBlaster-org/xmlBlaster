@@ -7,14 +7,12 @@ import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 

@@ -104,7 +104,7 @@ public class ClientSub implements I_Callback
             }
          }
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 0)
             log.info(ME, "Success, no Callback for a simple subscribe without a publish");
@@ -138,7 +138,7 @@ public class ClientSub implements I_Callback
             }
          }
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 1)
             log.info(ME, "Success, got Callback after publishing");

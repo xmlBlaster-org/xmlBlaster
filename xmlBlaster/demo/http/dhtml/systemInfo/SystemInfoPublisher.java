@@ -9,9 +9,6 @@ package http.dhtml.systemInfo;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.jutils.io.FileUtil;
-import org.jutils.time.StopWatch;
-import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -19,7 +16,6 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.MsgUnit;
 
-import java.io.File;
 import java.util.Random;
 
 
@@ -63,13 +59,13 @@ public class SystemInfoPublisher
          try {
             int val = random.nextInt(6000); // between 0 and 6 sec
             if (val < 2000) val = 2000;
-            try { Thread.currentThread().sleep(val); } catch( InterruptedException i) {}
+            try { Thread.sleep(val); } catch( InterruptedException i) {}
             int cpu = getCpuload();
             publish("cpuinfo", cpu);
 
             val = random.nextInt(6000); // between 0 and 6 sec
             if (val < 2000) val = 2000;
-            try { Thread.currentThread().sleep(val); } catch( InterruptedException i) {}
+            try { Thread.sleep(val); } catch( InterruptedException i) {}
             int mem = getMeminfo();
             publish("meminfo", mem);
          }

@@ -229,7 +229,7 @@ public class ClientRawSecurity
    private void delay(long millis)
    {
       try {
-          Thread.currentThread().sleep(millis);
+          Thread.sleep(millis);
       }
       catch( InterruptedException i)
       {}

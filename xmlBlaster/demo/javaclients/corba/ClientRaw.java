@@ -204,7 +204,7 @@ public class ClientRaw
 
    private void delay(long millis) {
       try {
-          Thread.currentThread().sleep(millis);
+          Thread.sleep(millis);
       }
       catch( InterruptedException i)
       {}

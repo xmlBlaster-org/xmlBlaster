@@ -15,10 +15,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
 import org.xmlBlaster.protocol.http.HttpPushHandler;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 
 import javax.servlet.*;
 import javax.servlet.http.*;

@@ -3,10 +3,6 @@ package javaclients.email;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -40,7 +36,7 @@ public class Demo
          con.publish(new MsgUnit("<key oid='EmailDemo'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
-         try { Thread.currentThread().sleep(1000); } 
+         try { Thread.sleep(1000); } 
          catch( InterruptedException i) {} // wait a second
 
          con.disconnect(null);
