@@ -9,11 +9,27 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
-//!!!  import SNMP subagent specific classes here !!!
+import XmlBlasterTest;
+
+import NodeScalarImpl;
+import NodeEntryImpl;
+import NodeTable;
+import NodeTableSubject;
+import NodeTableObserver;
+import ConnectionTableSubject;
+import ConnectionTableObserver;
+
+import java.io.*;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.net.*;
+import java.lang.Integer;
+import jax.*; // import SNMP subagent specific classes
 
 /**
  * The gateway from outside SNMP connections to inside CommandManager. 
@@ -31,6 +47,15 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    private LogChannel log;
    private CommandManager manager;
    private String sessionId = null;
+   private XmlBlasterTest proxy = null;
+
+   /** port for agentX connection, where SNMP-agent listens for our sub agent */
+   private int port = 705;
+   private String hostname;
+
+   private AgentXConnection connection;
+   private AgentXSession session;
+   private AgentXRegistration registration;
 
    /**
     * This is called after creation of the plugin. 
@@ -46,9 +71,9 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       this.log = this.glob.getLog("admin");
       this.ME = "SnmpGateway" + this.glob.getLogPraefixDashed();
       this.manager = commandManager;
-      initSubagent();
+      boolean ret = initSubagent();
       log.trace(ME, "Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
-      return true;
+      return ret;
    }
 
    /**
@@ -59,9 +84,78 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
     *  mem
     * </pre>
     * Enter 'help' for all available commands.
+    * @return true if subagent is configured and active
     */
-   private void initSubagent() throws XmlBlasterException {
-       // throw new XmlBlasterException(ME, "Initializing of SNMP subagent failed:" + e.toString());
+   private boolean initSubagent() throws XmlBlasterException {
+      // throw new XmlBlasterException(ME, "Initializing of SNMP subagent failed:" + e.toString());
+      this.port = glob.getProperty().get("admin.snmp.port", this.port);
+      this.port = glob.getProperty().get("admin.snmp.port[" + glob.getId() + "]", this.port);
+
+      this.hostname = glob.getProperty().get("admin.snmp.hostname", glob.getBootstrapAddress().getHostname());
+      this.hostname = glob.getProperty().get("admin.snmp.hostname[" + glob.getId() + "]", this.hostname);
+
+      boolean debug = glob.getProperty().get("admin.snmp.debug", false);
+      debug = glob.getProperty().get("admin.snmp.debug[" + glob.getId() + "]", debug);
+
+      System.setProperty("jax.debug", ""+debug);
+
+      if (this.port < 1) {
+         log.warn(ME, "SNMP subagent is switched off, please provide admin.snmp.port > 0 to switch it on");
+         return false;
+      }
+
+      try {
+         log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port);
+
+         connection = new AgentXConnection(this.hostname, this.port);
+
+         log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " established");
+
+         session = new AgentXSession();
+         connection.openSession(session);
+
+         registration = new AgentXRegistration(new AgentXOID(Constants.XMLBLASTER_OID_ROOT));
+         session.register(registration);
+
+         log.info(ME, "Subagent registered");
+
+      } catch (Exception e) {
+         String text = "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " failed:" + e.toString();
+         log.error(ME, text);
+         throw new XmlBlasterException(ME, text);
+      }
+
+      initMib();
+      return true;
+   }
+
+   private void initMib() {
+      NodeScalarImpl nodeScalarImpl;
+      NodeEntryImpl nodeEntryImpl;
+      NodeTable nodeTable;
+      NodeTableSubject nodeTableSubject;
+      NodeTableObserver nodeTableObserver;
+      ConnectionTableSubject connectionTableSubject;
+      ConnectionTableObserver connectionTableObserver;
+
+      /*
+      nodeScalarImpl = new NodeScalarImpl();
+      session.addGroup(nodeScalarImpl);
+
+      // create concrete subjects and observers (observer pattern)
+      nodeTableSubject = new NodeTableSubject();
+      nodeTableObserver = new NodeTableObserver(nodeTableSubject, session);
+      connectionTableSubject = new ConnectionTableSubject();
+      connectionTableObserver = new ConnectionTableObserver(connectionTableSubject, session);
+
+      nodeEntryImpl = new NodeEntryImpl(1, "node1", "host1", 111, 1161, 80, "err1.log", 1);
+
+      // add entries to concrete subjects using the observer pattern
+      nodeTableSubject.addEntry("node11", "host11", 111, 1161, 80, "err1.log", 1);
+      nodeTableSubject.addEntry("node22", "host22", 222, 1162, 20, "err2.log", 2);
+      connectionTableSubject.addEntry(nodeTableObserver, "node11", "hostAAA", 4711, "192.47.11", 5);
+      connectionTableSubject.addEntry(nodeTableObserver, "node22", "hostBBB", 3333, "192.3.3.3.3",675);
+      */
    }
 
    /**
@@ -123,12 +217,24 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    }
 
    public void shutdown() {
-      /* Something like this!!!:
-      if (agent != null) {
-         agent.shutdown();
-         agent = null;
+      if (session != null) {
+         try {
+            session.unregister(registration);
+            session.close(AgentXSession.REASON_SHUTDOWN);
+            session = null;
+         } catch (Exception e) {
+            log.warn(ME, "Problems on shutdown: " + e.toString());
+         }
       }
-      */
+      if (connection != null) {
+         try {
+            connection.close();
+            connection = null;
+         } catch (Exception e) {
+            log.warn(ME, "Problems on disconnect: " + e.toString());
+         }
+      }
+      log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " is shutdown");
    }
 
    /**
