@@ -13,11 +13,15 @@ TODO:
 * Test: Perl client ...
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 * Change to Sun coding convention: http://checkstyle.sourceforge.net/
+* Handle QueueProperty.java similar to CbQueueProprty.java in ConnectQos.java
 
 BUGS:
 
 
 DONE:
+  - Splitted PropertyQueue class to handle client connect queue
+    and server callback queue
+
   - Incompatible change of ConnectQos:
     - The constructor expects now a Global instance as the
       first argument (you can pass null).
