@@ -195,6 +195,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_CLUSTER_NOTAVAILABLE = new ErrorCode("resource.cluster.notAvailable",
+         "A remote cluster node is not reachable.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "cluster requirement", "cluster")
+         }
+      );
+
    public static final ErrorCode COMMUNICATION_NOCONNECTION = new ErrorCode("communication.noConnection",
          "A specific remote connection throws an exception on invocation.",
          new ResourceInfo[] {
