@@ -20,6 +20,9 @@ import org.xmlBlaster.engine.xml2java.GetQoS;
 import org.xmlBlaster.engine.xml2java.EraseQoS;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -235,13 +238,13 @@ public final class ClusterManager
 
    /**
     * @return null if no forwarding is done, if we are the master of this message ourself<br />
-    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
     *         Otherwise the normal publish return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public String forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
+   public PublishRetQos forwardPublish(SessionInfo publisherSession, MessageUnitWrapper msgWrapper) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardPublish(" + msgWrapper.getUniqueKey() + ")");
       XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
       if (con == null)
@@ -251,25 +254,18 @@ public final class ClusterManager
       MessageUnit msgUnit = msgWrapper.getMessageUnit();
       msgUnit.setQos(publishQos.toXml());
 
-      try {
-         return con.publish(msgUnit).toXml();
-      }
-      catch (XmlBlasterException e) {
-         if (e.id.equals("TryingReconnect"))
-            return Constants.RET_FORWARD_WARNING; // "<qos><state id='FORWARD_WARNING'/></qos>"
-         throw e;
-      }
+      return con.publish(msgUnit);
    }
 
    /**
     * @return null if no forwarding is done, if we are the master of this message ourself<br />
-    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]'/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
     *         Otherwise the normal publish return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public String forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException {
+   public SubscribeRetQos forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardSubscribe(" + xmlKey.getUniqueKey() + ")");
 
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
@@ -281,14 +277,7 @@ public final class ClusterManager
          return null;
       }
 
-      try {
-         return con.subscribe(xmlKey.literal(), subscribeQos.toXml());
-      }
-      catch (XmlBlasterException e) {
-         if (e.id.equals("TryingReconnect"))
-            return Constants.RET_FORWARD_WARNING; // "<qos><state id='FORWARD_WARNING'/></qos>"
-         throw e;
-      }
+      return con.subscribe(xmlKey.literal(), subscribeQos.toXml());
    }
 
    /**
@@ -311,25 +300,18 @@ public final class ClusterManager
          return null;
       }
 
-      try {
-         return con.get(xmlKey.literal(), getQos.toXml());
-      }
-      catch (XmlBlasterException e) {
-         if (e.id.equals("TryingReconnect"))
-            return new MessageUnit[0];
-         throw e;
-      }
+      return con.get(xmlKey.literal(), getQos.toXml());
    }
 
    /**
     * @return null if no forwarding is done, if we are the master of this message ourself<br />
-    *         <pre>&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos></pre> if message is
+    *         <pre>&lt;qos>&lt;state id='OK' info='QUEUED[bilbo]/>&lt;/qos></pre> if message is
     *         tailed back because cluster node is temporary not available. The command will
     *         be flushed on reconnect.<br />
     *         Otherwise the normal erase return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public String[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
+   public EraseRetQos[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardErase(" + xmlKey.getUniqueKey() + ")");
 
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
@@ -341,14 +323,7 @@ public final class ClusterManager
          return null;
       }
 
-      try {
-         return con.erase(xmlKey.literal(), eraseQos.toXml());
-      }
-      catch (XmlBlasterException e) {
-         if (e.id.equals("TryingReconnect"))
-            return new String[0];
-         throw e;
-      }
+      return con.erase(xmlKey.literal(), eraseQos.toXml());
    }
 
    /**
