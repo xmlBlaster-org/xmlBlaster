@@ -3,11 +3,11 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.35 2004/06/20 10:36:19 laghi Exp $
+Version:   $Id: Global.h,v 1.36 2004/09/20 14:05:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 
-#ifndef _UTIL_GLOBAL_H
-#define _UTIL_GLOBAL_H
+#ifndef ORG_XMLBLASTER_UTIL_GLOBAL_H
+#define ORG_XMLBLASTER_UTIL_GLOBAL_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/I_Log.h>
@@ -253,4 +253,4 @@ public:
 
 }}}; // namespace
 
-#endif
+# endif // ORG_XMLBLASTER_UTIL_GLOBAL_H
