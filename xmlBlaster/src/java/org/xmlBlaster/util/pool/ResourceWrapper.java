@@ -37,6 +37,8 @@ public class ResourceWrapper implements I_Timeout
    private long busyToIdleTimeout;
    /** busyToIdleTimeout handle */
    private Timestamp busyToIdleTimeoutHandle;
+   /** Synchronization helper */
+   private final Object BUSYTOIDLETIMEOUT_MONITOR = new Object();
    /** Max live span until 'idle' to 'erase' transition */
    private long idleToEraseTimeout;
    /** idleToEraseTimeout handle */
@@ -253,7 +255,9 @@ public class ResourceWrapper implements I_Timeout
       if (busyToIdleTimeoutHandle == null)
          return;
       try {
-         busyToIdleTimeoutHandle = poolManager.getTransistionTimer().refreshTimeoutListener(busyToIdleTimeoutHandle, busyToIdleTimeout);
+         synchronized (this.BUSYTOIDLETIMEOUT_MONITOR) {
+            busyToIdleTimeoutHandle = poolManager.getTransistionTimer().refreshTimeoutListener(busyToIdleTimeoutHandle, busyToIdleTimeout);
+         }
       }
       catch (XmlBlasterException e) {
          // Log.error(ME, e.reason);
