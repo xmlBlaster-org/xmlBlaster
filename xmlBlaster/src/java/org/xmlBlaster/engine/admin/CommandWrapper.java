@@ -204,13 +204,18 @@ public final class CommandWrapper
 
    private void parseKeyValue() throws XmlBlasterException { 
       int qIndex = cmd.indexOf("?");
-      if (qIndex < 1 || cmd.length() <= (qIndex+1))
+      if (qIndex < 1 || cmd.length() <= (qIndex+1)) {
+         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '?'");
          throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find '?'");
+      }
       String pair = cmd.substring(qIndex+1);
 
       int equalsIndex = pair.indexOf("=");
-      if (equalsIndex < 1 || pair.length() <= (equalsIndex+1))
+      if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
+         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find assignment '='");
+         //Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
+      }
       
       key = pair.substring(0,equalsIndex).trim();
       value = pair.substring(equalsIndex+1);
@@ -230,8 +235,10 @@ public final class CommandWrapper
     */
    public final String getCommandStripAssign() throws XmlBlasterException {
       int equalsIndex = cmd.lastIndexOf("=");
-      if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1))
+      if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1)) {
+         log.warn(ME, "getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
          throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
+      }
       return cmd.substring(0,equalsIndex).trim();
    }
 

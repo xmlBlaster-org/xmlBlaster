@@ -71,6 +71,7 @@ public final class MomClientGateway implements I_ExternGateway
          throw new XmlBlasterException(ME, "Ignoring your empty command.");
       }
       command = command.trim();
+      if (log.CALL) log.call(ME, "Invoking getCommand(" + command + ")");
       if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
          throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
       }
@@ -118,6 +119,7 @@ public final class MomClientGateway implements I_ExternGateway
          throw new XmlBlasterException(ME, "Ignoring your empty command.");
       }
       command = command.trim();
+      if (log.CALL) log.call(ME, "Invoking setCommand(" + command + ")");
       if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
          throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
       }
