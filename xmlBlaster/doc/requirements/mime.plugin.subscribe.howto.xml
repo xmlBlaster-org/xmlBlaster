@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='mime.plugin.subscribe.howto' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster supports to plugin your own subscribe message filters</topic>
+   <description>
+      <p>
+      XmlBlaster allows to code your own specific plugins to filter messages looking
+      into their content. The plugin is MIME aware, allowing to code different plugins
+      for different message MIME types. A MIME type is for example "text/xml" or "audio/midi"
+      or your own specific message MIME type like "application/cool".
+      The mime type "*" registers the plugin for all message MIME types.
+      </p>
+      <p>
+      There is an example xmlBlaster/src/java/org/xmlBlaster/engine/mime/demo/ContentLenFilter.java
+      showing how to code your plugin. Just take a copy of this and change the parts 
+      you want.
+      </p>
+      <p>
+      This are the steps to implement your plugin:
+      </p>
+      <ul>
+      <li>Your plugin needs to implement the interface I_Plugin<br />
+      This allows our plugin manager to load the plugin as specified in xmlBlaster.properties
+      </li>
+      <li>Your plugin needs to implement the interface I_SubscribeFilter<br />
+      The main things here are
+      <ul>
+         <li>Code your filter rules in the method match(), return true if you accept the message
+         or return false if you want to filter it away.
+         </li>
+         <li>
+         Return the MIME types and version number this plugin can handle.
+         </li>
+      </ul>
+      </li>
+      <li>Register the plugin in xmlBlaster.properties (or on command line)<br />
+      This entry registers the plugin ContentLenFilter.
+         <pre>
+         MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+         </pre>
+      Clients address the plugin when the subscribe with the filter type of the subscribe QoS:
+         <pre>
+<![CDATA[
+         <filter type='ContentLenFilter' version='1.0'>
+            8000
+         </filter>
+]]>
+         </pre>
+         The version='1.0' is default and may be omitted.
+      </li>
+      <li>You can pass optional parameters to your plugin<br />
+      This entry registers the plugin ContentLenFilter in xmlBlaster.properties and
+      add some options.
+         <pre>
+         MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
+         </pre>
+      The plugin can access these options in its init() call:
+         <pre>
+<![CDATA[
+   public void init(String[] options) throws XmlBlasterException {
+      if (options != null) {
+         for (int ii=0; ii<options.length-1; ii++) {
+            if (options[ii].equalsIgnoreCase("DEFAULT_MAX_LEN")) {
+               DEFAULT_MAX_LEN = (new Long(options[++ii])).longValue();
+               Log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
+            }
+            ...
+         }
+      }
+   }
+]]>
+         </pre>
+      </li>
+   </ul>
+   </description>
+   <example lang="Java">
+<![CDATA[
+For an example look at the code of ContentLenFilter.java (link below).
+]]>
+   </example>
+   <see type="API">org.xmlBlaster.engine.mime.I_SubscribeFilter</see>
+   <see type="API">org.xmlBlaster.engine.mime.demo.ContentLenFilter</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="REQ">mime.plugin.subscribe</see>
+   <see type="REQ">util.property.env</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 03 14</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubscribeFilter</test>
+   </testcase>
+</requirement>
+
