@@ -24,7 +24,7 @@ Changes for 1.RC4 [2004-12-19] #13059
      namespace clash with syslog.h; Thanks to David Kerry
 
  o C++ client library:
-   - #13045 BUGFIX for SAX parsing of ClientProperties: encoding of received message was ignored
+   - #13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
 
  o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
    authentication of connecting clients as well, see
@@ -50,7 +50,7 @@ Changes for 1.RC3 [2004-12-08] #12997
 
  o #12995 Changed subscription ID to be unique over time
 
- o #12988 BUGFIX in script: CDATA in content are not passed through anymore and duplication of 
+ o #12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 
    content does not happen anymore 
 
  o C client library:
@@ -72,12 +72,12 @@ Changes for 1.RC2 [2004-12-01] #12978
 
  o #12956 build.xml: JFlex and JavaCup are invoked only if files not up to date.
 
- o #12954 BUGFIX: Topic erase notification events could dead lock
+ o #12954 Bugfix: Topic erase notification events could dead lock
    when at the same time a subscriber callback delivery took place
 
  o #12950 it is now possible to send CDATA in content when using xmlBlaster script
 
- o #12948 BUGFIX: The combination of subscribe() and get() on the same topic with cluster=true failed
+ o #12948 Bugfix: The combination of subscribe() and get() on the same topic with cluster=true failed
    Thanks to Michal Masa xmasam@sgi.felk.cvut.cz
 
  o #12938 login- and logout events now return the public session id in the "__sessionId" client property as a long 
@@ -85,7 +85,7 @@ Changes for 1.RC2 [2004-12-01] #12978
  o #12936 Added subversion property "svn:eol-style=native" to resolve CRLF (Win) and LF (UNIX) problems
    Thanks to David Viner dviner@yahoo-inc.com
 
- o #12932 BUGFIX: hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
+ o #12932 Bugfix: hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
 
  o #12930 util.Global now throws IllegalArgumentException if loading of Property instance fails
 
@@ -157,10 +157,10 @@ Changes for 1.RC1 [2004-10-28] #12758
    Remember public and secret sessionId on client side for reconnect attempts
    (For future enhancement of pubSessionId<0 and persistent sessions)
 
- o #12664 Java client library: BUGFIX get() and async mode
+ o #12664 Java client library: Bugfix get() and async mode
    Catching get() requests in async mode and throw an exception
 
- o #12663 Java client library: BUGFIX switch to sync mode
+ o #12663 Java client library: Bugfix switch to sync mode
    Added dispatchManager.trySyncMode(true) to force immediate sync mode
    after polling even for empty client queue
 
@@ -184,7 +184,7 @@ Changes for 1.RC1 [2004-10-28] #12758
      java javaclients.HelloWorldSubscribe -session.name joe/1 -xpath //key
      java javaclients.HelloWorldGet -oid '__cmd:client/joe/1/?subscriptionDump'
 
- o BUGFIX: Plugins with no package names did throw NPE
+ o Bugfix: Plugins with no package names did throw NPE
 
  o Plugin configuration of protocol plugins
    Fixed to check properties from plugin configuration in xmlBlaster.properties
@@ -216,7 +216,7 @@ Changes for 1.RC1 [2004-10-28] #12758
  o Java client library:
    Changed ClientErrorHandler to not remove client side queue entries on certain exceptions
 
- o BUGFIX in PtP cluster forwarding:
+ o Bugfix in PtP cluster forwarding:
    In some cases the destination QoS got lost
 
  o SOCKET SSL
@@ -304,8 +304,8 @@ Changes for 1.RC1 [2004-10-28] #12758
    - SecurityQos constructor now accepts the security plugin name
    - Fixed reading of default client name
    - Fixed setting default SecurtiyQos userId from SessionName
-   - BUGFIX: Fixed to pass configuration settings to C-SOCKET layer on reconnect
-   - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
+   - Bugfix: Fixed to pass configuration settings to C-SOCKET layer on reconnect
+   - Bugfix: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
      You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
    - Fixed initial queueing of connect request if xmlBlaster server is not available (ConnectQos is not queued anymore)
@@ -329,7 +329,7 @@ Changes for 0.91 [2004-08-30]
    - Added missing return values for remote calls, added publishArr()
 
  o C client library:
-   - BUGFIX in messageUnitToXmlLimited() for msg content smaller 5 bytes
+   - Bugfix in messageUnitToXmlLimited() for msg content smaller 5 bytes
    - Added support for UDP based publishOneway() and updateOneway()
      Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
    - Added PTHREAD_CREATE_DETACHED to cleanup resources
@@ -356,7 +356,7 @@ Changes for 0.91 [2004-08-30]
      same connection.
    - Fixed bug in lexical_cast for string to string on solaris
    - QueueFactory and ParserFactory are now stateless (no global nor log)
-   - BUGFIX in C++ client properties: empty spaces are allowed inside strings.
+   - Bugfix in C++ client properties: empty spaces are allowed inside strings.
    - CorbaDriverFactory and SocketDriverFactory in C++ client keep now
      driver instances with Global* as key instead of instanceName. 
    - Added individual callbacks for subscriptions
@@ -418,7 +418,7 @@ Changes for 0.91 [2004-08-30]
 
  o Fixed XML dump of properties (jutils.jar)
 
- o BUGFIX for sending ERASE events in UNREFERENCED topics with XPath subscription
+ o Bugfix for sending ERASE events in UNREFERENCED topics with XPath subscription
    Topics delivered by XPATH subscriptions don't send erase notifications
    when they disappear as they match again if the appear again
 
@@ -455,11 +455,11 @@ Changes for 0.903 [2004-05-13]
  o Fixed telnet access bug which was introduced in 0.902
 
  o C client library
-   - BUGFIX: hostname copy from command line
+   - Bugfix: hostname copy from command line
    - Added property dump
 
  o C++ client library
-   - BUGFIX: Client side Address was hold twice (in ConnectQos and in ClientQueueProperty)
+   - Bugfix: Client side Address was hold twice (in ConnectQos and in ClientQueueProperty)
      and was not dumped with toXml()
 
 Changes for 0.902 [2004-05-11]
@@ -481,11 +481,11 @@ Changes for 0.902 [2004-05-11]
  o C++ client library
    - Introduced abstract queue interface (I_Queue) and queue factory
      to be able to add arbitrary queue implementations as plugins.
-   - BUGFIX for default logging: loglevel settings inherited from I_Log
-   - BUGFIX reading of xmlBlaster.properties: Line extensions are now recognized
+   - Bugfix for default logging: loglevel settings inherited from I_Log
+   - Bugfix reading of xmlBlaster.properties: Line extensions are now recognized
    - Extended Property class to preset ${user.home}, ${user.name},
      ${file.separator} and ${path.separator} to support replacement in xmlBlaster.properties
-   - BUGFIX of failsafe mode when a publish noticed connection loss before ping thread
+   - Bugfix of failsafe mode when a publish noticed connection loss before ping thread
    - Changed to activate failsafe mode even without a connectionProblem listener
      if -dispatch/connection/delay is > 0
 
@@ -516,14 +516,14 @@ Changes for 0.901 [2004-04-27]
  o Fixed release generation to remove build.tmp and
    keep the 'build' script.
 
- o BUGFIX in PersistentCachePlugin (I_Map, msgUnitStore)
+ o Bugfix in PersistentCachePlugin (I_Map, msgUnitStore)
    - swapping with ascending messages sizes could fail
      (Thanks to Dimitri.Devriendt@ses-astra.com)
    - synchronized setProperties()
      (Thanks to Dimitri.Devriendt@ses-astra.com)
    - numOfBytes calculation was buggy if swapping
 
- o BUGFIX in JDBC service module to handle NULL db entries
+ o Bugfix in JDBC service module to handle NULL db entries
    Thanks to zzwzyz@hotmail.com
 
  o Added two new requirements:
@@ -580,7 +580,7 @@ Changes for 0.901 [2004-04-27]
                -1L takes all entries available in the callback RAM queue
                possibly limited by maxEntries
 
- o BUGFIX: C SOCKET client library, fixed uninitialized memory read in memmove call
+ o Bugfix: C SOCKET client library, fixed uninitialized memory read in memmove call
  
  o changed the JdbcConnectionPool to be handled by Doug Lea's classes
  
@@ -591,7 +591,7 @@ Changes for 0.901 [2004-04-27]
    Compile:  build deploy_war   (and start tomcat + xmlBlaster server)
    Load:     http://localhost:8080/xmlBlaster/XmlScript.html (in mozilla, konqueror, appletviewer, explorer)
 
- o BUGFIX for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
+ o Bugfix for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
 
  o Updated utils.jar to CVS version from  2004-03-19, contains Property bug fix for ArrayOutOfBoundsException
 
@@ -634,7 +634,7 @@ Changes for 0.9 [2004-02-23]
 
  o Added I_QueueSizeListener to listen to changes in size of a queue
 
- o BUGFIX: Reconfiguration of client reconnect (same pubSessionId)
+ o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
    supports now queue properties and sync/async reconfiguration
    (with or without a client side callback server)
 
@@ -697,10 +697,10 @@ Changes for 0.9 [2004-02-23]
    - Added Global::getCompiler()
    - Fixed LifeTimeManager to have destruction sequence reversed to creation sequence
    - Added map to LifeTimeManager to support registered object lookup by key
-   - BUGFIX for lexical_cast<double> and lexical_cast<long double>
+   - Bugfix for lexical_cast<double> and lexical_cast<long double>
      which rounded to only 6 digits
    - Added Base64 support for ClientProperty
-   - BUGFIX: SAX parsers are now thread safe
+   - Bugfix: SAX parsers are now thread safe
    - Renamed msgQosData.getForceDestroy() to isForceDestroy()
    - Other minor changes
 
@@ -973,7 +973,7 @@ Changes for 0.85beta [2003-09-24]
    new release with some bugfixes, see
      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.javascript.rhino.html
 
- o BUGFIX Java client library:
+ o Bugfix Java client library:
    In fail safe mode on client reconnect the subscribe
    specific callback redirect got lost and updates where
    delivered to the default callback handle.
@@ -1022,7 +1022,7 @@ Changes for 0.85beta [2003-09-24]
 Changes for 0.849 [2003-07-15]
 ==============================
 
- o BUGFIX Java client library: Fixed memory leak for reconnecting clients with
+ o Bugfix Java client library: Fixed memory leak for reconnecting clients with
   subscribes using specific callbacks. 
 
  o Changed behavior that '-version' and '-type' is not read from env anymore,
@@ -1063,11 +1063,11 @@ Changes for 0.849 [2003-07-15]
    NOTE: xmlBlaster/config/xmlBlaster-autoconf.tar.gz still exists
          but probably needs a face lift.
 
- o BUGFIX in cluster configuration, switch off naming service and
+ o Bugfix in cluster configuration, switch off naming service and
    setting other address parameters is now possible from configuration file.
    Reported by Michael Atighetchi.
 
- o BUGFIX clustering for get() by Michael Atighetchi.
+ o Bugfix clustering for get() by Michael Atighetchi.
    A node X was only forwarding get requests to other nodes if a subscription
    has been established to X and a message had been successfully served to that
    subscription. Now, get() requests are always forwarded to the right other nodes.
@@ -1082,13 +1082,13 @@ Changes for 0.849 [2003-07-15]
 
  o Added support for OmniORB 4.0.1 (C++ client library)
 
- o BUGFIX C++ object cleanup by Martin Johnson
+ o Bugfix C++ object cleanup by Martin Johnson
 
  o Removed deprecated property scanning precedence, see PropEnv.java
 
- o BUGFIX to report nicer wrong configuration setting
+ o Bugfix to report nicer wrong configuration setting
 
- o BUGFIX  '-pluginsFile /yourdirectory/yourfile.xml' works now
+ o Bugfix  '-pluginsFile /yourdirectory/yourfile.xml' works now
    as expected
 
 
@@ -1167,14 +1167,14 @@ Changes for 0.848 [23, May 2003]
       Please copy the new config/xmlBlasterPlugins.xml.template
          to $HOME/xmlBlasterPlugins.xml
 
- o BUGFIX: Server side command line usage was showing client side usage as well
+ o Bugfix: Server side command line usage was showing client side usage as well
 
  o BUGIFX: PropBoolean had wrong Boolean to boolean conversion
 
- o BUGFIX Perl: Outdated sessionId markup in ConnectQos,
+ o Bugfix Perl: Outdated sessionId markup in ConnectQos,
    fixed by Dominique.Petitpierre@adm.unige.ch 
 
- o BUGFIX C-XmlRpc: Added missing ping(), reported by
+ o Bugfix C-XmlRpc: Added missing ping(), reported by
    Dominique.Petitpierre@adm.unige.ch 
 
  o Added basic support to connect to xmlBlaster from
@@ -1202,14 +1202,14 @@ Changes for 0.847 [12, May 2003]
    boolean disconnect(DisconnectQos disconnectQos, boolean clearClientQueue, boolean shutdown, boolean shutdownCb) 
    Please configure the options in DisconnectQos and use disconnect(DisconnectQos)
 
- o BUGFIX in java client library. If the client side tail back queue contains
+ o Bugfix in java client library. If the client side tail back queue contains
    persistent entries on disconnect they are kept and resent on new connection
    of the same client (same pubSessionId).
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.disconnect.html
 
  o Merged basic JMX support from branch jmx_gui
 
- o BUGFIX: PersistentStore and PersistentQueue have now separate pools. Avoids
+ o Bugfix: PersistentStore and PersistentQueue have now separate pools. Avoids
    deadlocks when configured with only 1 connection AND msg store AND
    other queues are peeking objects from persistence (for example when both caching).
 
@@ -1218,7 +1218,7 @@ Changes for 0.847 [12, May 2003]
  o Better exception handling in JdbcManagerCommonTable to catch even 
    throwables
 
- o BUGFIX: Fixed subject id to be without public sessionId in all cases.
+ o Bugfix: Fixed subject id to be without public sessionId in all cases.
    Had severe impact on PtP messages as subject queue name was sometimes
    identical to session queue name.
 
@@ -1234,7 +1234,7 @@ Changes for 0.846 [26, Apr 2003]
  o The plugin overview:
    http://www.xmlblaster.org/MessageFlowPubSubOverview.html
 
- o BUGFIX: sync gap in SubjectInfo.java for PtP messages and offline clients
+ o Bugfix: sync gap in SubjectInfo.java for PtP messages and offline clients
 
  o removed I_Queue.take methods
  
@@ -1245,35 +1245,35 @@ Changes for 0.846 [26, Apr 2003]
 
  o CacheQueueInterceptorPlugin synch is now less detailed but more simple
  
- o BUGFIX: deleteAllTransient does only delete own entries 
+ o Bugfix: deleteAllTransient does only delete own entries 
  
- o BUGFIX: inconsistency between cached numOfEntries and numOfBytes on jdbc fixed
+ o Bugfix: inconsistency between cached numOfEntries and numOfBytes on jdbc fixed
 
  o http push example updated to be functional for this release
 
  o Fixed and updated cluster demo
 
- o BUGFIX: Setting ORB environment for different orb instances
+ o Bugfix: Setting ORB environment for different orb instances
 
- o BUGFIX: In CORBA NameService lookup
+ o Bugfix: In CORBA NameService lookup
 
- o BUGFIX: Fixed two synchronize gaps which could lead to
+ o Bugfix: Fixed two synchronize gaps which could lead to
    "The timeout handle is null, no timeout refresh done" exception
 
- o BUGFIX: Fixed TopicHandler.java synchronize bug which could lead
+ o Bugfix: Fixed TopicHandler.java synchronize bug which could lead
    to multiple initial XPATH subscriptions instead of one.
 
  o NEW FEATURE: A subscriber can supress to receive topic ERASE
    events on topics which are erased and on which he has subscribed,
    see SubscribeQos.setWantNotify(boolean)
   
- o BUGFIX for SOCKET and RMI protocol when on client startup the xmlBlaster server
+ o Bugfix for SOCKET and RMI protocol when on client startup the xmlBlaster server
    was missing. Reported by Xavier Roques <xRoques@infovista.com>
 
  o Changed REQ: The successful callback does not refresh a session, see:
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
 
- o BUGFIXES in CACHE and JDBC plugins when persistent storage failed
+ o BugfixES in CACHE and JDBC plugins when persistent storage failed
 
  o BUGIFX for passing EraseReturnQos in cluster environment back to client
 
@@ -1308,7 +1308,7 @@ Changes for 0.845 [Mar, 27 2003]
  o Updated JacORB to 1.4.50, cvs from 2003-03-279
    to get fixed orb.shutdown().
 
- o Memory leak BUGFIX in corba protocol plugin.
+ o Memory leak Bugfix in corba protocol plugin.
    This occurred on shutdown of the corba plugin
    (e.g. if server is run embedded).
 
