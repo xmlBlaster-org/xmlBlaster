@@ -201,11 +201,11 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       synchronized(this) {
          long ret = (long)this.storage.size();
          if (this.notifiedAboutAddOrRemove) {
-            Iterator iter = this.storage.iterator();
-            while (iter.hasNext()) {
-               I_QueueEntry entry = (I_QueueEntry)iter.next();
+            // Take a copy to avoid java.util.ConcurrentModificationException
+            I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
+            for (int ii=0; ii<entries.length; ii++) {
                try {
-                  entry.removed(this.storageId);
+                  entries[ii].removed(this.storageId);
                }
                catch (XmlBlasterException e) {
                   log.error(ME, "Unexpected exception: " + e.getMessage());
@@ -280,8 +280,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#peek()
     */
    public final I_QueueEntry peek() {
-      if (this.storage.size() < 1) return null;
-      return (I_QueueEntry)this.storage.first();
+      if (getNumOfEntries() < 1) return null;
+      synchronized (this) {
+         return (I_QueueEntry)this.storage.first();
+      }
       //return (I_QueueEntry)this.storage.iterator().next();
    }
 
@@ -314,7 +316,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       long currentSizeInBytes = 0L;
 //      long totalSizeInBytes = 0L;
 //      ArrayList ret = new ArrayList();
-      if (this.storage.size() < 1) return ret;
+      if (getNumOfEntries() < 1) return ret;
 
       synchronized (this) {
          Iterator iter = this.storage.iterator();
@@ -364,7 +366,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
       if (limitEntry == null) return new ArrayList();
-      return new ArrayList(this.storage.headSet(limitEntry));
+      synchronized (this) {
+         return new ArrayList(this.storage.headSet(limitEntry));
+      }
    }
 
 
@@ -373,7 +377,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#getNumOfEntries()
     */
    public long getNumOfEntries() {
-      return this.storage.size();
+      synchronized (this) {
+         return this.storage.size();
+      }
    }
 
    /**i
@@ -411,12 +417,14 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#getNumOfBytes()
     */
    public long getSynchronizedNumOfBytes() {
-      Iterator iter = this.storage.iterator();
-      long sum = 0L;
-      while (iter.hasNext()) {
-         sum += ((I_QueueEntry)(iter.next())).getSizeInBytes();
+      synchronized (this) {
+         Iterator iter = this.storage.iterator();
+         long sum = 0L;
+         while (iter.hasNext()) {
+            sum += ((I_QueueEntry)(iter.next())).getSizeInBytes();
+         }
+         return sum;
       }
-      return sum;
    }
 
    /**
@@ -710,10 +718,12 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * destroys all the resources associated to this queue.
+    * destroys silently all the resources associated to this queue.
     */
    public void destroy() throws XmlBlasterException {
-      this.storage.clear();
+      synchronized (this) {
+         this.storage.clear();
+      }
       this.shutdown(true);
       this.property = null;
    }
