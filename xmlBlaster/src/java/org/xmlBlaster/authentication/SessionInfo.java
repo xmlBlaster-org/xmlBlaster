@@ -328,13 +328,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       offset += extraOffset;
 
       sb.append(offset).append("<SessionInfo id='").append(instanceId).append("' sessionId='").append(getUniqueKey());
-      if (connectQos != null) {
-         sb.append("'>");
-         sb.append(connectQos.toXml(extraOffset+"   "));
-         sb.append(offset).append("</SessionInfo>");
-      }
-      else
-         sb.append(offset).append("'/>");
+      sb.append("' publicSessionId='").append(getPublicSessionId()).append("'>");
+      sb.append(sessionQueue.toXml(extraOffset+"   "));
+      sb.append(offset).append("</SessionInfo>");
 
       return sb.toString();
    }
