@@ -3,7 +3,7 @@ Name:      PMessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Ccapsulate a MessageUnit and QoS for persistence and engine 
-Version:   $Id: PMessageUnit.java,v 1.2 2000/06/13 16:10:47 kron Exp $
+Version:   $Id: PMessageUnit.java,v 1.3 2000/06/13 16:39:37 kron Exp $
 Author:    manuel.kron@gmx.net 
 ------------------------------------------------------------------------------*/
 
@@ -14,16 +14,16 @@ import org.xmlBlaster.engine.xml2java.PublishQoS;
 
 public class PMessageUnit
 {
-   public final MessageUnit _msgUnit; 
-   public final PublishQoS  _pubQos;
-   public final String      _sender;
-   public final long        _timeStamp;
+   public final MessageUnit msgUnit; 
+   public final PublishQoS  pubQos;
+   public final String      sender;
+   public final long        timeStamp;
 
-   public PMessageUnit(MessageUnit mu,PublishQoS qos, String sender)
+   public PMessageUnit(MessageUnit mu,PublishQoS qos, String send)
    {
-      _timeStamp = System.currentTimeMillis();
-      _msgUnit   = mu;
-      _pubQos    = qos;
-      _sender    = sender;
+      timeStamp = System.currentTimeMillis();
+      msgUnit   = mu;
+      pubQos    = qos;
+      sender    = send;
    }
 }
