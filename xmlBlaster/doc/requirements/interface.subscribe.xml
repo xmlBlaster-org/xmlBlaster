@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='interface.subscribe' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Messages are asynchronous accessed with the subscribe() method</topic>
+   <description>
+      <p>
+      The <b>subscribe()</b> method allows to subscribe for messages in xmlBlaster.
+      You can subscribe with exactly one message by passing its oid, or by a
+      selection of message by passing a XPATH query.
+      </p>
+      <p>
+      Method detail (CORBA IDL notation):
+      </p>
+      <pre>
+   typedef string XmlType;
+   typedef sequence&lt;string> StringArr;
+
+   string subscribe(in XmlType xmlKey, in XmlType qos) raises(XmlBlasterException);
+      </pre>
+         
+      <table border="1">
+         <tr>
+         <td>Parameter</td><td>Type</td><td>Description</td>
+         </tr>
+         <tr>
+         <td>xmlKey</td><td>string</td><td>The XML encoded key containing the oid or XPATH query to select messages to subscribe</td>
+         </tr>
+         <tr>
+         <td>xmlQos</td><td>string</td><td>The XML encoded Quality of Service (QoS)</td>
+         </tr>
+         <tr>
+         <td>return</td><td>string</td><td>An XML encoded string containing status and the unique subscription ID (see SubscribeRetQos link below)</td>
+         </tr>
+      </table>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is an example of an exact query:
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td>&lt;key oid='MyMessage'/></td></tr>
+         <tr><td>QoS</td><td>&lt;qos/></td></tr>
+      </table>
+      <p>
+      And a return value:
+    </p>
+   <table border="1"><tr><td>
+   <pre>
+&lt;qos>
+   &lt;state id='OK'/>
+   &lt;subscribe id='subId:34023'/>
+&lt;/qos>
+   </pre>
+   </td></tr></table>
+   
+      <p>
+      Here is an example of a XPATH query:
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td>&lt;key oid='' queryType='XPATH'>//key&lt;/key></td></tr>
+         <tr><td>QoS</td><td>&lt;qos/></td></tr>
+      </table>
+      <p>
+      And a return value:
+    </p>
+   <table border="1"><tr><td>
+   <pre>
+&lt;qos>
+   &lt;state id='OK'/>
+   &lt;subscribe id='subId:XPATH:8673'/>
+&lt;/qos>
+   </pre>
+   </td></tr></table>
+
+   </example>
+
+   <example lang="XmlRpc" type="HTML">
+      <p>
+      This is the XmlRpc server interface variant:
+      </p>
+      <pre>
+   public String subscribe(String sessionId, String xmlKey_literal, String qos_literal)
+                                                         throws XmlBlasterException
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code for an EXACT subscription:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("MyOid");
+
+   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+
+   String subId = con.subscribe(sk.toXml(), sq.toXml());
+      </pre>
+   <p>
+   See xmlBlaster/demo/javaclients/HelloWorld*.java for more examples.
+   </p>
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.helper.MessageUnit</see>
+   <see type="API">org.xmlBlaster.client.SubscribeQosWrapper</see>
+   <see type="API">org.xmlBlaster.client.SubscribeRetQos</see>
+   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 01</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Tests the subscribe method invocation</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubXPathMany</test>
+   </testcase>
+</requirement>
+
