@@ -7,7 +7,7 @@ Currently supported are 'IOR' for CORBA, 'RMI' and 'XML-RPC'.
 The default protocol used by these clients is CORBA/IIOP.
 
 The demos connect to xmlBlaster and do some subscribing and
-publishing of messages. 
+publishing of messages.
 
 
    Start xmlBlaster server:
@@ -48,6 +48,10 @@ Running a client with RMI protocol:
 Running a client with XML-RPC protocol:
 
       jaco javaclients.ClientSub -client.protocol XML-RPC
+
+Running a client which forces the GUI based authentication/authorization plugin:
+
+      java javaclients.ClientSub -Security.Client.ForcePlugin gui,1.0 -Security.Client.ForcePlugin gui,1.0 -Security.Client.Plugin[gui][1.0] org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
 
 NOTE: To run these other protocols, the xmlBlaster server must
       have switched on the supporting driver (see xmlBlaster.properties)
