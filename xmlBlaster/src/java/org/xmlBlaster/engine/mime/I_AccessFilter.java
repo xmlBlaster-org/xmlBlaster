@@ -3,7 +3,7 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.5 2002/08/26 14:13:50 ruff Exp $
+Version:   $Id: I_AccessFilter.java,v 1.6 2002/08/26 14:32:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -42,7 +42,7 @@ import org.xmlBlaster.engine.mime.Query;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author ruff@swand.lake.de
  */
 public interface I_AccessFilter
@@ -95,6 +95,13 @@ public interface I_AccessFilter
     *            best to return 'false' instead and log the situation.
     */
    public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException;
+
+   // TODO: have a match() variant for synchronous get() access:
+   //   boolean match(SessionInfo session, MessageUnitWrapper msgUnitWrapper, Query query)
+   // and one for subscriptions:
+   //   boolean match(SessionInfo session, SubscriptionInfo sub, Query query)
+   //        SessionInfo receiver = sub.getSessionInfo()
+   //        MessageUnitWrapper w = sub.getMessageUnitWrapper();
 
    public void shutdown();
 }
