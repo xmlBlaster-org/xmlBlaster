@@ -206,11 +206,6 @@ CbQueueProperty& ConnectQosData::getSessionCbQueueProperty()
    return sessionCbQueueProperty_;
 }
 
-void ConnectQosData::addClientProperty(const std::string& key, const std::string& value)
-{
-   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
-}
-        
 const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() const
 {
    return clientProperties_;
@@ -231,6 +226,18 @@ void ConnectQosData::setPersistent(bool persistent)
 bool ConnectQosData::isPersistent() const
 {
    return persistent_;
+}
+
+string ConnectQosData::dumpClientProperties(const string& extraOffset) const
+{
+   string ret = "";
+   QosData::ClientPropertyMap::const_iterator iter = clientProperties_.begin();
+   while (iter != clientProperties_.end()) {
+      const ClientProperty& cp = (*iter).second;
+      ret += cp.toXml(extraOffset);
+      iter++;
+   }
+   return ret;
 }
 
 /**
@@ -282,12 +289,7 @@ string ConnectQosData::toXml(const string& extraOffset) const
       }
    }
 
-   ConnectQosData::ClientPropertyMap::const_iterator 
-      iter = clientProperties_.begin();
-   while (iter != clientProperties_.end()) {
-      offset2 + "<clientProperty name='" + (*iter).first + "'><![CDATA[" + (*iter).second + "]]></clientProperty>";
-      iter++;
-   }
+   ret += dumpClientProperties(offset2);
 
    ret += offset + string("</qos>");
    return ret;

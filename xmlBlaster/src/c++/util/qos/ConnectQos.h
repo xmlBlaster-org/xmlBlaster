@@ -20,6 +20,7 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/qos/storage/QueuePropertyFactory.h>
 #include <util/qos/storage/ClientQueueProperty.h>
 #include <util/qos/storage/CbQueueProperty.h>
+#include <util/qos/ClientProperty.h>
 
 #include <vector>
 #include <map>
@@ -54,7 +55,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 class Dll_Export ConnectQosData
 {
 
-typedef std::map<std::string, std::string> ClientPropertyMap;
+public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
 
 private:
    org::xmlBlaster::util::Global&     global_;
@@ -158,10 +159,47 @@ public:
    void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
    org::xmlBlaster::util::qos::storage::CbQueueProperty& getSessionCbQueueProperty();
 
-   void addClientProperty(const std::string& key, const std::string& value);
-   const ClientPropertyMap& getClientProperties() const;
+   std::string dumpClientProperties(const std::string& extraOffset) const;
 
+   /**
+    * Add a client property key and value
+    * @param name
+    * @param value "vector<unsigned char>" and "unsigned char *" is treated as a blob
+    * @see ClientProperty::#ClientProperty
+    */
+   template <typename T_VALUE> void addClientProperty(
+            const std::string& name,
+            const T_VALUE& value);
+
+   /**
+    * Access the value for the given name, if not found returns the defaultValue. 
+    * @return A copy of the given defaultValue if none was found
+    */
+   template <typename T_VALUE> T_VALUE getClientProperty(
+            const std::string& name,
+            const T_VALUE& defaultValue);
+        
+   const ClientPropertyMap& getClientProperties() const;
 };
+
+template <typename T_VALUE> void ConnectQosData::addClientProperty(
+               const std::string& name, const T_VALUE& value)
+{
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value);
+   clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
+}
+
+template <typename T_VALUE> T_VALUE ConnectQosData::getClientProperty(
+               const std::string& name, const T_VALUE& defaultValue)
+{
+   ClientPropertyMap::const_iterator iter = clientProperties_.find(name);
+   if (iter != clientProperties_.end()) {
+      T_VALUE tmp;
+      (*iter).second.getValue(tmp);
+      return tmp;
+   }
+   return defaultValue;
+}
 
 typedef ConnectQosData ConnectQos;
 
