@@ -105,32 +105,45 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * </p>
     */
    public Object getEmbeddedObject() {
-      MsgUnitWrapper w = null;
-      if (isPersistent() && ((w = getMsgUnitWrapper()) != null)) {
-         Object[] meat = (Object[])w.getEmbeddedObject();
-         Object[] obj = { 
+      if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
+            Object[] obj = { 
                           this.keyOid,
                           new Long(this.msgUnitWrapperUniqueId),
                           this.receiver.getAbsoluteName(),
                           this.subscriptionId,
                           this.state,
-                          new Integer(getRedeliverCounter()),
-                          meat[0],   // QoS
-                          meat[1],   // key
-                          meat[2]    // content
+                          new Integer(getRedeliverCounter())
                            };
-         return obj;
+            return obj;
       }
       else {
-         Object[] obj = { 
-                       this.keyOid,
-                       new Long(this.msgUnitWrapperUniqueId),
-                       this.receiver.getAbsoluteName(),
-                       this.subscriptionId,
-                       this.state,
-                       new Integer(getRedeliverCounter())
-                        };
-         return obj;
+         MsgUnitWrapper w = null;
+         if (isPersistent() && ((w = getMsgUnitWrapper()) != null)) {
+            Object[] meat = (Object[])w.getEmbeddedObject();
+            Object[] obj = { 
+                             this.keyOid,
+                             new Long(this.msgUnitWrapperUniqueId),
+                             this.receiver.getAbsoluteName(),
+                             this.subscriptionId,
+                             this.state,
+                             new Integer(getRedeliverCounter()),
+                             meat[0],   // QoS
+                             meat[1],   // key
+                             meat[2]    // content
+                              };
+            return obj;
+         }
+         else {
+            Object[] obj = { 
+                          this.keyOid,
+                          new Long(this.msgUnitWrapperUniqueId),
+                          this.receiver.getAbsoluteName(),
+                          this.subscriptionId,
+                          this.state,
+                          new Integer(getRedeliverCounter())
+                           };
+            return obj;
+         }
       }
    }
 

@@ -106,13 +106,16 @@ public class ServerEntryFactory implements I_EntryFactory
             String qos = null;
             String key = null;
             byte[] content = null;
-            if (obj.length >= 9) {
-               // see ENTRY_TYPE_MSG_XML !
-               qos = (String)obj[6];
-               key = (String)obj[7];
-               content = (byte[])obj[8];
-               //Integer referenceCounter = (Integer)obj[9];
-               //Integer historyReferenceCounter = (Integer)obj[10];
+            if ( ReferenceEntry.STRICT_REFERENCE_COUNTING_COMPATIBLE ) {
+               if (obj.length >= 9) {
+                  // deprecated, remove this code in future
+                  // see ENTRY_TYPE_MSG_XML !
+                  qos = (String)obj[6];
+                  key = (String)obj[7];
+                  content = (byte[])obj[8];
+                  //Integer referenceCounter = (Integer)obj[9];
+                  //Integer historyReferenceCounter = (Integer)obj[10];
+               }
             }
 
             if (log.TRACE) log.trace(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
@@ -322,7 +325,7 @@ public class ServerEntryFactory implements I_EntryFactory
                publishQosServer.getData().setPriority(PriorityEnum.HIGH_PRIORITY);
                MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
                StorageId storageId = new StorageId("mystore", "someid");
-               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId, 0, 0, persistType[jj], -1);
+               MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, null, storageId, 0, 0, persistType[jj], -1);
 
                I_EntryFactory factory = glob.getEntryFactory();
 

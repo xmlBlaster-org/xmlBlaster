@@ -41,6 +41,18 @@ public class ReferenceEntry extends MsgQueueEntry
 
    protected SessionName receiver;
 
+   /*
+      If true we don't store the meat in every UpdateEntry but just the reference
+      and take care that the msgUnitStore referenceCounter on HD is always current
+   */
+   public static final boolean STRICT_REFERENCE_COUNTING = true;
+   /*
+      If true we are able to read the meat from database entries of older
+      xmlBlaster versions
+      Nice during transition to new behavior
+   */
+   public static final boolean STRICT_REFERENCE_COUNTING_COMPATIBLE = false;
+
    /**
     * A new message object is fed by method update(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
@@ -82,37 +94,49 @@ public class ReferenceEntry extends MsgQueueEntry
       setReceiver(receiver);
       super.wantReturnObj = false;
 
-      // We need to check it the original msgUnitWrapper still
-      // exists, if not we create one (used by callback queue, not by history queue).
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-      if (msgUnitWrapper == null) {
-         if (qos != null || key != null) {
-            log.warn(ME, "Lookup of MsgUnitWrapper '" + msgUnitWrapperUniqueId + "' failed, we create a new instance");
-            if (this.glob.getRequestBroker() != null) {
-               TopicHandler topicHandler = this.glob.getRequestBroker().getMessageHandlerFromOid(this.keyOid);
-               if (topicHandler != null) {
-                  PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
-                  MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
-                  MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
-                  msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit,
-                                             topicHandler.getMsgUnitCache().getStorageId(),
-                                             1, 0, -1);
-                  // The topicHandler holds the real reference:
-                  msgUnitWrapper = topicHandler.addMsgUnitWrapper(msgUnitWrapper, storageId);
-                  // NOTE: The returned msgUnitWrapper is not always identical to the passed one
-                  // if two threads do this simultaneously, the topic handler sync this situation
-                  super.wantReturnObj = msgUnitWrapper.getWantReturnObj();
-                  this.weakMsgUnitWrapper = new WeakReference(msgUnitWrapper);
+
+      if ( STRICT_REFERENCE_COUNTING_COMPATIBLE ) {
+         // We need to check it the original msgUnitWrapper still
+         // exists, if not we create one (used by callback queue, not by history queue).
+         if (msgUnitWrapper == null) {
+            if (qos != null || key != null) {
+               log.warn(ME, "Lookup of MsgUnitWrapper '" + msgUnitWrapperUniqueId + "' failed, we create a new instance");
+               if (this.glob.getRequestBroker() != null) {
+                  TopicHandler topicHandler = this.glob.getRequestBroker().getMessageHandlerFromOid(this.keyOid);
+                  if (topicHandler != null) {
+                     PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
+                     MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+                     MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
+                     msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit,
+                                                topicHandler.getMsgUnitCache(),
+                                                1, 0, -1);
+                     // The topicHandler holds the real reference:
+                     msgUnitWrapper = topicHandler.addMsgUnitWrapper(msgUnitWrapper, storageId);
+                     // NOTE: The returned msgUnitWrapper is not always identical to the passed one
+                     // if two threads do this simultaneously, the topic handler sync this situation
+                     super.wantReturnObj = msgUnitWrapper.getWantReturnObj();
+                     this.weakMsgUnitWrapper = new WeakReference(msgUnitWrapper);
+                  }
                }
+            }
+            else {
+               log.error(ME, "Can't recreate MsgUnitWrapper, got no information from persistency: " + toXml());
             }
          }
          else {
-            log.error(ME, "Can't recreate MsgUnitWrapper, got no information from persistency: " + toXml());
+            // added() is not triggered when coming from persistency
+            //msgUnitWrapper.incrementReferenceCounter(1, storageId);
          }
       }
       else {
-         // added() is not triggered when coming from persistency
-         msgUnitWrapper.incrementReferenceCounter(1, storageId);
+         if (msgUnitWrapper == null) {
+            log.error(ME, "No 'meat' found for MsgQueueEntry '" + getLogId() +
+	                  "' in msgStore: " + Global.getStackTraceAsString());
+
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, 
+	              "No 'meat' found for MsgQueueEntry '" + getLogId() + "' in msgStore");
+         }
       }
    }
 
