@@ -131,6 +131,7 @@ Changes svn
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - #12750 Upgrade to pthreads-dll-2004-06-22
    - #12746 Windows flag '/YX' added for precompiled headers
    - #12710 Added subversion revision number, see getXmlBlasterVersion()
    - Added zlib:stream compression support

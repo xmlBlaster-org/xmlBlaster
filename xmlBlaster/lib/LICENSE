@@ -250,7 +250,7 @@ only the SNMP subagent module jax.jar is GPL only!
 ======================
    xmlBlaster/src/c/socket/pthreadVC.lib and dll
    http://sources.redhat.com/pthreads-win32
-   for C SOCKET client on Windows only (pthreads-2003-05-10)
+   for C SOCKET client on Windows only (pthreads-dll-2004-06-22)
 
 28) hsqldb database
 ===================
