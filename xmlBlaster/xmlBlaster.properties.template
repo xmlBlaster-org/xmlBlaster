@@ -31,6 +31,9 @@ Persistence.LazyRecovery=false
 # For protocol types see I_Driver.java
 Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
 Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+# Switch on RMI driver:
+#Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,RMI:org.xmlBlaster.protocol.rmi.RmiDriver
+#Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 
 
 #------------------------------------------------------------------------------
