@@ -1175,12 +1175,12 @@ public class JdbcManager implements I_ConnectionListener {
       }
 
       String req = "SELECT * from " + tableName + " ORDER BY prio DESC, dataid ASC";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Found " + ret.size() + " entries");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
          return ret;
       }
       catch (SQLException ex) {
