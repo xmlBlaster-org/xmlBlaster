@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.7 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.8 2000/03/03 15:36:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -22,10 +22,18 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private String ME = "UpdateQoS";
 
-   // helper flags for SAX parsing
-   private boolean inSender = false; // parsing inside <sender> ?
-
-   private String sender = null;     // the sender (publisher) of this message (unique loginName)
+   /** helper flag for SAX parsing: parsing inside <state> ? */
+   private boolean inState = false;
+   /** the state of the message */
+   private String state = null;
+   /** helper flag for SAX parsing: parsing inside <sender> ? */
+   private boolean inSender = false;
+   /** the sender (publisher) of this message (unique loginName) */
+   private String sender = null;
+   /** helper flag for SAX parsing: parsing inside <subscriptionId> ? */
+   private boolean inSubscriptionId = false;
+   /** If Pub/Sub style update: contains the subscribe ID which caused this update */
+   private String subscriptionId = null;
 
 
    /**
@@ -33,8 +41,8 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public UpdateQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      // if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS(" + xmlQoS_literal + ")");
-      if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS()");
+      if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS(" + xmlQoS_literal + ")");
+      //if (Log.CALLS) Log.calls(ME, "Creating UpdateQoS()");
       init(xmlQoS_literal);
    }
 
@@ -50,6 +58,26 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
+    * Access state of message. 
+    * @return OK (Other values are not yet supported)
+    */
+   public String getState()
+   {
+      return state;
+   }
+
+
+   /**
+    * If Pub/Sub style update: contains the subscribe ID which caused this update
+    * @return subscribeId or null if PtP message
+    */
+   public String getSubscriptionId()
+   {
+      return subscriptionId;
+   }
+
+
+   /**
     * Start element, event from SAX parser.
     * <p />
     * @param name Tag name
@@ -61,6 +89,20 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
       //if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
 
+      if (name.equalsIgnoreCase("state")) {
+         if (!inQos)
+            return;
+         inState = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warning(ME, "Ignoring sent <state> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+            }
+            if (Log.TRACE) Log.trace(ME, "Found state tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("sender")) {
          if (!inQos)
             return;
@@ -71,6 +113,20 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                Log.warning(ME, "Ignoring sent <sender> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
             }
             if (Log.TRACE) Log.trace(ME, "Found sender tag");
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("subscriptionId")) {
+         if (!inQos)
+            return;
+         inSubscriptionId = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warning(ME, "Ignoring sent <subscriptionId> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+            }
+            if (Log.TRACE) Log.trace(ME, "Found subscriptionId tag");
          }
          return;
       }
@@ -88,10 +144,26 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
       // if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
 
+      if(name.equalsIgnoreCase("state")) {
+         inState = false;
+         state = character.toString().trim();
+         // if (Log.TRACE) Log.trace(ME, "Found message state = " + state);
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("sender")) {
          inSender = false;
          sender = character.toString().trim();
-         if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("subscriptionId")) {
+         inSubscriptionId = false;
+         subscriptionId = character.toString().trim();
+         // if (Log.TRACE) Log.trace(ME, "Found message subscriptionId = " + subscriptionId);
          character.setLength(0);
          return;
       }
@@ -123,13 +195,48 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       offset += extraOffset;
 
       sb.append(offset + "<qos> <!-- UpdateQoS -->");
+      if (state != null) {
+         sb.append(offset + "   <state>");
+         sb.append(offset + "      " + state);
+         sb.append(offset + "   </state>");
+      }
       if (sender != null) {
          sb.append(offset + "   <sender>");
          sb.append(offset + "      " + sender);
          sb.append(offset + "   </sender>");
       }
+      if (subscriptionId != null) {
+         sb.append(offset + "   <subscriptionId>");
+         sb.append(offset + "      " + subscriptionId);
+         sb.append(offset + "   </subscriptionId>");
+      }
       sb.append(offset + "</qos>\n");
 
       return sb;
+   }
+
+
+   /**
+    *  For testing invoke: jaco org.xmlBlaster.client.UpdateQoS
+    */
+   public static void main( String[] args ) throws XmlBlasterException
+   {
+      String xml = "<qos>\n" +
+                   "   <state>\n" +
+                   "      OK\n" +
+                   "   </state>\n" +
+                   "   <sender>\n" +
+                   "      Joe\n" +
+                   "   </sender>\n" +
+                   "   <subscriptionId>\n" +
+                   "      1234567890\n" +
+                   "   </subscriptionId>\n" +
+                   "</qos>";
+                   
+      UpdateQoS up = new UpdateQoS(xml);
+      Log.info("Test", "\n" + up.toXml());
+      
+      up = new UpdateQoS(up.toXml());
+      Log.exit("Test", "\n" + up.toXml());
    }
 }
