@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.17 2000/10/22 16:55:14 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.18 2000/10/24 12:08:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -26,19 +26,22 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * This client tests the method subscribe() with a later publish() with XPath query.<br />
  * The subscribe() should be recognized for this later arriving publish().
  * <p>
- * This demo uses the XmlBlasterConnection helper class, which hides the raw CORBA nastiness.<br />
- * XmlBlasterConnections hides how to find the CORBA server (see XmlBlasterConnection API).<br />
- * XmlBlasterConnection installs a callback server (class DefaultCallback) for you and informs
+ * This demo uses the XmlBlasterConnection helper class, which hides the raw
+ * CORBA/RMI/XML-RPC nastiness.<br />
+ * XmlBlasterConnections hides how to find the xmlBlaster server (see XmlBlasterConnection API).<br />
+ * XmlBlasterConnection installs a callback server (for CORBA,RMI or XML-RPC) for you and informs
  * you about asynchronous callbacks using the I_Callback interface (method update() see below).
  * <p>
- * If you want to know step by step what happens, study the ClientRaw example.
+ * If you want to know step by step what happens with CORBA, study the corba/ClientRaw.java example.
  * Here we use all available Java helper classes.
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub
+ *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSub
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub -name "Jeff"
+ *    jaco javaclients.ClientSub -name Jeff -client.protocol RMI
+ *
+ *    java javaclients.ClientSub -help
  * </pre>
  */
 public class ClientSub implements I_Callback

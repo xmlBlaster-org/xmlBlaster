@@ -187,7 +187,7 @@ Else add it manually.
     <delete file="${lib.dir}/demo.jar"/>
     <delete file="${lib.dir}/testsuite.jar"/>
     <delete file="${build.dir}/${name}.jar"/>
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy"/>
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
 
