@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.18 2000/10/24 12:08:28 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.19 2000/11/14 07:06:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -159,7 +159,8 @@ public class ClientSub implements I_Callback
          // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }
       catch (Exception e) {
-          e.printStackTrace();
+         Log.error(ME, "Client failed: " + e.toString());
+         // e.printStackTrace();
       }
    }
 
