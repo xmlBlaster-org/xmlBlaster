@@ -5,12 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.QosData;

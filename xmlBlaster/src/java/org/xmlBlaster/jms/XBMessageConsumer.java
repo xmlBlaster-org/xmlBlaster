@@ -69,7 +69,12 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
       return receive(-1L);
    }
 
+   // TODO this method still needs to be implemented. There is probably
+   // need of modifying the get method by adding a blocking version. This
+   // can be configurated in the GetQos
    synchronized public Message receive(long delay) throws JMSException {
+      throw new JMSException(ME + " 'receive' not implemented yet");
+      /*
       startToListen();
       this.waitingForReceive = true;
       try {
@@ -80,6 +85,7 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
       }
       this.waitingForReceive = false;
       return this.msg;
+      */
    }
 
    /**
@@ -92,10 +98,7 @@ public class XBMessageConsumer implements MessageConsumer, MessageListener {
     * TODO we would need something as 'noInitialUpdates' for the getQos. 
     */
    synchronized public Message receiveNoWait() throws JMSException {
-      startToListen();
-      if (this.waitingForReceive) return null;
-      notify();
-      return this.msg;
+      return receive(0L);
    }
 
    synchronized public void setMessageListener(MessageListener msgListener) throws JMSException {

@@ -1,11 +1,9 @@
 package org.xmlBlaster.protocol.email;
 
-import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.Attributes;
 
-import org.xmlBlaster.util.XmlToDom;
 import org.jutils.log.LogChannel;
 import java.util.HashSet;
 import java.util.Hashtable;

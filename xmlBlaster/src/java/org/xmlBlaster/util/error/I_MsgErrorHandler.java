@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.error;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * You need to implement this interface to be notified on unrecoverable errors. 

@@ -7,21 +7,12 @@ package org.xmlBlaster.client;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
-import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
-import org.xmlBlaster.client.XmlBlasterAccess;
-
-import java.util.ArrayList;
 
 /**
  * The default error recovery implementation for messages which are lost
@@ -82,7 +73,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
          }
       }
 
-      Thread.currentThread().dumpStack();
+      Thread.dumpStack();
       if (xmlBlasterAccess.getQueue() != null)
          xmlBlasterAccess.getQueue().clear();
    }
