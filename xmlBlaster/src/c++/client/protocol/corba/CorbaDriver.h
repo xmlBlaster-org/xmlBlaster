@@ -22,10 +22,12 @@ Comment:   The client driver for the corba protocol
 #include <client/xmlBlasterClient.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
+#include <util/thread/Thread.h>
+#include <map>
 
-using org::xmlBlaster::util::MessageUnit;
-using org::xmlBlaster::util::Global;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::thread;
 using namespace std;
 
 namespace org {
@@ -34,13 +36,31 @@ namespace org {
    namespace protocol {
     namespace corba {
 
+   class CorbaDriver;
+   typedef map<string, CorbaDriver*> DriverMap;
+
    using namespace org::xmlBlaster::util::qos;
 
-   class CorbaDriver : public virtual I_CallbackServer, public virtual I_XmlBlasterConnection
+   class CorbaDriver 
+      : public virtual I_CallbackServer, 
+        public virtual I_XmlBlasterConnection, 
+        public Thread
    {
-   friend CorbaDriver& getInstance(Global& global);
+   friend CorbaDriver& getInstance(Global& global, const string& instanceName);
+   /**
+    * If the reference counter is negative, it returns -1 (this means that there is no instance.
+    * If it is zero '0', it stops the singleton. if it is negative it returns -1.
+    */
+//   friend int killInstance(const string& instanceName);
 
    private:
+      static DriverMap& getDrivers();
+
+      bool&            doRun_;
+      bool&            isRunning_; 
+      Mutex&           mutex_;
+      int              count_;
+      string           instanceName_;
       CorbaConnection* connection_;
       DefaultCallback* defaultCallback_;
       const string     ME;
@@ -55,9 +75,9 @@ namespace org {
        */
       void freeResources(bool deleteConnection=true, bool deleteCallback=true);
 
-      CorbaDriver(Global& global, bool connectionOwner = false);
+      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, bool connectionOwner = false);
 
-      CorbaDriver();
+//      CorbaDriver();
 
       CorbaDriver(const CorbaDriver& corbaDriver);
 
@@ -65,9 +85,12 @@ namespace org {
 
       virtual ~CorbaDriver();
 
+      void run();
+
    public:
 
-      static CorbaDriver& getInstance(Global& global);
+      static CorbaDriver& getInstance(Global& global, const string& instanceName);
+      static int killInstance(const string& instanceName);
 
       // methods inherited from I_CallbackServer
       void initialize(const string& name, I_Callback &client);

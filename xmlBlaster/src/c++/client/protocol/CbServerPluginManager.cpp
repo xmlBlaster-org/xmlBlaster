@@ -46,7 +46,7 @@ CbServerPluginManager::~CbServerPluginManager()
 */
 }
 
-I_CallbackServer& CbServerPluginManager::getPlugin(const string& /*instanceName*/, const string& type, const string& version)
+I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, const string& type, const string& version)
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
@@ -65,7 +65,7 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& /*instanceName*
       }
       return *((*iter).second);
 */
-      return corba::CorbaDriver::getInstance(global_);
+      return corba::CorbaDriver::getInstance(global_, instanceName);
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +

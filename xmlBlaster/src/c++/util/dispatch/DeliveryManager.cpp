@@ -50,7 +50,7 @@ DeliveryManager::~DeliveryManager()
    }
 }
 
-I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& /*instanceName*/, const string& type, const string& version)
+I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, const string& type, const string& version)
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
@@ -60,7 +60,7 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& /*instanceName*
    if (type == "IOR") {
       ServerMap::iterator iter = serverMap_.find(completeName);
       if (iter == serverMap_.end()) {
-         corba::CorbaDriver* driver =	&corba::CorbaDriver::getInstance(global_);
+         corba::CorbaDriver* driver =   &corba::CorbaDriver::getInstance(global_, instanceName);
          // probably notify the dispatcher framework here since they
          // share the same object.
          ServerMap::value_type el(completeName, driver);

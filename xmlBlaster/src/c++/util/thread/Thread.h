@@ -48,6 +48,7 @@ class Lock;
 
 class ThreadRunner 
 {
+public:
    Thread& owner_;
    ThreadRunner(Thread& owner);
    void operator()();
@@ -92,6 +93,13 @@ public:
     * thread on which this method is invoked, will terminate, before it continues.
     */
    void join();
+
+
+   bool isRunning() const
+   {
+      return thread_;
+   }
+
 };
 
 
