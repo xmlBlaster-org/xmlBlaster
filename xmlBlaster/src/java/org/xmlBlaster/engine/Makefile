@@ -13,6 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/engine
 
 
 #------------------------------------------------------------------------------
+SUB_DIRS = persistence
 LOCAL_FILES = \
 			$(CLASS_DIR)/ClientInfo.class \
 			$(CLASS_DIR)/RequestBroker.class \
@@ -35,7 +36,7 @@ LOCAL_FILES = \
 $(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
 	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
 
-all: 	precond java
+all: 	all_SUB_DIRS precond java
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.7 1999/12/15 00:45:26 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.8 2000/01/20 19:42:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import java.util.*;
 
 
@@ -31,6 +32,7 @@ public class MessageUnitWrapper
    private PublishQoS publishQoS;    // the flags from the publisher
    private String publisherName;     // the unique loginName of the publisher
    private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
+   private I_PersistenceDriver persistenceDriver;
 
 
    /**
@@ -52,6 +54,7 @@ public class MessageUnitWrapper
       this.uniqueKey = this.xmlKey.getUniqueKey();
       this.publishQoS = publishQoS;
       this.publisherName = publisherName;
+      this.persistenceDriver = RequestBroker.getInstance().getPersistenceDriver();
 
       if (publisherName == null)
          publisherName = "";
@@ -61,6 +64,9 @@ public class MessageUnitWrapper
 
       if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the messageUnit.xmlKey as well
          this.messageUnit.xmlKey = xmlKey.literal();
+
+      if (persistenceDriver != null && publishQoS.isDurable())
+         persistenceDriver.store(this);
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
    }
@@ -83,7 +89,7 @@ public class MessageUnitWrapper
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public final boolean setContent(byte[] content, String publisherName)
+   public final boolean setContent(byte[] content, String publisherName) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
@@ -107,6 +113,8 @@ public class MessageUnitWrapper
 
       if (changed) {  // new content is not the same as old one
          this.messageUnit.content = content;
+         if (persistenceDriver != null && publishQoS.isDurable())
+            persistenceDriver.store(xmlKey, content);
          return true;
       }
       else {

@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.8 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.9 2000/01/20 19:42:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -159,8 +159,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
       if (name.equalsIgnoreCase("IsDurable")) {
          if (!inQos)
             return;
-         Log.error(ME, "Sorry, IsDurable is not yet supported");
-         isDurable = false; // !!!
+         isDurable = true;
          return;
       }
 

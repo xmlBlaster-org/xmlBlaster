@@ -3,11 +3,12 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.44 2000/01/15 15:33:56 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.45 2000/01/20 19:42:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Property;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
@@ -18,6 +19,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import java.util.*;
 import java.io.*;
 
@@ -29,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -75,6 +77,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    private BigXmlKeyDOM bigXmlKeyDOM = null;
 
+   /**
+    * This Interface allows to hook in you own persistence driver, configure it through xmlBlaster.properties
+    */
+   private I_PersistenceDriver persistenceDriver = null;
+
+   /** Flag for performance reasons only */
+   private boolean usePersistence = true;
+
 
    /**
     * Access to RequestBroker singleton
@@ -117,6 +127,42 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
+
+      getPersistenceDriver().recover(this);
+   }
+
+
+   /**
+    * This Interface allows to hook in you own persistence driver,<br />
+    * configure it through xmlBlaster.properties
+    * <p />
+    * Note that you can't change the driver during runtime (would need some code added).
+    * @return interface to the configured persistence driver or null if no is available
+    */
+   public final I_PersistenceDriver getPersistenceDriver()
+   {
+      if (usePersistence == false) return (I_PersistenceDriver)null;
+
+      if (persistenceDriver == null) {
+         String driverClass = Property.getProperty("Persistence.Driver", (String)null);
+         if (driverClass == null) {
+            Log.error(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
+            usePersistence = false;
+            return (I_PersistenceDriver)null;
+         }
+
+         try {
+            Class cl = java.lang.Class.forName(driverClass);
+            persistenceDriver = (I_PersistenceDriver)cl.newInstance();
+            usePersistence = true;
+         }
+         catch (Exception e) {
+            Log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate " + driverClass + ": " + e.toString());
+            usePersistence = false;
+            return (I_PersistenceDriver)null;
+         }
+      }
+      return persistenceDriver;
    }
 
 
@@ -626,7 +672,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
    /**
     * This helper method checks for a published message which didn't exist before if
-    * there are any XPath subscriptions pending which match. 
+    * there are any XPath subscriptions pending which match.
     * <p />
     * PRECOND: The new message is already merged in the big DOM tree
     */
