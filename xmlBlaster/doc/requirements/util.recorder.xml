@@ -12,6 +12,8 @@
       -> see XmlBlasterConnection.initFailSave()
       </p>
 
+      Allows to kill the db-file during execution
+
       <p>
       Following error handling is possible if the queue overflows:
       </p>
@@ -111,7 +113,7 @@
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
