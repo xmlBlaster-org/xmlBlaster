@@ -1,5 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xxx, xx 2003]
+================================
+
+ o Fixed behavior and error handling of PtP messages, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.offline.html
+
+
 Changes for 0.844 [Mar, 20 2003]
 ================================
 
