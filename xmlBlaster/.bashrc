@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.42 $
+# $Revision: 1.43 $
 #-----------------------------------------------------------
 
 
@@ -120,6 +120,11 @@ if [ ${JDK_HOME:=""} != "" ] ; then
          # JDK 1.2
          CLASSPATH=${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}
          export CLASSPATH
+			ORB_PROPS=${JDK_HOME}/jre/lib/orb.properties
+		   if [ ! -f ${ORB_PROPS} ]; then
+		      cp ${XMLBLASTER_HOME}/orb.properties ${ORB_PROPS}
+		      ${ECHO} "$BLACK_RED   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
+		   fi
       fi
       PATH=${JDK_HOME}/bin:${PATH}
       export PATH
@@ -178,9 +183,9 @@ if [ -d ${JacORB_HOME} ] ; then
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
    ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
-   if [ ! -f ${HOME}/.jacorb_properties ]; then
-      cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
-      ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
+   if [ ! -f ${HOME}/jacorb.properties ]; then
+      cp ${JacORB_HOME}/jacorb.properties.template ${HOME}/jacorb.properties
+      ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/jacorb.properties   $ESC"
    fi
 else
    ${ECHO} "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"

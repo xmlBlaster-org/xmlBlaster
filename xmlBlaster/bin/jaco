@@ -1,51 +1,17 @@
 #!/bin/sh
 #
-# Starting the java interpreter, using JacORB omg libs instead of those from JDK 1.2
+# Starting the java interpreter, using JacORB omg libs instead of those
+# from JDK 1.2
 #
+#   Basically, you don't need this script anymore, calling java or javac
+#   directly is enough - if you are using JDK 1.1 or, for JDK 1.2,
+#   installed the orb.properties file correctly. If this was not
+#   possible, you need to set and pass the system properties 
+#   org.omg.CORBA.ORBClass and org.omg.CORBA.ORBSingletonClass on 
+#   the command line. For convenience, you can use this script
+#
+#   Copy orb.properties to JAVA_HOME/lib or edit the existing
+#   orb.properties file. Then you don't need this script.
+#
+java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton $@
 
-JACO_PRG=$0
-
-if [ "x${JacORB_HOME}" = "x" ] ; then
-   JacORB_BIN=`dirname "${JACO_PRG}"`
-   JacORB_HOME=`dirname "${JacORB_BIN}"`
-   if [ -d ${JacORB_HOME}/lib ] ; then
-      # JacORB delivered with xmlBlaster
-      JacORB_LIB=${JacORB_HOME}/lib
-   else
-      # Original JacORB distribution
-      JacORB_LIB=${JacORB_HOME}/classes
-   fi
-   #echo -e "\033[32;40m  Using JacORB_HOME=${JacORB_HOME}\033[0m"
-fi
-
-if [ "x${JDK_HOME}" = "x" ] ; then
-   JAVA_EXE=`which java`
-   if ! [ ${JAVA_EXE} ] ; then
-      echo -e ""
-      echo -e "\033[31;40m  Please set environment variable JDK_HOME \033[0m"
-      echo -e "\033[31;40m    Example: 'export JDK_HOME=/usr/local/jdk1.2' \033[0m"
-      echo -e "\033[31;40m  or set PATH to contain 'java' \033[0m"
-      echo -e ""
-   else
-      JDK_BIN=`dirname $JAVA_EXE`
-      JDK_HOME=`dirname $JDK_BIN`
-   fi
-   #echo -e "\033[32;40m  Using JDK_HOME=${JDK_HOME}\033[0m"
-fi
-
-if [ -f ${JDK_HOME}/lib/classes.zip ]; then
-   echo -e "\033[32;40m  Running JacORB with JDK 1.1\033[0m"
-   # On Linux jdk1.1.7: Using -native does block forever in System.in.read()
-   java -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
-else
-   # To change memory consumption:
-   #BlasterServerMemory=-Xms10m -Xmx80m
-   # Uncomment to switch off JIT:
-   #JIT_COMPILER="-Djava.compiler="
-   echo -e "\033[32;40m  Running JacORB with JDK 1.2 and JIT=$JIT_COMPILER\033[0m"
-   java -native $JIT_COMPILER $BlasterServerMemory -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
-   #java -green -Djava.compiler= -Xbootclasspath:"${CLASSPATH}"  "$@"
-fi
-
-
-# java -native -Djava.compiler= -Xbootclasspath:"/home/bwana/brose/Work/jacorb/classes:/home/bwana/brose/Work/jacorb/classes/jacorb.jar:/import/java2/jre/lib/rt.jar:${CLASSPATH}"    "$@"

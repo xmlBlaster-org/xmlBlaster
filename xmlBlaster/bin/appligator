@@ -4,6 +4,6 @@
 # Sebastian Mueller, Freie Universitaet Berlin
 # semu@inf.fu-berlin.de
 
-# Starts the JacORB proxy server
+# Starts the JacORB appligator
 
-jaco jacorb.proxy.orbProxyServer "$@"
+jaco jacorb.proxy.ForwarderImpl "$@"

@@ -66,17 +66,40 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      set CLASSPATH=%XMLBLASTER_HOME%/lib/servlet-2.0.jar;%CLASSPATH%
      set CLASSPATH=%XMLBLASTER_HOME%/lib/test.jar;%CLASSPATH%
      set CLASSPATH=%JacORB_LIB%/jacorb.jar;%CLASSPATH%
+     set CLASSPATH=%JacORB_LIB%/idl.jar;%CLASSPATH%
      
      If you use the release version of xmlBlaster you should add the xmlBlaster.jar
      to your classpath environment.
      REM set CLASSPATH=%XMLBLASTER_HOME%/lib/xmlBlaster.jar;%classpath%
 
 
-    You can do also put all the above settings to your startup script.
+    You can also put all the above settings to your startup script.
     After a new login you are ready to start the xmlBlaster (see below).
 
 
-2. Notes on adjusting your environment setup.
+2. Copy %XMLBLASTER_HOME%/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
+   or edit the existing orb.properties file.
+
+	This switches off the default CORBA from JDK 1.2, and replaces it with
+	the JacORB CORBA implementation.
+
+	If you want to avoid this, you need to specify on command line:
+	   java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+		     -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+
+
+3. There are two property files which you need to copy.
+
+   a) %HOME%/xmlBlaster.properties
+	   There is a template %XMLBLASTER_HOME%/xmlBlaster.properties.template
+		to use as a base.
+
+	b) %HOME%/jacorb.properties
+	   There is a template %XMLBLASTER_HOME%/jacorb.properties.template
+		to use as a base.
+
+
+4. Notes on adjusting your environment setup.
    You may wish to change the default environment setup for example
    if you have JacORB installed already, or to include your MICO C++ Corba library.
    You may do this with setting following variables before you source:
@@ -199,3 +222,6 @@ Usage :
 #################################################################
 
 -> Not tested yet, see the general INSTALL file.
+
+Peter Roth - Roth.Peter@gmx.de
+

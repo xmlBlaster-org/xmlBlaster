@@ -4,6 +4,13 @@
 Changes for 0.76 [?, 2000]
 ===============================
 
+   - xmlBlaster now uses the new JacORB 1.1 with SSL support
+
+	- .jacorb_properties is renamed to jacorb.properties
+	  YOU NEED TO REMOVE YOUR $HOME/.jacorb_properties and
+	  configure $HOME/jacorb.properties
+	  Use the xmlBlaster/jacorb.properties.template as a base
+
    - Peter added the sweet rainbow fish to our control panel
 
 Changes for 0.75 [Mar.28, 2000]

@@ -1,4 +1,4 @@
-#This file was created by <ruff> Sat Mar 25 22:53:58 2000
+#This file was created by <ruff> Wed Apr  5 13:07:47 2000
 #LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
@@ -238,16 +238,16 @@ and then use it as a variable in this file.
  The configuration file delivered for the CORBA library JacORB is called
  
 \family typewriter 
-.jacorb_properties
+jacorb.properties
 \family default 
 .
  Copy manually the 
 \family typewriter 
-$HOME/xmlBlaster/jacorb_properties.templateINSTALL 
+$HOME/xmlBlaster/jacorb.properties.template INSTALL 
 \family default 
 file to 
 \family typewriter 
-$HOME/.jacorb_properties.
+$HOME/jacorb.properties.
 
 \family default 
  If you use the delivered 
@@ -257,7 +257,7 @@ $HOME/.jacorb_properties.
  file you don't need to copy it, it is done automatically.
  Edit 
 \family typewriter 
-.jacorb_properties
+jacorb.properties
 \family default 
  if necessary.
  If you need help about this, check the JacORB documentation.

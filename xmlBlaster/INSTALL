@@ -9,16 +9,14 @@
 Welcome!
 
 We hope these hints are useful to get you running with xmlBlaster.
-If you have problems, don't hesitate to contact the maintainers
+If  you  have  problems, don't hesitate to contact the maintainers
 through the mailing list (see http://www.xmlBlaster.org).
 
-If you do some own hacks, feel free to contribute them back,
-so anybody benefits from your glorious invention.
-This project is living from ideas and contributions.
-If you are a Python hacker, why not contribute some Python
-helper classes?
-If you prefer Smalltalk, why not contributing your xmlBlaster
-client solution?
+If  you  do  some own hacks, feel free to contribute them back, so
+anybody  benefits  from  your  glorious invention. This project is
+living  from  ideas and contributions. If you are a Python hacker,
+why  not  contribute  some  Python  helper  classes? If you prefer
+Smalltalk,  why  not contributing your xmlBlaster client solution?
 But, if you are lazy, just use and enjoy xmlBlaster as delivered!
 
 
@@ -27,7 +25,7 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
 +--------------------+
 
    - JDK 1.2 or later
-   - a GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
+   - A GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
      For DOS/Windows, e.g. cygwin's make.
      Note that Windows nmake will not work properly with xmlBlaster Makefiles
    - or -
@@ -78,13 +76,37 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
      setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-     setenv CLASSPATH ${JacORB_LIB}/jacorb.jar:${CLASSPATH}:
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jacorb.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/idl.jar:${CLASSPATH}
 
     You can do this automatically from your startup shell script.
     After a new login you are ready to start the xmlBlaster (see below).
 
 
-2. Notes on adjusting your environment setup.
+2. Copy xmlBlaster/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
+   or edit the existing orb.properties file.
+
+	This switches off the default CORBA from JDK 1.2, and replaces it with
+	the JacORB CORBA implementation.
+
+	If you want to avoid this, you need to specify on command line:
+	   java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+		     -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+
+
+3. There are two property files which you can adjust.
+   (They are copied automatically if you use the .bashrc from step 1a)
+
+   a) $HOME/xmlBlaster.properties
+	   There is a template xmlBlaster/xmlBlaster.properties.template
+		to use as a base.
+
+	b) $HOME/jacorb.properties
+	   There is a template xmlBlaster/jacorb.properties.template
+		to use as a base.
+
+
+4. Notes on adjusting your environment setup.
    You may wish to change the default environment setup for example
    if you have JacORB installed already, or to include your MICO C++ Corba library.
    You may do this with setting following variables before you source
@@ -93,6 +115,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
       export JacORB_HOME=/usr/local/JacORB   (to use your own JacORB installation)
       export MICO_HOME=/usr/local/mico       (to use C++ demo clients with mico)
       export JIKES_HOME=/usr/local/jikes     (to use your jikes java compiler instead of javac, http://www.alphaworks.ibm.com/tech/jikes)
+
 
 
 +--------------------+
@@ -116,8 +139,11 @@ instructions.
 One important note:
    You can't start xmlBlaster on JDK 1.2.x with the java command directly,
    since this would use the JDK internal ORB (which is outdated).
-   You always have to use the little wrapper script 'jaco' which
-   sets the -Xbootclasspath to use the JacORB CORBA implementation!
+	- Start xmlBlaster like this:
+	   java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+		     -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+	- Use our little script 'jaco' which does this
+	- Or install orb.properties (see above, the recommended way)
 
 1. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
    (This is the Default-Startup)
@@ -161,8 +187,8 @@ One important note:
 
      jaco org.xmlBlaster.MainGUI -iorPort -1
 
-   This client looks into .jacorb_properties to find the URL with the naming service IOR.
-   Edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
+   This client looks into jacorb.properties to find the URL with the naming service IOR.
+   Edit ${HOME}/jacorb.properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
 
      jaco javaclients.ClientXml -iorPort -1
 
@@ -362,4 +388,4 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
 
 -------------------------------------------------------------------------
-Manuel + Marcel, Jan. 2000
+Marcel - ruff@swand.lake.de

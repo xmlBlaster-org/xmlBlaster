@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.42 2000/03/27 22:02:28 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.43 2000/04/05 14:25:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -141,41 +141,29 @@ public class CorbaConnection implements ServerOperations
    /**
     * CORBA client access to xmlBlaster for <strong>applets</strong>.
     * <p />
-    * Use these environment settings for VisiBroker
+    * Use these environment settings for JacORB if you don't use this constructor!
     * <br />
-    * <ul>
-    *    <li>ORBservices</li>
-    *    <li>SVCnameroot</li>
-    *    <li>ORBagentAddr</li>
-    *    <li>ORBagentPort</li>
-    * </ul>
-    * <br />
-    * <b>Example:</b>
-    *  <code>
-    *     <-APPLET<br />
-    *        CODEBASE = "http://localhost"<br>
-    *        CODE     = "DemoApplet.class"<br>
-    *        NAME     = "xmlBlaster demo"<br>
-    *        WIDTH    = 200<br>
-    *        HEIGHT   = 200<br>
-    *        HSPACE   = 0<br>
-    *        VSPACE   = 0<br>
-    *        ALIGN    = middle<br>
-    *     ><br />
-    *     <-PARAM name=org.omg.CORBA.ORBClass value=com.visigenic.vbroker.orb.ORB><br>
-    *     <-PARAM name=ORBServices value=CosNaming><br>
-    *     <-PARAM name=SVCnameroot value=xmlBlaster-Authenticate><br>
-    *     <-PARAM name=ORBagentAddr value=192.168.1.1><br>
-    *     <-PARAM name=ORBagentPort value=14000><br>
-    *     <-PARAM name=ORBgatekeeperIOR value=15000><br>
-    *     <-/APPLET>
-    *  </code>
+    * Example:
+    *  <pre>
+    *     &lt;APPLET
+    *        CODEBASE = "http://localhost"
+    *        CODE     = "DemoApplet.class"
+    *        NAME     = "xmlBlaster demo"
+    *        WIDTH    = 200
+    *        HEIGHT   = 200
+    *        HSPACE   = 0
+    *        VSPACE   = 0
+    *        ALIGN    = middle
+    *     >
+    *     &lt;PARAM name=org.omg.CORBA.ORBClass value=jacorb.orb.ORB>
+    *     &lt;PARAM name=org.omg.CORBA.ORBSingletonClass value=jacorb.orb.ORBSingleton>
+    *     &lt;PARAM name=SVCnameroot value=xmlBlaster-Authenticate>
+    *     &lt;/APPLET>
+    *  </pre>
     * @param ap  Applet handle
     */
    public CorbaConnection(Applet ap)
    {
-      java.util.Properties props = null;
-      /*
       // try to force to use JacORB instead of builtin CORBA:
       String orbClassName = "jacorb.orb.ORB";
       String orbSingleton = "jacorb.orb.ORBSingleton";
@@ -184,7 +172,6 @@ public class CorbaConnection implements ServerOperations
       props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
 
       Log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
-      */
 
       orb = org.omg.CORBA.ORB.init(ap, props);
    }

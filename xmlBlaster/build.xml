@@ -2,48 +2,48 @@
 
 <!-- ===========================================================================
 
- xmlBlaster build file 
- 
+ xmlBlaster build file
+
 Authors:
  James Birchfield <jmbirchfield@proteustechnologies.com>
 
 ToDo:
  Figure out how not to convert idl to java everytime.
- (Luckily it is fast)   
+ (Luckily it is fast)
 
 Installing the build tools
 ==========================
- 
+
 The xmlBlaster build system is based on Jakarta Ant, which is a Java building
 tool originally developed for the Jakarta Tomcat project but now used in many
 other Apache projects and extended by many developers.
- 
+
 Ant is a little but very handy tool that uses a build file written in XML
 (this file) as building instructions. For more information refer to
 "http://jakarta.apache.org/ant/".
- 
+
 To make things easier for you, the xmlBlaster distribution contains a
 precompiled version of Ant and the build scripts take care of all the
 classpath issues.
- 
+
 The only thing that you have to make sure, is the "JAVA_HOME" environment
 property should be set to match the JVM you want to use. That's it.
- 
-                      
+
+
 Building instructions
 =====================
- 
+
 Ok, let's build the baby. First, make sure your current working directory is
 where this very file is located. Then type
- 
+
   ./build.sh (unix)
   .\build.bat (win32)
- 
+
 if everything is right and all the required packages are visible, this action
 will generate a file called "xmlBlaster.jar" in the "./lib" directory.
 Note, that if you do further development, compilation time is reduced
 since Ant is able to detect which files have changed an to recompile
-them at need. 
+them at need.
 
 ============================================================================ -->
 
@@ -129,18 +129,18 @@ them at need.
     <mkdir dir="${build.dest}/xmlBlaster"/>
 
     <!-- convert idl -->
-	<echo message="Converting idl..."/>
+        <echo message="Converting idl..."/>
     <java
-		classname="${idl.class}"
-		args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>  
+                classname="${idl.class}"
+                args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
     <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile"/>
 
     <javac
-		srcdir="${build.src}/xmlBlaster"
-		destdir="${build.dest}/xmlBlaster"
-		classpath="${classpath}"
-		debug="${debug}"/>
+                srcdir="${build.src}/xmlBlaster"
+                destdir="${build.dest}/xmlBlaster"
+                classpath="${classpath}"
+                debug="${debug}"/>
 
     <jar jarfile="${build.dir}/${name}.jar" basedir="${build.dest}/xmlBlaster" includes="org/**"/>
 
@@ -154,10 +154,10 @@ them at need.
     <mkdir dir="${build.dest}/demo"/>
     <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile"/>
     <javac
-		srcdir="${build.src}/demo"
-		destdir="${build.dest}/demo"
-		classpath="${classpath}:${lib.dir}/${name}.jar"
-		debug="${debug}"/>
+                srcdir="${build.src}/demo"
+                destdir="${build.dest}/demo"
+                classpath="${classpath}:${lib.dir}/${name}.jar"
+                debug="${debug}"/>
 
     <jar jarfile="${build.dir}/demo.jar" basedir="${build.dest}/demo"/>
 
@@ -177,10 +177,10 @@ them at need.
     <mkdir dir="${build.dest}/testsuite"/>
     <copydir src="${testsuite.dir}/org" dest="${build.src}/testsuite/org" excludes="README, Makefile"/>
     <javac
-		srcdir="${build.src}/testsuite"
-		destdir="${build.dest}/testsuite"
-		classpath="${classpath}:${lib.dir}/${name}.jar"
-		debug="${debug}"/>
+                srcdir="${build.src}/testsuite"
+                destdir="${build.dest}/testsuite"
+                classpath="${classpath}:${lib.dir}/${name}.jar"
+                debug="${debug}"/>
     <jar jarfile="${build.dir}/testsuite.jar" basedir="${build.dest}/testsuite" includes="testsuite/**"/>
     <copyfile src="${build.dir}/testsuite.jar" dest="${lib.dir}/testsuite.jar"/>
   </target>
@@ -190,15 +190,15 @@ them at need.
   <!-- =================================================================== -->
   <target name="javadocs" depends="xmlBlaster">
     <mkdir dir="${javadoc.dir}"/>
-	<javadoc packagenames="org.xmlBlaster.*"
-		sourcepath="${src.dir}"
-		classpath="${classpath}"
-		destdir="${javadoc.dir}"
-		author="true"
-		version="true"
-		use="true"
-		windowtitle="xmlBlaster API"
-		doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
+        <javadoc packagenames="org.xmlBlaster.*"
+                sourcepath="${src.dir}"
+                classpath="${classpath}"
+                destdir="${javadoc.dir}"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="xmlBlaster API"
+                doctitle="&lt;h1&gt;xmlBlaster API&lt;/h1&gt;" />
 
   </target>
 
@@ -227,12 +227,12 @@ them at need.
     <copyfile src="INSTALL" dest="${dist.dir}/INSTALL"/>
     <copyfile src="LICENSE" dest="${dist.dir}/LICENSE"/>
     <copyfile src="xmlBlaster.properties.template" dest="${dist.dir}/xmlBlaster.properties.template"/>
-    <copyfile src="jacorb_properties.template" dest="${dist.dir}/jacorb_properties.template"/>
+    <copyfile src="jacorb.properties.template" dest="${dist.dir}/jacorb.properties.template"/>
     <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
-	<echo message="Creating jar file"/>
+        <echo message="Creating jar file"/>
     <jar jarfile="${name}-${version}.jar" basedir="${dist.dir}"/>
-	<echo message="Created jar file"/>
+        <echo message="Created jar file"/>
   </target>
 
   <!-- =================================================================== -->
