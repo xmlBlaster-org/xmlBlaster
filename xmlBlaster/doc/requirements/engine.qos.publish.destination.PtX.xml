@@ -4,6 +4,7 @@
 <requirement id='engine.qos.publish.destination.PtX' type='NEW' prio='HIGH' status="OPEN">
    <topic>PtX (Point to XPath) messages are routed using the qos-destination tag</topic>
    <description>
+      <p>
       If you specify a  &lt;destination queryType='XPATH'&gt;  tag, the message will be delivered to
       all clients, for which the XPATH query matches.
       Assuming that clients are stored in a dedicated authentication xmlBlaster server,
@@ -12,8 +13,23 @@
       This allows a smart addressing of client with specific roles or in specific groups.
       You may categorize some client with the &lt;MANAGER&gt; tag, and some with the "TRUSTED"
       attribute. This allows to send a message for example to all managers which are trusted.
+      </p>
+      <p>
+      The clients connection name should be in that kind, so I think the term 'key' is misleading here.
+      </p>
+      <p>
+      This is a requirement, we've been talking about before X-mas 2002. It allows to group
+      clients with additional terms.
+      For example Agents as publisher or Clients as subscriber.
+      </p>
+      <p>
+      The next step would be that those META-Tags have to be in the <code>__sys__Login</code> and
+      <code>__sys__Logout</code> messages as well to monitor connections and disconnections of
+      this particular client. Probably in the <code>__sys__UserList</code> message as well.
+      </p>
    </description>
    <example lang="Java">
+
       <![CDATA[
       Imagine your clients in xmlBlaster have following meta informations:
          <key oid='martin' contentMime='text/plain'>
@@ -51,11 +67,12 @@
       ]]>
    </example>
    <see type="REQ">engine.qos.publish.destination.PtP</see>
+   <see type="REQ">engine.LoginLogoutEvent</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 01 17</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
