@@ -12,7 +12,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = pool 
+SUB_DIRS = pool servlet
 LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
