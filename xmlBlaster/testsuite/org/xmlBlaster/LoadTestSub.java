@@ -3,11 +3,12 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.22 2002/03/13 16:41:37 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.23 2002/03/18 00:31:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -38,6 +39,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private static String ME = "Tim";
    private boolean messageArrived = false;
    private StopWatch stopWatch = null;
+   private Global glob;
 
    private String subscribeOid;
    private String publishOid = "LoadTestSub";
@@ -50,6 +52,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private final int numPublish;        // 200;
    private int numReceived = 0;         // error checking
    private int burstModePublish = 1;
+   private boolean publishOneway = false;
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
    private int lastContentNumber = -1;
@@ -63,14 +66,16 @@ public class LoadTestSub extends TestCase implements I_Callback
     * @param numPublish The number of messages to send
     * @param burstModePublish send given number of publish messages in one bulk
     */
-   public LoadTestSub(String testName, String loginName, String passwd, int numPublish, int burstModePublish)
+   public LoadTestSub(Global glob, String testName, String loginName, String passwd, int numPublish, int burstModePublish, boolean publishOneway)
    {
        super(testName);
+       this.glob = glob;
        this.senderName = loginName;
        this.receiverName = loginName;
        this.passwd = passwd;
        this.numPublish = numPublish;
        this.burstModePublish = burstModePublish;
+       this.publishOneway = publishOneway;
    }
 
 
@@ -82,7 +87,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob);
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
          Log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " burstMode.collectTime=" + XmlBlasterProperty.get("burstMode.collectTime", 0L));
       }
@@ -178,7 +183,10 @@ public class LoadTestSub extends TestCase implements I_Callback
                arr[jj].content = new String(someContent + (ii+1)).getBytes();
             }
             ii+=burstModePublish;
-            publishOids = senderConnection.publishArr(arr);
+            if (publishOneway)
+               senderConnection.publishOneway(arr);
+            else
+               publishOids = senderConnection.publishArr(arr);
             /*
             if (((ii+1) % 1) == 0)
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
@@ -212,20 +220,12 @@ public class LoadTestSub extends TestCase implements I_Callback
       assertEquals("numReceived after publishing", numPublish, numReceived); // message arrived?
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -246,6 +246,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          }
       }
       lastContentNumber = val;
+      return "";
    }
 
 
@@ -284,7 +285,7 @@ public class LoadTestSub extends TestCase implements I_Callback
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        int numMsg = 200;
-       suite.addTest(new LoadTestSub("testManyPublish", loginName, "secret", numMsg, 200));
+       suite.addTest(new LoadTestSub(new Global(), "testManyPublish", loginName, "secret", numMsg, 200, false));
        return suite;
    }
 
@@ -294,7 +295,8 @@ public class LoadTestSub extends TestCase implements I_Callback
       Log.plain("   -name               The login name [Tim].");
       Log.plain("   -passwd             The login name [secret].");
       Log.plain("   -numPublish         Number of messages to send [5000].");
-      Log.plain("   -burstMode.publish  Collect given number of messages when publishing [1].");
+      Log.plain("   -publish.burstMode  Collect given number of messages when publishing [1].");
+      Log.plain("   -publish.oneway     Send messages oneway (publish does not receive return value) [false].");
       XmlBlasterConnection.usage();
       Log.usage();
    }
@@ -312,21 +314,20 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      try {
-         boolean showUsage = XmlBlasterProperty.init(args);
-         if (showUsage) {
-            usage();
-            Log.exit(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -burstMode.publish 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
-         }
-      } catch(org.jutils.JUtilsException e) {
+      Global glob = new Global();
+      int ret = glob.init(args);
+      if (ret != 0) {
          usage();
-         Log.panic(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -burstMode.publish 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
+         Log.exit(ME, "Example: java -Xms18M -Xmx32M testsuite.org.xmlBlaster.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 100 -burstMode.collectTime 100 -numPublish 5000 -client.protocol IOR");
       }
+
       int numPublish = XmlBlasterProperty.get("numPublish", 5000);
-      int burstModePublish = XmlBlasterProperty.get("burstMode.publish", 1);
-      LoadTestSub testSub = new LoadTestSub("LoadTestSub", XmlBlasterProperty.get("name", "Tim"),
+      int burstModePublish = XmlBlasterProperty.get("publish.burstMode", 1);
+      boolean publishOneway = XmlBlasterProperty.get("publish.oneway", false);
+
+      LoadTestSub testSub = new LoadTestSub(glob, "LoadTestSub", XmlBlasterProperty.get("name", "Tim"),
                                             XmlBlasterProperty.get("passwd", "secret"),
-                                            numPublish, burstModePublish);
+                                            numPublish, burstModePublish, publishOneway);
       testSub.setUp();
       testSub.testManyPublish();
       testSub.tearDown();
