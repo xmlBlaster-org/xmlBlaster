@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.25 2002/09/11 16:19:28 ruff Exp $
+Version:   $Id: Executor.java,v 1.26 2002/09/14 23:09:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -68,8 +68,6 @@ public abstract class Executor implements ExecutorBase
    protected I_XmlBlaster xmlBlasterImpl = null;
    /** To avoid creating a new dummy on each request, we do it here */
    private final String DUMMY_OBJECT = "";
-   /** Set debug level */
-   protected int SOCKET_DEBUG=0;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -160,13 +158,11 @@ public abstract class Executor implements ExecutorBase
       return this.soLingerTimeout;
    }
 
-   public final void setCbClient(I_CallbackExtended cbClient)
-   {
+   public final void setCbClient(I_CallbackExtended cbClient) {
       this.cbClient = cbClient;
    }
 
-   public final I_CallbackExtended getCbClient()
-   {
+   public final I_CallbackExtended getCbClient() {
       return this.cbClient;
    }
 
@@ -242,9 +238,8 @@ public abstract class Executor implements ExecutorBase
     * Handle common messages
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
-   protected final boolean receive(Parser receiver) throws XmlBlasterException, IOException {
-
-      if (log.TRACE || SOCKET_DEBUG>0)  log.info(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+   public final boolean receive(Parser receiver) throws XmlBlasterException, IOException {
+      if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
          // handling invocations ...
@@ -319,7 +314,7 @@ public abstract class Executor implements ExecutorBase
          }
          else {
             log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
-            if (SOCKET_DEBUG>1) log.info(ME, "Ignoring received message, nobody is interested in it:\n>" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+            if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + receiver.toLiteral() + "<");
          }
          
          return true;
@@ -329,7 +324,7 @@ public abstract class Executor implements ExecutorBase
       I_ResponseListener listener = getResponseListener(receiver.getRequestId());
       if (listener == null) {
          log.warn(ME, "Ignoring received '" + receiver.getMethodName() + "' message id=" + receiver.getRequestId() + ", nobody is interested in it");
-         if (SOCKET_DEBUG>1) log.info(ME, "Ignoring received message, nobody is interested in it: >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
+         if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it: >" + receiver.toLiteral() + "<");
          return true;
       }
       removeResponseListener(receiver.getRequestId());
@@ -371,7 +366,7 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
+      if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
@@ -390,7 +385,7 @@ public abstract class Executor implements ExecutorBase
 
       // Send the message / method invocation ...
       byte[] rawMsg = parser.createRawMsg();
-      if (SOCKET_DEBUG>1) log.info(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
+      if (log.DUMP) log.dump(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
       try {
          synchronized (oStream) {
             oStream.write(rawMsg);
@@ -403,7 +398,7 @@ public abstract class Executor implements ExecutorBase
          throw new XmlBlasterException(ME, str);
       }
 
-      if (SOCKET_DEBUG>1) log.info(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
+      if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
 
       if (!expectingResponse)
          return null;
@@ -412,8 +407,8 @@ public abstract class Executor implements ExecutorBase
       try {
          boolean awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
          if (awaikened) {
-            if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
-            if (SOCKET_DEBUG>1) log.info(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
+            if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
+            if (log.DUMP) log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
             return response[0];
@@ -448,8 +443,8 @@ public abstract class Executor implements ExecutorBase
          oStream.write(returner.createRawMsg());
          oStream.flush();
       }
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (SOCKET_DEBUG>1) log.info(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
+      if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
 
    /**
@@ -464,18 +459,8 @@ public abstract class Executor implements ExecutorBase
          oStream.write(returner.createRawMsg());
          oStream.flush();
       }
-      /*
-      try {
-         oStream.write(returner.createRawMsg());
-         oStream.flush();
-      }
-      catch (Throwable e2) {
-         log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
-         shutdown();
-      }
-      */
-      if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (SOCKET_DEBUG>1) log.info(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
+      if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
 
    //abstract boolean shutdown();
