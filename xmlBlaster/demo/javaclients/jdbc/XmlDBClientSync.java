@@ -86,7 +86,7 @@ public class XmlDBClientSync
       wrap.init(type, limit, confirm, queryStr);
 
       try {
-         GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc", "text/xml", "query");
+         GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQosWrapper qos = new GetQosWrapper();
          // get() blocks until the query is finished ...
