@@ -67,7 +67,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
    public void initialize(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types if content is not to long");
+      log.info(ME, "Filter is initialized, regular expression checks for all mime types");
    }
 
    /**
