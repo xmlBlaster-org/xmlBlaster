@@ -35,7 +35,7 @@ import org.apache.xmlrpc.WebServer;
  * <pre>
  *     -xmlrpc.portCB      Specify a port number where xmlrpc callback webserver listens.
  *                         Default is port 8081, the port 0 switches this feature off.
- *     -xmlrpc.hostnameCB     Specify a hostname where xmlrpcregistry runs.
+ *     -xmlrpc.hostnameCB  Specify a hostname where xmlrp callback server runs.
  *                         Default is the localhost.
  * </pre>
  * If the callback server can't be established because of the port is not free,
