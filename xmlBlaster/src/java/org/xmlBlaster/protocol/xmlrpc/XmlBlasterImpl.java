@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.1 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.2 2000/09/01 05:34:22 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -110,7 +110,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
 
          // convert the xml literal strings
-         XmlKey xmlKey = new XmlKey(xmlKey_literal);
+         XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
          PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
 
          String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
