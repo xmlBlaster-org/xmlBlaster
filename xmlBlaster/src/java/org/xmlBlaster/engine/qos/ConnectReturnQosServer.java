@@ -25,6 +25,10 @@ public final class ConnectReturnQosServer {
       this.connectQosData = connectQosData;
    }
 
+   public ConnectQosData getData() {
+      return this.connectQosData;
+   }
+
    public String toXml() {
       return this.connectQosData.toXml();
    }
