@@ -319,6 +319,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    * @return boolean true if the entry was successfully removed.
    */
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener entry) {
+      if (entry == null) return false;
       synchronized (this.listener) {
          return this.listener.remove(entry) != null;
       }
@@ -816,7 +817,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             this.log.error(ME, "modifyEntry: Exception when closing the statement: " + ex1.toString());
          }
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
-         this.log.warn(getLogId(queueName, nodeId, "modifyEntry"), "Could not insert entry '" +
+         this.log.warn(getLogId(queueName, nodeId, "modifyEntry"), "Could not update entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "modifyEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", "", ex); 
@@ -1408,9 +1409,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          conn = pool.getConnection();
          statement = conn.createStatement();
          statement.setQueryTimeout(this.pool.getQueryTimeout());
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executing statement: " + request);
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement '" + request + "', number of changed entries=" + ret);
       }
       finally {
          try {
@@ -1447,7 +1447,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          statement = conn.createStatement();
          statement.setQueryTimeout(this.pool.getQueryTimeout());
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement '" + request + "', number of changed entries=" + ret);
       }
 
       finally {
