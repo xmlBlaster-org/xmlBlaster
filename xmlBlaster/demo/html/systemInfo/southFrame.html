@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
 COMMENT:
-   This frame only displays some informations about this framework. 
+   This frame only displays some informations about this framework.
 -->
 <html>
    <head>
@@ -22,7 +22,7 @@ COMMENT:
 
    <!-- body bgcolor="#FFFFFF" -->
    <body>
-   <center>
+   <center><font size='-1'>
       <script language="Javascript1.2">
          var info = getBrowserInfo();
          document.writeln(info);
@@ -32,8 +32,48 @@ COMMENT:
       <br />
       The Servlet subscribes to xmlBlaster for cpuinfo and meminfo messages
       and directly updates the browser if new values arrive.
+      <br />
+      A little component publishes the data to xmlBlaster (currently random values).
       <p />
-   </center>
+      See directory 'xmlBlaster/demo/html/systemInfo' in the xmlBlaster distribution to
+      find out how it works.
+      <hr />
+      Tested with<br />
+      <table border>
+      <tr>
+         <th>Browser</th>
+         <th>OS</th>
+         <th>State</th>
+         <th>Comment</th>
+      </tr>
+      <tr>
+         <td>Netscape 4.72</td>
+         <td>Linux</td>
+         <td>OK</td>
+         <td>Runs fine</td>
+      </tr>
+      <tr>
+         <td>Mozilla M13 and M15</td>
+         <td>Linux</td>
+         <td>OK</td>
+         <td>The callback framework runs fine.<br />
+             Note: M13 can't display the changed colored bars correctly,<br />
+             M15 fixed this but has a new bug, it does not delete the content on subsequent window.open() and window.close()</td>
+      </tr>
+      <tr>
+         <td>Opera 4.0a</td>
+         <td>Linux</td>
+         <td>Failed</td>
+         <td>Not tracked down the problems yet</td>
+      </tr>
+      <tr>
+         <td>MSIE</td>
+         <td>Win</td>
+         <td>?</td>
+         <td>Please report to ruff@swand.lake.de</td>
+      </tr>
+      </table>
+   </font></center>
    </body>
 </html>
 
