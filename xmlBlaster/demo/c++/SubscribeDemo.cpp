@@ -60,6 +60,8 @@ public:
       //subscribe("anotherDummy");  -> subscribe in update does not work with single threaded 'mico'
       log_.info(ME, "update: key    : " + updateKey.toXml());
       log_.info(ME, "update: qos    : " + updateQos.toXml());
+
+      // Dump the ClientProperties decoded:
       const QosData::ClientPropertyMap& propMap = updateQos.getClientProperties();
       QosData::ClientPropertyMap::const_iterator mi;
       for (mi=propMap.begin(); mi!=propMap.end(); ++mi) {
@@ -68,9 +70,10 @@ public:
       if (updateQos.hasClientProperty(string("BLA"))) {
          log_.info(ME, "clientProperty[BLA]=" +updateQos.getClientProperty("BLA", string("MISSING VALUE?")));
       }
-      log_.info(ME, "clientProperty["+mi->first+"]   " + mi->second.getStringValue());
-      string help((char*)content, (char*)(content)+contentSize);
-      if (log_.trace()) log_.trace(ME, "update: content: " + help);
+      
+      string contentStr((char*)content, (char*)(content)+contentSize);
+      if (log_.trace()) log_.trace(ME, "update: content: " + contentStr);
+      
       if (updateQos.getState() == "ERASED" ) {
          doContinue_ = false;
          return "";
