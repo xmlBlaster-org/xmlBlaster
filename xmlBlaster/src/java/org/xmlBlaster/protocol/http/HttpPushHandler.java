@@ -430,7 +430,7 @@ public class HttpPushHandler
          String codedContent = Global.encode( content, BlasterHttpProxyServlet.ENCODING );
          String codedQos     = Global.encode( updateQos.trim(), BlasterHttpProxyServlet.ENCODING );
 
-         if (log.TRACE) log.trace(ME,"update dump: " + ((updateKey.length() < 50) ? updateKey : updateKey.substring(0,50)) + " ...");
+         if (log.TRACE) log.trace(ME,"update dump: " + ((updateKey.length() < 50) ? updateKey.toString() : updateKey.substring(0,50)) + " ...");
          /*
          log.plain(ME,"Key:"+updateKey);
          log.plain(ME,"\nContent:"+content);
