@@ -1,0 +1,342 @@
+/*------------------------------------------------------------------------------
+Name:      xmlBlaster.idl
+Project:   xmlBlaster.org
+Task:      Server interface
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   String arguments my be used empty "", but never with null
+Compile:   JacORB Java 1.2:
+              $JacORB_HOME/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           VisiBroker (no JacORB should be in CLASSPATH) Java 1.2:
+              ${VBROKER_PATH}/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
+           MICO C++:
+              $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
+           COPE Perl:
+              idl2perl -imp xmlBlaster.idl
+Author:    ruff@swand.lake.de
+Version:   $Id: xmlBlaster.idl,v 1.1 2000/06/25 18:29:18 ruff Exp $
+------------------------------------------------------------------------------*/
+
+#ifndef _xmlBlaster_IDL_
+#define _xmlBlaster_IDL_
+
+
+#pragma prefix "org.xmlBlaster.protocol.corba"
+
+//------------------------------------------------------------------------------
+//#include "xy.idl"
+//------------------------------------------------------------------------------
+
+
+/**
+ * Declaration of common types
+ */
+module serverIdl
+{
+   typedef string XmlType;
+   typedef sequence<XmlType> XmlTypeArr;
+
+   typedef sequence<octet> ContentType;
+   typedef sequence<string> StringArr;
+   typedef string ExceptionIdType;
+
+   /**
+    * This contains all informations about a Message and the Message itself.
+    *
+    * @param xmlKey  Unique message key with index attributes
+    * @param content The data itself (XML data, java objects, jpeg pictures ...)
+    *
+    * @see onMessage() method in JMS
+    */
+   struct MessageUnit {
+      XmlType xmlKey;
+      ContentType content;
+      XmlType qos;
+   };
+   typedef sequence<MessageUnit> MessageUnitArr;
+
+
+   /**
+    * Exception class for xmlBlaster interface
+    */
+   exception XmlBlasterException
+   {
+      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
+      string reason;       // in English
+   };
+
+}; // org::xmlBlaster::protocol::corba::serverIdl
+
+
+
+
+/**
+ * Declaration of the client Callback interface.
+ * <p>
+ * This interface must be implemented by the client.
+ *
+ * Declared before the server, so that the server declaration
+ * can use the BlasterCallback interface
+ *
+ * Forward declaration like
+ *    interface org::xmlBlaster::clientIdl::BlasterCallback;
+ * didn't work!?
+ */
+module clientIdl
+{
+   /**
+    * This interface needs to be implemented by the clients.
+    * <p>
+    * The IOR of this BlasterCallback has to be passed initially to the
+    * xmlBlaster using the login() method
+    */
+   interface BlasterCallback
+   {
+      /**
+       * This update is invoked when the server calls back to the client.
+       *
+       * oneway is chosen because of:
+       *
+       *  - better performance
+       *  - server doesn't block (decoupling of server dependency on clients)
+       * <p>
+       * Note: MICO Orb (C++) and Cope Orb (Perl) don't like the combination
+       * of 'oneway' and 'raises Exception' simultaneously,<br>
+       * where as Visigenic and JacORB have no problems with it.
+       *
+       * @param msgUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param qos         Quality of Service for each MessageUnit
+       */
+     oneway void update(in serverIdl::MessageUnitArr msgUnitArr);
+                                //raises(serverIdl::XmlBlasterException);
+   };
+
+}; // org::xmlBlaster::protocol::corba::clientIdl
+
+
+
+/**
+ * The xmlBlaster interface
+ */
+module serverIdl
+{
+   /**
+    * This is an easy to use, message based, communication middleware interface.
+    * <p>
+    * It allows event-driven instant communication between separate modules.<br>
+    *
+    * COMMENTS:
+    *   It is generic to avoid future changes to the IDL.<br>
+    *
+    *   This server uses the benefits of both technologies XML and CORBA.<br>
+    *
+    *   It is a compromise between compile time type checking (CORBA)
+    *   and runtime type checking (XML).<p>
+    *
+    *   Runtime checking allows easier maintenance and migration to newer
+    *   xmlBlaster Versions, compile time checking of invariant interfaces
+    *   allows enhanced performance and early error checking.
+    *
+    *   Authentication and Authorization is not supported, they will be
+    *   provided as separate servers or gateways to existing user management
+    *   systems.<p>
+    *
+    *   The <key id=""> strings have to be handled in a hierarchical manner to avoid
+    *   namespace conflicts or may be generated (as number) by the xmlBlaster-server.
+    *
+    * BENEFITS:
+    *   xmlBlaster allows instant communication between different uncoupled modules
+    *   spread over the Internet (publish / subscriber and point to point framework).
+    *
+    *   For example:
+    *   - Clipboard functionality to store permanent the clipboard entries
+    *     of many clients
+    *   - Task handling
+    *     This feature allows automatic notification, when a task
+    *     for a special user is available.
+    *   - Inter client communication (chat rooms, graphic rooms etc.)
+    *   - Broadcasts over well known attribute-keys
+    *     or by notifying all known client-callback interfaces
+    *   - email like instant notifications
+    *   - inter process 'model/view/controller' paradigm
+    *   - synchronize html with embedded applets over the server
+    *   - data and message transfer between subsystems
+    *   - controller support functionality like subsystem-alive slots,
+    *     start and stop events etc.
+    *   - configuration attributes with auto-notification
+    *   - Central logging facility for client/server systems
+    *
+    * RELATED DESIGN PATTERNS:
+    *   @see JMS - Java Message Service, http://java.sun.com/products/jms/
+    *   @see JMQ - A reference implementation of JMS, http://www.sun.com/workshop/jmq/
+    *   @see JNDI - Java Naming & Directory Interface, www.javasoft.com/products/jndi
+    *   @see Observer Pattern, Gamma et.al
+    *   @see CORBA Property Service, http://www.omg.org
+    *   @see CORBA Notification Service ftp://ftp.omg.org/pub/docs/telecom/98-01-01.pdf
+    *   @see CORBA Event Service (push/pull concepts), http://www.omg.org
+    *   @see CORBA Design Patterns, Mowbray Thomas J. et al. 'Dynamic Attributes'
+    *   @see Addressless message-event-middleware pattern
+    */
+   interface Server
+   {
+      /**
+       * Asynchronous read-access method.
+       * <p>
+       * The result are returned to the
+       * Client-Callback interface via the update() method.
+       * You need to implement the method BlasterCallback.update()
+       * This is the push modus.
+       * <p>
+       * Duplicate subscriptions are silently ignored (no Exception is thrown)
+       * <br>
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XPath/SQL selection<br>
+       *                See xmlKey.dtd for a description
+       * @param qos     Quality of Service, flags to control subscription<br>
+       *                See qosSubscribe.dtd for a description
+       * @return oid    The oid of your subscribed Message<br>
+       *                If you subscribed using a query, the subscription ID of this<br>
+       *                query handling object is returned.<br>
+       *                You should use this oid if you wish to unSubscribe()<br>
+       *                If no match is found, an empty string "" is returned.
+       *
+       * @see addListener in Java event model
+       * @see addObserver in Java observer pattern
+       */
+      string subscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * Synchronous read-access methods
+       * This is the pull modus.
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XPath/SQL selection<br>
+       *                See xmlKey.dtd for a description
+       * @param qos     Quality of Service, flags to control subscription<br>
+       *                See qosSubscribe.dtd for a description
+       * @return Contains a sequence of 0 - n MessageUnit structs with its qos infos
+       */
+      MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * if a key was subscribed forever, you can cancel your
+       * subscription with following method
+       *
+       * @param xmlKey    Key with attributes allowing Regex/XPath/SQL selection<br>
+       *                  See xmlKey.dtd for a description
+       * @param qos       Quality of Service, flags to control unsubscription<br>
+       *                  See qosSubscribe.dtd for a description
+       */
+      void unSubscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * Write-Access Method
+       * This triggers the method update() if observed by somebody
+       * If the given key doesn't exist, it will be automatically added, <br>
+       * so this covers the SQL'ish INSERT and UPDATE.<p>
+       *
+       * @param msgUnit Contains a MessageUnit struct
+       * @param qos         Quality of Service for MessageUnit
+       *
+       * @return String with the key oid of the msgUnit
+       *         If you let the oid be generated, you need this information
+       *         for further publishing to the same MessageUnit<br>
+       *         Rejected Messages will contain an empty string ""
+       */
+      string publish(in MessageUnit msgUnit)
+                                          raises(XmlBlasterException);
+
+
+
+      /**
+       * Write-Access Method
+       * This triggers the method update() if observed by somebody
+       * If the given key doesn't exist, it will be automatically added, <br>
+       * so this covers the SQL'ish INSERT and UPDATE.<p>
+       *
+       * For performance or transaction reasons, you can send a whole array
+       * of MessageUnit with one Invocation of publish()
+       *
+       * @param msgUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param qos         Quality of Service for each MessageUnit
+       *
+       * @return String array with the key oid's, corresponding to the index
+       *         of msgUnitArr<br>
+       *         If you let the oid be generated, you need this information
+       *         for further publishing to the same MessageUnit array<br>
+       *         Rejected Messages will contain an empty string ""
+       */
+      StringArr publishArr(in MessageUnitArr msgUnitArr)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * erase a MessageUnit
+       * @return String array with the key oid's which are deleted
+       */
+      StringArr erase(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+      /**
+       * Ping to check if xmlBlaster is alive
+       * @return true
+       */
+      boolean ping();
+
+   }; // interface server
+
+}; // org::xmlBlaster::protocol::corba::serverIdl
+
+
+
+/**
+ * The xmlBlaster authentication interface.
+ * <p>
+ * Use this interface to access via login() the xmlBlaster
+ * <p>
+ * The final authentication/authorization interace is not yet specified
+ */
+module authenticateIdl
+{
+   interface AuthServer
+   {
+      /**
+       * Login to server.
+       * <p>
+       * This is a factory for server interfaces
+       *
+       * @param loginName A unique name
+       * @param passwd    Password - Not yet necessary
+       * @param qos       Quality of Service, flags for additional client informations
+       *                  like client certificate (X.509), timeout etc.
+       *                  Typically it contains the IOR reference to the BlasterCallback
+       *                  interface or other protocol addresses like email or http URL
+       *
+       * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
+       * @return if the login is successful, the xmlBlaster server interface is returned
+       * @exception if the login fails
+       */
+      serverIdl::Server login(in string loginName, in string passwd,
+                              in serverIdl::XmlType qosClient)
+                              raises (serverIdl::XmlBlasterException);
+
+
+      /**
+       * Logout from server
+       *
+       * @param The server interface handle from the login() method
+       */
+      void logout(in serverIdl::Server xmlBlaster) raises (serverIdl::XmlBlasterException);
+   };
+
+
+}; // org::xmlBlaster::protocol::corba::authenticateIdl
+
+
+
+#endif // _xmlBlaster_IDL_
