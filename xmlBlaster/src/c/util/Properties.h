@@ -26,6 +26,7 @@ typedef const char *( * XmlBlasterPropertiesGetString)(Properties *xb, const cha
 typedef bool ( * XmlBlasterPropertiesGetBool)(Properties *xb, const char * key, bool defaultValue);
 typedef int ( * XmlBlasterPropertiesGetInt)(Properties *xb, const char * key, int defaultValue);
 typedef long ( * XmlBlasterPropertiesGetLong)(Properties *xb, const char * key, long defaultValue);
+typedef int64_t ( * XmlBlasterPropertiesGetInt64)(Properties *xb, const char * key, int64_t defaultValue);
 
 /**
  * All client access to Properties goes over this struct and its function pointers. 
@@ -45,6 +46,7 @@ struct PropertiesStruct {
    XmlBlasterPropertiesGetBool getBool;
    XmlBlasterPropertiesGetInt getInt;
    XmlBlasterPropertiesGetLong getLong;
+   XmlBlasterPropertiesGetInt64 getInt64;
 };
 
 /**

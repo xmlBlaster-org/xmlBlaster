@@ -18,6 +18,7 @@ static const char *getString(Properties *props, const char *key, const char *def
 static bool getBool(Properties *props, const char *key, bool defaultValue);
 static int getInt(Properties *props, const char *key, int defaultValue);
 static long getLong(Properties *props, const char *key, long defaultValue);
+static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue);
 
 /**
  * Create an instance of a property struct. 
@@ -38,6 +39,7 @@ Properties *createProperties(int argc, const char* const* argv) {
    props->getBool = getBool;
    props->getInt = getInt;
    props->getLong = getLong;
+   props->getInt64 = getInt64;
 
    if (argc > 1) {
       /* strip the executable name and the dash '-' */
@@ -122,6 +124,17 @@ static long getLong(Properties *props, const char *key, long defaultValue)
    return defaultValue;
 }
 
+static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue)
+{
+   const char *valP = getString(props, key, 0);
+   if (valP != 0) {
+      int64_t val;
+      if (sscanf(valP, "%lld", &val) == 1)
+         return val;
+   }
+   return defaultValue;
+}
+
 #ifdef PropertiesMain /* compile a standalone test program */
 
 /**
@@ -138,6 +151,7 @@ int main(int argc, char** argv)
    printf("isDurable=%d\n", props->getBool(props, "isDurable", true));
    printf("numTests=%d\n", props->getInt(props, "numTests", -1));
    printf("timeout=%ld\n", props->getLong(props, "timeout", -1l));
+   printf("timeout=%lld\n", props->getInt64(props, "lonLong", -1LL));
    freeProperties(props);
    return 0;
 }
