@@ -255,6 +255,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.state = ALIVE;
    }
 
+   Authenticate getAuthenticate() {
+      return this.authenticate;
+   }
+
    /**
     * Put this code in a generic internal message producer class (future release)
     */
@@ -1014,7 +1018,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          PublishQosServer publishQosUserListEvent = new PublishQosServer(glob, this.publishQosForEvents.getData().toXml(), false);
          //publishQosUserListEvent.clearRoutes();
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyUserListEvent,
-                                 glob.getAuthenticate().getSubjectList().getBytes(), //content.getBytes(),
+                                 this.authenticate.getSubjectList().getBytes(), //content.getBytes(),
                                  publishQosUserListEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit);
          publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
