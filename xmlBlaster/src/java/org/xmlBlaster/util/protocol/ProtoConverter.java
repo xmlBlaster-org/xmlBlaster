@@ -3,8 +3,8 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.5 2002/09/13 23:18:21 ruff Exp $
-Author:    "Michele Laghi" <michele.laghi@attglobal.net>
+Version:   $Id: ProtoConverter.java,v 1.6 2002/09/18 16:40:53 laghi Exp $
+Author:    "Michele Laghi" (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * support a particular data type. This class is used extensively in the
  * xml-rpc protocol where user-defined classes are not supported.
  * <p />
- * @author michele.laghi@attglobal.net
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class ProtoConverter {
 
