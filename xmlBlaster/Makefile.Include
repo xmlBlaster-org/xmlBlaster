@@ -31,7 +31,6 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 
 
 #------------------------------------------------------------------------------
-IDL2JAVA=$(JacORB_HOME)/bin/idl -p org.xmlBlaster.protocol.corba
 #IDL2JAVA=D:\\DvlpApp\\Orbs\\JacORB1_0-beta15\\bin\\idl.bat -p org.xmlBlaster.protocol.corba
 #IDL2JAVA=/DEVELOP/opt/java/JacORB1_0-beta13/bin/idl -p org.xmlBlaster.protocol.corba
 #IDL2JAVA=/usr/local/vbroker/bin/idl2java
