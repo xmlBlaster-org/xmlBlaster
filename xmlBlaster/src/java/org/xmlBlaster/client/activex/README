@@ -44,6 +44,10 @@ DEMO:
   Task bar: Java Icon:
     -> Open Console
 
+  You need to start the server first:
+
+    java -jar lib\xmlBlaster.jar
+
 
 TODO:
 
