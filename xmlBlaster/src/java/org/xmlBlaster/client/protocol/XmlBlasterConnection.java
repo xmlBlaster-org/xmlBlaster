@@ -1266,7 +1266,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       String text = "\n";
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'IOR' or 'RMI' or 'XML-RPC'.\n";
-      text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below.\n";
+      text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.ForcePlugin \"gui,1.0\"\n";
