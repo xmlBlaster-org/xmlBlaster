@@ -21,7 +21,7 @@ import org.xmlBlaster.util.qos.QueryQosData;
  * <p>
  * For the xml representation see QueryQosSaxFactory.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.util.qos.QueryQosData
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
  */

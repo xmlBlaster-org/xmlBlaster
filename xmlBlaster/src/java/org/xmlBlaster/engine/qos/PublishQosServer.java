@@ -5,11 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.qos;
 
-import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.SessionName;
 
 import org.xmlBlaster.engine.helper.Destination;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
  * Handling of publish() quality of services in the server core.
  * <p />
  * This decorator hides the real qos data object and gives us a server specific view on it. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.util.qos.MsgQosData
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  */
@@ -34,15 +36,29 @@ public final class PublishQosServer
    private final MsgQosData msgQosData;
 
    /**
-    * Constructor which accepts a raw data struct. 
+    * Constructor which accepts parsed object. 
+    */
+   public PublishQosServer(Global glob, QosData msgQosData) {
+      this(glob, (MsgQosData)msgQosData);
+   }
+
+   /**
+    * Constructor which accepts parsed object.
     */
    public PublishQosServer(Global glob, MsgQosData msgQosData) {
       this.glob = glob;
       this.msgQosData = msgQosData;
+
+      this.msgQosData.setFromPersistenceStore(false);
+      if (!this.msgQosData.isFromPersistenceStore()) {
+         this.msgQosData.touchRcvTimestamp();
+      }
+      completeDestinations();
    }
 
    /**
-    * Constructs the specialized quality of service object for a publish() call.
+    * Constructs the specialized quality of service object for a publish() call,
+    * and parses the given XML string.
     * @param the XML based ASCII string
     */
    public PublishQosServer(Global glob, String xmlQos) throws XmlBlasterException {
@@ -61,6 +77,24 @@ public final class PublishQosServer
       this.msgQosData.setFromPersistenceStore(fromPersistenceStore);
       if (!fromPersistenceStore) {
          this.msgQosData.touchRcvTimestamp();
+      }
+      completeDestinations();
+   }
+
+   /**
+    * Checks for relative destination names and completes them with
+    * our cluster node id
+    */
+   private void completeDestinations() {
+      if (getNumDestinations() > 0) {
+         Destination[] arr = getDestinationArr();
+         for(int i=0; i<arr.length; i++) {
+            SessionName sessionName = arr[i].getDestination();
+            if (sessionName.getNodeId() == null) {
+               sessionName = new SessionName(glob, glob.getNodeId(), sessionName.getRelativeName());
+               arr[i].setDestination(sessionName);
+            }
+         }
       }
    }
 
@@ -119,6 +153,10 @@ public final class PublishQosServer
     */
    public RouteInfo[] getRouteNodes() {
       return this.msgQosData.getRouteNodes();
+   }
+
+   public void clearRoutes() {
+      this.msgQosData.clearRoutes();
    }
 
    public int count(NodeId nodeId) {
@@ -183,6 +221,26 @@ public final class PublishQosServer
 
    public ArrayList getDestinations() {
       return this.msgQosData.getDestinations();
+   }
+
+   public Destination[] getDestinationArr() {
+      return this.msgQosData.getDestinationArr();
+   }
+
+   public void removeDestination(Destination destination) {
+      this.msgQosData.removeDestination(destination);
+   }
+
+   public int getNumDestinations() {
+      return this.msgQosData.getNumDestinations();
+   }
+
+   public boolean hasTopicProperty() {
+      return this.msgQosData.hasTopicProperty();
+   }
+
+   public TopicProperty getTopicProperty() {
+      return this.msgQosData.getTopicProperty();
    }
 
    public String toXml() {

@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.HistoryQos;
 
 /**
  * Handling of erase() quality of services in the server core.
@@ -22,7 +23,7 @@ import org.xmlBlaster.engine.helper.AccessFilterQos;
  * <p>
  * For the xml representation see QueryQosSaxFactory.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.util.qos.QueryQosData
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
  */
@@ -58,6 +59,20 @@ public final class EraseQosServer
 
    public boolean getWantNotify() {
       return this.queryQosData.getWantNotify();
+   }
+
+   /**
+    * @param forceDestroy
+    */
+   public void setForceDestroy(boolean forceDestroy) {
+      this.queryQosData.setForceDestroy(forceDestroy);
+   }
+
+   /**
+    * @return for erase behavior: destroy even if we are referenced?
+    */
+   public boolean getForceDestroy() {
+      return this.queryQosData.getForceDestroy();
    }
 
    public String toXml() {

@@ -17,7 +17,7 @@ import org.xmlBlaster.util.enum.PriorityEnum;
  * Handling of update() quality of services in the server core.
  * <p />
  * This decorator hides the real qos data object and gives us a server specific view on it. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.util.qos.MsgQosData
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  */

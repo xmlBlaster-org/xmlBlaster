@@ -7,6 +7,7 @@ package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -14,7 +15,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
  * via the return value of the get() method. 
  * <p />
  * The server uses this decorator to create the QoS.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.util.qos.MsgQosData
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  */
@@ -26,8 +27,8 @@ public class GetReturnQosServer
 
    public GetReturnQosServer(Global glob, MsgQosData msgQosData, String state) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.msgQosData = msgQosData;
-      this.msgQosData.setState(state);
+      this.msgQosData = (msgQosData == null) ? new MsgQosData(glob) : msgQosData;
+      this.msgQosData.setState((state == null) ? Constants.STATE_OK : state);
    }
 
    public MsgQosData getData() {
