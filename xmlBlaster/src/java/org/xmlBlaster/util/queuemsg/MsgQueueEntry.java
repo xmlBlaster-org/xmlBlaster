@@ -36,7 +36,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    private final StorageId storageId;
 
    /** How often the entry was tried to send but failed */
-   private int redeliverCounter = 0;
+   protected int redeliverCounter = 0;
 
    /** The unique creation timestamp (unique in a Global of a virtual machine) */
    private final Timestamp uniqueIdTimestamp;
@@ -180,19 +180,20 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * Increment the counter if message delivery fails (exception during sending)
     * We don't know if other side has processed it completely or not
     */
-   public final void incrRedeliver() {
+   public final void incrRedeliverCounter() {
       this.redeliverCounter++;
    }
 
    /**
     * How often we tried to redeliver the message.
     * <p>
-    * Note: This information is lost on server crash (the redeliver counter
-    * is not persistent).
+    * Note: Depending on the derived class implementation this information
+    * is lost on server crash (the redeliver counter
+    * is not persistent). Only MsgQueueUpdateEntry persists it.
     * </p>
-    * @return How often delivery of this message is not known
+    * @return Number of failed tries
     */
-   public final int getRedeliver() {
+   public final int getRedeliverCounter() {
       return this.redeliverCounter;
    }
 
