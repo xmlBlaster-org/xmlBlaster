@@ -3,6 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o BUGFIX clustering for get() by Michael Atighetchi.
+   A node X was only forwarding get requests to other nodes if a subscription
+   has been established to X and a message had been successfully served to that
+   subscription. Now, get() requests are always forwarded to the right other nodes.
+
  o Added MethodName argument to exportMessage in security message interceptor
 
  o Zhang Zhi Wei added a Microsoft SQL Server port for our persistence layer
