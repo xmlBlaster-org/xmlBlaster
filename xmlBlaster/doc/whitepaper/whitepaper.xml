@@ -110,7 +110,7 @@ XmlBlaster MOM will be based on following modern technologies and standards to f
 <itemizedlist>
 <listitem>CORBA <ulink url="http://www.omg.org">(http://www.omg.org)</ulink>
       <para>Allows multiple programming languages and hardware platforms to be integrated</para>  </listitem>
-<listitem>XML <ulink url="http://www.w3c.org">(http://www.w3c.org)</ulink>
+<listitem>XML <ulink url="http://www.w3.org">(http://www.w3.org)</ulink>
       <para>Allows to describe problem domains in a new simple but powerful way</para></listitem>
 <listitem>Java on the server side <ulink url="http://java.sun.com">(http://java.sun.com)</ulink>
       <para>To allow easy portable code</para></listitem>
