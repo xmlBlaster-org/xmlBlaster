@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.7 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.8 2002/02/12 21:51:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -41,11 +41,16 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private PluginManager plgnLdr = null;
 
    // action key --- used to ckeck access rights
-   public static final String         GET = "GET";
-   public static final String       ERASE = "ERASE";
-   public static final String     PUBLISH = "PUBLISH";
-   public static final String   SUBSCRIBE = "SUBSCRIBE";
-   public static final String UNSUBSCRIBE = "UNSUBSCRIBE";
+   public static final String         GET = "get";
+   public static final String       ERASE = "erase";
+   public static final String     PUBLISH = "publish";
+   public static final String   SUBSCRIBE = "subscribe";
+   public static final String UNSUBSCRIBE = "unSubscribe";
+   public static final String      UPDATE = "update";
+   public static final String        PING = "ping";
+   public static final String     CONNECT = "connect";
+   public static final String  DISCONNECT = "disconnect";
+   //public static final String   EXCEPTION = "exception";
 
    /**
     * One instance of this represents one xmlBlaster server.
