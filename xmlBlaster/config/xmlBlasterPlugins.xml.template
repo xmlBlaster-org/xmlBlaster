@@ -142,8 +142,9 @@
    </plugin>
    -->
 
-   <!-- FilePollerPlugin[FilePollerPlugin][1.0]  see http://http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html
-  <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
+   <!-- See http://http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html -->
+   <!--
+   <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
      <attribute id='directoryName'>/tmp/filePoller</attribute>
      <attribute id='topicName'>poller.test</attribute> 
      <attribute id='sent'>Sent</attribute>
