@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='engine.qos.publish.destination.offline' type='NEW' prio='LOW' status="CLOSED">
-   <topic>If the receiver of a PtP message is offline or has no callback, the sender gets an exception</topic>
+   <topic>If the receiver of a PtP message is offline or has no callback the behavior is configurable</topic>
    <description>
       <p>
       If you send a message to a named destination, using the qos &lt;destination&gt; tag,
@@ -90,7 +90,7 @@ try {
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
