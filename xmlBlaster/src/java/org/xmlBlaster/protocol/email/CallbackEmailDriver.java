@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.20 2002/05/30 09:53:28 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.21 2002/08/23 21:24:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -27,8 +27,7 @@ import javax.mail.internet.*;
  * Activate the email callback driver in xmlBlaster.properies first,
  * for example:
  * <pre>
- *    Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                             EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ *    CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
  * 
  *    EmailDriver.smtpHost=192.1.1.1
  *    EmailDriver.from=xmlblast@localhost
@@ -43,27 +42,37 @@ public class CallbackEmailDriver implements I_CallbackDriver
    private CallbackAddress callbackAddress = null;
 
    /** Get a human readable name of this driver */
-   public String getName()
-   {
+   public String getName() {
       return ME;
    }
-
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "NativeDemo"
     */
-   public String getProtocolId()
-   {
+   public String getProtocolId() {
       return "EMAIL";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return null
     */
-   public String getRawAddress()
-   {
+   public String getRawAddress() {
       return this.callbackAddress.getAddress();
    }
 

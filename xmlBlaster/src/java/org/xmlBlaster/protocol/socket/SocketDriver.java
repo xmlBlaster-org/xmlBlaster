@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.21 2002/08/21 22:30:36 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.22 2002/08/23 21:24:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -27,17 +27,9 @@ import java.io.OutputStream;
  * This "SOCKET:" driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- *Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
- *                 SOCKET:org.xmlBlaster.protocol.socket.SocketDriver,\
- *                 RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
- *                 XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,\
- *                 JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
- *Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                         SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
- *                         RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
- *                         XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,\
- *                         JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,\
- *                         EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
+ *
+ * CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
  * </pre>
  *
  * The variable socket.port (default 7607) sets the socket server port,
@@ -85,8 +77,7 @@ public class SocketDriver extends Thread implements I_Driver
     * Creates the driver. 
     * Note: getName() is enforced by interface I_Driver, but is already defined in Thread class
     */
-   public SocketDriver()
-   {
+   public SocketDriver() {
       super("SocketDriver");
    }
 
@@ -94,17 +85,29 @@ public class SocketDriver extends Thread implements I_Driver
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "SOCKET"
     */
-   public String getProtocolId()
-   {
+   public String getProtocolId() {
       return "SOCKET";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return "server.mars.univers:6701"
     */
-   public String getRawAddress()
-   {
+   public String getRawAddress() {
       return serverUrl; // hostname + ":" + socketPort;
    }
 

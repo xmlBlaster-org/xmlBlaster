@@ -3,7 +3,7 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.15 2002/05/30 09:53:29 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.16 2002/08/23 21:24:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -45,27 +45,37 @@ public class CallbackRmiDriver implements I_CallbackDriver
 
 
    /** Get a human readable name of this driver */
-   public String getName()
-   {
+   public String getName() {
       return ME;
    }
-
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "RMI"
     */
-   public String getProtocolId()
-   {
+   public String getProtocolId() {
       return "RMI";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return "rmi://www.mars.universe:1099/I_AuthServer"
     */
-   public String getRawAddress()
-   {
+   public String getRawAddress() {
       return callbackAddress.getAddress();
    }
 

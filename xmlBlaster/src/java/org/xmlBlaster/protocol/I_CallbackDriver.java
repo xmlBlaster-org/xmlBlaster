@@ -8,6 +8,7 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -18,7 +19,7 @@ import org.xmlBlaster.engine.queue.MsgQueueEntry;
  * <p>
  * @author ruff
  */
-public interface I_CallbackDriver
+public interface I_CallbackDriver extends I_Plugin
 {
    /** Get a human readable name of this driver */
    public String getName();

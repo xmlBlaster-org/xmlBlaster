@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------------
-Name:      CallbackXmlRpcDriver.java
+Name:      CallbackSoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.18 2002/08/23 21:24:57 ruff Exp $
+Comment:   This singleton sends messages to clients using SOAP interface.
+Version:   $Id: CallbackSoapDriver.java,v 1.1 2002/08/23 21:24:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.protocol.xmlrpc;
+package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -15,30 +15,37 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
-import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
+import org.xmlBlaster.client.protocol.soap.SoapConnection; // The SoapException to XmlBlasterException converter
 
-import org.apache.xmlrpc.XmlRpcClient;
-import org.apache.xmlrpc.XmlRpcException;
+import org.jafw.saw.*;
+import org.jafw.saw.rpc.*;
+import org.jafw.saw.util.*;
+import org.jafw.saw.transport.*;
+import org.jafw.saw.transport.http.*;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Vector;
 
 /**
- * This object sends a MessageUnit back to a client using XML-RPC interface, in
+ * This object sends a MessageUnit back to a client using SOAP interface, in
  * the same JVM.
  * <p>
  * The I_CallbackDriver.update() method of the client will be invoked
  *
- * @author michele.laghi@attglobal.net
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
- * @see org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+ * @see org.xmlBlaster.protocol.soap.SoapDriver
  */
-public class CallbackXmlRpcDriver implements I_CallbackDriver
+public class CallbackSoapDriver implements I_CallbackDriver
 {
-   private String ME = "CallbackXmlRpcDriver";
+   private String ME = "CallbackSoapDriver";
    private Global glob = null;
    private LogChannel log;
    private CallbackAddress callbackAddress = null;
-   private XmlRpcClient xmlRpcClient = null;
+   private TransportConnection soapClient = null; // SOAP client to send method calls.
+   /** See service.xml configuration */
+   private final String service = "urn:I_XmlBlasterCallback";
+      //String callbackSoapServerBindName = "urn://" + hostname + ":" + port + "/I_XmlBlasterCallback/" + loginName;
+
 
    /** Get a human readable name of this driver */
    public String getName() {
@@ -47,29 +54,15 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
-    * @return "XML-RPC"
+    * @return "SOAP"
     */
    public String getProtocolId() {
-      return "XML-RPC";
-   }
-
-   /** Enforced by I_Plugin */
-   public String getType() {
-      return getProtocolId();
-   }
-
-   /** Enforced by I_Plugin */
-   public String getVersion() {
-      return "1.0";
-   }
-
-   /** Enforced by I_Plugin */
-   public void init(org.xmlBlaster.util.Global glob, String[] options) {
+      return "SOAP";
    }
 
    /**
     * Get the address how to access this driver. 
-    * @return "http://server.mars.universe:8080/"
+    * @return "http://server.mars.universe:8686/"
     */
    public String getRawAddress() {
       return callbackAddress.getAddress();
@@ -81,20 +74,31 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by
     * xmlBlaster after instantiation of this class, telling us
     * the address to callback.
-    * @param  callbackAddress Contains the stringified XML-RPC callback handle of
-    *                      the client
+    * @param  callbackAddress Contains the SOAP callback URL of the client
     */
-   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
-   {
+   public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
+      this.log = glob.getLog("soap");
       this.callbackAddress = callbackAddress;
+      SAWHelper.initLogging();
+      
+      URL sawURL;
       try {
-         xmlRpcClient = new XmlRpcClient(callbackAddress.getAddress());
-         if (log.TRACE) log.trace(ME, "Accessing client callback web server using given url=" + callbackAddress.getAddress());
+         //This will only work if you are using an HTTP server defined in 'conf/config.xml'
+         //hostname    -    the hostname of the computer running the MathService example that we created
+         //            probably localhost.
+         //port      -   the port that the server is running on
+         sawURL = new URL(getRawAddress()); // "http://develop:8686";
+      } catch (Exception e) {
+         log.error(ME, "Invalid URL '" + getRawAddress() + "', no callback possible");
+         return;
       }
-      catch (IOException ex1) {
-         throw new XmlBlasterException(ME, ex1.toString());
+
+      try {
+         soapClient = TransportConnectionManager.createTransportConnection(sawURL);
+      } catch (SOAPException e) {
+         log.error(ME, "FaultCode: " + e.getFaultCode() + " FaultString: " + e.getFaultString());
+         throw new XmlBlasterException("SOAPException", e.toString());
       }
    }
 
@@ -112,10 +116,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
-   {
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
  
+      log.error(ME, "sendUpdate() not implemented");
+      return new String[0];
+      /*
       // transform the msgUnits to Vectors
       try {
          String[] retVal = new String[msg.length];
@@ -129,15 +135,15 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
           
             if (log.TRACE) log.trace(ME, "Send an update to the client ...");
 
-            retVal[ii] = (String)xmlRpcClient.execute("update", args);
+            retVal[ii] = (String)soapClient.execute("update", args);
 
             if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
                 + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
          }
          return retVal;
       }
-      catch (XmlRpcException ex) {
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
+      catch (SoapException ex) {
+         XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
          String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          throw new XmlBlasterException("CallbackFailed", str);
@@ -148,16 +154,18 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          e.printStackTrace();
          throw new XmlBlasterException("CallbackFailed", str);
       }
+      */
    }
 
    /**
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
-   {
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
  
+      log.error(ME, "sendUpdateOneway() not implemented");
+      /*
       // transform the msgUnits to Vectors
       try {
          for (int ii=0; ii < msg.length; ii++) {
@@ -170,14 +178,14 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
           
             if (log.TRACE) log.trace(ME, "Send an updateOneway to the client ...");
 
-            xmlRpcClient.execute("updateOneway", args);
+            soapClient.execute("updateOneway", args);
 
             if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
                 + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
          }
       }
-      catch (XmlRpcException ex) {
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
+      catch (SoapException ex) {
+         XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
          String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
          throw new XmlBlasterException("CallbackFailed", str);
@@ -188,6 +196,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          e.printStackTrace();
          throw new XmlBlasterException("CallbackFailed", str);
       }
+      */
    }
 
    /**
@@ -197,26 +206,58 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
-   {
+   public final String ping(String qos) throws XmlBlasterException {
+      //Create a Call
+      Call call = new Call();
+
+      //Set the service to the name of the service we created
+      call.setService(service);
+
+      //Set the method we wish to invoke
+      call.setMethodName("ping");
+      
+      //Create the parameters for the add method
+      Parameter param1 = new Parameter("<qos/>", String.class, qos);
+      
+      //Set the parameter count and then set the parameters
+      call.setParamCount(1);
+      call.setParam(0, param1);
+      
+
+      //Invoke the call on the connection created above
       try {
-         Vector args = new Vector();
-         args.addElement("");
-         return (String)xmlRpcClient.execute("ping", args);
-      } catch (Throwable e) {
-         throw new XmlBlasterException("CallbackPingFailed", "XmlRpc callback ping failed: " + e.toString());
+         Parameter returnParam = soapClient.invoke(call);
+         
+         //Ensure we recieved a non null response, Note: if the call was invoking a 'void' method 
+         //then the return will always be null, but there will be a SOAPException thrown if an error occurs
+         if (returnParam == null) {
+            log.error(ME, "I got a null response for ping(), something went wrong");
+            throw new XmlBlasterException("CallbackPingFailed", "Soap callback ping failed, null was returned");
+         } else {
+            Class returnType = returnParam.getType();
+            log.info(ME, "Return had class type of: " + returnType.getName());
+            Object returnValue = returnParam.getValue();
+            log.info(ME, "Return was: " + returnValue.toString());
+            return returnValue.toString();
+         }
+      } catch (SOAPException se) {
+         //If there was an error while invoking the call
+         log.error(ME, "Ping failed, faultCode: " + se.getFaultCode() + " faultString: " + se.getFaultString());
+         throw new XmlBlasterException("CallbackPingFailed", "Soap callback ping failed: " + se.toString());
       }
    }
 
    /**
-    * This method shuts down the driver.
-    * <p />
+    * This method shuts down the SOAP connection. 
     */
-   public void shutdown()
-   {
-      //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
+   public void shutdown() {
+      //if (soapClient != null) soapClient.shutdown(); method is missing in Soap package !!!
       callbackAddress = null;
-      xmlRpcClient = null;
-      if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
+      if (this.soapClient != null) {
+         // TODO:
+         // ((SOAPHTTPConnection)this.soapClient).closeConnection();
+         this.soapClient = null;
+      }
+      if (log.TRACE) log.trace(ME, "Shutdown done");
    }
 }

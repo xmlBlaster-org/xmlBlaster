@@ -16,8 +16,8 @@ Install:
 
   Make sure to have the following set in your $HOME/xmlBlaster.properties file:
 
-    Protocol.Drivers=...,XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,...
-    Protocol.CallbackDrivers=...,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver,...
+   ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+   CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
 
   This loads XmlRpc support into xmlBlaster.
   It should be there already, since it is default.

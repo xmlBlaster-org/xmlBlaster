@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.26 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.27 2002/08/23 21:24:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -104,8 +104,7 @@ public class RmiDriver implements I_Driver
 
 
    /** Get a human readable name of this driver */
-   public String getName()
-   {
+   public String getName() {
       return ME;
    }
 
@@ -113,17 +112,29 @@ public class RmiDriver implements I_Driver
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "RMI"
     */
-   public String getProtocolId()
-   {
+   public String getProtocolId() {
       return "RMI";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return "rmi://www.mars.universe:1099/I_AuthServer"
     */
-   public String getRawAddress()
-   {
+   public String getRawAddress() {
       return authBindName;
    }
 

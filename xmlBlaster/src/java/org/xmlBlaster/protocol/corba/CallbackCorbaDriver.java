@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.27 2002/08/04 16:29:58 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.28 2002/08/23 21:24:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -36,8 +36,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
 
 
    /** Get a human readable name of this driver */
-   public final String getName()
-   {
+   public final String getName() {
       return ME;
    }
 
@@ -45,8 +44,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * Get callback reference here.
     * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
-   public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
-   {
+   public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("corba");
       this.callbackAddress = callbackAddress;
@@ -61,22 +59,33 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
    }
 
-
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "IOR"
     */
-   public final String getProtocolId()
-   {
+   public final String getProtocolId() {
       return "IOR";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return "IOR:00034500350..."
     */
-   public final String getRawAddress()
-   {
+   public final String getRawAddress() {
       return callbackAddress.getAddress();
    }
 
@@ -84,8 +93,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
-   {
+   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException {
       if (msg == null || msg.length < 1 || msg[0] == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal update argument");
@@ -174,10 +182,12 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    public void shutdown()
    {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
-      // CorbaDriver.getOrb().disconnect(cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
-      cb._release();
-      //cbfactory.releaseCb(cb);
-      cb = null;
+      if (cb != null) {
+         // CorbaDriver.getOrb().disconnect(cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
+         cb._release();
+         //cbfactory.releaseCb(cb);
+         cb = null;
+      }
       callbackAddress = null;
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well
       if (log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");

@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.17 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.18 2002/08/23 21:24:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -30,13 +30,9 @@ import org.xmlBlaster.util.DisconnectQos;
  * The native driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- *   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
- *                    RMI:org.xmlBlaster.protocol.rmi.RmiDriver,\
- *                    NativeDemo:org.xmlBlaster.protocol.nativ.NativeDriver
+ *ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver
  *
- *   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
- *                            RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
- *                            NativeDemo:org.xmlBlaster.protocol.nativ.CallbackNativeDriver
+ *CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativeDriver
  * </pre>
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
@@ -61,27 +57,37 @@ public class NativeDriver implements I_Driver
     * <p />
     * Enforced by interface I_Driver.
     */
-   public String getName()
-   {
+   public String getName() {
       return ME;
    }
-
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
     * @return "NativeDemo"
     */
-   public String getProtocolId()
-   {
+   public String getProtocolId() {
       return "NativeDemo";
+   }
+
+   /** Enforced by I_Plugin */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /** Enforced by I_Plugin */
+   public void init(org.xmlBlaster.util.Global glob, String[] options) {
    }
 
    /**
     * Get the address how to access this driver. 
     * @return null
     */
-   public String getRawAddress()
-   {
+   public String getRawAddress() {
       log.error(ME+".getRawAddress()", "No external access address available");
       return null;
    }

@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------
-Name:      XmlRpcDriver.java
+Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.35 2002/08/23 21:24:57 ruff Exp $
+Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
+Version:   $Id: SoapDriver.java,v 1.1 2002/08/23 21:24:57 ruff Exp $
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.protocol.xmlrpc;
+package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -16,44 +16,49 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
-import org.apache.xmlrpc.*;
+import org.jafw.saw.*;
+import org.jafw.saw.rpc.*;
+import org.jafw.saw.util.*;
+import org.jafw.saw.transport.*;
+import org.jafw.saw.server.*;
 import java.io.IOException;
 
 
 /**
- * XmlRpc driver class to invoke the xmlBlaster server over HTTP XML-RPC.
+ * Soap driver class to invoke the xmlBlaster server over HTTP SOAP.
  * <p />
  * This driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- * ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
- * CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
+ * ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver
+ *
+ * CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver
  * </pre>
  *
- * The variable xmlrpc.port (default 8080) sets the http web server port,
+ * The variable soap.port (default 8686) sets the http web server port,
  * you may change it in xmlBlaster.properties or on command line:
  * <pre>
- * java -jar lib/xmlBlaster.jar  -xmlrpc.port 9090
+ * java -jar lib/xmlBlaster.jar  -soap.port 9090
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
  */
-public class XmlRpcDriver implements I_Driver
+public class SoapDriver implements I_Driver
 {
-   private String ME = "XmlRpcDriver";
+   private String ME = "SoapDriver";
    private Global glob;
    private LogChannel log;
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
-   public static final int DEFAULT_HTTP_PORT = 8080;
-   /** The port for the xml-rpc web server */
+   public static final int DEFAULT_HTTP_PORT = 8686;
+   /** The port for the SOAP web server */
    private int xmlPort = DEFAULT_HTTP_PORT;
-   /** The xml-rpc HTTP web server */
-   private WebServer webServer = null;
+   /** The SOAP HTTP web server */
+   private ServerManager manager = null;
    /** The URL which clients need to use to access this server */
    private String serverUrl = null;
 
@@ -71,10 +76,10 @@ public class XmlRpcDriver implements I_Driver
 
    /**
     * Access the xmlBlaster internal name of the protocol driver. 
-    * @return "XML-RPC"
+    * @return "SOAP"
     */
    public String getProtocolId() {
-      return "XML-RPC";
+      return "SOAP";
    }
 
    /** Enforced by I_Plugin */
@@ -93,14 +98,14 @@ public class XmlRpcDriver implements I_Driver
 
    /**
     * Get the address how to access this driver. 
-    * @return "http://server.mars.universe:8080/"
+    * @return "http://server.mars.universe:8686/"
     */
    public String getRawAddress() {
       return serverUrl;
    }
 
    /**
-    * Start xmlBlaster XML-RPC access.
+    * Start xmlBlaster SOAP access.
     * <p />
     * Enforced by interface I_Driver.
     * @param glob Global handle to access logging, property and commandline args
@@ -108,26 +113,29 @@ public class XmlRpcDriver implements I_Driver
     * @param xmlBlasterImpl Handle to access xmlBlaster core
     */
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
-      throws XmlBlasterException
-   {
+      throws XmlBlasterException {
       this.glob = glob;
-      this.ME = "XmlRpcDriver" + this.glob.getLogPraefixDashed();
-      this.log = glob.getLog("xmlrpc");
+      this.ME = "SoapDriver" + this.glob.getLogPraefixDashed();
+      this.log = glob.getLog("soap");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      xmlPort = glob.getProperty().get("xmlrpc.port", DEFAULT_HTTP_PORT);
+      if (System.getProperty("saw.home") == null)
+         System.setProperty("saw.home", glob.getProperty().get("saw.home", "/home/xmlblast/saw_0.995"));
+      log.info(ME, "Using SOAP saw implementation home directory saw.home=" + System.getProperty("saw.home") + "");
+
+      xmlPort = glob.getProperty().get("soap.port", DEFAULT_HTTP_PORT);
 
       if (xmlPort < 1) {
-         log.info(ME, "Option xmlrpc.port set to " + xmlPort + ", xmlRpc server not started");
+         log.info(ME, "Option soap.port set to " + xmlPort + ", soap server not started");
          return;
       }
 
-      if (glob.getProperty().get("xmlrpc.debug", false) == true)
-         XmlRpc.setDebug(true);
+      //if (glob.getProperty().get("soap.debug", false) == true)
+      //   Soap.setDebug(true);
 
-      String hostname = glob.getProperty().get("xmlrpc.hostname", (String)null);
+      String hostname = glob.getProperty().get("soap.hostname", (String)null);
       if (hostname == null) {
          try  {
             java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
@@ -140,9 +148,12 @@ public class XmlRpcDriver implements I_Driver
       try {
          inetAddr = java.net.InetAddress.getByName(hostname);
       } catch(java.net.UnknownHostException e) {
-         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-xmlrpc.hostname=<ip>': " + e.toString());
+         throw new XmlBlasterException("InitSoapFailed", "The host [" + hostname + "] is invalid, try '-soap.hostname=<ip>': " + e.toString());
       }
       serverUrl = "http://" + hostname + ":" + xmlPort + "/";
+
+      SAWHelper.initLogging();    
+      //logger = Category.getInstance(Main.class);
    }
 
    /**
@@ -150,17 +161,42 @@ public class XmlRpcDriver implements I_Driver
     */
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
+      String action = "start";
+
       try {
+        SAWHelper.initConfig();
+      } catch (ConfigException ce) {
+        System.out.println(ce.getMessage());
+        Throwable t = ce.getRootCause();
+        if (t != null)
+          t.printStackTrace();
+        throw new XmlBlasterException(ME, ce.getMessage());
+      }
+
+      try {
+         ServerManager manager = new ServerManager();    
+         manager.loadConfig();
+         if (manager.getServerCount() < 1) {
+            String text = "When running in standalone mode you must specify at least one server in 'conf/config.xml'.";
+            log.warn(ME, text);
+            throw new XmlBlasterException(ME, text);
+         }
+           
+         manager.startServers();
+      }
+      catch (IOException e) {
+         String text = "Starting SOAP server failed: " + e.toString();
+         log.error(ME, text);
+         throw new XmlBlasterException(ME, text);
+      }
+
+      /*
          webServer = new WebServer(xmlPort, inetAddr);
-         // publish the public methods to the XmlRpc web server:
+         // publish the public methods to the Soap web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
          //serverUrl = "http://" + hostname + ":" + xmlPort + "/";
-         log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
-      } catch (IOException e) {
-         log.error(ME, "Error creating webServer on '" + inetAddr + ":" + xmlPort + "': " + e.toString());
-         e.printStackTrace();
-      }
+      */
    }
 
    /**
@@ -168,19 +204,24 @@ public class XmlRpcDriver implements I_Driver
     */
    public synchronized void deActivate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering deActivate");
-      if (webServer != null) {
-         webServer.removeHandler("authenticate");
-         webServer.removeHandler("xmlBlaster");
-         webServer.shutdown();
-         webServer = null;
-         log.info(ME, "XML-RPC driver stopped, handler released.");
+      if (manager != null) {
+         try {
+            manager.killServers();        
+         }
+         catch (IOException e) {
+            String text = "Stopping SOAP server failed: " + e.toString();
+            log.warn(ME, text);
+            throw new XmlBlasterException(ME, text);
+         }
+         manager = null;
+         log.info(ME, "SOAP driver stopped, handler released.");
       }
       else
-         log.info(ME, "XML-RPC shutdown, nothing to do.");
+         log.info(ME, "SOAP shutdown, nothing to do.");
    }
 
    /**
-    * Instructs XML-RPC driver to shut down.
+    * Instructs SOAP driver to shut down.
     * <p />
     * Enforced by interface I_Driver.
     */
@@ -201,11 +242,10 @@ public class XmlRpcDriver implements I_Driver
    public String usage()
    {
       String text = "\n";
-      text += "XmlRpcDriver options:\n";
-      text += "   -xmlrpc.port        The XML-RPC web server port [" + DEFAULT_HTTP_PORT + "].\n";
-      text += "   -xmlrpc.hostname    Specify a hostname where the XML-RPC web server runs.\n";
-      text += "                       Default is the localhost.\n";
-      text += "   -xmlrpc.debug       true switches on detailed XML-RPC debugging [false].\n";
+      text += "SoapDriver options:\n";
+      text += "   -soap.port        The SOAP web server port [" + DEFAULT_HTTP_PORT + "].\n";
+      text += "   -soap.hostname    Specify a hostname where the SOAP web server runs.\n";
+      text += "                     Default is the localhost.\n";
       text += "\n";
       return text;
    }

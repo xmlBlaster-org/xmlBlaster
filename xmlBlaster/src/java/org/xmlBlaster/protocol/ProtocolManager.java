@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.5 2002/07/21 16:37:05 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.6 2002/08/23 21:24:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -12,11 +12,14 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
 
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -28,11 +31,14 @@ import java.util.StringTokenizer;
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html" target="others">protocol</a>
  */
-public class ProtocolManager implements I_RunlevelListener
+public class ProtocolManager extends PluginManagerBase implements I_RunlevelListener
 {
    private final String ME;
    private final Global glob;
    private final LogChannel log;
+   private final CbProtocolManager cbProtocolManager;
+   private static final String defaultPluginName = "org.xmlBlaster.protocol.corba.CorbaDriver";
+   public static final String pluginPropertyName = "ProtocolPlugin";
 
    /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
    private Vector protocols = new Vector();
@@ -41,110 +47,148 @@ public class ProtocolManager implements I_RunlevelListener
    private Hashtable cbProtocolClasses = new Hashtable();
 
    public ProtocolManager(Global glob) {
+      super(glob);
       this.glob = glob;
       this.log = glob.getLog("protocol");
       this.ME = "ProtocolManager" + this.glob.getLogPraefixDashed();
+      this.cbProtocolManager = new CbProtocolManager(glob);
       if (log.CALL) log.call(ME, "Constructor ProtocolManager");
       glob.getRunlevelManager().addRunlevelListener(this);
+   }
+
+   public final CbProtocolManager getCbProtocolManager() {
+      return cbProtocolManager;
+   }
+
+   /**
+    * Enforced by PluginManagerBase. 
+    * @return The name of the property in xmlBlaster.property "LoadBalancerPlugin"
+    * for "LoadBalancerPlugin[RoundRobin][1.0]"
+    */
+   protected String getPluginPropertyName() {
+      return pluginPropertyName;
+   }
+
+   /**
+    * @return please return your default plugin classname or null if not specified
+    */
+   public String getDefaultPluginName(String type, String version) {
+      return defaultPluginName;
    }
 
    /**
     * Load the drivers from xmlBlaster.properties.
     * <p />
-    * Default is "Protocol.Drivers=<br />
-    *   IOR:org.xmlBlaster.protocol.corba.CorbaDriver,<br />
-    *   RMI:org.xmlBlaster.protocol.rmi.RmiDriver,<br />
-    *   XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,<br />
-    *   JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+    * <pre>
+    *  ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
+    *  ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
+    *  ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
+    *  ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
+    *  ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
+    * </pre>
     */
    private void initDrivers() {
-      // A unique name for this xmlBlaster server instance, if running in a cluster
-      String uniqueNodeIdName = null;
+      // ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
+      Map map = glob.getProperty().get(pluginPropertyName, (Map)null);
+      if (map == null) {
+         log.error(ME, "No protocol driver configuration like 'ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver' found");
+         map = new TreeMap();
+         map.put("IOR:1.0", "org.xmlBlaster.protocol.corba.CorbaDriver");
+      }
 
-      String defaultDrivers = // See CbInfo.java for "Protocol.CallbackDrivers" default settings
-                 "IOR:org.xmlBlaster.protocol.corba.CorbaDriver," +
-                 "SOCKET:org.xmlBlaster.protocol.socket.SocketDriver," +
-                 "RMI:org.xmlBlaster.protocol.rmi.RmiDriver," +
-                 "XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver," +
-                 "JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver";
-      String drivers = glob.getProperty().get("Protocol.Drivers", defaultDrivers);
-      StringTokenizer st = new StringTokenizer(drivers, ",");
-      int numDrivers = st.countTokens();
-      for (int ii=0; ii<numDrivers; ii++) {
-         String token = st.nextToken().trim();
-         int index = token.indexOf(":");
-         if (index < 0) {
-            log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.Drivers, driver ignored: " + token);
+      Iterator it = map.keySet().iterator();
+      while (it.hasNext()) {
+         String key = (String)it.next();
+         String clazz = (String)map.get(key);        // "org.xmlBlaster.protocol.rmi.RmiDriver"
+         if (clazz == null || clazz.length() < 1) {
+            log.info(ME, "Ignoring empty protocol driver " + key);
             continue;
          }
-         String protocol = token.substring(0, index).trim();
-         String driverId = token.substring(index+1).trim();
+         log.trace(ME, "Loading protocol driver " + key + "=" + clazz);
+         int colon = key.indexOf(":");
+         if (colon < 0) {
+            log.error(ME, "Ignoring protocol driver " + key + "=" + clazz + ", wrong format");
+            continue;
+         }
+         String type = key.substring(0, colon);      // "RMI"
+         String version = key.substring(colon+1);    // "1.0"
          try {
-            I_Driver driver = loadDriver(protocol, driverId);
-            //log.info(ME, "Loaded address " + driver.getRawAddress());
-
-            if (driver.getRawAddress() != null) {
-               // choose the shortest (human readable) unique name for this cluster node (xmlBlaster instance)
-               if (uniqueNodeIdName == null)
-                  uniqueNodeIdName = driver.getRawAddress();
-               else if (uniqueNodeIdName.length() > driver.getRawAddress().length())
-                  uniqueNodeIdName = driver.getRawAddress();
-            }
+            I_Driver driver = getPlugin(type, version);
+            protocols.addElement(driver);
          }
          catch (XmlBlasterException e) {
             log.error(ME, e.toString());
          }
          catch (Throwable e) {
-            log.error(ME, e.toString());
+            log.error(ME, "Problems loading protocol driver type=" + type + " version=" + version + " class=" + clazz + ": " + e.toString());
             e.printStackTrace();
          }
       }
 
+      findUniqueNodeIdName();
+   }
+
+   /**
+    * Try to extract a unique name for this xmlBlaster server instance,
+    * if running in a cluster
+    */
+   private void findUniqueNodeIdName() {
+      String uniqueNodeIdName = null;
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         if (driver.getRawAddress() != null) {
+            // choose the shortest (human readable) unique name for this cluster node (xmlBlaster instance)
+            if (uniqueNodeIdName == null)
+               uniqueNodeIdName = driver.getRawAddress();
+            else if (uniqueNodeIdName.length() > driver.getRawAddress().length())
+               uniqueNodeIdName = driver.getRawAddress();
+         }
+      }
       if (glob.getNodeId() == null) {
          if (uniqueNodeIdName != null)
             glob.setUniqueNodeIdName(uniqueNodeIdName);
       }
    }
 
+   /**
+    * Return a specific plugin. 
+    * <p/>
+    * @param String The type of the requested plugin.
+    * @param String The version of the requested plugin.
+    * @return The load balancer for this type and version or null if none is specified
+    */
+   public I_Driver getPlugin(String type, String version) throws XmlBlasterException {
+      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
+      I_Driver driver = null;
+      String[] pluginNameAndParam = null;
+
+      pluginNameAndParam = choosePlugin(type, version);
+
+      if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
+         driver = (I_Driver)managers.get(pluginNameAndParam[0]);
+         if (driver!=null) return driver;
+         driver = loadPlugin(pluginNameAndParam);
+      }
+      else {
+         //throw new XmlBlasterException(ME+".notSupported","The requested security manager isn't supported!");
+      }
+
+      return driver;
+   }
 
    /**
-    * Load a protocol driver.
-    * <p />
-    * Usually invoked by entries in xmlBlaster.properties, but for example ProtocolManagerGUI.java
-    * uses this directly.
-    * @param protocol For example "IOR", "RMI", "XML-RPC"
-    * @param driverId The class name of the driver, for example "org.xmlBlaster.protocol.corba.CorbaDriver"
+    * Loads the plugin. 
+    * <p/>
+    * @param String[] The first element of this array contains the class name
+    *                 e.g. org.xmlBlaster.engine.cluster.simpledomain.RoundRobin<br />
+    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
+    * @return I_LoadBalancer
+    * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   public I_Driver loadDriver(String protocol, String driverId) throws XmlBlasterException
-   {
-      // Load the protocol driver ...
-      I_Driver driver = null;
-      try {
-         if (log.TRACE) log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-         Class cl = java.lang.Class.forName(driverId);
-         driver = (I_Driver)cl.newInstance();
-         driver.init(glob, glob.getAuthenticate(), glob.getAuthenticate().getXmlBlaster());
-         protocols.addElement(driver);
-         log.info(ME, "Found '" + protocol + "' driver '" + driverId + "'");
-      }
-      catch (IllegalAccessException e) {
-         log.error(ME, "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-         throw new XmlBlasterException("Driver.NoClass", "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-      }
-      catch (SecurityException e) {
-         log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
-         throw new XmlBlasterException("Driver.NoAccess", "No right to access the driver class or initializer '" + driverId + "'");
-      }
-      catch (ClassNotFoundException e) {
-         log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-         throw new XmlBlasterException("Driver.Invalid", "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-      }
-      catch (Throwable e) {
-         log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-         e.printStackTrace();
-         throw new XmlBlasterException("Driver.Invalid", "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
-      }
-      return driver;
+   protected I_Driver loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException {
+      I_Driver i = (I_Driver)super.instantiatePlugin(pluginNameAndParam);
+      i.init(glob, glob.getAuthenticate(), glob.getAuthenticate().getXmlBlaster());
+      return i;
    }
 
    private void activateDrivers() throws XmlBlasterException {
@@ -221,101 +265,6 @@ public class ProtocolManager implements I_RunlevelListener
    }
 
    /**
-    * Load the callback drivers from xmlBlaster.properties.
-    * <p />
-    * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP, RMI).
-    * <p />
-    * Default is support for IOR, XML-RPC, RMI and the JDBC service (ODBC bridge)
-    * <p />
-    * This is done once and than cached in the static protocols Hashtable.
-    */
-   private final void initCbDrivers() {
-      String defaultDrivers = // See Main.java for "Protocol.Drivers" default settings
-               "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
-               "SOCKET:org.xmlBlaster.protocol.socket.CallbackSocketDriver," +
-               "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
-               "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
-               "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
-
-      String drivers = glob.getProperty().get("Protocol.CallbackDrivers", defaultDrivers);
-      StringTokenizer st = new StringTokenizer(drivers, ",");
-      int numDrivers = st.countTokens();
-      for (int ii=0; ii<numDrivers; ii++) {
-         String token = st.nextToken().trim();
-         int index = token.indexOf(":");
-         if (index < 0) {
-            log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.CallbackDrivers, driver ignored: " + token);
-            continue;
-         }
-         String protocol = token.substring(0, index).trim();
-         String driverId = token.substring(index+1).trim();
-
-         if (driverId.equalsIgnoreCase("NATIVE")) { // We can mark in xmlBlaster.properties e.g. SOCKET:native
-            continue;
-         }
-
-         // Load the protocol driver ...
-         try {
-            if (log.TRACE) log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-            Class cl = java.lang.Class.forName(driverId);
-            cbProtocolClasses.put(protocol, cl);
-            if (log.TRACE) log.trace(ME, "Found callback driver class '" + driverId + "' for protocol '" + protocol + "'");
-         }
-         catch (SecurityException e) {
-            log.error(ME, "No right to access the protocol driver class or initializer '" + driverId + "'");
-         }
-         catch (Throwable e) {
-            log.error(ME, "The protocol driver class or initializer '" + driverId + "' is invalid\n -> check the driver name in xmlBlaster.properties and/or the CLASSPATH to the driver file: " + e.toString());
-         }
-      }
-   }
-
-   public final Class getCbProtocolDriverClass(String driverType) {
-      return (Class)cbProtocolClasses.get(driverType);
-   }
-
-   /**
-    * Creates a new instance of the given protocol driver type. 
-    * <p />
-    * You need to call cbDriver.init(glob, cbAddress) on it.
-    * @return The uninitialized driver, never null
-    * @exception XmlBlasterException on problems
-    */
-   public final I_CallbackDriver getNewCbProtocolDriverInstance(String driverType) throws XmlBlasterException {
-      Class cl = getCbProtocolDriverClass(driverType);
-      String err = null;
-      try {
-         I_CallbackDriver cbDriver = (I_CallbackDriver)cl.newInstance();
-         if (log.TRACE) log.trace(ME, "Created callback driver for protocol '" + driverType + "'");
-         return cbDriver;
-      }
-      catch (IllegalAccessException e) {
-         err = "The protocol driver class '" + driverType + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver";
-      }
-      catch (SecurityException e) {
-         err = "No right to access the protocol driver class or initializer '" + driverType + "'";
-      }
-      catch (Throwable e) {
-         err = "The protocol driver class or initializer '" + driverType + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString();
-      }
-      log.error(ME, err);
-      throw new XmlBlasterException(ME, err);
-   }
-
-   private void activateCbDrivers() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to activate the callback drivers, they are created for each client and session separately");
-   }
-
-   private final void deactivateCbDrivers(boolean force) {
-      if (log.TRACE) log.trace(ME, "Don't know how to deactivate the callback drivers, they are created for each client and session separately");
-   }
-
-   private void shutdownCbDrivers(boolean force) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to shutdown the callback drivers, they are created for each client and session separately");
-   }
-
-   /**
     * Protocol driver usage. 
     */
    public String usage() {
@@ -355,11 +304,11 @@ public class ProtocolManager implements I_RunlevelListener
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
             initDrivers();
-            initCbDrivers();
+            cbProtocolManager.initCbDrivers();
             glob.getHttpServer(); // incarnate allow http based access (is currently only used by CORBA)
          }
          if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-            activateCbDrivers(); // not implemented: is done for each client on callback
+            cbProtocolManager.activateCbDrivers(); // not implemented: is done for each client on callback
          }
          if (to == RunlevelManager.RUNLEVEL_RUNNING) {
             activateDrivers();
@@ -370,11 +319,11 @@ public class ProtocolManager implements I_RunlevelListener
             deactivateDrivers(force);
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            deactivateCbDrivers(force); // not implemented: is done for each client on callback
+            cbProtocolManager.deactivateCbDrivers(force); // not implemented: is done for each client on callback
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
             shutdownDrivers(force);
-            shutdownCbDrivers(force);  // not implemented: is done for each client on callback
+            cbProtocolManager.shutdownCbDrivers(force);  // not implemented: is done for each client on callback
             protocols.clear();
             cbProtocolClasses.clear();
             glob.shutdownHttpServer();
