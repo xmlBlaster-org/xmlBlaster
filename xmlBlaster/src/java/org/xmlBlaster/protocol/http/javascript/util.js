@@ -68,7 +68,7 @@ function getFromUrlParam(urlParams, key, defaultValue)
 }
 
 /**
- * Walk recursively through all frames and list them. 
+ * Walk recursively through all frames and list them.
  * Not yet tested!
  */
 function debugFrames()
@@ -99,6 +99,8 @@ function debugF(level, str, currentFrame)
  *    Log.trace("Entering ping() method.");
 */
 var logWindow = null;         // the window handle - a popup with the log output table
+var collectForDisplay=false;  // To avoid for each logging a window update, collect log lines
+var logStrippingInfo = null;  // Text to display if we stripped to many log entries from log window
 var MAX_LOG_ENTRIES = 60;     // max number of rows in window
 var levelColor = new Array(); // every log level is displayed in a characteristic color
 levelColor["ERROR"] = "red";
@@ -107,7 +109,7 @@ levelColor["INFO"] = "green";
 levelColor["TRACE"] = "white";
 
 /**
- * The log object, containing infos about one logging output. 
+ * The log object, containing infos about one logging output.
  */
 function logObject(level_, codePos_, text_)
 {
@@ -212,18 +214,17 @@ function logToWindow(level, codePos, text)
    if (logWindow == null || logWindow.closed) {
       logWindow = window.open("","XmlBlasterLog",
                   "content=no-cache," +
-                  "width=500,height=400,screenX=300,screenY=200," +
+                  "width=600,height=400,screenX=300,screenY=200," +
                   "menubar=no,status=no,toolbar=no,titlebar=no," +
                   "scrollbars=yes,resizable=yes,alwaysraised=yes,dependent=yes");
    }
-   var d = logWindow.document;
 
    if (level == "CLEAR") {
       logEntries.length = 0;
    }
    else if (logEntries.length >= MAX_LOG_ENTRIES) {
       // only half the logs, not empty them totally
-      alert("Stripping logging output to " + logEntries.length / 2 + " lines");
+      logStrippingInfo = "Stripping logging output to " + logEntries.length / 2 + " lines";
       var jj=0;
       for (var ii=logEntries.length/2; ii<logEntries.length; ii++) {
          logEntries[jj] = logEntries[ii];
@@ -234,6 +235,22 @@ function logToWindow(level, codePos, text)
    else {
       logEntries[logEntries.length] = new logObject(level, codePos, text);
    }
+
+   // To avoid to many log refreshs, we collect for 2 seconds all logs and
+   // display them in one window refresh
+   if (collectForDisplay == false) {
+      collectForDisplay = true;
+      displayRefreshHandler = window.setTimeout( "displayLogs()", 2000 );
+   }
+}
+
+function displayLogs()
+{
+   collectForDisplay = false;
+   window.clearTimeout(displayRefreshHandler);
+
+   var d = logWindow.document;
+   d.open("text/html","replace");
 
    var headerStr =
       '<HTML>\n' +
@@ -247,6 +264,10 @@ function logToWindow(level, codePos, text)
       '</HEAD>\n' +
       '<BODY>\n' +
       '<CENTER><H3>Logging output from XmlBlaster Javascript</H3></CENTER>\n';
+   if (logStrippingInfo != null) {
+      headerStr += logStrippingInfo;
+      logStrippingInfo = null;
+   }
    d.writeln(headerStr);
 
    var tableStr =
@@ -287,14 +308,15 @@ function logToWindow(level, codePos, text)
    tableStr += "<A HREF='" + clearStr + "'>clear</A>\n";
 
    d.writeln(tableStr);
-   d.writeln('</BODY>\n</HTML>');
+   d.writeln('<P /></BODY>\n</HTML>');
    d.close();
-   logWindow.focus();
+   //logWindow.focus();
+   logWindow.scrollTo(0, 10000);
    return;
 }
 
 /**
- * The log handler object, containing the necessary variables. 
+ * The log handler object, containing the necessary variables.
  */
 function LogHandler()
 {
@@ -311,7 +333,7 @@ function LogHandler()
 }
 
 /**
- * The log handler, use this to invoke your logging output. 
+ * The log handler, use this to invoke your logging output.
  * Example:
  *    Log.warning("Performance over internet is slow.");
  */
