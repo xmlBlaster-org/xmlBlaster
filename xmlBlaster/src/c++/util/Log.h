@@ -27,6 +27,16 @@ namespace org { namespace xmlBlaster { namespace util {
       
    private:
 
+      /**
+       * private copy constructor
+       */
+      Log(const Log& entry);
+
+      /**
+       * private assignment constructor
+       */
+      Log& operator =(const Log& entry);
+
       bool withXtermColor_;
       
       /**
@@ -130,17 +140,9 @@ namespace org { namespace xmlBlaster { namespace util {
        */
       void exitLow(int val);
       
-      bool call_;
-      bool time_;
-      bool trace_;
-      bool dump_;
-            
      public:
-      inline bool call() { return call_; }
-      inline bool time() { return time_; }
-      inline bool trace() { return trace_; }
-      inline bool dump() { return dump_; }
-      
+      /** Return the log channel */
+      inline std::string getName() { return name_; }
       
       Log(Property& properties, int args=0, const char * const argc[]=0, const std::string& name="default");
 
@@ -200,16 +202,22 @@ namespace org { namespace xmlBlaster { namespace util {
 
       
       /**
-       * Converts for example the bit setting L_ERROR to String "ERROR".
+       * Converts for example the bit setting L_ERROR to String "ERROR|WARN".
        * @param bit setting for example L_TRACE
-       * @return for example "TRACE"
+       * @return for example "ERROR|WARN|TRACE"
        */
-      std::string bitToLogLevel(int level);      
+      std::string bitToLogLevel(int level) const;      
+
+      /**
+       * My current log level setting in human readable notation. 
+       * @return for example "ERROR|WARN|TRACE"
+       */
+      std::string getLogLevelStr() const { return bitToLogLevel(logLevel_); }
 
       /**
        * Gets the loglevel 0,10,20,30,40,50,60
        */
-      int getLogLevel() {
+      int getLogLevel() const {
          return logLevel_;
       }
       

@@ -131,6 +131,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       int level = logLevelToBit(logLevel);
       logLevel_ = (logLevel_ | level);
       setPreLogLevelCheck();
+      //std::cout << "DEBUG: " << "Adding logLevel '" << logLevel << "' level=" << level << " dump=" << dump_ << std::endl;
    }
 
 
@@ -143,7 +144,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    }
 
 
-   string Log::bitToLogLevel(int level) {
+   string Log::bitToLogLevel(int level) const {
       string sb = "";
       if (level & L_PANIC) sb += "PANIC";
       if (level & L_ERROR) sb += " | ERROR";
@@ -358,6 +359,9 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       // format: {0}:{1}:{2}:{3}    <timestamp>:<levelStr>:<instance>:<text>
       currentLogFormat = properties_.getStringProperty("LogFormat",
                                                        currentLogFormat);
+
+      //std::cout << "DEBUG: " << "Current logLevel for [" << name_ << "] is " << bitToLogLevel(logLevel_) << std::endl;
+
 //      string tmp = properties_.getStringProperty("LogFormat.Date","MEDIUM");
 //       if (tmp == "SHORT") lookAndFeelDate = java.text.DateFormat.SHORT;
 //       else if (tmp.equals("MEDIUM"))
