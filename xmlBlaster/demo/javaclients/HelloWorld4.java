@@ -15,7 +15,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * Invoke: java HelloWorld4
  * <p />
  * Invoke: java HelloWorld4 -loginName joe -passwd secret
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld4
 {

@@ -10,10 +10,11 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p />
  * Invoke:
  * <pre>
- *   cd xmlBlaster                  // Change to xmlBlaster distribution directory
- *   java -jar libXmlBlaster.jar    // Start the server
- *   java HelloWorld                // Start this demo
+ *   cd xmlBlaster                           // Change to xmlBlaster distribution directory
+ *   java -jar lib/xmlBlaster.jar            // Start the server
+ *   java -cp lib/xmlBlaster.jar HelloWorld  // Start this demo
  * </pre>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld
 {

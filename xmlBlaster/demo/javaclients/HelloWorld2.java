@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * We then publish the message and receive it asynchronous in the update() method. 
  * <p />
  * Invoke: java HelloWorld2
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld2 implements I_Callback
 {
