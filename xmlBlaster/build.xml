@@ -1680,9 +1680,10 @@ TODO
             <linkerarg value="-L${lib.dir.absolute}" />
             <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
             <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:/data/xmlBlaster/orbix_build:${XMLCPP_HOME}/lib" if="ORBIX" />
+
+            <syslibset dir="/lib" libs="dl" />
          </linker>
 
-         <syslibset dir="/lib" libs="dl"/>
       </cc>
    </target>
 
