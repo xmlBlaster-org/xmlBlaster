@@ -16,7 +16,7 @@ JUTIL_DIR  =$(SRC_DIR)/jutil
 SHARED_LIB =xmlBlasterClient
 TEST_DIR   =$(XMLBLASTER_HOME)/testsuite/c++
 BIN_DIR    =$(TEST_DIR)/bin
-XMLCPP_INC =-I$(XMLCPP_HOME)/include
+XMLCPP_INC =-I$(XMLCPP_HOME)/include -I$(XMLCPP_HOME)/include/xercesc
 XMLCPP_LIB =-L$(XMLCPP_HOME)/lib -lxerces-c$(XMLCPP_VER) -lpthread
 CLIENT_OBJ =$(CLIENT_DIR)/CorbaConnection.o $(UTIL_DIR)/CompatibleCorba.o $(UTIL_DIR)/Log.o
 
