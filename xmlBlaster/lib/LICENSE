@@ -171,7 +171,7 @@ All packages allow free use for both commercial and non-commercial applications.
 15) cpptasks.jar & ant-contrib.jar, cvs from Mar 30, 2002
 =========================================================
   cpptasks.jar     cvs from Jan 10, 2002
-  ant-contrib.jar  cvs from Mar 30, 2002
+  ant-contrib.jar  cvs from Apr 16, 2002
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
   See http://sourceforge.net/projects/ant-contrib/
