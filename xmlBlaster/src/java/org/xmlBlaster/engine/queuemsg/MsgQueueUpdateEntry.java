@@ -59,6 +59,13 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       return this.state;
    }
 
+   public long getSizeInBytes() {
+      return 179; // This is a guess only, we have only a reference on the real data
+                  // The bytes consumed are a 'new Timestamp' and a 'new MsgQueueUpdateEntry'
+      // IBM JDK 1.3.1 approx 172 bytes/entry
+      // SUN JDK 1.4.1 approx 179 bytes/entry
+   }
+
    /**
     * The embeddded object for this implementing class is an Object[6]
     */

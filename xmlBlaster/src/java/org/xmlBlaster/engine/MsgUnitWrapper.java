@@ -118,7 +118,19 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       this.uniqueIdStr = ""+this.uniqueId;
       this.ME = "MsgUnitWrapper-" + getLogId();
       this.destroyTimer = this.glob.getMessageTimer();  // holds weak references only
-      this.immutableSizeInBytes = this.msgUnit.size();
+
+      // Estimated calculation of used memory by one MsgUnitWrapper instance
+      // = Object memory + payload
+      // Where following objects need to be created:
+      // 5 PropBoolean
+      // 1 PropLong
+      // 1 RcvTimestamp
+      // 1 MsgQosData
+      // 1 MsgKeyData
+      // 1 MsgUnit
+      // 1 MsgUnitWrapper
+      this.immutableSizeInBytes = 3200 + this.msgUnit.size();
+
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert

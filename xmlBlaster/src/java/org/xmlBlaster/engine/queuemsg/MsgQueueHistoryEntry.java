@@ -34,10 +34,10 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
    /**
     * For persistence recovery
     */
-   public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
+   public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,
-            updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null);
+            entryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null);
    }
 
    /**
@@ -63,6 +63,13 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     */
    public final Long getUniqueIdLong() {
       return new Long(getUniqueId());
+   }
+
+   public long getSizeInBytes() {
+      return 176; // This is a guess only, we have only a reference on the real data
+                  // The bytes consumed are a 'new Timestamp' and a 'new MsgQueueHistoryEntry'
+      // IBM JDK 1.3.1 approx 164 bytes/entry
+      // SUN JDK 1.4.1 approx 176 bytes/entry
    }
 
    /**

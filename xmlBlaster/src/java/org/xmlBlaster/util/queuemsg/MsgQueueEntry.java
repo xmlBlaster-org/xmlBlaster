@@ -197,13 +197,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    }
 
    /**
-    * Try to find out the approximate memory consumption of this message.
+    * Try to find out the approximate memory consumption of this message in RAM.
     * <p />
     * NOTE: The derived classes need to add their data amount to this value.
     * @return the approximate size in bytes of this object which contributes to a QueueEntry memory consumption
     */
    public long getSizeInBytes() {
-      return 20; // a totally intuitive number for the object creation itself
+      return 100; // a totally intuitive number for the object creation itself
    }
 
    /**
