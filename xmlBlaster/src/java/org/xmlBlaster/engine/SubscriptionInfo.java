@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.18 2000/03/03 15:52:29 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.19 2000/03/05 20:11:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -51,7 +51,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Use this constructor for an exact subscription. 
+    * Use this constructor for an exact subscription.
     * @param clientInfo The client we deal with
     * @param xmlKey     The message meta info
     * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
@@ -229,7 +229,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (querySub != null) {
          return querySub.getUniqueKey();
       }
-      return getUniqueKey();
+      return xmlKey.getUniqueKey();  // Exact subscriptions deliver the key oid
    }
 
 
