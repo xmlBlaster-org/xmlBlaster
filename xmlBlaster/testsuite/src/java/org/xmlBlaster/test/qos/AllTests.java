@@ -45,6 +45,7 @@ public class AllTests
       suite.addTest(TestGet.suite());
       suite.addTest(TestReconnectSameClientOnly.suite());
       suite.addTest(TestSubExact.suite());
+      suite.addTest(TestSubGet.suite());
       suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubId.suite());
