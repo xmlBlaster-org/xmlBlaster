@@ -109,7 +109,7 @@ public final class RouteInfo {
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(126);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
