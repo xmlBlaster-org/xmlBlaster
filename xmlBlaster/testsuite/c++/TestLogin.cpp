@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.9 2002/06/02 21:39:37 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.10 2002/08/12 07:24:19 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -142,8 +142,8 @@ public:
          msgUnit_ = new serverIdl::MessageUnit();
          msgUnit_->xmlKey  = xmlKey.c_str();
          msgUnit_->content =
-            serverIdl::ContentType(senderContent_.length()+1,
-                                   senderContent_.length()+1,
+            serverIdl::ContentType(senderContent_.length(),
+                                   senderContent_.length(),
                                    (CORBA::Octet*)senderContent_.c_str());
       }
       catch (CORBA::Exception &e) {
@@ -162,7 +162,7 @@ public:
    void tearDown() {
       string xmlKey = "<key oid='" + oid_ + "' queryType='EXACT'>\n</key>";
       string qos    = "<qos></qos>";
-      serverIdl::StringArr_var strArr; // should be inizialized ?
+      vector<string> strArr;
       try {
          strArr = senderConnection_->erase(xmlKey.c_str(), qos.c_str());
       }
@@ -172,9 +172,9 @@ public:
          txt += e.reason;
          log_->error(msg, txt);
       }
-      if (strArr->length() != 1) {
+      if (strArr.size() != 1) {
          string txt = "Erased ";
-         txt += strArr->length() + " messages:";
+         txt += strArr.size() + " messages:";
          log_->error(me(), txt);
       }
 
@@ -190,7 +190,7 @@ public:
          txt       += e.reason;
          log_->error(msg, txt);
       }
-      if (strArr->length() != 1) {
+      if (strArr.size() != 1) {
          string txt = "Erased ";
          txt       += "many messages"; // change many with the number!!!!
          log_->error(me(), txt);
@@ -320,8 +320,8 @@ public:
          serverIdl::MessageUnit secondMsg;
          secondMsg.xmlKey  = xmlKey.c_str();
          secondMsg.content =
-            serverIdl::ContentType(content.length()+1,
-                                   content.length()+1,
+            serverIdl::ContentType(content.length(),
+                                   content.length(),
                                    (CORBA::Octet*)content.c_str());
 
          secondMsg.qos = "<qos></qos>";

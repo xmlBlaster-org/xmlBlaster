@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.6 2002/06/18 13:51:56 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.7 2002/08/12 07:24:19 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -102,16 +102,12 @@ public:
 //      stopWatch = new StopWatch();
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
-         string xmlKey = "<key oid='RamTest-" + lexical_cast<string>(i+1) + "'>\n" + "</key>";
-         string qos = "<qos></qos>";
-         serverIdl::StringArr* strArr = 0;
+         string xmlKey = "<key oid='RamTest-" + lexical_cast<string>(i+1) + "'/>";
+         string qos = "<qos/>";
+         vector<string> strArr;
          try {
             strArr = senderConnection_->erase(xmlKey, qos);
-            if (!strArr) {
-               log_.error(me(), "returned erased oid array == null");
-               assert(0);
-            }
-            if (strArr->length() != 1) {
+            if (strArr.size() != 1) {
                log_.error(me(), "num erased messages is wrong");
                assert(0);
             }
@@ -121,6 +117,7 @@ public:
                        + string(e.reason));
          }
       }
+      log_.info(me(), "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
 
 //        long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
 //        Log.info(ME, "Success: Erasing done, " + NUM_PUBLISH + " messages erased, average messages/second = " + avg);
@@ -135,89 +132,63 @@ public:
     * The returned publishOid is checked
     */
    void testPublish() {
-      if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
+      if (log_.TRACE) log_.trace(me(), "Publishing messages ...");
 
-      serverIdl::MessageUnitArr msgUnitArr(NUM_PUBLISH);
-      msgUnitArr.length(NUM_PUBLISH);
+      vector<util::MessageUnit> msgVec;
+      msgVec.reserve(NUM_PUBLISH);
 
       for (string::size_type i=0; i < NUM_PUBLISH; i++) {
          string xmlKey = string("<key oid='RamTest-") + lexical_cast<string>(i+1) + "'></key>";
          senderContent_ = lexical_cast<string>(i+1);
-         serverIdl::MessageUnit msgUnit;
-         CORBA::String_var help = CORBA::string_dup(xmlKey.c_str());
-         msgUnit.xmlKey  = help;
-         msgUnit.xmlKey[xmlKey.length()] = (char)0;
-         msgUnit.content = serverIdl::
-            ContentType(senderContent_.length()+1,
-                        senderContent_.length()+1,
-                        (CORBA::Octet*)senderContent_.c_str());
-         msgUnit.qos   = "<qos></qos>";
-         msgUnitArr[i] = msgUnit;
+         util::MessageUnit msgUnit(xmlKey, senderContent_, "<qos/>");
+         msgVec.push_back(msgUnit);
       }
 
       try {
          // 1. Query the current memory allocated in xmlBlaster
-         string xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'></key>";
+         string xmlKey = "<key oid='__cmd:?usedMem' queryType='EXACT'/>";
          string qos    = "<qos></qos>";
-         serverIdl::MessageUnitArr_var
-            msgArr = senderConnection_->get(xmlKey, qos);
-         if (!msgArr) {
-            log_.error(me(), "returned msgArr == null");
+         vector<util::MessageUnit> msgRetVec = senderConnection_->get(xmlKey, qos);
+         if (msgRetVec.size() != 1) {
+            log_.error(me(), "msgRetVec.length!=1");
             assert(0);
          }
-         if (msgArr->length() != 1) {
-            log_.error(me(), "msgArr.length!=1");
+         if (msgRetVec[0].getContentLen() == 0) {
+            log_.error(me(), "returned msgRetVec[0].msgUnit.content.length == 0");
             assert(0);
          }
-         serverIdl::MessageUnit msgUnit = (*msgArr)[0];
-
-
-//       if (msgUnitCont.size() == 0) {
-//          log_.error(me(),  "returned msgArr[0].msgUnit == null");
-//          assert(0);
-//       }
-         if (msgUnit.content.length() == 0) {
-            log_.error(me(), "returned msgArr[0].msgUnit.content.length == 0");
-            assert(0);
-         }
-
-         char *mem = (char*)&msgUnit.content[0];
-         mem[msgUnit.content.length()] = (char)0; // null terminated string !!!
+         string usedMemBefore = msgRetVec[0].getContentStr();
+         long usedBefore = lexical_cast<long>(usedMemBefore);
          log_.info(me(), string("xmlBlaster used allocated memory before ") +
-                   "publishing = " + mem);
+                   "publishing = " + usedMemBefore);
 
+         log_.info(me(), "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " messages ...");
          stopWatch_.restart();
          // 2. publish all the messages
-         serverIdl::StringArr_var publishOidArr =
-            senderConnection_->publishArr(msgUnitArr);
+         vector<string> publishOidArr = senderConnection_->publishArr(msgVec);
+         double elapsed = 0.001 * stopWatch_.elapsed();
 
-         for (int i=0; i < 1000; i++) {
-            cout << msgUnitArr[i].xmlKey << endl;
-            cout << (char*)&(msgUnitArr[i].content)[0] << endl;
+         for (unsigned int i=0; i < NUM_PUBLISH; i++) {
+            cout << msgVec[i].getKey() << endl;
+            //cout << msgVec[i].getContentStr() << endl;
          }
 
-
-         double elapsed = 0.001 * stopWatch_.elapsed();
          long avg = (long)((double)NUM_PUBLISH / elapsed);
          log_.info(me(), "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average messages/second = " + lexical_cast<string>(avg));
-         if (!publishOidArr) {
-            log_.error(me(), "returned publishOidArr == null");
-            assert(0);
-         }
 
-         if (publishOidArr->length() != NUM_PUBLISH) {
+         if (publishOidArr.size() != NUM_PUBLISH) {
             log_.error(me(), "numPublished is wrong");
             assert(0);
          }
 
          // 3. Query the memory allocated in xmlBlaster after publishing all
          // the messages
-         msgArr = senderConnection_->get(xmlKey, qos);
-         char *usedMemAfter = (char*)&(*msgArr)[0].content[0];
-         usedMemAfter[(*msgArr)[0].content.length()] = (char)0;
+         msgRetVec = senderConnection_->get(xmlKey, qos);
+         string usedMemAfter = msgRetVec[0].getContentStr();
+         long usedAfter = lexical_cast<long>(usedMemAfter);
          log_.info(me(), string("xmlBlaster used allocated memory after ") +
                    "publishing = " + usedMemAfter);
-
+         log_.info(me(), lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/message");
       }
 
       catch(serverIdl::XmlBlasterException &e) {

@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.12 2002/08/10 13:46:54 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.13 2002/08/12 07:24:19 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -108,15 +108,15 @@ private:
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")
          + "<key oid='" + publishOid_ + "' queryType='EXACT'>\n</key>";
       string qos = "<qos></qos>";
-      serverIdl::StringArr_var strArr; //  = null;
+      vector<string> strArr;
       try {
          strArr = senderConnection_->erase(xmlKey, qos);
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException: ") + string(e.reason));
       }
-      if (strArr->length() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(strArr->length()) + " messages");
+      if (strArr.size() != 1) {
+         log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
       }
       senderConnection_->logout();
    }
@@ -160,8 +160,8 @@ private:
     * TEST: Construct a message and publish it. <p />
     * The returned publishOid is checked
     */
-   void testPublish() {
-      if (log_.TRACE) log_.trace(me(), "Publishing a message ...");
+   void testPublishCorbaMethods(bool testOneway) {
+      if (log_.TRACE) log_.trace(me(), "Publishing a message (old style) ...");
       numReceived_ = 0;
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
          "<key oid='" + publishOid_ + "' contentMime='" + contentMime_ +
@@ -173,13 +173,12 @@ private:
          "</key>";
       serverIdl::MessageUnit msgUnit;
       msgUnit.xmlKey  = xmlKey.c_str();
-      serverIdl::ContentType content(senderContent_.length()+1,
-                                     senderContent_.length()+1,
+      serverIdl::ContentType content(senderContent_.length(),
+                                     senderContent_.length(),
                                      (CORBA::Octet*)senderContent_.c_str());
       msgUnit.content = content;
       try {
          msgUnit.qos = "<qos></qos>";
-         bool testOneway = false;
 
          if (testOneway) {
             serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
@@ -187,7 +186,7 @@ private:
             msgUnitArr[0] = msgUnit;
             senderConnection_->publishOneway(msgUnitArr);
             //delete msgUnitArr;
-            log_.info(me(), string("Success: Publishing oneway done"));
+            log_.info(me(), string("Success: Publishing oneway done (old style)"));
          }
          else {
             string tmp = senderConnection_->publish(msgUnit);
@@ -195,7 +194,47 @@ private:
                log_.error(me(), "Wrong publishOid: " + tmp);
                assert(0);
             }
-            log_.info(me(), string("Success: Publishing done, returned oid=") +
+            log_.info(me(), string("Success: Publishing with ACK done (old style), returned oid=") +
+                      publishOid_);
+         }
+      }
+      catch(serverIdl::XmlBlasterException &e) {
+         log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
+         assert(0);
+      }
+   }
+
+
+   /**
+    * TEST: Construct a message and publish it. <p />
+    * The returned publishOid is checked
+    */
+   void testPublishSTLMethods(bool testOneway) {
+      if (log_.TRACE) log_.trace(me(), "Publishing a message (the STL way) ...");
+      numReceived_ = 0;
+      string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
+         "<key oid='" + publishOid_ + "' contentMime='" + contentMime_ +
+         "' contentMimeExtended='" + contentMimeExtended_ + "'>\n" +
+         "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+         "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
+         "      </TestSub-DRIVER>"+
+         "   </TestSub-AGENT>" +
+         "</key>";
+      util::MessageUnit msgUnit(xmlKey, senderContent_);
+      try {
+         if (testOneway) {
+            vector<util::MessageUnit> msgVec;
+            msgVec.push_back(msgUnit);
+            senderConnection_->publishOneway(msgVec);
+            log_.info(me(), string("Success: Publishing oneway done (the STL way)"));
+         }
+         else {
+            string tmp = senderConnection_->publish(msgUnit);
+            if (tmp.find(publishOid_) == string::npos) {
+               log_.error(me(), "Wrong publishOid: " + tmp);
+               assert(0);
+            }
+            log_.info(me(), string("Success: Publishing with ACK done (the STL way), returned oid=") +
                       publishOid_);
          }
       }
@@ -218,10 +257,32 @@ private:
          log_.error(me(), "numReceived after subscribe");
          assert(0);
       }
-      testPublish();
+
+      testPublishCorbaMethods(true);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing");
+         log_.error(me(),"numReceived after publishing oneway");
+         assert(0);
+      }
+
+      testPublishCorbaMethods(false);
+      waitOnUpdate(2000L);
+      if (numReceived_ != 1) {
+         log_.error(me(),"numReceived after publishing with ACK");
+         assert(0);
+      }
+
+      testPublishSTLMethods(true);
+      waitOnUpdate(2000L);
+      if (numReceived_ != 1) {
+         log_.error(me(),"numReceived after publishing STL oneway");
+         assert(0);
+      }
+
+      testPublishSTLMethods(false);
+      waitOnUpdate(2000L);
+      if (numReceived_ != 1) {
+         log_.error(me(),"numReceived after publishing STL with ACK");
          assert(0);
       }
    }
@@ -249,6 +310,8 @@ private:
                 updateKey.getUniqueKey() + " state=" + updateQos.getState() + " ...");
       numReceived_ ++;
 
+      string contentStr(static_cast<char *>(content), contentSize);
+
       if (senderName_ != updateQos.getSender()) {
          log_.error(me(), "Wrong Sender");
          assert(0);
@@ -262,8 +325,11 @@ private:
          log_.error(me(), "Wrong oid of message returned");
          assert(0);
       }
-      if (senderContent_ != string((char*)content)) {
-         log_.error(me(), "Message content is corrupted: Sent '" + senderContent_ + "' received '" + string((char*)content) + "'");
+      if (senderContent_ != contentStr) {
+         log_.error(me(), "Corrupted content expected '" + senderContent_ + "' size=" +
+                           lexical_cast<string>(senderContent_.size()) + " but was '" + contentStr +
+                           "' size=" + lexical_cast<string>(contentStr.size()) + " and contentSize=" +
+                           lexical_cast<string>(contentSize));
          assert(0);
       }
       if (contentMime_ != updateKey.getContentMime()) {

@@ -2,8 +2,7 @@
 Name:      TestGet.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing publish()
-Version:   $Id: TestGet.cpp,v 1.7 2002/05/01 21:40:17 ruff Exp $
+Comment:   Testing get()
 -----------------------------------------------------------------------------*/
 
 #include <string>
@@ -107,7 +106,7 @@ public:
       string xmlKey = "<key oid='" + publishOid_ + "' queryType='EXACT'>\n" +
          "</key>";
       string qos = "<qos></qos>";
-      serverIdl::StringArr_var strArr; // = (serverIdl::StringArr_var)0;
+      vector<string> strArr;
       try {
          strArr = corbaConnection_->erase(xmlKey, qos);
          log_.info(me(), "Success, erased a message");
@@ -115,8 +114,8 @@ public:
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), "XmlBlasterException: " + string(e.reason));
       }
-      if (strArr->length() != 1) {
-         log_.error(me(), "Erased " + lexical_cast<string>(strArr->length()) + " messages");
+      if (strArr.size() != 1) {
+         log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
       }
       corbaConnection_->logout();
       // Give the server some millis to finish the iiop handshake ...
@@ -137,9 +136,10 @@ public:
          string xmlKey = string("<key oid='") + publishOid_
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
-         serverIdl::MessageUnitArr* msgArr = corbaConnection_->get(xmlKey, qos);
-         log_.info(me(), string("Success, got empty array for trying to get unknown message: "));
-         delete msgArr;
+         vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+         log_.info(me(), "Success, got array of size " + lexical_cast<string>(msgVec.size()) +
+                         " for trying to get unknown message");
+         assert(msgVec.size() == 0);
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), "get of not existing message " + publishOid_);
@@ -154,8 +154,8 @@ public:
             + "' contentMime='text/plain'>\n</key>";
          serverIdl::MessageUnit msgUnit;
          msgUnit.xmlKey  = xmlKey.c_str();
-         serverIdl::ContentType content(senderContent_.length()+1,
-                                        senderContent_.length()+1,
+         serverIdl::ContentType content(senderContent_.length(),
+                                        senderContent_.length(),
                                         (CORBA::Octet*)senderContent_.c_str());
          msgUnit.content = content;
 
@@ -176,17 +176,18 @@ public:
          string xmlKey = string("<key oid='") + publishOid_
             + "' queryType='EXACT'></key>";
          string qos = "<qos></qos>";
-         serverIdl::MessageUnitArr* msgArr =
-            corbaConnection_->get(xmlKey, qos);
-         log_.info(me(), "Success, got the message");
-         string str = (char*)&(*msgArr)[0].content[0];
+         vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+         log_.info(me(), "Success, got " + lexical_cast<string>(msgVec.size()) + " message");
+         assert(msgVec.size() == 1);
+         string str = msgVec[0].getContentStr();
          if (senderContent_ != str) {
-            log_.error(me(), "Corrupted content");
-            delete msgArr;
+            log_.error(me(), "Corrupted content expected '" + senderContent_ + "' size=" +
+                             lexical_cast<string>(senderContent_.size()) + " but was '" + str +
+                             "' size=" + lexical_cast<string>(str.size()) + " and contentLen=" +
+                             lexical_cast<string>(msgVec[0].getContentLen()));
             usage();
             assert(0);
          }
-         delete msgArr;
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException for trying to get ")
@@ -198,19 +199,18 @@ public:
 
 
    /**
-    * LOAD TEST: get 200 times a non-existing message
+    * LOAD TEST: get 50 times a non-existing message
     */
    void testGetMany() {
-      int num = 200;
+      int num = 50;
       log_.info(me(), "Get " + lexical_cast<string>(num) + " not existing messages ...");
       string xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
       string qos    = "<qos></qos>";
       for (int i=0; i < num; i++) {
          try {
-            serverIdl::MessageUnitArr* msgArr =
-               corbaConnection_->get(xmlKey, qos);
+            vector<util::MessageUnit> msgVec = corbaConnection_->get(xmlKey, qos);
+            assert(msgVec.size() == 0);
             log_.info(me(), string("Success"));
-            delete msgArr;
          }
          catch(serverIdl::XmlBlasterException &e) {
             log_.error(me(), "Exception for a not existing message" + string(e.reason));
@@ -241,8 +241,8 @@ int main(int args, char *argc[]) {
 
    org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet("TestGet", "Tim");
    testSub->setUp(args, argc);
-   testSub->testGet();
    testSub->testGetMany();
+   testSub->testGet();
    testSub->tearDown();
 //   log_.exit(TestGet.me(), "Good bye");
    return 0;
