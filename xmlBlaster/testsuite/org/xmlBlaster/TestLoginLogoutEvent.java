@@ -3,10 +3,11 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.9 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.10 2001/03/26 14:09:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
+import java.util.StringTokenizer;
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.client.LoginQosWrapper;
@@ -17,6 +18,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import test.framework.*;
 
@@ -29,9 +31,11 @@ import test.framework.*;
  * and to "__sys__Logout" to be notified when a client logs out.
  * The message content contains the unique login name of this client.
  * <p />
+ * Tests the '__sys__UserList' feature as well.
+ * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
- * <p>
+ * <p />
  * Invoke examples:<br />
  * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestLoginLogoutEvent
@@ -156,6 +160,24 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
+
+         // Test the '__sys__UserList' feature:
+         MessageUnit[] msgArr = secondConnection.get(
+                          "<key oid='__sys__UserList' queryType='EXACT'></key>",
+                          "<qos></qos>");
+         assert(msgArr.length == 1);
+         String clients = new String(msgArr[0].content);
+         Log.info(ME, "Current '__sys__UserList' is\n" + clients);
+         StringTokenizer st = new StringTokenizer(clients);
+         int found = 0;
+         while (st.hasMoreTokens()) {
+            String client = (String)st.nextToken();
+            if (client.equals(this.firstName))
+               found++;
+            else if (client.equals(this.secondName))
+               found++;
+         }
+         assert("Check of '__sys__UserList' failed", found==2);
       }
       catch (XmlBlasterException e) {
          Log.error(ME, e.id + ": " + e.reason);
