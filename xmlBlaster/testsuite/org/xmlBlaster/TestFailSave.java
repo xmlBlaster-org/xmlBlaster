@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.5 2000/02/25 16:25:15 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.6 2000/02/25 16:58:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,11 +15,12 @@ import test.framework.*;
 
 
 /**
- * This client tests the method publish() with its different qos variants.
- * <br />
+ * Tests the fail save behavior of the CorbaConnect client helper class. 
+ * <br />For a description of what this fail save mode can do for you, please
+ * read the API documentation of ClientConnect.
  * <p>
- * This client may be invoked multiple time on the same xmlBlaster server,
- * as it cleans up everything after his tests are done.
+ * This is an interesting example, since it creates a XmlBlaster server instance 
+ * in a separate thread, talking over CORBA with it.
  * <p>
  * Invoke examples:<br />
  * <code>
@@ -31,6 +32,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 {
    private static String ME = "Tim";
    private boolean messageArrived = false;
+
+   private int serverPort = 7604;
+   private ServerThread serverThread;
 
    private String subscribeOid;
    private CorbaConnection corbaConnection;
@@ -63,8 +67,13 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    protected void setUp()
    {
+      startServer();
+
       try {
-         corbaConnection = new CorbaConnection(); // Find orb
+         String[] args = new String[2];
+         args[0] = "-iorPort";
+         args[1] = "" + serverPort;
+         corbaConnection = new CorbaConnection(args); // Find orb
 
          // Setup fail save handling ...
          long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
@@ -82,7 +91,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
           e.printStackTrace();
       }
    }
-
 
    /**
     * Tears down the fixture.
@@ -276,6 +284,50 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
        suite.addTest(new TestFailSave("testFailSave", loginName));
        return suite;
    }
+
+
+   private void startServer()
+   {
+      serverThread = new ServerThread(serverPort);
+      serverThread.start();
+      Util.delay(3000L);    // Wait some time
+   }
+
+
+   private void stopServer()
+   {
+      serverThread.stopServer = true;
+      Util.delay(500L);    // Wait some time
+   }
+
+
+   /**
+    * Start a xmlBlaster server instance. 
+    * Invoke thread.stopServer=true; to stop it.
+    */
+   private class ServerThread extends Thread
+   {
+      private final String ME = "ServerThread";
+      int port = 7609; // this is the default port, which is probably blocked by another xmlBlaster server
+      boolean stopServer = false;
+
+      ServerThread(int port) { this.port = port; }
+
+      public void run() {
+         Log.info(ME, "Starting a xmlBlaster server instance for testing ...");
+         String[] args = new String[4];
+         args[0] = "-iorPort";
+         args[1] = "" + port;
+         args[2] = "-doBlocking";
+         args[3] = "false";
+         new org.xmlBlaster.Main(args);
+         while(!stopServer) {
+            try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}
+         }
+         stopServer = false;
+         Log.info(ME, "Stopping the xmlBlaster server instance ...");
+      }
+   } // class ServerThread
 
 
    /**
