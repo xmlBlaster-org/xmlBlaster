@@ -18,6 +18,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
+#include <util/plugin/I_Plugin.h>
 #include <util/queue/I_Queue.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <util/thread/ThreadImpl.h>
@@ -28,7 +29,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 typedef std::set<EntryType, std::greater<EntryType> > StorageType;
 
-class Dll_Export RamQueuePlugin : public I_Queue
+class Dll_Export RamQueuePlugin : public I_Queue,
+                                  public virtual org::xmlBlaster::util::plugin::I_Plugin
 {
 protected:
    std::string        ME;
@@ -81,6 +83,19 @@ public:
      */                                  
      bool empty() const;
 
+   /**
+    * Get the name of the plugin. 
+    * @return "RAM"
+    * @enforcedBy I_Plugin
+    */
+   std::string getType() { static std::string type = "RAM"; return type; }
+
+   /**
+    * Get the version of the plugin. 
+    * @return "1.0"
+    * @enforcedBy I_Plugin
+    */
+   std::string getVersion() { static std::string version = "1.0"; return version; }
 };
 
 }}}} // namespace
