@@ -192,7 +192,7 @@ int main(int argc, char** argv)
             int i;
             char *p = malloc(contentSize);
             for (i=0; i<contentSize; i++) {
-               int ran = random() % 100;
+               int ran = rand() % 100;
                p[i] = (char)(ran+28);
             }
             msgUnit.content = p;
