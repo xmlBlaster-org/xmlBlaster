@@ -9,8 +9,7 @@
 	database:confirmation,
 	database:documentrootnode,
 	database:rowrootnode,
-	database:rowlimit,
-	database:columnnamecase)>
+	database:rowlimit)>
 
 <!ENTITY % text "#PCDATA">
 
@@ -25,10 +24,8 @@
 <!ELEMENT database:documentrootnode (%text;)> 
 <!ELEMENT database:rowrootnode (%text;)> 
 <!ELEMENT database:rowlimit EMPTY> 
-<!ELEMENT database:columnnamecase EMPTY> 
  
-<!ATTLIST columnnamecase case (  UPPER | LOWER | DEFAULT ) "DEFAULT">
 <!ATTLIST interaction type (UPDATE | QUERY) "QUERY">
 <!ATTLIST rowlimit max CDATA #REQUIRED>  
 <!ATTLIST connectionlifespan ttl CDATA #REQUIRED>  
-<!ATTLIST confirmation confirm (YES | NO) "YES">
+<!ATTLIST confirmation confirm (TRUE | FALSE) "TRUE">
