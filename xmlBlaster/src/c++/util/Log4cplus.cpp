@@ -10,6 +10,7 @@ Comment:   Embed logging library log4cpp http://log4cplus.sourceforge.net/
 #include <util/Log4cplus.h>
 #include <log4cplus/logger.h>
 #include <log4cplus/configurator.h>
+#include <log4cplus/helpers/property.h>
 #include <log4cplus/helpers/loglog.h>
 #include <fstream>
 #include <util/PropertyDef.h>
@@ -38,6 +39,7 @@ namespace util {
          }
       }
 
+      // Find the configuration file name
       const char *envName = "xmlBlaster/logging/configFileName";
       string configFileName = "log4cplus.properties";
       PropMap::const_iterator pos = propMap.find(envName);
@@ -50,18 +52,51 @@ namespace util {
             configFileName = envValue;
          }
       }
+
+      bool inheritEnvironment = true;
+
       std::ifstream file;
       file.open(configFileName.c_str());
       if(!file) {
+         // No configuration file
+         if (inheritEnvironment) {
+            // We pass all xmlBlaster.properties + command line settings to log4cplus
+            log4cplus::helpers::Properties props;
+            PropMap::const_iterator iter = propMap.begin();
+            while (iter != propMap.end()) {
+                 props.setProperty((*iter).first, (*iter).second);
+               iter++;
+            }
+            PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
+            tmp.configure();
+         }
+         else {
             BasicConfigurator config;
             config.configure();
-            Logger logger = Logger::getInstance("client");
-            LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", you can use the example in xmlBlaster" +
-                                   FILE_SEP + "config" + FILE_SEP + configFileName);
-            LOG4CPLUS_INFO(logger, "We continue with default logging configuration.");
+         }
+         Logger logger = Logger::getInstance("client");
+         LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", you can use the example in xmlBlaster" +
+                                 FILE_SEP + "config" + FILE_SEP + configFileName);
+         LOG4CPLUS_INFO(logger, "We continue with default logging configuration.");
       }
       else {
-         PropertyConfigurator::doConfigure(configFileName);
+         // Scan configuration file
+         if (inheritEnvironment) {
+            // Log4Cplus can replace env variables in its config file
+            // there for we pass all settings from xmlBlaster.properties to log4cplus
+            log4cplus::helpers::Properties props(configFileName);
+            PropMap::const_iterator iter = propMap.begin();
+            while (iter != propMap.end()) {
+                 props.setProperty((*iter).first, (*iter).second);
+               iter++;
+            }
+            PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
+            tmp.configure();
+         }
+         else {
+            PropertyConfigurator::doConfigure(configFileName);
+         }
+
          Logger logger = Logger::getInstance("client");
          LOG4CPLUS_INFO(logger, "Configured log4cplus with configuration file xmlBlaster/logging/configFileName=" + configFileName);
       }
