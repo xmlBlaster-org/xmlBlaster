@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.5 2000/06/19 15:48:38 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.6 2000/06/26 12:00:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -71,7 +71,6 @@ import java.rmi.Naming;
 public class RmiDriver implements I_Driver
 {
    private static final String ME = "RmiDriver";
-   private String iorFile = null;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    /** The singleton handle for this xmlBlaster server */
