@@ -129,13 +129,14 @@
       the state of the update() QoS:
       </p>
       <pre>
-&lt;qos> &lt;
-   &lt;state id='queue' info='Notification about special message treatment
-                              in plugin DispatchPlugin[Priority][1],
-                              dispatcher state=64k'/>
+&lt;qos>
+   &lt;state id='queue' 
+         info='Notification about special message treatment
+               in plugin DispatchPlugin[Priority][1],
+               dispatcher state=64k'/>
    &lt;sender>_PriorizedDeliveryPlugin&lt;/sender>
    &lt;priority>6&lt;/priority>
-&lt;/route>
+&lt;/qos>
  
       </pre>
 
@@ -185,15 +186,17 @@ For coding examples please look into the testsuite, links are provided below.
 
          <tr>
             <td>DispatchPlugin[Priority][1]</td>
-            <td>org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin</td>
+            <td>org.xmlBlaster.util.dispatch.\<br />
+            plugins.prio.PriorizedDeliveryPlugin</td>
             <td>Loads the plugin on the server side</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>DispatchPlugin[Priority][2]</td>
-            <td>org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin</td>
+            <td>org.xmlBlaster.util.dispatch.\<br />
+            plugins.prio.PriorizedDeliveryPlugin</td>
             <td>Loads the same plugin on the server side under a different name.
-            You can configure this plugin differently. Do this as often you like.</td>
+            You can configure this plugin differently. Do this as often you as like.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
@@ -223,14 +226,14 @@ For coding examples please look into the testsuite, links are provided below.
          </tr>
          <tr>
             <td>PriorizedDeliveryPlugin.config</td>
-            <td><pre>&lt;msgDispatch defaultStatus='64k' ...</pre></td>
+            <td><pre>&lt;msgDispatch ...<br />...</pre></td>
             <td>The XML default configuration string for the plugin
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>PriorizedDeliveryPlugin.config[Priority,2]</td>
-            <td><pre>&lt;msgDispatch defaultStatus='2M' ...</pre></td>
+            <td><pre>&lt;msgDispatch ...<br />...</pre></td>
             <td>A specific XML configuration string for the plugin 'Priority,2'
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -245,7 +248,7 @@ For coding examples please look into the testsuite, links are provided below.
    <see type="REQ">delivery.control.plugin</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 11 08</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
