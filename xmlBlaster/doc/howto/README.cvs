@@ -30,7 +30,7 @@ Merge the branch again with the main development:
         cvs checkout -r BEFORE_V08_MERGE xmlBlaster
       but - this should never be necessary
 
-  2) No merge branch V08 back into the main branch:
+  2) Now merge branch V08 back into the main branch:
       cd $HOME
       mv  xmlBlaster  xmlBlaster.xmlBlasterV08   -> save MyHackV08 branch
       cvs checkout xmlBlaster                    -> get the current main branch as a working copy to merge
