@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.18 2002/05/11 08:09:01 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.19 2002/05/30 16:19:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -977,7 +977,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       String text = "\n";
       text += "Control my session and security settings\n";
-      text += "   -session.timeout    How long lasts our login session in milliseconds, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
+      text += "   -session.timeout    How long lasts our login session in milliseconds, 0 is forever, defaults to one day [" + Constants.DAY_IN_MILLIS + "].\n";
       text += "   -session.maxSessions     Maximum number of simultanous logins per client [" + 10 + "].\n";
       text += "   -session.clearSessions   Kill other sessions running under my login name [false]\n";
       text += "   -security.plugin.type    The security plugin to use [simple]\n";
