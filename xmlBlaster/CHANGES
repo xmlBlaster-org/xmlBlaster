@@ -2,7 +2,7 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xx [xx, xx 2001]
 ==============================
- - Chnaged XML-RPC 'void' method return values to return
+ - Changed XML-RPC 'void' method return values to return
    an 'empty string', since 'void' is not supported in the
    XML-RPC spec.
    Bug reported by Cyrille Giquello <cyrille@ktaland.com>
