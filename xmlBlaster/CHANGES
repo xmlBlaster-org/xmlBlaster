@@ -2,8 +2,31 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Removed deprecated classes from package org.xmlBlaster.client:
+      EraseKeyWrapper.java
+      EraseQosWrapper.java
+      GetKeyWrapper.java
+      GetQosWrapper.java
+      PublishKeyWrapper.java
+      PublishQosWrapper.java
+      SubscribeKeyWrapper.java
+      SubscribeQosWrapper.java
+      UnSubscribeKeyWrapper.java
+      UnSubscribeQosWrapper.java
+      EraseRetQos.java
+      I_RetQos.java
+      PublishRetQos.java
+      SubscribeRetQos.java
+      UpdateKey.java
+      UpdateQos.java
+      GetQos.java
+   Please use the packages org.xmlBlaster.client.key and
+   org.xmlBlaster.client.qos instead
+   
+ o Fixed build.bat to take more command line parameters
+
  o Added new connect QoS setting 'reconnectSameClientOnly' which
-   allows us to enfoce a client singleton - if you need to assure
+   allows us to enforce a client singleton - if you need to assure
    that a client can only connect exactly once, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
