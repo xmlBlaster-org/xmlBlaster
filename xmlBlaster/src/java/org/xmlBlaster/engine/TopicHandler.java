@@ -711,6 +711,7 @@ public final class TopicHandler implements I_Timeout
     * Event triggered by MsgUnitWrapper itself when it reaches destroy state
     */
    public void entryDestroyed(MsgUnitWrapper msgUnitWrapper) {
+      if (log.CALL) log.call(ME, "Entering entryDestroyed(" + msgUnitWrapper.getLogId() + ")");
       /*
       if (this.historyQueue != null) {
          try {
