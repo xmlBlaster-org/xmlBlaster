@@ -21,13 +21,11 @@ import org.xmlBlaster.util.queue.ReturnDataHolder;
 // import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.Comparator;
-// import EDU.oswego.cs.dl.util.concurrent.BoundedPriorityQueue;
-// import java.util.HashSet;
-// import java.util.Iterator;
 import java.util.ArrayList;
-// import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -753,6 +751,23 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @return the pluginInfo object.
     */
    public PluginInfo getInfo() { return this.pluginInfo; }
+
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean registerStorageProblemListener(I_StorageProblemListener listener) {
+      return false;
+   }
+
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
+      return false;
+   }
+
 }
 
 /**

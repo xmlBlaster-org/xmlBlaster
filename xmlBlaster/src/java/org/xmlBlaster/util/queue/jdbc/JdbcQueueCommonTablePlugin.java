@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------                              
-Name:      JdbcQueuePlugin.java
+Name:      JdbcQueueCommonTablePlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -15,7 +15,6 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
-import org.xmlBlaster.util.queue.QueuePluginManager;
 // import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -38,7 +37,7 @@ import java.util.Properties;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
+public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugin, I_Map
 {
    private String ME;
    private StorageId storageId;
@@ -47,7 +46,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
    private Global glob;
    private LogChannel log;
    private QueuePropertyBase property;
-   private JdbcManager manager = null;
+   private JdbcManagerCommonTable manager = null;
    private I_QueuePutListener putListener;
    private long numOfEntries = -1L;
    private long numOfPersistentEntries = -1L;
@@ -118,16 +117,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
             this.ME = this.getClass().getName() + "-" + uniqueQueueId;
             this.storageId = uniqueQueueId;
 
-//            this.manager = this.glob.getJdbcQueueManager(this.storageId);
-            if (this.pluginInfo != null) {
-               this.manager = this.glob.getJdbcQueueManager(this.pluginInfo);
-            }
-            else {
-               log.warn(ME, "initialize. The pluginInfo is null (init has not been invoked. This is allowed when testing but be aware that settings will follow 'JDBC,1.0' configuration!!");
-               QueuePluginManager pluginManager = new QueuePluginManager(this.glob);
-               PluginInfo tmpPluginInfo = new PluginInfo(this.glob, pluginManager, "JDBC", "1.0");
-               this.manager = this.glob.getJdbcQueueManager(tmpPluginInfo);
-            }
+            this.manager = this.glob.getJdbcQueueManagerCommonTable(this.pluginInfo);
             this.manager.setUp();
 
             this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
@@ -891,7 +881,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "update not implemented");
    }
 
-   public JdbcManager getManager() {
+   public JdbcManagerCommonTable getManager() {
       return this.manager;
    }
 
@@ -961,7 +951,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       // NOTE: Recursion problems when using getNumOfEntries() instead of this.numOfEntries
       // if an exception is thrown in getNumOfEntries() which uses toXml to dump the problem ...
 
-      sb.append(offset).append("<JdbcQueuePlugin id='").append(getStorageId().getId());
+      sb.append(offset).append("<JdbcQueueCommonTablePlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
       sb.append("' numOfEntries='").append(this.numOfEntries);
@@ -981,7 +971,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       catch (XmlBlasterException e) {
       }
       sb.append(offset).append(" <associatedTable>").append(this.associatedTable).append("</associatedTable>");
-      sb.append(offset).append("</JdbcQueuePlugin>");
+      sb.append(offset).append("</JdbcQueueCommonTablePlugin>");
       return sb.toString();
    }
 
@@ -1075,7 +1065,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_StoragePlugin, I_Map
       }
       return num;
    }
-
 
    /**
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)

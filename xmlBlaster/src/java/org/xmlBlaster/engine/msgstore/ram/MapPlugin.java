@@ -17,6 +17,8 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.TreeMap;
 import java.util.Map;
@@ -315,6 +317,20 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @return the pluginInfo object.
     */
    public PluginInfo getInfo() { return this.pluginInfo; }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean registerStorageProblemListener(I_StorageProblemListener listener) {
+      return false;
+   }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
+      return false;
+   }
 
    /**
     * java org.xmlBlaster.engine.msgstore.ram.MapPlugin

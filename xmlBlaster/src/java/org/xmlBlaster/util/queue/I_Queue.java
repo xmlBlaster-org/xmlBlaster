@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_Queue
+public interface I_Queue extends I_StorageProblemNotifier
 {
 
    /**

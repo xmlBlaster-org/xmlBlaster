@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      JdbcManager.java
+Name:      JdbcManagerCommonTable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -59,9 +59,9 @@ import java.util.Iterator;
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  *
  */
-public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNotifier {
+public class JdbcManagerCommonTable implements I_StorageProblemListener, I_StorageProblemNotifier {
 
-   private static final String ME = "JdbcManager";
+   private static final String ME = "JdbcManagerCommonTable";
    private final int queueIncrement;
    private final Global glob;
    private final LogChannel log;
@@ -93,7 +93,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
     *        the database. IMPORTANT: The pool must have been previously
     *        initialized.
     */
-   public JdbcManager(JdbcConnectionPool pool, I_EntryFactory factory)
+   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory)
       throws XmlBlasterException {
       this.pool = pool;
       this.glob = this.pool.getGlobal();
@@ -1411,7 +1411,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
 
 
    /**
-    * @see JdbcManager#cleanUp(String, boolean)
+    * @see JdbcManagerCommonTable#cleanUp(String, boolean)
     * no forcing used.
     */
    public final int cleanUp(String queueName) throws XmlBlasterException {
@@ -1430,21 +1430,20 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
     * IMPORTANT: If you invoke this method you must be sure that there are no
     * other users who have created tables with the name starting with the
     * string XMLBLASTER.
-    *  @param queueName the name of the queue to clean up (the storageId with
-    *         stripped special characters). If you pass null, then the cleanup
-    *         is done with no particular queue associated.
+    *  @param queueName the name of the queue to clean up (the storageId with stripped special characters).
     *  @param force the flag telling if removing everything anyway
     * @return the number of queues still remaining to be cleaned up
     */
    public final int cleanUp(String queueName, boolean force)
       throws XmlBlasterException {
+
       if (this.log.CALL) this.log.call(getLogId(queueName, null, "cleanUp"), "Entering");
 
       if (!this.isConnected) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(queueName, null, "cleanUp"), "No Connection to the DB. Could not clean up queue '" + queueName + "'");
       }
 
-      if (queueName !=null) this.queues.remove(queueName);
+      if (queueName != null) this.queues.remove(queueName);
       if ((!force) && (this.queues.size()>0)) return this.queues.size();
 
       if (!this.pool.isInitialized()) {
@@ -1505,7 +1504,6 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       return 0;
    }
 
-
    /**
     * @param tableName or null
     * @param storageId or null
@@ -1530,6 +1528,54 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
    }
 
    /**
+    * This main method can be used to delete all tables on the db which start
+    * with a certain prefix. It is useful to cleanup the entire DB.
+    * 
+    * IMPORTANT: caution must be used to avoid to delete the wrong data.
+    * <pre>
+    * java org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable
+    * and enter XMLBLASTER or TEST
+    * </pre>
+    */
+   public static void main(String[] args) {
+      Global glob = Global.instance();
+      glob.init(args);
+      
+      System.out.println("DANGER DANGER DANGER. BE CAREFUL NOT TO DELETE THE");
+      System.out.println("WRONG DATA.");
+      System.out.println("");
+      System.out.print("- Input a prefix (all tables found starting with the prefix specified will be deleted: ");
+      
+      String tableNamePrefix = null;
+      try {
+         java.io.InputStreamReader reader = new java.io.InputStreamReader(System.in);
+         java.io.BufferedReader buff = new java.io.BufferedReader(reader);
+         tableNamePrefix = buff.readLine().toUpperCase();
+         if (tableNamePrefix == null || tableNamePrefix.length() < 1) {
+            System.out.println("The tableNamePrefix is empty. Not doing anything");
+            System.exit(-1);
+         }
+      }
+      catch (java.io.IOException e) {
+         System.out.println("tableNamePrefix read error: " + e.toString());
+         System.exit(-1);
+      }
+
+      System.out.println("Sorry. Currently wiping out the entire DB is not possible (not implemented)");
+
+/*
+      try {
+         wipeOutDB(glob, tableNamePrefix);
+      }
+      catch (XmlBlasterException e) {
+         e.printStackTrace();
+         System.out.println("wipeOutDB error: " + e.getMessage());
+         System.exit(-1);
+      }
+*/
+   }
+
+   /**
     * This destroys the complete entries in the backend database.
     * Handle with extreme care
     * @return the number of queues still remaining to be cleaned up
@@ -1537,46 +1583,4 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
    public int wipeOutDB() throws XmlBlasterException {
       return cleanUp(null, true);
    }
-
-   /**
-    * This main method can be used to delete all tables on the db which start
-    * with a certain prefix. It is useful to cleanup the entire DB.
-    * 
-    * IMPORTANT: caution must be used to avoid to delete the wrong data.
-    * <pre>
-    * java org.xmlBlaster.util.queue.jdbc.JdbcManager
-    * and enter XMLBLASTER or TEST
-    * </pre>
-    */
-   public static void main(String[] args) {
-      Global glob = Global.instance();
-      glob.init(args);
-      LogChannel log = glob.getLog("main");
-
-      String tableNamePrefix = null;
-      if (glob.getProperty().propertyExists("tableNamePrefix")) {
-         tableNamePrefix = glob.getProperty().get("tableNamePrefix", "");
-      }
-      else {
-         log.info(ME, "usage: java org.xmlBlaster.util.queue.jdbc.JdbcManager -tableNamePrefix SomePrefix");
-         System.exit(-1);
-      }
-
-      log.warn(ME, "DANGER: Be aware that you are going to delete");
-      log.warn(ME, "        all tables in the database having a name prefix");
-      log.warn(ME, "        of '"+ tableNamePrefix + "'");
-
-
-      java.util.Properties properties = new java.util.Properties();
-      properties.put("tableNamePrefix", tableNamePrefix);
-      try {
-         glob.wipeOutDB("JDBC", "1.0", properties);
-      }
-      catch (XmlBlasterException e) {
-         e.printStackTrace();
-         System.out.println("wipeOutDB error: " + e.getMessage());
-         System.exit(-1);
-      }
-   }
-
 }

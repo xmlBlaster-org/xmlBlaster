@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.msgstore;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
-
+import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import java.util.ArrayList;
 
 
@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * All methods are reentrant and thread safe
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_Map
+public interface I_Map extends I_StorageProblemNotifier
 {
    /**
     * Is called after the instance is created.

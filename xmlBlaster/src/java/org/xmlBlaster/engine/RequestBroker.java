@@ -369,7 +369,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          tableNamePrefix = glob.getProperty().get("queue.persistent.tableNamePrefix", tableNamePrefix).toUpperCase();
          log.warn(ME, "You have set '-wipeOutJdbcDB true', we will destroy now the complete JDBC persistence store entries of prefix="+tableNamePrefix);
          try {
-            org.xmlBlaster.util.queue.jdbc.JdbcManager.wipeOutDB(glob, tableNamePrefix);
+            java.util.Properties prop = new java.util.Properties();
+            prop.put("tableNamePrefix", tableNamePrefix);
+            glob.wipeOutDB("JDBC", "1.0", prop);
          }
          catch (XmlBlasterException e) {
             log.error(ME, "Wipe out of JDBC database entries failed: " + e.getMessage());

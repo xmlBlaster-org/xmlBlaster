@@ -28,12 +28,14 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.enum.ErrorCode;
 
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
 /**
  * A Pool of connections to the database to be used for a persistent queue. To
  * keep genericity, queries and update strings are read from properties.
  */
-public class JdbcConnectionPool implements I_Timeout {
+public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static final String ME = "JdbcConnectionPool";
    private Connection[] connections = null;
    private LogChannel log = null;
@@ -57,13 +59,13 @@ public class JdbcConnectionPool implements I_Timeout {
    private String tableNamePrefix = "XMLBLASTER";
    private int tableAllocationIncrement = 2;
    /** will be set when a connecton is broken */
-   private boolean connectionLost = true;
+   private int status = I_StorageProblemListener.UNDEF;
    private boolean waitingForReentrantConnections = false;
    private String url;
    private String user;
    private String password;
    private long reconnectionTimeout = 10000L;
-   private I_ConnectionListener connectionListener = null;
+   private I_StorageProblemListener storageProblemListener = null;
 
    private static boolean firstConnectError = true;
 
@@ -94,9 +96,10 @@ public class JdbcConnectionPool implements I_Timeout {
             this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
          }
-         this.connectionLost = false;
-         I_ConnectionListener lst = this.connectionListener;
-         lst.reconnected();
+         int oldStatus = this.status;
+         this.status = I_StorageProblemListener.AVAILABLE;
+         I_StorageProblemListener lst = this.storageProblemListener;
+         if (lst != null) lst.storageAvailable(oldStatus);
          this.log.info(ME, "Successfully reconnected to database");
 
       }
@@ -109,10 +112,24 @@ public class JdbcConnectionPool implements I_Timeout {
    }
 
    /**
-    * Sets the connection listener. Only one is allowed at a time.
+    * Sets the connection listener. Only one is allowed at a time. So if there is
+    * already a connection listener, it will be overwritten (and the old one will
+    * not get anyu notification anymore).
     */
-   public void setConnectionListener(I_ConnectionListener connectionListener) {
-      this.connectionListener = connectionListener;
+   public boolean registerStorageProblemListener(I_StorageProblemListener storageProblemListener) {
+      this.storageProblemListener = storageProblemListener;
+      return true; // always true
+   }
+
+   /**
+    * Unregisters the storageProblemListener. If no one has been defined, or
+    * if the one you want to unregister is different from the one you have
+    * registered, nothing is done and 'false' is returned.
+    */
+   public boolean unRegisterStorageProblemListener(I_StorageProblemListener storageProblemListener) {
+      if ((this.storageProblemListener == null) || (this.storageProblemListener != storageProblemListener)) return false;
+      this.storageProblemListener = null;
+      return true;
    }
 
 
@@ -204,6 +221,7 @@ public class JdbcConnectionPool implements I_Timeout {
     *
     * @deprecated you should use initialize(Global, PluginInfo) instead
     */
+/*
    public synchronized void initialize(Global glob, String prefix)
       throws ClassNotFoundException, SQLException, XmlBlasterException {
       this.glob = glob;
@@ -268,7 +286,10 @@ public class JdbcConnectionPool implements I_Timeout {
             this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
          }
-         this.connectionLost = false;
+         int oldStatus = this.status;
+         this.status = I_StorageProblemListener.AVAILABLE;
+         I_StorageProblemListener lst = this.storageProblemListener;
+         if (lst != null) lst.storageAvailable(oldStatus);
          parseMapping(prop);
          this.initialized = true;
       }
@@ -296,6 +317,8 @@ public class JdbcConnectionPool implements I_Timeout {
       }
       this.log.info(ME, "Connections for group '" + prefix + "' to DB '" + url + "' successfully established.");
    }
+*/
+
 
    /**
     * Is called after the instance is created. It reads the needed properties,
@@ -412,7 +435,10 @@ public class JdbcConnectionPool implements I_Timeout {
             this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
          }
-         this.connectionLost = false;
+         int oldStatus = this.status;
+         this.status = I_StorageProblemListener.AVAILABLE;
+         I_StorageProblemListener lst = this.storageProblemListener;
+         if (lst != null) lst.storageAvailable(oldStatus);
          parseMapping(prop);
          this.initialized = true;
       }
@@ -548,27 +574,29 @@ public class JdbcConnectionPool implements I_Timeout {
     * returns true if the connection is temporarly lost (and the pool is polling
     * for new connections)
     */
-   public final boolean isConnectionLost() {
-      return this.connectionLost;
+   public final int getStatus() {
+      return this.status;
    }
 
    /**
     * informs this pool that the connection to the DB has been lost
     */
    public final void setConnectionLost() {
-      if (!this.connectionLost) {
+      if (this.status != I_StorageProblemListener.UNAVAILABLE) {
+         int oldStatus = this.status;
          synchronized (this) {
-            if (!this.connectionLost) {
-                this.connectionLost = true;
-                this.waitingForReentrantConnections = true;
+            oldStatus = this.status;
+            if (this.status != I_StorageProblemListener.UNAVAILABLE) {
+               this.status = I_StorageProblemListener.UNAVAILABLE;
+               this.waitingForReentrantConnections = true;
             }
          }
 
          // start polling to wait until all connections have returned
          // start pooling to see if new connections can be established again
          this.glob.getJdbcConnectionPoolTimer().addTimeoutListener(this, this.reconnectionTimeout, null);
-         I_ConnectionListener lst = this.connectionListener;
-         lst.disconnected();
+         I_StorageProblemListener lst = this.storageProblemListener;
+         lst.storageUnavailable(oldStatus);
       }
    }
 
@@ -576,8 +604,9 @@ public class JdbcConnectionPool implements I_Timeout {
     *
     */
    public Connection getConnection() throws XmlBlasterException {
-//      if (this.connectionLost) return null;
-      if (this.connectionLost) throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "getConnection: Connection Lost. Going in polling modus");
+//      if (this.status) return null;
+      if (this.status != I_StorageProblemListener.AVAILABLE) 
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "getConnection: Connection Lost. Going in polling modus");
       if (this.waitingCalls > this.maxWaitingThreads)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_TOO_MANY_THREADS, ME, "Too many threads waiting for a connection to the DB. Increase the property 'queue.persistent.maxWaitingThreads'");
 

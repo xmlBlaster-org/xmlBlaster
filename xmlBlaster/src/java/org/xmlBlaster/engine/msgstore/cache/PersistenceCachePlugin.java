@@ -11,7 +11,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.jdbc.I_ConnectionListener;
+// import org.xmlBlaster.util.queue.jdbc.I_ConnectionListener;
 // import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -20,6 +20,8 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
+import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.ArrayList;
 
@@ -28,7 +30,7 @@ import java.util.ArrayList;
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
-public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionListener, I_Map
+public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblemListener, I_Map
 {
    private String ME;
    private Global glob;
@@ -54,17 +56,20 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
     * Triggered by persistent store (JDBC) on lost connection
     * @see I_ConnectionListener#disconnected()
     */
-   public void disconnected() {
-      this.log.call(ME, "disconnected");
+
+   public void storageUnavailable(int oldStatus) {
+      this.log.call(ME, "storageUnavailable");
       this.isConnected = false;
    }
 
+
    /**
     * Triggered by persistent store (JDBC) on reconnection
-    * @see I_ConnectionListener#reconnected()
+    * @see I_StorageProblemListener#storageAvailable(int)
     */
-   public void reconnected() {
-      this.log.call(ME, "reconnected");
+   public void storageAvailable(int oldStatus) {
+      if (oldStatus == I_StorageProblemListener.UNDEF) return;
+      this.log.call(ME, "storageAvailable");
      /* remove all obsolete entries from the persistence. Obsolete are the
       * entries which are lower (lower priority and older) than the lowest
       * entry in the transient storage.
@@ -151,7 +156,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
 
             this.isConnected = true;
             // to be notified about reconnections / disconnections
-            this.glob.getJdbcQueueManager(this.queueId).registerListener(this);
+//            this.glob.getJdbcQueueManager(this.queueId).registerStorageProblemListener(this);
+            this.persistentStore.registerStorageProblemListener(this);
+
             if (log.TRACE) log.trace(ME, "Created persistent part:" + this.persistentStore.toXml(""));
          }
          catch (XmlBlasterException ex) {
@@ -602,7 +609,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
          this.persistentStore.shutdown(force);
 
       try {
-         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+//         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+         this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
@@ -677,7 +685,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
       this.isDown = true;
 
       try {
-         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+//         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+         this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
@@ -694,4 +703,24 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_ConnectionList
       this.transientStore.destroy();
       if (e != null) throw e;
    }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean registerStorageProblemListener(I_StorageProblemListener listener) {
+      if (this.persistentStore == null) return false;
+      return this.persistentStore.registerStorageProblemListener(listener);
+   }
+
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
+    */
+   public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
+      if (this.persistentStore == null) return false;
+      return this.persistentStore.unRegisterStorageProblemListener(listener);
+   }
+
+
+
 }

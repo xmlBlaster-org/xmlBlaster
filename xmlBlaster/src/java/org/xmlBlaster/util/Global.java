@@ -50,7 +50,9 @@ import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcManager;
+import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -161,6 +163,7 @@ public class Global implements Cloneable
 
    /** a hastable keeping all JdbcManager objects: one per DB */
    protected Hashtable jdbcQueueManagers = null;
+   protected Hashtable jdbcQueueManagersCommonTable = null;
 
    /**
     * Constructs an initial Global object.
@@ -1371,6 +1374,7 @@ public class Global implements Cloneable
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     * @deprecated you should use getJdbcQueueManager(String,String,PluginInfo) instead
     */
+/*
    public synchronized JdbcManager getJdbcQueueManager(StorageId queueId)
       throws XmlBlasterException {
 
@@ -1388,7 +1392,7 @@ public class Global implements Cloneable
          try {
             pool.initialize(this, managerName + ".queue.persistent");
             manager = new JdbcManager(pool, getEntryFactory(managerName));
-            pool.setConnectionListener(manager);
+            pool.registerStorageProblemListener(manager);
             manager.setUp();
             if (log.TRACE) log.trace(ME, "Created JdbcManager instance for storage class '" + managerName + "'");
          }
@@ -1419,6 +1423,7 @@ public class Global implements Cloneable
       }
       return manager;
    }
+*/
 
 
    // this is the new one still under testing
@@ -1446,7 +1451,7 @@ public class Global implements Cloneable
          try {
             pool.initialize(this, pluginInfo);
             manager = new JdbcManager(pool, getEntryFactory(managerName));
-            pool.setConnectionListener(manager);
+            pool.registerStorageProblemListener(manager);
             manager.setUp();
             if (log.TRACE) log.trace(ME, "Created JdbcManager instance for storage plugin configuration '" + managerName + "'");
          }
@@ -1465,7 +1470,8 @@ public class Global implements Cloneable
 
       try {
          if (!manager.getPool().isInitialized()) {
-            manager.getPool().initialize(this, managerName + ".queue.persistent");
+//            manager.getPool().initialize(this, managerName + ".queue.persistent");
+            manager.getPool().initialize(this, pluginInfo);
             if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
       }
@@ -1479,15 +1485,135 @@ public class Global implements Cloneable
    }
 
 
+   /**
+    * Returns a JdbcManagerCommonTable for a specific queue. It strips the queueId to
+    * find out to which manager it belongs. If such a manager does not exist
+    * yet, it is created and initialized.
+    * A queueId must be of the kind: cb:some/id/or/someother
+    * where the important requirement here is that it contains a ':' character.
+    * text on the left side of the separator (in this case 'cb') tells which
+    * kind of queue it is: for example a callback queue (cb) or a client queue.
+    */
+   public synchronized JdbcManagerCommonTable getJdbcQueueManagerCommonTable(PluginInfo pluginInfo)
+      throws XmlBlasterException {
+
+      String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
+      if (this.jdbcQueueManagersCommonTable == null) this.jdbcQueueManagersCommonTable = new Hashtable();
+
+      String managerName = pluginInfo.getTypeVersion();
+
+      // it is OK to use the same Hashtable since there should never be a JdbcCommonTableQueueManager 
+      // having the same  managerName as a JdbcQueueManager
+      Object obj = this.jdbcQueueManagersCommonTable.get(managerName);              
+      JdbcManagerCommonTable manager = null;
+      if (obj == null) {
+         JdbcConnectionPool pool = new JdbcConnectionPool();
+         try {
+            pool.initialize(this, pluginInfo);
+            manager = new JdbcManagerCommonTable(pool, getEntryFactory(managerName));
+            pool.registerStorageProblemListener(manager);
+            manager.setUp();
+            if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
+         }
+         catch (ClassNotFoundException ex) {
+            this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager class not found", ex);
+         }
+         catch (SQLException ex) {
+            if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager SQL exception: " + ex.getMessage());
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager SQL exception", ex);
+         }
+
+         this.jdbcQueueManagersCommonTable.put(managerName, manager);
+      }
+      else manager = (JdbcManagerCommonTable)obj;
+
+      try {
+         if (!manager.getPool().isInitialized()) {
+//            manager.getPool().initialize(this, managerName + ".queue.persistent");
+            manager.getPool().initialize(this, pluginInfo);
+            if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
+         }
+      }
+      catch (ClassNotFoundException ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: sql exception when initializing the connection pool", ex);
+      }
+      return manager;
+   }
 
 
+   /**
+    * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
+    * configuration name specified by defaultConfName (default is 'JDBC'). You can overwrite these 
+    * properties entirely or partially with 'properties'.
+    * @param confType the name of the configuration to use as default. If you pass null, then 
+    *                 'JDBC' will be taken.
+    * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
+    * @param properties the properties to use to overwrite the default properties. If you pass null, no 
+    *        properties will be overwritten, and the default will be used.
+    */
+   public void wipeOutDB(String confType, String confVersion, java.util.Properties properties) 
+      throws XmlBlasterException {
+      if (confType == null) confType = "JDBC";
+      if (confVersion == null) confVersion = "1.0";
+      QueuePluginManager pluginManager = new QueuePluginManager(this);
+      PluginInfo pluginInfo = new PluginInfo(this, pluginManager, confType, confVersion);
+      // clone the properties (to make sure they only belong to us) ...
+      java.util.Properties
+         ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
+      //overwrite our onw properties ...
+      java.util.Enumeration enum = properties.keys();
+      while (enum.hasMoreElements()) {
+         String key =(String)enum.nextElement();
+         ownProperties.put(key, properties.getProperty(key));
+      }
 
+      JdbcConnectionPool pool = new JdbcConnectionPool();
+      try {
+         pool.initialize(this, pluginInfo);
+      }
+      catch (ClassNotFoundException ex) {
+         this.log.error(ME, "wipOutDB class not found: " + ex.getMessage());
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
+      }
 
-
-
-
-
-
+      // determine which jdbc manager class to use
+      String queueClassName = pluginInfo.getClassName();
+      if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
+         // then it is a JdbcManager
+         JdbcManager manager = new JdbcManager(pool, null);
+         pool.registerStorageProblemListener(manager);
+         try {
+            manager.setUp();
+            manager.wipeOutDB();
+         }
+         catch (SQLException ex) {
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB", ex);
+         }
+      }
+      else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
+         // then it is a JdbcManagerCommontTable
+         // then it is a JdbcManager
+         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null);
+         pool.registerStorageProblemListener(manager);
+         try {
+            manager.setUp();
+            manager.wipeOutDB();
+         }
+         catch (SQLException ex) {
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB", ex);
+         }
+      }
+      else {
+         throw new XmlBlasterException(this, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
+      }
+   }
 
    /**
     * This notation is URLEncoder since JDK 1.4.
