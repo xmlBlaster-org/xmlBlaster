@@ -77,9 +77,9 @@ import java.applet.Applet;
  * will be intercepted with your supplied plugin.<br />
  * Your plugin must implement the interfaces I_SecurityClientHelper and I_SecurityInitQoSWrapper
  *
- * @see org.xmlBlaster.authentication.plugins.I_SecurityClientHelper 
+ * @see org.xmlBlaster.authentication.plugins.I_SecurityClientHelper
  * @see org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper
- * @see testsuite.org.xmlBlaster.TestFailSave 
+ * @see testsuite.org.xmlBlaster.TestFailSave
  *
  * @author $Author: ruff $
  */
@@ -282,7 +282,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Initialize fail save mode. 
+    * Initialize fail save mode.
     * Configured with command line or xmlBlaster.properties settings
     * <p />
     * For example:
@@ -537,7 +537,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.ME = "XmlBlasterConnection-" + qos.getSecurityPluginType();
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "init() ...");
-      try {
+      if (Log.DUMP) Log.dump(ME, "init() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
+       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
          driver.init(qos, (client != null) ? this : null);
          numLogins++;
@@ -1100,7 +1101,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    } // class PingThread
 
    /**
-    * This class implements connection problems with xmlBlaster. 
+    * This class implements connection problems with xmlBlaster.
     * <p />
     * It is a dummy implementation.
     * You can use this as fail save handling. Switch it on with command
