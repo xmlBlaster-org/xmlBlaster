@@ -16,6 +16,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.queue.StorageId;
 
 /**
@@ -83,6 +84,44 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       MsgQueueUpdateEntry entry = null;
       entry = (MsgQueueUpdateEntry)super.clone();
       return entry;
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of TopicHandler
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of TopicHandler
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(1000);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      Timestamp ts = new Timestamp(msgUnitWrapperUniqueId);
+
+      sb.append(offset).append("<MsgQueueUpdateEntry");
+      sb.append(" storageId='").append(getStorageId()).append("'");
+      sb.append(" keyOid='").append(getKeyOid()).append("'");
+      sb.append(" msgUnitRcvTimestamp='").append(ts.toString()).append("'");
+      sb.append(" sender='").append(getSender()).append("'");
+      sb.append(" receiver='").append(getReceiver().getAbsoluteName()).append("'");
+      sb.append(" isDurable='").append(isDurable()).append("'");
+      sb.append(" subscriptionId='").append(getSubscriptionId()).append("'");
+      sb.append(" redeliverCounter='").append(getRedeliverCounter()).append("'");
+      sb.append(" isExpired='").append(isExpired()).append("'");
+      sb.append(" isDestroyed='").append(isDestroyed()).append("'");
+      sb.append(" state='").append(getState()).append("'");
+      sb.append("/>");
+      return sb.toString();
    }
 }
 
