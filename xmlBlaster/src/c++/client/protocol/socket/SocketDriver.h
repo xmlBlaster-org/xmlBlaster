@@ -23,7 +23,7 @@ Comment:   The client driver for the socket protocol
 //#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
 
 struct XmlBlasterAccessUnparsed;
-struct XmlBlasterException;
+struct ExceptionStruct;
 namespace org {
  namespace xmlBlaster {
    namespace util {
@@ -100,11 +100,11 @@ namespace org {
       bool shutdownCb();
 
       //bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
-      //               ::XmlBlasterException *exception);
+      //               ::ExceptionStruct *exception);
 
       // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
       org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
-            //throw (org::xmlBlaster::util::XmlBlasterException);
+            //throw (org::xmlBlaster::util::ExceptionStruct);
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();
       bool shutdown();
@@ -137,8 +137,8 @@ namespace org {
       static std::string usage();
       // Exception conversion ....
       org::xmlBlaster::util::XmlBlasterException
-        convertFromSocketException(const struct ::XmlBlasterException & ex);
-      static struct ::XmlBlasterException
+        convertFromSocketException(const struct ::ExceptionStruct & ex);
+      static struct ::ExceptionStruct
         convertToSocketException(org::xmlBlaster::util::XmlBlasterException& ex);
    };
 
