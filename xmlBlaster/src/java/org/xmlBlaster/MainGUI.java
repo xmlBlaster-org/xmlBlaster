@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.7 1999/12/22 20:03:48 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.8 1999/12/22 20:39:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -35,20 +35,21 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
    private long elapsedTime = 0L;
 
-   private FillLevelBar publishedMessagesBar = null;
-   private Label publishedLabel = null;
+   private FillLevelBar publishedMessagesBar = new FillLevelBar();
+   private Label publishedLabel = new Label(); // display total count
    private long publishedMessages = 0L;
    private long lastPublishedMessages = 0L;
 
-   private FillLevelBar sentMessagesBar = null;
-   private Label sentLabel = null;
+   private FillLevelBar sentMessagesBar = new FillLevelBar();
+   private Label sentLabel = new Label();
    private long sentMessages = 0L;
    private long lastSentMessages = 0L;
 
-   private FillLevelBar getMessagesBar = null;
-   private Label getLabel = null;
+   private FillLevelBar getMessagesBar = new FillLevelBar();
+   private Label getLabel = new Label();
    private long getMessages = 0L;
    private long lastGetMessages = 0L;
+
 
    /**
     * Construct the xmlBlaster GUI.
@@ -91,12 +92,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Event fired ecery 2 seconds by the PollingThread.
+    * Event fired every 1 seconds by the PollingThread.
     * <p />
     * Update the statistic bars.
     * @param sleepTime Milliseconds how long the PollingThread was sleeping (no zero division check!)
     */
-   public void pollEvent(long sleepTime)
+   void pollEvent(long sleepTime)
    {
       elapsedTime += sleepTime;
 
@@ -144,7 +145,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    /**
     * Build the GUI layout.
     */
-   public void init()
+   private void init()
    {
       Log.setDefaultLogLevel();
       Log.addLogListener(this);
@@ -152,8 +153,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       setLayout(new GridBagLayout());
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.fill = GridBagConstraints.BOTH;
+      final int GRID_WIDTH = 4;
+      final int GRID_HEIGHT = 4;
       gbc.insets = new Insets(5,5,5,5);
-
 
       beepButton = new Button("Stop xmlBlaster");
       class BeepListener implements ActionListener {
@@ -168,232 +170,23 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       gbc.weightx = gbc.weighty = 0.0;
       add(beepButton, gbc);
 
-      final int LABEL_LOCATION_X = 2;
-      final int LABEL_LOCATION_Y = 10;
-      final int LABEL_WIDTH = 90;
-      final int LABEL_HEIGHT = 12;
-      final int BAR_X = 32;
-      final int BAR_Y = LABEL_LOCATION_Y + 2 * LABEL_HEIGHT;
-      final int BAR_WIDTH = 50;
-      final int BAR_HEIGHT = 130;
-      final int TOTAL_LABEL_Y = BAR_Y + BAR_HEIGHT;
-      final int PANEL_WIDTH = LABEL_LOCATION_X + LABEL_WIDTH + 2; // 94
-      final int PANEL_HEIGHT = TOTAL_LABEL_Y + LABEL_HEIGHT + 4;  // 180
-      Font barFont = new java.awt.Font("dialog", 2, 10);
-      {
-         Panel panel = new Panel();
-         panel.setName("PublishedMessagePanel");
-         panel.setLayout(null);
-         panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
+      int offset = 0;
+      gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
+      gbc.weightx = gbc.weighty = 0.0;
+      createBarPanel(publishedMessagesBar, publishedLabel, "Published", gbc, offset++);
+      createBarPanel(sentMessagesBar,      sentLabel,      "Update",    gbc, offset++);
+      createBarPanel(getMessagesBar,       getLabel,       "Get",       gbc, offset++);
 
-         Label label1 = new Label();
-         label1.setName("Label1");
-         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-         label1.setText("Published");
-         label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label1.setForeground(java.awt.Color.black);
-         label1.setFont(barFont);
-         label1.setAlignment(1);
-         panel.add(label1, label1.getName());
+      gbc.gridx=offset; gbc.gridy=1; gbc.gridwidth=3; gbc.gridheight=1;
 
-         Label label2 = new Label();
-         label2.setName("Label2");
-         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
-         label2.setText("[messages/sec]");
-         label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label2.setForeground(java.awt.Color.black);
-         label2.setFont(barFont);
-         label2.setAlignment(1);
-         panel.add(label2, label2.getName());
 
-         publishedMessagesBar = new FillLevelBar();
-         publishedMessagesBar.setName("PublishedMessages");
-         publishedMessagesBar.setLocation(BAR_X, BAR_Y);
-         publishedMessagesBar.setBackground(java.awt.SystemColor.control);
-         publishedMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
-         publishedMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
-         panel.add(publishedMessagesBar, publishedMessagesBar.getName());
+      gbc.gridx=0; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
+      add(new Label("Choose Logging Level: "), gbc);
+      gbc.gridx=1; gbc.gridwidth=3; gbc.gridheight=1;
+      add(createLogLevelBoxes(), gbc);
 
-         publishedLabel = new Label();
-         publishedLabel.setName("PublishedLabel");
-         publishedLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
-         publishedLabel.setText("Total:  0");
-         publishedLabel.setBackground(java.awt.SystemColor.control);
-         publishedLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         publishedLabel.setForeground(java.awt.Color.black);
-         publishedLabel.setFont(barFont);
-         publishedLabel.setAlignment(1);
-         panel.add(publishedLabel, publishedLabel.getName());
 
-         gbc.gridx=0; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
-         gbc.weightx = gbc.weighty = 0.0;
-         add(panel, gbc);
-      }
-
-      {
-         Panel panel = new Panel();
-         panel.setName("SentMessagePanel");
-         panel.setLayout(null);
-         panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
-
-         Label label1 = new Label();
-         label1.setName("Label1");
-         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-         label1.setText("Update");
-         label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label1.setForeground(java.awt.Color.black);
-         label1.setFont(barFont);
-         label1.setAlignment(1);
-         panel.add(label1, label1.getName());
-
-         Label label2 = new Label();
-         label2.setName("Label2");
-         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
-         label2.setText("[messages/sec]");
-         label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label2.setForeground(java.awt.Color.black);
-         label2.setFont(barFont);
-         label2.setAlignment(1);
-         panel.add(label2, label2.getName());
-
-         sentMessagesBar = new FillLevelBar();
-         sentMessagesBar.setName("SentMessages");
-         sentMessagesBar.setLocation(BAR_X, BAR_Y);
-         sentMessagesBar.setBackground(java.awt.SystemColor.control);
-         sentMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
-         // yellow avg value, green current value
-         sentMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
-         //sentMessagesBar.setMaxValue(100);  // is set variable
-         //sentMessagesBar.setMinValue(0);    // zero is default
-         //sentMessagesBar.setCurrentValue(50);
-         //sentMessagesBar.setAvgValue(25);
-         panel.add(sentMessagesBar, sentMessagesBar.getName());
-
-         sentLabel = new Label();
-         sentLabel.setName("SentLabel");
-         sentLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
-         sentLabel.setText("Total:  0");
-         sentLabel.setBackground(java.awt.SystemColor.control);
-         sentLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         sentLabel.setForeground(java.awt.Color.black);
-         sentLabel.setFont(barFont);
-         sentLabel.setAlignment(1);
-         panel.add(sentLabel, sentLabel.getName());
-
-         gbc.gridx=1; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
-         gbc.weightx = gbc.weighty = 0.0;
-         add(panel, gbc);
-      }
-
-      {
-         Panel panel = new Panel();
-         panel.setName("GetMessagePanel");
-         panel.setLayout(null);
-         panel.setBackground(java.awt.SystemColor.control);
-         panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
-
-         Label label1 = new Label();
-         label1.setName("Label1");
-         label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-         label1.setText("Get Synchronous");
-         label1.setBackground(java.awt.SystemColor.control);
-         label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label1.setForeground(java.awt.Color.black);
-         label1.setFont(barFont);
-         label1.setAlignment(1);
-         panel.add(label1, label1.getName());
-
-         Label label2 = new Label();
-         label2.setName("Label2");
-         label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
-         label2.setText("[messages/sec]");
-         label2.setBackground(java.awt.SystemColor.control);
-         label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         label2.setForeground(java.awt.Color.black);
-         label2.setFont(barFont);
-         label2.setAlignment(1);
-         panel.add(label2, label2.getName());
-
-         getMessagesBar = new FillLevelBar();
-         getMessagesBar.setName("GetMessages");
-         getMessagesBar.setLocation(BAR_X, BAR_Y);
-         getMessagesBar.setBackground(java.awt.SystemColor.control);
-         getMessagesBar.setSize(BAR_WIDTH, BAR_HEIGHT);
-         getMessagesBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
-         panel.add(getMessagesBar, getMessagesBar.getName());
-
-         getLabel = new Label();
-         getLabel.setName("GetLabel");
-         getLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
-         getLabel.setText("Total:  0");
-         getLabel.setBackground(java.awt.SystemColor.control);
-         getLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
-         getLabel.setForeground(java.awt.Color.black);
-         getLabel.setFont(barFont);
-         getLabel.setAlignment(1);
-         panel.add(getLabel, getLabel.getName());
-
-         gbc.gridx=2; gbc.gridy=1; gbc.gridwidth=1; gbc.gridheight=1;
-         gbc.weightx = gbc.weighty = 0.0;
-         add(panel, gbc);
-      }
-
-      {
-         gbc.gridx=0; gbc.gridy=2; gbc.gridwidth=1; gbc.gridheight=1;
-         gbc.weightx = gbc.weighty = 0.0;
-         add(new Label("Choose Logging Level: "), gbc);
-
-         Container container = new Container();
-         container.setLayout(new GridLayout(1, 7));
-         {
-            Checkbox error = new Checkbox("ERROR", null, true);
-            error.addItemListener(new LogLevelListener());
-            container.add(error);
-
-            Checkbox warning = new Checkbox("WARNING", null, true);
-            warning.addItemListener(new LogLevelListener());
-            container.add(warning);
-
-            Checkbox info = new Checkbox("INFO", null, true);
-            info.addItemListener(new LogLevelListener());
-            container.add(info);
-
-            if (true/*Log.CALLS*/) { // Log.CALLS=true/false: check for dead code elimination
-               Checkbox calls = new Checkbox("CALLS", null, false);
-               calls.addItemListener(new LogLevelListener());
-               container.add(calls);
-            }
-
-            if (true/*Log.TIME*/) {
-               Checkbox time = new Checkbox("TIME", null, false);
-               time.addItemListener(new LogLevelListener());
-               container.add(time);
-            }
-
-            if (true/*Log.TRACE*/) {
-               Checkbox trace = new Checkbox("TRACE", null, false);
-               trace.addItemListener(new LogLevelListener());
-               container.add(trace);
-            }
-
-            if (true/*Log.DUMP*/) {
-               Checkbox dump = new Checkbox("DUMP", null, false);
-               dump.addItemListener(new LogLevelListener());
-               container.add(dump);
-            }
-         }
-         gbc.gridx=1; gbc.gridwidth=3; gbc.gridheight=1;
-         gbc.weightx = gbc.weighty = 0.0;
-         add(container, gbc);
-      }
-
-      gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=4; // gbc.gridheight=4;
+      gbc.gridx=0; gbc.gridy=3; gbc.gridwidth=GRID_WIDTH; // gbc.gridheight=4;
       gbc.weightx = gbc.weighty = 1.0;
       logOutput = new TextArea("", 30, 140);
       logOutput.setEditable(false);
@@ -422,6 +215,127 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
+    * Create a Panel with a FillLevelBar and some labels. 
+    * @param messageBar The instance of FillLevelBar to use
+    * @param totalCountLabel The instance of total count Label to use
+    * @param token Describing text e.g. "Published"
+    * @param gbc The layout manager
+    * @param offset The position of the panel (grid layout)
+    */
+   private void createBarPanel(FillLevelBar messageBar, Label totalCountLabel, String token, GridBagConstraints gbc, int offset)
+   {
+      final int LABEL_LOCATION_X = 2;
+      final int LABEL_LOCATION_Y = 10;
+      final int LABEL_WIDTH = 90;
+      final int LABEL_HEIGHT = 12;
+      final int BAR_X = 32;
+      final int BAR_Y = LABEL_LOCATION_Y + 2 * LABEL_HEIGHT;
+      final int BAR_WIDTH = 50;
+      final int BAR_HEIGHT = 130;
+      final int TOTAL_LABEL_Y = BAR_Y + BAR_HEIGHT;
+      final int PANEL_WIDTH = LABEL_LOCATION_X + LABEL_WIDTH + 2; // 94
+      final int PANEL_HEIGHT = TOTAL_LABEL_Y + LABEL_HEIGHT + 4;  // 180
+      Font barFont = new java.awt.Font("dialog", 2, 10);
+
+      Panel panel = new Panel();
+      panel.setName(token + "MessagePanel");
+      panel.setLayout(null);
+      panel.setBackground(java.awt.SystemColor.control);
+      panel.setSize(PANEL_WIDTH, PANEL_HEIGHT);
+
+      Label label1 = new Label();
+      label1.setName("Label1");
+      label1.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y);
+      label1.setText(token);
+      label1.setBackground(java.awt.SystemColor.control);
+      label1.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+      label1.setForeground(java.awt.Color.black);
+      label1.setFont(barFont);
+      label1.setAlignment(1);
+      panel.add(label1, label1.getName());
+
+      Label label2 = new Label();
+      label2.setName("Label2");
+      label2.setLocation(LABEL_LOCATION_X, LABEL_LOCATION_Y + LABEL_HEIGHT);
+      label2.setText("[messages/sec]");
+      label2.setBackground(java.awt.SystemColor.control);
+      label2.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+      label2.setForeground(java.awt.Color.black);
+      label2.setFont(barFont);
+      label2.setAlignment(1);
+      panel.add(label2, label2.getName());
+
+      messageBar.setName(token + "Messages");
+      messageBar.setLocation(BAR_X, BAR_Y);
+      messageBar.setBackground(java.awt.SystemColor.control);
+      messageBar.setSize(BAR_WIDTH, BAR_HEIGHT);
+      messageBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
+      panel.add(messageBar, messageBar.getName());
+
+      totalCountLabel.setName(token + "Label");
+      totalCountLabel.setLocation(LABEL_LOCATION_X, TOTAL_LABEL_Y);
+      totalCountLabel.setText("Total:  0");
+      totalCountLabel.setBackground(java.awt.SystemColor.control);
+      totalCountLabel.setSize(LABEL_WIDTH, LABEL_HEIGHT);
+      totalCountLabel.setForeground(java.awt.Color.black);
+      totalCountLabel.setFont(barFont);
+      totalCountLabel.setAlignment(1);
+      panel.add(totalCountLabel, totalCountLabel.getName());
+
+      gbc.gridx=offset;
+      add(panel, gbc);
+   }
+
+
+   /**
+    * Create Checkboxes to adjust the logging levels
+    * @return container with checkboxes
+    */
+   private Container createLogLevelBoxes()
+   {
+      Container container = new Container();
+      container.setLayout(new GridLayout(1, 7));
+
+      Checkbox error = new Checkbox("ERROR", null, true);
+      error.addItemListener(new LogLevelListener());
+      container.add(error);
+
+      Checkbox warning = new Checkbox("WARNING", null, true);
+      warning.addItemListener(new LogLevelListener());
+      container.add(warning);
+
+      Checkbox info = new Checkbox("INFO", null, true);
+      info.addItemListener(new LogLevelListener());
+      container.add(info);
+
+      if (true/*Log.CALLS*/) { // Log.CALLS=true/false: check for dead code elimination
+         Checkbox calls = new Checkbox("CALLS", null, false);
+         calls.addItemListener(new LogLevelListener());
+         container.add(calls);
+      }
+
+      if (true/*Log.TIME*/) {
+         Checkbox time = new Checkbox("TIME", null, false);
+         time.addItemListener(new LogLevelListener());
+         container.add(time);
+      }
+
+      if (true/*Log.TRACE*/) {
+         Checkbox trace = new Checkbox("TRACE", null, false);
+         trace.addItemListener(new LogLevelListener());
+         container.add(trace);
+      }
+
+      if (true/*Log.DUMP*/) {
+         Checkbox dump = new Checkbox("DUMP", null, false);
+         dump.addItemListener(new LogLevelListener());
+         container.add(dump);
+      }
+      return container;
+   }
+
+
+   /**
     *  Invoke: jaco org.xmlBlaster.MainGUI
     */
    static public void main(String[] args)
@@ -439,7 +353,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
  */
 class PollingThread extends Thread
 {
-   private final int POLLING_FREQUENCY = 2000;  // sleep 2 sec
+   private final int POLLING_FREQUENCY = 1000;  // sleep 1 sec
    private final MainGUI mainGUI;
 
 
