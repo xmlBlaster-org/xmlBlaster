@@ -5,29 +5,33 @@
    <topic>The XmlBlaster stores MessageUnits persistent in a MessageUnit database (MuDb). The persistence is controlled by a QoS-Flag.</topic>
    
    <description>
-      <![CDATA[
       <p>
       -The 'persistence' section is the persistence of the xmlBlaster.
        I_PersistenceDriver is the interface for any persistence implementations.
-
+      </p>
+      <p>
       The MuDb MessageUnit-database a persistence for the xmlBlaster.
       MessageUnits are stored in a file-database if the QoS-Tag &lt;isDurable /&gt;
       is set. MessageUnits are cached in the memory and mapped on the 
       disk with COPY-BACK-Caching. The MuDb contains of a memory-cache
       ,file-database and a DOM which contanis the XmlKey. The settings
-      for the MuDb can be done in the xmlBlaster.properties.<p>
-      Caching:<br>
+      for the MuDb can be done in the xmlBlaster.properties.
+      </p>
+      <p>
+      Caching:<br />
       The caching strategy used is "least recently used" (LRU). If the
       cache has reached the max. Cachesize, then the cache will be swapped
-      each MessageUnit with LRU to the file-database.<p>
-      Dom:<br>
+      each MessageUnit with LRU to the file-database.
+      </p>
+      <p>
+      Dom:<br />
       A DOM-Tree contains all XmlKey's for each MessageUnits in the cache
-      and file-database.<p>
+      and file-database.
+      </p>
 
-      Persistence:<br>
+      Persistence:<br />
       If the Qos-Flag &lt;isDurable/&gt; is set, the MuDb writes the MessageUnit
       in a file with write-through-strategy. 
-       ]]>     
    </description> 
 
    <example>
@@ -71,5 +75,5 @@
    </example>
    <author>manuel.kron@gmx.net</author>
    <date>2000 07 16</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>

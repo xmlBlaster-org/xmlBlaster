@@ -7,7 +7,6 @@
       and receive query results xml encoded.
    </topic>
    <description>
-      <![CDATA[
       <p>
       XmlBlaster has a native service allowing querying relational databases (RDBMS).
       Every xmlBlaster client can address this service with any valid SQL statement.
@@ -93,7 +92,6 @@
       get() requests on key oid="__sys__jdbc" are handled by xmlBlaster (see RequestBroker.java)
       directly and the result set is delivered as the return value of the get() request.
       </p>
-      ]]>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -165,7 +163,7 @@ Note that the result values are encapsulated by CDATA sections (not shown here).
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>

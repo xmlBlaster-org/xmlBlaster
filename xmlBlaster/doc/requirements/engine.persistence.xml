@@ -4,7 +4,6 @@
 <requirement id='engine.persistence' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>XmlBlaster provides a plugin possibility for its persistence layer</topic>
    <description>
-      <![CDATA[
       <p>
       To store messages from xmlBlaster and to restore them again after a new
       startup of the server there is a lightweight interface, called I_PersitenceDriver,
@@ -35,13 +34,12 @@
       Note that this interface is very likely to change in one of the next
       xmlBlaster releases, since it is too simple (no caching support).
       </p>
-      ]]>
    </description>
    <see type="REQ">engine.persistence.FileDriver</see>
    <see type="REQ">engine.qos.publish.isDurable</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

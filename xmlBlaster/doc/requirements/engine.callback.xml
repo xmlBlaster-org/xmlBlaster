@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.callback' type='NEW' prio='HIGH' status="INWORK">
+   <topic>XmlBlaster has a sophisticated client callback framework</topic>
+   <description>
+      <p>
+      XmlBlaster has a callback framework to send messages to clients.
+      Clients need to establish a callback server (in any supported protocol)
+      to receive these asynchronous messages.
+      </p>
+      <img src="MsgQueue.gif" border="0" title="XmlBlaster Message Queue" alt="Overview of the internal message queue framework" />
+      <p>
+      Callback Features:
+      </p>
+      <ul>
+      <li>Thread pool<br />
+      A callback is invoked by a thread from a thread pool. Retrieving a thread
+      from the pool consumes approximately 180 micro seconds compared to approximately
+      800 micro seconds creating a thread natively.
+      </li>
+      <li>Zero or once delivery (transient message)<br />
+      A message is usually delivered exactly once. Under certain failure circumstances
+      a message can't be delivered:
+      <ol>
+         <li>If xmlBlaster is shutdown or crashes, transient messages are lost.</li>
+         <li>If the client can't be reached or the client does not acknowledge the
+         message, xmlBlaster will redeliver the message. Such messages are marked with
+         a QoS tag &lt;redeliver>12&lt;/redeliver> whereby 12 is the current attempt. xmlBlaster retries
+         until the queue span of life expires and in this case the lost messages are published as <i>dead letters</i>.
+         Redelivering can be switched off, resulting in immediate <i>dead letters</i>.
+         </li>
+         <li>For PtP messages it could be reasonable to inform the sender of the message about
+         this situation [needs to be specified]</li>
+      </ol>
+      </li>
+      <li>Once and only once delivery (durable message)<br />
+      Durable messages are guaranteed to be delivered once and only once, even if
+      xmlBlaster crashes or is shutdown interim. Durable messages are stored
+      in xmlBlasters database on hard disk as soon as it arrives.
+      Only if a client is not reachable or not acknowledging, a message
+      can be lost (see previous paragraph).
+      </li>
+      <li>Burst mode (collect messages)<br />
+      XmlBlaster allows to activate a <i>burst mode</i>. This allows to
+      collect messages for a client for a configurable amount of time (typically
+      50 milli seconds). This increases latency of message delivery for 50 msec
+      but allows a much higher message throughput. The overall performance increases.
+      </li>
+      <li>Protect against misbehaving clients<br />
+      Every callback is controlled by a timer, to avoid leakage of threads
+      and memory resources in the server when clients misconduct.
+      </li>
+      <li>ACK/NAK handling<br />
+      Clients shall acknowledge messages if they are capable to do so.
+      For dumb clients or connectionless protocols like email, the xmlBlaster
+      plugin driver can simulate the ACK. Callbacks are only as reliable
+      as the protocol and client allows.
+      </li>
+      <li>Automatic disconnect detection<br />
+      Failed callback connections are caught by xmlBlaster and handled as described
+      above.
+      </li>
+      <li>Authentication on callback<br />
+      The update() method invoked on client side has to accept the message and has
+      the problem to trust the sender. Another process may otherwise misuse the
+      callback and send unauthorized messages. Therefore the first argument in update()
+      sends a sessionId, which must be passed to xmlBlaster initially on callback construction.
+      </li>
+      </ul>
+      <p>
+      </p>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      ]]>
+   </example>
+   <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
+   <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
+   <see type="REQ">engine.queue</see>
+   <see type="REQ">engine.qos.login.callback</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 02 04</date>
+   <revision>$Revision: 1.2 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+

@@ -6,7 +6,6 @@
       XmlBlaster provides a 'named' JDBC connection pool for optimized performance of database access.
    </topic>
    <description>
-      <![CDATA[
       <p>
       The JDBC pool allows accessing any number of different databases with
       arbitrary login users.<br />
@@ -30,7 +29,6 @@
       increases the number of parallel connections until 'maxInstances' is reached.<br />
       Further parallel connections would throw an exception.
       </p>
-      ]]>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -54,7 +52,7 @@
    <hacker>ruff@swand.lake.de</hacker>
    <effort>2</effort>
    <date>2000 07 07</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="DONE">
       <name>-</name>
       <comment>The test is included in NamedConnectionPool.java main()</comment>

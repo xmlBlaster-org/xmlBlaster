@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.queue' type='NEW' prio='HIGH' status="INWORK">
+   <topic>XmlBlaster has a sophisticated message queueing engine</topic>
+   <description>
+      <p>
+      Message are queued only when necessary. This occurs typically on messages which
+      need to be sent back to clients:
+      </p>
+      <img src="MsgQueue.gif" border="0" title="XmlBlaster Message Queue" alt="Overview of the internal message queue framework" />
+      <p>
+      Queue Features:
+      </p>
+      <ul>
+      <li>High performing and thread safe<br />
+      The queue is based on a sorted bounded buffer from Doug Lea.
+      It is higher performing than a thread safe java.util collection TreeSet,
+      consuming 100 mirco seconds instead of 200 micro seconds for the latter
+      to insert and remove one message.
+      </li>
+      <li>Priority support<br />
+      The priority for messages can be specified when publishing.
+      The standard value is 5, a value of 9 has highest priority, whereas 0 is slowest.
+      </li>
+      <li>Guarantee sequence<br />
+      The sequence of incoming messages is recorded with a unique timestamp.
+      On delivery this sequence is guaranteed to be equal.
+      Different message priorities reorder the sequence of message delivery, since
+      priority is a higher sort criteria than the incoming timestamp.
+      </li>
+      <li>Bounded (max size)<br />
+      Every queue has a maximum size. The maximum boundary is adjustable
+      as the number of entries in the queue or as maximum memory consumption.
+      On queue overflow a "dead letter" is published.
+      A MsgQueue can be configured to support 'falling
+      through'. In this case the oldest message is removed when the queue is full and
+      a new message arrives.
+      </li>
+      <li>Dead letter<br />
+      On queue overflow a "dead letter" is published, containing the lost message.
+      Interested exception handlers clients can subscribe to "__sys__deadLetter" messages to
+      receive them and react accordingly.
+      </li>
+      <li>Queue types<br />
+      A queue is installed on the fly when needed. If a message destination is
+      not reachable, a queue is created to hold messages addressed for this destination.
+      Two message queue types are created on login and one for each published callback address.
+      <ol>
+         <li>LoginNameQueue (<i>UserID:</i>)<br />
+         This queue is created on login if not existing beforehand.
+         The queue is named similar to the login name of the client.
+         It may remain living after logout, or may be created before login if
+         a PtP message addresses it.
+         This is the default callback for login name based (durable) subscriptions without a specified callback in its QoS.
+         It is destroyed when the queue expires.
+         </li>
+         <li>SessionIdQueue (<i>SessionID:</i>)<br />
+         This queue is created on login and destroyed on logout.
+         It can be used as the ReplyTo address for sent messages.
+         This is the default callback for session based subscriptions without a specified callback.
+         </li>
+         <li>CallbackQueue (<i>CbID:</i>)<br />
+         This are queues which are created for subcribes which expressly states a callback
+         address in its QoS. It can be a delegated subscribe (e.g. for a dumb toaster).
+         It is destroyed when the queue expires.
+         </li>
+      </ol>
+      </li>
+      <li>Zero or one callback address<br />
+      Every message queue has zero or one callback addresses associated:
+      The SessionIdQueue and the CallbackQueue have exactly one, the LoginNameQueue 
+      has one or zero (if not logged in).
+      </li>
+      </ul>
+      <p>
+      </p>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      ]]>
+   </example>
+   <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
+   <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
+   <see type="REQ">engine.callback</see>
+   <see type="REQ">engine.qos.login.callback</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 02 04</date>
+   <revision>$Revision: 1.2 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+

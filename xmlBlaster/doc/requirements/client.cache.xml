@@ -7,7 +7,6 @@
       and access the up to date message high performing from a local cache.
    </topic>
    <description>
-      <![CDATA[
       The Java XmlBlasterConnection class (a helper class for Java clients) has a built in cache.
       If you activate this
       cache with the initCache() method, the xmlBlasterConnection.get() method accesses
@@ -19,7 +18,6 @@
       <p />
       Note that this is a pure client behavior, and for the moment the only reference implementation
       is in Java.
-      ]]>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -53,7 +51,7 @@
    <author>Konrad.Krafft@doubleSlash.de</author>
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -4,7 +4,6 @@
 <requirement id='engine.qos.publish.destination.ForceQueuing' type='NEW' prio='LOW' status="CLOSED">
    <topic>Published messages in PtP mode can be queued by xmlBlaster if the receiver is not logged in</topic>
    <description>
-      <![CDATA[
       If you publish a message in PtP mode and the receiver is not online, you get an exception
       by default. If the &lt;ForceQueuing&gt; flag is set in the publishing qos,
       the messages are queued by xmlBlaster. As soon as the receiver logs in,
@@ -12,7 +11,6 @@
       NOTE 1: The qualifier attributes from 'engine.qos.subscribe.OfflineQueuing' may be appropriate
       here as well (should we rename this tag to &lt;OfflineQueing> as well?)
       NOTE 2: The login qos may disallow PtP messages, ForceQueing will be ignored then.
-      ]]>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -30,7 +28,7 @@
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

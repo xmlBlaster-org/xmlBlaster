@@ -4,7 +4,6 @@
 <requirement id='engine.qos.login.callback' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Clients of XmlBlaster can specify their desired callbacks during login</topic>
    <description>
-   <![CDATA[
       <p>
       When you subscribe to messages or get sent a PtP message, xmlBlaster will
       deliver this to you through a callback.
@@ -30,7 +29,6 @@
       You can specify zero to many callbacks for one single client,
       with mixed protocols, all of them will be invoked for new messages.
       </p>
-   ]]>
    </description>
 
    <changerequest prio='MEDIUM' status="OPEN">
@@ -197,10 +195,11 @@
       ]]>
    </example>
    <see type="REQ">protocol</see>
+   <see type="REQ">engine.callback</see>
    <see type="API">org.xmlBlaster.client.LoginQosWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
