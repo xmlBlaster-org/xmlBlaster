@@ -64,7 +64,7 @@ public:
    /**
     * @return never '' (empty), an oid is generated if it was empty.
     */
-   string getOid();
+   string getOid() const;
 
    /**
     * Set client specific meta informations. 

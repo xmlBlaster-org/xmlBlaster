@@ -164,7 +164,7 @@ int KeyData::size() const
    return toXml().length();
 }
 
-string KeyData::generateOid(const string& uniquePrefix)
+string KeyData::generateOid(const string& uniquePrefix) const
 {
    string ret;
    Timestamp timestamp = TimestampFactory::getInstance().getTimestamp();

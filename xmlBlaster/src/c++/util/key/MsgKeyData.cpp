@@ -29,7 +29,7 @@ MsgKeyData& MsgKeyData::operator =(const MsgKeyData& key)
    return *this;
 }
 
-string MsgKeyData::getOid()
+string MsgKeyData::getOid() const
 {
    if (oid_.empty()) {
       generateOid(global_.getStrippedId());
