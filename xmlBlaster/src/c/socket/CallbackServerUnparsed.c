@@ -178,7 +178,8 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
        * Get a socket to work with.
        */
       if ((cb->listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-          perror("[CallbackServerUnparsed] socket");
+          printf("[CallbackServerUnparsed] Failed creating socket for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+             cb->hostCB, cb->portCB);
           return 0;
       }
 
@@ -191,10 +192,11 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
          serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
       else
          serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-      serv_addr.sin_port = htons(cb->portCB);
+      serv_addr.sin_port = htons((u_short)cb->portCB);
 
       if (bind(cb->listenSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-          perror("[CallbackServerUnparsed] bind");
+          printf("[CallbackServerUnparsed] Failed binding port for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+             cb->hostCB, cb->portCB);
           return 0;
       }
 
@@ -202,7 +204,8 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
        * Listen on the socket.
        */
       if (listen(cb->listenSocket, 5) < 0) {
-          perror("[CallbackServerUnparsed] listen");
+          printf("[CallbackServerUnparsed] Failed creating listener for callback server -dispatch/callback/plugin/socket/hostname %s -dispatch/callback/plugin/socket/port %d\n",
+             cb->hostCB, cb->portCB);
           return 0;
       }
 
@@ -225,7 +228,7 @@ static int initCallbackServer(CallbackServerUnparsed *cb)
       if (cb->debug) printf("[CallbackServerUnparsed] Reusing connection socket to tunnel callback messages\n");
    }
 
-   while (true) {
+   for (;;) {
       XmlBlasterException xmlBlasterException;
       SocketDataHolder socketDataHolder;
       MsgUnitArr *msgUnitArr;
@@ -321,7 +324,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    ssize_t numSent;
    char *rawMsg;
    size_t rawMsgLen;
-   size_t dataLen;
+   size_t dataLen = 0;
    char *data = 0;
    size_t i;
    MsgUnit msgUnit; /* we (mis)use MsgUnit for simple transformation of the exception into a raw blob */
@@ -472,7 +475,21 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
  */
 int main(int argc, char** argv)
 {
-   CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate);
+   int iarg;
+   CallbackServerUnparsed *cb;
+   
+   for (iarg=0; iarg < argc; iarg++) {
+      if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
+         const char *pp =
+         "\n  -debug               true/false [false]"
+         "\n\nExample:"
+         "\n  CallbackServerUnparsed -debug true -dispatch/callback/plugin/socket/hostname server.mars.universe";
+         printf("Usage:\n%s%s\n", callbackServerRawUsage(), pp);
+         exit(1);
+      }
+   }
+
+   cb = getCallbackServerUnparsed(argc, argv, myUpdate);
    printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
    cb->initCallbackServer(cb); /* blocks on socket listener */
 

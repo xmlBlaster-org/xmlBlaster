@@ -144,7 +144,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
       if (portP != 0)
          xmlBlasterAddr.sin_port = portP->s_port;
       else
-         xmlBlasterAddr.sin_port = htons(atoi(servTcpPort));
+         xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
       xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
       if (xb->socketToXmlBlaster != -1) {
          int ret=0;
@@ -155,9 +155,9 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb)
             if (xb->debug) {
                char errnoStr[MAX_ERRNO_LEN];
                sprintf(errnoStr, "errno=%d %s", errno, strerror(errno)); /* default if strerror_r fails */
-#ifndef __sun
+#              ifdef _LINUX
                strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
-#endif
+#              endif
                printf("[XmlBlasterConnectionUnparsed] ERROR Connecting to xmlBlaster (connect failed) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed, %s\n", serverHostName, servTcpPort, errnoStr);
             }
             return false;

@@ -23,7 +23,7 @@ ssize_t writen(int fd, char *ptr, size_t nbytes)
    ssize_t nleft, nwritten;
    int flag = 0; /* MSG_WAITALL; */
 
-   nleft = nbytes;
+   nleft = (ssize_t)nbytes;
    while(nleft > 0) {
       nwritten = send(fd, ptr, (int)nleft, flag); /* write() is deprecated on Win */
       if (nwritten <= 0) {
@@ -32,7 +32,7 @@ ssize_t writen(int fd, char *ptr, size_t nbytes)
       nleft -= nwritten;
       ptr += nwritten;
    }
-   return nbytes - nleft;
+   return (ssize_t)nbytes - nleft;
 }
 
 /**
@@ -49,7 +49,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
    ssize_t nread;
    ssize_t nleft;
    int flag = 0; /* MSG_WAITALL; */
-   nleft = nbytes;
+   nleft = (ssize_t)nbytes;
 
    while(nleft > 0) {
       nread = recv(fd, ptr, (int)nleft, flag); /* read() is deprecated on Win */
@@ -60,7 +60,7 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
       nleft -= nread;
       ptr += nread;
    }
-   return (nbytes-nleft);
+   return (ssize_t)nbytes-nleft;
 }
 
 /**

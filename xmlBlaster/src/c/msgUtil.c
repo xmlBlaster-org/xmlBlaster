@@ -12,8 +12,12 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <ctype.h>
 #include "msgUtil.h"
 
-#include <netdb.h>  /* gethostbyname_re() */
-#include <errno.h>  /* gethostbyname_re() */
+#ifdef _WINDOWS
+#  include <Winsock2.h> /* gethostbyname() */
+#else
+#  include <netdb.h>  /* gethostbyname_re() */
+#  include <errno.h>  /* gethostbyname_re() */
+#endif
 
 /**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself
@@ -264,10 +268,12 @@ void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
 }
 
 
-#ifdef __sun
-#define HAVE_FUNC_GETHOSTBYNAME_R_5 /* SUN */
-#else
-#define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
+#ifndef _WINDOWS   /* Windows does not support the reentrant ..._r() functions */
+#  ifdef __sun
+#    define HAVE_FUNC_GETHOSTBYNAME_R_5 /* SUN */
+#  else
+#    define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
+#  endif
 #endif
 
 /**
@@ -276,6 +282,112 @@ void initializeXmlBlasterException(XmlBlasterException *xmlBlasterException)
  */
 struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
 {
+#ifdef _WINDOWS_FUTURE
+  /* See  http://www.hmug.org/man/3/getaddrinfo.html for an example */
+  /* #include Ws2tcpip.h
+   typedef struct addrinfo {
+      int ai_flags;
+      int ai_family;
+      int ai_socktype;
+      int ai_protocol;
+      size_t ai_addrlen;
+      char* ai_canonname;
+      struct sockaddr* ai_addr;
+      struct addrinfo* ai_next;
+   } addrinfo;
+
+   struct sockaddr_in {
+        short   sin_family;
+        u_short sin_port;
+        struct  in_addr sin_addr;
+        char    sin_zero[8];
+   };
+   */
+#   ifdef SOME_CLIENT_EXAMPLE
+      struct addrinfo hints, *res, *res0;
+      int error;
+      int s;
+      const char *cause = NULL;
+      const char* servname = "7609"; // or "http"
+      memset(&hints, 0, sizeof(hints));
+      hints.ai_family = PF_UNSPEC;
+      hints.ai_socktype = SOCK_STREAM;
+      error = getaddrinfo(host, servname, &hints, &res0);
+      if (error) {
+         errx(1, "%s", gai_strerror(error));
+         /*NOTREACHED*/
+      }
+      s = -1;
+      cause = "no addresses";
+      errno = EADDRNOTAVAIL;
+      for (res = res0; res; res = res->ai_next) {
+         s = socket(res->ai_family, res->ai_socktype,
+             res->ai_protocol);
+         if (s < 0) {
+            cause = "socket";
+            continue;
+         }
+         if (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
+            cause = "connect";
+            close(s);
+            s = -1;
+            continue;
+         }
+         break;  /* okay we got one */
+      }
+      if (s < 0) {
+         err(1, cause);
+         /*NOTREACHED*/
+      }
+      freeaddrinfo(res0);
+#   endif /* SOME_CLIENT_EXAMPLE */
+#   ifdef SOME_SERVER_EXAMPLE
+     The following example tries to open a wildcard listening socket onto ser-
+     vice ``http'', for all the address families available.
+
+      struct addrinfo hints, *res, *res0;
+      int error;
+      int s[MAXSOCK];
+      int nsock;
+      const char* servname = "7609"; // or "http"
+      const char *cause = NULL;
+      memset(&hints, 0, sizeof(hints));
+      hints.ai_family = PF_UNSPEC;
+      hints.ai_socktype = SOCK_STREAM;
+      hints.ai_flags = AI_PASSIVE;
+      error = getaddrinfo(NULL, servname, &hints, &res0);
+      if (error) {
+         errx(1, "%s", gai_strerror(error));
+         /*NOTREACHED*/
+      }
+      nsock = 0;
+      for (res = res0; res && nsock < MAXSOCK; res = res->ai_next) {
+         s[nsock] = socket(res->ai_family, res->ai_socktype,
+             res->ai_protocol);
+         if (s[nsock] < 0) {
+            cause = "socket";
+            continue;
+         }
+         if (bind(s[nsock], res->ai_addr, res->ai_addrlen) < 0) {
+            cause = "bind";
+            close(s[nsock]);
+            continue;
+         }
+         if (listen(s[nsock], SOMAXCONN) < 0) {
+            cause = "listen";
+            close(s[nsock]);
+            continue;
+         }
+         nsock++;
+      }
+      if (nsock == 0) {
+         err(1, cause);
+         /*NOTREACHED*/
+      }
+      freeaddrinfo(res0);
+#   endif /* SOME_SERVER_EXAMPLE */
+
+#else /* !_WINDOWS */
 #ifdef HAVE_FUNC_GETHOSTBYNAME_R_6
    struct hostent *hp;
    int herr,res;
@@ -335,8 +447,12 @@ struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char
             return NULL;
          return hostbuf;
 #     else
+         hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
+         tmphstbuf = 0;
+         hstbuflen = 0;
          return gethostbyname(host); /* Not thread safe */
 #     endif
 #  endif
-#endif
+#endif /* !_WINDOWS */
+#endif /* _WINDOWS */
 }

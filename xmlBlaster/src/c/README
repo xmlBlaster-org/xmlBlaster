@@ -30,7 +30,7 @@ Features:
 
   o The client side xmlBlasterAccess structure has function pointers
     for all methods to have object oriented like access,
-    see client.c as a usage example
+    see HelloWorld.c as a usage example
 
   o The access library and the callback library is thread safe.
     Multiple instances of client connections or callback servers
@@ -40,13 +40,16 @@ Features:
 COMPILE:
 ========
 
-cd xmlBlaster/demo/c/socket   (see client.c)
+cd xmlBlaster/demo/c/socket   (see HelloWorld.c)
 
-Linux:    gcc -Wall -g -D_REENTRANT -I. -o client client.c msgUtil.c socket/*.c -lpthread
-          g++ -Wall -g -D_REENTRANT -I. -o client client.c msgUtil.c socket/*.c -lpthread
+Linux:    gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
+          g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
 
-Windows:  cl /MT /W3 /Wp64 -D_WINDOWS -I. client.c msgUtil.c socket\*.c ws2_32.lib
+Windows:  cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+          cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
 
+
+Note: Solaris CC has '__sun' defined.
 
 Now start xmlBlaster:
 =====================
@@ -55,9 +58,9 @@ Now start xmlBlaster:
 
 and the C client:
 
-   client
+   HelloWorld
 
-The client connects and does some invocations (see the main() in client.c).
+The client connects and does some invocations (see the main() in HelloWorld.c).
 
 
 

@@ -19,11 +19,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 #include <msgUtil.h>
 #include <XmlBlasterConnectionUnparsed.h>
 #include <CallbackServerUnparsed.h>
-
-#ifdef _WINDOWS
-#else
-#  include <pthread.h>
-#endif
+#include <pthread.h> /* For Windows and WinCE download them from http://sources.redhat.com/pthreads-win32 */
 
 struct XmlBlasterAccessUnparsedStruct;
 typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;

@@ -8,8 +8,9 @@ Comment:   Wraps raw socket connection to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
   LINUX:   gcc -DXmlBlasterAccessUnparsedMain -Wall -pedantic -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread
-  WIN:
-  Solaris: cc -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
+  WIN:     cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c ws2_32.lib pthreadVC.lib
+           (download pthread for Windows and WinCE from http://sources.redhat.com/pthreads-win32)
+  Solaris: cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I.. -o XmlBlasterAccessUnparsedMain XmlBlasterAccessUnparsed.c ../msgUtil.c xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c -lpthread -lsocket -lnsl
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -65,6 +66,8 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->isConnected = isConnected;
    xa->debug = false;
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
+   xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
+   xa->responseCond = PTHREAD_COND_INITIALIZER;
 
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-debug") == 0)
@@ -574,8 +577,10 @@ int main(int argc, char** argv)
    }
 
    freeXmlBlasterAccessUnparsed(xa);
+#  ifndef _WINDOWS  /* I don't know which library to include for sleep() on Windows */
    printf("[client] Sleeping 2 sec.\n");
    sleep(2);
+#  endif
    printf("[client] Good bye.\n");
    exit(0);
 }
