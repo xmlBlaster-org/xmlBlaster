@@ -201,7 +201,7 @@ public class HtPasswd {
          while (it.hasNext()) {
             String user = (String)it.next();
             user = user.trim();
-            if (user.startsWith("#" )) {
+            if (user.startsWith("#" ) || user.length() < 1) {
                continue;
             }
             String passwd = (String)map.get(user);
