@@ -87,7 +87,7 @@ public class AuthenticateImpl
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         LoginReturnQoS qos = authenticateNative.init(qos_literal, sessionId);
+         LoginReturnQoS qos = authenticateNative.connect(qos_literal, sessionId);
          returnValue = qos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
       }

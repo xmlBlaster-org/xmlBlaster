@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.11 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.12 2001/09/01 09:09:05 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -199,7 +199,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       }
 
       try {
-         returnQoS = authenticate.init(qos_literal, sessionId);
+         returnQoS = authenticate.connect(qos_literal, sessionId);
 
          org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
          String serverIOR = orb.object_to_string(xmlBlaster);
@@ -210,7 +210,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       }
 
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "Returning from login-init()" + returnQoS.toXml());
+      if (Log.DUMP) Log.dump(ME, "Returning from login-connect()" + returnQoS.toXml());
 
       return returnQoS.toXml();
    }
