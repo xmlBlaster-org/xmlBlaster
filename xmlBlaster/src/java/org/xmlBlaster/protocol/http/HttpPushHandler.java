@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.36 2001/02/14 01:01:15 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.37 2001/05/18 15:41:33 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -201,7 +201,7 @@ public class HttpPushHandler
          }
       }
       catch (XmlBlasterException e) {
-         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.text.StackTrace.getStackTrace());
+         Log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ":\n" + org.jutils.runtime.StackTrace.getStackTrace());
       }
    }
 

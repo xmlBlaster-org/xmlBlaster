@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.42 2000/12/26 14:56:43 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.43 2001/05/18 15:41:33 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -501,7 +501,7 @@ public class XmlKeyBase
          xmlToDom.mergeRootNode(merger);
       }
       else {
-         Log.plain(org.jutils.text.StackTrace.getStackTrace());
+         Log.plain(org.jutils.runtime.StackTrace.getStackTrace());
          Log.warn(ME, "You should call mergeNode only for publish");
       }
    }

@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.42 2001/03/27 19:30:49 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.43 2001/05/18 15:41:33 freidlin Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -117,7 +117,7 @@ public class MessageUnitHandler
    final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (msgUnitWrapper == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.text.StackTrace.getStackTrace());
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + org.jutils.runtime.StackTrace.getStackTrace());
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnitWrapper = null");
       }
       return msgUnitWrapper;

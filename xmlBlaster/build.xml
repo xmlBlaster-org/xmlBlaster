@@ -92,7 +92,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -151,6 +151,7 @@ Else add it manually.
 
     <copy todir="${build.src}/xmlBlaster">
        <fileset dir="${src.dir}">
+          <exclude name="org/jutils"/>
           <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
           <exclude name="Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
           <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
@@ -172,6 +173,9 @@ Else add it manually.
     <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
     <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
     <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
+
+    <!-- include content of jutils.jar in xmlBlaster.jar -->
+    <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
     <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif"/>
 
@@ -395,7 +399,12 @@ Else add it manually.
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
    <target name="clean">
+      <delete dir="${build.dir}"/>
       <delete>
+         <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
+      </delete>
+
+      <!-- delete>
          <fileset dir="${build.dir}"/>
          <fileset dir="${classes.dir}/org"/>
          <fileset dir="${classes.dir}/html"/>
@@ -404,11 +413,11 @@ Else add it manually.
          <fileset dir="${classes.dir}/doc"/>
          <fileset dir="${classes.dir}" includes="DomQueryTest.class"/>
          <fileset dir="${classes.dir}" includes="XtOmQueryTest.class"/>
-         <!-- fileset dir="${req.dir}" includes="*.class"/ -->
+         // <fileset dir="${req.dir}" includes="*.class"/>
          <fileset dir="${classes.webinf.dir}/org"/>
          <fileset dir="${classes.webinf.dir}/html"/>
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
-      </delete>
+      </delete -->
    </target>
 
    <target name="delete" depends="clean">
