@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.68 2003/05/23 09:45:41 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.69 2003/05/23 10:00:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -629,8 +629,8 @@ public class CorbaDriver implements I_Driver
       text += "   -plugin/ior/useNameService true/false [true]\n";
       text += "                       Publish the IOR to a naming service.\n";
       text += "   -plugin/ior/hostname\n";
-      text += "                       Allows to set the corba server IP address for multi-homed hosts.\n";
-      text += "   -plugin/ior/port    Allows to set the corba server port number.\n";
+      text += "                       Allows to force the corba server IP address for multi-homed hosts.\n";
+      text += "   -plugin/ior/port    Allows to force the corba server port number.\n";
       text += " For JacORB only:\n";
       text += "   java -DOAIAddr=<ip> Use '-dispatch/connection/plugin/ior/hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-plugin/ior/port'\n";
