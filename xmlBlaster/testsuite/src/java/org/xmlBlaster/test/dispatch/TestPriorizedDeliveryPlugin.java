@@ -62,6 +62,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 9560;
+   private boolean startEmbedded = true;
    private MsgInterceptor update;
 
    private final String msgOid = "dispatchTestMessage";
@@ -102,7 +103,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
     * Then we connect as a client
     */
    protected void setUp() {  
-      glob.init(Util.getOtherServerPorts(serverPort));
+      this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
       String[] args = {
         "-DispatchPlugin[Priority][1.0]", "org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin",
@@ -127,8 +128,11 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          };
       glob.init(args);
 
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+      if (this.startEmbedded) {
+         glob.init(Util.getOtherServerPorts(serverPort));
+         serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
+         log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+      }
 
       try {
          log.info(ME, "Connecting ...");
@@ -385,7 +389,10 @@ public class TestPriorizedDeliveryPlugin extends TestCase
    }
 
    /**
-    * Test all tuples of possibilities
+    * Test the notifySender message
+    * 1. subscribe to a message
+    * 2. change state to 64k
+    * 3. send a message with prio 6 which should trigger a notify PtP message
     */
    public void testPriorizedDeliveryPluginOne() {
       log.info(ME, "testPriorizedDeliveryPluginOne() ...");
@@ -393,12 +400,17 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       long sleep = 2000L;
       String text = "state=" + BACKUP_LINE + " action=queue,notifySender";
 
+      // <action do='queue,notifySender'  ifPriority='6'/>
+
       subscribe(msgOid);
 
       changeStatus(statusOid, BACKUP_LINE);
+      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Wait some time
+
       int priority = 6;
       log.info(ME, text + ": Expecting notify");
 
+      this.update.getMsgs().clear();
       publish(msgOid, priority);
       assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
       assertEquals(text, 1, this.update.getMsgs().count());
@@ -423,8 +435,10 @@ public class TestPriorizedDeliveryPlugin extends TestCase
 
       con.disconnect(null);
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      if (this.startEmbedded) {
+         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      }
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
