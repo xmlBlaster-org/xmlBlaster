@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.12 2002/05/30 16:25:08 ruff Exp $
+Version:   $Id: Global.java,v 1.13 2002/06/11 14:20:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -51,6 +51,10 @@ public final class Global extends org.xmlBlaster.util.Global
    private Hashtable cbProtocols = new Hashtable();
 
    private CbWorkerPool cbWorkerPool;
+
+   private boolean useCluster = true; // default
+   private boolean firstUseCluster = true; // to allow caching
+
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -251,9 +255,12 @@ public final class Global extends org.xmlBlaster.util.Global
 
    /**
     * Access instance which manages myself in a cluster environment. 
+    * @return null if cluster support is switched off
     */
    public final ClusterManager getClusterManager() throws XmlBlasterException {
       if (this.clusterManager == null) {
+         if (!useCluster())
+            return null;
          log.error(ME, "Internal problem: please intialize ClusterManager first");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Internal problem: please intialize ClusterManager first - Please ask on mailing list for support");
@@ -262,11 +269,26 @@ public final class Global extends org.xmlBlaster.util.Global
    }
 
    /**
+    * Is cluster support switched on?
+    */
+   public final boolean useCluster() {
+      if (firstUseCluster) {
+         useCluster = getProperty().get("cluster", useCluster);
+         firstUseCluster = false;
+      }
+      return useCluster;
+   }
+
+   /**
     * Initialize the instance which manages myself in a cluster environment. 
     * Only the first call will set the sessionInfo
+    * @param An internal sessionInfo instance, see RequestBroker.
+    * @return null if cluster support is switched off
     */
    public final ClusterManager getClusterManager(org.xmlBlaster.authentication.SessionInfo sessionInfo) throws XmlBlasterException {
       if (this.clusterManager == null) {
+         if (!useCluster())
+            return null;
          synchronized(this) {
             if (this.clusterManager == null)
                this.clusterManager = new ClusterManager(this, sessionInfo);
