@@ -124,6 +124,18 @@
 
    <configuration where="server">
       <p>
+      If you make a xmlBlaster distribution you must make shure to copy
+      </p>
+<pre>
+   xmlBlaster/lib/xpath/jaxen-core.jar
+   xmlBlaster/lib/xpath/jaxen-dom.jar
+   xmlBlaster/lib/xpath/saxpath.jar
+</pre>
+      <p>
+      and add the jar files to the CLASSPATH.
+      </p>
+      
+      <p>
       These parameters allow to configure the XPath plugin.
       </p>
       <table border="1">
