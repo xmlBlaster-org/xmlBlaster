@@ -2,13 +2,9 @@ These are examples on how to access xmlBlaster from a C++ client
 
 * The C++ clients use the MICO (C++) CORBA library
   and the XML Xerces C++ library.
+  Some headers from http://www.boost.org are included as well.
 
-* IMPORTANT:
-  See xmlBlaster/src/c++/README how to build the
-     xmlBlasterClient.dll (shared library)
-  first!
-
-* xmlBlaster runs with JacORB (Java)
+* The xmlBlaster server runs with JacORB (Java)
 
 * C++ Compilation is done with ant, go to xmlBlaster root directory and type:
 
@@ -18,11 +14,17 @@ These are examples on how to access xmlBlaster from a C++ client
 
      build.sh cpp-test
 
-  which will first compile the xmlBlasterClient shared library (dll) and then
-  some C++ executables to test C++ access to xmlBlaster.
+  which will first compile the xmlBlasterClient shared library (dll/so/sl)
+  and then some C++ executables to test C++ access to xmlBlaster.
 
   This should compile with g++ on all OS (tested on Linux),
   and with MS Visual C++ 6.
+
+* IMPORTANT:
+  See xmlBlaster/src/c++/README how to build the
+     xmlBlasterClient.dll   (shared library Windows)
+     libxmlBlasterClient.so (shared library Linux)
+  on problems.
 
 
 To run the clients, change to the 'bin' directory:
@@ -67,7 +69,7 @@ You need to have a running web server and set the DocumentRoot to e.g.
 
 3) Start the naming service (with a running web server)
 
-   jaco -DOAPort=7608 org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
+   java -DOAPort=7608 org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
 
 
 4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
