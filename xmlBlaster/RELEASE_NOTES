@@ -24,7 +24,7 @@ IMPORTANT NOTE:
     Please read 
       xmlBlaster/CHANGES
     and study
-      xmlBlaster/demo/javaclients/HelloWorld4.java
+      xmlBlaster/demo/javaclients/HelloWorld3.java
     as an example.
 
 3. The default setup of xmlBlaster runs RAM based only,
@@ -45,7 +45,7 @@ NEW FEATURES:
   * It is known to run on Linux gcc 2.9 and 3.2 and Solaris
   * The xmlBlaster branch CPP_WIN contains a Windows variant:
       cvs checkout -r CPP_WIN xmlBlaster
-    When some header declaration issues are resolved it will be merged
+    When some namespace issues are resolved it will be merged
     back to the main trunk.
   * Compile:
       cd xmlBlaster
