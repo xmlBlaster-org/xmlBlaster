@@ -160,7 +160,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * Logout from the server.
     * <p />
-    * Flushes pending publishOneway messages if any and destroys low level connection and callback server.
+    * Destroys pending tail back messages if any if public session ID is generated (pubSessionId < 0)
+    * and destroys low level connection and callback server.
     * @param disconnectQos Describe the desired behavior on disconnect
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos, boolean, boolean, boolean)
@@ -198,22 +199,6 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @return is null if connect() was not called before
     */
    ConnectQos getConnectQos();
-
-   /**
-    * Logout from the server. 
-    * <p>
-    * Depending on your arguments, the callback server is removed as well, releasing all CORBA/RMI/XmlRpc threads.
-    * Note that this kills the server ping thread as well (if in fail save mode)
-    * </p>
-    * @param qos The disconnect quality of service
-    * @param flush Flushed pending publishOneway() messages if any
-    * @param shutdown shutdown lowlevel connection as well (e.g. CORBA connection)
-    * @param shutdownCb shutdown callback server as well (if any was established)
-    * @return <code>true</code> successfully logged out<br />
-    *         <code>false</code> failure on logout
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
-    */
-   boolean disconnect(DisconnectQos disconnectQos, boolean flush, boolean shutdown, boolean shutdownCb);
 
    /**
     * Access the callback server which is currently used in I_XmlBlasterAccess. 
