@@ -35,7 +35,7 @@ import java.util.Vector;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.jdbc.TestJdbcAccess
- *    java junit.swingui.TestRunner org.xmlBlaster.test.jdbc.TestJdbcAccess
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.jdbc.TestJdbcAccess
  * </pre>
  */
 public class TestJdbcAccess extends TestCase
@@ -172,6 +172,22 @@ public class TestJdbcAccess extends TestCase
          fail("Query failed: " + e.toString());
          return "";
       }
+   }
+
+   /**
+    * Invoke: java org.xmlBlaster.test.jdbc.TestJdbcAccess
+    * @deprecated Use the TestRunner from the testsuite to run it
+    */
+   public static void main(String args[]) {
+      Global glob = Global.instance();
+      if (glob.init(args) != 0) {
+         System.err.println("Init failed");
+         System.exit(1);
+      }
+      TestJdbcAccess test = new TestJdbcAccess("TestJdbcAccess");
+      test.setUp();
+      test.testQueries();
+      test.tearDown();
    }
 }
 
