@@ -4,47 +4,143 @@
 <requirement id='engine.qos.publish.destination.PtP' type='NEW' prio='HIGH' status="CLOSED">
    <topic>PtP (Point to Point) messages are routed using the qos-destination tag</topic>
    <description>
-      If you specify a &lt;destination&gt; tag, the message will be delivered to
-      the given address. The address is the loginName of the receiver. You may use as
-      many destination addresses as you wish.
+      <p>
+      If you specify a &lt;destination&gt; tag when publishing a message,
+      the message will be delivered to the given address.
+      </p>
+      <p>
+      The address must follow this naming schema:
+      </p>
+      <br />
+      <img src="SessionNamingConvention.gif" border="0" title="Session naming convention" alt="Session naming convention" />
+      <br />
+      <p>
+      The following table shows the routing chosen for different address types:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Address type</th>
+            <th>Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>subjectId</td>
+            <td>joe</td>
+            <td>
+            The publisher and the receiver of the message need to be connected
+            to the same xmlBlaster server.<br />
+            If <i>joe</i> is logged in multiple times, all sessions of joe will receive this message.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>relative name</td>
+            <td>client/joe/-9 or joe/-9</td>
+            <td>
+            The publisher and the receiver of the message need to be connected
+            to the same xmlBlaster server.<br />
+            The message is delivered to login session <i>pubSessionId=-9</i> of client <i>joe</i> only.
+            This is typically useful for ACK messages.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>absolute name</td>
+            <td>/node/heron/client/joe</td>
+            <td>
+            The PtP message is routed in a cluster environment to cluster node <i>heron</i>, the user
+            <i>joe</i> is expected there.<br />
+            If <i>joe</i> is logged in multiple times at node <i>heron</i>,
+            all sessions of <i>joe</i> will receive this message.<br />
+            If the name contains a <i>pubSessionId</i> the message is routed to the specific
+            session only.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+      <p>
+      You may use as many destination addresses as you wish in a publish QoS.
+      </p>
    </description>
-   <example lang="Java">
-      <![CDATA[
-      // Construct a message and send it to 'Gesa', 'Tim' and 'Ben'
-      String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
-                      "</key>";
+   <example lang="XML">
+      <pre>
+&lt;-- Publish QoS to send a message to 'Gesa', 'Tim' and 'Ben' -->
 
-      String qos = "<qos>" +
-                   "   <destination queryType='EXACT'>" +
-                   "      Gesa" +
-                   "   </destination>" +
-                   "   <destination queryType='EXACT'>" +
-                   "      Tim" +
-                   "   </destination>" +
-                   "   <destination queryType='EXACT'>" +
-                   "      Ben" +
-                   "   </destination>" +
-                   "</qos>";
-
-      content = "Dinner is ready";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
-      try {
-         xmlBlaster.publish(msgUnit, qos);
-      } catch(XmlBlasterException e) {
-         System.err.println("Failed to send message");
-      }
-      ]]>
+&lt;qos>
+   &lt;destination>
+      Gesa
+   &lt;/destination>
+   &lt;destination queryType='EXACT'>
+      Tim/-5
+   &lt;/destination>
+   &lt;destination queryType='EXACT' forceQueuing='true'>
+      /node/heron/client/Ben/-2
+   &lt;/destination>
+&lt;/qos>";
+      </pre>
    </example>
+   <example lang="Java">
+      <pre>
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.engine.helper.Destination;
+
+// connect to xmlBlaster (not shown here) ...
+
+try {
+   // Send a message to 'Gesa', 'Tim' and 'Ben' ...
+
+   PublishQos pq = new PublishQos(glob);
+
+   pq.addDestination(new Destination(new SessionName(glob, "Gesa")));
+   
+   pq.addDestination(new Destination(new SessionName(glob, "Tim/-5")));
+
+   Destination destination = new Destination(
+                  new SessionName(glob, "/node/heron/client/Ben/-2"));
+   destination.forceQueuing(true);
+   pq.addDestination(destination);
+
+   String content = "Dinner is ready";
+
+   MessageUnit msgUnit = new MessageUnit("&lt;key oid='Dinner'/>",
+                                      content.getBytes(), pq.toXml());
+
+   PublishReturnQos rq = connection.publish(msgUnit);
+   
+   System.out.println("Published PtP message: " + rq.toXml());
+
+}
+catch(XmlBlasterException e) {
+
+   System.err.println(e.getMessage());
+}
+      </pre>
+   </example>
+   <see type="REQ">engine.qos.publish.destination.ForceQueuing</see>
+   <see type="REQ">engine.qos.publish.destination.offline</see>
    <see type="REQ">engine.qos.publish.destination.PtX</see>
+   <see type="REQ">cluster.PtP</see>
+   <see type="REQ">interface.publish</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
+   <see type="API">HelloWorld5</see>
    <author>ruff@swand.lake.de</author>
-   <date>2000 01 17</date>
-   <revision>$Revision: 1.5 $</revision>
+   <date>2002 11 27</date>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPtD</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestPtSession</test>
+      <test tool="SUITE">org.xmlBlaster.test.cluster.PtPTest</test>
    </testcase>
 </requirement>
 

@@ -4,31 +4,41 @@
 <requirement id='engine.qos.publish.destination.ForceQueuing' type='NEW' prio='LOW' status="CLOSED">
    <topic>Published messages in PtP mode can be queued by xmlBlaster if the receiver is not logged in</topic>
    <description>
+      <p>
       If you publish a message in PtP mode and the receiver is not online, you get an exception
-      by default. If the &lt;ForceQueuing&gt; flag is set in the publishing qos,
+      by default.
+      </p>
+      <p>
+      If the <i>forceQueuing</i> attribute is set in the publishing qos,
       the messages are queued by xmlBlaster. As soon as the receiver logs in,
       all queued messages are flushed to the recevier.
+      </p>
+      <p>
       NOTE 1: The qualifier attributes from 'engine.qos.subscribe.OfflineQueuing' may be appropriate
       here as well (should we rename this tag to &lt;OfflineQueing> as well?)
+      </p>
+      <p>
       NOTE 2: The login qos may disallow PtP messages, ForceQueing will be ignored then.
+      </p>
    </description>
-   <example lang="Java">
-      <![CDATA[
-      <qos>
-         <destination queryType='EXACT'>
-            Michelle
-            <ForceQueuing /> <!-- If the destination client is not logged in, queue the messages ->
-         </destination>      <!-- Default is no queuing -->
-      </qos>
-      ]]>
+   <example lang="XML">
+&lt;-- Publish QoS to send a message to 'joe' -->
+
+&lt;qos>
+   &lt;destination queryType='EXACT' forceQueuing='true'>
+      joe
+   &lt;/destination>      &lt;!-- Default is no queuing -->
+&lt;/qos>
    </example>
+   <see type="REQ">engine.qos.publish.destination.PtP</see>
    <see type="REQ">engine.qos.publish.destination.offline</see>
    <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
    <see type="REQ">engine.qos.login.OfflineQueuing</see>
+   <see type="REQ">interface.publish</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

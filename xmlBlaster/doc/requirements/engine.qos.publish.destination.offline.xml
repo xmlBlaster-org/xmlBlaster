@@ -4,38 +4,42 @@
 <requirement id='engine.qos.publish.destination.offline' type='NEW' prio='LOW' status="CLOSED">
    <topic>If the receiver of a PtP message is offline or has no callback, the sender gets an exception</topic>
    <description>
+      <p>
       If you send a message to a named destination, using the qos &lt;destination&gt; tag,
       and there is no callback for this receiver, or the receiver is not logged in
-      and the &lt;ForceQueuing&gt; qos tag is not set in this message, you get a
+      and the <i>forceQueuing</i> qos attribute is not set in this message, you get an
       XmlBlasterException.
+      </p>
    </description>
    <example lang="Java">
-      <![CDATA[
-      // Construct a message and send it to 'Michelle', she is currently not logged in
-      String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
-                      "</key>";
+      <pre>
+// Construct a message and send it to 'Michelle', she is currently not logged in
+String xmlKey = "&lt;key oid='' contentMime='text/plain'/>";
 
-      String qos = "<qos>" +
-                   "   <destination queryType='EXACT'>" +
-                   "      Michelle" +
-                   "   </destination>" +
-                   "</qos>";
+String qos = "&lt;qos>" +
+             "   &lt;destination queryType='EXACT'>" +
+             "      Michelle" +
+             "   &lt;/destination>" +
+             "&lt;/qos>";
 
-      content = "Hi Michelle";
-      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
-      try {
-         xmlBlaster.publish(msgUnit, qos);
-      } catch(XmlBlasterException e) {
-         System.out.println("Exception is correct, Michelle is not logged in");
-      }
-      ]]>
+content = "Hi Michelle";
+MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
+try {
+   xmlBlaster.publish(msgUnit);
+} catch(XmlBlasterException e) {
+   System.out.println("Exception is correct, Michelle is not logged in");
+}
+      </pre>
    </example>
    <see type="REQ">engine.qos.publish.destination.ForceQueuing</see>
+   <see type="REQ">engine.qos.publish.destination.PtP</see>
+   <see type="REQ">cluster.PtP</see>
+   <see type="REQ">interface.publish</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

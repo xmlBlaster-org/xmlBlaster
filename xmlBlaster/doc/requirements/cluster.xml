@@ -96,7 +96,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>PtP</td>
+            <td>Point to point (PtP)</td>
             <td>
             PtP routing in cluster environment is available. Routing supports
             currently directly connected cluster nodes only.
@@ -838,6 +838,7 @@ cluster.node[heron]=\
    </configuration>
 
    <see type="REQ">cluster.dirtyRead</see>
+   <see type="REQ">cluster.PtP</see>
    <see type="REQ">util.property</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterManager</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterNode</see>
@@ -849,7 +850,7 @@ cluster.node[heron]=\
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.39 $</revision>
+   <revision>$Revision: 1.40 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
@@ -858,6 +859,7 @@ cluster.node[heron]=\
       <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeXPathTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.EraseTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.DirtyReadTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.cluster.PtpTest</test>
    </testcase>
 </requirement>
 

@@ -122,13 +122,15 @@
       <pre>
    import org.xmlBlaster.client.key.PublishKey;
    import org.xmlBlaster.client.qos.PublishQos;
+   import org.xmlBlaster.util.SessionName;
+   import org.xmlBlaster.engine.helper.Destination;
 
    ...
 
    PublishKey pk = new PublishKey(glob, "HelloWorld5", "text/plain", "1.0");
 
    PublishQos pq = new PublishQos(glob);
-   pq.addDestination(new Destination("michelle"));
+   pq.addDestination(new Destination(new SessionName(glob, "Tim/-5")));
 
    MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
 
@@ -157,14 +159,16 @@
    <see type="REQ">engine.qos.publish.isVolatile</see>
    <see type="REQ">engine.qos.publish.readonly</see>
 
-   <see type="REQ">engine.qos.publish.destination.ForceQueuing</see>
    <see type="REQ">engine.qos.publish.destination.PtP</see>
+   <see type="REQ">engine.qos.publish.destination.ForceQueuing</see>
    <see type="REQ">engine.qos.publish.destination.PtX</see>
    <see type="REQ">engine.qos.publish.destination.offline</see>
+
+   <see type="REQ">cluster.PtP</see>
  
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
