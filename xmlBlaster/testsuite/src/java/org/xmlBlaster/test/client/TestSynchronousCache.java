@@ -295,17 +295,24 @@ public class TestSynchronousCache extends TestCase {
                assertTrue("", publishReturnQos1.getRcvTimestamp().equals(grq0.getRcvTimestamp()) ||
                               publishReturnQos1.getRcvTimestamp().equals(grq1.getRcvTimestamp()));
                assertTrue("", !grq0.getRcvTimestamp().equals(grq1.getRcvTimestamp()));
-               log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
-                              "' and status=" + grq0.getState());
+               assertEquals("", 2, msgs.length);
+               log.info(ME, "Accessed " + msgs.length + " xmlBlaster messages with content '" +
+                              new String(msgs[0].getContent()) +
+                              "' and '" + new String(msgs[1].getContent()) + "' and status=" + grq0.getState());
             }
 
+            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr0 = sendErase(publishOidArr[0]);
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr1 = sendErase(publishOidArr[1]);
+            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
+
+            // The cache is not cleared automatically for XPATH, we do it manually
+            this.synchronousCache.removeEntryByQueryString(this.synchronousCache.getQueryString(gk));
+            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr2 = sendErase(publishOidArr[2]);
-            // The cache is not cleared automatically for XPATH
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
          }
          catch (XmlBlasterException e) {
