@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.4 2000/03/18 20:33:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -23,7 +23,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -46,6 +46,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
 
    /**
     * This sends the update to the client.
+    * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
    public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
    {
@@ -64,7 +65,11 @@ public class CallbackCorbaDriver implements I_CallbackDriver
 
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msgUnitWrapper.getXmlKey().getUniqueKey() + ") to " + clientInfo.toString());
 
-      cb.update(updateMsgArr, qarr);
+      try {
+         cb.update(updateMsgArr, qarr);
+      } catch (Exception e) {
+         throw new XmlBlasterException("CallbackFailed", "Callback to client " + clientInfo.getLoginName() + " failed, reason=" + e.toString());
+      }
    }
 
 }

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.26 2000/03/03 15:52:29 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.27 2000/03/18 20:33:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -31,7 +31,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -102,26 +102,43 @@ public class ClientInfo
    {
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
-         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
-         sentMessages++;
+         try {
+            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+            sentMessages++;
+         } catch(XmlBlasterException e) {
+            Log.error(ME, "Callback failed, going to queue the message ...");
+            queueMessage(msgUnitWrapper, destination);
+            Log.error(ME, "TODO: Should the receiver be auto logged out if his callback is broken???"); // !!!
+            throw e;
+         }
       }
-      else {
-         if (destination == null) {
-            Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
-            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "'");
-         }
+      else
+         queueMessage(msgUnitWrapper, destination);
+   }
 
-         if (!destination.forceQueuing()) {
-            Log.warning(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
-            throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + msgUnitWrapper.getUniqueKey() + "'");
-         }
-
-         if (messageQueue == null) {
-            messageQueue = new ClientUpdateQueue();
-         }
-         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is not logged in, queing message");
-         messageQueue.push(msgUnitWrapper);
+         
+   /**
+    * PtP mode: If the qos is set to forceQueuing the message is queued. 
+    * @param msgUnitWrapper Wraps the msgUnit with some more infos
+    * @param destination The Destination object of the receiver
+    */
+   final void queueMessage(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
+   {
+      if (destination == null) {
+         Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
+         throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "'");
       }
+
+      if (!destination.forceQueuing()) {
+         Log.warning(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
+         throw new XmlBlasterException(ME+".NotLoggedIn", "Client '" + getLoginName() + "' is not logged in, can't deliver PtP message '" + msgUnitWrapper.getUniqueKey() + "'");
+      }
+
+      if (messageQueue == null) {
+         messageQueue = new ClientUpdateQueue();
+      }
+      if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is not logged in, queing message");
+      messageQueue.push(msgUnitWrapper);
    }
 
 
