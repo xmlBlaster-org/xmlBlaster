@@ -208,7 +208,7 @@ var listenerList = new Array();
 
 function FrameMessageQueue( frameHandle )
 {
-   this.queueTime               = 500;
+   this.queueTime               = 100;
    this.retries                 = 0;
    this.ready                   = false;
    this.timeOutHandle           = null;
@@ -253,13 +253,13 @@ function sendMessageQueue(queueName)
    if( fmq.ready ) {
       if( fmq.frame.update != null ) {
          fmq.frame.update( fmq.messageQueue );
-         var str = "Update:<br />"; 
+         var str = "Update:<br />";
          for( var i = 0; i < fmq.messageQueue.length; i++ )
             str += fmq.messageQueue[i].key.oid + "<br />";
-      	if(Log.DEBUG) Log.info("Queue["+fmq.frame.name+"]: "+str);
-      } 
+        if(Log.DEBUG) Log.info("Queue["+fmq.frame.name+"]: "+str);
+      }
       else {
-      	if(Log.DEBUG) Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
+        if(Log.DEBUG) Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
       }
       fmq.messageQueue.length = 0;
       fmq.retries = 0;

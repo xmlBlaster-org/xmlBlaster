@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.8 2000/03/21 00:14:35 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.9 2000/03/28 07:52:03 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -77,8 +77,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
       HttpSession session = req.getSession(true);
       String sessionId = session.getId();
-
       HttpPushHandler pushHandler = new HttpPushHandler(req, res);
+
 
       try {
          String actionType = Util.getParameter(req, "ActionType", "NONE");
@@ -131,13 +131,32 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          }
 
 
+         //------------------ ready --------------------------------------------------
+         else if(actionType.equals("browserReady")) {
+            try {
+               ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnectionBySessionId(sessionId);
+               if( proxyConnection == null ) {
+                  throw new XmlBlasterException(ME, "Session not registered yet (sessionId="+sessionId+")");
+               }
+               HttpPushHandler cbPushHandler = proxyConnection.getHttpPushHandler(sessionId);
+               cbPushHandler.setReady( true );
+               pushHandler.push("// - doubleSlash",false);
+               return;
+            }
+            catch (XmlBlasterException e) {
+               Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
+               return;
+            }
+      	}
+
+
       } catch (XmlBlasterException e) {
          Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
          String codedText = URLEncoder.encode( e.reason );
-         pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n");
+         pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n",false);
       } catch (Exception e) {
          Log.error(ME, "Caught Exception: " + e.toString());
-         pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n");
+         pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n",false);
          e.printStackTrace();
       } finally {
          Log.info(ME, "Entering finally of permanent connection");

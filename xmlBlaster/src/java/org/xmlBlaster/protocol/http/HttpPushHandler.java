@@ -3,12 +3,13 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.11 2000/03/27 07:33:18 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.12 2000/03/28 07:52:03 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
 import java.rmi.RemoteException;
 import java.io.*;
+import java.util.*;
 import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -31,21 +32,25 @@ import org.xmlBlaster.util.*;
 public class HttpPushHandler
 {
 
-   private final String ME = "HttpPushHandler";
+   private final String ME 							= "HttpPushHandler";
    private final long PING_INTERVAL             = 40000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
-   private boolean closed = false;
+   private boolean closed 								= false;
    private ServletOutputStream outMulti;
    private PrintWriter outPlain;
    /** The header of the HTML page */
    private String head;
    /** The tail of the HTML page */
    private String tail;
+   private String readyStr;
    /** handlesMultipart is true for netscape browser */
-   private boolean handlesMultipart = false;
+   private boolean handlesMultipart 				= false;
+   private boolean ready            				= false;
 
-   private HttpPingThread pingThread = null;
+   private HttpPingThread pingThread 				= null;
+
+   private Vector pushQueue                     = null;
 
 
    /**
@@ -77,6 +82,9 @@ public class HttpPushHandler
       this.res = res;
       initialize(null, null);
 
+      pushQueue = new Vector();
+      ready = true;
+
       Log.info(ME,"Creating PingThread ...");
       pingThread = new HttpPingThread( this, PING_INTERVAL );
       pingThread.start();
@@ -87,7 +95,7 @@ public class HttpPushHandler
     */
    private void initialize(String head, String tail) throws IOException
    {
-      if (Log.TRACE) Log.trace(ME, "Creating CallbackHandler ...");
+      if (Log.TRACE) Log.trace(ME, "Creating HttpPushHandler ...");
       this.head = head;
       this.tail = tail;
       this.handlesMultipart = doesHandleMultipart();
@@ -116,9 +124,12 @@ public class HttpPushHandler
           "   <script language='JavaScript'>\n";
       }
 
+      if(readyStr == null) {
+         readyStr = "\n  if (parent.browserReady != null) parent.browserReady();\n";
+      }
+
       if (this.tail == null) {
-         this.tail  = "\n   </script>\n" +
-          "</BODY></HTML>";
+         this.tail  ="\n   </script>\n</BODY></HTML>";
       }
 
       if (handlesMultipart) {
@@ -164,6 +175,28 @@ public class HttpPushHandler
       this.closed = closed;
    }
 
+   /**
+    * check's whether the HTTP connection is ready or not
+    */
+   public boolean ready()
+   {
+      return ready;
+   }
+   /**
+    */
+   public void setReady(boolean ready)
+   {
+      this.ready = ready;
+
+      //send queue if connection is ready
+      try {
+         if( ready ) pushQueue(true);
+      }
+      catch(Exception e) {
+         Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+      }
+   }
+
 
    /**
     * Don't forget to call this method when you want to close the connection.
@@ -198,57 +231,92 @@ public class HttpPushHandler
     * Updating data to the browser (callback/push mode).
     * The data must be Javascript code
     */
+   public void push(String str, boolean confirm) throws ServletException, IOException
+   {
+      synchronized(pushQueue) {
+         pushQueue.addElement( str );
+         pushQueue(confirm);
+      }
+   }
    public void push(String str) throws ServletException, IOException
    {
-      if (handlesMultipart) {
-         /* Every line which is sent to the browser overwrites the former one
-            Problems: (Linux/netscape)
-            1. The watch-wait cursor is displayed, until the doGet() leaves.
-            2. Resizing the browser window doesn't resize the content.
-         */
-         synchronized(outMulti) {
-            outMulti.println("Content-Type: text/html");
-            outMulti.println();
-
-            StringBuffer buf = new StringBuffer(head);
-            buf.append(str);	 
-            buf.append(tail);
-
-            if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
-
-            outMulti.println(buf.toString());
-
-            outMulti.println();
-            outMulti.println("--End");
-            outMulti.flush();
-         }
+      synchronized(pushQueue) {
+         pushQueue.addElement( str );
+         pushQueue(true);
       }
-      else {
-         /*
-            Problems: (Linux/netscape)
-            1. The watch-wait cursor is displayed, until the doGet() leaves.
-            2. Resizing the browser window doesn't resize the content.
-            3. Browser only refreshes after one line is full
-               (depending on current width every 3 messages)
-               So the message should contain some <p> to force a refresh
-            4. Every line which is sent again to the browser is written after
-               the previous one resulting in a list of ten rows.
-         */
-         synchronized(outPlain) {
-            res.setContentType("text/html");
+   }
 
-            outPlain.println(head);
+   private void pushQueue(boolean confirm) throws ServletException, IOException
+   {
+      synchronized(pushQueue) {
+         if( pushQueue.size() == 0 || !ready )
+            return;
 
-            outPlain.println(str);
+         //setting Http push connection to false.
+         if (handlesMultipart) {
+            /* Every line which is sent to the browser overwrites the former one
+               Problems: (Linux/netscape)
+               1. The watch-wait cursor is displayed, until the doGet() leaves.
+               2. Resizing the browser window doesn't resize the content.
+            */
+            synchronized(outMulti) {
+               outMulti.println("Content-Type: text/html");
+               outMulti.println();
 
-            // This newline forces a refresh everytime,
-            // only necessary if the str fills less then one line in the netscape browser window
-            //outPlain.println("<P />");
+               StringBuffer buf = new StringBuffer(head);
 
-            outPlain.println(tail);
+               for( int i = 0; i < pushQueue.size(); i++ )
+               	buf.append((String)pushQueue.elementAt(i));
 
-            outPlain.flush();
-            outPlain.close();
+               if( confirm ) {
+                  buf.append(readyStr);
+         			ready = false; 
+               }
+
+               buf.append(tail);
+               if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
+
+               outMulti.println(buf.toString());
+               
+               outMulti.println();
+               outMulti.println("--End");
+               outMulti.flush();
+               pushQueue.clear();
+            }
+         }
+         else {
+            /*
+               Problems: (Linux/netscape)
+               1. The watch-wait cursor is displayed, until the doGet() leaves.
+               2. Resizing the browser window doesn't resize the content.
+               3. Browser only refreshes after one line is full
+                  (depending on current width every 3 messages)
+                  So the message should contain some <p> to force a refresh
+               4. Every line which is sent again to the browser is written after
+                  the previous one resulting in a list of ten rows.
+            */
+            synchronized(outPlain) {
+               res.setContentType("text/html");
+
+               outPlain.println(head);
+
+               for( int i = 0; i < pushQueue.size(); i++ )
+               	outPlain.println((String)pushQueue.elementAt(i));
+
+               if( confirm ) {
+                  outPlain.println(readyStr);
+                  ready = false;
+               }
+               // This newline forces a refresh everytime,
+               // only necessary if the str fills less then one line in the netscape browser window
+               //outPlain.println("<P />");
+
+               outPlain.println(tail);
+
+               outPlain.flush();
+               outPlain.close();
+               pushQueue.clear();
+            }
          }
       }
    }
@@ -265,7 +333,7 @@ public class HttpPushHandler
          String codedContent           = URLEncoder.encode( content );
          String codedQos               = URLEncoder.encode( updateQos );
 
-         
+
          Log.info(ME,"**********Update:"+updateKey.substring(0,40));
          /*
          Log.plain(ME,"Key:"+updateKey);
