@@ -112,8 +112,17 @@ Else add it manually.
  
  
    <property name="xmlblaster_home" value="."/>
-   <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/junit.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp.jar:./lib/remotecons.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar:./lib/batik/js.jar:./lib/batik/batik.jar"/>
- 
+
+   <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
+   <property name="cp.xml" value="lib/parser.jar:lib/jaxp.jar:lib/omquery.jar:lib/xtdash.jar"/>
+   <property name="cp.orb" value="lib/idl.jar:lib/jacorb.jar"/>
+   <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
+   <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
+   <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
+   <property name="cp.test" value="testsuite/org/xmlBlaster"/>
+   <property name="classpath" value="${cp.j2ee}:${cp.xml}:${cp.orb}:${cp.core}:${cp.other}:${cp.db}:${cp.test}"/>
+
+
    <!-- =================================================================== -->
    <!-- General C++ compiling setup for VisialC++, Borland and GCC          -->
    <!-- =================================================================== -->
@@ -214,6 +223,7 @@ Else add it manually.
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support [true]"/>
+      <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support [false]"/>
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
@@ -228,6 +238,7 @@ Else add it manually.
       <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
+      <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
       <echo message="         -DADD_XML_PARSER=true add XML parser, usually you should use your own [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
@@ -307,8 +318,8 @@ Else add it manually.
          </then>
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
-            <java classname="${idl.class}"
-                  args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
+            <java classname="${idl.class}" classpath="${classpath}"
+                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
          </else>
       </if>
 
@@ -555,6 +566,7 @@ Else add it manually.
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
+      <property name="ADD_SNMP" value="false"/>
       <property name="ADD_XML_PARSER" value="true"/>
       <property name="ADD_PROP" value="default"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties (to configure MoM) -->
       <property name="ADD_POLICY" value="default"/> <!-- e.g. -DADD_POLICY=myclient/xmlBlaster.policy (for RMI security) -->
@@ -612,6 +624,15 @@ Else add it manually.
             <unjar src="${lib.dir}/jta-spec1_0_1.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
+         </default>
+      </switch>
+      <switch value="${ADD_SNMP}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/jax.jar for SNMP support" />
+            <unjar src="${lib.dir}/jax.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+            <echo message="ADD_SNMP=${ADD_SNMP}: No SNMP support added." />
          </default>
       </switch>
       <switch value="${ADD_XML_PARSER}">
@@ -708,6 +729,7 @@ Else add it manually.
       <property name="ADD_COLLECTION" value="false"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
+      <property name="ADD_SNMP" value="true"/>
       <property name="ADD_XML_PARSER" value="false"/>
       <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
       <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
@@ -733,6 +755,15 @@ Else add it manually.
          </case>
          <default>
             <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XML-RPC support added." />
+         </default>
+      </switch>
+      <switch value="${ADD_SNMP}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/jax.jar for SNMP support" />
+            <unjar src="${lib.dir}/jax.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default>
+            <echo message="ADD_SNMP=${ADD_SNMP}: No SNMP support added." />
          </default>
       </switch>
       <switch value="${ADD_COLLECTION}">
