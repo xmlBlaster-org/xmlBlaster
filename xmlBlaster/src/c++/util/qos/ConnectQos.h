@@ -96,7 +96,7 @@ private:
    }
 
 public:
-   ConnectQosData(Global& global, const string& user="", const string& passwd="", long publicSessionId=-1);
+   ConnectQosData(Global& global, const string& user="", const string& passwd="", long publicSessionId=0);
    ConnectQosData(const ConnectQosData& data);
    ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;

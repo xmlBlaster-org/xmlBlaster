@@ -21,7 +21,7 @@ DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback 
    boss_         = boss;
    loginName_    = name;
    // cache_ = cache;
-   if (log_.call()) log_.trace(me(),"Entering constructor with argument");
+   if (log_.call()) log_.call(me(),"Entering constructor with argument");
 }
 
 /**
