@@ -26,6 +26,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.engine.xml2java.*;
@@ -39,13 +40,13 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.TopicsStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
@@ -68,6 +69,7 @@ import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_AdminNode;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
+import org.xmlBlaster.engine.msgstore.I_Map;
 
 import java.util.*;
 import java.io.*;
@@ -107,6 +109,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     * value = TopicHandler object
     */
    private final Map messageContainerMap = new HashMap(); //Collections.synchronizedMap(new HashMap());
+
+   /**
+    * Store configuration of all topics in xmlBlaster for recovery
+    */
+   private I_Map topicsStore;
 
    /**
     * This client is only for internal use, it is un secure to pass it outside because
@@ -319,6 +326,28 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     */
    public final LogChannel getLog() {
       return this.log;
+   }
+
+   /**
+    * This stores the topics configuration (the publish administrative message - the MsgUnit data struct)
+    */
+   private void startupTopicsStore() throws XmlBlasterException   {
+      synchronized (this) {
+         // TODO: get TopicsStoreProperty from administrator
+         //TopicsStoreProperty topicsStoreProperty = this.topicProperty.getTopicsStoreProperty();
+         TopicsStoreProperty topicsStoreProperty = new TopicsStoreProperty(glob, glob.getStrippedId());
+         if (this.topicsStore == null) {
+            String type = topicsStoreProperty.getType();
+            String version = topicsStoreProperty.getVersion();
+            // e.g. "topicsStore:/node/heron" is the unique name of the data store:
+            StorageId topicsStoreId = new StorageId("topicsStore", glob.getStrippedId());
+            this.topicsStore = glob.getTopicsStorePluginManager().getPlugin(type, version, topicsStoreId, topicsStoreProperty); //this.topicsStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+         }
+         else {
+            log.info(ME, "Reconfiguring topics store.");
+            this.topicsStore.setProperties(topicsStoreProperty);
+         }
+      }
    }
 
    public final AccessPluginManager getAccessPluginManager() {
