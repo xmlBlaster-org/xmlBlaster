@@ -993,8 +993,11 @@ TODO
       <copy file="INSTALL" tofile="${dist.dir}/INSTALL" overwrite="yes" preservelastmodified="true"/>
       <copy file="doc/LICENSE" tofile="${dist.dir}/LICENSE" overwrite="yes" preservelastmodified="true"/>
       <copy file="config/jacorb.properties.template" tofile="${dist.dir}/config/jacorb.properties.template" overwrite="yes" preservelastmodified="true"/>
-      <copy file="config/wrapper.conf.template" tofile="${dist.dir}/config/wrapper.conf.template" overwrite="yes" preservelastmodified="true"/>
       <copy file=".bashrc" tofile="${dist.dir}/.bashrc" overwrite="yes" preservelastmodified="true"/>
+
+	<!-- copy wrapper files -->
+      <copy file="bin/xmlBlasterd.sh" tofile="${dist.dir}/bin/xmlBlasterd.sh" overwrite="yes" preservelastmodified="true"/>
+      <copy file="config/wrapper.conf.template" tofile="${dist.dir}/config/wrapper.conf.template" overwrite="yes" preservelastmodified="true"/>
 
       <copy file="bin/xmlBlaster.sh" tofile="${dist.dir}/bin/xmlBlaster.sh" overwrite="yes" preservelastmodified="true"/>
       <copy file="bin/ns" tofile="${dist.dir}/bin/ns" overwrite="yes" preservelastmodified="true"/>
@@ -1006,7 +1009,6 @@ TODO
 
       <property name="zipFile" value="${name}Dist-${version}.zip"/>
       <property name="jarFile" value="${name}Dist.jar"/>
-
 
       <!-- Create xmlBlaster/dist/lib/xmlBlaster.jar with ALL classes ...-->
       <delete file="${dist.dir}/lib/${name}.jar" failonerror="false"/>
