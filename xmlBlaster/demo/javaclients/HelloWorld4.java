@@ -40,7 +40,6 @@ public class HelloWorld4
    private final LogChannel log;
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
-   private boolean connected;
 
    public HelloWorld4(final Global glob) {
       
@@ -52,9 +51,8 @@ public class HelloWorld4
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
                public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  connected = true;
                   conRetQos = connection.getConnectReturnQos();
-                  log.error(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
+                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   //initClient();    // initialize subscription etc. again
                   //try {
                   //   connectionHandler.getQueue().clear(); // e.g. discard all msgs (it is our choice)
@@ -64,13 +62,11 @@ public class HelloWorld4
                }
 
                public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.error(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
-                  connected = false;
+                  log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
                }
 
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   log.error(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
-                  connected = false;
                }
             });
 
@@ -102,8 +98,7 @@ public class HelloWorld4
          });  // Login to xmlBlaster, default handler for updates
 
 
-         connected = (conRetQos != null);
-         if (connected)
+         if (con.isAlive())
             log.info(ME, "Connected as " + qos.getUserId() + " to xmlBlaster, your public session ID is " + conRetQos.getSessionName());
          else
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
@@ -142,16 +137,16 @@ public class HelloWorld4
          msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
          retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
+
+         // Wait a second for messages to arrive before we logout
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         log.info(ME, "Success, hit a key to exit");
+         try { System.in.read(); } catch(java.io.IOException e) {}
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Houston, we have a problem: " + e.getMessage());
       }
       finally {
-         // Wait a second for messages to arrive before we logout
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
-         log.info(ME, "Success, hit a key to exit");
-         try { System.in.read(); } catch(java.io.IOException e) {}
-         
          if (con != null && con.isConnected()) {
             try {
                EraseQos eq = new EraseQos(glob);
