@@ -61,7 +61,7 @@
       </li>
       <li>Multiple filters per subscription<br />
       Multiple filters can be specified in one subscribe/get invocation.
-      Each of them may address another plugin. The are sequentially executed and if
+      Each of them may address another plugin. They are sequentially executed and if
       one filter denies access (the match() method returns 'false') the message
       is not delivered. The filters are logically AND connected.
       </li>
@@ -121,11 +121,12 @@ have a content shorter then 8 kBytes.
    <see type="API">org.xmlBlaster.engine.mime.demo.ContentLenFilter</see>
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
+   <see type="REQ">mime.plugin.access.regex</see>
    <see type="REQ">util.property.env</see>
    <see type="REQ">mime.plugin.publishfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
