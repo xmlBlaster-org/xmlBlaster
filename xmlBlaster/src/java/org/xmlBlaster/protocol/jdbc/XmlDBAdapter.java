@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.17 2001/02/24 23:16:38 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.18 2001/12/08 22:54:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -197,16 +197,23 @@ public class XmlDBAdapter
                                                 descriptor.getRowrootnode(),
                                                 descriptor.getRowlimit(), rs);
             }
+            if (Log.TRACE) Log.trace(ME, "Query successful done, connection released");
          } finally {
             if (rs!=null) rs.close();
             if (stmt!=null) stmt.close();
             if (conn!=null) namedPool.release(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
-            if (Log.TRACE) Log.trace(ME, "Query successful done, connection released");
          }
       }
       catch (SQLException e) {
-         Log.warn(ME, "Exception in query '" + descriptor.getCommand() + "' : " + e);
-         throw new XmlBlasterException(ME, e.getMessage());
+         String str = "SQLException in query '" + descriptor.getCommand() + "' : " + e;
+         Log.warn(ME, str);
+         throw new XmlBlasterException(ME, str);
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         String str = "Exception in query '" + descriptor.getCommand() + "' : " + e;
+         Log.warn(ME, str);
+         throw new XmlBlasterException(ME, str);
       }
 
       return doc;
