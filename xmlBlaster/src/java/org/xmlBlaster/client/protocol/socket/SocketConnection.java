@@ -206,8 +206,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          else {
             if (log.TRACE) log.trace(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
             this.sock = new Socket(inetAddr, port);
-            this.localPort = sock.getLocalPort();
-            this.localHostname = sock.getLocalAddress().getHostAddress();
+            this.localPort = this.sock.getLocalPort();
+            this.localHostname = this.sock.getLocalAddress().getHostAddress();
             log.info(ME, "Created socket client connected to " + hostname + " on port " + port + ", callback address is " + getLocalAddress());
          }
          oStream = this.sock.getOutputStream();
@@ -264,12 +264,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @return For example "localhost:66557"
     */
    public String getLocalAddress() {
-      if (sock == null) {
+      if (this.sock == null) {
          log.error(ME, "Can't determine client address, no socket connection available");
          Thread.currentThread().dumpStack();
          return null;
       }
-      return "" + sock.getLocalAddress().getHostAddress() + ":" + sock.getLocalPort();
+      return "" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort();
    }
 
    /**
@@ -291,7 +291,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (connectQos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
       if (log.CALL) log.call(ME, "Entering connect");
-      if (isLoggedIn()) {
+      if (isConnected() && isLoggedIn()) {
          log.warn(ME, "You are already logged in, no relogin possible.");
          return "";
       }
@@ -376,7 +376,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
    }
 
    /**
