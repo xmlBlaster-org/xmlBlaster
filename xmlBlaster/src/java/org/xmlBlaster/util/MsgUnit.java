@@ -117,9 +117,9 @@ public final class MsgUnit implements java.io.Serializable
    /**
     */
    public MsgUnit(KeyData key, byte[] content, QosData qos) {
-      if (key == null && qos == null) {
+      if (key == null || qos == null) {
          Thread.dumpStack();
-         throw new IllegalArgumentException("MsgUnit constructor with key=="+key+" AND qos="+qos+" is invalid");
+         throw new IllegalArgumentException("MsgUnit constructor with key=="+key+" OR qos="+qos+" is invalid");
       }
       this.glob = (key == null) ? qos.getGlobal() : key.getGlobal();
       this.keyData = key;
