@@ -6,9 +6,9 @@ Comment:   Allows you be called back after a given delay.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-
-import java.util.*;
-
+import java.lang.ref.WeakReference;
+import java.util.TreeMap;
+import java.util.NoSuchElementException;
 
 /**
  * Allows you be called back after a given delay.
@@ -65,7 +65,7 @@ import java.util.*;
  *
  * JDK 1.2 or higher only.
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.TimeoutTest
  */
 public class Timeout extends Thread
@@ -80,41 +80,37 @@ public class Timeout extends Thread
    private boolean ready = false;
    /** Switch on debugging output */
    private final boolean debug = false;
-
-
-   /**
-    * Helper holding the callback interface an some user data to be 
-    * looped through.
-    */
-   private class Container
-   {
-     I_Timeout callback;
-     Object userData;
-     long creation;
-     Container(I_Timeout callback, Object userData) {
-       this.callback = callback;
-       this.userData = userData;
-       this.creation = System.currentTimeMillis();
-     }
-   }
-
+   /** Hold only weak reference on callback object? */
+   private final boolean useWeakReference;
 
    /**
-    * Create a timer thread. 
+    * Create a timer thread with a strong reference on the callback objects. 
     */
    public Timeout()
    {
-      this("Timeout-Thread");
+      this("Timeout-Thread", false);
    }
 
 
    /**
-    * Create a timer thread. 
+    * Create a timer thread with a strong reference on the callback objects. 
+    * @param name The name of the thread
     */
    public Timeout(String name)
    {
+      this(name, false);
+   }
+
+   /**
+    * @param name The name of the thread
+    * @param useWeakReference If true the reference on your I_Timeout implementation is
+    *        only weak referenced and may be garbage collected even that we hold a weak reference.
+    */
+   public Timeout(String name, boolean useWeakReference)
+   {
       super(name);
-      map = new TreeMap();
+      this.useWeakReference = useWeakReference;
+      this.map = new TreeMap();
       setDaemon(true);
       start();
       while (!ready) { // We block until our timer thread is ready
@@ -164,7 +160,11 @@ public class Timeout extends Thread
          }
 
          if (container != null) {
-            container.callback.timeout(container.userData);
+            I_Timeout callback = container.getCallback();
+            //System.out.println("useWeakReference=" + useWeakReference + " callback=" + callback);
+            if (callback != null) {
+               callback.timeout(container.getUserData());
+            }
             continue;
          }
 
@@ -200,6 +200,9 @@ public class Timeout extends Thread
     */
    public final Timestamp addTimeoutListener(I_Timeout listener, long delay, Object userData)
    {
+      if (listener == null) {
+         throw new IllegalArgumentException(ME+": addTimeoutListener() with listener=null");
+      }
       Timestamp key = null;
       if (delay < 1) System.out.println(ME + ": addTimeoutListener with delay = " + delay);
       int nanoCounter = 0;
@@ -210,7 +213,7 @@ public class Timeout extends Thread
             key = new Timestamp(endNanos);
             Object obj = map.get(key);
             if (obj == null) {
-               map.put(key, new Container(listener, userData));
+               map.put(key, new Container(this.useWeakReference, listener, userData));
                break;
             }
             else {
@@ -262,7 +265,14 @@ public class Timeout extends Thread
             throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
          }
          Container container = (Container)obj;
-         return addTimeoutListener(container.callback, delay, container.userData);
+         I_Timeout callback = container.getCallback();
+         if (callback == null) {
+            if (this.useWeakReference)
+               throw new XmlBlasterException(ME, "The weak callback reference for timeout handle '" + key + "' is garbage collected, no timeout refresh done");
+            else
+               throw new XmlBlasterException(ME, "Internal error for timeout handle '" + key + "', no timeout refresh done");
+         }
+         return addTimeoutListener(callback, delay, container.getUserData());
       }
    }
 
@@ -294,8 +304,7 @@ public class Timeout extends Thread
       synchronized (map) {
          Container container = (Container) map.remove(key);
          if (container != null) {
-            container.callback = null;
-            container.userData = null;
+            container.reset();
             container = null;
          }
       }
@@ -399,7 +408,12 @@ public class Timeout extends Thread
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
     */
    public static void main(String args[]) throws Exception {
+      testWeakReference();
+      //testStrongReference();
+   }
 
+   /** Eample for the standard case */
+   static void testStrongReference() {
       Timeout timeout = new Timeout("TestTimer");
       System.out.println("Timer created and ready.");
       Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
@@ -413,4 +427,101 @@ public class Timeout extends Thread
       System.err.println("ERROR: Timeout not occurred.");
       System.exit(1);
    }
+
+   /** Test a weak reference */
+   static void testWeakReference() {
+      final class WeakObj implements I_Timeout {
+         public void timeout(Object userData) {
+            System.err.println("ERROR: Timeout invoked, weak object was not garbage collected.");
+            System.exit(1);
+         }
+         public void finalize() {
+            System.out.println("WeakObj is garbage collected");
+         }
+      }
+
+      Timeout timeout = new Timeout("TestTimer", true);
+      System.out.println("Timer created and ready.");
+
+      {
+         WeakObj weakObj = new WeakObj();
+         Object anotherRef = new Object();
+         Timestamp timeoutHandle = timeout.addTimeoutListener(weakObj, 4000L, weakObj); //anotherRef);
+         weakObj = null;
+         //anotherRef = null;
+      }
+
+      System.gc();
+      System.out.println("Called gc()"); // NOTE: Without "weakObj = null" and "System.gc()" the test fails
+      try { Thread.currentThread().sleep(8000L); } catch (InterruptedException e) {}
+      System.out.println("SUCCESS: No timeout happened");
+      System.exit(0);
+   }
 }
+
+
+
+   /**
+    * Helper holding the callback interface an some user data to be 
+    * looped through.
+    */
+   final class Container
+   {
+      private final boolean useWeakReference;
+      private Object callback;
+      private Object userData;
+      final long creation;
+      
+      /** @param callback The handle to callback a client (is checked already to be not null) */
+      Container(boolean useWeakReference, I_Timeout callback, Object userData) {
+         this.useWeakReference = useWeakReference;
+         if (this.useWeakReference) {
+            this.callback = new WeakReference(callback);
+            if (userData != null) 
+               this.userData = new WeakReference(userData);
+         }
+         else {
+            this.callback = callback;
+            this.userData = userData;
+         }
+         this.creation = System.currentTimeMillis();
+      }
+
+      /** @return The callback handle can be null for weak references */
+      I_Timeout getCallback() {
+         if (this.useWeakReference) {
+            WeakReference weak = (WeakReference)this.callback;
+            return (I_Timeout)weak.get();
+         }
+         else {
+            return (I_Timeout)this.callback;
+         }
+      }
+      /** @return The userData, can be null for weak references */
+      Object getUserData() {
+         if (this.userData == null) {
+            return null;
+         }
+         if (this.useWeakReference) {
+            WeakReference weak = (WeakReference)this.userData;
+            return weak.get();
+         }
+         else {
+            return this.userData;
+         }
+      }
+
+      void reset() {
+         if (this.callback != null && useWeakReference) {
+            ((WeakReference)this.callback).clear();
+         }
+         this.callback = null;
+
+         if (this.userData != null && useWeakReference) {
+            ((WeakReference)this.userData).clear();
+         }
+         this.userData = null;
+      }
+   }
+
+
