@@ -38,7 +38,7 @@ public class I_MapTest extends TestCase {
    private final boolean IS_TRANSIENT = false;
 
    private I_Map currMap;
-   private int count;
+   private int currImpl;
 /*
    static I_Map[] IMPL = {
                    new org.xmlBlaster.engine.msgstore.ram.MapPlugin(),
@@ -52,7 +52,7 @@ public class I_MapTest extends TestCase {
 
    public I_MapTest(String name, int currImpl) {
       super(name);
-      this.count = currImpl;
+      this.currImpl = currImpl;
 
       String[] args = { //configure the cache
          "-persistence.persistentQueue", "JDBC,1.0",
@@ -61,14 +61,13 @@ public class I_MapTest extends TestCase {
       this.glob = new Global(args);
       this.log = glob.getLog(null);
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
-      this.log.error(ME, "PLEASE UPDATE OUTDATED PROPS");
    }
 
    protected void setUp() {
       try {
          glob.getProperty().set("topic.queue.persistent.tableNamePrefix", "TEST");
 
-         String type = PLUGIN_TYPES[this.count];
+         String type = PLUGIN_TYPES[this.currImpl];
          StoragePluginManager pluginManager = this.glob.getStoragePluginManager();
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
@@ -108,16 +107,30 @@ public class I_MapTest extends TestCase {
    }
 
    private MsgUnit createMsgUnit(boolean persistent) {
+      return createMsgUnit(persistent, -1);
+   }
+
+   private MsgUnit createMsgUnit(boolean persistent, long contentLen_) {
       try {
+         int contentLen = (int)contentLen_;
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
          publishQosServer.getData().setPersistent(persistent);
-         return new MsgUnit(glob, "<key oid='Hi'/>", "content".getBytes(), publishQosServer.toXml());
+         String contentStr = "content";
+         if (contentLen >= 0) {
+            StringBuffer content = new StringBuffer(contentLen);
+            for (int i=0; i<contentLen; i++) {
+               content.append("X");
+            }
+            contentStr = content.toString();
+         }
+         return new MsgUnit(glob, "<key oid='Hi'/>", contentStr.getBytes(), publishQosServer.toXml());
       }
       catch (XmlBlasterException ex) {
          fail("msgUnit not constructed: " + ex.getMessage());
       }
       return null;
    }
+
 
    /**
     * Tests QueuePropertyBase() and getStorageId()
@@ -268,6 +281,58 @@ public class I_MapTest extends TestCase {
          i_map.shutdown();
       }
       catch(XmlBlasterException e) {
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+   }
+
+
+   /**
+    * Tests overflow of maxNumOfBytes() of a CACHE. 
+    */
+   public void testByteOverflow() {
+      I_Map i_map = this.currMap;
+      ME = "I_MapTest.testByteOverflow(" + i_map.getStorageId() + ")[" + i_map.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      try {
+         StorageId storageId = new StorageId("msgUnitStore", "ByteOverflowMapId");
+         QueuePropertyBase prop = new MsgUnitStoreProperty(glob, "/node/test");
+
+         MsgUnitWrapper mu = new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId);
+         long sizeEmpty = mu.getSizeInBytes();
+
+         MsgUnitWrapper[] queueEntries = {
+            new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId),
+            new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId),
+            new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId),
+            // Each above entry has 3,311 bytes = 9,922, the next one has 9,932 bytes
+            // so when it is entered two of the above need to be swapped away
+            // as maxBytes=13,244
+            new MsgUnitWrapper(glob, createMsgUnit(false, 2*sizeEmpty-1), storageId),
+            new MsgUnitWrapper(glob, createMsgUnit(false, 0),  storageId)};
+
+         final long maxBytesCache = 4*sizeEmpty;
+         prop.setMaxBytes(1000000);
+         prop.setMaxBytesCache(maxBytesCache);
+         assertEquals(ME+": Wrong capacity", 1000000, prop.getMaxBytes());
+         assertEquals(ME+": Wrong cache capacity", maxBytesCache, prop.getMaxBytesCache());
+         i_map.initialize(storageId, prop);
+         assertEquals(ME+": Wrong queue ID", storageId, i_map.getStorageId());
+
+         long numOfBytes = 0;
+         for(int i=0; i<queueEntries.length; i++) {
+            i_map.put(queueEntries[i]);
+            numOfBytes += queueEntries[i].getSizeInBytes();
+         }
+
+         assertEquals(ME+": Wrong size", queueEntries.length, i_map.getNumOfEntries());
+         assertEquals(ME+": Wrong bytes", numOfBytes, i_map.getNumOfBytes());
+
+         System.out.println("***" + ME + " [SUCCESS]");
+         i_map.clear();
+         i_map.shutdown();
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, "Exception thrown: " + e.getMessage());
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
@@ -543,9 +608,6 @@ public class I_MapTest extends TestCase {
 
 
 
-
-
-
    public void testPutEntriesTwice() {
       String queueType = "unknown";
       try {
@@ -656,6 +718,7 @@ public class I_MapTest extends TestCase {
    {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
+      suite.addTest(new I_MapTest("testByteOverflow", 2)); // For CACHE only
       for (int i=0; i<PLUGIN_TYPES.length; i++) {
          suite.addTest(new I_MapTest("testConfig", i));
          suite.addTest(new I_MapTest("testPutMsg", i));
@@ -676,12 +739,20 @@ public class I_MapTest extends TestCase {
 
       Global glob = new Global(args);
 
+      I_MapTest testSub = new I_MapTest("I_MapTest", 2); // CACHE check
+      long startTime = System.currentTimeMillis();
+      testSub.setUp();
+      testSub.testByteOverflow();
+      testSub.tearDown();
+      long usedTime = System.currentTimeMillis() - startTime;
+      testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+
+      /*
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
-         I_MapTest testSub = new I_MapTest("I_MapTest", i);
+         testSub = new I_MapTest("I_MapTest", i);
 
-         long startTime = System.currentTimeMillis();
+         startTime = System.currentTimeMillis();
 
-/*
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
@@ -701,13 +772,14 @@ public class I_MapTest extends TestCase {
          testSub.setUp();
          testSub.testGetAllSwappedMsgs();
          testSub.tearDown();
-*/
          testSub.setUp();
          testSub.testPutEntriesTwice();
          testSub.tearDown();
-         long usedTime = System.currentTimeMillis() - startTime;
+
+         usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }
+      */
    }
 }
 
