@@ -114,23 +114,7 @@ public class Global implements Cloneable
     * by your properties array (usually the command line args). 
     */
    public Global(Properties props) {
-     this(propsToArgs(props));
-   }
-
-   public static String[] propsToArgs(Properties props) {
-     if (props == null) return new String[0];
-     String[] args = new String[props.size()*2];
-     Enumeration e = props.keys();
-     int ii=0;
-     while (e.hasMoreElements()) {
-       String key = (String)e.nextElement();
-       args[ii] = "-"+key;
-       ii++;
-       args[ii] = props.getProperty(key);
-       //System.out.println("ii=" + ii + ": " + args[ii] + " key=" + key);
-       ii++;
-     }
-     return args;
+     this(Property.propsToArgs(props));
    }
 
    /**
@@ -463,7 +447,7 @@ public class Global implements Cloneable
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(Properties props) {
-      return init(propsToArgs(props));
+      return init(Property.propsToArgs(props));
    }
 
    /**
