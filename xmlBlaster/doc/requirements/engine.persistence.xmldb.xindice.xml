@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.persistence.xmldb.xindice' type='NEW' prio='MEDIUM' status="INWORK">
+   <topic>XmlBlaster provides proxy for the native xmldb Xindice.</topic>
+   <description>
+      <p>
+      To use the native xml-based db Xindice of the Apache Software Foundation
+      xmlBlaster provides a proxy which offers methods to access this db easily
+      from within the engine of the server or even from the client.
+      </p>
+
+      <p>
+      The proxy creates one connection to the db per instance. There is no connection pooling
+      implemented. The user has to start the db seperately.
+      </p>
+
+      <p>
+      The proxy provides methods to open, list, set, close and remove collections.
+      </p>
+
+      <p>
+      The proxy provides methods to add retrieve and remove documents.
+      </p>
+   </description>
+   <configuration where="server">
+     <table border="1">
+        <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Driver.Type</td>
+            <td>filestore<br/>Example: xmldb</td>
+            <td>Gives the type of the persistence driver.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Driver.Version</td>
+            <td>1.0<br/>Example: xindice</td>
+            <td>Gives the version of the persistence driver type.</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Path</td>
+            <td>${user.home}${file.separator}tmp<br/>Example: xmldb:xindice:///db/xmlBlaster</td>
+            <td>Gives the path of storage depending on the desired persistence driver type and version.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+     </table>
+   </configuration>
+
+   <todo type='HTML'>
+   <p>Find the CORBA Bug!
+   </p>
+
+   <p>Write a testcase!
+   </p>
+
+   <p>
+   Problem is: currently we're using two different ORB's in the same VM.
+   We try to address this problem by delegating the Plugins to different ClassLoaders.
+   </p>
+   </todo>
+
+   <see type="REQ">engine.persistence.xmldb</see>
+   <see type="API">org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin</see>
+   <see type="OTHER">org.xmlBlaster.engine.persistence.xmldb.README</see>
+   <see type="INTERNET">http://xml.apache.org/xindice</see>
+   <see type="INTERNET">http://www.xmldb.org</see>
+   <author>goetzger@gmx.net</author>
+   <date>2002 07 12</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="INWORK">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+<!-- end of file -->
