@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.4 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestGet.java,v 1.5 2000/03/07 12:21:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -140,6 +140,27 @@ public class TestGet extends TestCase
 
 
    /**
+    * LOAD TEST: get 2000 times a not existing message
+    */
+   public void testGetMany()
+   {
+      int num = 2000;
+      Log.info(ME, "Get " + num + " not existing messages ...");
+      String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
+      String qos = "<qos></qos>";
+      for (int ii=0; ii<num; ii++) {
+         try {
+            MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+            assert("get of not existing message is not possible", false);
+         } catch(XmlBlasterException e) {
+            // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
+         }
+      }
+      Log.info(ME, "Get " + num + " not existing messages done");
+   }
+
+
+   /**
     * Method is used by TestRunner to load these tests
     */
    public static Test suite()
@@ -147,6 +168,7 @@ public class TestGet extends TestCase
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        suite.addTest(new TestGet("testGet", loginName));
+       suite.addTest(new TestGet("testGetMany", loginName));
        return suite;
    }
 
@@ -166,6 +188,7 @@ public class TestGet extends TestCase
       TestGet testSub = new TestGet("TestGet", "Tim");
       testSub.setUp();
       testSub.testGet();
+      testSub.testGetMany();
       testSub.tearDown();
       Log.exit(TestGet.ME, "Good bye");
    }
