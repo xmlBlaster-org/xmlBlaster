@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $
+Version:   $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.66 2004/09/23 13:37:11 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.67 2004/09/24 19:59:43 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -378,7 +378,7 @@ Timeout& Global::getPingTimer()
    if (pingTimer_) return *pingTimer_;
    thread::Lock lock(pingerMutex_);
    { // this is synchronized. Test again if meanwhile it has been set ...
-      getLog("org.xmlBlaster.util").info(ME, "::getPingTimer: creating the singleton 'ping timer'");
+      getLog("org.xmlBlaster.util").trace(ME, "::getPingTimer: creating the singleton 'ping timer'");
       if (pingTimer_) return *pingTimer_;
       pingTimer_ = new Timeout(*this, string("ping timer"));
       return *pingTimer_;
@@ -395,12 +395,12 @@ const string& Global::getBoolAsString(bool val)
 
 void Global::setSessionName(SessionNameRef sessionName)
 {
-	sessionName_ = sessionName;
+   sessionName_ = sessionName;
 }
 
 SessionNameRef Global::getSessionName() const
 {
-	return sessionName_;
+   return sessionName_;
 }
 
 
@@ -450,6 +450,43 @@ void Global::setId(const string& id)
 void Global::setImmutableId(const string& id) 
 {
    immutableId_ = id;
+}
+
+std::string waitOnKeyboardHit(const std::string &str)
+{
+   char ptr[256];
+   std::string retStr;
+
+   // Flush input stream
+   while (true) {
+      cout.flush();
+      int ret = std::cin.rdbuf()->in_avail();
+      if (ret == 0) break;
+      std::cin.getline(ptr,255,'\n');
+   }
+
+   // Request input
+   if (str != "")
+      std::cout << str;
+
+   // Read input, ignore newlines
+   *ptr = 0;
+   bool first=true;
+   while (true) {
+      std::cin.getline(ptr,255,'\n');
+      if (strlen(ptr))
+         retStr = ptr;
+      else {
+         if (str != "" && !first)
+            std::cout << str;
+      }
+      first = false;
+
+      int ret = std::cin.rdbuf()->in_avail();
+      if (ret == 0 && retStr != "") {
+         return retStr;
+      }
+   }
 }
 
 }}} // namespace

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.38 2004/09/23 13:37:11 ruff Exp $
+Version:   $Id: Global.h,v 1.39 2004/09/24 19:59:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef ORG_XMLBLASTER_UTIL_GLOBAL_H
@@ -27,6 +27,14 @@ Version:   $Id: Global.h,v 1.38 2004/09/23 13:37:11 ruff Exp $
 #include <util/objman.h>
 
 namespace org { namespace xmlBlaster { namespace util {
+
+/**
+ * Blocks until <enter> on the keyboard is hit. 
+ * Consumes multiple hits (for Windows DOS box)
+ * @param str If not null it will be printed on console with cout
+ * @return The last entered line which contains something, previous lines and following empty lines are ignored
+ */
+Dll_Export std::string waitOnKeyboardHit(const std::string &str);
 
 /**
  * Data holder of Properties dumped to argc/argv command line arguments
