@@ -11,12 +11,14 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #define _CLIENT_CORBACONNECTION_H
 
 #include <string>
+#include <vector>
 #include <fstream>
 #include <client/LoginQosWrapper.h>
 #include <client/DefaultCallback.h>
 #include <util/Log.h>
 #include <util/NameServerControl.h>
 #include <util/CallbackAddress.h>
+#include <util/MessageUnit.h>
 
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
@@ -29,7 +31,7 @@ namespace org { namespace xmlBlaster {
       
    private:
       
-      string me() {
+      string me() const {
          return "CorbaConnection";
       }
       
@@ -43,7 +45,7 @@ namespace org { namespace xmlBlaster {
       string                          loginName_;
       string                          passwd_;
       LoginQosWrapper                 loginQos_;
-      util::Log                       log_;
+      mutable util::Log               log_;
       int                             numLogins_;
       bool                            orbOwner_;
 
@@ -232,51 +234,93 @@ namespace org { namespace xmlBlaster {
       }
       
       
-      string subscribe(const string &xmlKey, const string &qos);
+      /**
+       * Subscribe a message. 
+       * <br />
+       * Note: You don't need to free anything
+       * @return The xml based QoS
+       */
+      string subscribe(const string &xmlKey, const string &qos=string("<qos/>"));
       
  
-      void unSubscribe(const string &xmlKey, const string &qos);
+      void unSubscribe(const string &xmlKey, const string &qos=string("<qos/>"));
       
       
       /**
-       * Publish fault-tolerant the given message.
+       * Publish the given message.
        * <p />
        * This is a wrapper around the raw CORBA publish() method
        * If the server disappears you get an exception.
        * This call will not block.
        * <p />
-       * Enforced by ServerOperations interface (fail save mode)
        * @see xmlBlaster.idl
+       * @deprecated Please use the util::MessageUnit variant
        */
       string publish(const serverIdl::MessageUnit &msgUnit);
 
+      /**
+       * Publish with util MessageUnit (not CORBA specific client code). 
+       * <br />
+       * This method has a common interface which is not CORBA depending. 
+       * Prefer this to publish(const serverIdl::MessageUnit &msgUnit)
+       * <br />
+       * Note: You don't need to free anything
+       * @return The xml based QoS
+       */
+      string publish(const util::MessageUnit &msgUnitUtil);
       
       /**
-       * Enforced by ServerOperations interface.
+       * Publish a bulk of messages. 
+       * <br />
+       * This method has a common interface which is not CORBA depending. 
+       * <br />
+       * Note: You don't need to free anything
+       * @param A vector with MessageUnit
+       * @return A vector of strings each is a publish return QoS. 
        * @see xmlBlaster.idl
        */
-      serverIdl::StringArr*
-      publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
+      vector<string> publishArr(const vector<util::MessageUnit> &msgVec);
      
-      
+      /**
+       * @deprecated Please use the STL vector variant
+       */
+      serverIdl::StringArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
+
+      /**
+       * Publish a bulk of messages without ACK. 
+       * <br />
+       * This method has a common interface which is not CORBA depending. 
+       * <br />
+       * Note: You don't need to free anything
+       * @param The MessageUnit array as a STL vector
+       * @see xmlBlaster.idl
+       */
+      void CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec);
+
       /**
        * Enforced by ServerOperations interface.
        * @see xmlBlaster.idl
+       * @deprecated Use the vector<util::MessageUnit> variant
        */
       void publishOneway(const serverIdl::MessageUnitArr& msgUnitArr);
 
       /**
-       * Enforced by ServerOperations interface (fail save mode)
        * @see xmlBlaster.idl
        */
-      serverIdl::StringArr* erase(const string &xmlKey, const string &qos);
+      vector<string> erase(const string &xmlKey, const string &qos=string("<qos/>"));
 
       
       /**
-       * Enforced by ServerOperations interface (fail save mode)
+       * Access messages the synchronous way. 
+       * <br />
+       * Note: You don't need to free anything
+       * @return The STL MessageUnit vector, its a copy so if you have the variable on the
+       *         stack it will free itself
        * @see xmlBlaster.idl
        */
-      serverIdl::MessageUnitArr* get(const string &xmlKey, const string &qos);
+      vector<util::MessageUnit> get(const string &xmlKey, const string &qos=string("<qos/>"));
+
+      //serverIdl::MessageUnitArr* get(const string &xmlKey, const string &qos);
       
       
       /**
@@ -289,7 +333,19 @@ namespace org { namespace xmlBlaster {
        * Enforced by ServerOperations interface (fail save mode)
        * @see xmlBlaster.idl
        */
-      string ping(const string &qos);
+      string ping(const string &qos=string("<qos/>"));
+
+      /**
+       * Transform a util::MessageUnit to the corba variant
+       */
+      void copyToCorba(serverIdl::MessageUnit &dest, const util::MessageUnit &src) const;
+
+      /**
+       * Transform STL vector to corba messageUnit array variant. 
+       */
+      void copyToCorba(serverIdl::MessageUnitArr_var &units, const vector<util::MessageUnit> &msgVec) const;
+
+      void copyFromCorba(vector<util::MessageUnit> &vecArr, serverIdl::MessageUnitArr_var &units) const;
 
       /**
        * Command line usage.

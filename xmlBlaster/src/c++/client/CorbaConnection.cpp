@@ -283,11 +283,12 @@ namespace org { namespace xmlBlaster {
          log_.warn(me(), "No logout, you are not logged in");
          return false;
       }
-      else log_.warn(me(), "Logout!");
+      else log_.info(me(), "Logout from xmlBlaster ...");
 
       try {
          if (!CORBA::is_nil(xmlBlaster_)) authServer_->logout(xmlBlaster_);
          xmlBlaster_ = 0;
+         log_.info(me(), "Disconnected from xmlBlaster.");
          return true;
       }
       catch(serverIdl::XmlBlasterException &e) {
@@ -299,7 +300,12 @@ namespace org { namespace xmlBlaster {
       return false;
    }
 
-
+   /**
+    * Subscribe a message. 
+    * <br />
+    * Note: You don't need to free anything
+    * @return The xml based QoS
+    */
    string CorbaConnection::subscribe(const string &xmlKey, const string &qos) {
       if (log_.CALL) log_.call(me(), "subscribe() ...");
       if (CORBA::is_nil(xmlBlaster_)) {
@@ -307,11 +313,12 @@ namespace org { namespace xmlBlaster {
          throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
       }
       try {
-         return xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
+         CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
+         return static_cast<char *>(ret);
       } catch(serverIdl::XmlBlasterException &e) {
          throw e;
       }
-      return "";
+      //return "";
    }
 
 
@@ -332,9 +339,16 @@ namespace org { namespace xmlBlaster {
       }
    }
 
-
-   string CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit) {
-      if (log_.TRACE) log_.trace(me(), "Publishing ...");
+   /**
+    * publish a message. 
+    * <br />
+    * This method has a common interface which is not CORBA depending. 
+    * <br />
+    * Note: You don't need to free anything
+    * @return The xml based QoS
+    */
+   string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
+      if (log_.TRACE) log_.trace(me(), "Publishing the STL way ...");
 
       if (CORBA::is_nil(xmlBlaster_)) {
          string txt = "no auth.Server, you must login first";
@@ -342,7 +356,11 @@ namespace org { namespace xmlBlaster {
       }
 
       try {
-         return xmlBlaster_->publish(msgUnit);
+         serverIdl::MessageUnit msgUnit;
+         // serverIdl::MessageUnit_var msgUnit;
+         copyToCorba(msgUnit, msgUnitUtil);
+         CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
+         return static_cast<char *>(ret);
       }
       catch(serverIdl::XmlBlasterException &e) {
          string msg = "XmlBlasterException: ";
@@ -353,13 +371,72 @@ namespace org { namespace xmlBlaster {
 //        catch(CORBA::Exception &ex1) {
 //       throw serverIdl::XmlBlasterException(me().c_str(),to_string(ex1));
 //        }
-
-      return "";
    }
 
+   /**
+    * @deprecated Please use the util::MessageUnit variant
+    */
+   string CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit) {
+      if (log_.TRACE) log_.trace(me(), "Publishing ...");
 
-   serverIdl::StringArr*
-      CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr){
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
+         return static_cast<char *>(ret);
+      }
+      catch(serverIdl::XmlBlasterException &e) {
+         string msg = "XmlBlasterException: ";
+         msg += e.reason;
+         if (log_.TRACE) log_.trace(me(), msg);
+         throw e;
+      }
+//        catch(CORBA::Exception &ex1) {
+//       throw serverIdl::XmlBlasterException(me().c_str(),to_string(ex1));
+//        }
+   }
+
+   /**
+    * Publish a bulk of messages. 
+    * <br />
+    * This method has a common interface which is not CORBA depending. 
+    * <br />
+    * Note: You don't need to free anything
+    * @param A vector with MessageUnit
+    * @return A vector of strings each is a publish return QoS. 
+    */
+   vector<string> CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec) {
+      if (log_.CALL) log_.call(me(), "publishArr() ...");
+
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
+         copyToCorba(msgUnitArr, msgVec);
+         serverIdl::StringArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
+         vector<string> vecArr;
+         for (unsigned int ii=0; ii<retArr->length(); ii++) {
+            vecArr.push_back(static_cast<char *>(retArr[ii]));
+         }
+         return vecArr;
+      }
+      catch(serverIdl::XmlBlasterException &e) {
+         if (log_.TRACE) log_.trace(me(), "XmlBlasterException: "
+                                    + string(e.reason) );
+         throw e;
+      }
+   }
+
+   /**
+    * @deprecated Please use the STL vector variant
+    */
+   serverIdl::StringArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr){
       if (log_.CALL) log_.call(me(), "publishArr() ...");
 
       if (CORBA::is_nil(xmlBlaster_)) {
@@ -378,7 +455,40 @@ namespace org { namespace xmlBlaster {
       return 0;
    }
 
+   /**
+    * Publish a bulk of messages without ACK. 
+    * <br />
+    * This method has a common interface which is not CORBA depending. 
+    * <br />
+    * Note: You don't need to free anything
+    * @param The MessageUnit array as a STL vector
+    */
+   void CorbaConnection::publishOneway(const vector<util::MessageUnit>& msgVec){
+      if (log_.CALL) log_.call(me(), "publishOneway() ...");
 
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
+         copyToCorba(msgUnitArr, msgVec);
+         xmlBlaster_->publishOneway(msgUnitArr);
+      }
+      catch (const exception& e) {
+         log_.error(me(), string("Exception caught in publishOneway, it is not transferred to client: ") + e.what());
+      }
+      catch(...) {
+         log_.error(me(), "Exception caught in publishOneway, it is not transferred to client");
+      }
+   }
+
+   /*
+    * Please use the STL based variant
+    * @param The MessageUnit array as a CORBA datatype
+    * @deprecated Use the vector<util::MessageUnit> variant
+    */
    void CorbaConnection::publishOneway(const serverIdl::MessageUnitArr& msgUnitArr){
       if (log_.CALL) log_.call(me(), "publishOneway() ...");
 
@@ -398,9 +508,12 @@ namespace org { namespace xmlBlaster {
       }
    }
 
-
-   serverIdl::StringArr*
-      CorbaConnection::erase(const string &xmlKey, const string &qos) {
+   /**
+    * This method has a common interface which is not CORBA depending. 
+    * <br />
+    * Note: You don't need to free anything
+    */
+   vector<string> CorbaConnection::erase(const string &xmlKey, const string &qos) {
       if (log_.CALL) log_.call(me(), "erase() ...");
 
       if (CORBA::is_nil(xmlBlaster_)) {
@@ -409,18 +522,29 @@ namespace org { namespace xmlBlaster {
       }
 
       try {
-         return xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
+         serverIdl::StringArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
+         vector<string> vecArr;
+         for (unsigned int ii=0; ii<retArr->length(); ii++) {
+            vecArr.push_back(static_cast<char *>(retArr[ii]));
+         }
+         return vecArr;
       }
       catch(serverIdl::XmlBlasterException e) {
          throw e;
       }
-      return 0;
    }
 
 
-   serverIdl::MessageUnitArr*
-      CorbaConnection::get(const string &xmlKey, const string &qos) {
-      serverIdl::MessageUnitArr* units;
+   /**
+    * Access messages the synchronous way. 
+    * <br />
+    * Note: You don't need to free anything
+    * @return The STL MessageUnit vector, its a copy so if you have the variable on the
+    *         stack it will free itself
+    */
+   vector<util::MessageUnit> CorbaConnection::get(const string &xmlKey, const string &qos) {
+
+      serverIdl::MessageUnitArr_var units;
       if (log_.CALL) log_.call(me(), "get() ...");
 
       if (CORBA::is_nil(xmlBlaster_)) {
@@ -435,6 +559,31 @@ namespace org { namespace xmlBlaster {
                                                qos.c_str());
          log_.info(me(),"New Entry in Cache created (subId="+subId+")");
          */
+         vector<util::MessageUnit> msgVec;
+         copyFromCorba(msgVec, units);
+         return msgVec;
+      }
+      catch(serverIdl::XmlBlasterException &e) {
+         throw e;
+      }
+   }
+
+   /*
+    * Please use the other STL based get() variant
+    * @return The MessageUnit array as a CORBA datatype
+    * @deprecated Use the vector<util::MessageUnit> variant of get()
+   serverIdl::MessageUnitArr* CorbaConnection::get(const string &xmlKey, const string &qos) {
+
+      serverIdl::MessageUnitArr* units;
+      if (log_.CALL) log_.call(me(), "get() ...");
+
+      if (CORBA::is_nil(xmlBlaster_)) {
+         string txt = "no auth.Server, you must login first";
+         throw serverIdl::XmlBlasterException(me().c_str(), txt.c_str());
+      }
+
+      try {
+         units = xmlBlaster_->get(xmlKey.c_str(), qos.c_str());
          return units; // check if this is OK or if it must be duplicated.
       }
       catch(serverIdl::XmlBlasterException &e) {
@@ -443,7 +592,7 @@ namespace org { namespace xmlBlaster {
 
       return (serverIdl::MessageUnitArr*)0;
    }
-
+    */
 
    string CorbaConnection::ping(const string &qos) {
       if (log_.CALL) log_.call(me(), "ping() ...");
@@ -454,14 +603,75 @@ namespace org { namespace xmlBlaster {
       }
 
       try {
-         const char *ret = xmlBlaster_->ping("");
-         return string(ret);
+         CORBA::String_var ret = xmlBlaster_->ping("");
+         return static_cast<char *>(ret);
       }
       catch(serverIdl::XmlBlasterException &e) {
          throw e;
       }
    }
 
+   /**
+    * Transform a util::MessageUnit to the corba variant
+    */
+   void CorbaConnection::copyToCorba(serverIdl::MessageUnit &dest, const util::MessageUnit &src) const {
+      dest.xmlKey = src.getKey().c_str();
+      serverIdl::ContentType content(src.getContentLen(),
+                                     src.getContentLen(),
+                                     (CORBA::Octet*)src.getContent(),
+                                     false); // our src does memory management itself
+      dest.content = content;  // dest.content and content point to same memory? memory leak?
+      dest.qos = src.getQos().c_str();
+   }
+
+   
+   /**
+    * Transform STL vector to corba messageUnit array variant. 
+    */
+   void CorbaConnection::copyToCorba(serverIdl::MessageUnitArr_var &units, const vector<util::MessageUnit> &msgVec) const {
+      unsigned int len = msgVec.size();
+      units->length(len);
+      for (unsigned int ii=0; ii<len; ii++) {
+         util::MessageUnit src = msgVec[ii];
+         serverIdl::MessageUnit dest;
+         copyToCorba(dest, src);
+         units[ii] = dest;
+      }
+   }
+
+   /**
+    * Transform corba messageUnit array to vector variant. 
+    * @param units Is not const as [] operator does not like it
+    */
+   void CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec, serverIdl::MessageUnitArr_var &units) const {
+      unsigned int len = units->length();
+      msgVec.reserve(len);
+      for (unsigned int ii=0; ii<len; ii++) {
+         const serverIdl::MessageUnit &msgUnit = static_cast<const serverIdl::MessageUnit>(units[ii]);
+         string key(msgUnit.xmlKey);
+         unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
+         const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
+         if (log_.TRACE) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<string>(len));
+         string qos(msgUnit.qos);
+         const util::MessageUnit msg(key, len, blob, string(qos));
+         msgVec.push_back(msg);
+      }
+   }
+
+   /**
+    * Transform corba messageUnit array to vector variant. 
+   void CorbaConnection::copyFromCorba(util::MessageUnit &msgUnitUtil, serverIdl::MessageUnitArr_var &msgUnit) {
+      string key(units[ii].xmlKey);
+      unsigned long len = static_cast<unsigned long>(units[ii].content.length());
+      const unsigned char * blob = static_cast<const unsigned char *>(&units[ii].content[0]);
+      //unsigned char *blob = (unsigned char *)&units[ii].content[0];
+      string qos(units[ii].qos);
+      msgUnitUtil.setKey(key);
+      msgUnitUtil.setContentLen(len);
+      msgUnitUtil.setContent(blob);
+      msgUnitUtil.setQos(qos);
+   }
+    */
 
    void CorbaConnection::usage() {
       util::Log log;
