@@ -9,9 +9,24 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define XMLBLASTER_SOCKET_H
 
 #include <stdlib.h>
+
 #ifdef _WINDOWS
-#include <Winsock2.h>
-/*#  include <winsock.h>*/
+                             /* #if _MSC_VER > 1300 */
+#include <Winsock2.h>        /* WS2_32.DLL: The newer lib which extends winsock.h */
+
+/*#  include <winsock.h> */  /* WSOCK32.DLL: The old lib, if you activate replace SD_BOTH with 2 in XmlBlasterConnectionUnparsed.c  */
+/* From a mailing list:
+   #ifndef INCL_WINSOCK_API_TYPEDEFS
+   #define INCL_WINSOCK_API_TYPEDEFS 1
+   #endif
+
+   // then include:
+   #include <winsock2.h>
+
+   also any header you include ( mainly a concern in your stdafx.h file ) that may suck in the winsock.h file you should do a:
+
+   #define _WINSOCKAPI_
+*/
 #  define ssize_t signed int
 #else
 #  include <sys/socket.h>
