@@ -89,22 +89,6 @@ abstract public class PluginManagerBase {
       return plug;
    }
 
-
-   /**
-    * Check if the requested plugin is supported.
-    * <p/>
-    * @param String The type of the requested plugin.
-    * @param String The version of the requested plugin.
-    * @return boolean true, if supported. else -> false
-    */
-   public boolean isSupported(String type, String version) {
-      // currently just a dummy implementation
-      // thus, it's impossible the switch the default security manager off
-
-      return true;
-   }
-
-
    /**
    * @return The name of the property in xmlBlaster.property, e.g. "Security.Server.Plugin"
    * for "Security.Server.Plugin[simple][1.0]"
@@ -125,7 +109,7 @@ abstract public class PluginManagerBase {
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return String The name of the requested plugin.
+    * @return String[] The name of the requested plugin and its parameters (as from xmlBlaster.properties)
     */
    protected String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
@@ -133,35 +117,33 @@ abstract public class PluginManagerBase {
       String[] pluginData=null;
       String rawString;
 
-      if (isSupported(type, version)) {
-         rawString = glob.getProperty().get(getPluginPropertyName(type, version), (String)null);
-         if (rawString==null) {
-            if (type != null)
-               Log.warn(ME, "Plugin type=" + type + " version=" + version + "not found, choosing default plugin");
-            rawString = getDefaultPluginName(type, version);
-         }
-         if(rawString!=null) {
-            Vector tmp = new Vector();
-            StringTokenizer st = new StringTokenizer(rawString, ",=");
-            while(st.hasMoreTokens()) {
-               tmp.addElement(st.nextToken());
-            }
-            //pluginData = (String[])tmp.toArray();
-            pluginData=new String[tmp.size()];
-            for(int i=0;i<tmp.size();i++) {
-               pluginData[i]=(String)tmp.elementAt(i);
-            }
-         }
-         //else
-         //   Log.warn(ME, "Accessing " + getPluginPropertyName(type, version) + " failed, no such entry found in xmlBlaster.properties");
+      rawString = glob.getProperty().get(getPluginPropertyName(type, version), (String)null);
+      if (rawString==null) {
+         if (type != null)
+            Log.warn(ME, "Plugin type=" + type + " version=" + version + "not found, choosing default plugin");
+         rawString = getDefaultPluginName(type, version);
       }
+      if(rawString!=null) {
+         Vector tmp = new Vector();
+         StringTokenizer st = new StringTokenizer(rawString, ",=");
+         while(st.hasMoreTokens()) {
+            tmp.addElement(st.nextToken());
+         }
+         //pluginData = (String[])tmp.toArray();
+         pluginData=new String[tmp.size()];
+         for(int i=0;i<tmp.size();i++) {
+            pluginData[i]=(String)tmp.elementAt(i);
+         }
+      }
+      //else
+      //   Log.warn(ME, "Accessing " + getPluginPropertyName(type, version) + " failed, no such entry found in xmlBlaster.properties");
       if (pluginData != null && pluginData[0].equalsIgnoreCase("")) pluginData = null;
 
       return pluginData;
    }
 
    /**
-    * Loads a security manager.
+    * Loads a plugin. 
     * <p/>
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
