@@ -315,7 +315,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Called by DeliveryWorker if an Exception occured
+    * Called by DeliveryWorker if an Exception occurred
     */
    void handleWorkerException(ArrayList entryList, Throwable throwable) {
       // Note: The DeliveryManager is notified about connection problems directly by its DeliveryConnectionsHandler
