@@ -1017,6 +1017,18 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
  (or in fact any other construct like <tt>$[..]</tt> if only your sub-plugin can handle it).
  </p>
 
+ <h3>Needed class files</h3>
+ <p>The complete DbWatcher code resides under
+    <code>xmlBlaster/src/java/org/xmlBlaster/contrib</code>,
+    after a <code>build all</code> it is compiled as well and
+    available in <code>xmlBlaster.jar</code>.
+ </p>
+    <p>You can manually distribute it with</p>
+    <pre>
+    cd xmlBlaster/build.tmp/classes
+    jar cvf dbwatcher.jar org/xmlBlaster/contrib
+    </pre>
+
    </configuration>
 
    <todo type="HTML">
