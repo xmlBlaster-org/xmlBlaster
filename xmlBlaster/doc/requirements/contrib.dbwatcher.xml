@@ -967,7 +967,6 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
 
   <plugin id='DbWatcherPlugin.MD5'
           className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
-     <attribute id='topicName'>poller.test</attribute> 
      <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
      <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
      <attribute id='db.user'>system</attribute>
