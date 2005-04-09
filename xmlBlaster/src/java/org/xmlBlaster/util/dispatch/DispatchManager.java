@@ -99,11 +99,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.connectionStatusListeners = new HashSet();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
       
-      if (addrArr != null) {
-         for (int ii=0; ii<addrArr.length; ii++) { // TODO: How to handle setting of multiple addresses??
-            this.dispatcherActive = addrArr[ii].isDispatcherActive();
-         }
-      }
+      initDispatcherActive(addrArr);
 
       /*
        * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
@@ -141,7 +137,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       switchToSyncMode();
    }
 
+   /**
+    * Reconfigure dispatcher with given properties. 
+    *
+    * Note that only a limited re-configuration is supported
+    * @param addressArr The new configuration
+    */
    public final void updateProperty(CallbackAddress[] addressArr) throws XmlBlasterException {
+      initDispatcherActive(addressArr);
       this.dispatchConnectionsHandler.initialize(addressArr);
    }
 
@@ -775,6 +778,17 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    public void setAddresses(AddressBase[] addr) throws XmlBlasterException {
       this.dispatchConnectionsHandler.initialize(addr);
+   }
+
+   /**
+    * Switch on/off the sending of messages. 
+    */
+   private void initDispatcherActive(AddressBase[] addrArr) {
+      if (addrArr != null) {
+         for (int ii=0; ii<addrArr.length; ii++) { // TODO: How to handle setting of multiple addresses??
+            this.dispatcherActive = addrArr[ii].isDispatcherActive();
+         }
+      }
    }
 
    /**
