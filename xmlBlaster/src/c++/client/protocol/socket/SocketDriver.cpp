@@ -422,6 +422,16 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
          if (secretSessionId_ != "") {
             qos.getSessionQos().setSecretSessionId(secretSessionId_);
          }
+         if (connection_ != 0 && connection_->callbackP != 0) {
+            ConnectQos *qq = const_cast<ConnectQos*>(&qos);
+            if (qq->getSessionCbQueueProperty().getCurrentCallbackAddress().getType() == Constants::SOCKET) {
+               // Force callback address, it could have changed on reconnect (checked to cb not be a delegate)
+               string addr = string("socket://") + string(connection_->callbackP->hostCB) + ":" +
+                      lexical_cast<std::string>(connection_->callbackP->portCB);
+               qq->getSessionCbQueueProperty().getCurrentCallbackAddress().setAddress(addr);
+               log_.trace(ME, "Setting callback address to " + addr);
+            }
+         }
       }
 
       char *retQos = connection_->connect(connection_, qos.toXml().c_str(),

@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
+ o #13323 Bugfix C++ client library
+   Fixed reconnect when server was away and C++ ping hasn't yet detected it
+
  o #13322 finalized dispatcherActive property (#13300)
    Now it works on reconnect as well
 
