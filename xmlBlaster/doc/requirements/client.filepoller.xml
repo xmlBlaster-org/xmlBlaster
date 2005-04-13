@@ -107,6 +107,7 @@
         <attribute id='discarded'>Discarded</attribute>
         <attribute id='fileFilter'></attribute>
         <attribute id='lockExtention'>*.lck</attribute>
+        <attribute id='filterType'>simple</attribute>
 
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
         <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
@@ -291,6 +292,18 @@ and here a minimalistic one:
          If the directory does not exist, one is created once the plugin is initialized. 
          You can either specify an absolute or a relative directory name. Relative names are put in the
          directory specified in the <i>directoryName</i> attribute.
+         </td>
+       </tr>
+       <tr>
+         <td>filterType</td>
+         <td>String</td>
+         <td>simple</td>
+         <td><b>optional</b>: If nothing is specified here, 'simple' is assumed. Valid types are 'simple' and 
+	        'regex'. This attribute decides which filter to use when processing both the fileFilter.
+		If you choose 'simple' then you can specify filters of the kind '*.xml' which are very simple to be used but
+		somehow limited if you want more advanced things to be done. The type 'regex' allows you to use regex 
+		syntax for the fileFilter. Note that <i>lockExtention</i> is not affected by this flag and is always considered
+		of type 'simple'.
          </td>
        </tr>
      </table>   
