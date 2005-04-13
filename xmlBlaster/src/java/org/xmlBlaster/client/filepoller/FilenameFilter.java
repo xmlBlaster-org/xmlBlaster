@@ -8,6 +8,7 @@ package org.xmlBlaster.client.filepoller;
 import java.io.File;
 import java.io.FileFilter;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -30,12 +31,13 @@ public class FilenameFilter implements FileFilter {
    public FilenameFilter() {
    }
 
-   public FilenameFilter(Global global, String pattern) throws XmlBlasterException {
+   public FilenameFilter(Global global, String pattern, boolean trueRegex) throws XmlBlasterException {
       this();
-      setPattern(global, pattern);
+      setPattern(global, pattern, trueRegex);
    }
 
-   public void setPattern(Global global, String globPattern) throws XmlBlasterException {
+   public void setPattern(Global global, String globPattern, boolean trueRegex) throws XmlBlasterException {
+      LogChannel log = global.getLog("filepoller");
       char[] gPat = globPattern.toCharArray();
       char[] rPat = new char[gPat.length * 2];
       boolean isWin32 = (File.separatorChar == '\\');
@@ -112,7 +114,10 @@ public class FilenameFilter implements FileFilter {
          }
       }
       try {
-         this.pattern = new RE(new String(rPat, 0, j), RE.REG_ICASE);
+         if (trueRegex)
+            this.pattern = new RE(globPattern, RE.REG_ICASE);
+         else
+            this.pattern = new RE(new String(rPat, 0, j), RE.REG_ICASE);
       }
       catch (REException ex) {
          throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + new String(rPat, 0, j) + "'", ex);

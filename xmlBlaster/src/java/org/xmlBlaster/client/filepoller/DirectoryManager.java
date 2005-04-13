@@ -50,11 +50,11 @@ public class DirectoryManager {
    
    private Set lockFiles;
    
-   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention) throws XmlBlasterException {
+   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex) throws XmlBlasterException {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
-         this.fileFilter = new FilenameFilter(this.global, filter);
+         this.fileFilter = new FilenameFilter(this.global, filter, trueRegex);
       this.log = this.global.getLog("filepoller");
       this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
@@ -69,7 +69,7 @@ public class DirectoryManager {
          if (!tmp.startsWith("*.")) {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, ME, "lockExtention must start with '*.' and be of the kind '*.lck'");
          }
-         this.lockExtention = new FilenameFilter(this.global, tmp);
+         this.lockExtention = new FilenameFilter(this.global, tmp, false);
          this.lockExt = tmp.substring(1); // '*.gif' -> '.gif' 
       }
       this.lockFiles = new HashSet();
@@ -414,5 +414,32 @@ public class DirectoryManager {
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, ME + ".removeEntry", "", ex);
       }
    }
+   
+   public static void main(String[] args) {
+      try {
+         Global global = new Global(args);
+         File directory = new File(".");
+         System.out.println("directory to look into: '" + directory.getName() + "'");
+         String filter = global.get("filter", "*.txt", null, null);
+         String filterType = global.get("filterType", "simple", null, null);
+         boolean trueRegex = false;
+         if ("regex".equalsIgnoreCase(filterType))
+            trueRegex = true;
+         System.out.println("the regex filter is '" + filter + "'"); 
+         FilenameFilter fileFilter = new FilenameFilter(global, filter, trueRegex);
+         File[] files = directory.listFiles(fileFilter);
+         if (files == null || files.length < 1)
+            System.out.println("no files found matching the regex expression '" + filter + "'");
+         for (int i=0; i < files.length; i++) {
+            System.out.println("   - file '" + i + "' \t + " + files[i].getName());
+         } 
+         System.out.println("no more files found");         
+         
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+   
    
 }
