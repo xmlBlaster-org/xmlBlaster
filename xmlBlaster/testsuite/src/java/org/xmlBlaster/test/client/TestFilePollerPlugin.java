@@ -403,6 +403,17 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       doPublish(prop, deliverDat, deliverGif, absSubPath);
    }
    
+   public void testSimplePublishWithFilterRegex() {
+      boolean deliverDat = true;
+      boolean deliverGif = true;
+      boolean absSubPath = true;
+      PluginProperties prop = new PluginProperties();
+      prop.put("filterType", "regex");
+      // note that the double backslash would be simple if read from the configuration file
+      prop.put("fileFilter", "(.*\\.dat)|(.*\\.gif)");
+      doPublish(prop, deliverDat, deliverGif, absSubPath);
+   }
+   
    public void testPublishWithMoveAbsolute() {
       boolean deliverDat = true;
       boolean deliverGif = true;
@@ -589,6 +600,10 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
 
       test.setUp();
       test.testSimplePublishWithFilter();
+      test.tearDown();
+
+      test.setUp();
+      test.testSimplePublishWithFilterRegex();
       test.tearDown();
 
       test.setUp();
