@@ -21,7 +21,7 @@ SubscribeQueueEntry::SubscribeQueueEntry(Global& global, const SubscribeKey& sub
    : MsgQueueEntry(global, subscribeKey.getData(), subscribeQos.getData(), 
      org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::SUBSCRIBE,
      priority,
-     subscribeQos.getData().isPersistent(),
+     false, // subscribeQos.getData().isPersistent(), TODO: first implement retrieval before we can put it in !!!
      uniqueId)
 {
    ME = "SubscribeQueueEntry";
