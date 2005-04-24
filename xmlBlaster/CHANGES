@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
  
+ o #13330 C++ client library
+   Forced to not put SubscribeQos into client side persistent queue (SQLite)
+   even whith persisten=true, as we have not yet coded the retrieval (RAM based queueing only)
+
  o #13327 added pure regex to filepoller plugin.
 
  o #13323 Bugfix C++ client library
