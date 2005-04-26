@@ -10,8 +10,9 @@
       messages to be sent are put into a queue and dispatched by a dedicated email callback plugin.
       </p>
       <p>
-      This plugin wraps inside another log. It catches (or sniffs) all log messages, when an error is detected
-      it is sent by email, all messages are then written to the log which is is wrapped.
+      This plugin wraps inside another logger. It listens to all log messages and if the log message is of
+      the ERROR type, then it is sent by email. All messages are also written to the underlying logger, 
+      the one defined by the 'logDevice' attribute of this plugin.
       </p>
       <p>
       A delay can be defined to let the dispatcher wait between sent messages, this way, in case of many
@@ -37,6 +38,7 @@ LoggableDevicePlugin[emailOnError][1.0]=org.xmlBlaster.contrib.log.EmailOnErrorL
                                         logDevice=console,\
 				        smtpHost=mail.provider.com,\
 	 				from=joe@provider.com,\
+					to=fritz@provider2.com,\
 					subject=xmlBlaster error,\
  				        sleepDelay=60000,\
 					maxQueueSize=100
@@ -64,25 +66,31 @@ logDevice=emailOnError
             <td>logDevice</td>
             <td>none</td>
             <td>This is mandatory. It specifies which logging to use</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>smtpHost</td>
             <td>none</td>
-            <td>This is mandatory. It specifies which logging to use</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td>This is mandatory. It specifies which smtp server to use</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>from</td>
             <td>none</td>
             <td>This is mandatory. It specifies the 'from' email address</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>to</td>
+            <td>none</td>
+            <td>This is mandatory. It specifies the destination email address</td>
+            <td><img src="no.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>subject</td>
             <td>xmlBlaster error</td>
             <td>Specifies which subject to use when sending the emails</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>sleepDelay</td>
