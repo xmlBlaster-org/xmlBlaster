@@ -101,7 +101,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
          String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
          String from = glob.getProperty().get("EmailDriver.from", "xmlblast@localhost"); //sessionInfo.getLoginName();
          String to = callbackAddress.getRawAddress();
-
+         String subject =  glob.getProperty().get("EmailDriver.subject", "XmlBlaster Generated Email");
          // Get system properties
          Properties props = System.getProperties();
 
@@ -115,7 +115,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
          MimeMessage message = new MimeMessage(session);
          message.setFrom(new InternetAddress(from));
          message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-         message.setSubject("XmlBlaster Generated Email");
+         message.setSubject(subject);
          String text = getMailBody(msg);
          message.setText(text);
          log.info(ME + ".sendUpdate", "Sending email from " + from + " to " + to + ", smtpHost=" + smtpHost);
