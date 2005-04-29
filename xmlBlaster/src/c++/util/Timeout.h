@@ -259,7 +259,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
 
 };
 
-}}}; // namespaces
+}}} // namespaces
 
 #endif
 

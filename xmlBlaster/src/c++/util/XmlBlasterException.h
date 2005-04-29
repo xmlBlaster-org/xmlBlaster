@@ -189,6 +189,6 @@ class Dll_Export XmlBlasterException : public std::exception
 
 };
 
-}}}; // namespaces
+}}} // namespaces
 
 #endif

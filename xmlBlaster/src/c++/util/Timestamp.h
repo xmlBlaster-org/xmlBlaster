@@ -84,6 +84,6 @@ namespace org { namespace xmlBlaster { namespace util {
 
    };
 
-}}}; // namespace
+}}} // namespace
 
 #endif

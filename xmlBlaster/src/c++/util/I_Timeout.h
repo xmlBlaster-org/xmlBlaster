@@ -31,6 +31,6 @@ class  Dll_Export I_Timeout {
       virtual void timeout(void *userData) = 0;
 };
 
-}}}; // namespaces
+}}} // namespaces
 
 #endif

@@ -249,6 +249,6 @@ namespace org { namespace xmlBlaster { namespace util {
    );
 
 
-}}}; // namespaces
+}}} // namespaces
 
 #endif

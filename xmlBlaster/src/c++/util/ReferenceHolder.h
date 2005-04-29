@@ -134,6 +134,6 @@ inline bool operator< (const ReferenceHolder<T>&  lhs, const ReferenceHolder<T>&
 }
 */
 
-}}}; // namespace
+}}} // namespace
 
 #endif

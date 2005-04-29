@@ -28,7 +28,7 @@
 extern "C"
 {
    void object_manager_cleanup();
-};
+}
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -249,7 +249,7 @@ private:
    static ManagedList managedObjectList_;
 };
 
-}}}; //namespace
+}}} //namespace
 
 #endif
 

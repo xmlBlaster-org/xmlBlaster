@@ -359,6 +359,6 @@ public:
          void setImmutableId(const std::string& id);
 };
 
-}}}; // namespace
+}}} // namespace
 
 # endif // ORG_XMLBLASTER_UTIL_GLOBAL_H

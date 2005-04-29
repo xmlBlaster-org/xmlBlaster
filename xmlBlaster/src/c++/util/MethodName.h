@@ -38,7 +38,7 @@ extern Dll_Export const std::string UNKNOWN;
 //}; // class MethodName
 
 
-}}}}; // namespace 
+}}}} // namespace 
 
 #endif
 

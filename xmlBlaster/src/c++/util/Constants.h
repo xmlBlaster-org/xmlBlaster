@@ -234,7 +234,7 @@ namespace org { namespace xmlBlaster {
 //};
 
 
-}}}}; // namespace 
+}}}} // namespace 
 
 #endif
 
