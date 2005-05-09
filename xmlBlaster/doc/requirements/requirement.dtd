@@ -89,7 +89,7 @@ Comment:   Validates xml requirements
  -->
 <!ATTLIST see type (API | REQ | OTHER | INTERNET | LOCAL | CODE) "API"
               lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript | XmlRpc | Csharp | VisualBasic) "Java"
-				  label (X) "">
+				  label NMTOKEN #IMPLIED>
 
 <!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">
 
