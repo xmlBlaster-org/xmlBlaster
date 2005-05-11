@@ -212,13 +212,15 @@ public class HandleClient extends Executor implements Runnable
                setLoginName(conQos.getUserId());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
+
+               // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
                log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                   cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
-                  SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
+                  SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostAddress(), super.sock.getPort());
                   if (driver.getAddressServer() != null) {
                      driver.getAddressServer().setRemoteAddress(remoteUrl);
                   }
