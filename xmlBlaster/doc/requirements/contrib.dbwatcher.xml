@@ -634,6 +634,52 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
 
    </example>
 
+   <example lang="any" type="HTML">
+
+   <h2>Example for Microsoft SQLServer with rowversion column</h2>
+<pre>
+&lt;plugin id='DbWatcherPlugin.testTS' 
+         className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+   &lt;attribute id='jdbc.drivers'>com.microsoft.jdbc.sqlserver.SQLServerDriver&lt;/attribute>
+   &lt;attribute id='db.url'>
+      jdbc:microsoft:sqlserver://localhost:1433;SelectMethod=cursor;DatabaseName=mydb
+   &lt;/attribute>
+   &lt;attribute id='db.user'>sa&lt;/attribute>
+   &lt;attribute id='db.password'>secret&lt;/attribute>
+   &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event&lt;/attribute>
+
+   &lt;attribute id='alertScheduler.pollInterval'>500&lt;/attribute>
+   &lt;attribute id='changeDetector.class'>
+      org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
+   &lt;/attribute>
+
+   &lt;!-- timestamp variable, we want to get each row seperately -->
+   &lt;attribute id='changeDetector.groupColName'>polterTS&lt;/attribute>
+
+   &lt;!-- check if there was any change -->
+   &lt;attribute id='changeDetector.detectStatement'>
+      SELECT MAX(CAST(polterTS as datetime)) from polter
+   &lt;/attribute>
+
+   &lt;!-- each result row will be one explicit publish -->
+   &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM  polter WHERE CAST(polterTS as datetime) > '${oldTimestamp}' ORDER BY polterTS
+   &lt;/attribute>
+   &lt;attribute id='mom.eraseOnDelete'>true&lt;/attribute>
+   &lt;attribute id='mom.eraseOnDrop'>true&lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='6' sequence='6'
+               onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='5' sequence='6'/>
+&lt;/plugin>
+</pre>
+   <p>
+   The polterTS column is of type <tt>rowVersion</tt>.
+   You can add such a column with this command:
+   </p>
+   <pre>alter table [xxx].[polter] add polterTS rowversion</pre>
+   </example>
+
    <configuration where="server">
       <p>
          The plugin is configured in the <tt>xmlBlasterPlugins.xml</tt> configuration file.
