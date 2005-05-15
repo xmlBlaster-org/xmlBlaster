@@ -122,8 +122,8 @@ namespace log4cplus {
 
             explicit string_append_iterator(_Container& __x) : container(&__x) {}
             string_append_iterator<_Container>&
-            operator=(const typename _Container::value_type& __value) {
-                *container += __value;
+            operator=(const typename _Container::value_type& _value) {
+                *container += _value;
                 return *this;
             }
             string_append_iterator<_Container>& operator*() { return *this; }
