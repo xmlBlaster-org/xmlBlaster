@@ -219,7 +219,8 @@ TODO
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <compilerarg value="${CFLAGS}" if="CFLAGS" />
       <defineset><define name="_WINDOWS" value="1" /></defineset>
-      <!-- <compilerarg value="/GX" /> -->
+      <!-- <compilerarg value="/EHsc" /> -->  <!-- Enable C++ exception handling (former /GX), set automatically by cpptasks -->
+      <!-- <compilerarg value="/RTC1" /> -->  <!-- Enable stack chek (former /GZ), set automatically by cpptasks -->
       <compilerarg value="/Gm" if="is-debug"/>
       <compilerarg value="/Zi" if="is-debug"/>
       <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
@@ -244,7 +245,10 @@ TODO
       <!--  disable Microsoft Extensions   -->
       <compilerarg value="/GR"/> <!--enable C++ RTTI, used in TestQueue.cpp -->
       <compilerarg value="/TP" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ -->
-      <compilerarg value="/YX"/> <!-- use precompiled headers -->
+      <!-- compilerarg value="/YX"/ --> <!-- use precompiled headers -->
+      <compilerarg value="/wd4996"/> <!-- 'sprintf' etc. was declared deprecated -->
+      <!-- option 'GX' is deprecated, use 'EHsc' -->
+      <!-- 'GZ' is deprecated, use 'RTC1' -->
       <compilerarg value="-D${thread.impl}" />  <!-- -DBOOST or  -DOMNITHREAD -->
    </compiler>
 
