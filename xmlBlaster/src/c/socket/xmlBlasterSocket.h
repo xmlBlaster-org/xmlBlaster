@@ -11,8 +11,8 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <stdlib.h>
 
 #ifdef _WINDOWS
-                             /* #if _MSC_VER > 1300 */
-#include <Winsock2.h>        /* WS2_32.DLL: The newer lib which extends winsock.h */
+                             /* #if _MSC_VER > 1300 (which is VC7) but also for 1400 (which is VC8 2005) */
+#include <Winsock2.h>        /* WS2_32.DLL: The newer lib which extends winsock.h, new: Ws2tcpip.h */
 
 /*#  include <winsock.h> */  /* WSOCK32.DLL: The old lib, if you activate replace SD_BOTH with 2 in XmlBlasterConnectionUnparsed.c  */
 /* From a mailing list:
