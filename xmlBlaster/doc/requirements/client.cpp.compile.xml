@@ -123,6 +123,24 @@
        <li>zlib.lib.dir is on Unix the path to the shared library libz.so and
            on Windows to zlib.dll and zlib.lib (for compilation)</li>
      </ul>
+     <p>This settings usually works on a Windows box:</p>
+     <pre>
+-> Entry in build.properties:
+XMLBLASTER_ZLIB=1
+zlib.include.dir=C:/zlib/include
+zlib.lib.dir=C:/zlib
+zlib.lib.name=zlib1
+
+-> Directory listing of C:\zlib (zlib1.lib is a copy of lib\zdll.lib)
+include
+lib
+README.txt
+test
+USAGE.txt
+zlib1.dll
+zlib1.lib
+      </pre>
+
      <p>As many zlib versions may fly around on your PC you can add a zlib name
      which contains all references for statical linkage (e.g. zlib.lib on Windows), example:</p>
      <pre>
