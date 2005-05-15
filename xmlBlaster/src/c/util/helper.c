@@ -213,7 +213,7 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
    struct _timeb tm;
    (void) _ftime(&tm);
 
-   abstime->tv_sec = tm.time;
+   abstime->tv_sec = (long)tm.time;
    abstime->tv_nsec = tm.millitm * 1000 * 1000; /* TODO !!! How to get the more precise current time on Win? */
 
    if (relativeTimeFromNow > 0) {
