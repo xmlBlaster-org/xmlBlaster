@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for xxx [2005-xx-xx] (current subversion)
-=================================================
+Changes for 1.0.3 [2005-05-16] #13349 "Xmas release patch 3"
+============================================================
  
  o #13335 C and C++ client library
    Port to Microsoft VC++ 8 Express 2005 beta2
