@@ -230,12 +230,14 @@ Author:    xmlBlaster@marcelruff.info
                <td>
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/>.html</xsl:attribute>
-                  <xsl:if test="@label=''">
-                     <xsl:value-of select="."/>
-                  </xsl:if>
-                  <xsl:if test="@label!=''">
-                     <xsl:value-of select="@label"/>
-                  </xsl:if>
+                  <xsl:choose>
+                     <xsl:when test="@label!=''">
+                        <xsl:value-of select="@label"/>
+                     </xsl:when>
+                     <xsl:otherwise>
+                        <xsl:value-of select="."/>
+                     </xsl:otherwise>
+                  </xsl:choose>
                </a>
                </td>
             </xsl:if>
