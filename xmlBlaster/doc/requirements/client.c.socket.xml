@@ -1004,6 +1004,34 @@ Solaris:
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><i>cd xmlBlaster;  ./build  -Duse-gcc=1 c-delete c-lib</i></td>
        </tr>
+
+       <tr>
+       <td>11</td>
+       <td>Linux 2.6.11</td>
+       <td><a href="http://gcc.gnu.org/" target="others">gcc 4.0.0</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.3</a></td>
+       <td>pthread</td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
+       <td>2005-05-06</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build c</i></td>
+       </tr>
+
+       <tr>
+       <td>12</td>
+       <td>Windows XP Home with <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&amp;displaylang=en" target="others">SDK</a></td>
+       <td><a href="http://msdn.microsoft.com/visualc/whidbey/default.aspx" target="others">VC++ 8 express 2005 (beta 2)</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.3</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
+       <td>2005-05-14</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+
       </table>
 
       <p>
