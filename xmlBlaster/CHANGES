@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
  
+ o #13335 C and C++ client library
+   Port to Microsoft VC++ 8 Express 2005 beta2
+
  o #13338 Java SOCKET protocol (server side):
    Changed to avoid DNS host name lookup on connect which could lead
    to blocking for a missing DNS server (reverse lookup) until timeout occurred.
