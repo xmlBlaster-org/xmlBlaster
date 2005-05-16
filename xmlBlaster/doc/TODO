@@ -111,6 +111,16 @@ o Performance analysis with garbage collector http://wireless.java.sun.com/midp/
   - http://www.thoughtcrime.org/profiler.html
 
 
+C and C++:
+----------
+
+o Port deprecated sprintf, sscanf etc. for VC8 2005 (Windows)
+  Warnings are currently supressed with '/wd4996' in build.xml
+
+o Port deprecated  gethostbyname to getaddrinfo etc. for Windows IPv6 support.
+  The Windows Platform SDK includes a tool called Checkv4.exe.
+  Checkv4.exe scans source code files to identify code that needs to be changed to support IPv6.
+
 TEST
 ----
 
