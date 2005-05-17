@@ -522,7 +522,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
 #        endif
          *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
 #        if XB_USE_PTHREADS
-            printf("[%s %s %s thread0x%x] %s %s\n", timeStr, logText[level], location,
+            printf("[%s %s %s thread0x%lx] %s %s\n", timeStr, logText[level], location,
                                     get_pthread_id(pthread_self()), p,
                                     (stackTrace != 0) ? stackTrace : "");
 #        else
