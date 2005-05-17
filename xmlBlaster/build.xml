@@ -2113,12 +2113,12 @@ TODO
       <copy todir="${build.src.c.dir}" filtering="true">
          <fileset dir="${src.c.dir}">
             <exclude name="README"/>
-            <exclude name="**/pthreadVC.*"/>
+            <exclude name="**/pthreadVC*.*"/>
          </fileset>
       </copy>
       <copy todir="${build.src.c.dir}" filtering="false">
          <fileset dir="${src.c.dir}">
-            <include name="**/pthreadVC.*"/>
+            <include name="**/pthreadVC*.*"/>
          </fileset>
       </copy>
 
@@ -2906,7 +2906,7 @@ TODO
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
-           <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
+           <libset dir="${build.src.c.dir}/socket" libs="pthreadVC2" />
            <syslibset libs="ws2_32" />
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
            <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
@@ -2927,11 +2927,11 @@ TODO
          </linker>
       </cc>
 
-      <copy file="${build.src.c.dir}/socket/pthreadVC.dll" tofile="${lib.dir}/pthreadVC.dll"/>
+      <copy file="${build.src.c.dir}/socket/pthreadVC2.dll" tofile="${lib.dir}/pthreadVC2.dll"/>
 
       <switch value="${os.family}" caseinsensitive="false">
          <case value="windows">
-            <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll, pthreadVC.dll and sqlite.dll (if persistent queues are used) and zlib.dll (if compression is used)"/>
+            <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll, pthreadVC2.dll and sqlite.dll (if persistent queues are used) and zlib.dll (if compression is used)"/>
             <switch value="${XMLBLASTER_PERSISTENT_QUEUE}">
                <case value="1">
                   <copy file="${sqlite.lib.dir}/sqlite.dll" tofile="${lib.dir}/sqlite.dll"/>
@@ -3031,7 +3031,7 @@ TODO
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
-            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
+            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC2" />
             <syslibset libs="ws2_32" />
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="${c.lib.name}" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="${c.lib.name}.dll" />  <!-- xmlBlasterClientC.dll -->
@@ -3085,7 +3085,7 @@ TODO
           <fileset dir="${demo.dir}/c/socket/bin" includes="*"/>
           <fileset dir="${demo.dir}/c/bin" includes="*"/>
           <fileset dir="${testsuite.dir}/src/c/bin" includes="*"/>
-          <fileset dir="${lib.dir}" includes="libz.dll,${zlib.lib.name}.dll,pthreadVC.dll,*xmlBlasterClientC${C_DEBUG_POSTFIX}.*"/>
+          <fileset dir="${lib.dir}" includes="libz.dll,${zlib.lib.name}.dll,pthreadVC2.dll,*xmlBlasterClientC${C_DEBUG_POSTFIX}.*"/>
        </delete>
     </target>
 

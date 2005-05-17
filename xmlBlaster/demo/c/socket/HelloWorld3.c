@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build c
-           (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+           (Win: copy xmlBlaster\src\c\socket\pthreadVC2.dll to your PATH)
            Manually:
             cd xmlBlaster/src/c
             gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld3 

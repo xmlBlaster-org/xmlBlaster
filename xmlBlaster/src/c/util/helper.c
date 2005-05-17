@@ -447,6 +447,20 @@ Dll_Export char *toReadableDump(char *data, size_t len)
 }
 
 /**
+ * Cast the thread identifier to an long value. 
+ * @param t The pthread_t type
+ * @return A uniquue long, usually the pointer address
+ */
+long get_pthread_id(pthread_t t)
+{
+#  ifdef _WINDOWS
+   return (int)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
+#  else
+   return (int)t;
+#  endif
+}
+
+/**
  * Default logging output is handled by this method: 
  * All logging is appended a time, the loglevel and the location string.
  * The logging output is to console.
@@ -509,7 +523,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
          *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
 #        if XB_USE_PTHREADS
             printf("[%s %s %s thread0x%x] %s %s\n", timeStr, logText[level], location,
-                                    (int)pthread_self(), p,
+                                    get_pthread_id(pthread_self()), p,
                                     (stackTrace != 0) ? stackTrace : "");
 #        else
             printf("[%s %s %s] %s %s\n", timeStr, logText[level], location, p,

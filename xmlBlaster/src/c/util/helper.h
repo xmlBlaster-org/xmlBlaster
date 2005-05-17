@@ -107,6 +107,7 @@ Dll_Export extern BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, s
 Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
 Dll_Export extern char *blobDump(BlobHolder *blob);
 Dll_Export extern void freeBlobDump(char *blobDump); /* deprecated: use xmlBlasterFree() */
+Dll_Export extern long get_pthread_id(pthread_t t);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

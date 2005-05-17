@@ -33,7 +33,7 @@
           Uses posix threads DLL for Win, PocketPC, WinCE from
              http://sources.redhat.com/pthreads-win32<br/>
              This LGPL lib is included in our distribution 
-             xmlBlaster/src/c/socket/pthreadVC.lib</li>
+             xmlBlaster/src/c/socket/pthreadVC2.lib</li>
 
         <li> Reports exceptions nicely back to the client</li>
 
@@ -83,7 +83,7 @@
      <h2>Memory footprint</h2>
      <p>
      On Linux the 'hello world' client executable has a very little footprint,
-     on Windows you need to add the pthreadVC.lib size of ~ 29 kBytes:
+     on Windows you need to add the pthreadVC2.lib size of ~ 29 kBytes:
      </p>
      <pre>
 1. Complete synchronous access (without callback and single threaded):
@@ -209,7 +209,7 @@ Windows:
   cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
    /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\*.c
    xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
-   ws2_32.lib pthreadVC.lib
+   ws2_32.lib pthreadVC2.lib
     
 Solaris:
   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I..
@@ -361,7 +361,7 @@ Solaris:
 <a name="line5" href="#line5">  5</a> Comment:   Example for all remote method invocations.
 <a name="line6" href="#line6">  6</a> Author:    &quot;Marcel Ruff&quot; &lt;xmlBlaster@marcelruff.info&gt;
 <a name="line7" href="#line7">  7</a> Compile:   cd xmlBlaster; build c
-<a name="line8" href="#line8">  8</a>            (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+<a name="line8" href="#line8">  8</a>            (Win: copy xmlBlaster\src\c\socket\pthreadVC2.dll to your PATH)
 <a name="line9" href="#line9">  9</a> Invoke:    HelloWorld3 -help
 <a name="line10" href="#line10"> 10</a> See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 <a name="line11" href="#line11"> 11</a> -----------------------------------------------------------------------------*/</font>

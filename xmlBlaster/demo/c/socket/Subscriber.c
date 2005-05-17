@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build.sh c
-           (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+           (Win: copy xmlBlaster\src\c\socket\pthreadVC2.dll to your PATH)
 Invoke:    Subscriber -help
 See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/

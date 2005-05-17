@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Example for all remote method invocations.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   cd xmlBlaster; build c
-           (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+           (Win: copy xmlBlaster\src\c\socket\pthreadVC2.dll to your PATH)
 See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -52,7 +52,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
       char *response = (char *)0;
       XmlBlasterException xmlBlasterException;
       MsgUnit msgUnit;
-		memset(&msgUnit, 0, sizeof(MsgUnit));
+                memset(&msgUnit, 0, sizeof(MsgUnit));
       printf("[client] Publishing message 'HelloWorldCb from update thread' ...\n");
       msgUnit.key = strcpyAlloc("<key oid='HelloWorldCb'/>");
       msgUnit.content = strcpyAlloc("Some message payload");
@@ -92,14 +92,14 @@ int main(int argc, char** argv)
    XmlBlasterAccessUnparsed *xa = 0;
    int sleepInterval = 0;
 /*
-	int tmpDbgFlag;
+        int tmpDbgFlag;
 
    _CrtSetReportMode( _CRT_ERROR, _CRTDBG_MODE_FILE );
    _CrtSetReportFile( _CRT_ERROR, _CRTDBG_FILE_STDERR );
    tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
    tmpDbgFlag |= _CRTDBG_DELAY_FREE_MEM_DF;
-	tmpDbgFlag |= _CRTDBG_CHECK_ALWAYS_DF;
-	tmpDbgFlag |= _CRTDBG_ALLOC_MEM_DF;
+        tmpDbgFlag |= _CRTDBG_CHECK_ALWAYS_DF;
+        tmpDbgFlag |= _CRTDBG_ALLOC_MEM_DF;
    tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
    _CrtSetDbgFlag(tmpDbgFlag);
 */
