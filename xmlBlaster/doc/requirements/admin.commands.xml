@@ -443,6 +443,21 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>client/joe/ses17/?cbQueueNumMsgs</td>
+            <td>Access the current number of messages in joe's callback queue waiting to be delivered</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>client/joe/-5/?subscriptionList</td>
+            <td>Show all subscriptions 'joe' has made (with his login session '-5')</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>client/joe/-5/?numUpdates</td>
+            <td>How many update messages were delivered to joe's session '-5' since server startup?</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>/node/heron/sysprop/?java.vm.version</td>
             <td>Access the JDK version</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
