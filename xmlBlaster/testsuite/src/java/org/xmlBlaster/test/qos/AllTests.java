@@ -6,7 +6,6 @@ Comment:   Start all tests
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.JUtilsException;
 import junit.framework.*;
 
 
@@ -49,6 +48,7 @@ public class AllTests
       suite.addTest(TestSubNoDup.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubId.suite());
+      suite.addTest(TestSubHistory.suite());
       suite.addTest(TestSubLostClient.suite());
       suite.addTest(TestSubNoInitial.suite());
       suite.addTest(TestSubNoLocal.suite());

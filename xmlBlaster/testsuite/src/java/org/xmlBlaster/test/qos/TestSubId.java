@@ -132,10 +132,11 @@ public class TestSubId extends TestCase implements I_Callback
                   "/" + myCounter;
          sq.setSubscriptionId(sentSubscribeId);
          numReceived = 0;
-         subscribeId = null;
-         subscribeId = senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
+         this.subscribeId = null;
+         this.subscribeId = senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
          assertEquals("Sent sentSubscribeId= " + sentSubscribeId + " The returned subscriptionId=" + subscribeId + " is wrong", sentSubscribeId, subscribeId);
          log.info(ME, "Success: Subscribe on " + subscribeId + " done");
+         
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
@@ -180,12 +181,15 @@ public class TestSubId extends TestCase implements I_Callback
    public void testPublishAfterSubscribe()
    {
       subscribeExact();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       testPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
+
+      // TODO test if it is possible to unsubscribe with the given subscribeId.
+      
    }
 
    /**
@@ -205,7 +209,7 @@ public class TestSubId extends TestCase implements I_Callback
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
+      try { Thread.sleep(200); } catch( InterruptedException i) {}
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeId, updateQos.getSubscriptionId());
@@ -231,7 +235,7 @@ public class TestSubId extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}
