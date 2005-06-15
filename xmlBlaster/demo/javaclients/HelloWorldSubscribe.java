@@ -75,6 +75,7 @@ public class HelloWorldSubscribe implements I_Callback
    boolean dumpContent;
    String filePrefix;
    String fileLock;
+   String fileHeader;
    private String fileExtension;
 
    public HelloWorldSubscribe(Global glob) {
@@ -102,9 +103,11 @@ public class HelloWorldSubscribe implements I_Callback
          boolean updateOneway = glob.getProperty().get("updateOneway", false);
          boolean wantContent = glob.getProperty().get("wantContent", true);
          this.dumpContent = glob.getProperty().get("dumpContent", false);
-         this.fileExtension = glob.getProperty().get("fileExtension", ""); // only IF dumpContent==true: for example ".jpg"
-         this.filePrefix = glob.getProperty().get("filePrefix", "");       // only IF dumpContent==true: Fixed file name instead of topic as file name
-         this.fileLock = glob.getProperty().get("fileLock", "");           // only IF dumpContent==true: add extension for lock file during Fixed file name instead of topic as file name, ".lck"
+         // only IF dumpContent==true:
+         this.fileExtension = glob.getProperty().get("fileExtension", ""); // for example ".jpg"
+         this.filePrefix = glob.getProperty().get("filePrefix", "");       // Fixed file name instead of topic as file name
+         this.fileLock = glob.getProperty().get("fileLock", "");           // add extension for lock file during Fixed file name instead of topic as file name, ".lck"
+         this.fileHeader = glob.getProperty().get("fileHeader", "");       // add a header text to the file, e.g. "<?xml version='1.0' encoding='UTF-8' ?>\n"
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
          boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
@@ -308,6 +311,12 @@ public class HelloWorldSubscribe implements I_Callback
          String time = updateQos.getRcvTime();  // getRcvTimestamp().getTimestamp();
          time = org.jutils.text.StringHelper.replaceFirst(time, " ", "T");
          time = org.jutils.text.StringHelper.replaceAll(time, ":", "");
+         // 2005-06-15T052536.146
+         int pos = time.lastIndexOf(".");
+         if (pos > 0 && pos < (time.length()-1)) {
+            time = time.substring(0,pos); // + time.substring(pos+1);
+            // Strip milli to "2005-06-15T052536"
+         }
          String fileName = pre + time;
          if (fileExtension != null && fileExtension.length() > 0) {
             fileName += fileExtension;
@@ -320,7 +329,13 @@ public class HelloWorldSubscribe implements I_Callback
             if (lckFile.length() > 0) {
                org.jutils.io.FileUtil.writeFile(lckFile, "Writing " + fileName + " ...");
             }
-            org.jutils.io.FileUtil.writeFile(fileName, content);
+            //byte[] tmp = "<?xml version='1.0' encoding='UTF-8' ?>\n".getBytes() + content;
+            String tmp = new String(content);
+            if (this.fileHeader.length() > 0) {
+               tmp = this.fileHeader + new String(content);
+            }
+
+            org.jutils.io.FileUtil.writeFile(fileName, tmp);
             System.out.println("Dumped content to file '" + fileName + "'");
          }
          catch (org.jutils.JUtilsException e) {
