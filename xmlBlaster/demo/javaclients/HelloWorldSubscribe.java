@@ -24,6 +24,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import java.util.Map;
 import java.util.Iterator;
+import java.io.File;
 
 
 /**
@@ -72,6 +73,8 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionRuntime;
    private int maxContentLength;
    boolean dumpContent;
+   String filePrefix;
+   String fileLock;
    private String fileExtension;
 
    public HelloWorldSubscribe(Global glob) {
@@ -100,6 +103,8 @@ public class HelloWorldSubscribe implements I_Callback
          boolean wantContent = glob.getProperty().get("wantContent", true);
          this.dumpContent = glob.getProperty().get("dumpContent", false);
          this.fileExtension = glob.getProperty().get("fileExtension", ""); // only IF dumpContent==true: for example ".jpg"
+         this.filePrefix = glob.getProperty().get("filePrefix", "");       // only IF dumpContent==true: Fixed file name instead of topic as file name
+         this.fileLock = glob.getProperty().get("fileLock", "");           // only IF dumpContent==true: add extension for lock file during Fixed file name instead of topic as file name, ".lck"
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
          boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
@@ -287,7 +292,7 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println(updateKey.toXml());
       System.out.println("");
       System.out.println("<content size='"+content.length+"'>");
-      if (content.length < maxContentLength) {
+      if (maxContentLength < 0 || content.length < maxContentLength) {
          System.out.println(new String(content));
       }
       else {
@@ -299,16 +304,39 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("</xmlBlaster>");
 
       if (dumpContent) {
-         String fileName = updateKey.getOid() + "-" + updateQos.getRcvTimestamp().getTimestamp();
+         String pre = (this.filePrefix.length() > 0) ? this.filePrefix : (updateKey.getOid() + "-");
+         String time = updateQos.getRcvTime();  // getRcvTimestamp().getTimestamp();
+         time = org.jutils.text.StringHelper.replaceFirst(time, " ", "T");
+         time = org.jutils.text.StringHelper.replaceAll(time, ":", "");
+         String fileName = pre + time;
          if (fileExtension != null && fileExtension.length() > 0) {
             fileName += fileExtension;
          }
+         String lckFile = "";
+         if (this.fileLock.length() > 0) {
+            lckFile = fileName + this.fileLock;
+         }
          try {
+            if (lckFile.length() > 0) {
+               org.jutils.io.FileUtil.writeFile(lckFile, "Writing " + fileName + " ...");
+            }
             org.jutils.io.FileUtil.writeFile(fileName, content);
             System.out.println("Dumped content to file '" + fileName + "'");
          }
          catch (org.jutils.JUtilsException e) {
             System.out.println("Can't dump content to file '" + fileName + "': " + e.toString());
+         }
+         finally {
+            try {
+               if (lckFile.length() > 0) {
+                  File f = new File(lckFile);
+                  if (f.exists())
+                     f.delete();
+               }
+            }
+            catch (Exception e) {
+               System.out.println("Can't remove lock file '" + lckFile + "': " + e.toString());
+            }
          }
       }
 
