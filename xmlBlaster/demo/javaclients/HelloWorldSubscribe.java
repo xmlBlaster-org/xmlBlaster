@@ -94,8 +94,8 @@ public class HelloWorldSubscribe implements I_Callback
    private boolean initialUpdate;
    private boolean updateOneway;
    private boolean wantContent;
-   private boolean dumpContent;
-   // only IF dumpContent==true:
+   private boolean dumpToFile;
+   // only IF dumpToFile==true:
    private String fileExtension;
    private String filePrefix;
    private String fileDateFormat;
@@ -111,6 +111,7 @@ public class HelloWorldSubscribe implements I_Callback
    private int maxContentLength;
    private boolean connectRefreshSession;
    private boolean runAsDaemon;
+   private boolean dumpToConsole;
 
    private void readEnv() {
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
@@ -131,8 +132,8 @@ public class HelloWorldSubscribe implements I_Callback
       this.initialUpdate = glob.getProperty().get("initialUpdate", true);
       this.updateOneway = glob.getProperty().get("updateOneway", false);
       this.wantContent = glob.getProperty().get("wantContent", true);
-      this.dumpContent = glob.getProperty().get("dumpContent", false);
-      // only IF dumpContent==true:
+      this.dumpToFile = glob.getProperty().get("dumpToFile", false);
+      // only IF dumpToFile==true:
       this.fileExtension = glob.getProperty().get("fileExtension", ""); // for example ".jpg"
       this.filePrefix = glob.getProperty().get("filePrefix", "");       // Fixed file name instead of topic as file name
       this.fileDateFormat = glob.getProperty().get("fileDateFormat", "yyyy-MM-dd'T'HHmmss.S"); // How to format the date of the file name (ISO 8601)
@@ -147,6 +148,7 @@ public class HelloWorldSubscribe implements I_Callback
       this.maxContentLength = glob.getProperty().get("maxContentLength", 250);
       this.connectRefreshSession = glob.getProperty().get("connect/qos/sessionRefresh", false);
       this.runAsDaemon = glob.getProperty().get("runAsDaemon", false);
+      this.dumpToConsole = glob.getProperty().get("dumpToConsole", true);
    }
 
    public HelloWorldSubscribe(Global glob_) {
@@ -194,7 +196,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
          log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
-         log.info(ME, "   -dumpContent       " + dumpContent);
+         log.info(ME, "   -dumpToFile       " + dumpToFile);
          log.info(ME, "   -fileExtension     " + fileExtension);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
@@ -378,25 +380,27 @@ public class HelloWorldSubscribe implements I_Callback
          return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
       }
       ++updateCounter;
-      System.out.println("");
-      System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
-      log.info(ME, "Receiving update #" + updateCounter + " of a message ...");
-      System.out.println("<xmlBlaster>");
-      System.out.println(updateKey.toXml());
-      System.out.println("");
-      System.out.println("<content size='"+content.length+"'>");
-      if (maxContentLength < 0 || content.length < maxContentLength) {
-         System.out.println(new String(content));
+      if (dumpToConsole) {
+         System.out.println("");
+         System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
+         log.info(ME, "Receiving update #" + updateCounter + " of a message ...");
+         System.out.println("<xmlBlaster>");
+         System.out.println(updateKey.toXml());
+         System.out.println("");
+         System.out.println("<content size='"+content.length+"'>");
+         if (maxContentLength < 0 || content.length < maxContentLength) {
+            System.out.println(new String(content));
+         }
+         else {
+            String str = new String(content, 0,maxContentLength-5);
+            System.out.println(str + " ...");
+         }
+         System.out.println("</content>");
+         System.out.println(updateQos.toXml());
+         System.out.println("</xmlBlaster>");
       }
-      else {
-         String str = new String(content, 0,maxContentLength-5);
-         System.out.println(str + " ...");
-      }
-      System.out.println("</content>");
-      System.out.println(updateQos.toXml());
-      System.out.println("</xmlBlaster>");
 
-      if (dumpContent) {
+      if (dumpToFile) {
          String pre = (this.filePrefix.length() > 0) ? this.filePrefix : (updateKey.getOid() + "-");
          String time = formatDate(updateQos.getRcvTimestamp().getMillis()); // 2005-06-15T052536
          String fileName = pre + time;
@@ -418,10 +422,10 @@ public class HelloWorldSubscribe implements I_Callback
             }
 
             org.jutils.io.FileUtil.writeFile(fileName, tmp);
-            System.out.println("Dumped content to file '" + fileName + "'");
+            log.info(ME, "Dumped content #" + updateCounter + " of topic '" + updateKey.getOid() + "' to file '" + fileName + "'");
          }
          catch (org.jutils.JUtilsException e) {
-            System.out.println("Can't dump content to file '" + fileName + "': " + e.toString());
+            log.error(ME, "Can't dump content to file '" + fileName + "': " + e.toString());
          }
          finally {
             try {
@@ -432,7 +436,7 @@ public class HelloWorldSubscribe implements I_Callback
                }
             }
             catch (Exception e) {
-               System.out.println("Can't remove lock file '" + lckFile + "': " + e.toString());
+               log.error(ME, "Can't remove lock file '" + lckFile + "': " + e.toString());
             }
          }
       }
@@ -447,8 +451,10 @@ public class HelloWorldSubscribe implements I_Callback
          }
       }
 
-      System.out.println("============= END #" + updateCounter + " '" + updateKey.getOid() + "' =========================");
-      System.out.println("");
+      if (dumpToConsole) {
+         System.out.println("============= END #" + updateCounter + " '" + updateKey.getOid() + "' =========================");
+         System.out.println("");
+      }
 
       if (this.updateSleep > 0L) {
          log.info(ME, "Sleeping for " + this.updateSleep + " millis ...");
