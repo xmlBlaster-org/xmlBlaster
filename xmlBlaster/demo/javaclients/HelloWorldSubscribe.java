@@ -22,9 +22,16 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import java.util.Map;
 import java.util.Iterator;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.Date;
 
 
 /**
@@ -65,69 +72,93 @@ public class HelloWorldSubscribe implements I_Callback
    private final String ME = "HelloWorldSubscribe";
    private final Global glob;
    private final LogChannel log;
+   private I_XmlBlasterAccess con;
+   private SubscribeReturnQos srq;
+   private boolean firstConnect=true;
    private int updateCounter;
+   private boolean connectPersistent;
+   private boolean interactive;
    private boolean interactiveUpdate;
    private long updateSleep;
    private String updateExceptionErrorCode;
    private String updateExceptionMessage;
    private String updateExceptionRuntime;
-   private int maxContentLength;
-   boolean dumpContent;
-   String filePrefix;
-   String fileLock;
-   String fileHeader;
+   private boolean shutdownCbServer;
+   private String oid;
+   private String domain;
+   private String xpath;
+   private boolean multiSubscribe;
+   private boolean persistentSubscribe;
+   private boolean notifyOnErase;
+   private boolean local;
+   private boolean initialUpdate;
+   private boolean updateOneway;
+   private boolean wantContent;
+   private boolean dumpContent;
+   // only IF dumpContent==true:
    private String fileExtension;
+   private String filePrefix;
+   private String fileDateFormat;
+   private DateFormat formatter;
+   private String fileLock;
+   private String fileHeader;
+   private int historyNumUpdates;
+   private boolean historyNewestFirst;
+   private String filterType;
+   private String filterVersion;
+   private String filterQuery;
+   private boolean unSubscribe;
+   private int maxContentLength;
+   private boolean connectRefreshSession;
+   private boolean runAsDaemon;
 
-   public HelloWorldSubscribe(Global glob) {
-      this.glob = glob;
+   private void readEnv() {
+      this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
+      this.interactive = glob.getProperty().get("interactive", true);
+      this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
+      this.updateSleep = glob.getProperty().get("updateSleep", 0L);
+      this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
+      this.updateExceptionMessage = glob.getProperty().get("updateException.message", (String)null);
+      this.updateExceptionRuntime = glob.getProperty().get("updateException.runtime", (String)null);
+      this.shutdownCbServer = glob.getProperty().get("shutdownCbServer", false);
+      this.oid = glob.getProperty().get("oid", "");
+      this.domain = glob.getProperty().get("domain", "");
+      this.xpath = glob.getProperty().get("xpath", "");
+      this.multiSubscribe = glob.getProperty().get("multiSubscribe", true);
+      this.persistentSubscribe = glob.getProperty().get("persistentSubscribe", false);
+      this.notifyOnErase = glob.getProperty().get("notifyOnErase", true);
+      this.local = glob.getProperty().get("local", true);
+      this.initialUpdate = glob.getProperty().get("initialUpdate", true);
+      this.updateOneway = glob.getProperty().get("updateOneway", false);
+      this.wantContent = glob.getProperty().get("wantContent", true);
+      this.dumpContent = glob.getProperty().get("dumpContent", false);
+      // only IF dumpContent==true:
+      this.fileExtension = glob.getProperty().get("fileExtension", ""); // for example ".jpg"
+      this.filePrefix = glob.getProperty().get("filePrefix", "");       // Fixed file name instead of topic as file name
+      this.fileDateFormat = glob.getProperty().get("fileDateFormat", "yyyy-MM-dd'T'HHmmss.S"); // How to format the date of the file name (ISO 8601)
+      this.fileLock = glob.getProperty().get("fileLock", "");           // add extension for lock file during Fixed file name instead of topic as file name, ".lck"
+      this.fileHeader = glob.getProperty().get("fileHeader", "");       // add a header text to the file, e.g. "<?xml version='1.0' encoding='UTF-8' ?>\n"
+      this.historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
+      boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
+      this.filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
+      this.filterVersion = glob.getProperty().get("filter.version", "1.0");
+      this.filterQuery = glob.getProperty().get("filter.query", "");
+      this.unSubscribe = glob.getProperty().get("unSubscribe", true);
+      this.maxContentLength = glob.getProperty().get("maxContentLength", 250);
+      this.connectRefreshSession = glob.getProperty().get("connect/qos/sessionRefresh", false);
+      this.runAsDaemon = glob.getProperty().get("runAsDaemon", false);
+   }
+
+   public HelloWorldSubscribe(Global glob_) {
+      this.glob = glob_;
       this.log = glob.getLog("HelloWorldSubscribe");
-      I_XmlBlasterAccess con = null;
       boolean disconnect = glob.getProperty().get("disconnect", true);
       try {
-         boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
-         boolean interactive = glob.getProperty().get("interactive", true);
-         this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
-         this.updateSleep = glob.getProperty().get("updateSleep", 0L);
-         this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
-         this.updateExceptionMessage = glob.getProperty().get("updateException.message", (String)null);
-         this.updateExceptionRuntime = glob.getProperty().get("updateException.runtime", (String)null);
-         boolean shutdownCbServer = glob.getProperty().get("shutdownCbServer", false);
-         String oid = glob.getProperty().get("oid", "");
-         String domain = glob.getProperty().get("domain", "");
-         String xpath = glob.getProperty().get("xpath", "");
-         boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
-         boolean persistentSubscribe = glob.getProperty().get("persistentSubscribe", false);
-         boolean notifyOnErase = glob.getProperty().get("notifyOnErase", true);
-         boolean local = glob.getProperty().get("local", true);
-         boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
-         boolean updateOneway = glob.getProperty().get("updateOneway", false);
-         boolean wantContent = glob.getProperty().get("wantContent", true);
-         this.dumpContent = glob.getProperty().get("dumpContent", false);
-         // only IF dumpContent==true:
-         this.fileExtension = glob.getProperty().get("fileExtension", ""); // for example ".jpg"
-         this.filePrefix = glob.getProperty().get("filePrefix", "");       // Fixed file name instead of topic as file name
-         this.fileLock = glob.getProperty().get("fileLock", "");           // add extension for lock file during Fixed file name instead of topic as file name, ".lck"
-         this.fileHeader = glob.getProperty().get("fileHeader", "");       // add a header text to the file, e.g. "<?xml version='1.0' encoding='UTF-8' ?>\n"
-         int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
-         boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
-         String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
-         String filterVersion = glob.getProperty().get("filter.version", "1.0");
-         String filterQuery = glob.getProperty().get("filter.query", "");
-         boolean unSubscribe = glob.getProperty().get("unSubscribe", true);
-         maxContentLength = glob.getProperty().get("maxContentLength", 250);
-         boolean connectRefreshSession = glob.getProperty().get("connect/qos/sessionRefresh", false);
+         readEnv();
 
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
             oid = "Hello";
-            /*
-            log.error(ME, "Please specify the message oid or an xpath query");
-            log.info(ME, "Example:");
-            log.info(ME, "  java javaclients.HelloWorldSubscribe -oid HelloMsg");
-            log.info(ME, "  java javaclients.HelloWorldSubscribe -xpath //key");
-            log.info(ME, "  java javaclients.HelloWorldSubscribe -help    (more help)");
-            System.exit(1);
-            */
          }
 
          if (this.updateSleep > 0L && interactiveUpdate == true) {
@@ -175,6 +206,36 @@ public class HelloWorldSubscribe implements I_Callback
 
          con = glob.getXmlBlasterAccess();
 
+         // Doe fail safe handling:
+         con.registerConnectionListener(new I_ConnectionStateListener() {
+            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.info(ME, "I_ConnectionStateListener.reachedAlive(): We were lucky, connected to " +
+                        connection.getConnectReturnQos().getSessionName());
+               if (connection.getQueue().getNumOfEntries() > 0) {
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Queue contains " +
+                           connection.getQueue().getNumOfEntries() + " messages: " +
+                           connection.getQueue().toXml(""));
+                  // connection.getQueue().clear(); -> Would destroy ConnectQos if new connected
+               }
+               if (firstConnect || !connection.getConnectReturnQos().isReconnected()) {
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found");
+                  if (connection.isConnected())
+                     subscribe(); // initialize subscription again
+               }
+               else {
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
+               }
+               firstConnect = false;
+            }
+            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.warn(ME, "I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
+            }
+            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.error(ME, "I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
+               System.exit(1);
+            }
+         });
+
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
@@ -184,6 +245,77 @@ public class HelloWorldSubscribe implements I_Callback
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
 
+         subscribe();
+
+         if (shutdownCbServer) {
+            Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
+            con.getCbServer().shutdown();
+            log.info(ME, "Callback server halted, no update should arrive ...");
+            /*
+            for (int ii=0; ii<4; ii++) {
+               Global.waitOnKeyboardHit("Hit a key to publish " + ii + "/4 ...");
+               org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit("<key oid='FromSubscriber'/>", (new String("BLA")).getBytes(), "<qos/>");
+               con.publish(msgUnit);
+               log.info(ME, "Published message");
+            }
+            */
+         }
+         else {
+            log.info(ME, "Waiting on update ...");
+         }
+
+         if (interactiveUpdate) {
+            try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
+         }
+
+         if (unSubscribe) {
+            if (interactive) {
+               Global.waitOnKeyboardHit("Hit a key to unSubscribe");
+            }
+
+            UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
+            if (domain.length() > 0)  // cluster routing information
+               uk.setDomain(domain);
+            UnSubscribeQos uq = new UnSubscribeQos(glob);
+            log.info(ME, "UnSubscribeKey=\n" + uk.toXml());
+            log.info(ME, "UnSubscribeQos=\n" + uq.toXml());
+            UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
+            log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
+         }
+
+         if (runAsDaemon) {
+            while (true) {
+               try {
+                  Thread.sleep(1000000000L);
+               }
+               catch (Exception e) {}
+            }
+         }
+         else {
+            Global.waitOnKeyboardHit("Hit a key to exit");
+         }
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, e.getMessage());
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+         log.error(ME, e.toString());
+      }
+      finally {
+         if (con != null && disconnect) {
+            DisconnectQos dq = new DisconnectQos(glob);
+            con.disconnect(dq);
+            log.info(ME, "Disconnected");
+         }
+      }
+   }
+
+   /**
+    * Does the xmlBlaster subscribe. 
+    */
+   private void subscribe() {
+      try {
          SubscribeKey sk = null;
          String qStr = null;
          if (oid.length() > 0) {
@@ -225,68 +357,26 @@ public class HelloWorldSubscribe implements I_Callback
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
          }
 
-         SubscribeReturnQos srq = con.subscribe(sk, sq);
+         this.srq = con.subscribe(sk, sq);
 
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
-                      "', got subscription id='" + srq.getSubscriptionId() + "'\n" + srq.toXml());
+                        "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml());
          if (log.DUMP) log.dump("", "Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
-
-         if (shutdownCbServer) {
-            Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
-            con.getCbServer().shutdown();
-            log.info(ME, "Callback server halted, no update should arrive ...");
-            /*
-            for (int ii=0; ii<4; ii++) {
-               Global.waitOnKeyboardHit("Hit a key to publish " + ii + "/4 ...");
-               org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit("<key oid='FromSubscriber'/>", (new String("BLA")).getBytes(), "<qos/>");
-               con.publish(msgUnit);
-               log.info(ME, "Published message");
-            }
-            */
-         }
-         else {
-            log.info(ME, "Waiting on update ...");
-         }
-
-         if (interactiveUpdate) {
-            try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
-         }
-
-         if (unSubscribe) {
-            if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to unSubscribe");
-            }
-
-            UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
-            if (domain.length() > 0)  // cluster routing information
-               uk.setDomain(domain);
-            UnSubscribeQos uq = new UnSubscribeQos(glob);
-            log.info(ME, "UnSubscribeKey=\n" + uk.toXml());
-            log.info(ME, "UnSubscribeQos=\n" + uq.toXml());
-            UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
-            log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
-         }
-
-         Global.waitOnKeyboardHit("Hit a key to exit");
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
       }
-      catch (Exception e) {
-         e.printStackTrace();
-         log.error(ME, e.toString());
-      }
-      finally {
-         if (con != null && disconnect) {
-            DisconnectQos dq = new DisconnectQos(glob);
-            con.disconnect(dq);
-            log.info(ME, "Disconnected");
-         }
-      }
    }
 
+   /**
+    * Here the messages from xmlBlaster arrive. 
+    */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) throws XmlBlasterException {
+      if (updateQos.isErased() && oid.length() > 0) { // Erased topic with EXACT subscription?
+         subscribe();             // topic is erased -> re-subsribe
+         return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+      }
       ++updateCounter;
       System.out.println("");
       System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
@@ -308,15 +398,7 @@ public class HelloWorldSubscribe implements I_Callback
 
       if (dumpContent) {
          String pre = (this.filePrefix.length() > 0) ? this.filePrefix : (updateKey.getOid() + "-");
-         String time = updateQos.getRcvTime();  // getRcvTimestamp().getTimestamp();
-         time = org.jutils.text.StringHelper.replaceFirst(time, " ", "T");
-         time = org.jutils.text.StringHelper.replaceAll(time, ":", "");
-         // 2005-06-15T052536.146
-         int pos = time.lastIndexOf(".");
-         if (pos > 0 && pos < (time.length()-1)) {
-            time = time.substring(0,pos); // + time.substring(pos+1);
-            // Strip milli to "2005-06-15T052536"
-         }
+         String time = formatDate(updateQos.getRcvTimestamp().getMillis()); // 2005-06-15T052536
          String fileName = pre + time;
          if (fileExtension != null && fileExtension.length() > 0) {
             fileName += fileExtension;
@@ -396,6 +478,29 @@ public class HelloWorldSubscribe implements I_Callback
       }
 
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+   }
+
+   /**
+    * Convert the long milli second time to a readable format as given with fileDateFormat. 
+    * "yyyy-MM-dd'T'HHmmss" or with milli seconds "yyyy-MM-dd'T'HHmmss.S"
+    * @return Defaults to "2005-06-19T152029.344" (ISO 8601)
+    */
+   private String formatDate(long timestamp) {
+      if (this.fileDateFormat == null || this.fileDateFormat.length() == 0) {
+         return "";
+      }
+      if (this.fileDateFormat.equals("long")) {
+         return ""+timestamp;
+      }
+      if (this.formatter == null) { // cache
+         synchronized (this) {
+            if (this.formatter == null) {
+               this.formatter = new SimpleDateFormat(this.fileDateFormat); //, Locale.US);
+               this.formatter.setTimeZone(TimeZone.getDefault()); // from "user.timezone"
+            }
+         }
+      }
+      return this.formatter.format(new Date(timestamp));
    }
 
    /**
