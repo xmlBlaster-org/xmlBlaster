@@ -5,6 +5,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.xxx [2005-xx-xx] current repository
 =================================================
 
+ o #13375 Bugfix FilePoller
+   Added fix #13316 again, it was lost during #13325 patch
+
  o #13354 Windows C/C++ pthread update to 2.5.0 (http://sourceware.org/pthreads-win32/)
    Note: The library name has changed from pthreadVC.dll to pthreadVC2.dll
 
