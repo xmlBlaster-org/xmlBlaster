@@ -13,6 +13,8 @@
       </p>
       <p>
       This plugin does a search on the client properties of the qos used to publish a given message.
+      Note that the content of the message is not checked, please use the <i>mime.plugin.access.xpath</i>
+      or <i>mime.plugin.access.regex</i> plugins for such full text filter tasks.
       </p>
       <p> A typical use case would be the same as you have for a message selector in jms. Suppose for example
       you have designed a solution to manage a taxi center in a town. The taxis are motorcycles, 

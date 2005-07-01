@@ -110,10 +110,27 @@
       <p>
       All messages containing the xml meta information element &lt;StockData/> are
       selected.<br />
-      Those message are further filtered to not contain the word 'sex' and to
-      have a content shorter then 8 kBytes.
+      Those message are further filtered to not contain the word 'sex' in the message content
+      and to have a content shorter then 8 kBytes.
+      </p>
+      <p>The topic of the message below contains the topic meta information
+      &lt;StockData/> and is therefore subscribed, but it is filtered away as it contains the word sex:
       </p>
 
+      <pre>
+<![CDATA[
+   <publish>
+      <key oid="MyMessage"><StockData/></key>
+
+      <content>Enhance your sex ...</content>
+
+      <qos><persistent/></qos>  
+   </publish>
+]]>
+      </pre>
+
+      <p>Note that some filter plugins check the qos settings of the message, others check
+      the content of a message</p>
       <p>
       Don't forget to put your query string in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
       in your query string.
