@@ -1,64 +1,247 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin.jmx' type='NEW' prio='MEDIUM' status='INWORK'>
+<requirement id='admin.jmx' type='NEW' prio='MEDIUM' status='CLOSED'>
 
    <topic>XmlBlaster provides an JMX-Interface for monitoring and controlling</topic>
 
    <description>
-      JMX-support (Java Management Extension for J2EE) has been added to xmlBlaster.<br />
-      On startup a small JMX-Server is started.<p />
-      <b>What is JMX?</b><br />
-      JMX is a new Sun standard that allows Java developers to rapidly management
+      <h2>JMX overview</h2>
+      <p>
+      <a href="http://java.sun.com/products/JavaManagement/index.jsp" target="others">JMX-support</a>
+      (Java Management Extension) is available for xmlBlaster.<br />
+      You need to pass some configuration parameters on xmlBlaster startup and you
+      are ready to observe the running xmlBlaster from a remote GUI application.
+      </p>
+      <h3>What is JMX?</h3>
+      <p>
+      JMX is a Sun standard that allows Java developers to rapidly management
       functionality into existing applications.<br />
       JMX defines a standard for writing JMX objects, also called MBeans.
       MBeans basically represent the state and the functionality of a managed ressource.
       It is possible for a JMX client to invoke methods and access attributes on an MBean.
       A JMX Agent enables manageability of these functionalities from local or remote,
       allowing a system administrator to manage the components of the application.
-      <br />
-      In order to gain access to ressources from JMX-management,
-      it is neccessary to implement a JMX-compliant interface.
-      These interfaces are charatericed by the postposition "MBean" in the interface name.
-      <br />
-      Taken for example is org.xmlBlaster.engine.RequestBroker. A RequestBrokerMBean Interface has been
-      added. This MBean is loaded at startup.
-      When you point your browser to: http://hostname:8082 you will see the output of
-      a JMX-Http-Adaptor.
-      <p />
-      <b>Custom protocol adaptors</b><br />
-      The JMX framework allows to add protocol adaptors/connectors like the http-adaptor
-      to the framework without disturbing the instrumentation.
-      <br />
-      Such an adaptor is implemented too. It is a xmlBlaster-adaptor.
-      This adaptor is running on port 3424.
-      The adaptor enables the communication with the JMX-Server across the network.
-      Within the "normal" xmlBlaster-Instance another embedded xmlBlasterinstance is started
-      that handles the communication with clients.
-      <p />
-      <b>Administration-client</b>
-      <br />
-      An administration-client that uses this new feature has been added.
-      It can be found at org.xmlBlaster.jmxgui.<br />
-      The Userinterface is pluggable and new plugins, handling other MBeans, can be
-      added to the system.
-      To show the usage, two plugins have already been added.
+      </p>
+      <img src='jmx-xmlBlaster.gif' border='0' alt='JMX - xmlBlaster integration overview' />
+      <p>
 
+      <h3>JMX adaptor overview</h3>
+      XmlBlaster provides internal informations using <i>MBean</i> as specified by the JMX specification.
+      To access those MBeans there are several adaptors available:
+      </p>
+      <table border="1">
+      <tr>
+      <th>Adaptor</th>
+      <th>Description</th>
+      <th>GUI access</th>
+      </tr>
+
+      <tr>
+      <td>HtmlAdaptor</td>
+      <td>The support is delivered
+          ready to go with your xmlBlaster distribution and is available for
+          JDK >= 1.3</td>
+      <td>Access xmlBlaster from any web browser</td>
+      </tr>
+      
+      <tr>
+      <td>jconsole adaptor</td>
+      <td>Access xmlBlaster from the jconsole adaptor. You need a JDK runtime 1.5 or newer
+          to use jconsole. Nevertheless it is possible to compile xmlBlaster with JDK 1.4 as
+          the adaptor is loaded by reflection.</td>
+      <td>The <a href="http://java.sun.com/developer/JDCTechTips/2005/tt0315.html#2"
+           target="others">jconsole GUI</a> application is delivered with JDK 1.5,
+          you don't need to install anything else.</td>
+      </tr>
+      
+      <tr>
+      <td>Native xmlBlaster adaptor</td>
+      <td>This support uses xmlBlaster own communication protocol listening on port 3424.
+          The adaptor is developed by Oliver Neubert and provides a pluggable
+          swing GUI to monitor. It is currently not functional.
+          Within the "normal" xmlBlaster server instance another embedded xmlBlaster instance is started
+          that handles the communication with clients.
+          </td>
+          <td>
+            An administration client implemented with SWING is available.
+            It can be found at org.xmlBlaster.jmxgui.<br />
+            The user interface is pluggable and new plugins, handling other MBeans, can be
+            added to the system.
+            To show the usage, two plugins have already been added.
+          </td>
+      </tr>
+      <tr>
+      <td>SNMP adaptor</td>
+      <td>If you need to monitor xmlBlaster from an existing SNMP aware monitoring
+          tool you need to install a SNMP adaptor.
+          This is currently only available under commercial licenses from SUN with
+          the <a href="http://java.sun.com/products/jdmk/" target="others">Java Dynamic Management Kit JDMK</a>
+          (~6000 US$)
+          or from AdventNet with the 
+          <a href="http://www.adventnet.com/products/snmpadaptor/index.html" target="others">SNMP Adaptor for JMX</a> (~500 US$).
+      </td>
+      <td>Any existing SNMP aware monitoring
+          tool like <a href="http://www.nagios.org/" target="others">NAGIOS</a>
+          or <a href="http://www.managementsoftware.hp.com/" target="others"> HP-OpenView</a>
+          can be used as front end.
+      </td>
+      </tr>
+      </table>
+
+     <h3>Changing properties using JMX</h3>
+     <p>
+     <b>
+     Important note:</b> When changing properties with JMX you
+     need to be aware what you are doing. Not all configurations
+     over JMX have been tested. It is best that you check
+     any manipulation first on your reference system.
+     </p>
    </description>
+
+   <example lang="any" type="HTML">
+      <h2 id="htmladaptor">Observing xmlBlaster with a browser</h2>
+      <p>On startup of xmlBlaster you need to switch this adaptor on:</p>
+   <pre>
+java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
+
+Open URL
+   http://localhost:8082
+in your browser.
+   </pre>
+   <p>Note: >You should protect remote access of xmlBlaster using the html adaptor
+   with a login name and password.
+   </p>
+   <h3>HTML adaptor screenshot</h3>
+   <p>
+      <img src='jmx-htmlAdaptor.png' border='0' alt='JMX - xmlBlaster HTML adaptor browser screenshot' />
+   </p>
+   </example>
+
+
+   <example lang="any" type="HTML">
+      <h2 id="jconsole">Observing xmlBlaster with jconsole</h2>
+   <pre>
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+
+jconsole
+   </pre>
+   <p>
+   You find the jconsole application in the JAVA_HOME\bin directory of
+   JDK 1.5 or above. Start jconsole as the same user and on the same
+   computer as the server.
+   </p>
+   <p>In the MBeans tab of jconsole you find the <tt>org.xmlBlaster</tt> root node.
+   </p>
+   <p>Note: For remote access of xmlBlaster using jconsole with password or SSL
+   protection please consult the jconsole online documentation.</p>
+   <h3>Jconsole screenshot</h3>
+   <p>
+      <img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' />
+      </p>
+   </example>
+
+
+   <configuration where="server">
+      <p>
+         JMX is configured in the <tt>xmlBlaster.properties</tt> configuration file
+         or on command line.
+      </p>
+
+    <table border="1">
+       <tr>
+         <th>Id (name)</th>
+         <th>Type</th>
+         <th>Manda
+         tory</th>
+         <th>Default value</th>
+         <th>Comment</th>
+       </tr>
+
+       <tr>
+         <td>java -Dcom.sun.management.jmxremote</td>
+         <td>String</td>
+         <td>no</td>
+         <td>-</td>
+         <td>
+         If given as system property the jconsole monitoring support is switched on.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/HtmlAdaptor</td>
+         <td>String</td>
+         <td>no</td>
+         <td>false</td>
+         <td>
+         HTML adaptor: Switch on with 'true'.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/hostname</td>
+         <td>String</td>
+         <td>no</td>
+         <td>localhost</td>
+         <td>
+         HTML adaptor: Configures the hostname, where to listen for HTTP requests.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/port</td>
+         <td>int</td>
+         <td>no</td>
+         <td>8082</td>
+         <td>
+         HTML adaptor: Configures the port, where to listen for HTTP requests.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/HtmlAdaptor/loginName</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         HTML adaptor: If given the access is restricted to the given user
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/HtmlAdaptor/password</td>
+         <td>String</td>
+         <td>no</td>
+         <td>secret</td>
+         <td>
+         HTML adaptor: The password, needed only if xmlBlaster/jmx/HtmlAdaptor/loginName!=null
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/XmlBlasterAdaptor</td>
+         <td>String</td>
+         <td>no</td>
+         <td>false</td>
+         <td>
+         XmlBlaster native adaptor: true switches it on.
+         </td>
+       </tr>
+    </table>
+   </configuration>
 
    <todo type="HTML">
     <ol>
-      <li>Write some TestCase!</li>
+      <li>Write some TestCases</li>
       <li>Strip down embedded XmlBlaster to minimum</li>
       <li>Write some Plugins</li>
+      <li>Find a free SNMP adaptor</li>
+      <li>Add notifications</li>
     </ol>
    </todo>
 
    <see type="REQ">admin.commands</see>
-
-
+   <see type="INTERNET">http://java.sun.com/products/JavaManagement/index.jsp</see>
+   <see type="INTERNET">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
+   <see type="INTERNET">http://java.sun.com/products/jdmk/</see>
 
    <author>oliver.neubert@doubleslash.de</author>
+   <author>xmlblast@marcelruff.info</author>
+   <hacker>xmlblast@marcelruff.info</hacker>
    <date>2003 06 10</date>
    <revision>$Revision: 1.1 $</revision>
 
