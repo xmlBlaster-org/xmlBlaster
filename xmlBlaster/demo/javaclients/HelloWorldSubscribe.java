@@ -196,7 +196,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
          log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
-         log.info(ME, "   -dumpToFile       " + dumpToFile);
+         log.info(ME, "   -dumpToFile        " + dumpToFile);
          log.info(ME, "   -fileExtension     " + fileExtension);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
@@ -247,7 +247,7 @@ public class HelloWorldSubscribe implements I_Callback
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
 
-         subscribe();
+         //subscribe(); -> see reachedAlive()
 
          if (shutdownCbServer) {
             Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
