@@ -76,7 +76,6 @@ final public class Authenticate implements I_RunlevelListener
    /** My security delegate layer which is exposed to the protocol plugins */
    private final AuthenticateProtector encapsulator;
 
-
    /**
     */
    public Authenticate(Global global) throws XmlBlasterException
@@ -997,6 +996,20 @@ final public class Authenticate implements I_RunlevelListener
       }
 
       return sb.toString();
+   }
+
+   /** For JMX MBean: The number of different users, the sessions may be higher */
+   public int getNumClients() {
+      return getNumSubjects();
+   }
+   /** For JMX MBean: The maximum number of different users, the sessions may be higher */
+   public int getMaxClients() {
+      return getMaxSubjects();
+   }
+   /** For JMX MBean: These are the login names returned, every client may be logged in multiple times
+       which you can't see here */
+   public String getClientList() {
+      return getSubjectList();
    }
 
 }

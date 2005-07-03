@@ -186,6 +186,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    private static final int ALIVE = 0;
    private int state = UNDEF;
 
+   /** My JMX registration */
+   private Object mbeanObjectName;
+
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -198,6 +201,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
       this.uptime = System.currentTimeMillis();
+      this.mbeanObjectName = this.glob.registerMBean(null, this);
+
 
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {
@@ -208,7 +213,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       //this.burstModeTimer = new Timeout("BurstmodeTimer");
 
-      myselfLoginName = new SessionName(glob, glob.getNodeId(), internalLoginNamePrefix + "[" + glob.getId() + "]");
+      myselfLoginName = new SessionName(glob, glob.getNodeId(), internalLoginNamePrefix + "[" + glob.getId() + "]/1");
 
       initHelperQos();
 
@@ -241,20 +246,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
       authenticate.addClientListener(this);
-
-      // register into the jmx server ...
-      try {
-         JmxWrapper wr = this.glob.getJmxWrapper();
-         if (wr != null) {
-            this.log.info(ME, "Registering the RequestBroker into the jmx server");
-//            wr.register(this, this.glob.getStrippedId());
-            wr.register(this, "requestBroker");
-            // unregister from the jmx server is done in Global
-         }
-      }
-      catch(XmlBlasterException e) { // javax.management.InstanceAlreadyExistsException
-         log.warn(ME, "Loading of JMX support failed: " + e.getMessage());
-      }
 
       this.state = ALIVE;
    }
@@ -347,7 +338,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            //
+            this.glob.unregisterMBean(this.mbeanObjectName);
          }
       }
    }
@@ -2146,12 +2137,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getBuildJavaVersion() {
       return glob.getBuildJavaVersion();
    }
-   public String getDump() throws XmlBlasterException {
+   public String dump() throws XmlBlasterException {
       return glob.getDump();
    }
    public void setDump(String fn) throws XmlBlasterException{
       try {
-         org.jutils.io.FileUtil.writeFile(fn, getDump());
+         org.jutils.io.FileUtil.writeFile(fn, glob.getDump());
          log.info(ME, "Dumped internal state to " + fn);
       }
       catch (org.jutils.JUtilsException e) {
@@ -2192,9 +2183,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       System.gc();
    }
 
-   public String getExit() throws XmlBlasterException {
-//      setExit("0");
-      return "OK";
+   public void exit() throws XmlBlasterException {
+      setExit("0");
    }
    public void setExit(String exitValue) throws XmlBlasterException {
       int val = 0;

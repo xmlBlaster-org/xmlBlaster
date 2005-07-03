@@ -31,8 +31,6 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolder;
 
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
-
 import java.util.*;
 import org.jutils.init.Property;
 
@@ -44,7 +42,6 @@ import org.jutils.init.Property;
 public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
    private RunlevelManager runlevelManager;
-   private JmxWrapper jmxWrapper;
 
    /** the authentication service (a layer around it for security reasons) */
    private I_Authenticate authenticate;
@@ -84,13 +81,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public void shutdown() {
       super.shutdown();
       if (log.TRACE) log.trace(ME, "Destroying engine.Global handle");
-
-      try {
-         unregisterJmx();
-      }
-      catch (XmlBlasterException e) {
-         log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
-      }
 
       if (sessionTimer != null) {
          sessionTimer.shutdown();
@@ -426,31 +416,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          return this.entryFactory;
       }
    }
-
-   /**
-    * @return the JmxWrapper used to manage the MBean resources
-    */
-    public JmxWrapper getJmxWrapper() throws XmlBlasterException {
-      if (this.jmxWrapper == null) {
-         synchronized (this) {
-            if (this.jmxWrapper == null) {
-               boolean activateJmx = getProperty().get("xmlBlaster.activateJmx", false);
-               if (activateJmx) {
-                  this.jmxWrapper = new JmxWrapper(this);
-               }
-            }
-         }
-      }
-      return this.jmxWrapper;
-    }
-
-
-    public synchronized void unregisterJmx() throws XmlBlasterException {
-      if (this.jmxWrapper != null) {
-         this.jmxWrapper.unRegister(getStrippedId());
-         this.jmxWrapper = null;
-      }
-    }
 
    /**
     * Access instance of remote command administration manager.

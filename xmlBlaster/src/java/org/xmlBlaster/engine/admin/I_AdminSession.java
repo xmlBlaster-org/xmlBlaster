@@ -32,8 +32,8 @@ public interface I_AdminSession {
    public String getSubscriptionList() throws XmlBlasterException;
    /** An XML dump of all subscriptions of this login session */
    public String getSubscriptionDump() throws XmlBlasterException;
-   /** Destroy the session (force logout) */
-   public String getKillSession() throws XmlBlasterException;
+   /** Invoke operation to destroy the session (force logout) */
+   public String killSession() throws XmlBlasterException;
    /** activates/inhibits the dispatch of messages to this session */
    public void setDispatcherActive(boolean dispatcherActive);
    /** true if the dispatcher is currently able to dispatch asyncronously */

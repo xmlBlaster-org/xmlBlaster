@@ -23,7 +23,8 @@ public interface I_AdminSubject {
    public long getSubjectQueueMaxMsgs();
    public int getNumSessions();
    public int getMaxSessions();
+   public void setMaxSessions(int max);
    public String getSessionList();
    public I_AdminSession getSessionByPubSessionId(long pubSessionId);
-   public String getKillClient() throws XmlBlasterException;
+   public String killClient() throws XmlBlasterException;
 }

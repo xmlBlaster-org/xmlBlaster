@@ -73,6 +73,9 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import javax.management.ObjectName;
+
 /**
  * Global variables to avoid singleton. 
  * <p>
@@ -185,6 +188,8 @@ public class Global implements Cloneable
    //** the entry factory to be used */
    protected I_EntryFactory entryFactory;
 
+   /** Support for JMX access */
+   private JmxWrapper jmxWrapper;
 
    /**
     * Constructs an initial Global object,
@@ -258,6 +263,45 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
+   }
+
+   /**
+    * @return the JmxWrapper used to manage the MBean resources
+    */
+    public final JmxWrapper getJmxWrapper() throws XmlBlasterException {
+      if (this.jmxWrapper == null) {
+         synchronized (this) {
+            if (this.jmxWrapper == null) {
+               this.jmxWrapper = new JmxWrapper(this);
+            }
+         }
+      }
+      return this.jmxWrapper;
+   }
+
+   /**
+    * JMX support. 
+    * Start xmlBlaster with <code>java -Dcom.sun.management.jmxremote org.xmlBlaster.Main</code>
+    * You can access xmlBlaster from 'jconsole' delivered with JDK1.5 or above.
+    * The root node is always the cluster node id.
+    * @param name the instance for example "client/joe/-1"
+    * @param mbean the MBean object instance 
+    * @return The object name used to register or null on error
+    * @since 1.0.4
+    * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
+    */
+   public ObjectName registerMBean(String name, Object mbean) throws XmlBlasterException {
+      return getJmxWrapper().registerMBean(name, mbean);
+   }
+
+   /**
+    * Unregister a JMX MBean. 
+    * @param objectName The object you got from registerMBean() of type ObjectName,
+    *                   if null nothing happens
+    */
+   public void unregisterMBean(Object objectName) {
+      if (this.jmxWrapper != null)
+         this.jmxWrapper.unregisterMBean(objectName);
    }
 
    /**
@@ -1656,7 +1700,14 @@ public class Global implements Cloneable
          this.xmlProcessor.shutdown();
          this.xmlProcessor = null;
       }
-
+      /*
+      try {
+         unregisterJmx();
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Ignoring exception during JMX unregister: " + e.getMessage());
+      }
+      */
       synchronized (Global.class) {
          if (firstInstance != null && this == firstInstance) {
             //System.out.println("###################################First instance of Global destroyed");

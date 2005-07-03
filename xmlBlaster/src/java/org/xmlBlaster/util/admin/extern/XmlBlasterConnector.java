@@ -41,7 +41,8 @@ import javax.management.*;
 
 
 /**
- * XmlBlasterConnector is both publisher and subscriber to a topic.<br>
+ * XmlBlasterConnector is a tiny embedded xmlBlaster server instance. 
+ * It is both publisher and subscriber to a topic.
  * XmlBlasterConnector extracts MethodInvocation Object from the Message Unit and
  * handles the invocation, stores the return value
  */
@@ -115,11 +116,11 @@ public class XmlBlasterConnector implements XmlBlasterConnectorMBean, I_Callback
       prop.setProperty("bootstrapPort","3424");
       prop.setProperty("bootstrapHostname","127.0.0.1");
       prop.setProperty("SecurityServer.Plugin","NONE");
-      prop.setProperty("xmlBlaster.activateJmx","false");
-      prop.setProperty("admin.remoteconsole.port","2703");
+      prop.setProperty("xmlBlaster.jmx.XmlBlasterAdaptor","false");
+      prop.setProperty("admin.remoteconsole.port","0");
       prop.setProperty("plugin/socket/port","0");
       prop.setProperty("plugin/xmlrpc/port","0");
-      prop.setProperty("plugin/rmi/registryPort","1122");
+      prop.setProperty("plugin/rmi/registryPort","0");
       prop.setProperty("cluster","false");
 
 //      prop.setProperty("trace", "true");

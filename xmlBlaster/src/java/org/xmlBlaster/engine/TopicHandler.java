@@ -59,6 +59,10 @@ import org.xmlBlaster.engine.distributor.I_MsgDistributor;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
 
@@ -72,7 +76,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
  * @see org.xmlBlaster.test.topic.TestTopicLifeCycle
  * @author xmlBlaster@marcelruff.info
  */
-public final class TopicHandler implements I_Timeout//, I_ChangeCallback
+public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_ChangeCallback
 {
    private String ME = "TopicHandler";
    private final Global glob;
@@ -154,6 +158,9 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
 
    private Map msgUnitWrapperUnderConstruction = new HashMap();
 
+   /** My JMX registration */
+   private Object mbeanObjectName;
+
    /**
     * Use this constructor if a subscription is made on a yet unknown topic.
     * <p />
@@ -181,6 +188,9 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
          Thread.dumpStack();
       }
       
+      // JMX register "topic/hello"
+      this.mbeanObjectName = this.glob.registerMBean(ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey, this);
+
       if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
       // mimeType and content remains unknown until first data is fed
    }
@@ -214,6 +224,9 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
          Thread.dumpStack();
       }
       if (log.CALL) log.trace(ME, "Creating new TopicHandler.");
+
+      // JMX register "topic/hellpo"
+      this.mbeanObjectName = this.glob.registerMBean(ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey, this);
    }
 
    /**
@@ -346,6 +359,10 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       return queue;
    }
 
+   // JMX does not allow hasXY
+   public boolean getDomTreeExists() {
+      return hasDomTree();
+   }
    /**
     * @return false if topicProperty.isCreateDomEntry() was configured to false
     */
@@ -370,6 +387,16 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     */
    public final boolean hasXmlKey() {
       return this.msgKeyData != null;
+   }
+
+   // JMX
+   public final boolean getTopicXmlExists() {
+      return hasXmlKey();
+   }
+
+   // JMX
+   public final String getTopicXml() throws org.xmlBlaster.util.XmlBlasterException {
+      return getXmlKey().literal();
    }
 
    /**
@@ -1342,6 +1369,11 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       }
    }
 
+   // JMX
+   public final int getNumSubscribers() {
+      return numSubscribers();
+   }
+
    public final int numSubscribers() {
       return this.subscriberMap.size();
    }
@@ -1357,6 +1389,11 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       synchronized(this.subscriberMap) {
          return (SubscriptionInfo[])this.subscriberMap.values().toArray(new SubscriptionInfo[this.subscriberMap.size()]);
       }
+   }
+
+   // JMX
+   public final boolean getExactSubscribersExist() {
+      return hasExactSubscribers();
    }
 
    /**
@@ -1750,6 +1787,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
       long numHistory = 0L;
       ArrayList notifyList = null;
+
+      this.glob.unregisterMBean(this.mbeanObjectName);
 
       synchronized (this) {
          if (this.dyingInProgress || isDead()) {
@@ -2292,4 +2331,21 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       return this.distributor;
    }
 
+   // JMX
+   public final String eraseTopic() throws XmlBlasterException {
+      EraseKey ek = new EraseKey(glob, uniqueKey);
+      EraseQos eq = new EraseQos(glob);
+      String[] eraseArr = this.requestBroker.erase(
+                    this.requestBroker.getInternalSessionInfo(),
+                    ek.getData(),
+                    new EraseQosServer(this.glob, eq.getData()));
+      if (eraseArr.length == 1) {
+         log.info(ME, "Erased topic '" + getId() + "' due to administrative request");
+         return "Erased topic '" + getId() + "'";
+      }
+      else {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                   "Erasing of topic '" + getId() + "' due to administrative request failed");
+      }
+   }
 }

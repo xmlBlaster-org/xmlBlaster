@@ -25,7 +25,11 @@ public interface I_AdminNode {
    public String getBuildTimestamp();
    public String getBuildJavaVendor();
    public String getBuildJavaVersion();
-   public String getDump() throws XmlBlasterException;
+   /**
+    * Dump the complete internal state of xmlBlaster. 
+    * Is an operation to not do it automatically on JMX load
+    */
+   public String dump() throws XmlBlasterException;
    public void setDump(String fn) throws XmlBlasterException;
 
    public String getRunlevel();
@@ -46,10 +50,14 @@ public interface I_AdminNode {
    public long getTotalMem();
    public long getUsedMem();
 
+   /* TODO: rename to gc(); as it is an operation */
    public String getGc();
    public void setGc(String dummy);
 
-   public String getExit() throws XmlBlasterException;
+   /**
+    * Shutdown xmlBlaster, exit value is '0'
+    */
+   public void exit() throws XmlBlasterException;
    public void setExit(String exitValue) throws XmlBlasterException;
 
    public String getHostname();

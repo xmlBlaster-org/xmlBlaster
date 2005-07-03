@@ -61,7 +61,7 @@ import org.xmlBlaster.util.ReentrantLock;
  * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class SubjectInfo /* implements I_AdminSubject -> is delegated to SubjectInfoProtector */
+public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean -> is delegated to SubjectInfoProtector */
 {
    private String ME = "SubjectInfo";
    private final Global glob;
@@ -120,6 +120,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
 
+   /** My JMX registration */
+   private Object mbeanObjectName;
+
    /**
     * <p />
     * @param subjectName  The unique loginName
@@ -136,6 +139,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       this.log = this.glob.getLog("auth");
       this.authenticate = authenticate;
       this.subjectInfoProtector = new SubjectInfoProtector(this);
+
       String prae = glob.getLogPrefix();
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       if (this.subjectName.isSession()) {
@@ -144,6 +148,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       }
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
+
+      // JMX register "client/joe"
+      this.mbeanObjectName = this.glob.registerMBean(this.subjectName.getRelativeName(), this.subjectInfoProtector);
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
@@ -287,6 +294,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
             return;
          }
 
+         this.glob.unregisterMBean(this.mbeanObjectName);
+
          if (getSubjectQueue().getNumOfEntries() < 1)
             log.info(ME, "Destroying SubjectInfo. Nobody is logged in and no queue entries available");
          else {
@@ -303,6 +312,10 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
          if (clearQueue)
             this.subjectQueue.clear();
+
+         if (this.subjectQueue != null) {
+            this.subjectQueue.shutdown();
+         }
 
          if (getSessions().length > 0) {
             log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
@@ -333,8 +346,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    public void finalize() {
       //log.error(ME, "DEBUG ONLY: finalize - garbage collected " + getLoginName());
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
-      boolean force = true;
-      this.subjectQueue.shutdown();
+      //boolean force = true;
+      //this.subjectQueue.shutdown();
    }
 
    /**
@@ -1006,6 +1019,14 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    }
 
    /**
+    * JMX access. 
+    * @param Change the max allowed simultaneous logins of this user
+    */
+   void setMaxSessions(int max) {
+      this.maxSessions = max;
+   }
+
+   /**
     * Access a list of public session identifier e.g. "1,5,7,12"
     * @return An empty string if no sessions available
     */
@@ -1037,7 +1058,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
     * Kills all sessions of this client
     * @return The list of killed sessions (public session IDs)
     */
-   String getKillClient() throws XmlBlasterException {
+   String killClient() throws XmlBlasterException {
       int numSessions = getNumSessions();
       if (numSessions < 1)
          return "";
@@ -1050,12 +1071,12 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                break;
             sessionInfo = (SessionInfo)iterator.next();
          }
-         sessionInfo.getKillSession();
+         sessionInfo.killSession();
       }
       /* The upper form is probably better
       SessionInfo[] sessions = getSessions();
       for (int ii=0; ii<sessions.length; ii++) {
-         sessions[ii].getKillSession();
+         sessions[ii].killSession();
       }
       */
      return getId() + " Sessions " + sessionList + " killed";

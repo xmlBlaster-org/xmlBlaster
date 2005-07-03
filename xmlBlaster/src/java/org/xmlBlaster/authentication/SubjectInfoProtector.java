@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class SubjectInfoProtector implements I_AdminSubject
+public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectInfoProtectorMBean
 {
    private final SubjectInfo subjectInfo;
 
@@ -49,6 +49,10 @@ public final class SubjectInfoProtector implements I_AdminSubject
       return this.subjectInfo.getMaxSessions();
    }
 
+   public void setMaxSessions(int maxSessions) {
+      this.subjectInfo.setMaxSessions(maxSessions);
+   }
+
    public String getSessionList() {
       return this.subjectInfo.getSessionList();
    }
@@ -57,7 +61,7 @@ public final class SubjectInfoProtector implements I_AdminSubject
       return this.subjectInfo.getSessionByPubSessionId(pubSessionId);
    }
 
-   public String getKillClient() throws XmlBlasterException {
-      return this.subjectInfo.getKillClient();
+   public String killClient() throws XmlBlasterException {
+      return this.subjectInfo.killClient();
    }
 }

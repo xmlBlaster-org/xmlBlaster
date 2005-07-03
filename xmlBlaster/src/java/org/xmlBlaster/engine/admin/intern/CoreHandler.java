@@ -254,10 +254,21 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          return returnValue;
          */
       }
-      catch (Exception e) {
-         //e.printStackTrace();
-         log.error(ME, "Invoke for get method '" + methodName + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed: " + e.toString());
-         throw XmlBlasterException.convert(glob, ME, "Invoke for get method '" + property + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed", e);
+      catch (Exception e1) {
+         log.trace(ME, "Invoke for get method '" + methodName + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed: " + e1.toString());
+         try {
+            // Check if there is a 'operation' method to be called,
+            // instead of getXY() call XY():
+            Method method = aInterface.getDeclaredMethod(property, new Class[0]); // NoSuchMethodException 
+            Object returnValue = method.invoke (impl, null); //argValues);
+            log.info(ME, "Invoke method '" + property + "' return=" + returnValue);
+            return returnValue;
+         }
+         catch (Exception e) {
+            //e.printStackTrace();
+            log.warn(ME, "Invoke for get method '" + methodName + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed: " + e.toString());
+            throw XmlBlasterException.convert(glob, ME, "Invoke for get method '" + property + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed", e);
+         }
       }
    }
 

@@ -33,7 +33,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener
+public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener, CacheQueueInterceptorPluginMBean
 {
    private String ME;
    private LogChannel log;
@@ -59,6 +59,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    
    /** this is the sync between the peaks and the swapping: no peak should be allowed while swapping */
    private Object peekSync = new Object();
+
+   /** My JMX registration */
+   private Object mbeanObjectName;
 
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
@@ -245,6 +248,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (this.log.CALL) this.log.call(ME, "initialized");
          this.queueId = uniqueQueueId;
 
+         // For JMX create a short relative name (may not contain ":")
+         // for example: "queue_cache_callback_client/joe/-2"
+         String name = "queue_cache_" + this.queueId.getId();
+         int index = name.indexOf(":");
+         if (index >= 0) name = name.substring(0,index) + "_" + name.substring(index+1);
+         this.mbeanObjectName = this.glob.registerMBean(name, this);
+
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
 
@@ -339,6 +349,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       this.property = newProp;
       this.transientQueue.setProperties(createRamCopy((QueuePropertyBase)userData));
       if (this.persistentQueue != null) this.persistentQueue.setProperties(userData);
+   }
+
+   // JMX
+   public String getPropertyStr() {
+      return (this.property == null) ? "" : this.property.toXml();
    }
 
    /**
@@ -543,6 +558,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
    }
 
+   // JMX
+   public String getStorageIdStr() {
+      return getStorageId().toString();
+   }
 
    /**
     * Returns the unique ID of this queue
@@ -652,6 +671,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
       }
       return list;
+   }
+
+   // JMX
+   public String peekStr() throws XmlBlasterException {
+      I_QueueEntry entry = peek();
+      return (entry == null) ? "" : entry.getLogId(); // no toXml() available ??
    }
 
    /**
@@ -1170,8 +1195,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Shutdown the implementation, sync with data store
     */
    synchronized public void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown()");
+      if (log.CALL) log.call(ME, "shutdown(isDown="+this.isDown+")");
+      if (this.isDown) {
+         return;
+      }
       this.isDown = true;
+      this.glob.unregisterMBean(this.mbeanObjectName);
       long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
       if (numTransients > 0) {
          log.warn(ME, "Shutting down cache queue which contains " + numTransients + " transient messages");
@@ -1212,6 +1241,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    public String usage() {
       return "no usage";
+   }
+
+   // JMX
+   public final String toXml() {
+      return toXml("");
    }
 
    /**

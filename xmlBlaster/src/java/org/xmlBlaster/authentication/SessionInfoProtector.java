@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.QueryQosData;
  * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class SessionInfoProtector implements I_AdminSession
+public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_AdminSession*/
 {
    private final SessionInfo sessionInfo;
 
@@ -49,8 +49,8 @@ public class SessionInfoProtector implements I_AdminSession
       return this.sessionInfo.getSubscriptionDump();
    }
 
-   public final String getKillSession() throws XmlBlasterException {
-      return this.sessionInfo.getKillSession();
+   public final String killSession() throws XmlBlasterException {
+      return this.sessionInfo.killSession();
    }
    
    public void setDispatcherActive(boolean dispatcherActive) {

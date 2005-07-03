@@ -88,6 +88,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
    private final SessionInfoProtector sessionInfoProtector;
+   /** My JMX registration */
+   private Object mbeanObjectName;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -172,6 +174,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       else {
          if (log.TRACE) log.trace(ME, "Session lasts forever, requested expiry timer was 0");
       }
+
+      // JMX register "client/joe/1"
+      this.mbeanObjectName = this.glob.registerMBean(this.sessionName.getRelativeName(), this.sessionInfoProtector);
    }
 
    public final boolean isAlive() {
@@ -274,6 +279,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
+      this.glob.unregisterMBean(this.mbeanObjectName);
       this.lock.lock();
       try {
          this.isShutdown = true;
@@ -610,7 +616,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return sb.toString();
    }
 
-   public final String getKillSession() throws XmlBlasterException {
+   public final String killSession() throws XmlBlasterException {
       glob.getAuthenticate().disconnect(getAddressServer(), securityCtx.getSecretSessionId(), "<qos/>");
       return getId() + " killed";
    }
