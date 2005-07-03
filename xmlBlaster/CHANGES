@@ -26,6 +26,12 @@ Changes for 1.xxx [2005-xx-xx] current repository
  o #13354 Windows C/C++ pthread update to 2.5.0 (http://sourceware.org/pthreads-win32/)
    Note: The library name has changed from pthreadVC.dll to pthreadVC2.dll
 
+ o #13372 HelloWorldSubscribe
+   - Added some more configuration parameters
+   - Added fail safe subscribe handling (without persistent subscription)
+   - Added re-subscribe on erase
+   - Added extended file dump capabilities with locking
+
 
 Changes for 1.0.3 [2005-05-16] #13349 "Xmas release patch 3"
 ============================================================
