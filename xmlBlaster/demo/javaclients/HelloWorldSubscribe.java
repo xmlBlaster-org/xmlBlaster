@@ -219,7 +219,7 @@ public class HelloWorldSubscribe implements I_Callback
                            connection.getQueue().toXml(""));
                   // connection.getQueue().clear(); -> Would destroy ConnectQos if new connected
                }
-               if (firstConnect || !connection.getConnectReturnQos().isReconnected()) {
+               if (firstConnect || !connection.getConnectReturnQos().isReconnected() && !persistentSubscribe) {
                   log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found");
                   if (connection.isConnected())
                      subscribe(); // initialize subscription again
@@ -270,7 +270,7 @@ public class HelloWorldSubscribe implements I_Callback
             try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
          }
 
-         if (unSubscribe) {
+         if (unSubscribe && srq!=null) {
             if (interactive) {
                Global.waitOnKeyboardHit("Hit a key to unSubscribe");
             }
@@ -355,7 +355,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "SubscribeKey=\n" + sk.toXml());
          log.info(ME, "SubscribeQos=\n" + sq.toXml());
 
-         if (interactive) {
+         if (firstConnect && interactive) {
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
          }
 
