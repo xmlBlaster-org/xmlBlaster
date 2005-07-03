@@ -5,6 +5,21 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.xxx [2005-xx-xx] current repository
 =================================================
 
+ o #13381 Added JMX support
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
+   - New configuration parameters
+   - Changed admin interface to support operations besides propertiy getter/setter
+     e.g. operation killClient() instead of getKillClient()
+   - Changed getKillClient() to operation killClient()
+   - Changed getKillSession() to operation killSession()
+   - Added TopicHandler MBean control
+   - Added TopicHandler eraseTopic and accessors administrative commands
+   - SubjectInfo does subjectQueue.shutdown() now in its shutdown() instead of finalize()
+   - RequestBroker.java: fixed internal login to be a session
+   - Added MBean to CacheQueue implementation (not yet for RAM or JDBC)
+   - CacheQueueInterceptorPlugin: Check for multiple shutdown added
+   - CacheQueueInterceptorPlugin: JMX getters added
+
  o #13375 Bugfix FilePoller
    Added fix #13316 again, it was lost during #13325 patch
 
