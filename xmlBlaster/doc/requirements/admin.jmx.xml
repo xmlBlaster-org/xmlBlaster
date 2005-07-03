@@ -226,18 +226,21 @@ jconsole
 
    <todo type="HTML">
     <ol>
-      <li>Write some TestCases</li>
-      <li>Strip down embedded XmlBlaster to minimum</li>
-      <li>Write some Plugins</li>
+      <li>Write some test cases</li>
+      <li>Fix native XmlBlaster adaptor</li>
+      <li>Strip down embedded xmlBlaster to minimum</li>
+      <li>Write some jmxgui plugins</li>
       <li>Find a free SNMP adaptor</li>
       <li>Add notifications</li>
+      <li>Add client observation (C/C++/Java clients over internal messages)</li>
     </ol>
    </todo>
 
    <see type="REQ">admin.commands</see>
-   <see type="INTERNET">http://java.sun.com/products/JavaManagement/index.jsp</see>
-   <see type="INTERNET">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
-   <see type="INTERNET">http://java.sun.com/products/jdmk/</see>
+   <see type="INTERNET" label="JMX homepage">http://java.sun.com/products/JavaManagement/index.jsp</see>
+   <see type="INTERNET" label="JMX tutorial">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
+   <see type="INTERNET" label="JMDK homepage">http://java.sun.com/products/jdmk/</see>
+   <see type="INTERNET" label="JMDK homepage">http://mc4j.sourceforge.net/</see>
 
    <author>oliver.neubert@doubleslash.de</author>
    <author>xmlblast@marcelruff.info</author>
