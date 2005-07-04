@@ -2,8 +2,8 @@ Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
 
-Changes for 1.xxx [2005-xx-xx] current repository
-=================================================
+Changes for 1.0.4 [2005-07-04] #13388 "Xmas release patch 4"
+============================================================
 
  o #13381 Added JMX support
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
