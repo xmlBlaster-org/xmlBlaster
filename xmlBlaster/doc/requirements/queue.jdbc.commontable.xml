@@ -89,7 +89,7 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
                          entriesTableName=ENTRIES,\
                          tableNamePrefix=XB,\
                          dbAdmin=true,\
-			 configurationIdentifier=mySpecialDB
+                         configurationIdentifier=mySpecialDB
      </pre>
      <table border="1">
         <tr>
@@ -120,12 +120,12 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
           <td>configurationIdentifier</td>
           <td>$DatabaseMetaData.getDatabaseProductName()$</td>
           <td>The ID to assign to this configuration. Its only purpose is to find the correct Mapping
-	      declaration for this database configuration. This name must match the name inside the
-	      square brackets. If you define configurationIdentifier=myStrangeDB here, then you will
-	      need to define the associated mapping: 
+              declaration for this database configuration. This name must match the name inside the
+              square brackets. If you define configurationIdentifier=myStrangeDB here, then you will
+              need to define the associated mapping: 
               JdbcDriver.mapping[myStrangeDB]=longint=numeric (19),boolean=char(1),blob=image. If
-	      you don't define anything here, then the database product name is taken (which you get
-	      with DatabaseMetaData.getDatabaseProductName()).
+              you don't define anything here, then the database product name is taken (which you get
+              with DatabaseMetaData.getDatabaseProductName()).
           </td>
         </tr>
 
@@ -160,26 +160,26 @@ StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlug
             <td>enableBatchMode</td>
             <td>true</td>
             <td>Tells the driver to make the addition of entries in batch mode, i.e. several entries are
-	        added in the same sweep. This can improve performance on some DB's significantly. The 
-		drawback is that it could loose performance and create noisy logs in the case you insert
-		several entries and one of them is already in the DB. Then everything would be rolled back
-		and repeated in single mode (we can not save the current state since PostGres implicitly
-		aborts transactions in case of an SQLException is thrown). If the DB used does not support
-		batch mode, then this option is ignored.
-	    </td>
+                added in the same sweep. This can improve performance on some DB's significantly. The 
+                drawback is that it could loose performance and create noisy logs in the case you insert
+                several entries and one of them is already in the DB. Then everything would be rolled back
+                and repeated in single mode (we can not save the current state since PostGres implicitly
+                aborts transactions in case of an SQLException is thrown). If the DB used does not support
+                batch mode, then this option is ignored.
+            </td>
          </tr>
          <tr>
             <td>cascadeDeleteSupported</td>
             <td>true</td>
             <td>Tells the driver that cascade delete is supported. When this is set (default), deleting a
-	        queue will delete all entries within the same SQL statement.
-	    </td>
+                queue will delete all entries within the same SQL statement.
+            </td>
          </tr>
          <tr>
             <td>nestedBracketsSupported</td>
             <td>true</td>
             <td>Tells the driver wether nested brackets are supported or not. It normally is supported.
-	    </td>
+            </td>
          </tr>
      </table>
 
@@ -205,46 +205,46 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
         </tr>
         <tr>
           <td>string</td>
-	  <td>text</td>
+          <td>text</td>
           <td>The name be used for the java.String type</td>
-	</tr>
-	<tr>
-	  <td>longint</td>
-	  <td>bigint</td>
+        </tr>
+        <tr>
+          <td>longint</td>
+          <td>bigint</td>
           <td>The name be used for the java.Long type (or long)</td>
-	</tr>
-	<tr>
-	  <td>int</td>
-	  <td>integer</td>
+        </tr>
+        <tr>
+          <td>int</td>
+          <td>integer</td>
           <td>The name be used for the java.Integer (or int) type</td>
-	</tr>
-	<tr>
-	  <td>boolean</td>
-	  <td>char(1)</td>
+        </tr>
+        <tr>
+          <td>boolean</td>
+          <td>char(1)</td>
           <td>The name be used for the java.Boolean (or boolean) type (a char is used since oracle does not support boolean)</td>
-	</tr>
-	<tr>
-	  <td>blob</td>
-	  <td>bytea</td>
+        </tr>
+        <tr>
+          <td>blob</td>
+          <td>bytea</td>
           <td>The name be used for the blobs (mapped to byte[])</td>
-	</tr>
-	<tr>
-	  <td>pingStatement</td>
-	  <td>SHOW ALL</td>
+        </tr>
+        <tr>
+          <td>pingStatement</td>
+          <td>SHOW ALL</td>
           <td>The SQL stement to use to simulate a ping to the DB</td>
-	</tr>
-	<tr>
-	  <td>blobVarName</td>
-	  <td>blob</td>
+        </tr>
+        <tr>
+          <td>blobVarName</td>
+          <td>blob</td>
           <td>The name to assign to the table column for the blob. This has been added since the name <i>blob</i>
-	      is invalid because it is an internal keyword.
-	  </td>
-	</tr>
-	<tr>
-	  <td>keyAttr</td>
-	  <td>(empty string)</td>
+              is invalid because it is an internal keyword.
+          </td>
+        </tr>
+        <tr>
+          <td>keyAttr</td>
+          <td>(empty string)</td>
           <td>Additional attributes to the PRIMARY KEY to describe the primary key. Some DB need <i>not null</i> being added here</td>
-	</tr>
+        </tr>
      </table>
  Note that the separator for the subproperties is a comma (,). If for some reasons you need to use a 
  comma inside the subproperty (for example if you want to define  <i>...,longint=decimal(19,0),...</i>, then 
@@ -263,6 +263,11 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
    <see type="REQ">queue</see>
    <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.jdbc.oracle</see>
+   <see type="REQ">queue.jdbc.firebird</see>
+   <see type="REQ">queue.jdbc.sqlserver</see>
+   <see type="REQ">queue.jdbc.hsqldb</see>
+   <see type="REQ">queue.jdbc.mysql</see>
+   <see type="REQ">queue.jdbc.ldbc</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>

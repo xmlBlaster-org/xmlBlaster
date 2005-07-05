@@ -32,11 +32,12 @@
 #queue/connection/defaultPlugin=RAM,1.0
 
 # NOTE: If you don't want the embedded hsqldb database to handle persistence you need to install a
-# Postgres, Oracle or MS-SQL-Server database
+# Postgres, Oracle, Firebird or MS-SQLServer database
 #   See
 #    xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
 #    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
 #    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
+#    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.firebird.html
 #    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.sqlserver.html
 
 #==============================================================================
@@ -183,6 +184,19 @@ JdbcStorage[Oracle]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                     dbAdmin=true
 
 # Settings for the persistence plugins (StoragePlugin and QueuePlugin)
+# for FIREBIRD http://www.ibphoenix.com/
+JdbcStorage[Firebird]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                      url=jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/mydb.fdb,\
+                      user=user,\
+                      password=password,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+
+# Settings for the persistence plugins (StoragePlugin and QueuePlugin)
 # for Microsoft SQL server:
 JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                   url=jdbc:microsoft:sqlserver://localhost:1433;SelectMethod=cursor;DatabaseName=xmlBlaster,\
@@ -247,6 +261,7 @@ JdbcStorage[SQLite]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
 StoragePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
@@ -265,6 +280,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 QueuePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
@@ -306,9 +322,10 @@ queue/connection/maxEntries = 10000000
 
 
 #------------------------------------------------------------------------------
-# List of all jdbc drivers to initalize for the XmlDBAdapter and for the jdbc peristence queue
+# List of all jdbc drivers to initalize for the XmlDBAdapter and for the jdbc persistence queue
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html
 JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    org.ldbc.jdbc.jdbcDriver:\
                    com.mckoi.JDBCDriver:\
@@ -318,6 +335,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    com.microsoft.jdbc.sqlserver.SQLServerDriver:\
                    com.mysql.jdbc.Driver:\
                    org.postgresql.Driver:\
+                   org.firebirdsql.jdbc.FBDriver:\
                    de.sag.jdbc.adabasd.ADriver:\
                    com.sybase.jdbc2.jdbc.SybDriver:\
                    SQLite.JDBCDriver
@@ -327,6 +345,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
 JdbcDriver.mapping[HSQLDatabaseEngine]=string=VARCHAR,longint=BIGINT,int=INTEGER,blob=BINARY,boolean=CHAR
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1)
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
+JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
 JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
 JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boolean=char(1),blob=blob,blobVarName=ablob,keyAttr=not null
 

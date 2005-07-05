@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queue.jdbc.firebird' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+        XmlBlaster has an advanced queuing facility. Among others one tested persistence layer is offered by
+        communicating with a Firebird database.
+    </topic>
+    <description>
+       <p>The generic plugin for jdbc based queues has been tested against Firebird 1.5.2.4731</p>
+       <p>To make xmlBlaster run with a persitent queue stored on Firebird it is necessary to first install Firebird.
+       You can download it from the Main Downloads section at
+       <a href='http://www.ibphoenix.com/' target='others'>The Firebird Homepage</a>. Please follow the instructions given there on 
+       how to download, install and initially configure Firebird.
+       Keep in mind that you also need to install the jdbc driver that works with Firebird.
+       You can download it from the Main Downloads section at <a href='http://www.ibphoenix.com/' target='others'>
+       The Firebird Homepage</a> and put it somewhere in your classpath. To keep it simple you can 
+       put the jar file (for example jaybird-full-2.0.0.jar) in the $XMLBLASTER_HOME/lib directory.
+       </p>
+    </description>
+
+    <example lang="Java" type="HTML">
+       Example of a connect() invocation which configures the callback queue settings:
+       <pre>
+&lt;qos>
+   ...
+   &lt;queue relating='callback' maxEntries='1000' maxBytes='4000000'
+                                 onOverflow='deadMessage'>
+&lt;/qos>
+       </pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure a cache queue running with Firebird
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[JDBC][1.0]</td>
+            <td>org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</td>
+            <td>specifies the JDBC implementing class to be used to store queue entries</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>StoragePlugin[JDBC][1.0]</td>
+            <td>org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</td>
+            <td>specifies the JDBC implementing class to be used to store the message content</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxEntries</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxBytes</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/url</td>
+            <td>jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/dbTest.fdb</td>
+            <td>the url which specifies where to find the DB. Here firebirdsql is the db vendor name, localhost the hostname. Replace "c:/Firebird/Data/dbTest.fdb" with the fully qualified path to your .fdb file</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+            <tr>
+            <td>queue/persistent/user</td>
+            <td>sysdba</td>
+            <td>The db user under which to run</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/password</td>
+            <td>sysdba</td>
+            <td>The unencrypted password for the user 'sysdba'. In this example, the password is 'sysdba'.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+        </table>
+        Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+        <h3>How to switch to Firebird</h3>
+        <p>Please edit xmlBlaster.properties following the example below,
+          typically you need to change the <tt>url</tt> setting to suit your
+          environment.</p>
+<pre>
+JdbcDriver.drivers=org.firebirdsql.jdbc.FBDriver:...
+
+JdbcStorage[Firebird]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                      url=jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/dbTest.fdb,\
+                      user=sysdba,\
+                      password=sysdba,\
+                      connectionPoolSize=1,\
+                      connectionBusyTimeout=90000,\
+                      maxWaitingThreads=300,\
+                      tableNamePrefix=XB_,\
+                      entriesTableName=ENTRIES,\
+                      dbAdmin=true
+
+StoragePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
+QueuePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
+
+JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
+
+(since 'blob' is a reserved in Firebird, it cannot be used as a field name. Instead, xmlBlaster will use the value specified
+ in blobVarName - which, in this example, is 'msg')
+</pre>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>ckl_88@yahoo.ca</author>
+   <date>2005 07 04</date>
+   <revision>$Revision: 1.00 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
+   </testcase>
+</requirement>
+

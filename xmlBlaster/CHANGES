@@ -1,6 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for xxxxx [2005-xx-xx]
+==============================
+
+ o Added port for persistency in Firebird database
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.firebird.html
+   Donated by Chris Lau ckl_88@yahoo.ca under LGPL
+
 
 Changes for 1.0.4 [2005-07-04] #13388 "Xmas release patch 4"
 ============================================================
