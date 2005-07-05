@@ -79,7 +79,8 @@
           the <a href="http://java.sun.com/products/jdmk/" target="others">Java Dynamic Management Kit JDMK</a>
           (~6000 US$)
           or from AdventNet with the 
-          <a href="http://www.adventnet.com/products/snmpadaptor/index.html" target="others">SNMP Adaptor for JMX</a> (~500 US$).
+          <a href="http://www.adventnet.com/products/snmpadaptor/index.html" target="others">SNMP Adaptor for JMX</a> (~500 US$)
+          or <a href="http://www.koshna.com/sales/purchase.asp?product=KSX" target="others">" target="others">Koshna SNMP Toolkit for JMX</a> (~1200 US$)
       </td>
       <td>Any existing SNMP aware monitoring
           tool like <a href="http://www.nagios.org/" target="others">NAGIOS</a>
