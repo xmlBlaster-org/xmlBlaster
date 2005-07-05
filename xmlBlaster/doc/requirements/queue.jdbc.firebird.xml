@@ -72,8 +72,8 @@
          </tr>
          <tr>
             <td>queue/persistent/url</td>
-            <td>jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/dbTest.fdb</td>
-            <td>the url which specifies where to find the DB. Here firebirdsql is the db vendor name, localhost the hostname. Replace "c:/Firebird/Data/dbTest.fdb" with the fully qualified path to your .fdb file</td>
+            <td>jdbc:firebirdsql:localhost/3050:c:/Data/dbTest.fdb</td>
+            <td>the url which specifies where to find the DB. Here firebirdsql is the db vendor name, localhost the hostname. Replace "c:/Data/dbTest.fdb" with the fully qualified path to your .fdb file</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -102,24 +102,27 @@
 JdbcDriver.drivers=org.firebirdsql.jdbc.FBDriver:...
 
 JdbcStorage[Firebird]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                      url=jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/dbTest.fdb,\
-                      user=sysdba,\
-                      password=sysdba,\
-                      connectionPoolSize=1,\
-                      connectionBusyTimeout=90000,\
-                      maxWaitingThreads=300,\
-                      tableNamePrefix=XB_,\
-                      entriesTableName=ENTRIES,\
-                      dbAdmin=true
+      url=jdbc:firebirdsql:localhost/3050:c:/Firebird/Data/dbTest.fdb,\
+      user=sysdba,\
+      password=sysdba,\
+      connectionPoolSize=1,\
+      connectionBusyTimeout=90000,\
+      maxWaitingThreads=300,\
+      tableNamePrefix=XB_,\
+      entriesTableName=ENTRIES,\
+      dbAdmin=true
 
 StoragePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 QueuePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 
-JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
+JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",
+                             int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
 
-(since 'blob' is a reserved in Firebird, it cannot be used as a field name. Instead, xmlBlaster will use the value specified
- in blobVarName - which, in this example, is 'msg')
 </pre>
+    <p>Since 'blob' is a reserved in Firebird, it cannot be used as a field name.
+       Instead, xmlBlaster will use the value specified
+       in blobVarName - which, in this example, is 'msg'
+     </p>
    </configuration>
 
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
