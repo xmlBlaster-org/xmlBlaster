@@ -110,8 +110,11 @@ Open URL
    http://localhost:8082
 in your browser.
    </pre>
-   <p>Note: >You should protect remote access of xmlBlaster using the html adaptor
-   with a login name and password.
+   <p>This adaptor does not support changing of property names containing '[' or ']'
+   as it interprets those as an array. A smart work around is currently not known.
+   </p>
+   <p>Caution: You should protect remote access of xmlBlaster using the html adaptor
+   with a login name and password, see the configuration section below how to do it.
    </p>
    <h3>HTML adaptor screenshot</h3>
    <p>
@@ -135,10 +138,41 @@ jconsole
    <p>In the MBeans tab of jconsole you find the <tt>org.xmlBlaster</tt> root node.
    </p>
    <p>Note: For remote access of xmlBlaster using jconsole with password or SSL
-   protection please consult the jconsole online documentation.</p>
+   protection please consult the
+   <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html" target="others">
+   jconsole online documentation</a>.</p>
    <h3>Jconsole screenshot</h3>
    <p>
       <img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' />
+      </p>
+   </example>
+
+
+   <example lang="any" type="HTML">
+      <h2 id="jconsole">Observing xmlBlaster with MC4J GUI</h2>
+      <p>The <a href="http://mc4j.sourceforge.net/" target="others">MC4J sourceforge project</a>
+      offers an advanced Management Console, here is how to start it:
+      </p>
+   <pre>
+java -Dcom.sun.management.jmxremote
+     -Dcom.sun.management.jmxremote.port=8999
+     -Dcom.sun.management.jmxremote.ssl=false
+     -Dcom.sun.management.jmxremote.authenticate=false org.xmlBlaster.Main
+
+MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 5.0')
+   </pre>
+   <p>
+   You find the jconsole application in the JAVA_HOME\bin directory of
+   JDK 1.5 or above. Start jconsole as the same user and on the same
+   computer as the server.
+   </p>
+   <p>In the MBeans tab of jconsole you find the <tt>org.xmlBlaster</tt> root node.
+   </p>
+   <p>Note: The above example is unprotected, you definitely need to configure SSL protection!</p>
+
+   <h3>MC4J screenshot</h3>
+   <p>
+      <img src='jmx-MC4J.png' border='0' alt='JMX - xmlBlaster MC4J screenshot' />
       </p>
    </example>
 
@@ -234,6 +268,12 @@ jconsole
       <li>Find a free SNMP adaptor</li>
       <li>Add notifications</li>
       <li>Add client observation (C/C++/Java clients over internal messages)</li>
+      <li>Fix XmlBlasterException (-> Exception)</li>
+      <li>Add attribute help, see descriptions like 
+         TopicHandlerMBeanDescription in http://mx4j.sourceforge.net/docs/ch04.html or
+         XDoclet http://mx4j.sourceforge.net/docs/ch07s15.html#N11001</li>
+      <li>Add email notification, e.g. with MX4J http://mx4j.sourceforge.net/docs/ch06s10.html</li>
+      <li>Add ManageEngine example, connected over MX4J RMI connector</li>
     </ol>
    </todo>
 
@@ -241,7 +281,7 @@ jconsole
    <see type="INTERNET" label="JMX homepage">http://java.sun.com/products/JavaManagement/index.jsp</see>
    <see type="INTERNET" label="JMX tutorial">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
    <see type="INTERNET" label="JMDK homepage">http://java.sun.com/products/jdmk/</see>
-   <see type="INTERNET" label="JMDK homepage">http://mc4j.sourceforge.net/</see>
+   <see type="INTERNET" label="MC4J homepage">http://mc4j.sourceforge.net/</see>
 
    <author>oliver.neubert@doubleslash.de</author>
    <author>xmlblast@marcelruff.info</author>
