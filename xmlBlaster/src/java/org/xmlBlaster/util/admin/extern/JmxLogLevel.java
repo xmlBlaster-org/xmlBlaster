@@ -63,7 +63,7 @@ public class JmxLogLevel implements DynamicMBean {
    }
 
    /**
-    * Export all properties from glob. 
+    * Export all log-level settings. 
     */
    public JmxLogLevel(Global glob) {
       this.glob = glob;
