@@ -18,15 +18,14 @@ import java.util.Map;
 import javax.management.*;
 
 /**
- * Definition of a dynamic MBean which exports the Global properties. 
+ * Definition of a dynamic MBean which exports the logging properties. 
  *
- * The "JmxLogLevel" dynamic MBean shows how to expose for management
+ * The "JmxLogLevel" dynamic MBean exposes management
  * attributes and operations, at runtime,  by implementing the  
  * "javax.management.DynamicMBean" interface.
  *
- * This MBean exposes for management all glob.getProperty() key/values.
+ * This MBean exposes for management all LogChannel values.
  *      - the read/write attribute,
- *      - the read only attribute,
  *      - the "reset()" operation.
  * It does so by putting this information in an MBeanInfo object that
  * is returned by the getMBeanInfo() method of the DynamicMBean interface.
@@ -41,7 +40,7 @@ import javax.management.*;
  * Note that as "JmxLogLevel" explicitly defines one constructor,
  * this constructor must be public and exposed for management through
  * the MBeanInfo object.
- * @since 1.0.4
+ * @since 1.0.5
  */
 public class JmxLogLevel implements DynamicMBean {
    private Global glob;
@@ -55,7 +54,7 @@ public class JmxLogLevel implements DynamicMBean {
    private int numChannels;
 
    /**
-    * Export all properties from glob. 
+    * Export all log-level settings. 
     */
    public JmxLogLevel() {
       this(Global.instance());
