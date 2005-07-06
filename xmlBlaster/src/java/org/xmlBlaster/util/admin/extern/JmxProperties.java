@@ -25,7 +25,7 @@ import javax.management.*;
  * This MBean exposes for management all glob.getProperty() key/values.
  *      - the read/write attribute,
  *      - the read only attribute,
- *      - the "reset()" operation.
+ *      - the "set()" operation.
  * It does so by putting this information in an MBeanInfo object that
  * is returned by the getMBeanInfo() method of the DynamicMBean interface.
  *
@@ -33,7 +33,7 @@ import javax.management.*;
  * getAttributes(), setAttribute(), and setAttributes() methods of the
  * DynamicMBean interface.
  *
- * It implements the invocation of its reset() operation through the
+ * It implements the invocation of its set() operation through the
  * invoke() method of the DynamicMBean interface.
  * 
  * Note that as "JmxProperties" explicitly defines one constructor,
@@ -49,7 +49,6 @@ public class JmxProperties implements DynamicMBean {
    private MBeanAttributeInfo[] dAttributes;
    private MBeanConstructorInfo[] dConstructors = new MBeanConstructorInfo[1];
    private MBeanInfo dMBeanInfo = null;
-   private int numResets;
    private int numProperties;
 
    /**
@@ -199,9 +198,25 @@ public class JmxProperties implements DynamicMBean {
                                              "Cannot invoke a null operation in " + dClassName);
       }
       // Check for a recognized operation name and call the corresponding operation
-      if (operationName.equals("reset")){
-         reset();
-         return null;
+      if (operationName.equals("set")){
+         if (params.length == 2) {
+            String key = (String)params[0];
+            String value = (String)params[1];
+            try {
+               String retVal = this.glob.getProperty().set(key, value);
+               String ret = "Operation set(key="+key+",value="+value+") returned '" + retVal + "'";
+               log.info(ME, ret);
+               return ret;
+            }
+            catch (Exception e) {
+               throw new RuntimeOperationsException(new IllegalArgumentException("Operation set(key="+key+",value="+value+") failed: " + e.toString()), 
+                                             "Cannot invoke a set(key,value) operation in " + dClassName);
+            }
+         }
+         else {
+            throw new RuntimeOperationsException(new IllegalArgumentException("Operation set(key,value) expects two parameters"), 
+                                             "Cannot invoke a set(key,value) operation in " + dClassName);
+         }
       } else { 
          // unrecognized operation name:
          throw new ReflectionException(new NoSuchMethodException(operationName), 
@@ -219,14 +234,6 @@ public class JmxProperties implements DynamicMBean {
        if (log.CALL) log.call(ME, "Access MBeanInfo");
        buildDynamicMBeanInfo();
        return dMBeanInfo;
-   }
-
-   /**
-    * Operation: reset to their initial values
-    */
-   public void reset() {
-       // TODO: Implement operations if needed 
-       numResets++;
    }
 
    /**
@@ -268,15 +275,22 @@ public class JmxProperties implements DynamicMBean {
       dConstructors[0] = new MBeanConstructorInfo("JmxProperties(): Constructs a JmxProperties object",
                                                     constructors[0]);
 
-      MBeanOperationInfo[] dOperations = new MBeanOperationInfo[0];
-      /*
-      MBeanParameterInfo[] params = null;        
-      dOperations[0] = new MBeanOperationInfo("reset",
-                                             "reset(): reset State and NbChanges attributes to their initial values",
+      MBeanOperationInfo[] dOperations = new MBeanOperationInfo[1];
+
+      MBeanParameterInfo[] params = 
+               new MBeanParameterInfo[] { (new MBeanParameterInfo("key",
+                                           "java.lang.String",
+                                           "property key") ),
+                                          (new MBeanParameterInfo("value",
+                                           "java.lang.String",
+                                           "new property value") )
+                                         } ;
+      dOperations[0] = new MBeanOperationInfo("set",
+                                             "set(): set a new key/value property, returns the previous value if any",
                                              params , 
-                                             "void", 
+                                             "java.lang.String", 
                                              MBeanOperationInfo.ACTION);
-      */
+
       dMBeanInfo = new MBeanInfo(dClassName,
                                  "Exposing the Global properties environment.",
                                  dAttributes,
