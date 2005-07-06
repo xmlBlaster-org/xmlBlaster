@@ -543,6 +543,14 @@ public class Global implements Cloneable
    }
 
    /**
+    * Access all log channels. 
+    * For example key="core" -> value=LogChannel
+    */
+   public Map getLogChannels() {
+      return this.logChannels;
+   }
+
+   /**
    * Changes the given loglevel to given state.
    * <p />
    * See org.jutils.init.Property#toBool(boolean) at www.jutils.org
@@ -573,9 +581,15 @@ public class Global implements Cloneable
 
       try {
          int start = logLevel.indexOf("[");
+         if (start == -1) {
+            start = logLevel.indexOf("/"); // JMX interpretes [ as index, so we use info/core syntax there
+         }
 
          if (start != -1) { // Syntax is for example "info[core]"
             int end = logLevel.indexOf("]");
+            if (end == -1 ) {
+               end = logLevel.length();    // info/auth
+            }
             if (start < 1 || end == -1 || end <= (start+1)) {
                throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
             }
@@ -629,9 +643,15 @@ public class Global implements Cloneable
 
       try {
          int start = logLevel.indexOf("[");
+         if (start == -1) {
+            start = logLevel.indexOf("/"); // JMX interpretes [ as index, so we use info/core syntax there
+         }
 
          if (start != -1) { // Syntax is for example "info[core]"
             int end = logLevel.indexOf("]");
+            if (end == -1 ) {
+               end = logLevel.length();    // info/auth
+            }
             if (start < 1 || end == -1 || end <= (start+1)) {
                throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
             }
