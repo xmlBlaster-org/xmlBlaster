@@ -50,6 +50,7 @@ public class JmxProperties implements DynamicMBean {
    private MBeanConstructorInfo[] dConstructors = new MBeanConstructorInfo[1];
    private MBeanInfo dMBeanInfo = null;
    private int numResets;
+   private int numProperties;
 
    /**
     * Export all properties from glob. 
@@ -80,6 +81,7 @@ public class JmxProperties implements DynamicMBean {
          throw new RuntimeOperationsException(new IllegalArgumentException("Attribute name cannot be null"), 
                                                 "Cannot invoke a getter of " + dClassName + " with null attribute name");
       }
+      attribute_name = this.glob.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
       String value = this.glob.getProperty().get(attribute_name, (String)null);
       if (value != null) {
          return value;
@@ -104,6 +106,7 @@ public class JmxProperties implements DynamicMBean {
          throw new RuntimeOperationsException(new IllegalArgumentException("Attribute name cannot be null"), 
                                              "Cannot invoke the setter of " + dClassName + " with null attribute name");
       }
+      name = this.glob.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
 
       if (isReadOnly(name)) {
          throw(new AttributeNotFoundException("Cannot set attribute "+ name +" because it is read-only"));
@@ -214,6 +217,7 @@ public class JmxProperties implements DynamicMBean {
        // return the information we want to expose for management:
        // the dMBeanInfo private field has been built at instanciation time,
        if (log.CALL) log.call(ME, "Access MBeanInfo");
+       buildDynamicMBeanInfo();
        return dMBeanInfo;
    }
 
@@ -235,11 +239,15 @@ public class JmxProperties implements DynamicMBean {
     * of the DynamicMBean interface. Note that, once constructed, an MBeanInfo object is immutable.
     */
    private void buildDynamicMBeanInfo() {
+      java.util.Properties props = glob.getProperty().getProperties();
+      if (this.numProperties == props.size()) {
+         return; // no change -> no need to refresh meta informations
+      }
+      this.numProperties = props.size();
 
       boolean isReadable = true;
       boolean isIs = false; // true if we use "is" getter
 
-      java.util.Properties props = glob.getProperty().getProperties();
       ArrayList tmp = new ArrayList(props.size());
 
       int i=0;
