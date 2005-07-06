@@ -53,6 +53,7 @@ public class JmxWrapper
    private int useJmx;
    /** Export Global.getProperty() to JMX */
    private JmxProperties jmxProperties;
+   private JmxLogLevel jmxLogLevel;
 
    private MBeanServer getMBeanServer() {
       if (this.mbeanServer == null) {
@@ -97,6 +98,9 @@ public class JmxWrapper
          // Export Global.getProperty() to JMX
          this.jmxProperties = new JmxProperties(this.glob);
          registerMBean("syspropList", jmxProperties);
+
+         this.jmxLogLevel = new JmxLogLevel(this.glob);
+         registerMBean("logging", jmxLogLevel);
       }
    }
 
