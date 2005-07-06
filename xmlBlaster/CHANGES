@@ -4,7 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxxxx [2005-xx-xx]
 ==============================
 
- o Added port for persistency in Firebird database
+ o #13402 Extended JMX support
+   - Observe/change Logging
+
+ o #13397 Added port for persistency in Firebird database
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.firebird.html
    Donated by Chris Lau ckl_88@yahoo.ca under LGPL
 
