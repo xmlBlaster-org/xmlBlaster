@@ -5,7 +5,7 @@ Please read
 first.
 
 This is a demo which shows the possibilities of xmlBlaster when
-combining it with javascript (using the rhino lifeConnect feature)
+combining it with javascript (using the rhino LiveConnect feature)
 and with SVG. It has currently been tested with the batik browser
 but it should also work with Mozilla (with native svg).
 
