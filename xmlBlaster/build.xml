@@ -1551,6 +1551,7 @@ TODO
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
+      <property name="ADD_JMXTOOLS" value="false"/> <!-- To use HTMLAdaptor, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor -->
       <property name="ADD_SNMP" value="false"/>
       <property name="ADD_TINYSQL" value="false"/>
       <property name="ADD_XML_PARSER" value="true"/>
@@ -1624,6 +1625,14 @@ TODO
             <unjar src="${lib.dir}/javax.jms.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/jndi-jdk1_3_1.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/jta-spec1_0_1.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+         </default>
+      </switch>
+      <switch value="${ADD_JMXTOOLS}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/jmxtools.jar for JMX HTMLAdaptor support" />
+            <unjar src="${lib.dir}/jmxtools.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
          </default>

@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13409 Extended JMX support
+   Added 'build -DADD_JMXTOOLS=true ... dist' configuration
+   to add jmxtools.jar to distribution (needed for HTMLAdaptor)
 
  o #13402 Extended JMX support
    - Observe/change Logging
