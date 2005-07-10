@@ -101,7 +101,7 @@
    </description>
 
    <example lang="any" type="HTML">
-      <h2 id="htmladaptor">Observing xmlBlaster with a browser</h2>
+      <h1 id="htmladaptor">Observing xmlBlaster with a browser</h1>
       <p>On startup of xmlBlaster you need to switch this adaptor on:</p>
    <pre>
 java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
@@ -114,8 +114,18 @@ in your browser.
    as it interprets those as an array. A smart work around is currently not known.
    </p>
    <p>Caution: You should protect remote access of xmlBlaster using the html adaptor
-   with a login name and password, see the configuration section below how to do it.
+   with a login name and password, see the configuration section below how to do it, here
+   is an example (type all in one line):
    </p>
+   <pre>
+java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true 
+                         -xmlBlaster/jmx/HtmlAdaptor/loginName admin
+                         -xmlBlaster/jmx/HtmlAdaptor/password secret
+
+Open URL
+   http://localhost:8082
+in your browser and type in the above credentials.
+   </pre>
    <h3>HTML adaptor screenshot</h3>
    <p>
       <img src='jmx-htmlAdaptor.png' border='0' alt='JMX - xmlBlaster HTML adaptor browser screenshot' />
@@ -124,23 +134,64 @@ in your browser.
 
 
    <example lang="any" type="HTML">
-      <h2 id="jconsole">Observing xmlBlaster with jconsole</h2>
+      <h1 id="jconsole">Observing xmlBlaster with jconsole</h1>
    <pre>
+# Start the server
 java -Dcom.sun.management.jmxremote org.xmlBlaster.Main
 
+# Start the GUI:
 jconsole
    </pre>
    <p>
-   You find the jconsole application in the JAVA_HOME\bin directory of
-   JDK 1.5 or above. Start jconsole as the same user and on the same
+   You find the <tt>jconsole</tt> application in the <tt>JAVA_HOME\bin</tt> directory of
+   JDK 1.5 or above. Start <tt>jconsole</tt> as the same user and on the same
    computer as the server.
    </p>
-   <p>In the MBeans tab of jconsole you find the <tt>org.xmlBlaster</tt> root node.
+   <p>In the MBeans tab of <tt>jconsole</tt> you find the <tt>org.xmlBlaster</tt> root node.
    </p>
+   <h3>Remote access</h3>
+   <p>For remote access try these settings, take care, in this setup
+   you have no access control and anybody could log in:</p>
+   <pre>
+# Start the server
+java -Dcom.sun.management.jmxremote.port=1099
+     -Dcom.sun.management.jmxremote.ssl=false
+     -Dcom.sun.management.jmxremote.authenticate=false org.xmlBlaster.Main
+
+# Start the GUI:
+jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
+   </pre>
+   <p>Please replace <tt>localhost</tt> in the above example
+    with your computer DNS name or IP address.</p>
+
+   <h3>Simple password protection</h3>
+   <p>Now we add simple password protection, first we create a password file
+   called <tt>jmxremote.password</tt> with clear text password <tt>secret</tt>
+   and one read only and one administrative user:
+   </p>
+   <pre>
+monitorRole secret
+controlRole secret
+   </pre>
+   <p>There is an example password file
+   <tt>/opt/jdk1.5.0_04/jre/lib/management/jmxremote.password.template</tt>
+   delivered with your JDK which contains some guidance.
+   </p>
+   <pre>
+# Start the server
+java -Dcom.sun.management.jmxremote.port=1099
+     -Dcom.sun.management.jmxremote.ssl=false
+     -Dcom.sun.management.jmxremote.password.file=jmxremote.password
+      org.xmlBlaster.Main
+
+# Start the GUI (and enter user=controlRole, password=secret):
+jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
+   </pre>
    <p>Note: For remote access of xmlBlaster using jconsole with password or SSL
    protection please consult the
    <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html" target="others">
-   jconsole online documentation</a>.</p>
+   <tt>jconsole</tt> online documentation</a>.</p>
+
    <h3>Jconsole screenshot</h3>
    <p>
       <img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' />
@@ -149,7 +200,7 @@ jconsole
 
 
    <example lang="any" type="HTML">
-      <h2 id="jconsole">Observing xmlBlaster with MC4J GUI</h2>
+      <h1 id="mc4j">Observing xmlBlaster with MC4J GUI</h1>
       <p>The <a href="http://mc4j.sourceforge.net/" target="others">MC4J sourceforge project</a>
       offers an advanced Management Console, here is how to start it:
       </p>
