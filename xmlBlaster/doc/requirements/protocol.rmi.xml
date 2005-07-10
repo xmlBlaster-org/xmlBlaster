@@ -74,7 +74,7 @@
    </configuration>
 
    <see type="REQ">protocol</see>
-   <see type="INTERNET">http://java.sun.com/products/jdk/1.2/docs/guide/rmi/faq.html</see>
+   <see type="INTERNET" label="RMI homepage">http://java.sun.com/j2se/1.5.0/docs/guide/rmi/</see>
    <see type="CODE">org.xmlBlaster.protocol.rmi.RmiDriver</see>
    <see type="CODE">org.xmlBlaster.client.protocol.rmi.RmiConnection</see>
 
