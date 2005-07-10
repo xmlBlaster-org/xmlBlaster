@@ -126,6 +126,10 @@ Open URL
    http://localhost:8082
 in your browser and type in the above credentials.
    </pre>
+   <p>Note: You need the jmxtools.jar file in your CLASSPATH, if you
+   create a distribution add id like
+    <tt>build -DADD_JMXTOOLS=true ... dist</tt>
+   </p>
    <h3>HTML adaptor screenshot</h3>
    <p>
       <img src='jmx-htmlAdaptor.png' border='0' alt='JMX - xmlBlaster HTML adaptor browser screenshot' />
