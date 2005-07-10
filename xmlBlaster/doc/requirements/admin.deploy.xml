@@ -175,6 +175,15 @@ sleep 5
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>ADD_JMXTOOLS</td>
+            <td>false</td>
+            <td>Switch on JMX HTMLAdaptor support. If set to true,
+             it copies the jmxtools.jar as well, see
+             http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>ADD_PROP</td>
             <td>default</td>
             <td>We use the default xmlBlaster.properties. It is possible to use an own
