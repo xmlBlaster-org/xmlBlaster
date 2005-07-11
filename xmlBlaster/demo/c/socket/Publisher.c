@@ -150,7 +150,7 @@ int main(int argc, char** argv)
       else
          *destinationQos = 0;
 
-      for (iPublish=0; iPublish<numPublish; iPublish++) {
+      for (iPublish=0; iPublish<numPublish || numPublish==-1; iPublish++) {
          char msg[20];
          char *pp = strstr(key, "%counter");
          MsgUnit msgUnit;
