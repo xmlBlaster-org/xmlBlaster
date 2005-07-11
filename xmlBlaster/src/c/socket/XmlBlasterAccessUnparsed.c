@@ -250,7 +250,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    if (clientUpdateFp == 0) {
       xa->clientsUpdateFp = 0;
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, "",
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, "",
         "Your callback UpdateFp pointer is NULL, we use our default callback handler");
    }
    else {
