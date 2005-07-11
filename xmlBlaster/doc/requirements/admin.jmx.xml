@@ -335,7 +335,9 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
 
    <see type="REQ">admin.commands</see>
    <see type="INTERNET" label="JMX homepage">http://java.sun.com/products/JavaManagement/index.jsp</see>
-   <see type="INTERNET" label="JMX tutorial">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
+   <see type="INTERNET" label="JMX tutorial">http://java.sun.com/j2se/1.5.0/docs/guide/jmx/tutorial/tutorialTOC.html</see>
+   <see type="INTERNET" label="JMX tips">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
+   <see type="INTERNET" label="JMX tech-article">http://java.sun.com/developer/technicalArticles/J2SE/jmx.html</see>
    <see type="INTERNET" label="JMDK homepage">http://java.sun.com/products/jdmk/</see>
    <see type="INTERNET" label="MC4J homepage">http://mc4j.sourceforge.net/</see>
 
