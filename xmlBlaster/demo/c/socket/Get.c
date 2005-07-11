@@ -29,6 +29,8 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
  *
  * Access silently, useful for scripting:
  *   Get -oid __cmd:?freeMem -verbose false -sleep 0  -dumpRawContent true -logLevel WARN
+ *   Get -oid __cmd:?topicList -verbose false -sleep 0  -dumpRawContent true -logLevel WARN
+ *   Get -oid __cmd:?clientList -verbose false -sleep 0  -dumpRawContent true -logLevel WARN
  */
 int main(int argc, char** argv)
 {
