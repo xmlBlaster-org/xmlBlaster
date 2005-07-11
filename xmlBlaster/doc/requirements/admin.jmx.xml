@@ -126,8 +126,9 @@ Open URL
    http://localhost:8082
 in your browser and type in the above credentials.
    </pre>
-   <p>Note: You need the <tt>jmxtools.jar</tt> file in your CLASSPATH, if you
-   create a distribution add it like
+   <p>Note: You need the <tt>jmxtools.jar</tt> file in your CLASSPATH which is
+   there if you use the xmlBlaster.jar as downloaded.<br />
+   If you create a distribution add it like
     <tt>build -DADD_JMXTOOLS=true ... dist</tt>
    </p>
    <h3>HTML adaptor screenshot</h3>
