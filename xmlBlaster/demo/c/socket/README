@@ -16,8 +16,7 @@ Compile:
 --------
 
   cd xmlBlaster
-  build.bat c    (Win)
-  build.sh c     (UNIX)
+  build c    (Windows or UNIX)
 
 This will first create a shared library (dll) in xmlBlaster/lib
 and than compile the demo clients in this directory.
