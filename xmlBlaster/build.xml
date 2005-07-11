@@ -2968,8 +2968,19 @@ TODO
       </foreach>
    </target>
 
+   <!--
+      Here an example on how to compile a single test application ...
+      ./build -DexeName=Publisher c-demo-single
+   -->
+   <target name="c-demo-single" depends="prepare-cpp" description="Create single C demo client">
+      <foreach list="${cToCompile}"
+               target="compileCExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
+      </foreach>
+   </target>
+
    <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
-      <foreach list="Publisher,HelloWorld3,LogRedirect,HelloWorldUdp,Subscriber"
+      <foreach list="Publisher,HelloWorld3,LogRedirect,HelloWorldUdp,Subscriber,Get"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
       </foreach>
