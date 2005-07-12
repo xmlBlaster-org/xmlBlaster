@@ -1884,9 +1884,11 @@ public class Global implements Cloneable
       sb.append("   Example:  -logFile /tmp/test.log -logDevice file,console -call true -trace[corba] true.\n");
       sb.append("\n");
       sb.append("Control properties framework:\n");
-      sb.append("   -propertyFile <file> Specify an xmlBlaster property file to load.\n");
+      sb.append("   -propertyFile <file> Specify an xmlBlaster.properties file to load.\n");
       sb.append("                        The contained settings overwrite a property file found in the xmlBlaster.jar file.\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
+      sb.append("   -pluginsFile  <file> Specify an xmlBlasterPlugins.xml property file to load.\n");
+      sb.append("                        The contained settings overwrite a plugins file found in the xmlBlaster.jar file.\n");
       return sb.toString();
    }
 
