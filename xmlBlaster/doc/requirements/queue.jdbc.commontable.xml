@@ -77,7 +77,7 @@ CREATE TABLE ${Entries} (dataId ${longint},
 
    <configuration where="server">
 
-     To activate persitence please add the following to your properties file:
+     To activate persistence please add the following to your properties file:
      <pre>
 persistence/defaultPlugin=CACHE,1.0
 queue/defaultPlugin=CACHE,1.0

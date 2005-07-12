@@ -8,7 +8,7 @@
     </topic>
     <description>
        <p>The generic plugin for jdbc based queues has been tested against Firebird 1.5.2.4731</p>
-       <p>To make xmlBlaster run with a persitent queue stored on Firebird it is necessary to first install Firebird.
+       <p>To make xmlBlaster run with a persistent queue stored on Firebird it is necessary to first install Firebird.
        You can download it from the Main Downloads section at
        <a href='http://www.ibphoenix.com/' target='others'>The Firebird Homepage</a>. Please follow the instructions given there on 
        how to download, install and initially configure Firebird.

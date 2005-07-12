@@ -9,7 +9,7 @@
     <description>
        <p>The generic plugin for jdbc based queues has been tested against postgres (postgres 7.2.2 up to 7.4.5 and 8.0-RC2
        on linux and 8.0-RC2 on Windows).</p>
-       <p>To make xmlBlaster run with a persitent queue stored on postgres it is necessary to first install postgres.
+       <p>To make xmlBlaster run with a persistent queue stored on postgres it is necessary to first install postgres.
        In some of the linux distributions postgres comes along. For others, you can download it from
        <a href='http://www.postgresql.org/'>the postgres homepage</a>. Please follow the instructions given there on 
        how to download, install and initially configure postgres.. Keep in mind that you also need to install on your
