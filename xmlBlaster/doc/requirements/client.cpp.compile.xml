@@ -151,6 +151,35 @@ zlib.lib.dir=/opt/zlib-bin/lib
 #zlib.lib.name=zlib
 </pre>
 
+     <h2>Example command line settings for Windows</h2>
+<pre>
+REM Visual C++ 2005 Express Edition Beta 2
+REM C and C++
+
+REM ========== Global env settings ======
+set JAVA_HOME=C:\PROGRA~1\Java\JDK15~2.0_0
+set XMLBLASTER_HOME=C:\xmlBlaster
+set CLASSPATH=%XMLBLASTER_HOME%\lib\xmlBlaster.jar
+
+REM ========== C/C++ compilation ========
+set PATH=%PATH%;C:\PROGRA~1\MICROS~4\Common7\IDE;C:\PROGRA~1\MICROS~4\VC\bin
+set PATH=%PATH%;%XMLBLASTER_HOME%\lib;%XMLBLASTER_HOME%\bin;
+set PATH=%PATH%;%XMLBLASTER_HOME%\demo\c\socket\bin;%XMLBLASTER_HOME%\demo\c++\bin
+
+REM stdio.h and Winsock2.h (C:\Program Files\Microsoft Platform SDK)
+set INCLUDE=%INCLUDE%;C:\PROGRA~1\MICROS~2\Include
+
+REM uuid.lib (C:\Program Files\Microsoft Platform SDK\Lib)
+set lib=%lib%;C:\PROGRA~1\MICROS~2\lib
+
+REM ========== C++ runtime ========
+REM C++ only: xerces-c_2_6D.dll (from C:\xerces-c_2_6_0-windows_nt-msvc_60)
+set PATH=%PATH%;C:\xerces-c_2_6_0-windows_nt-msvc_60\bin
+
+REM C++ with debug only: MSVCRTD.dll  (where from???)
+</pre>
+
+
      <h2>The compilation step</h2>
      <p>
      After adjusting build.properties as described you can compile like this:
