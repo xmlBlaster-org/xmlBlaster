@@ -126,7 +126,7 @@ abstract public class DispatchConnection implements I_Timeout
       }
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, e.getMessage());
-         if (e.isCommunication()) {
+         if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
             handleTransition(true, e); // never returns - throws exception
          }
          else {
@@ -143,6 +143,14 @@ abstract public class DispatchConnection implements I_Timeout
       }
 
       if (log.TRACE) log.trace(ME, "Created driver for protocol '" + this.address.getType() + "'");
+   }
+
+   private boolean retry(XmlBlasterException e) {
+      if (e.isCommunication())  // all types of ErrorCode.COMMUNICATION*
+         return true;
+      //if (e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED))
+      //   return true; // If the client was killed in the server and tries to reconnect with old sessionId
+      return false;
    }
 
    public void finalize()
@@ -210,7 +218,7 @@ abstract public class DispatchConnection implements I_Timeout
          if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          for (int i=0; i<msgArr.length; i++)
             msgArr[i].incrRedeliverCounter();
-         if (e.isCommunication()) {
+         if (retry(e)) {
             handleTransition(true, e); // never returns - throws exception
          }
          else {
@@ -360,7 +368,7 @@ abstract public class DispatchConnection implements I_Timeout
                                    glob.isServerSide() && !ex.isServerSide() ||
                                    !glob.isServerSide() && ex.isServerSide()) ? true : false;
       if (ex != null) {
-         if (ex.isCommunication()) {
+         if (retry(ex)) {
             toReconnected = false;
          }
          else {
