@@ -75,6 +75,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    protected PropBoolean reconnected = new PropBoolean(false);
 
+   protected String serverInstanceId;
+
    /** Session settings */
    private SessionQos sessionQos;
 
@@ -138,6 +140,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    private void initialize(Global glob) throws XmlBlasterException {
+      this.serverInstanceId = this.glob.getInstanceId();
       this.securityQos = getClientPlugin().createSecurityQos();
       this.securityQos.setCredential(accessPassword(null));
       if (this.sessionQos.getSessionName() != null) {
@@ -736,6 +739,24 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    public int size() {
       return this.toXml().length();
+   }
+
+   /**
+    * Unique id of the xmlBlaster server (or a client), changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   public String getInstanceId() {
+      return this.serverInstanceId;
+   }
+
+   /**
+    * Unique id of the xmlBlaster server (or a client), changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @param instanceId e.g. '/node/heron/instanceId/33470080380'
+    */
+   public void setInstanceId(String instanceId) {
+      this.serverInstanceId = instanceId;
    }
 
    /**

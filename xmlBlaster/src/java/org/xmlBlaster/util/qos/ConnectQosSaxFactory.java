@@ -425,12 +425,14 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (inCallback) {
          if (name.equalsIgnoreCase("callback")) inCallback = false;
          tmpCbAddr.endElement(uri, localName, name, character);
+         character.setLength(0);
          return;
       }
 
       if (inAddress) {
          if (name.equalsIgnoreCase("address")) inAddress = false;
          tmpAddr.endElement(uri, localName, name, character);
+         character.setLength(0);
          return;
       }
 
@@ -438,6 +440,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setPtpAllowed(new Boolean(tmp).booleanValue());
+         character.setLength(0);
          return;
       }
 
@@ -445,6 +448,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setClusterNode(new Boolean(tmp).booleanValue());
+         character.setLength(0);
          return;
       }
 
@@ -452,6 +456,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setRefreshSession(new Boolean(tmp).booleanValue());
+         character.setLength(0);
          return;
       }
 
@@ -459,6 +464,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setDuplicateUpdates(new Boolean(tmp).booleanValue());
+         character.setLength(0);
          return;
       }
 
@@ -466,6 +472,14 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setReconnected(new Boolean(tmp).booleanValue());
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("instanceId")) {
+         String tmp = character.toString().trim();
+         this.connectQosData.setInstanceId(tmp);
+         character.setLength(0);
          return;
       }
 
@@ -474,6 +488,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
         character.append("]]>\n");
         character.append("</").append(name).append(">");
         String tmp = character.toString().trim();
+        character.setLength(0);
         // delegate the collected tags to our security plugin
         try {
            I_SecurityQos securityQos = this.connectQosData.getClientPlugin(tmpSecurityPluginType, tmpSecurityPluginVersion).createSecurityQos();
@@ -485,6 +500,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
            */
            securityQos.parse(tmp);
            this.connectQosData.setSecurityQos(securityQos);
+           return;
          }
          catch(XmlBlasterException e) {
             log.warn(ME, "Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
@@ -593,6 +609,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          else
             sb.append(offset).append(" <reconnected>false</reconnected>");
       }
+
+      sb.append(offset).append(" <instanceId>").append(data.getInstanceId()).append("</instanceId>");
 
       if (data.getPersistentProp().isModified()) {
          if (data.isPersistent())
