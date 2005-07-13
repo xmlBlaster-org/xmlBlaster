@@ -248,6 +248,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       authenticate.addClientListener(this);
 
       this.state = ALIVE;
+
+      if (log.CALL) log.call(ME, "Server " + glob.getInstanceId() + " instance is created");
    }
 
    Authenticate getAuthenticate() {
@@ -2118,8 +2120,14 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getNodeId() {
       return glob.getId();
    }
+   public String getInstanceId() {
+      return glob.getInstanceId();
+   }
    public String getVersion() {
       return glob.getVersion();
+   }
+   public String getRevisionNumber() {
+      return glob.getRevisionNumber();
    }
    public long getServerTimestampMillis() {
       return System.currentTimeMillis();

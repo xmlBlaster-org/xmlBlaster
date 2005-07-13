@@ -21,7 +21,17 @@ public interface I_AdminNode {
    public String getNodeList();
 
    public String getNodeId();
+   /**
+    * Unique id of the xmlBlaster server, changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   public String getInstanceId();
    public String getVersion();
+   /**
+    * The SVN version control revision number
+    */
+   public String getRevisionNumber();
    public String getBuildTimestamp();
    public String getBuildJavaVendor();
    public String getBuildJavaVersion();

@@ -48,6 +48,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    /** the xmlBlaster core class */
    private RequestBroker requestBroker;
    private NodeId nodeId;
+   /** Unique id, even for each restart of a node */
+   private String instanceId;
    private ClusterManager clusterManager;
    private Timeout sessionTimer;
    private Timeout topicTimer;
@@ -155,6 +157,26 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     */
    public boolean isServerSide() {
       return true;
+   }
+
+   /**
+    * Unique id of the xmlBlaster server, changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   public String getInstanceId() {
+      if (this.instanceId == null) {
+         synchronized(this) {
+            if (this.instanceId == null) {
+               // TODO: Two mirrored /node/heron: add IP:port to instanceId?
+               ContextNode node = new ContextNode(this, "instanceId",
+                                      ""+System.currentTimeMillis(), getContextNode());
+               this.instanceId = node.getAbsoluteName();
+               //this.instanceId = getLogPrefix() + "/instanceId/" + System.currentTimeMillis();
+            }
+         }
+      }
+      return this.instanceId;
    }
 
    /**
