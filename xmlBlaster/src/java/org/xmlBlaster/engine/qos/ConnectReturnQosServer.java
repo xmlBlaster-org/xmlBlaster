@@ -23,6 +23,7 @@ public final class ConnectReturnQosServer {
    public ConnectReturnQosServer(Global glob, ConnectQosData connectQosData) throws XmlBlasterException {
       this.glob = glob;
       this.connectQosData = connectQosData;
+      setServerInstanceId(this.glob.getInstanceId());
    }
 
    public ConnectReturnQosServer(Global glob, String xmlQos) throws XmlBlasterException {
@@ -97,4 +98,21 @@ public final class ConnectReturnQosServer {
       return this.connectQosData.isReconnected();
    }
 
+   /**
+    * Unique id of the xmlBlaster server, changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   public String getServerInstanceId() {
+      return this.connectQosData.getInstanceId();
+   }
+
+   /**
+    * Unique id of the xmlBlaster server, changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @param instanceId e.g. '/node/heron/instanceId/33470080380'
+    */
+   public void setServerInstanceId(String instanceId) {
+      this.connectQosData.setInstanceId(instanceId);
+   }
 }
