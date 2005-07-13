@@ -146,6 +146,15 @@ public class ConnectReturnQos {
       return this.connectQosData.isReconnected();
    }
 
+   /**
+    * Unique id of the xmlBlaster server, changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   public String getServerInstanceId() {
+      return this.connectQosData.getInstanceId();
+   }
+
    public final String toXml() {
       return this.connectQosData.toXml();
    }
