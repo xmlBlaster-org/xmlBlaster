@@ -113,6 +113,7 @@ public class Global implements Cloneable
    protected String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
+   private String instanceId;
 
    protected Property property = null;
    protected String errorText = null;
@@ -2045,5 +2046,30 @@ public class Global implements Cloneable
       }
    }
 
+   /**
+    * Reset the cached instance id
+    */
+   public void resetInstanceId() {
+      synchronized(this) {
+         this.instanceId = null;
+      }
+   }
 
+   /**
+    * Unique id of the client, changes on each restart. 
+    * If 'client/joe' is restarted, the instanceId changes.
+    * @return id + timestamp, '/client/joe/instanceId/33470080380'
+    */
+   public String getInstanceId() {
+      if (this.instanceId == null) {
+         synchronized(this) {
+            if (this.instanceId == null) {
+               ContextNode node = new ContextNode(this, "instanceId",
+                                       ""+System.currentTimeMillis(), getContextNode());
+               this.instanceId = node.getAbsoluteName();
+            }
+         }
+      }
+      return this.instanceId;
+   }
 }
