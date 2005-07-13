@@ -57,6 +57,8 @@ public class ConnectQosTest extends TestCase {
          "   </securityService>\n" +
          "   <ptp>false</ptp>\n" +
          "   <clusterNode>true</clusterNode>\n" +
+         "   <instanceId>/node/heron/instanceId/123445</instanceId>\n" +
+         "   <reconnected>true</reconnected>\n" +
          "   <duplicateUpdates>false</duplicateUpdates>\n" +
          "   <session name='/node/avalon/client/joe/2' timeout='" + sessionTimeout + "' maxSessions='27' clearSessions='true' sessionId='xyz'/>\n" +
          "   <queue relating='subject' type='XY' version='7.0' maxEntries='1009' maxBytes='4009' maxEntriesCache='509' maxBytesCache='777' storeSwapLevel='20009' storeSwapBytes='10000' reloadSwapLevel='20000' reloadSwapBytes='30000' onOverflow='deadMessage'>\n" +
@@ -125,6 +127,8 @@ public class ConnectQosTest extends TestCase {
 
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", true, qos.isClusterNode());
+         assertEquals("", true, qos.isReconnected());
+         assertEquals("", "/node/heron/instanceId/123445", qos.getInstanceId());
          assertEquals("", false, qos.duplicateUpdates());
          assertEquals("", true, qos.getPersistentProp().getValue());
 
