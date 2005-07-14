@@ -202,7 +202,6 @@ public class HandleClient extends Executor implements Runnable
       try {
 
          if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-         if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
          // receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (receive(receiver, udp) == false) {
