@@ -59,7 +59,8 @@ static size_t stack_size = 0;
 ///////////////////////////////////////////////////////////////////////////
 
 
-omni_mutex::omni_mutex(void)
+/** switching recursive on/off is not supported, the default is not known (Marcel 2005-07-14) */
+omni_mutex::omni_mutex(bool recursive)
 {
   mutex_init(&mach_mutex);	
 }

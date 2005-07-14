@@ -211,7 +211,13 @@ class _OMNITHREAD_NTDLL_ omni_thread_invalid {};
 class _OMNITHREAD_NTDLL_ omni_mutex {
 
 public:
-    omni_mutex(void);
+    /**
+     * The locks may not be called recursive.
+     * @param recursive If true the same thread may call the lock recursive
+     *                  Note that the thread needs to free the lock as many times again.
+     * @since xmlBlaster 1.0.5
+     */
+    omni_mutex(bool recursive=false);
     virtual ~omni_mutex(void);
 
     inline void lock(void)    { OMNI_MUTEX_LOCK_IMPLEMENTATION   }
@@ -227,6 +233,7 @@ private:
     // dummy copy constructor and operator= to prevent copying
     omni_mutex(const omni_mutex&);
     omni_mutex& operator=(const omni_mutex&);
+    pthread_mutexattr_t mtx_attr;
 
 OMNI_THREAD_EXPOSE:
     OMNI_MUTEX_IMPLEMENTATION

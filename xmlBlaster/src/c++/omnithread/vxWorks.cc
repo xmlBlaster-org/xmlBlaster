@@ -93,7 +93,8 @@ int omni_thread_prio_high = 55;
 // Mutex
 //
 ///////////////////////////////////////////////////////////////////////////
-omni_mutex::omni_mutex(void):m_bConstructed(false)
+/** switching recursive on/off is not supported, the default is not known (Marcel 2005-07-14) */
+omni_mutex::omni_mutex(bool recursive):m_bConstructed(false)
 {
 	mutexID = semMCreate(SEM_Q_PRIORITY | SEM_INVERSION_SAFE);
 

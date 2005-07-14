@@ -42,7 +42,8 @@ static void get_time_now(unsigned long* abs_sec, unsigned long* abs_nsec);
 ///////////////////////////////////////////////////////////////////////////
 
 
-omni_mutex::omni_mutex(void)
+/** switching recursive on/off is not supported, the default is true on Windows (Marcel 2005-07-14) */
+omni_mutex::omni_mutex(bool recursive)
 {
     InitializeCriticalSection(&crit);
 }

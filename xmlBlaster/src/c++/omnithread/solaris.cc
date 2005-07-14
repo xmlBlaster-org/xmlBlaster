@@ -43,7 +43,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-omni_mutex::omni_mutex(void)
+/** switching recursive on/off is not supported, the default is not known (Marcel 2005-07-14) */
+omni_mutex::omni_mutex(bool recursive)
 {
     THROW_ERRORS(mutex_init(&sol_mutex, USYNC_THREAD, 0));
 }

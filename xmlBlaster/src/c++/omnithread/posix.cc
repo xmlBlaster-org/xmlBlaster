@@ -91,13 +91,36 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <stdio.h>
 
-omni_mutex::omni_mutex(void)
+
+omni_mutex::omni_mutex(bool recursive)
 {
 #if (PthreadDraftVersion == 4)
+    !!!TODO: recursive!!!
     THROW_ERRORS(pthread_mutex_init(&posix_mutex, pthread_mutexattr_default));
 #else
-    THROW_ERRORS(pthread_mutex_init(&posix_mutex, 0));
+    int ret_val = pthread_mutexattr_init(&mtx_attr);
+    if (ret_val != 0)
+       printf("posix.cc: Can't initialize mutexattr\n");
+    THROW_ERRORS(ret_val);
+
+    if (recursive) { // Same thread may enter multiple times (extension to POSIX
+       ret_val = pthread_mutexattr_settype(&mtx_attr, PTHREAD_MUTEX_RECURSIVE);
+       if (ret_val != 0)
+          printf("posix.cc: Can't initialize mutexattr PTHREAD_MUTEX_RECURSIVE\n");
+       THROW_ERRORS(ret_val);
+    }
+    
+    THROW_ERRORS(pthread_mutex_init(&posix_mutex, &mtx_attr));
+
+    ret_val = pthread_mutexattr_destroy(&mtx_attr);
+    if (ret_val != 0)
+       printf("posix.cc: Can't destroy mutexattr\n");
+    //THROW_ERRORS(ret_val);
+
+    // Original code:
+    // THROW_ERRORS(pthread_mutex_init(&posix_mutex, 0));
 #endif
 }
 
