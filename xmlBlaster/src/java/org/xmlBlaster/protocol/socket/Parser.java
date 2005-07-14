@@ -13,7 +13,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
@@ -367,18 +366,6 @@ public class Parser
    }
 
    /**
-    * Use for methods update, publish.
-    * <br />
-    * Use for return value of method get.
-    * <br />
-    * Multiple adds are OK
-   public final void addMessage(MsgQueueEntry[] arr) {
-      for (int ii=0; ii<arr.length; ii++)
-         msgVec.add(arr[ii].getMsgUnitRaw());
-   }
-    */
-
-   /**
     * Add a QoS value, use for methods connect, disconnect, ping.
     * <br />
     * Use for return value of methods connect, disconnect, ping, update, publish, subscribe, unSubscribe and erase
@@ -457,11 +444,6 @@ public class Parser
     * @exception IllegalArgumentException if there is no QoS to get
     */
    public final String[] getQosArr() {
-      /* OK for empty get() return
-      if (msgVec.isEmpty()) {
-         throw new IllegalArgumentException(ME + ": getQosArr() is called without having a response");
-      }
-      */
       Vector msgs = getMessages();
       String[] strArr = new String[msgs.size()];
       for (int ii=0; ii<strArr.length; ii++) {
@@ -569,7 +551,7 @@ public class Parser
          return; // The shortest ping ever
       }
 
-      if (log.DUMP) log.dump(ME, "Raw message received '" + toLiteral(buf.buf) + "'");
+      if (log.DUMP) log.dump(ME, "Raw message of length " + buf.buf.length + " received >" + toLiteral(buf.buf) + "<");
 
       checksum = (buf.buf[NUM_FIELD_LEN] > 0);
       if (checksum) {
