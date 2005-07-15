@@ -138,7 +138,7 @@ Property::loadCommandLineProps(int args,
             //if (name == "h" || name == "help" || name == "?" ) {
             value = (count < nmax-1) ? argv[count+1] : "";
             if (value == ""/* || value.find(prefix) == 0*/) { // A property without a value -> we set it to true, for example --help
-               if (setProperty_(name, "true")) ret++;
+               if (setProperty_(name, lexical_cast<std::string>(true))) ret++;
             }
             else {
                count++;
@@ -349,12 +349,7 @@ bool
 Property::getBoolProperty(const string &name, bool def, bool env) 
 {
    string value = getProperty(name, env);
-   if (value.length() == 0) return def;
-   if ((value=="1")||(value=="true")||(value=="TRUE")) return true;
-   else {
-      if ((value=="0")||(value=="false")||(value=="FALSE")) return false;
-   }
-   return def;
+   return StringTrim::isTrue(value, def);
 }
 
 
