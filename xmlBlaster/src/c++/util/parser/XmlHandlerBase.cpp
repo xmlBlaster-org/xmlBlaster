@@ -272,7 +272,7 @@ bool XmlHandlerBase::getBoolAttr(const AttributeMap &attrs, const string &name, 
    string buf;
    bool ret = getStringAttr(attrs, name, buf);
    if (ret) {
-      value = ( (buf == "true") || (buf == "TRUE") );
+      value = lexical_cast<bool>(buf);
       return true;
    }
    return false;

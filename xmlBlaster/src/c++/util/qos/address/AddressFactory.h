@@ -27,14 +27,14 @@ class Dll_Export AddressFactory : public parser::XmlHandlerBase
 {
 private:
    const std::string ME;
-   org::xmlBlaster::util::qos::address::AddressBase* address_;
+   org::xmlBlaster::util::qos::address::AddressBaseRef address_;
 
 public:
    AddressFactory(org::xmlBlaster::util::Global& global);
 
-   void reset(AddressBase& address);
+   void reset(const AddressBaseRef& address);
 
-   org::xmlBlaster::util::qos::address::AddressBase& getAddress();
+   org::xmlBlaster::util::qos::address::AddressBaseRef getAddress();
 
    /**
     * Called for SAX callback start tag
@@ -46,7 +46,7 @@ public:
    // public final void endElement(String uri, String localName, String name, StringBuffer character) {
    void endElement(const std::string &name);
 
-   org::xmlBlaster::util::qos::address::AddressBase& readAddress(const std::string& litteral, org::xmlBlaster::util::qos::address::AddressBase& address);
+   org::xmlBlaster::util::qos::address::AddressBaseRef readAddress(const std::string& litteral, const org::xmlBlaster::util::qos::address::AddressBaseRef& address);
 };
 
 }}}}} // namespaces

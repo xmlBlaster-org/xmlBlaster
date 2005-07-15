@@ -169,7 +169,10 @@ protected:
    org::xmlBlaster::client::qos::PublishReturnQos queuePublish(const org::xmlBlaster::util::MessageUnit& msgUnit);
    org::xmlBlaster::client::qos::SubscribeReturnQos queueSubscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
    org::xmlBlaster::util::qos::ConnectReturnQos& queueConnect();
-   bool startPinger();
+   /**
+    * @param withInitialPing If true do an immediate ping without delay
+    */
+   bool startPinger(bool withInitialPing);
 
    /**
     * Going to polling status in case we are in failsafe mode or to DEAD if we are not in failsafe mode.

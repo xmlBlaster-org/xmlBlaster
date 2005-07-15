@@ -32,6 +32,9 @@ SessionName::SessionName(Global& global, const string& absoluteName)
    initialize(absoluteName, "", 0);
 }
 
+SessionName::~SessionName()
+{
+}
 
 void SessionName::copy(const SessionName& data)
 {

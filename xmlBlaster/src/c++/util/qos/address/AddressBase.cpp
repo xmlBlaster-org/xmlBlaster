@@ -39,7 +39,7 @@ const bool   DEFAULT_useForSubjectQueue = true;
 
 
 AddressBase::AddressBase(Global& global, const string& rootTag)
-   : global_(global), log_(global.getLog("org.xmlBlaster.util.qos"))
+   : ReferenceCounterBase(), global_(global), log_(global.getLog("org.xmlBlaster.util.qos"))
 {
 
    defaultPingInterval_ = 0L;
@@ -115,9 +115,7 @@ bool AddressBase::isSameAddress(AddressBase& other)
  */
 string AddressBase::getSettings() const
 {
-   string onewayStr = "false";
-   if (oneway_) onewayStr = "true";
-   string ret = string("type=") + type_ + string(" oneway=") + onewayStr + string(" burstMode.collectTime=") + lexical_cast<std::string>(getCollectTime());
+   string ret = string("type=") + type_ + string(" oneway=") + lexical_cast<std::string>(oneway_) + string(" burstMode.collectTime=") + lexical_cast<std::string>(getCollectTime());
    return ret;
 }
 
@@ -490,18 +488,13 @@ string AddressBase::toXml(const string& extraOffset) const
    if (defaultDelay_ != getDelay())
        ret += string(" delay='") + lexical_cast<std::string>(getDelay()) + string("'");
    if (DEFAULT_oneway != oneway()) {
-       string onewayStr = "false";
-       if (oneway()) onewayStr = "true";
-       ret += string(" oneway='") + onewayStr + string("'");
+       ret += string(" oneway='") + lexical_cast<std::string>(oneway()) + string("'");
    }
    if (DEFAULT_dispatcherActive != isDispatcherActive()) {
-       string dispatcherActiveStr = (isDispatcherActive()) ? "true" : "false";
-       ret += string(" dispatcherActive='") + dispatcherActiveStr + string("'");
+       ret += string(" dispatcherActive='") + lexical_cast<std::string>(isDispatcherActive()) + string("'");
    }
    if (DEFAULT_useForSubjectQueue != useForSubjectQueue_) {
-       string useForSubjectQueueStr = "false";
-       if (useForSubjectQueue_) useForSubjectQueueStr = "true";
-       ret += string(" useForSubjectQueue='") + useForSubjectQueueStr + string("'");
+       ret += string(" useForSubjectQueue='") + lexical_cast<std::string>(useForSubjectQueue_) + string("'");
    }
    if (DEFAULT_dispatchPlugin != dispatchPlugin_)
        ret += string(" dispatchPlugin='") + dispatchPlugin_ + string("'");
@@ -517,9 +510,7 @@ string AddressBase::toXml(const string& extraOffset) const
    if (getCompressType() != DEFAULT_compressType)
       ret += offset2 + string("<compress type='") + getCompressType() + string("' minSize='") + lexical_cast<std::string>(getMinSize()) + string("'/>");
    if (ptpAllowed_ != DEFAULT_ptpAllowed) {
-      string ptpAllowedStr = "false";
-      if (ptpAllowed_) ptpAllowedStr = "true";
-      ret += offset2 + string("<ptp>") + ptpAllowedStr + string("</ptp>");
+      ret += offset2 + string("<ptp>") + lexical_cast<std::string>(ptpAllowed_) + string("</ptp>");
    }
    ret += offset + string("</") + rootTag_ + string(">");
    return ret;

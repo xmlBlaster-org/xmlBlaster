@@ -113,6 +113,7 @@ public:
 class MutexImpl : public omni_mutex 
 {
 public:
+  MutexImpl(bool recursive=false) : omni_mutex(recursive) {}
 };
 
 class LockImpl 
@@ -254,9 +255,9 @@ Timestamp Thread::getCurrentTimestamp()
 
 // ----------------------------- MutexClass ----------------------------------
 
-MutexClass::MutexClass() 
+MutexClass::MutexClass(bool recursive) 
 {
-   mutex_ = new MutexImpl();
+   mutex_ = new MutexImpl(recursive);
 }
 
 MutexClass::~MutexClass() 

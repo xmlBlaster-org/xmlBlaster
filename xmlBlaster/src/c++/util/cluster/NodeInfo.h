@@ -21,8 +21,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace cluster {
  * This class holds the address informations about an
  * xmlBlaster server instance (=cluster node). 
  */
-typedef std::map<std::string, org::xmlBlaster::util::qos::address::CallbackAddress> CbAddressMap;
-typedef std::map<std::string, org::xmlBlaster::util::qos::address::Address> AddressMap;
+typedef std::map<std::string, org::xmlBlaster::util::qos::address::AddressBaseRef> AddressMap;
 typedef std::map<std::string, org::xmlBlaster::util::cluster::NodeId>          NodeMap;
 
 class Dll_Export NodeInfo
@@ -33,7 +32,7 @@ private:
    org::xmlBlaster::util::cluster::NodeId          nodeId_;
    org::xmlBlaster::util::qos::address::Address         tmpAddress_; // = null; // Helper for SAX parsing
    org::xmlBlaster::util::qos::address::CallbackAddress tmpCbAddress_; // = null; // Helper for SAX parsing
-   CbAddressMap    cbAddressMap_; // = null;
+   AddressMap      cbAddressMap_; // = null;
    AddressMap      addressMap_; // = null;
    NodeMap         backupNodeMap_; // = null;
    bool            nameService_; //  = false;
@@ -89,14 +88,14 @@ public:
     * Access the currently used address to access the node
     * @return null if not specified
     */
-   org::xmlBlaster::util::qos::address::Address getAddress() const;
+   org::xmlBlaster::util::qos::address::AddressBaseRef getAddress() const;
 
    /**
     * Add another address for this cluster node. 
     * <p />
     * The std::map is sorted with the same sequence as the given XML sequence
     */
-   void addAddress(org::xmlBlaster::util::qos::address::Address& address);
+   void addAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& address);
 
    /**
     * Access all addresses of a node, please handle as readonly. 
@@ -106,23 +105,23 @@ public:
    /**
     * Does the given address belong to this node?
     */
-   bool contains(org::xmlBlaster::util::qos::address::Address& other);
+   bool contains(const org::xmlBlaster::util::qos::address::AddressBaseRef& other);
 
    /**
     * Access the currently used callback address for this node
     * @return Never null, returns a default if none specified
     */
-   org::xmlBlaster::util::qos::address::CallbackAddress getCbAddress();
+   org::xmlBlaster::util::qos::address::AddressBaseRef getCbAddress();
 
    /**
     * Currently not used. 
     */
-   CbAddressMap getCbAddressMap() const;
+   AddressMap getCbAddressMap() const;
 
    /**
     * Add another callback address for this cluster node. 
     */
-   void addCbAddress(org::xmlBlaster::util::qos::address::CallbackAddress& cbAddress);
+   void addCbAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& cbAddress);
 
    /**
     * Is the node acting as a preferred cluster naming service. 

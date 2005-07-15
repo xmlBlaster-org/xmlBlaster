@@ -28,19 +28,19 @@ using namespace org::xmlBlaster::util::parser;
 
 
 AddressFactory::AddressFactory(Global& global)
-   : XmlHandlerBase(global), ME("AddressFactory")
+   : XmlHandlerBase(global), ME("AddressFactory"),
+   address_(new Address(global)) // dummy allocation
 {
-   address_ = NULL;
 }
 
-void AddressFactory::reset(AddressBase& address)
+void AddressFactory::reset(const AddressBaseRef& address)
 {
-   address_ = &address;
+   address_ = address;
 }
 
-AddressBase& AddressFactory::getAddress()
+AddressBaseRef AddressFactory::getAddress()
 {
-   return *address_;
+   return address_;
 }
 
 /**
@@ -89,19 +89,13 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
             address_->setDelay(XmlHandlerBase::getLongValue(tmpValue));
          }
          else if (tmpName.compare("oneway") == 0) {
-            bool ret = false;
-            if (tmpValue == "true") ret = true;
-            address_->setOneway(ret);
+            address_->setOneway(XmlHandlerBase::getBoolValue(tmpValue));
          }
          else if (tmpName.compare("dispatcherActive") == 0) {
-            bool ret = false;
-            if (tmpValue == "true") ret = true;
-            address_->setDispatcherActive(ret);
+            address_->setDispatcherActive(XmlHandlerBase::getBoolValue(tmpValue));
          }
          else if (tmpName.compare("useForSubjectQueue") == 0) {
-            bool ret = false;
-            if (tmpValue == "true") ret = true;
-            address_->useForSubjectQueue_ = ret;
+            address_->useForSubjectQueue_ = XmlHandlerBase::getBoolValue(tmpValue);
          }
          else if (tmpName.compare("dispatchPlugin") == 0) {
             address_->dispatchPlugin_ = tmpValue;
@@ -181,16 +175,13 @@ void AddressFactory::endElement(const string &name)
    else if (name.compare("compress") == 0) {
    }
    else if (name.compare("ptp") == 0) {
-      StringTrim::trim(character_);
-      if (!character_.empty()) {
-         address_->ptpAllowed_ = string("true")==character_ || string("TRUE")==character_;
-      }
+      address_->ptpAllowed_ = StringTrim::isTrueTrim(character_);
    }
    character_.erase();
 }
 
 
-AddressBase& AddressFactory::readAddress(const string& litteral, AddressBase& address)
+AddressBaseRef AddressFactory::readAddress(const string& litteral, const AddressBaseRef& address)
 {
    reset(address);
    init(litteral);
@@ -228,7 +219,7 @@ int main(int args, char* argv[])
 
       AddressFactory factory(glob);
       Address addr(glob);
-      AddressBase* ptr = &factory.readAddress(a.toXml(), addr);
+      AddressBaseRef ptr = &factory.readAddress(a.toXml(), addr);
       cout << "parsed one: " << endl << ptr->toXml() << endl;
 
       string nodeId = "heron";

@@ -54,6 +54,8 @@ public:
    SessionName(const SessionName& data);
    SessionName& operator =(const SessionName& data);
 
+   virtual ~SessionName();
+
    /**
     * Sets the absolute name. It checks if it really is an absolute name,
     * i.e. if it contains the well known structure '/node/....' it parses it,

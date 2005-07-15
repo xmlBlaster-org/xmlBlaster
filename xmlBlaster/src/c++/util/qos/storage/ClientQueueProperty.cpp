@@ -55,13 +55,13 @@ using namespace org::xmlBlaster::util::qos::address;
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
              string(" maxEntries=") + lexical_cast<std::string>(getMaxEntries());
       if (!addressArr_.empty())
-         ret += string(" ") + getCurrentAddress().getSettings();
+         ret += string(" ") + getCurrentAddress()->getSettings();
       return ret;
    }
 
    /**
     */
-   void ClientQueueProperty::setAddress(const AddressBase& address)
+   void ClientQueueProperty::setAddress(const AddressBaseRef& address)
    {
       // this differes from the current java code (2002-12-07) since it allows
       // multiple addresses
@@ -78,25 +78,15 @@ using namespace org::xmlBlaster::util::qos::address;
 
 
    /**
-    * @return null if none available
-   public Address[] getAddresses() {
-      return (Address[])this.addressArr;
-   }
+    * @return If none is available a default is created
     */
-
-   /**
-    * @return null if none available
-    */
-   Address& ClientQueueProperty::getCurrentAddress()
+   AddressBaseRef ClientQueueProperty::getCurrentAddress()
    {
       if (addressArr_.empty()) {
-         Address a(global_);
-         addressArr_.push_back(a);
+         addressArr_.push_back(new Address(global_));
       }
       // otherwise get the last one added
-      AddressBase *ab = &(*addressArr_.begin());
-      Address *a = reinterpret_cast<Address*>(ab);
-      return *a;
+      return *addressArr_.begin();
    }
 
    /**

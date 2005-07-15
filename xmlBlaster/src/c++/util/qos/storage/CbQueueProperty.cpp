@@ -57,7 +57,7 @@ using namespace org::xmlBlaster::util::qos::address;
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
              string(" maxEntries=") + lexical_cast<std::string>(getMaxEntries());
       if (!addressArr_.empty())
-         ret += string(" ") + getCurrentCallbackAddress().getSettings();
+         ret += string(" ") + getCurrentCallbackAddress()->getSettings();
       return ret;
    }
 
@@ -119,7 +119,7 @@ using namespace org::xmlBlaster::util::qos::address;
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
-   void CbQueueProperty::setCallbackAddress(const AddressBase& address)
+   void CbQueueProperty::setCallbackAddress(const AddressBaseRef& address)
    {
 //      addressArr_.insert(addressArr_.begin(), address);
       if (!addressArr_.empty()) addressArr_.erase(addressArr_.begin());
@@ -144,11 +144,10 @@ using namespace org::xmlBlaster::util::qos::address;
    /**
     * @return a default if none available
     */
-   AddressBase &CbQueueProperty::getCurrentCallbackAddress()
+   AddressBaseRef CbQueueProperty::getCurrentCallbackAddress()
    {
       if (addressArr_.empty()) {
-         CallbackAddress cb(global_);
-         setCallbackAddress(cb);
+         setCallbackAddress(new CallbackAddress(global_));
       }
       return *addressArr_.begin();
    }
@@ -195,7 +194,7 @@ int main(int args, char* argv[])
    CbQueueProperty prop(glob, "", "");
 
    cout << prop.toXml() << endl;
-   CallbackAddress adr(glob, "EMAIL");
+   CallbackAddress *adr = new CallbackAddress(glob, "EMAIL");
    adr.setAddress("et@mars.sun");
    prop.setCallbackAddress(adr);
    cout << prop.toXml() << endl;

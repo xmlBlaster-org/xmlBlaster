@@ -69,7 +69,7 @@ public:
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
-   void setCallbackAddress(const org::xmlBlaster::util::qos::address::AddressBase& address);
+   void setCallbackAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& address);
 
    /**
     */
@@ -83,7 +83,7 @@ public:
    /**
     * @return null if none available
     */
-   org::xmlBlaster::util::qos::address::AddressBase &getCurrentCallbackAddress();
+   org::xmlBlaster::util::qos::address::AddressBaseRef getCurrentCallbackAddress();
 
    /**
     * Get a usage std::string for the connection parameters

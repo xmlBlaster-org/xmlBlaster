@@ -32,7 +32,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * The counter is rewound on any second step (this is different from its omonimous java
  * class since there is no portable way in c++ to get the system time with a millisecond
  * precision yet. Besides this difference, the c++ timestamp is a singleton working as a
- * factory of timestamps (which are of the type long long).
+ * factory of timestamps (which are of the type long long -> typedef int64_t Timestamp;).
  * <br />
  * Guarantees that any created Timestamp instance is unique in the current process.
  * <br /><br />
@@ -72,9 +72,8 @@ namespace org { namespace xmlBlaster { namespace util {
       static TimestampFactory& getInstance();
     
       /**
-       * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
-       * @param delay the time in milliseconds from now the return value has to point to.
-       * @exception RuntimeException on overflow (never happens :-=)
+       * Constructs a current timestamp which is guaranteed to be unique in time for this process. 
+       * @return a 64 bit integer (typedef int64_t Timestamp)
        */
       Timestamp getTimestamp();
 

@@ -67,7 +67,7 @@ ConnectionsHandler::~ConnectionsHandler()
    }
    */
    Lock lock(connectMutex_);
-   string type = connectQos_->getAddress().getType();
+   string type = connectQos_->getAddress()->getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
       global_.getDispatchManager().releasePlugin(instanceName_, type, version);
@@ -106,14 +106,14 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    global_.setId(connectQos_->getSessionQos().getAbsoluteName()); // temporary
    //log_.info(ME, "BEFORE id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
 
-   retries_ = connectQos_->getAddress().getRetries();
-   long pingInterval = connectQos_->getAddress().getPingInterval();
+   retries_ = connectQos_->getAddress()->getRetries();
+   long pingInterval = connectQos_->getAddress()->getPingInterval();
    if (log_.trace()) {
       log_.trace(ME, string("connect: number of retries during communication failure: ") + lexical_cast<std::string>(retries_));
       log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<std::string>(pingInterval));
    }
 
-   string type = connectQos_->getAddress().getType();
+   string type = connectQos_->getAddress()->getType();
    string version = "1.0"; // currently hardcoded
    if (!connection_) {
       connection_ = &(global_.getDispatchManager().getPlugin(instanceName_, type, version));
@@ -135,7 +135,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       if ((ex.isCommunication() || ex.getErrorCodeStr().find("user.configuration") == 0)) {
          log_.warn(ME, "Got exception when connecting, polling now: " + ex.toString());
          if (!pingIsStarted_)
-            startPinger();
+            startPinger(false);
          return queueConnect();
       }
       else {
@@ -151,7 +151,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    status_ = ALIVE;
    if (connectionProblemsListener_) connectionProblemsListener_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
-   startPinger();
+   startPinger(false);
    if (log_.dump()) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
 
    flushQueue();
@@ -397,6 +397,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
 void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 {
 //   Lock lock(connectionMutex_);
+   if (log_.trace()) log_.trace(ME, "Register initFailsafe " + lexical_cast<string>(connectionProblems!=0));
    connectionProblemsListener_ = connectionProblems;
 }
 
@@ -427,7 +428,7 @@ void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlaster
    */
    connection_->shutdown();
    if (connectionProblemsListener_) connectionProblemsListener_->reachedPolling(oldState, this);
-   startPinger();
+   startPinger(true);
 }
 
 
@@ -445,7 +446,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
          if (connection_) {
             connection_->ping("<qos/>");
             if ( log_.trace() ) log_.trace(ME, "lowlevel ping returned: status is 'ALIVE'");
-            startPinger();
+            startPinger(false);
          }
       }
       catch (XmlBlasterException& ex) {
@@ -472,8 +473,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             connectQos_->getSessionQos().setSecretSessionId(sessionId);
  
             if ( log_.trace() ) {
-               log_.trace(ME, "ping timeout: re-connection was successful");
-               log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
+               log_.trace(ME, string("ping timeout: re-connection, the new connect returnQos: ") + connectReturnQos_->toXml());
             }
  
             bool doFlush = true;
@@ -497,14 +497,14 @@ void ConnectionsHandler::timeout(void * /*userData*/)
                   log_.warn(ME, "An exception occured when trying to asynchronously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
                }
             }
-            startPinger();
+            startPinger(false);
          }
       }
       catch (XmlBlasterException ex) {
          if (log_.trace()) log_.trace(ME, "timeout got exception: " + ex.getMessage());
          currentRetry_++;
          if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
-            startPinger();
+            startPinger(false);
          }
          else {
             enum States oldState = status_;
@@ -600,7 +600,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
       connectionProblemsListener_->reachedPolling(oldState, this);
       // stopping
    }
-   startPinger();
+   startPinger(true);
    return *connectReturnQos_;
 }
 
@@ -683,16 +683,16 @@ I_Queue* ConnectionsHandler::getQueue()
 bool ConnectionsHandler::isFailsafe() const
 {
    if (!connectQos_) return false;
-   return connectQos_->getAddress().getDelay() > 0;
+   return connectQos_->getAddress()->getDelay() > 0;
 }
 
-bool ConnectionsHandler::startPinger()
+bool ConnectionsHandler::startPinger(bool withInitialPing)
 {
    if (log_.call()) log_.call(ME, "startPinger");
    if (doStopPing_) return false;
 
    if (log_.trace()) log_.trace(ME, "startPinger (no request to stop the pinger is active for the moment)");
-   if (pingIsStarted_) {
+   if (pingIsStarted_ && !withInitialPing) {
       if (log_.trace()) log_.trace(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
       return false;  
    }
@@ -700,24 +700,26 @@ bool ConnectionsHandler::startPinger()
    long delay        = 10000;
    long pingInterval = 0;
    if ( connectQos_ ) {
-      delay        = connectQos_->getAddress().getDelay();
-      pingInterval = connectQos_->getAddress().getPingInterval();
+      delay        = connectQos_->getAddress()->getDelay();
+      pingInterval = connectQos_->getAddress()->getPingInterval();
    }
    else {
       ConnectQos tmp(global_);
-      delay        = tmp.getAddress().getDelay();
-      pingInterval = tmp.getAddress().getPingInterval();
+      delay        = tmp.getAddress()->getDelay();
+      pingInterval = tmp.getAddress()->getPingInterval();
    }
    if (log_.trace()) {
       log_.trace(ME, string("startPinger(status=") + 
                getStatusString() +
                "): parameters are: delay '" + lexical_cast<std::string>(delay) +
-               "' and pingInterval '" + lexical_cast<std::string>(pingInterval));
+               "' and pingInterval '" + lexical_cast<std::string>(pingInterval) +
+               " withInitialPing=" + lexical_cast<string>(withInitialPing));
    }
    if (delay > 0 && pingInterval > 0) {
       long delta = delay;
       if (status_ == ALIVE) delta = pingInterval;
-      timestamp_ = global_.getPingTimer().addTimeoutListener(this, delta, NULL);
+      if (withInitialPing) delta = 400;
+      timestamp_ = global_.getPingTimer().addOrRefreshTimeoutListener(this, delta, NULL, timestamp_);
       pingIsStarted_ = true;
    }
    return true;

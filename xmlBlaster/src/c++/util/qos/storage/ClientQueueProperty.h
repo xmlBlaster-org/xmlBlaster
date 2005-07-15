@@ -46,7 +46,7 @@ public:
 
    /**
     */
-   void setAddress(const org::xmlBlaster::util::qos::address::AddressBase& address);
+   void setAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& address);
 
    /**
     * clears up all addresses and allocates new ones.
@@ -56,7 +56,7 @@ public:
    /**
     * @return null if none available
     */
-   org::xmlBlaster::util::qos::address::Address& getCurrentAddress();
+   org::xmlBlaster::util::qos::address::AddressBaseRef getCurrentAddress();
 
    /**
     * Get a usage std::string for the connection parameters

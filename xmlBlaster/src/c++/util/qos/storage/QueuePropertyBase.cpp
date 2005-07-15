@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.25 2004/09/28 15:17:03 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 
@@ -173,6 +173,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
 
    QueuePropertyBase::~QueuePropertyBase()
    {
+      addressArr_.clear();
       // delete all entries of the address vector since they are pointers
       // owned by this object.
 //      cleanupAddresses();
@@ -521,6 +522,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    }
 
    /**
+    * Access the reference counted addresses. 
     * @return null if none available
     */
    AddressVector QueuePropertyBase::getAddresses() const
@@ -568,7 +570,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
          ret += string("'>");
          AddressVector::const_iterator iter = addressArr_.begin();
          while (iter != addressArr_.end()) {
-            ret += (*iter).toXml(extraOffset + Constants::INDENT);
+            ret += (*iter)->toXml(extraOffset + Constants::INDENT);
             iter++;
          }
          ret += offset + string("</queue>");

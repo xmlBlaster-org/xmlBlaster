@@ -91,7 +91,7 @@ bool EmbeddedServer::start(bool blockUntilUp)
 
    if (runner_) return false;
    runner_ = new EmbeddedServerRunner(*this);
-	const bool detached = false;
+        const bool detached = false;
    bool ret  = runner_->start(detached);
    if (ret && blockUntilUp) {
       if (log_.trace()) log_.trace(ME, "start: setting up for a client connection");
@@ -103,8 +103,8 @@ bool EmbeddedServer::start(bool blockUntilUp)
             count++;
             XmlBlasterAccess conn(global_);
             ConnectQos connQos(global_, "embeddedKiller", "secret");
-            Address address(global_);
-            address.setDelay(0);
+            Address *address = new Address(global_);
+            address->setDelay(0);
             connQos.setAddress(address);
             // to be sure not to store the kill msg in a client queue ...
             conn.connect(connQos, NULL);
@@ -148,8 +148,8 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    try {
       ConnectQos connQos(global_, "embeddedKiller", "secret");
       // to be sure not to store the kill msg in a client queue ...
-      Address address(global_);
-      address.setDelay(0);
+      Address *address = new Address(global_);
+      address->setDelay(0);
       connQos.setAddress(address);
       conn.connect(connQos, NULL);
    }

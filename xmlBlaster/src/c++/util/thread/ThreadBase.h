@@ -115,7 +115,16 @@ private:
    MutexImpl* mutex_;
 
 public:
-   MutexClass();
+   /**
+    * The locks may not be called recursive. 
+    * Posix supports recursive calls as an extension.
+    * @param mutex The mutex implementation
+    * @param ignore If true no lock is created
+    * @param recursive If true the same thread may call the lock recursive
+    *                  Note that the thread needs to free the lock as many times again.
+    * @since xmlBlaster 1.0.5
+    */
+   MutexClass(bool recursive=false);
    
    ~MutexClass();
 };

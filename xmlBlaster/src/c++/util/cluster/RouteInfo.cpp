@@ -86,9 +86,7 @@ string RouteInfo::toXml(const string& extraOffset) const
    ret += "' stratum='" + lexical_cast<std::string>(getStratum());
    ret += "' timestamp='"+ lexical_cast<std::string>(getTimestamp()) + "'";
       //if (dirtyRead != NodeDomainInfo.DEFAULT_dirtyRead)
-   string dirtyReadStr = "false";
-   if (dirtyRead_) dirtyReadStr = "true";
-   ret += " dirtyRead='" + dirtyReadStr + "'";
+   ret += " dirtyRead='" + lexical_cast<std::string>(dirtyRead_) + "'";
    ret += "/>";
    return ret;
 }

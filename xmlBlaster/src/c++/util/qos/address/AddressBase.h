@@ -22,6 +22,8 @@ Version:   $Id$
 #include <util/Constants.h>
 #include <util/I_Log.h>
 #include <string>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
@@ -40,7 +42,7 @@ extern Dll_Export       std::string    DEFAULT_dispatchPlugin;
 
 
 
-class Dll_Export AddressBase
+class Dll_Export AddressBase : public org::xmlBlaster::util::ReferenceCounterBase
 {
    friend class AddressFactory;
 
@@ -433,6 +435,8 @@ public:
     */
    std::string toXml(const std::string& extraOffset = "") const;
 };
+
+typedef org::xmlBlaster::util::ReferenceHolder<AddressBase> AddressBaseRef;
 
 }}}}}
 

@@ -369,6 +369,7 @@ void SocketDriver::initialize(const string& name, I_Callback &client)
    callbackClient_ = &client;
    Lock lock(mutex_);
    if (connection_ == 0) {
+      if (log_.trace()) log_.trace(ME, "ERROR: connection_ is null");
       throw org::xmlBlaster::util::XmlBlasterException(INTERNAL_UNKNOWN, name, ME + ".initialize", "en",
                        global_.getVersion() + " " + global_.getBuildTimestamp() + " The connection_ handle is NULL");
    }
@@ -412,7 +413,7 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
 {
    if (log_.call()) log_.call(ME, string("connect() ") + string((connection_==0)?"connection_==0":"connection_!=0") +
                               ", secretSessionId_="+secretSessionId_);
-                              //+" isConnected=" + ((connection_==0)?"false":lexical_cast<string>(connection_->isConnected(connection_))));
+                              //+" isConnected=" + ((connection_==0)?XMLBLASTER_FALSE:lexical_cast<string>(connection_->isConnected(connection_))));
    ::ExceptionStruct socketException;
    Lock lock(mutex_);
    try {
@@ -424,11 +425,11 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
          }
          if (connection_ != 0 && connection_->callbackP != 0) {
             ConnectQos *qq = const_cast<ConnectQos*>(&qos);
-            if (qq->getSessionCbQueueProperty().getCurrentCallbackAddress().getType() == Constants::SOCKET) {
+            if (qq->getSessionCbQueueProperty().getCurrentCallbackAddress()->getType() == Constants::SOCKET) {
                // Force callback address, it could have changed on reconnect (checked to cb not be a delegate)
                string addr = string("socket://") + string(connection_->callbackP->hostCB) + ":" +
                       lexical_cast<std::string>(connection_->callbackP->portCB);
-               qq->getSessionCbQueueProperty().getCurrentCallbackAddress().setAddress(addr);
+               qq->getSessionCbQueueProperty().getCurrentCallbackAddress()->setAddress(addr);
                log_.trace(ME, "Setting callback address to " + addr);
             }
          }

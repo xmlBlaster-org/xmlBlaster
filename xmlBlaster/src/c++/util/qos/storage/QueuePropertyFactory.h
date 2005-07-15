@@ -30,9 +30,7 @@ private:
    const std::string  ME;
    QueuePropertyBase  prop_;
    bool               inAddress_;
-   org::xmlBlaster::util::qos::address::AddressFactory   addressFactory_;
-   org::xmlBlaster::util::qos::address::Address*         address_;
-   org::xmlBlaster::util::qos::address::CallbackAddress* cbAddress_;
+   org::xmlBlaster::util::qos::address::AddressFactory addressFactory_;
    std::string  RELATING;
 
 public:

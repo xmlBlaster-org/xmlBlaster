@@ -48,7 +48,7 @@ extern Dll_Export  std::string DEFAULT_version;
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue/expires=3600000" milliseconds */
 extern Dll_Export  long DEFAULT_expires;
 
-typedef std::vector<org::xmlBlaster::util::qos::address::AddressBase> AddressVector;
+typedef std::vector<org::xmlBlaster::util::qos::address::AddressBaseRef> AddressVector;
 
 class Dll_Export QueuePropertyBase
 {
@@ -397,6 +397,7 @@ public:
    bool onFailureDeadMessage();
 
    /**
+    * Access all addresses, they are reference counted.
     * @return null if none available
     */
    AddressVector getAddresses() const;

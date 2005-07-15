@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.16 2004/09/27 12:54:31 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -24,14 +24,10 @@ QueuePropertyFactory::QueuePropertyFactory(Global& global)
 {
    RELATING   = "relating";
    inAddress_ = false;
-   address_   = NULL;
-   cbAddress_ = NULL;
 }
 
 QueuePropertyFactory::~QueuePropertyFactory()
 {
-   if (address_   != NULL) delete address_;
-   if (cbAddress_ != NULL) delete cbAddress_;
 }
 
 /*
@@ -56,20 +52,14 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
 
    // in case it is inside or entering an 'address' or 'callbackAddress'
    if (name.compare("address") == 0) {
-      if (address_ != NULL) delete address_;
-      address_ = NULL;
-      address_ = new Address(global_);
       inAddress_ = true;
-      addressFactory_.reset(*address_);
+      addressFactory_.reset(new Address(global_));
       addressFactory_.startElement(name, attrs);
       return;
    }
    if (name.compare("callback") == 0) {
-      if (cbAddress_ != NULL) delete cbAddress_;
-      cbAddress_ = NULL;
-      cbAddress_ = new CallbackAddress(global_);
       inAddress_ = true;
-      addressFactory_.reset(*cbAddress_);
+      addressFactory_.reset(new CallbackAddress(global_));
       addressFactory_.startElement(name, attrs);
       return;
    }

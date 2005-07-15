@@ -13,15 +13,16 @@ namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
+using namespace org::xmlBlaster::util::cluster;
 
 /**
  * This class holds the address informations about an
  * xmlBlaster server instance (=cluster node). 
  */
 
-typedef map<string, CallbackAddress> CbAddressMap;
-typedef map<string, Address>         AddressMap;
-typedef map<string, NodeId>          NodeMap;
+//typedef map<string, CallbackAddress> CbAddressMap;
+//typedef map<string, Address>         AddressMap;
+//typedef map<string, NodeId>          NodeMap;
 
 NodeInfo::NodeInfo(Global& global, NodeId nodeId)
    : ME(string("NodeInfo.") + nodeId.toString()), global_(global), nodeId_(nodeId),
@@ -74,9 +75,9 @@ string NodeInfo::getId() const
     * Access the currently used address to access the node
     * @return null if not specified
     */
-   Address NodeInfo::getAddress() const
+   AddressBaseRef NodeInfo::getAddress() const
    {
-      if (addressMap_.empty()) return Address(global_);
+      if (addressMap_.empty()) return new Address(global_);
       return (*(addressMap_.begin())).second;
    }
 
@@ -85,9 +86,9 @@ string NodeInfo::getId() const
     * <p />
     * The map is sorted with the same sequence as the given XML sequence
     */
-   void NodeInfo::addAddress(Address& address)
+   void NodeInfo::addAddress(const AddressBaseRef& address)
    {
-      addressMap_.insert(AddressMap::value_type(address.getRawAddress(), address));
+      addressMap_.insert(AddressMap::value_type(address->getRawAddress(), address));
    }
 
    /**
@@ -101,21 +102,20 @@ string NodeInfo::getId() const
    /**
     * Does the given address belong to this node?
     */
-   bool NodeInfo::contains(Address& other)
+   bool NodeInfo::contains(const AddressBaseRef& other)
    {
       if (addressMap_.empty()) return false;
-      return (addressMap_.find(other.getRawAddress()) != addressMap_.end());
+      return (addressMap_.find(other->getRawAddress()) != addressMap_.end());
    }
 
    /**
     * Access the currently used callback address for this node
     * @return Never null, returns a default if none specified
     */
-   CallbackAddress NodeInfo::getCbAddress()
+   AddressBaseRef NodeInfo::getCbAddress()
    {
       if (cbAddressMap_.empty()) {
-         CallbackAddress cbAddr = CallbackAddress(global_);
-         addCbAddress(cbAddr);
+         addCbAddress(new CallbackAddress(global_));
       }
       return (*(cbAddressMap_.begin())).second;
    }
@@ -123,7 +123,7 @@ string NodeInfo::getId() const
    /**
     * Currently not used. 
     */
-   CbAddressMap NodeInfo::getCbAddressMap() const
+   AddressMap NodeInfo::getCbAddressMap() const
    {
       return cbAddressMap_;
    }
@@ -131,9 +131,9 @@ string NodeInfo::getId() const
    /**
     * Add another callback address for this cluster node. 
     */
-   void NodeInfo::addCbAddress(CallbackAddress& cbAddress)
+   void NodeInfo::addCbAddress(const AddressBaseRef& cbAddress)
    {
-      cbAddressMap_.insert(CbAddressMap::value_type(cbAddress.getRawAddress(),cbAddress));
+      cbAddressMap_.insert(AddressMap::value_type(cbAddress->getRawAddress(),cbAddress));
    }
 
    /**
@@ -272,17 +272,17 @@ string NodeInfo::getId() const
       if (!addressMap_.empty()) {
          AddressMap::iterator iter = addressMap_.begin();
          while (iter != addressMap_.end()) {
-            Address info = (*iter).second;
-            ret += info.toXml(extraOffset + "   ");
+            const AddressBaseRef& info = (*iter).second;
+            ret += info->toXml(extraOffset + "   ");
             iter++;
          }
       }
  
       if (!cbAddressMap_.empty()) {
-         CbAddressMap::iterator iter = cbAddressMap_.begin();
+         AddressMap::iterator iter = cbAddressMap_.begin();
          while (iter != cbAddressMap_.end()) {
-            CallbackAddress info = (*iter).second;
-            ret +=  info.toXml(extraOffset + "   ");
+            const AddressBaseRef &info = (*iter).second;
+            ret +=  info->toXml(extraOffset + "   ");
             iter++;
          }
       }
