@@ -451,6 +451,10 @@ abstract public class DispatchConnection implements I_Timeout
                   if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
+                  synchronized (this.PING_TIMER_MONITOR) { // do one instant try:
+                     this.timerKey = this.glob.getPingTimer().addOrRefreshTimeoutListener(this,
+                              400, "poll", this.timerKey);
+                  }
                }
                if (byDispatchConnectionsHandler)
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState);
