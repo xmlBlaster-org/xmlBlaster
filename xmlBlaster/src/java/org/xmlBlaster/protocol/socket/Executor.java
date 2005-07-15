@@ -69,7 +69,7 @@ public abstract class Executor implements ExecutorBase
    /** How long to block the socket on input stream read */
    protected long soTimeout = 0;
    /** How long to block the socket on close with remaining data */
-   protected long soLingerTimeout = 0;
+   protected long soLingerTimeout = 0; // Constants.MINUTE_IN_MILLIS -> this can lead to blocking close(), so we choose '0'
    /** This is the client side */
    protected I_CallbackExtended cbClient = null;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -140,12 +140,15 @@ public abstract class Executor implements ExecutorBase
       this.sock.setSoTimeout((int)this.soTimeout);
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
 
-      setSoLingerTimeout(addressConfig.getEnv("SoLingerTimeout", Constants.MINUTE_IN_MILLIS).getValue());
+      setSoLingerTimeout(addressConfig.getEnv("SoLingerTimeout", soLingerTimeout).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
-      if (getSoLingerTimeout() > 0L)
+      if (getSoLingerTimeout() >= 0L) {
+         // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
+         // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
          this.sock.setSoLinger(true, (int)this.soLingerTimeout);
+      }
       else
-         this.sock.setSoLinger(false, 0);
+         this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
    }
 
    /**
@@ -475,12 +478,16 @@ public abstract class Executor implements ExecutorBase
          sendMessage(rawMsg, udp);
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
-      catch (InterruptedIOException e) {
+      catch (Throwable e) {
          if (startSignal != null) {
             synchronized (latchSet) { latchSet.remove(startSignal); }
          }
          String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str);
+         if (e instanceof XmlBlasterException) {
+            if (log.TRACE) log.trace(ME, str + ": " + e.toString());
+            throw (XmlBlasterException)e;
+         }
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
       if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
