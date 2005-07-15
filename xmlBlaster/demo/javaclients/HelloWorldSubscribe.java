@@ -74,9 +74,10 @@ public class HelloWorldSubscribe implements I_Callback
    private final LogChannel log;
    private I_XmlBlasterAccess con;
    private SubscribeReturnQos srq;
-   private boolean firstConnect=true;
+   private String subscribeServerId;
    private int updateCounter;
    private boolean connectPersistent;
+   private boolean firstConnect=true;
    private boolean interactive;
    private boolean interactiveUpdate;
    private long updateSleep;
@@ -211,23 +212,25 @@ public class HelloWorldSubscribe implements I_Callback
          // Doe fail safe handling:
          con.registerConnectionListener(new I_ConnectionStateListener() {
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.info(ME, "I_ConnectionStateListener.reachedAlive(): We were lucky, connected to " +
+               if (connection.getConnectReturnQos().isReconnected())
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
+               else
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found, connected to " +
                         connection.getConnectReturnQos().getSessionName());
+
                if (connection.getQueue().getNumOfEntries() > 0) {
                   log.info(ME, "I_ConnectionStateListener.reachedAlive(): Queue contains " +
                            connection.getQueue().getNumOfEntries() + " messages: " +
                            connection.getQueue().toXml(""));
                   // connection.getQueue().clear(); -> Would destroy ConnectQos if new connected
                }
-               if (firstConnect || !connection.getConnectReturnQos().isReconnected() && !persistentSubscribe) {
-                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found");
-                  if (connection.isConnected())
-                     subscribe(); // initialize subscription again
+
+               String id = connection.getConnectReturnQos().getSecretSessionId() + connection.getConnectReturnQos().getServerInstanceId();
+
+               if (!firstConnect && (subscribeServerId == null ||
+                   !subscribeServerId.equals(id) && !persistentSubscribe)) {
+                  subscribe(); // We lost the old subscription, initialize subscription again
                }
-               else {
-                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
-               }
-               firstConnect = false;
             }
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.warn(ME, "I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
@@ -239,7 +242,6 @@ public class HelloWorldSubscribe implements I_Callback
          });
 
          // ConnectQos checks -session.name and -passwd from command line
-         log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
          qos.setPersistent(connectPersistent);
          qos.setRefreshSession(connectRefreshSession);
@@ -247,7 +249,7 @@ public class HelloWorldSubscribe implements I_Callback
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
 
-         //subscribe(); -> see reachedAlive()
+         subscribe(); // first time
 
          if (shutdownCbServer) {
             Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
@@ -358,8 +360,11 @@ public class HelloWorldSubscribe implements I_Callback
          if (firstConnect && interactive) {
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
          }
+         firstConnect = false;
 
          this.srq = con.subscribe(sk, sq);
+
+         subscribeServerId = con.getConnectReturnQos().getSecretSessionId() + con.getConnectReturnQos().getServerInstanceId();
 
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
                         "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml());
@@ -376,6 +381,9 @@ public class HelloWorldSubscribe implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) throws XmlBlasterException {
       if (updateQos.isErased() && oid.length() > 0) { // Erased topic with EXACT subscription?
+         if (dumpToConsole) {
+            System.out.println("============= Topic '" + updateKey.getOid() + "' is ERASED =======================");
+         }
          subscribe();             // topic is erased -> re-subsribe
          return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
       }
@@ -447,7 +455,9 @@ public class HelloWorldSubscribe implements I_Callback
       while (it.hasNext()) {
          ClientProperty clientProperty = (ClientProperty)it.next();
          if (clientProperty.isBase64()) {
-            System.out.println("\nClientProperty decoded: " + clientProperty.getName() + "='" + clientProperty.getStringValue() + "'");
+            if (dumpToConsole) {
+               System.out.println("\nClientProperty decoded: " + clientProperty.getName() + "='" + clientProperty.getStringValue() + "'");
+            }
          }
       }
 
