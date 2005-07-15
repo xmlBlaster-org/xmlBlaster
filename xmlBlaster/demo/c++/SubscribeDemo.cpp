@@ -22,6 +22,7 @@ using namespace std;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -34,7 +35,7 @@ using namespace org::xmlBlaster::client::key;
  * </code>
  * to receives some messages
  */
-class SubscribeDemo : public I_Callback
+class SubscribeDemo : public I_Callback, public I_ConnectionProblems
 {
 private:
    string           ME;
@@ -47,6 +48,7 @@ private:
    bool disconnect;
    bool interactive;
    bool interactiveUpdate;
+   bool firstTime;
    long updateSleep;
    string updateExceptionErrorCode;
    string updateExceptionMessage;
@@ -81,6 +83,7 @@ public:
    {
       initEnvironment();
       doContinue_ = true;
+      firstTime = true;
       execute();
    }
 
@@ -185,12 +188,32 @@ public:
       log_.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
    }
 
+   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* connectionsHandler)
+   {
+      log_.info(ME, "reachedAlive()");
+      if (!firstTime && !connectionsHandler->getConnectReturnQos()->isReconnected() && !persistentSubscribe) {
+         subscribe(); // We lost the old subscription, initialize subscription again
+      }
+      return true;
+   }
+
+   void reachedDead(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "reachedDead()");
+   }
+
+   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   {
+      log_.info(ME, "reachedPolling()");
+   }
+
    void connect()
    {
+      connection_.initFailsafe(this);
       ConnectQos connQos(global_);
-      log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
+      if (log_.trace()) log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
       ConnectReturnQos retQos = connection_.connect(connQos, this);
-      log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
+      if (log_.trace()) log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
    }
 
    void subscribe()
@@ -233,10 +256,11 @@ public:
          log_.info(ME, "SubscribeKey=" + sk->toXml());
          log_.info(ME, "SubscribeQos=" + sq.toXml());
 
-         if (interactive) {
+         if (firstTime && interactive) {
             log_.info(ME, "Hit a key to subscribe '" + qStr + "'");
             std::cin.read(ptr,1);
          }
+         firstTime = false;
 
          SubscribeReturnQos srq = connection_.subscribe(*sk, sq);
          subscriptionId = srq.getSubscriptionId();
@@ -285,6 +309,15 @@ public:
     */
    string update(const string& sessionId, UpdateKey& updateKey, const unsigned char *content, long contentSize, UpdateQos& updateQos)
    {
+      stringstream sout;
+
+      if (updateQos.isErased() && oid.length() > 0) { // Erased topic with EXACT subscription?
+         sout << endl << "============= Topic '" + updateKey.getOid() + "' is ERASED =======================" << endl;
+         log_.plain(ME, sout.str());
+         subscribe();              // topic is erased -> re-subsribe
+         return Constants::RET_OK; // "<qos><state id='OK'/></qos>";
+      }
+
       //const Global& global_ = updateKey.getGlobal();
       ++updateCounter;
 
@@ -293,7 +326,6 @@ public:
 
       log_.info(ME, "Receiving update #" + lexical_cast<string>(updateCounter) + " of a message, secret sessionId=" + sessionId + " ...");
 
-      stringstream sout;
       sout << endl << "============= START #" << updateCounter << " '" << updateKey.getOid() << "' =======================";
       string contentStr((char*)content, (char*)(content)+contentSize);
       sout << endl << "<xmlBlaster>";
@@ -350,13 +382,7 @@ public:
          throw logic_error(updateExceptionRuntime);
       }
 
-      if (updateQos.getState() == "ERASED" ) {
-         doContinue_ = false;
-         log_.info(ME, "Received topic '" + updateKey.getOid() + "' ERASED message, stopping myself ...");
-         return "";
-      }
-
-      return "";
+      return Constants::RET_OK;
    }
 };
 
