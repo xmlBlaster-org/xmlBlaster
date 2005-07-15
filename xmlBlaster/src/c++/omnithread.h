@@ -233,7 +233,6 @@ private:
     // dummy copy constructor and operator= to prevent copying
     omni_mutex(const omni_mutex&);
     omni_mutex& operator=(const omni_mutex&);
-    pthread_mutexattr_t mtx_attr;
 
 OMNI_THREAD_EXPOSE:
     OMNI_MUTEX_IMPLEMENTATION

@@ -100,6 +100,7 @@ omni_mutex::omni_mutex(bool recursive)
     !!!TODO: recursive!!!
     THROW_ERRORS(pthread_mutex_init(&posix_mutex, pthread_mutexattr_default));
 #else
+    pthread_mutexattr_t mtx_attr;
     int ret_val = pthread_mutexattr_init(&mtx_attr);
     if (ret_val != 0)
        printf("posix.cc: Can't initialize mutexattr\n");
