@@ -3,6 +3,45 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13463 Bugfix user.security.authentication.accessdenied
+   - Collecting new ConnectReturnQos after reconnect
+   - Setting new instanceId on multiple connect() calls
+
+ o #13462 Bugfix user.security.authentication.accessdenied
+   Java client library now does another connect() if
+   accessdenied is thrown from server.
+   This can happen when a client session is destroyed in the
+   server as an administrative task or by other means.
+
+ o #13461 Dispatcher change (java)
+   Moved all protocol driver shutdown calls outside
+   of synchronization blocks to avoid deadlocks
+   if shutdown blocks and client wants to reconnect.
+
+ o #13460 SOCKET protocol driver change (java)
+   Moved all native socket close() calls outside
+   of synchronization blocks.
+   Like this a blocking system call won't deadlock
+   the clients reconnect attempts.
+   Changed to pass thru communication exceptions.
+
+ o #13459 Bugfix SOCKET protocol driver
+   Catching now throwable to always ensure the release of invocation locks
+   Otherwise a blocked thread could result
+
+ o #13459 Bugfix SOCKET protocol fail safe reconnect: SO_LINGER changed from one minute to 0
+   The java socket.close() could block in the kernel
+   when the ethernet cable was plugged out.
+   SO_LINGER>0: Try to send any unsent data on close(socket)
+                The UNIX kernel waits very long and ignores the given time
+   SO_LINGER=0: Discard remaining data on close() <-- Choose this to avoid blocking socket close() calls
+   Default:     The kernel tries to send queued data even after close()
+
+ o #13458 Bugfix SOCKET protocol fail safe reconnect
+   plugin/socket/responseTimeout callback exceptions are handled now as
+   communication exception and trigger polling for client instead of
+   creating dead messages.
+
  o #13449 C++ client library
    - Cleanup of true/false string handling
    - Extended ConnectQos to handle "refreshSession", "reconnected" and "instanceId"
