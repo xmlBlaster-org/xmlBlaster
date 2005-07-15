@@ -48,6 +48,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private final I_MsgSecurityInterceptor securityInterceptor;
    private String encryptedConnectQos;
    private ConnectReturnQos connectReturnQos;
+   private MsgQueueEntry connectEntry;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -118,34 +119,54 @@ public final class ClientDispatchConnection extends DispatchConnection
       }
 
       for (int ii=0; ii<msgArr_.length; ii++) {
-         if (MethodName.PUBLISH_ONEWAY == msgArr_[ii].getMethodName()) {
-            MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
-            publish(tmp);
+         try {
+            if (MethodName.PUBLISH_ONEWAY == msgArr_[ii].getMethodName()) {
+               MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
+               publish(tmp);
+            }
+            else if (MethodName.PUBLISH == msgArr_[ii].getMethodName()) {
+               MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
+               publish(tmp);
+            }
+            else if (MethodName.GET == msgArr_[ii].getMethodName()) {
+               get(msgArr_[ii]);
+            }
+            else if (MethodName.SUBSCRIBE == msgArr_[ii].getMethodName()) {
+               subscribe(msgArr_[ii]);
+            }
+            else if (MethodName.UNSUBSCRIBE == msgArr_[ii].getMethodName()) {
+               unSubscribe(msgArr_[ii]);
+            }
+            else if (MethodName.ERASE == msgArr_[ii].getMethodName()) {
+               erase(msgArr_[ii]);
+            }
+            else if (MethodName.CONNECT == msgArr_[ii].getMethodName()) {
+               connect(msgArr_[ii]);
+               this.connectEntry = msgArr_[ii]; // remember it
+            }
+            else if (MethodName.DISCONNECT == msgArr_[ii].getMethodName()) {
+               this.connectEntry = null;
+               disconnect(msgArr_[ii]);
+            }
+            else {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Message type '" + msgArr_[ii].getEmbeddedType() + "' is not implemented");
+            }
          }
-         else if (MethodName.PUBLISH == msgArr_[ii].getMethodName()) {
-            MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
-            publish(tmp);
-         }
-         else if (MethodName.GET == msgArr_[ii].getMethodName()) {
-            get(msgArr_[ii]);
-         }
-         else if (MethodName.SUBSCRIBE == msgArr_[ii].getMethodName()) {
-            subscribe(msgArr_[ii]);
-         }
-         else if (MethodName.UNSUBSCRIBE == msgArr_[ii].getMethodName()) {
-            unSubscribe(msgArr_[ii]);
-         }
-         else if (MethodName.ERASE == msgArr_[ii].getMethodName()) {
-            erase(msgArr_[ii]);
-         }
-         else if (MethodName.CONNECT == msgArr_[ii].getMethodName()) {
-            connect(msgArr_[ii]);
-         }
-         else if (MethodName.DISCONNECT == msgArr_[ii].getMethodName()) {
-            disconnect(msgArr_[ii]);
-         }
-         else {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Message type '" + msgArr_[ii].getEmbeddedType() + "' is not implemented");
+         catch (XmlBlasterException e) {
+            if (this.connectEntry != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
+               // Happens if the client was killed in the server by an admin task
+               // and has tried to reconnect with the old sessionId
+               log.warn(ME, "Server changed sessionId, trying reconnect now: " + e.toString());
+               //reconnect();   // loops?!
+               connect(this.connectEntry);
+               String key = glob.getId() + "/ConnectReturnQos";
+               if (log.TRACE) log.trace(ME, "Server changed sessionId to " + this.connectReturnQos.getServerInstanceId() + ", storing key=" + key);
+               glob.addObjectEntry(key, this.connectReturnQos); // Transport back
+               ii--;
+            }
+            else {
+               throw e;
+            }
          }
       }
    }
@@ -486,6 +507,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.connectReturnQos = null;
       try {
          this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+
+         String key = glob.getId() + "/ConnectReturnQos";
+         glob.addObjectEntry(key, this.connectReturnQos); // Transport back if reconnect was triggered from timer or locally
       }
       catch (XmlBlasterException e) {
          log.error(ME, "reconnect(): Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
