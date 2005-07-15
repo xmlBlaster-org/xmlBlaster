@@ -3,6 +3,35 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13449 C++ client library
+   - Cleanup of true/false string handling
+   - Extended ConnectQos to handle "refreshSession", "reconnected" and "instanceId"
+   - Bugfix for Base64 ClientProperty handling in ConnectQos
+   - Fixed Base64 clientProperty handling in ConnectQos SAX parsing
+   - WARNING:
+     The AddressBase class is now reference counted, you may not create
+     any Address instance on the stack, always use 'new Address(...)' or 'new CbAddress(...)'.
+     Please access methods with '->' instead of '.'.
+   - Threads: omni_mutex locks now support recursive entry, the same thread may enter recursively
+     This extends POSIX 1.c: There the results of recursively locking the mutex is undefined
+     and usually blocks.
+   - Changed fail safe reconnect to make an initial try directly after detection
+   - Added getInstanceId() to Global
+   - XmlBlasterAccess.cpp
+     Bugfix for multiple connect() calls.
+     Changed invocationMutex to allow recursive calls,
+     set xmlBlaster/invocationMutex/recursive=false for old behavior.
+   - Cleanup of bool converter methods and "true"/"false" usage
+     "1", "true" and "TRUE" are evaluated to true.
+   - Changed Timeout::addOrRefreshTimeoutListener() to ignore key<=0
+
+ o #13428-13432 ConnectReturnQos
+   Added instanceId which is unique when restarting the server
+
+ o #13427 Bugfix for reconnect (java client library)
+   Fixes for IOR and XMLRPC the reconnect behaviour
+   if client session was killed by administrative task
+
  o #13409 Extended JMX support
    Added 'build -DADD_JMXTOOLS=true ... dist' configuration
    to add jmxtools.jar to distribution (needed for HTMLAdaptor)
