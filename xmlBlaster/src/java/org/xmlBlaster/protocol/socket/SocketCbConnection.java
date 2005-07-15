@@ -232,6 +232,9 @@ public class SocketCbConnection extends Executor
          if (xmlBlasterException.isUser())
             throw xmlBlasterException;
 
+         if (xmlBlasterException.isCommunication())
+            throw xmlBlasterException;
+
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "SOCKET callback of " + msgArr.length + " messages failed", xmlBlasterException);
       }
