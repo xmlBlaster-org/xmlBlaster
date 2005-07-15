@@ -89,6 +89,21 @@ long UpdateQos::getQueueIndex() const
    return data_.getQueueIndex();
 }
 
+bool UpdateQos::isOk() const
+{
+   return data_.isOk();
+}
+
+bool UpdateQos::isErased() const
+{
+   return data_.isErased();
+}
+
+bool UpdateQos::isTimeout() const
+{
+   return data_.isTimeout();
+}
+
 bool UpdateQos::isForwardError() const
 {
    return data_.isForwardError();

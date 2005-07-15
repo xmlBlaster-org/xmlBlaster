@@ -102,8 +102,30 @@ public:
     */
    long getQueueIndex() const;
 
-   bool isForwardError() const;
+   /**
+    * True if the message is OK
+    */
+   bool isOk() const;
 
+   /**
+    * True if the message was erased by timer or by a
+    * client invoking erase(). 
+    */
+   bool isErased() const;
+
+   /**
+    * True if a timeout on this message occurred. 
+    * <p />
+    * Timeouts are spanned by the publisher and thrown by xmlBlaster
+    * on timeout to indicate for example
+    * STALE messages or any other user problem domain specific event.
+    */
+   bool isTimeout() const;
+
+   /**
+    * True on cluster forward problems
+    */
+   bool isForwardError() const;
 };
 
 }}}}
