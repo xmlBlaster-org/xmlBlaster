@@ -142,9 +142,9 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay)
          log_.error(ME, "The timeout handle '" + lexical_cast<std::string>(key) + "' is unknown, no timeout refresh done");
          return -1; // temporarly. Change this once exception is thrown
       }
-      timeoutMap_.erase(key);
       callback = (*iter).second.first;
       userData = (*iter).second.second;
+      timeoutMap_.erase(key);
    }
    return addTimeoutListener(callback, delay, userData);
 }
