@@ -200,6 +200,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
    /**
     * Checks if key is null -> addTimeoutListener else refreshTimeoutListener() 
     * in a thread save way. 
+    * @param key If <= 0 we add a new timer, else lookup given key and refresh
     */
     org::xmlBlaster::util::Timestamp addOrRefreshTimeoutListener(I_Timeout *listener, 
                                                   long delay, void *userData, org::xmlBlaster::util::Timestamp key);

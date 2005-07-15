@@ -149,10 +149,10 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay)
    return addTimeoutListener(callback, delay, userData);
 }
 
-Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void*, Timestamp key) 
+Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void *userData, Timestamp key) 
 {
    if (log_.call()) log_.call(ME, " addOrRefreshTimeoutListener");
-   if (key < 0) return addTimeoutListener(listener, delay, NULL);
+   if (key <= 0) return addTimeoutListener(listener, delay, userData);
    return refreshTimeoutListener(key, delay);
 }
 
