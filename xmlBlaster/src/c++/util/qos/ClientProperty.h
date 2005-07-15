@@ -152,20 +152,20 @@ public:
    
    /**
     * Convenience method for getValue(T_VALUE&). 
-    * @return The value. It is decoded (readable) in case it was base64 encoded,
+    * @return The value. It is decoded (readable) in case it was base64 encoded
     */
    std::string getStringValue() const;
    
    /**
     * Accessor for binary data (BLOB). 
-    * @return The value. It is decoded (readable) in case it was base64 encoded,
+    * @return The value. It is decoded (readable) in case it was base64 encoded
     */
    std::vector<unsigned char> getValue() const;
    
    /**
     * Access with for supported data type. 
     * @param value OUT parameter: The value in the desired data type. 
-    *        It is decoded (readable) in case it was base64 encoded,
+    *        It is decoded (readable) in case it was base64 encoded
     */
    template <typename T_VALUE> void getValue(T_VALUE& value) const;
    
