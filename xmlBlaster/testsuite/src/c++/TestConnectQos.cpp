@@ -135,10 +135,10 @@ public:
          assertEquals(log_, me, 629145L, prop.getReloadSwapLevel(), "reloadSwapLevel check");
          assertEquals(log_, me, 524288L, prop.getReloadSwapBytes(), "reloadSwapBytes check");
 
-         AddressBase address = prop.getCurrentAddress();
-         assertEquals(log_, me, string("IOR"), address.getType(), "address type check");
-         assertEquals(log_, me, string("127.0.0.2"), address.getHostname(), "address hostname check");
-         assertEquals(log_, me, string("undef"), address.getDispatchPlugin(), "address dispatch Plugin check");
+         AddressBaseRef address = prop.getCurrentAddress();
+         assertEquals(log_, me, string("IOR"), address->getType(), "address type check");
+         assertEquals(log_, me, string("127.0.0.2"), address->getHostname(), "address hostname check");
+         assertEquals(log_, me, string("undef"), address->getDispatchPlugin(), "address dispatch Plugin check");
 
          if (log_.trace()) log_.trace(me, string("the queue property literal: ") + prop.toXml());
       }
@@ -150,38 +150,60 @@ public:
    {
       string me = ME + "::testConnectQos";
       log_.info(me, "testing parsing of a return connect qos: start");
+      string defaultBoolStr[2] = { "true", "false" };
+      for (int jj=0; jj<2; jj++) {
+         bool defaultBool = lexical_cast<bool>(defaultBoolStr[jj]);
+         string qos = 
+             string("<qos>\n") +
+             string("  <securityService type='htpasswd' version='1.0'><![CDATA[\n") +
+             string("   <user>Tim</user>\n") +
+             string("   <passwd>secret</passwd>\n") +
+             string("  ]]></securityService>\n") +
+             string("  <ptp>")+defaultBoolStr[jj]+string("</ptp>\n") +
+             string("  <clusterNode>")+defaultBoolStr[jj]+string("</clusterNode>\n") +
+             string("  <instanceId>/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445</instanceId>\n") +
+             string("  <reconnected>")+defaultBoolStr[jj]+string("</reconnected>\n") +
+             string("  <refreshSession>")+defaultBoolStr[jj]+string("</refreshSession>\n") +
+             string("  <duplicateUpdates>")+defaultBoolStr[jj]+string("</duplicateUpdates>\n") +
+             string("  <duplicateUpdates>")+defaultBoolStr[jj]+string("</duplicateUpdates>\n") +
+             string("  <session name='/node/http_127_0_0_2_3412/client/Tim/-3' timeout='86400000' maxSessions='10' clearSessions='")+defaultBoolStr[jj]+string("' sessionId='IIOP:01110C332A141532012A0F'/>\n") +
+             string("  <queue relating='connection' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
+             string("   <address type='IOR' bootstrapHostname='127.0.0.2' dispatchPlugin='undef'>\n") +
+             string("      http://127.0.0.2:3412\n") +
+             string("   </address>\n") +
+             string("  </queue>\n") +
+             string("  <queue relating='callback' type='CACHE' version='1.0' maxEntries='10000000' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
+             string("   <callback type='IOR' bootstrapHostname='127.0.0.1' dispatchPlugin='undef'>\n") +
+             string("      IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e300002000000000000002f000000010100000c0000006c696e75782e6c6f63616c00a6820000130000002f353936372f313034323232363530392f5f30000100000024000000010000000100000001000000140000000100000001000100000000000901010000000000\n") +
+             string("   </callback>\n") +
+             string("  </queue>\n") +
+             string("  <serverRef type='IOR'>\n") +
+             string("  IOR:000000000000003749444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f73657276657249646c2f5365727665723a312e300000000000030000000000000043000100000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f000000000000000048000101000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f0000000000000000010000002c0000000000000001000000010000001c00000000000100010000000105010001000101090000000105010001\n") +
+             string("  </serverRef>\n") +
+             string("  <clientProperty name='intKey' type='int'>123</clientProperty>\n") +
+             string("  <clientProperty name='StringKey' type='String' encoding='") + Constants::ENCODING_BASE64 + string("'>QmxhQmxhQmxh</clientProperty>\n") +
+             string("  <persistent>")+defaultBoolStr[jj]+string("</persistent>\n") +
+             string(" </qos>\n");
 
-      string qos = 
-          string("<qos>\n") +
-          string("  <securityService type='htpasswd' version='1.0'><![CDATA[\n") +
-          string("   <user>Tim</user>\n") +
-          string("   <passwd>secret</passwd>\n") +
-          string("  ]]></securityService>\n") +
-          string("  <ptp>false</ptp>\n") +
-          string("  <duplicateUpdates>false</duplicateUpdates>\n") +
-          string("  <session name='/node/http_127_0_0_2_3412/client/Tim/-3' timeout='86400000' maxSessions='10' clearSessions='false' sessionId='IIOP:01110C332A141532012A0F'/>\n") +
-          string("  <queue relating='connection' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
-          string("   <address type='IOR' bootstrapHostname='127.0.0.2' dispatchPlugin='undef'>\n") +
-          string("      http://127.0.0.2:3412\n") +
-          string("   </address>\n") +
-          string("  </queue>\n") +
-          string("  <queue relating='callback' type='CACHE' version='1.0' maxEntries='10000000' storeSwapLevel='1468006' storeSwapBytes='524288' reloadSwapLevel='629145' reloadSwapBytes='524288'>\n") +
-          string("   <callback type='IOR' bootstrapHostname='127.0.0.1' dispatchPlugin='undef'>\n") +
-          string("      IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e300002000000000000002f000000010100000c0000006c696e75782e6c6f63616c00a6820000130000002f353936372f313034323232363530392f5f30000100000024000000010000000100000001000000140000000100000001000100000000000901010000000000\n") +
-          string("   </callback>\n") +
-          string("  </queue>\n") +
-          string("  <serverRef type='IOR'>\n") +
-          string("  IOR:000000000000003749444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f73657276657249646c2f5365727665723a312e300000000000030000000000000043000100000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f000000000000000048000101000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f0000000000000000010000002c0000000000000001000000010000001c00000000000100010000000105010001000101090000000105010001\n") +
-          string("  </serverRef>\n") +
-          string("  <persistent/>\n") +
-          string(" </qos>\n");
+         ConnectQosFactory factory(global_);
+         for (int i=0; i < 2; i++) {
+            ConnectQos connQos = factory.readObject(qos);
+            string qos2 = connQos.toXml();
+            connQos = factory.readObject(qos2); // round trip: parse -> dump -> parse again -> check
+            assertEquals(log_, me, "/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445", connQos.getInstanceId(), "check 'instanceId' flag");
+            assertEquals(log_, me, defaultBool, connQos.getPtp(), "check 'ptp' flag");
+            assertEquals(log_, me, defaultBool, connQos.isClusterNode(), "check 'clusterNode' flag");
+            assertEquals(log_, me, defaultBool, connQos.isRefreshSession(), "check 'refreshSession' flag");
+            assertEquals(log_, me, defaultBool, connQos.isDuplicateUpdates(), "check 'duplicateUpdates' flag");
+            assertEquals(log_, me, defaultBool, connQos.isPersistent(), "check 'persistent' flag");
+            assertEquals(log_, me, 123, connQos.getClientProperty("intKey", 0), "check 'intKey' flag");
+            // Base64: QmxhQmxhQmxh -> BlaBlaBla
+            assertEquals(log_, me, string("BlaBlaBla"), connQos.getClientProperty("StringKey", string("wrong")), "check 'StringKey' flag");
+            assertEquals(log_, me, "IIOP:01110C332A141532012A0F", connQos.getSecretSessionId(), "check 'secretSessionId' flag");
+            // TODO: other checks!
 
-      ConnectQosFactory factory(global_);
-      for (int i=0; i < 2; i++) {
-         ConnectQos connQos = factory.readObject(qos);
-         assertEquals(log_, me, true, connQos.isPersistent(), "check 'persistent' flag");
-         
-         log_.info(me, string("connect qos: ") + connQos.toXml());
+            log_.info(me, string("connect qos: ") + connQos.toXml());
+         }
       }
    }
 };
