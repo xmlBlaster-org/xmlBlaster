@@ -114,9 +114,7 @@ string CallbackAddress::usage()
    text += string("                       Number of milliseconds xmlBlaster shall collect callback messages.\n");
    text += string("                       The burst mode allows performance tuning, try set it to 200.\n");
 
-   string help = "false";
-   if (DEFAULT_oneway) help = "true";
-   text += string("   -dispatch/callback/oneway [") + help + string("]\n");
+   text += string("   -dispatch/callback/oneway [") + lexical_cast<std::string>(DEFAULT_oneway) + string("]\n");
    text += string("                       Shall the update() messages be send oneway (no application level ACK).\n");
 
    text += string("   -dispatch/callback/dispatcherActive [") + lexical_cast<string>(DEFAULT_dispatcherActive) + string("]\n");
@@ -132,9 +130,7 @@ string CallbackAddress::usage()
    //text += string("   -dispatch/callback/compress.type   With which format message be compressed on callback [") + DEFAULT_compressType + string("]\n");
    //text += string("   -dispatch/callback/compress.minSize Messages bigger this size in bytes are compressed [") + lexical_cast<std::string>(DEFAULT_minSize) + string("]\n");
 
-   //help = "false";
-   //if (DEFAULT_ptpAllowed) help = "true";
-   //text += string("   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [") + help + string("]\n");
+   //text += string("   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [") + lexical_cast<std::string>(DEFAULT_ptpAllowed) + string("]\n");
    //text += "   -cb.DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
    return text;
 }

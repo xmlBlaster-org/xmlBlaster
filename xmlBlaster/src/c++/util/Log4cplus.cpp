@@ -14,6 +14,7 @@ Comment:   Embed logging library log4cpp http://log4cplus.sourceforge.net/
 #include <log4cplus/helpers/loglog.h>
 #include <fstream>
 #include <util/PropertyDef.h>
+#include <util/lexical_cast.h>
 
 using namespace std;
 using namespace log4cplus;
@@ -35,9 +36,7 @@ namespace util {
       {
          PropMap::const_iterator pos = propMap.find("xmlBlaster/logging/debug");
          if (pos != propMap.end()) {
-            string value = pos->second;
-            if ("true" == value)
-               log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(true);
+            log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(lexical_cast<bool>(pos->second));
          }
       }
 

@@ -12,6 +12,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #include <util/XmlBCfg.h>
 #include <ctype.h>  // ::tolower
 #include <string>
+#include <util/lexical_cast.h>
 
 #define  EMPTY_STRING std::string("")
 
@@ -79,23 +80,43 @@ namespace util {
       }
 
       /**
+       * Checks string to be interpreted as true. 
+       * If you don't need trimming please use <i>lexical_cast<bool>(str)</i> instead of this method.
        * @param str The checked std::string (is not modified)
        * @return true if trimmed std::string is "TRUE" or "true" or "1" else false
        */
       static bool isTrue(const std::string& str) {
          std::string tmp = trim(str.c_str());
-         return std::string("true")==tmp || std::string("1")==tmp || std::string("TRUE")==tmp;
+         return lexical_cast<bool>(tmp);
+      }
+
+      /**
+       * Evaluate trimmed boolean string. 
+       * @param str The checked std::string (is not modified)
+       * @param def Default value to use if str not one of described below
+       * @return true if trimmed std::string is "TRUE" or "true" or "1" else false
+       *         false if trimmed "0", "false", "FALSE"
+       */
+      static bool isTrue(const std::string& str, bool def) {
+         std::string value = trim(str);
+         if (value.length() == 0) return def;
+         if (isTrue(value) == true) return true;
+         if ((value=="0")||(value=="false")||(value=="FALSE")) return false;
+         return def;
       }
 
       /**
        * Use this method instead of isTrue(std::string&) if your input std::string may
        * be manipulated (it performs a bit better then the other method). 
+       * NOTE: It returns true if the str is empty, this is nice for SAX parse
+       * where <persistent/> also triggers an endElement() with empty character_ and means 'true'.
        * @param str The checked std::string (is trimmed!!)
-       * @return true if trimmed std::string is "TRUE" or "true" or "1" else false
+       * @return true if trimmed std::string is "TRUE" or "true" or "1" or "" else false
        */
       static bool isTrueTrim(std::string& str) {
          trim(str);
-         return std::string("true")==str || std::string("1")==str || std::string("TRUE")==str;
+         if (str.length() == 0) return true;
+         return lexical_cast<bool>(str);
       }
 
       /**

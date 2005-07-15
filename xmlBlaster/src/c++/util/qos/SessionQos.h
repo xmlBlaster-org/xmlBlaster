@@ -48,6 +48,8 @@ private:
    void initialize();
 
 public:
+   virtual ~SessionQosData();
+
    /**
     * When using this constructor you can let it assign the defaults by passing an empty std::string as the 
     * 'absoluteName' argument, or you force the SessionQos to set the SessionName to what you specify in the

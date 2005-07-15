@@ -83,6 +83,7 @@ private:
    std::string            id_;
    std::string            immutableId_;
    std::string            instanceName_; /**< The name of the global as registered with createInstance(name) */
+   mutable std::string    instanceId_;   /**< The unique id changes on each startup of same client */
    thread::Mutex          pingerMutex_;  /**< mutex to protect the ping thread */
    static thread::Mutex   globalMutex_;  /**< mutex for the global class */
    org::xmlBlaster::util::SessionNameRef sessionName_;  /**< added for managed objects. */
@@ -101,7 +102,6 @@ public:
    // Global(const Global &global);
    Global& operator =(const Global &);
    ~Global();
-
 
    /**
     * Returns the length of getArgs()
@@ -279,84 +279,96 @@ public:
    /**
     * Returns the bootstrap host name
     */
-    std::string getBootstrapHostname() const;
+   std::string getBootstrapHostname() const;
 
-    std::string getCbHostname() const;
+   std::string getCbHostname() const;
 
-    org::xmlBlaster::client::protocol::CbServerPluginManager& getCbServerPluginManager();
+   org::xmlBlaster::client::protocol::CbServerPluginManager& getCbServerPluginManager();
 
-    org::xmlBlaster::util::dispatch::DispatchManager& getDispatchManager();
+   org::xmlBlaster::util::dispatch::DispatchManager& getDispatchManager();
 
-    Timeout& getPingTimer();
+   Timeout& getPingTimer();
 
-    /**
-     * Returns the specified value as a std::string. 
-     * @deprecated Please use 'lexical_cast<string>(bool)' instead
-     */
-    static const std::string& getBoolAsString(bool val);
+   /**
+    * Returns the specified value as a std::string. 
+    * @deprecated Please use 'lexical_cast<string>(bool)' instead
+    */
+   static const std::string& getBoolAsString(bool val);
 
-         /**
-          * Set the clients session name, changes after login
-          */
-         void setSessionName(org::xmlBlaster::util::SessionNameRef sessionName);
+   /**
+    * Set the clients session name, changes after login
+    */
+   void setSessionName(org::xmlBlaster::util::SessionNameRef sessionName);
 
-         /**
-          * Get the clients session name, changes after login
-          */
-         org::xmlBlaster::util::SessionNameRef getSessionName() const;
+   /**
+    * Get the clients session name, changes after login
+    */
+   org::xmlBlaster::util::SessionNameRef getSessionName() const;
 
-    /**
-     * Access the unique local id (as a String), the absolute session name. 
-     * Before connection it is temporay the relative session name
-     * and changed to the absolute session name after connection (when we know the cluster id)
-     * @return For example "/node/heron/client/joe/2"
-     */
-    std::string getId() const;
+   /**
+    * Access the unique local id (as a String), the absolute session name. 
+    * Before connection it is temporay the relative session name
+    * and changed to the absolute session name after connection (when we know the cluster id)
+    * @return For example "/node/heron/client/joe/2"
+    */
+   std::string getId() const;
 
-    /**
-     * Same as getId() but all 'special characters' are stripped
-     * so you can use it for file names.
-     * @return ""
-     */
-    std::string getStrippedId() const;
+   /**
+    * Same as getId() but all 'special characters' are stripped
+    * so you can use it for file names.
+    * @return ""
+    */
+   std::string getStrippedId() const;
 
-    /**
-     * The relative session name. 
-     * We can't use the absolute session name (with cluster node informations)
-     * as this is known after connect(), but we need to name queues
-     * before connect() already -> The Id must be immutable!
-     * @return For example "client/joe/2"
-     */
-    std::string getImmutableId() const;
+   /**
+    * The relative session name. 
+    * We can't use the absolute session name (with cluster node informations)
+    * as this is known after connect(), but we need to name queues
+    * before connect() already -> The Id must be immutable!
+    * @return For example "client/joe/2"
+    */
+   std::string getImmutableId() const;
 
-    /**
-     * Same as getImmutableId() but all 'special characters' are stripped
-     * so you can use it for queue names.
-     * @return ""
-     */
-    std::string getStrippedImmutableId() const;
+   /**
+    * Same as getImmutableId() but all 'special characters' are stripped
+    * so you can use it for queue names.
+    * @return ""
+    */
+   std::string getStrippedImmutableId() const;
 
-    /**
-     * Utility method to strip any std::string, all characters which prevent
-     * to be used for e.g. file names are replaced. 
-     * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
-     * @return e.g. "http_www_xmlBlaster_org_homex"
-     */
-    std::string getStrippedString(const std::string& text) const;
+   /**
+    * Utility method to strip any std::string, all characters which prevent
+    * to be used for e.g. file names are replaced. 
+    * @param text e.g. "http://www.xmlBlaster.org:/home\\x"
+    * @return e.g. "http_www_xmlBlaster_org_homex"
+    */
+   std::string getStrippedString(const std::string& text) const;
 
-    /**
-     * Set after successful login. 
-     * Set by XmlBlasterAccess/ConnectionHandler to absolute session name
-     * after successful connection (before it is temporary the relative name)
-     * @param a unique id, for example "/node/heron/client/joe/2"
-     */
-    void setId(const std::string& id);
-    
-         /**
-          * Set by XmlBlasterAccess/ConnectionHandler to relative session name
-          * @param a unique id, for example "client/joe/2"
-          */
-         void setImmutableId(const std::string& id);
+   /**
+    * Set after successful login. 
+    * Set by XmlBlasterAccess/ConnectionHandler to absolute session name
+    * after successful connection (before it is temporary the relative name)
+    * @param a unique id, for example "/node/heron/client/joe/2"
+    */
+   void setId(const std::string& id);
+   
+   /**
+    * Set by XmlBlasterAccess/ConnectionHandler to relative session name
+    * @param a unique id, for example "client/joe/2"
+    */
+   void setImmutableId(const std::string& id);
+
+   /**
+    * Reset the cached instance id
+    */
+   void resetInstanceId();
+
+   /**
+    * Unique id of the client, changes on each restart. 
+    * If 'client/joe' is restarted, the instanceId changes.
+    * @return id + timestamp, '/client/joe/instanceId/33470080380'
+    */
+   std::string getInstanceId() const;
 };
 
 }}} // namespace

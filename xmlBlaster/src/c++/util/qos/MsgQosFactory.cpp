@@ -346,12 +346,7 @@ void MsgQosFactory::endElement(const string &name)
 
    if(name.compare("forceUpdate") == 0) {
       inIsVolatile_ = false;
-      StringTrim::trim(character_);
-      if (!character_.empty()) {
-         if (character_ == "true") msgQosDataP_->setForceUpdate(true);
-         else msgQosDataP_->setForceUpdate(false);
-      }
-      // if (log.trace()) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
+      msgQosDataP_->setForceUpdate(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
@@ -364,22 +359,14 @@ void MsgQosFactory::endElement(const string &name)
 
    if(name.compare("persistent") == 0) {
       inIsPersistent_ = false;
-      StringTrim::trim(character_);
-      if (!character_.empty())
-         if (character_ == "true") msgQosDataP_->setPersistent(true);
-         else  msgQosDataP_->setPersistent(false);
-      // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
+      msgQosDataP_->setPersistent(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
    if(name.compare("readonly") == 0) {
       inReadonly_ = false;
-      StringTrim::trim(character_);
-      if (!character_.empty())
-         if (character_ == "true") msgQosDataP_->setReadonly(true);
-         else  msgQosDataP_->setReadonly(false);
-      // if (log.trace()) log.trace(ME, "Found readonly = " + msgQosData.readonly());
+      msgQosDataP_->setReadonly(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }

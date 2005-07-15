@@ -132,11 +132,7 @@ void StatusQosFactory::endElement(const string &name)
 
    if(name.compare("persistent") == 0) {
       inIsPersistent_ = false;
-      StringTrim::trim(character_);
-      if (!character_.empty())
-         if (character_ == "true") statusQosData_.setPersistent(true);
-         else  statusQosData_.setPersistent(false);
-      // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
+      statusQosData_.setPersistent(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }

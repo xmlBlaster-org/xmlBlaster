@@ -53,26 +53,22 @@ namespace org { namespace xmlBlaster { namespace util {
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
 template<> std::string lexical_cast(bool arg)
 {
-   static const std::string _TRUE = "true";
-   static const std::string _FALSE = "false";
-   return (arg) ? _TRUE : _FALSE;
+   return (arg) ? XMLBLASTER_TRUE : XMLBLASTER_FALSE; // "true", "false"
 }
 /** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
 template<> const char * lexical_cast(bool arg)
 {
-   static const char * const _TRUE = "true";
-   static const char * const _FALSE = "false";
-   return (arg) ? _TRUE : _FALSE;
+   return (arg) ? XMLBLASTER_TRUE.c_str() : XMLBLASTER_FALSE.c_str();
 }
 
 template<> bool lexical_cast(std::string arg)
 {
-   return arg == "true" || arg == "TRUE";
+   return arg == "1" || arg == XMLBLASTER_TRUE || arg == "TRUE"; // "true"
 }
 
 template<> bool lexical_cast(const char* arg)
 {
-   return std::string(arg) == "true" || std::string(arg) == "TRUE";
+   return lexical_cast<bool>(std::string(arg));
 }
 
 
@@ -551,10 +547,9 @@ Timeout& Global::getPingTimer()
 
 const string& Global::getBoolAsString(bool val)
 {
-   static const string _TRUE = "true";
-   static const string _FALSE = "false";
-   if (val) return _TRUE;
-   else return _FALSE;
+   return (val) ? XMLBLASTER_TRUE : XMLBLASTER_FALSE;
+   // return lexical_cast<std::string>(val); 
+   // gcc complains: warning: returning reference to temporary
 }
 
 void Global::setSessionName(SessionNameRef sessionName)
@@ -609,11 +604,30 @@ string Global::getStrippedString(const string& text) const
 void Global::setId(const string& id) 
 {
    id_ = id;
+   resetInstanceId();
 }
 
 void Global::setImmutableId(const string& id) 
 {
    immutableId_ = id;
+}
+
+void Global::resetInstanceId() {
+   thread::Lock lock(globalMutex_);
+   instanceId_ = "";
+}
+
+std::string Global::getInstanceId() const {
+   if (instanceId_ == "") {
+      thread::Lock lock(globalMutex_);
+      if (instanceId_ == "") {
+         Timestamp timestamp = TimestampFactory::getInstance().getTimestamp();
+         //ContextNode node(this, "instanceId",
+         //                 lexical_cast<std::string>(timestamp), getContextNode());
+         instanceId_ = getId() + "/instanceId/" + lexical_cast<std::string>(timestamp);
+      }
+   }
+   return instanceId_;
 }
 
 std::string waitOnKeyboardHit(const std::string &str)

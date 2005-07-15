@@ -39,6 +39,9 @@ SessionQosData::SessionQosData(Global& global, const string& absoluteName)
    sessionName_ = r;
 }
 
+SessionQosData::~SessionQosData()
+{
+}
 
 void SessionQosData::copy(const SessionQosData& data)
 {
@@ -241,12 +244,10 @@ void SessionQosFactory::startElement(const string &name, const AttributeMap& att
             sessionQos_->maxSessions_ = XmlHandlerBase::getIntValue(tmpValue);
          }
          else if (tmpName.compare("clearSessions") == 0) {
-            if (tmpValue == "true") sessionQos_->clearSessions_ = true;
-            else sessionQos_->clearSessions_ = false;
+            sessionQos_->clearSessions_ = StringTrim::isTrueTrim(tmpValue);
          }
          else if (tmpName.compare("reconnectSameClientOnly") == 0) {
-            if (tmpValue == "true") sessionQos_->reconnectSameClientOnly_ = true;
-            else sessionQos_->reconnectSameClientOnly_ = false;
+            sessionQos_->reconnectSameClientOnly_ = StringTrim::isTrueTrim(tmpValue);
          }
          else if (tmpName.compare("sessionId") == 0) {
             sessionQos_->sessionId_ = tmpValue;

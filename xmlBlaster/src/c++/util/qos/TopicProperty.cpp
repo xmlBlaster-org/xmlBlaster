@@ -206,9 +206,7 @@ const bool DEFAULT_readonly = false;
 
       ret += offset + "<topic";
       if (DEFAULT_readonly != readonly_) {
-         string readonlyStr = "false";
-         if (readonly_) readonlyStr = "true";
-         ret += " readonly='" + readonlyStr + "'";
+         ret += " readonly='" + lexical_cast<std::string>(readonly_) + "'";
       }
       if (destroyDelay_DEFAULT_DEFAULT != destroyDelay_) {
          ret += " destroyDelay='" + lexical_cast<std::string>(destroyDelay_) + "'";
