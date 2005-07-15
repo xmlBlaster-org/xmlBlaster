@@ -205,6 +205,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             else {
                this.glob.setId(getLoginName() + System.currentTimeMillis()); // Not secure if two clients start simultaneously
             }
+            this.glob.resetInstanceId();
+            this.connectQos.getData().setInstanceId(this.glob.getInstanceId());
 
             this.updateListener = updateListener;
 
@@ -264,6 +266,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       if (isAlive()) {
+         checkForNewConnectReturnQos();
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
@@ -271,7 +274,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();
-            log.info(ME, "Sending now our " + num + " client side queued tail back messages");
+            log.info(ME, "We have " + num + " client side queued tail back messages");
             this.dispatchManager.switchToASyncMode();
             while (this.clientQueue.getNumOfEntries() > 0) {
                try { Thread.sleep(20L); } catch( InterruptedException i) {}
@@ -604,6 +607,24 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (log.TRACE) log.trace(ME, "Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
       }
+      /* is currently handled in ClientDispatchConnection.java:
+      catch (XmlBlasterException e) {
+         if (this.connectQos != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
+            // Happens if the client was killed in the server by an admin task
+            // and has tried to reconnect with the old sessionId
+            MsgQueueConnectEntry ce = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
+            this.connectReturnQos = (ConnectReturnQos)queueMessage(ce);
+            this.connectReturnQos.getData().setInitialConnectionState(this.dispatchManager.getDispatchConnectionsHandler().getState());
+
+            this.clientQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+            if (log.TRACE) log.trace(ME, "Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
+            return entry.getReturnObj();
+         }
+         else {
+            throw e;
+         }
+      }
+      */
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME, e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
@@ -616,6 +637,18 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       try {
          this.clientQueue.put(entries, I_Queue.USE_PUT_INTERCEPTOR);
       }
+      /* is currently handled in ClientDispatchConnection.java:
+      catch (XmlBlasterException e) {
+         if (this.connectEntry != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
+            // Happens if the client was killed in the server by an admin task
+            // and has tried to reconnect with the old sessionId
+            connect(this.connectEntry);
+         }
+         else {
+            throw e;
+         }
+      }
+      */
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME, e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
@@ -895,9 +928,22 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          cleanupForNewServer();
       }
 
+      checkForNewConnectReturnQos();
 
       if (this.connectionListener != null) {
          this.connectionListener.reachedAlive(oldState, this);
+      }
+   }
+
+   /**
+    * The ClientDispatchConnection.java may have done a new connect()
+    */
+   private void checkForNewConnectReturnQos() {
+      String key = glob.getId() + "/ConnectReturnQos";
+      Object obj = glob.getObjectEntry(key); // New ConnectReturnQos ?
+      if (obj != null) {
+         this.connectReturnQos = (ConnectReturnQos)obj;
+         glob.removeObjectEntry(key);
       }
    }
 
