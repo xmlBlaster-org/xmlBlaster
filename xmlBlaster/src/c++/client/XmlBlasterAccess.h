@@ -72,6 +72,9 @@ typedef std::map<std::string, std::string> StringMap;
 
 /**
  * This is the main entry point for programmers to the C++ client library. 
+ * 
+ * Exactly one Global instance and one instance of this are a pair which can't be
+ * mixed with other instances. 
  */
 class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback,
                                     public org::xmlBlaster::util::ReferenceCounterBase
@@ -88,7 +91,7 @@ private:
    std::string serverNodeId_;
    org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** The return from connect() */
-   org::xmlBlaster::util::qos::ConnectReturnQos connectReturnQos_;
+   org::xmlBlaster::util::qos::ConnectReturnQos *connectReturnQos_;
    /** The dispatcher framework **/
    org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
    /** The callback server */
@@ -119,6 +122,8 @@ private:
     * Private assignment operator, clones are not supported
     */
    XmlBlasterAccess& operator =(const XmlBlasterAccess &);
+
+   void cleanup(bool doLock);
    
 public:
    /**
@@ -143,7 +148,8 @@ public:
    org::xmlBlaster::util::Global& getGlobal();
 
    /**
-    * Login to xmlBlaster
+    * Login to xmlBlaster. 
+    * Calling multiple times for changed connections should be possible but is not deeply tested.
     * @param qos Your configuration desire
     * @param client If not null callback messages will be routed to client.update()
     */
