@@ -98,88 +98,105 @@ abstract public class DispatchConnectionsHandler
       DispatchConnection reconfiguredCon = null;
       if (log.CALL) log.call(ME, "Initialize old connections=" + oldConSize +
                                  " new connections=" + ((cbAddr==null)?0:cbAddr.length));
-      synchronized (conList) {
-         
-         if (cbAddr == null || cbAddr.length==0) {
-            for (int ii=0; ii<conList.size(); ii++)
-               ((DispatchConnection)conList.get(ii)).shutdown();
+      ArrayList toShutdown = new ArrayList();
+      try {
+         synchronized (conList) {
+            
+            if (cbAddr == null || cbAddr.length==0) {
+               for (int ii=0; ii<conList.size(); ii++)
+                  ((DispatchConnection)conList.get(ii)).shutdown();
+               conList.clear();
+               updateState(null);
+               return;
+            }
+
+            ArrayList tmpList = (ArrayList)conList.clone(); // shallow
             conList.clear();
-            updateState(null);
-            return;
-         }
 
-         ArrayList tmpList = (ArrayList)conList.clone(); // shallow
-         conList.clear();
-
-         // shutdown callbacks not in use any more ...
-         for (int ii=0; ii<tmpList.size(); ii++) {
-            boolean found = false;
-            for (int jj=0; jj<cbAddr.length; jj++) {
-               if (((DispatchConnection)tmpList.get(ii)).getAddress().isSameAddress(cbAddr[jj])) {
-                  found = true;
-                  break;
+            // shutdown callbacks not in use any more ...
+            for (int ii=0; ii<tmpList.size(); ii++) {
+               boolean found = false;
+               for (int jj=0; jj<cbAddr.length; jj++) {
+                  if (((DispatchConnection)tmpList.get(ii)).getAddress().isSameAddress(cbAddr[jj])) {
+                     found = true;
+                     break;
+                  }
+               }
+               if (!found) {
+                  DispatchConnection con = (DispatchConnection)tmpList.get(ii);
+                  log.info(ME, "Shutting down callback connection '" + con.getName() + "' because of new configuration.");
+                  toShutdown.add(con);
+                  tmpList.remove(ii);
+                  ii--;
+                  //con.shutdown();
                }
             }
-            if (!found) {
-               DispatchConnection con = (DispatchConnection)tmpList.get(ii);
-               log.info(ME, "Shutting down callback connection '" + con.getName() + "' because of new configuration.");
-               con.shutdown();
-            }
-         }
 
-         // keep existing addresses, add the new ones ...
-         for (int ii=0; ii<cbAddr.length; ii++) {
-            boolean found = false;
-            for (int jj=0; jj<tmpList.size(); jj++) {
-               DispatchConnection tmpCon = (DispatchConnection)tmpList.get(jj);
-               if (cbAddr[ii].isSameAddress((tmpCon).getAddress())) {
-                  found = true;
-                  tmpCon.setAddress(cbAddr[ii]);
-                  conList.add(tmpCon); // reuse
-                  reconfiguredCon = tmpCon;
-                  break;
+            // keep existing addresses, add the new ones ...
+            for (int ii=0; ii<cbAddr.length; ii++) {
+               boolean found = false;
+               for (int jj=0; jj<tmpList.size(); jj++) {
+                  DispatchConnection tmpCon = (DispatchConnection)tmpList.get(jj);
+                  if (cbAddr[ii].isSameAddress((tmpCon).getAddress())) {
+                     found = true;
+                     tmpCon.setAddress(cbAddr[ii]);
+                     conList.add(tmpCon); // reuse
+                     reconfiguredCon = tmpCon;
+                     break;
+                  }
                }
-            }
-            if (!found) {
-               try {  // This creates a client or cb instance with its plugin
-                  DispatchConnection con = createDispatchConnection(cbAddr[ii]);
-                  try {
-                     conList.add(con);
-                     con.initialize();
+               if (!found) {
+                  try {  // This creates a client or cb instance with its plugin
+                     DispatchConnection con = createDispatchConnection(cbAddr[ii]);
+                     if (log.TRACE) log.trace(ME, "Create new DispatchConnection, retries=" + cbAddr[ii].getRetries() + " :" + cbAddr[ii].toXml());
+                     try {
+                        conList.add(con);
+                        con.initialize();
+                     }
+                     catch (XmlBlasterException e) {
+                        if (e.isCommunication()) { // Initial POLLING ?
+                           this.dispatchManager.toPolling(this.state);
+                           if (log.TRACE) log.trace(ME, "Load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                        }
+                        else {
+                           log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                           toShutdown.add(con);
+                           //con.shutdown();
+                           conList.remove(con);
+                        }
+                     }
                   }
                   catch (XmlBlasterException e) {
-                     if (e.isCommunication()) { // Initial POLLING ?
-                        this.dispatchManager.toPolling(this.state);
-                        if (log.TRACE) log.trace(ME, "Load " + cbAddr[ii].toString() + ": " + e.getMessage());
-                     }
-                     else {
-                        log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
-                        con.shutdown();
-                        conList.remove(con);
-                     }
+                     //log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                     throw e;
                   }
+                  catch (Throwable e) {
+                     log.error(ME, "Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
+                     throw XmlBlasterException.convert(glob, ME, "", e);
+                  }
+                  // TODO: cleanup if exception is thrown by createDispatchConnection()
                }
-               catch (XmlBlasterException e) {
-                  //log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
-                  throw e;
-               }
-               catch (Throwable e) {
-                  log.error(ME, "Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
-                  throw XmlBlasterException.convert(glob, ME, "", e);
-               }
-               // TODO: cleanup if exception is thrown by createDispatchConnection()
             }
+            
+            tmpList.clear();
+
+         } // synchronized
+      }
+      finally {
+         // We had the case where
+         //   java.net.PlainSocketImpl.socketClose0(Native Method)
+         // blocked for 20 min in LAST_ACK, so we shutdown outside of the synchronized now: 
+         for (int i=0;  i<toShutdown.size(); i++) {
+            DispatchConnection con = (DispatchConnection)toShutdown.get(i);
+            con.shutdown();
          }
-         
-         tmpList.clear();
 
-      } // synchronized
+         updateState(null);  // Redundant??
+         if (log.TRACE) log.trace(ME, "Reached state = " + state.toString());
 
-      updateState(null);  // Redundant??
-      if (log.TRACE) log.trace(ME, "Reached state = " + state.toString());
-
-      if (reconfiguredCon != null && /*reconfiguredCon.*/isPolling() && oldConSize > 0) {
-         this.glob.getPingTimer().addTimeoutListener(reconfiguredCon, 0L, "poll");  // force a reconnect try
+         if (reconfiguredCon != null && /*reconfiguredCon.*/isPolling() && oldConSize > 0) {
+            this.glob.getPingTimer().addTimeoutListener(reconfiguredCon, 0L, "poll");  // force a reconnect try
+         }
       }
    }
 
@@ -334,13 +351,13 @@ abstract public class DispatchConnectionsHandler
    private final void removeDispatchConnection(DispatchConnection con) {
       if (log.CALL) log.call(ME, "removeDispatchConnection(" + con.getName() + ") ...");
       synchronized (conList) {
-         try {
-            con.shutdown();
-         }
-         catch (XmlBlasterException ex) {
-            this.log.error(ME, "removeDispatchConnection() could not shutdown properly. " + ex.getMessage());
-         }
          conList.remove(con);
+      }
+      try {
+         con.shutdown();
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "removeDispatchConnection() could not shutdown properly. " + ex.getMessage());
       }
       if (log.TRACE) log.trace(ME, "Destroyed one callback connection, " + conList.size() + " remain.");
    }
