@@ -42,6 +42,7 @@ import com.sun.jmx.trace.Trace;
  * <td>Start the JDK 1.5 jconsole adaptor</td>
  * </tr>
  * </table>
+ * @see http://java.sun.com/developer/technicalArticles/J2SE/jmx.html
  */
 public class JmxWrapper
 {
@@ -119,6 +120,12 @@ public class JmxWrapper
 
 
       if (System.getProperty("com.sun.management.jmxremote") != null) {
+
+         // Create an RMI connector and start it
+         //JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:9999/server");
+         //JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
+         //cs.start();
+
          if (supportsJconsole) {
             log.info(ME, "'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole'");
             useJmx++;
