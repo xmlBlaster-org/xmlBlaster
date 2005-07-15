@@ -203,6 +203,11 @@ Supported tasks are
   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well
 
 </pre>
+  You can later check the shared libraries used like this:
+<pre>
+  tasklist /M        (Windows DOS box)
+  ldd PublishDemo    (Linux, Solaris)
+</pre>
    </description>
 
    <configuration where="client">
