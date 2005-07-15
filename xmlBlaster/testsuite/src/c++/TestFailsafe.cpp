@@ -29,9 +29,8 @@ private:
    PublishQos       *pubQos_;
    PublishKey       *pubKey_;
    Mutex            updateMutex_;
-   int              numOfUpdates_;
    bool             isConnected_;
-   Address          *address_;
+   int              numOfUpdates_;
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -44,9 +43,8 @@ public:
       subKey_         = 0;
       pubQos_         = 0;
       pubKey_         = 0;
-      address_        = 0;
-      numOfUpdates_   = 0;
       isConnected_    = false;
+      numOfUpdates_   = 0;
    }
 
 
@@ -59,7 +57,6 @@ public:
       delete subKey_;
       delete pubQos_;
       delete pubKey_;
-      delete address_;
       if (log_.trace()) log_.trace(ME, "destructor ended");
    }
 
@@ -82,17 +79,21 @@ public:
       isConnected_ = false;
    }
 
+   AddressBaseRef getAddress() {
+      AddressBaseRef address = new Address(global_);
+      address->setDelay(1000);
+      address->setPingInterval(1000);
+      return address;
+   }
+
    void setUp()
    {
       TestSuite::setUp();
       try {   
          connection_.initFailsafe(this);
 
-         address_  = new Address(global_);
-         address_->setDelay(1000);
-         address_->setPingInterval(1000);
          connQos_ = new ConnectQos(global_, "guy", "secret");
-         connQos_->setAddress(*address_);
+         connQos_->setAddress(getAddress());
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
          // Login to xmlBlaster, register for updates
          connRetQos_ = new ConnectReturnQos(connection_.connect(*connQos_, this));  
@@ -132,19 +133,22 @@ public:
          Thread::sleepSecs(2);
       }
       else {
-         log_.info(ME, "please stop the server now (I will wait 20 s)");
-         Thread::sleepSecs(20);
+         waitOnKeyboardHit("Please stop the server now and hit 'c' to continue >> ");
+         //log_.info(ME, "please stop the server now (I will wait 20 s)");
+         //Thread::sleepSecs(20);
       }
       log_.info(ME, "the communication is now down: ready to start the tests");
       ConnectQos connQos(global_);
-      connQos.setAddress(*address_);
+      connQos.setAddress(getAddress());
       SessionQos sessionQos(global_,"client/Fritz/-2");
       connQos.setSessionQos(sessionQos);
       bool wentInException = false;
+
       try {
          connection_.connect(connQos, this);
       }
-      catch (XmlBlasterException &/*ex*/) {
+      catch (XmlBlasterException &ex) {
+         log_.info(ME, "Exception is wanted: " + ex.toString());
          wentInException = true;
       }   
       assertEquals(log_, ME, true, wentInException, "reconnecting when communication down and not giving positive publicSessionId: exception must be thrown");
@@ -155,11 +159,13 @@ public:
       try {
          connection_.connect(connQos, this);
       }
-      catch (XmlBlasterException &/*ex*/) {
+      catch (XmlBlasterException &ex) {
+         log_.info(ME, "Exception is wanted: " + ex.toString());
          wentInException = true;
       }   
       assertEquals(log_, ME, true, wentInException, "reconnecting for the second time when communication down and not giving positive publicSessionId: exception must be thrown (again)");
 
+      log_.info(ME, "TESTING FAIL SAFE ...");
       sessionQos = SessionQos(global_,"client/Fritz/7");
       connQos.setSessionQos(sessionQos);
       wentInException = false;
@@ -168,7 +174,8 @@ public:
          string name = retQos.getSessionQos().getRelativeName();
          assertEquals(log_, ME, string("client/Fritz/7"), name, "checking that return qos has the correct sessionId");
       }
-      catch (XmlBlasterException &/*ex*/) {
+      catch (XmlBlasterException &ex) {
+         log_.error(ME, ex.toXml());
          wentInException = true;
       }   
       assertEquals(log_, ME, false, wentInException, "reconnecting when communication down and giving positive publicSessionId: no exception expected");
@@ -205,6 +212,9 @@ public:
             if (isConnected_) break;
             log_.info(ME, "please restart the server now");
             Thread::sleepSecs(2);
+            if (connection_.isAlive()) {
+               break;
+            }
          }
       }
 
@@ -303,6 +313,14 @@ public:
          log_.error(ME, string("exception occurred in tearDown. ") + ex.toXml());
          assert(0);
       }
+
+      delete connQos_; connQos_ = 0;
+      delete subQos_; subQos_ = 0;
+      delete subKey_; subKey_ = 0;
+      delete connRetQos_; connRetQos_ = 0;
+      delete pubQos_; pubQos_ = 0;
+      delete pubKey_; pubKey_ = 0;
+
       TestSuite::tearDown();
    }
 
