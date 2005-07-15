@@ -54,7 +54,14 @@ private:
    bool inSecurityService_;
    bool inServerRef_;
    bool inSession_;
+   bool inRefreshSession_;
+   bool inReconnected_;
+   bool inInstanceId_;
    bool inIsPersistent_; // QosData
+   bool inClientProperty_;
+   bool inQos_;
+
+   ClientProperty* clientProperty_;
 
    org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** when the current parsing point should be handled by another qos factory*/
@@ -65,7 +72,7 @@ private:
 public:
    ConnectQosFactory(org::xmlBlaster::util::Global& global);
 
-//   ~ConnectQosFactory();
+   ~ConnectQosFactory();
 
    /**
     * This characters emulates the java version but keep in mind that it is

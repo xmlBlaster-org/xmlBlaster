@@ -27,6 +27,7 @@ ConnectQosFactory::ConnectQosFactory(Global& global)
      addressFactory_(global),
 //     securityQos_(global),
 //     serverRef_(Global::getDefaultProtocol()), //"IOR"),
+     clientProperty_(0),
      connectQos_(global)
 {
    log_.call(ME, "constructor");
@@ -38,18 +39,25 @@ void ConnectQosFactory::prep()
    inSecurityService_ = false;
    inServerRef_       = false;
    inSession_         = false;
+   inRefreshSession_  = false;
+   inInstanceId_      = false;
+   inReconnected_     = false;
    inIsPersistent_    = false;
    serverRefType_     = "";
    subFactory_        = NULL;
+   inClientProperty_  = false;
+   inQos_             = false;
 }
-/*
+
 ConnectQosFactory::~ConnectQosFactory()
 {
    log_.call(ME, "destructor");
-   if (securityQos_ != NULL) delete securityQos_;
-   if (serverRef_ != NULL) delete serverRef_;
+   if (clientProperty_ != 0) {
+      delete(clientProperty_);
+   }
+   //if (securityQos_ != NULL) delete securityQos_;
+   //if (serverRef_ != NULL) delete serverRef_;
 }
-*/
 
 void ConnectQosFactory::characters(const string &ch)
 {
@@ -71,11 +79,13 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    //if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    if (name.compare("qos") == 0) {
+     inQos_ = true;
      connectQos_ = ConnectQos(global_); // kind of reset
      return;
    }
 
    if (name.compare("queue") == 0) {
+      if (!inQos_) return;
       subFactory_ = &queuePropertyFactory_;
    }
 
@@ -85,12 +95,14 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    }
 
    if (name.compare("securityService") == 0) {
+      if (!inQos_) return;
       inSecurityService_ = true;
       character_ = getStartElementAsString(name, attrs);
       return;
    }
 
    if (name.compare("session") == 0) {
+      if (!inQos_) return;
       inSession_ = true;
       sessionQosFactory_.reset();
    }
@@ -100,29 +112,59 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    }
 
    if (name.compare("ptp") == 0) {
+      if (!inQos_) return;
       connectQos_.setPtp(true);
       character_.erase();
       return;
    }
 
    if (name.compare("clusterNode") == 0) {
+      if (!inQos_) return;
       connectQos_.setClusterNode(true);
       character_.erase();
       return;
    }
 
+   if (name.compare("refreshSession") == 0) {
+      if (!inQos_) return;
+      inRefreshSession_ = true;
+      connectQos_.setRefreshSession(true);
+      character_.erase();
+      return;
+   }
+
    if (name.compare("duplicateUpdates") == 0) {
+      if (!inQos_) return;
       connectQos_.setDuplicateUpdates(true);
       character_.erase();
       return;
    }
 
+   if (name.compare("reconnected") == 0) {
+      if (!inQos_) return;
+      inReconnected_ = true;
+      connectQos_.setReconnected(true);
+      character_.erase();
+      return;
+   }
+
+   if (name.compare("instanceId") == 0) {
+      if (!inQos_) return;
+      inInstanceId_ = true;
+      character_.erase();
+      return;
+   }
+
    if (name.compare("persistent") == 0) {
+      if (!inQos_) return;
+      inIsPersistent_ = true;
       connectQos_.setPersistent(true);
+      character_.erase();
       return;
    }
 
    if (name.compare("serverRef") == 0) {
+      if (!inQos_) return;
       character_.erase();
       inServerRef_ = true;
       AttributeMap::const_iterator iter = attrs.begin();
@@ -135,11 +177,20 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    }
    
    if (name.compare("clientProperty") == 0) {
+      if (!inQos_) return;
+      inClientProperty_ = true;
       character_.erase();
+      string name;
       AttributeMap::const_iterator iter = attrs.find("name");
-      if (iter != attrs.end()) clientPropertyKey_ = (*iter).second;
+      if (iter != attrs.end()) name = (*iter).second;
+      string encoding;
+      iter = attrs.find("encoding");
+      if (iter != attrs.end()) encoding = (*iter).second;
+      string type;
+      iter = attrs.find("type");
+      if (iter != attrs.end()) type = (*iter).second;
+      clientProperty_ = new ClientProperty(true, name, type, encoding);
    }
-   
 }
 
 void ConnectQosFactory::endElement(const string &name) {
@@ -165,6 +216,7 @@ void ConnectQosFactory::endElement(const string &name) {
    }
 
    if (name.compare("qos") == 0) {
+     inQos_ = false;
      character_.erase();
      return;
    }
@@ -196,18 +248,37 @@ void ConnectQosFactory::endElement(const string &name) {
       return;
    }
 
+   if(name.compare("refreshSession") == 0) {
+      inRefreshSession_ = false;
+      connectQos_.setRefreshSession(StringTrim::isTrueTrim(character_));
+      character_.erase();
+      return;
+   }
+
    if (name.compare("duplicateUpdates") == 0) {
       connectQos_.setDuplicateUpdates(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
+   if(name.compare("instanceId") == 0) {
+      inInstanceId_ = false;
+      StringTrim::trim(character_);
+      connectQos_.setInstanceId(character_);
+      character_.erase();
+      return;
+   }
+
+   if(name.compare("reconnected") == 0) {
+      inReconnected_ = false;
+      connectQos_.setReconnected(StringTrim::isTrueTrim(character_));
+      character_.erase();
+      return;
+   }
+
    if(name.compare("persistent") == 0) {
       inIsPersistent_ = false;
-      StringTrim::trim(character_);
-      if (!character_.empty())
-         if (character_ == "true") connectQos_.setPersistent(true);
-         else  connectQos_.setPersistent(false);
+      connectQos_.setPersistent(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
@@ -226,7 +297,11 @@ void ConnectQosFactory::endElement(const string &name) {
    }
 
    if (name.compare("clientProperty") == 0) {
-      connectQos_.addClientProperty(clientPropertyKey_, character_);
+      inClientProperty_ = false;
+      clientProperty_->setValueRaw(character_);
+      connectQos_.addClientProperty(*clientProperty_);
+      delete clientProperty_;
+      clientProperty_ = 0;
       character_.erase();
    }
 
@@ -239,6 +314,8 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    // this should be synchronized here ....
 //   userId_ = "";
    prep();
+   delete clientProperty_;
+   clientProperty_ = 0;
    init(qos);
 //   ConnectQosData data(global_);
 //   connectQos_.setSecurityQos(securityQos_);

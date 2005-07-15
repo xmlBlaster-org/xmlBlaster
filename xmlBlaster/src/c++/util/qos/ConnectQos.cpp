@@ -36,7 +36,10 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
       clientProperties_()
 {
    clusterNode_      = false;
+   refreshSession_   = false;
    duplicateUpdates_ = true;
+   reconnected_      = false;
+   instanceId_       = global_.getInstanceId();
    persistent_       = false;
    if (user=="") { // Copy env setting to SecurityQos
       securityQos_.setUserId(sessionQos_->getSessionName()->getSubjectId());
@@ -72,10 +75,7 @@ bool ConnectQosData::getPtp() const
 
 const string& ConnectQosData::getBoolAsString(bool val) const
 {
-   static const string _TRUE = "true";
-   static const string _FALSE = "false";
-   if (val) return _TRUE;
-   else return _FALSE;
+   return global_.getBoolAsString(val);
 }
 
 void ConnectQosData::setPtp(bool ptp)
@@ -141,6 +141,16 @@ bool ConnectQosData::isClusterNode() const
    return clusterNode_;
 }
 
+void ConnectQosData::setRefreshSession(bool refreshSession)
+{
+   refreshSession_ = refreshSession;
+}
+
+bool ConnectQosData::isRefreshSession() const
+{
+   return refreshSession_;
+}
+
 void ConnectQosData::setDuplicateUpdates(bool duplicateUpdates)
 {
    duplicateUpdates_ = duplicateUpdates;
@@ -171,16 +181,16 @@ ServerRef ConnectQosData::getServerRef()
 
 // methods for queues and addresses ...
 
-void ConnectQosData::setAddress(const Address& address)
+void ConnectQosData::setAddress(const AddressBaseRef& address)
 {
    getClientQueueProperty().setAddress(address);
    //addresses_.insert(addresses_.begin(), address);
 }
 
-Address& ConnectQosData::getAddress()
+AddressBaseRef ConnectQosData::getAddress()
 {
-   org::xmlBlaster::util::qos::address::AddressBase &ab = getClientQueueProperty().getCurrentAddress();
-   return reinterpret_cast<Address&>(ab);
+   return getClientQueueProperty().getCurrentAddress();
+   //return reinterpret_cast<Address&>(ab);
    /*
    if (addresses_.empty()) {
       setAddress(Address(global_));
@@ -189,16 +199,17 @@ Address& ConnectQosData::getAddress()
    */
 }
 
-void ConnectQosData::addCbAddress(const CallbackAddress& cbAddress)
+void ConnectQosData::addCbAddress(const AddressBaseRef& cbAddress)
 {
    sessionCbQueueProperty_.setCallbackAddress(cbAddress);
    //cbAddresses_.insert(cbAddresses_.begin(), cbAddress);
 }
 
-CallbackAddress& ConnectQosData::getCbAddress()
+AddressBaseRef ConnectQosData::getCbAddress()
 {
-   org::xmlBlaster::util::qos::address::AddressBase &ab = sessionCbQueueProperty_.getCurrentCallbackAddress();
-   return reinterpret_cast<CallbackAddress&>(ab);//sessionCbQueueProperty_.getCurrentCallbackAddress();
+   return sessionCbQueueProperty_.getCurrentCallbackAddress();
+   //org::xmlBlaster::util::qos::address::AddressBaseRef ab = sessionCbQueueProperty_.getCurrentCallbackAddress();
+   //return ab; reinterpret_cast<CallbackAddress&>(ab);//sessionCbQueueProperty_.getCurrentCallbackAddress();
    //if (cbAddresses_.empty()) {
    //   addCbAddress(CallbackAddress(global_));
    //}
@@ -228,11 +239,35 @@ CbQueueProperty& ConnectQosData::getSessionCbQueueProperty()
    return sessionCbQueueProperty_;
 }
 
+void ConnectQosData::addClientProperty(const ClientProperty& clientProperty)
+{
+   clientProperties_.insert(ClientPropertyMap::value_type(clientProperty.getName(), clientProperty));   
+}
+
 const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() const
 {
    return clientProperties_;
 }
 
+bool ConnectQosData::isReconnected() const
+{
+   return reconnected_;
+}
+
+void ConnectQosData::setReconnected(bool reconnected)
+{
+   reconnected_ = reconnected;
+}
+
+std::string ConnectQosData::getInstanceId() const
+{
+   return instanceId_;
+}
+
+void ConnectQosData::setInstanceId(std::string instanceId)
+{
+   instanceId_ = instanceId;
+}
 
 /**
  * @param persistent mark a message as persistent
@@ -283,8 +318,17 @@ string ConnectQosData::toXml(const string& extraOffset) const
    if (isClusterNode())
       ret += offset2 + string("<clusterNode>") + getBoolAsString(isClusterNode()) + string("</clusterNode>");
 
+   if (isRefreshSession())
+      ret += offset2 + string("<refreshSession>") + getBoolAsString(isRefreshSession()) + string("</refreshSession>");
+
    if (isDuplicateUpdates() == false)
       ret += offset2 + string("<duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
+
+   if (isReconnected())
+      ret += offset + " <reconnected/>";
+
+   if (getInstanceId().length() > 0)
+      ret += offset + " <instanceId>" + getInstanceId() + "</instanceId>";
 
    if (isPersistent())
       ret += offset + " <persistent/>";

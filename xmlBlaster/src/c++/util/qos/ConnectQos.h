@@ -25,33 +25,12 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <vector>
 #include <map>
 
-/**
- * <qos>\n") +
- *    <securityService type='htpasswd' version='1.0'>
- *      <![CDATA[
- *      <user>joe</user>
- *      <passwd>secret</passwd>
- *      ]]>
- *    </securityService>
- *    <session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
- *    <ptp>true</ptp>
- *    <!-- The client side queue: -->
- *    <queue relating='client' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='exception'>
- *       <address type='IOR' sessionId='secretTokenForUpdateCheckOnClientSide'>
- *          IOR:10000010033200000099000010....
- *       </address>
- *    </queue>
- *    <!-- The server side callback queue: -->
- *    <queue relating='callback' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'>
- *       <callback type='IOR' sessionId='secretTokenForUpdateCheckOnClientSide'>
- *          IOR:10000010033200000099000010....
- *          <burstMode collectTime='400' />
- *       </callback>
- *    </queue>
- * </qos>
- */
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+/**
+ * Holds the connect() QoS XML markup. 
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
+ */
 class Dll_Export ConnectQosData
 {
 
@@ -64,7 +43,10 @@ private:
    mutable org::xmlBlaster::util::qos::SessionQosRef  sessionQos_;
    bool        ptp_;
    bool        clusterNode_;
+   bool        refreshSession_;
    bool        duplicateUpdates_;
+   bool        reconnected_;
+   std::string instanceId_;
    bool        persistent_;
 
    //std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
@@ -90,6 +72,7 @@ private:
       sessionQos_             = r;
       ptp_                    = data.ptp_;
       clusterNode_            = data.clusterNode_;
+      refreshSession_         = data.refreshSession_;
       duplicateUpdates_       = data.duplicateUpdates_;
       serverReferences_       = data.serverReferences_;
       //addresses_              = data.addresses_;
@@ -97,6 +80,8 @@ private:
       clientQueueProperties_  = data.clientQueueProperties_;
       sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
       clientProperties_       = data.clientProperties_;
+      reconnected_            = data.reconnected_;
+      instanceId_             = data.instanceId_;
       persistent_             = data.persistent_;
    }
 
@@ -121,12 +106,35 @@ public:
    org::xmlBlaster::authentication::SecurityQos& getSecurityQos() const;
    void setClusterNode(bool clusterNode);
    bool isClusterNode() const;
+   /**
+    * Extend the session lifetime. 
+    * @param refreshSession true: The client notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   void setRefreshSession(bool refreshSession);
+   bool isRefreshSession() const;
    void setDuplicateUpdates(bool duplicateUpdates);
    bool isDuplicateUpdates() const;
    /**
     * Returned in ConnectReturnQos from xmlBlaster showing all access addresses. 
     */
    const std::vector<ServerRef> getServerReferences() const;
+
+   /**
+    * Used for ConnetReturnQos only. 
+    * @return true A client has reconnected to an existing session
+    */
+   bool isReconnected() const;
+   void setReconnected(bool reconnected);
+
+   /**
+    * Unique id of the xmlBlaster server (or a client), changes on each restart. 
+    * If 'node/heron' is restarted, the instanceId changes.
+    * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
+    */
+   std::string getInstanceId() const;
+   void setInstanceId(std::string instanceId);
+
    bool isPersistent() const;
    void setPersistent(bool persistent);
    
@@ -139,21 +147,21 @@ public:
    std::string toXml(const std::string& extraOffset="") const;
 
    // methods for queues and addresses ...
+
    /**
-    * @param address We take a copy of this so you can destroy your address after setting.
-    *                Note that if you work on your address object later it does not change
-    *                the address in ConnectQos
+    * @param address You need to create the address with 'new Address()', we take care to delete it.
+    *                Don't pass any Address instance from the stack.
     */
-   void setAddress(const org::xmlBlaster::util::qos::address::Address& address);
-   org::xmlBlaster::util::qos::address::Address& getAddress();
+   void setAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& address);
+   org::xmlBlaster::util::qos::address::AddressBaseRef getAddress();
 
    /**
     * @param cbAddress We take a copy of this so you can destroy your address after setting.
     *                Note that if you work on your address object later it does not change
     *                the address in ConnectQos
     */
-   void addCbAddress(const org::xmlBlaster::util::qos::address::CallbackAddress& cbAddress);
-   org::xmlBlaster::util::qos::address::CallbackAddress& getCbAddress();
+   void addCbAddress(const org::xmlBlaster::util::qos::address::AddressBaseRef& cbAddress);
+   org::xmlBlaster::util::qos::address::AddressBaseRef getCbAddress();
 
    /**
     * @param prop We take a copy of this so you can destroy your property after setting.
@@ -186,6 +194,13 @@ public:
    std::string dumpClientProperties(const std::string& extraOffset, bool clearText=false) const;
 
    /**
+    * Add a client property. 
+    * @param clientProperty
+    * @see ClientProperty
+    */
+   void addClientProperty(const ClientProperty& clientProperty);
+
+   /**
     * Add a client property key and value
     * @param name
     * @param value "vector<unsigned char>" and "unsigned char *" is treated as a blob
@@ -210,7 +225,7 @@ public:
 
 template <typename T_VALUE> void ConnectQosData::addClientProperty(
                const std::string& name, const T_VALUE& value,
-					const std::string& type, const std::string& encoding)
+                                        const std::string& type, const std::string& encoding)
 {
    org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value, type, encoding);
    clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
