@@ -24,6 +24,7 @@ Changes for xxxxx [2005-xx-xx]
    - Cleanup of bool converter methods and "true"/"false" usage
      "1", "true" and "TRUE" are evaluated to true.
    - Changed Timeout::addOrRefreshTimeoutListener() to ignore key<=0
+   - Bugfix for method Timeout::refreshTimeoutListener()
 
  o #13428-13432 ConnectReturnQos
    Added instanceId which is unique when restarting the server
