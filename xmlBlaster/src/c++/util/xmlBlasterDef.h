@@ -41,8 +41,13 @@ Version:   $Id$
 # endif
 #endif
 
+#include <string> // need for XMLBLASTER_TRUE/XMLBLASTER_FALSE, shall we replace it by defines and throw out this include?
+
 // definition for the timestamps (see xmlBlaster/src/c/util/basicDefs.h)
 namespace org { namespace xmlBlaster { namespace util {
+
+static const std::string XMLBLASTER_TRUE("true");
+static const std::string XMLBLASTER_FALSE("false");
 
 typedef int64_t Timestamp;
 
