@@ -75,48 +75,48 @@ public class HandleClient extends Executor implements Runnable
    /**
     * Close connection for one specific client
     */
-   synchronized public void shutdown() {
+   public void shutdown() {
       if (!running)
          return;
+      synchronized (this) {
+         if (log.TRACE) log.trace(ME, "Shutdown cb connection to " + loginName + " ...");
+         if (cbKey != null)
+            driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
-      if (log.TRACE) log.trace(ME, "Shutdown cb connection to " + loginName + " ...");
-      if (cbKey != null)
-         driver.getGlobal().removeNativeCallbackDriver(cbKey);
+         running = false;
 
-      running = false;
+         driver.removeClient(this);
 
-      driver.removeClient(this);
+         if (sessionId != null) {
+            String tmp = sessionId;
+            sessionId = null;
+            try { // check first if session is in shutdown process already (avoid recursive disconnect()):
+               if (authenticate.sessionExists(sessionId))
+                  authenticate.disconnect(driver.getAddressServer(), tmp, "<qos/>");
+            }
+            catch(Throwable e) {
+               log.warn(ME, e.toString());
+               e.printStackTrace();
+            }
+         }
+         if (responseListenerMap.size() > 0) {
+            java .util.Iterator iterator = responseListenerMap.keySet().iterator();
+            StringBuffer buf = new StringBuffer(256);
+            while (iterator.hasNext()) {
+               if (buf.length() > 0) buf.append(", ");
+               String key = (String)iterator.next();
+               buf.append(key);
+            }
+            log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
+            responseListenerMap.clear();
+         }
 
+         freePendingThreads();
+      }
       closeSocket();
-
-      if (sessionId != null) {
-         String tmp = sessionId;
-         sessionId = null;
-         try { // check first if session is in shutdown process already (avoid recursive disconnect()):
-            if (authenticate.sessionExists(sessionId))
-               authenticate.disconnect(driver.getAddressServer(), tmp, "<qos/>");
-         }
-         catch(Throwable e) {
-            log.warn(ME, e.toString());
-            e.printStackTrace();
-         }
-      }
-      if (responseListenerMap.size() > 0) {
-         java .util.Iterator iterator = responseListenerMap.keySet().iterator();
-         StringBuffer buf = new StringBuffer(256);
-         while (iterator.hasNext()) {
-            if (buf.length() > 0) buf.append(", ");
-            String key = (String)iterator.next();
-            buf.append(key);
-         }
-         log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
-         responseListenerMap.clear();
-      }
-
-      freePendingThreads();
    }
 
-   private synchronized void closeSocket() {
+   private void closeSocket() {
       try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
@@ -160,9 +160,13 @@ public class HandleClient extends Executor implements Runnable
          if (xmlBlasterException.isUser())
             throw xmlBlasterException;
 
-         // The SOCKET protocol plugin throws this when a client has shutdown its callback server
-         if (xmlBlasterException.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE)
+         // and server side communication problems (how to assure if from server?)
+         if (xmlBlasterException.isCommunication() && xmlBlasterException.isServerSide())
             throw xmlBlasterException;
+
+         // The SOCKET protocol plugin throws this when a client has shutdown its callback server
+         //if (xmlBlasterException.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE)
+         //   throw xmlBlasterException;
 
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "Callback of " + msgArr.length + " messages failed", xmlBlasterException);
@@ -198,7 +202,7 @@ public class HandleClient extends Executor implements Runnable
       }
    }
 
-   synchronized public void handleMessage(Parser receiver, boolean udp) {
+   public void handleMessage(Parser receiver, boolean udp) {
       try {
 
          if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
