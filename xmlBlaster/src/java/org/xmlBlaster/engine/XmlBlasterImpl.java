@@ -28,6 +28,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -96,7 +97,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // Invoke xmlBlaster
          String ret = requestBroker.subscribe(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), subscribeQos);
 
-         sessionInfo.getDispatchManager().getDispatchStatistic().incrNumSubscribe(1);
+
+         sessionInfo.getDispatchStatistic().incrNumSubscribe(1);
          
          // export (encrypt) return value
          return sessionInfo.getSecuritySession().exportMessage(ret);
@@ -130,7 +132,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // Invoke xmlBlaster
          String [] retArr = requestBroker.unSubscribe(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), unSubscribeQosServer);
 
-         sessionInfo.getDispatchManager().getDispatchStatistic().incrNumUnSubscribe(1);
+         sessionInfo.getDispatchStatistic().incrNumUnSubscribe(1);
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
@@ -161,7 +163,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          
          String ret = requestBroker.publish(sessionInfo, msgUnit);
 
-         sessionInfo.getDispatchManager().getDispatchStatistic().incrNumPublish(1);
+         sessionInfo.getDispatchStatistic().incrNumPublish(1);
 
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
@@ -185,11 +187,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          I_Session sec = sessionInfo.getSecuritySession();
 
          // How to guarantee complete transaction?
+         DispatchStatistic statistic = sessionInfo.getDispatchStatistic();
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitArr[ii], MethodName.PUBLISH);
             String ret = requestBroker.publish(sessionInfo, msgUnit);
-            sessionInfo.getDispatchManager().getDispatchStatistic().incrNumPublish(1);
+            statistic.incrNumPublish(1);
             returnArr[ii] = sec.exportMessage(ret);
          }
 
@@ -238,7 +241,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // Invoke xmlBlaster
          String [] retArr = requestBroker.erase(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), eraseQosServer);
 
-         sessionInfo.getDispatchManager().getDispatchStatistic().incrNumErase(1);
+         sessionInfo.getDispatchStatistic().incrNumErase(1);
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
@@ -275,7 +278,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // Invoke xmlBlaster
          MsgUnit[] msgUnitArr = requestBroker.get(sessionInfo, (QueryKeyData)msgUnit.getKeyData(), getQosServer);
 
-         sessionInfo.getDispatchManager().getDispatchStatistic().incrNumGet(1);
+         sessionInfo.getDispatchStatistic().incrNumGet(1);
 
          // export (encrypt) return value
          MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgUnitArr.length];

@@ -2331,7 +2331,21 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return this.distributor;
    }
 
-   // JMX
+   /** JMX */
+   public final String[] getSubscribers() {
+      SubscriptionInfo[] infoArr = getSubscriptionInfoArr();
+      
+      if (infoArr.length < 1)
+         return new String[] { "This topic has currently no subscriber" };
+
+      String[] ret = new String[infoArr.length];
+      for (int i=0; i<infoArr.length; i++) {
+         ret[i] = infoArr[i].getSessionName();
+      }
+      return ret;
+   }
+
+   /** JMX */
    public final String eraseTopic() throws XmlBlasterException {
       EraseKey ek = new EraseKey(glob, uniqueKey);
       EraseQos eq = new EraseQos(glob);

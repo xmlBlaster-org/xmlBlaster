@@ -39,6 +39,11 @@ public interface I_AdminTopic {
    public boolean isSoftErased();
    public boolean isDead();
    public java.lang.String getStateStr();
+   /**
+    * Get a list of all subscribers of this topic. 
+    * @return array with absolute session names
+    */
+   public String[] getSubscribers();
    public java.lang.String toXml();
    /**
     * Invoke operation to erase the topic

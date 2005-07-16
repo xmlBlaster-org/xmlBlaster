@@ -35,6 +35,7 @@ import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 //import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.engine.MsgErrorHandler;
@@ -94,6 +95,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private final MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
    private DispatchManager dispatchManager;
+   /** Statistic about send/received messages, can be null if there is a DispatchManager around */
+   private DispatchStatistic statistic;
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
@@ -320,6 +323,23 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     */
    public final DispatchManager getDispatchManager() {
       return this.dispatchManager;
+   }
+
+   /**
+    * @return null if no callback is configured
+    */
+   public final DispatchStatistic getDispatchStatistic() {
+      if (this.statistic == null) {
+         synchronized (this) {
+            if (this.statistic == null) {
+               if (this.dispatchManager != null)
+                  this.statistic = this.dispatchManager.getDispatchStatistic();
+               else
+                  this.statistic = new DispatchStatistic();
+            }
+         }
+      }
+      return this.statistic;
    }
 
    /**
@@ -574,7 +594,13 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final String getConnectionState() {
-      return getDispatchManager().getDispatchConnectionsHandler().getState().toString();
+      if (this.dispatchManager != null) {
+         return this.dispatchManager.getDispatchConnectionsHandler().getState().toString();
+      }
+      else {
+         return "UNDEF";
+      }
+      
    }
 
    public final String getLoginDate() {
@@ -594,38 +620,31 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final long getNumPublish() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumPublish();
+      return getDispatchStatistic().getNumPublish();
    }
 
    public final long getNumSubscribe() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumSubscribe();
+      return getDispatchStatistic().getNumSubscribe();
    }
 
    public final long getNumUnSubscribe() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumUnSubscribe();
+      return getDispatchStatistic().getNumUnSubscribe();
    }
 
    public final long getNumGet() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumGet();
+      return getDispatchStatistic().getNumGet();
    }
 
    public final long getNumErase() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumErase();
+      return getDispatchStatistic().getNumErase();
    }
 
    public final long getNumUpdateOneway() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumUpdateOneway();
+      return getDispatchStatistic().getNumUpdateOneway();
    }
 
    public final long getNumUpdate() {
-      if (this.dispatchManager == null) return 0L;
-      return this.dispatchManager.getDispatchStatistic().getNumUpdate();
+      return getDispatchStatistic().getNumUpdate();
    }
 
    public final long getCbQueueNumMsgs() {
@@ -695,11 +714,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final String[] unSubscribe(String url, String qos) throws XmlBlasterException {
-      if (url == null) {
-         String[] ret = new String[1];
-         ret[0] = "Please pass a valid topic oid";
-         return ret;
-      }
+      if (url == null)
+         return new String[] { "Please pass a valid topic oid" };
 
       log.info(ME, "Administrative unSubscribe() of '" + url + "' for client '" + getId() + "'");
       UnSubscribeKey uk = new UnSubscribeKey(glob, url);
@@ -713,6 +729,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
       String[] ret = glob.getRequestBroker().unSubscribe(this, uk.getData(), uqs);
 
+      if (ret.length == 0)
+         return new String[] { "Unsubscribe of '" + url + "' for client '" + getId() + "' did NOT match any subscription" };
+
       for (int i=0; i<ret.length; i++) {
          UnSubscribeReturnQos tmp = new UnSubscribeReturnQos(glob, ret[i]);
          ret[i] = "Unsubscribe '" + tmp.getSubscriptionId() + "' state is " + tmp.getState();
@@ -720,11 +739,6 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
             ret[i] += " " + tmp.getStateInfo();
       }
 
-      if (ret.length == 0) {
-         ret = new String[1];
-         ret[0] = "Unsubscribe of '" + url + "' for client '" + getId() + "' did NOT match any subscription";
-      }
-      
       return ret;
    }
 
@@ -805,11 +819,16 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @param dispatchActive
     */
    public void setDispatcherActive(boolean dispatcherActive) {
-      this.dispatchManager.setDispatcherActive(dispatcherActive);
+      if (this.dispatchManager != null) {
+         this.dispatchManager.setDispatcherActive(dispatcherActive);
+      }
    }
    
    public boolean getDispatcherActive() {
-      return this.dispatchManager.isDispatcherActive();
+      if (this.dispatchManager != null) {
+         return this.dispatchManager.isDispatcherActive();
+      }
+      return false;
    }
 
    /**
