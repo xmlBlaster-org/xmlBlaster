@@ -72,6 +72,9 @@ void XmlHandlerBase::parse(const string &xmlData)
    catch (XmlBlasterException& ex) {
       throw ex;
    }
+	catch (std::exception e) {
+     throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: ") + e.what());
+	}
    catch (...) {
      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: unknown exception"));
    }
