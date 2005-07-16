@@ -813,8 +813,10 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
 
          <tr>
             <td>plugin/socket/SoLingerTimeout</td>
-            <td>60000 (one minute)</td>
+            <td>0</td>
             <td>If the socket is closed, how long shall we try to deliver unsent data from the socket stack.
+            Please leave this value 0, as other settings could block the socket close() operation
+            in the kernel (usually the timeout is 10-20 minutes, and your specific setting is ignored).
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
