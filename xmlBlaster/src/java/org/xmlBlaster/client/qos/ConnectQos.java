@@ -422,8 +422,8 @@ public final class ConnectQos
    }
    
    /**
-    * Gets the persistent flag for this subscription. If this flag is
-    * set, the subscription will persit a server crash.
+    * Gets the persistent flag. If this flag is
+    * set, the session will persist a server crash.
     * @return true if persistent false otherwise.
     */
    public boolean getPersistent() {
