@@ -137,10 +137,8 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay)
       Lock lock(invocationMutex_);
       TimeoutMap::iterator iter = timeoutMap_.find(key);
       if (iter == timeoutMap_.end()) {
-          // throw the exception here ...
-         // throw XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
-         log_.error(ME, "The timeout handle '" + lexical_cast<std::string>(key) + "' is unknown, no timeout refresh done");
-         return -1; // temporarly. Change this once exception is thrown
+         if (log_.trace()) log_.trace(ME, "The timeout handle '" + lexical_cast<std::string>(key) + "' is unknown, no timeout refresh done");
+         return -1;
       }
       callback = (*iter).second.first;
       userData = (*iter).second.second;
@@ -153,7 +151,9 @@ Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, 
 {
    if (log_.call()) log_.call(ME, " addOrRefreshTimeoutListener");
    if (key <= 0) return addTimeoutListener(listener, delay, userData);
-   return refreshTimeoutListener(key, delay);
+   key = refreshTimeoutListener(key, delay);
+   if (key <= 0) return addTimeoutListener(listener, delay, userData);
+   return key;
 }
 
 void Timeout::removeTimeoutListener(Timestamp key) 

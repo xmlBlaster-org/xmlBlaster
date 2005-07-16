@@ -170,6 +170,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
     *             I_Timeout.timeout().
     * @return     A handle which you can use to unregister with 
     *             removeTimeoutListener().
+    * @throws     XmlBlasterException if timer is not started
     */
     org::xmlBlaster::util::Timestamp addTimeoutListener(I_Timeout *listener, long delay, void *userData);
 
@@ -190,17 +191,17 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
     * @param      delay 
     *             The timeout in milliseconds measured from now.
     * @return     A new handle which you can use to unregister with 
-    *             removeTimeoutListener()
-    * @exception  org::xmlBlaster::util::XmlBlasterException 
-    *             if key is null or unknown or invalid because timer elapsed already
+    *             removeTimeoutListener().
+    *             -1: if key is null or unknown or invalid because timer elapsed already
+    * @throws     XmlBlasterException if key<0 or timer is not started
     */
-    org::xmlBlaster::util::Timestamp refreshTimeoutListener(org::xmlBlaster::util::Timestamp key, long delay); 
-   // throws org::xmlBlaster::util::XmlBlasterException
+   org::xmlBlaster::util::Timestamp refreshTimeoutListener(org::xmlBlaster::util::Timestamp key, long delay); 
 
    /**
-    * Checks if key is null -> addTimeoutListener else refreshTimeoutListener() 
+    * Checks if key is 0 -> addTimeoutListener else refreshTimeoutListener() 
     * in a thread save way. 
     * @param key If <= 0 we add a new timer, else lookup given key and refresh
+    * @throws     XmlBlasterException if timer is not started
     */
     org::xmlBlaster::util::Timestamp addOrRefreshTimeoutListener(I_Timeout *listener, 
                                                   long delay, void *userData, org::xmlBlaster::util::Timestamp key);
