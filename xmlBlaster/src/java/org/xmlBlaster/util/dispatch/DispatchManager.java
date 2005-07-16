@@ -187,7 +187,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    /**
     * @return The handler of all callback plugins, is never null
     */
-   public DispatchConnectionsHandler getDispatchConnectionsHandler() {
+   public final DispatchConnectionsHandler getDispatchConnectionsHandler() {
       return this.dispatchConnectionsHandler;
    }
 
