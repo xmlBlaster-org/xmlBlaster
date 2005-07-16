@@ -44,6 +44,32 @@ public interface I_AdminTopic {
     * @return array with absolute session names
     */
    public String[] getSubscribers();
+   /**
+    * Invoke operation to unSubscribe one client by index of getSubscribers() listed. 
+    * Note: The subscriber does not get any notification that his subscription is lost.
+    * @param index 0 will kill the first listed subscribing client, 1 the second and so forth
+    * @param qos The qos XML string (e.g. "" or "<qos/>")
+    * @return The status string
+    */
+   public String[] unSubscribeByIndex(int index, String qos) throws XmlBlasterException;
+   /**
+    * Invoke operation to unSubscribe one client by index of getSubscribers() listed. 
+    * Note: The subscriber does not get any notification that his subscription is lost.
+    * @param sessionName You can specify a relative name "client/joe/1" or an absolute name "/node/heron/client/joe/1"
+    * @param qos The qos XML string (e.g. "" or "<qos/>")
+    * @return The status string
+    */
+   public String[] unSubscribeBySessionName(String sessionName, String qos) throws XmlBlasterException;
+   /**
+    * Invoke operation to unSubscribe all clients. 
+    * Note: The subscribers don't get any notification that their subscription is lost.
+    * @param qos The qos XML string (e.g. "" or "<qos/>")
+    * @return The status string
+    */
+   public String[] unSubscribeAll(String qos) throws XmlBlasterException;
+   /**
+    * Get status dump. 
+    */
    public java.lang.String toXml();
    /**
     * Invoke operation to erase the topic

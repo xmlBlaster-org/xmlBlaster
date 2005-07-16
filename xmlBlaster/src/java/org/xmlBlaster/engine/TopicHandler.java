@@ -65,6 +65,11 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+
 
 /**
  * Handles all MsgUnit entries of same oid and its subscribers. 
@@ -2336,13 +2341,97 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       SubscriptionInfo[] infoArr = getSubscriptionInfoArr();
       
       if (infoArr.length < 1)
-         return new String[] { "This topic has currently no subscriber" };
+         return new String[0]; // { "This topic has currently no subscriber" };
 
       String[] ret = new String[infoArr.length];
       for (int i=0; i<infoArr.length; i++) {
          ret[i] = infoArr[i].getSessionName();
       }
       return ret;
+   }
+
+   public final String[] unSubscribeByIndex(int index, String qos) throws XmlBlasterException {
+      SubscriptionInfo[] infoArr = getSubscriptionInfoArr();
+      
+      if (infoArr.length < 1)
+         return new String[] { "This topic has currently no subscriber" };
+
+      if (index < 0 || index >= infoArr.length) {
+         return new String[] { "Please choose an index between 0 and " + (infoArr.length-1) + " (inclusiv)" };
+      }
+
+      log.info(ME, "Administrative unSubscribe() of client '" + infoArr[index].getSessionName() + "' for topic '" + getId() + "'");
+      return unSubscribe(infoArr[index].getSessionInfo(), qos);
+   }
+
+   public final String[] unSubscribeBySessionName(String sessionName, String qos) throws XmlBlasterException {
+      SubscriptionInfo[] infoArr = getSubscriptionInfoArr();
+      
+      if (infoArr.length < 1)
+         return new String[] { "This topic has currently no subscriber" };
+
+      SessionInfo sessionInfo = null;
+      SessionName wanted = new SessionName(glob, sessionName);
+      for (int i=0; i<infoArr.length; i++) {
+         SessionName tmp = infoArr[i].getSessionInfo().getSessionName();
+         if (wanted.equalsRelative(tmp) || wanted.equalsAbsolute(tmp)) {
+            sessionInfo = infoArr[i].getSessionInfo();
+            break;
+         }
+      }
+
+      if (sessionInfo == null)
+         return new String[] { "Unsubscribe of client '" + sessionName + "' failed, it did NOT match any client" };
+
+      log.info(ME, "Administrative unSubscribe() of client '" + sessionName + "' for topic '" + getId() + "'");
+      return unSubscribe(sessionInfo, qos);
+   }
+   
+   /** private helper to unSubscribe */
+   private String[] unSubscribe(SessionInfo sessionInfo, String qos) throws XmlBlasterException {
+      String sessionName = sessionInfo.getSessionName().getAbsoluteName();
+      UnSubscribeKey uk = new UnSubscribeKey(glob, uniqueKey);
+      UnSubscribeQos uq;
+      if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String"))
+         uq = new UnSubscribeQos(glob);
+      else
+         uq = new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
+      UnSubscribeQosServer uqs = new UnSubscribeQosServer(glob, uq.getData());
+      String[] ret = glob.getRequestBroker().unSubscribe(sessionInfo, uk.getData(), uqs);
+
+      if (ret.length == 0)
+         return new String[] { "Unsubscribe of client '" + sessionName + "' failed, the reason is not known" };
+
+      for (int i=0; i<ret.length; i++) {
+         UnSubscribeReturnQos tmp = new UnSubscribeReturnQos(glob, ret[i]);
+         ret[i] = "Unsubscribe '" + sessionName + "' state is " + tmp.getState();
+         if (tmp.getStateInfo() != null)
+            ret[i] += " " + tmp.getStateInfo();
+      }
+
+      return ret;
+   }
+
+   public final String[] unSubscribeAll(String qos) throws XmlBlasterException {
+      SubscriptionInfo[] infoArr = getSubscriptionInfoArr();
+      
+      if (infoArr.length < 1)
+         return new String[] { "This topic has currently no subscribers" };
+
+      log.info(ME, "Administrative unSubscribe() of " + infoArr.length + " clients");
+
+      ArrayList retList = new ArrayList();
+      for (int i=0; i<infoArr.length; i++) {
+         String[] tmp = unSubscribe(infoArr[i].getSessionInfo(), qos);
+         for (int j=0; j<tmp.length; j++) {
+            retList.add(tmp[j]);
+         }
+      }
+
+      if (retList.size() == 0)
+         return new String[] { "Unsubscribe of all clients failed, the reason is not known" };
+
+      return (String[])retList.toArray(new String[retList.size()]);
    }
 
    /** JMX */
