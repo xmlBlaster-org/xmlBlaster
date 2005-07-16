@@ -39,6 +39,16 @@ import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.engine.MsgErrorHandler;
 
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+
 //import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import org.xmlBlaster.util.ReentrantLock;
 
@@ -555,17 +565,65 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    //=========== Enforced by I_AdminSession ================
-   /**
-    * @return uptime in seconds
-    */
+   public final boolean isCallbackConfigured() {
+      return hasCallback();
+   }
+
    public final long getUptime() {
       return (System.currentTimeMillis() - this.uptime)/1000L;
    }
-   /**
-    * How many update where sent for this client, the sum of all session and
-    * subject queues of this clients.
-    */
-   public final long getNumUpdates() {
+
+   public final String getConnectionState() {
+      return getDispatchManager().getDispatchConnectionsHandler().getState().toString();
+   }
+
+   public final String getLoginDate() {
+      long ll = System.currentTimeMillis() + this.uptime;
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
+
+   public final String getSessionTimeoutExpireDate() {
+      long timeToLife = this.expiryTimer.spanToTimeout(timerKey);
+      if (timeToLife == -1) {
+         return "unlimited";
+      }
+      long ll = System.currentTimeMillis() + timeToLife;
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
+
+   public final long getNumPublish() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumPublish();
+   }
+
+   public final long getNumSubscribe() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumSubscribe();
+   }
+
+   public final long getNumUnSubscribe() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumUnSubscribe();
+   }
+
+   public final long getNumGet() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumGet();
+   }
+
+   public final long getNumErase() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumErase();
+   }
+
+   public final long getNumUpdateOneway() {
+      if (this.dispatchManager == null) return 0L;
+      return this.dispatchManager.getDispatchStatistic().getNumUpdateOneway();
+   }
+
+   public final long getNumUpdate() {
       if (this.dispatchManager == null) return 0L;
       return this.dispatchManager.getDispatchStatistic().getNumUpdate();
    }
@@ -578,6 +636,105 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();
+   }
+
+   public final String[] getSubscribedTopics() {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      String[] arr = new String[subs.length];
+      for (int i=0; i<arr.length; i++) {
+         arr[i] = subs[i].getKeyOid();
+      }
+      return arr;
+   }
+
+   public final long getNumSubscriptions() {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      return subs.length;
+   }
+
+   public final String subscribe(String url, String qos) throws XmlBlasterException {
+      if (url == null) {
+         return "Please pass a valid topic oid";
+      }
+
+      log.info(ME, "Administrative subscribe() of '" + url + "' for client '" + getId() + "' qos='" + qos + "'");
+      SubscribeKey uk = new SubscribeKey(glob, url);
+      SubscribeQos uq;
+      if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String")) {
+         uq = new SubscribeQos(glob);
+      }
+      else {
+         uq = new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
+      }
+      SubscribeQosServer uqs = new SubscribeQosServer(glob, uq.getData());
+
+      String ret = glob.getRequestBroker().subscribe(this, uk.getData(), uqs);
+
+      SubscribeReturnQos tmp = new SubscribeReturnQos(glob, ret);
+      ret = "Subscribe '" + tmp.getSubscriptionId() + "' state is " + tmp.getState();
+      if (tmp.getStateInfo() != null)
+         ret += " " + tmp.getStateInfo();
+
+      if (ret.length() == 0) {
+         ret = "Unsubscribe of '" + url + "' for client '" + getId() + "' did NOT match any subscription";
+      }
+      
+      return ret;
+   }
+
+   public String[] unSubscribeByIndex(int index, String qos) throws XmlBlasterException {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      if (subs.length < 1)
+         return new String[] { "Currently no topics are subscribed" };
+
+      if (index < 0 || index >= subs.length) {
+         return new String[] { "Please choose an index between 0 and " + (subs.length-1) + " (inclusiv)" };
+      }
+
+      return unSubscribe(subs[index].getSubscriptionId(), qos);
+   }
+
+   public final String[] unSubscribe(String url, String qos) throws XmlBlasterException {
+      if (url == null) {
+         String[] ret = new String[1];
+         ret[0] = "Please pass a valid topic oid";
+         return ret;
+      }
+
+      log.info(ME, "Administrative unSubscribe() of '" + url + "' for client '" + getId() + "'");
+      UnSubscribeKey uk = new UnSubscribeKey(glob, url);
+
+      UnSubscribeQos uq;
+      if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String"))
+         uq = new UnSubscribeQos(glob);
+      else
+         uq = new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
+      UnSubscribeQosServer uqs = new UnSubscribeQosServer(glob, uq.getData());
+
+      String[] ret = glob.getRequestBroker().unSubscribe(this, uk.getData(), uqs);
+
+      for (int i=0; i<ret.length; i++) {
+         UnSubscribeReturnQos tmp = new UnSubscribeReturnQos(glob, ret[i]);
+         ret[i] = "Unsubscribe '" + tmp.getSubscriptionId() + "' state is " + tmp.getState();
+         if (tmp.getStateInfo() != null)
+            ret[i] += " " + tmp.getStateInfo();
+      }
+
+      if (ret.length == 0) {
+         ret = new String[1];
+         ret[0] = "Unsubscribe of '" + url + "' for client '" + getId() + "' did NOT match any subscription";
+      }
+      
+      return ret;
+   }
+
+   public final String[] getSubscriptions() throws XmlBlasterException {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      String[] arr = new String[subs.length];
+      for (int i=0; i<arr.length; i++) {
+         arr[i] = subs[i].getSubscriptionId();
+      }
+      return arr;
    }
 
    public final String getSubscriptionList() throws XmlBlasterException {

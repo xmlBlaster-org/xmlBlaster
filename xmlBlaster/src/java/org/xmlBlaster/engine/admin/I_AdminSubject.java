@@ -18,7 +18,8 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public interface I_AdminSubject {
    public long getUptime();
-   public long getNumUpdates();
+   /** How many messages where sent to all of this clients login sessions */
+   public long getNumUpdate();
    public long getSubjectQueueNumMsgs();
    public long getSubjectQueueMaxMsgs();
    public int getNumSessions();

@@ -47,6 +47,10 @@ import java.util.Iterator;
 //import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import org.xmlBlaster.util.ReentrantLock;
 
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.AttributeChangeNotification;
+import javax.management.MBeanNotificationInfo;
+
 
 /**
  * SubjectInfo stores all known data about a client.
@@ -61,7 +65,7 @@ import org.xmlBlaster.util.ReentrantLock;
  * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean -> is delegated to SubjectInfoProtector */
+public final class SubjectInfo extends NotificationBroadcasterSupport /* implements I_AdminSubject, SubjectInfoMBean -> is delegated to SubjectInfoProtector */
 {
    private String ME = "SubjectInfo";
    private final Global glob;
@@ -103,6 +107,9 @@ public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean ->
    /** State after calling shutdown() */
    public final int DEAD = 1;
    private int state = UNDEF;
+
+   /** JMX calls */
+   private long sequenceNumber = 1; 
 
    private ReentrantLock lock = new ReentrantLock();
 
@@ -845,7 +852,7 @@ public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean ->
          this.callbackAddressCache = null;
       }
       if (sessionInfo != null) {
-         this.dispatchStatistic.incrNumUpdate(sessionInfo.getNumUpdates());
+         this.dispatchStatistic.incrNumUpdate(sessionInfo.getNumUpdate());
       }
       else {
          log.warn(ME, "Lookup of session with absoluteSessionName=" + absoluteSessionName + " failed");
@@ -985,12 +992,12 @@ public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean ->
     * How many update where sent for this client, the sum of all session and
     * subject queues of this clients.
     */
-   long getNumUpdates() {
+   long getNumUpdate() {
       long numUpdates = this.dispatchStatistic.getNumUpdate(); // The sessions which disappeared already are remembered here
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         numUpdates += sessionInfo.getNumUpdates();
+         numUpdates += sessionInfo.getNumUpdate();
       }
       return numUpdates;
    }
@@ -1081,4 +1088,18 @@ public final class SubjectInfo /* implements I_AdminSubject, SubjectInfoMBean ->
       */
      return getId() + " Sessions " + sessionList + " killed";
    }
+
+   /**
+    * JMX: Enforced by interface NotificationBroadcasterSupport
+    */
+   public MBeanNotificationInfo[] getNotificationInfo() { 
+      String[] types = new String[] { 
+         AttributeChangeNotification.ATTRIBUTE_CHANGE 
+      }; 
+      String name = AttributeChangeNotification.class.getName(); 
+      String description = "TODO: An attribute of this MBean has changed"; 
+      MBeanNotificationInfo info = 
+         new MBeanNotificationInfo(types, name, description); 
+      return new MBeanNotificationInfo[] {info}; 
+   } 
 }

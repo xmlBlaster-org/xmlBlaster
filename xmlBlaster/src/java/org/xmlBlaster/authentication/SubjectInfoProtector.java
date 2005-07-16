@@ -29,8 +29,8 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       return this.subjectInfo.getUptime();
    }
 
-   public long getNumUpdates() {
-      return this.subjectInfo.getNumUpdates();
+   public long getNumUpdate() {
+      return this.subjectInfo.getNumUpdate();
    }
 
    public long getSubjectQueueNumMsgs() {

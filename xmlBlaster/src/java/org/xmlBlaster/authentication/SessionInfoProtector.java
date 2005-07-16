@@ -25,12 +25,69 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public SessionInfoProtector(SessionInfo sessionInfo) {
       this.sessionInfo = sessionInfo;
    }
+
+   public final String getId() {
+      return this.sessionInfo.getId();
+   }
+
+   public final String getLoginName() {
+      return this.sessionInfo.getLoginName();
+   }
+
+   public final boolean isCallbackConfigured() {
+      return this.sessionInfo.isCallbackConfigured();
+   }
+
+   public final String getConnectionState() {
+      return this.sessionInfo.getConnectionState();
+   }
+
+   public final long getPublicSessionId() {
+      return this.sessionInfo.getPublicSessionId();
+   }
+
+   public final String getLoginDate() {
+      return this.sessionInfo.getLoginDate();
+   }
+
+   public final String getSessionTimeoutExpireDate() {
+      return this.sessionInfo.getSessionTimeoutExpireDate();
+   }
+
+   public final void refreshSession() throws XmlBlasterException {
+      this.sessionInfo.refreshSession();
+   }
+
    public final long getUptime() {
       return this.sessionInfo.getUptime();
    }
 
-   public final long getNumUpdates() {
-      return this.sessionInfo.getNumUpdates();
+   public final long getNumPublish() {
+      return this.sessionInfo.getNumPublish();
+   }
+
+   public final long getNumSubscribe() {
+      return this.sessionInfo.getNumSubscribe();
+   }
+
+   public final long getNumUnSubscribe() {
+      return this.sessionInfo.getNumUnSubscribe();
+   }
+
+   public final long getNumGet() {
+      return this.sessionInfo.getNumGet();
+   }
+
+   public final long getNumErase() {
+      return this.sessionInfo.getNumErase();
+   }
+
+   public final long getNumUpdateOneway() {
+      return this.sessionInfo.getNumUpdateOneway();
+   }
+
+   public final long getNumUpdate() {
+      return this.sessionInfo.getNumUpdate();
    }
 
    public final long getCbQueueNumMsgs() {
@@ -39,6 +96,30 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
 
    public final long getCbQueueMaxMsgs() {
       return this.sessionInfo.getCbQueueMaxMsgs();
+   }
+
+   public final String[] getSubscribedTopics() {
+      return this.sessionInfo.getSubscribedTopics();
+   }
+
+   public final long getNumSubscriptions() {
+      return this.sessionInfo.getNumSubscriptions();
+   }
+
+   public final String subscribe(String url, String qos) throws XmlBlasterException {
+      return this.sessionInfo.subscribe(url, qos);
+   }
+
+   public final String[] unSubscribeByIndex(int index, String qos) throws XmlBlasterException {
+      return this.sessionInfo.unSubscribeByIndex(index, qos);
+   }
+
+   public final String[] unSubscribe(String url, String qos) throws XmlBlasterException {
+      return this.sessionInfo.unSubscribe(url, qos);
+   }
+
+   public final String[] getSubscriptions() throws XmlBlasterException {
+      return this.sessionInfo.getSubscriptions();
    }
 
    public final String getSubscriptionList() throws XmlBlasterException {
@@ -70,4 +151,20 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getCbQueueEntries(keyData, qosData);
    }
 
+   /** Enforced by ConnectQosDataMBean interface. */
+   public final long getMaxSessions() {
+      return this.sessionInfo.getConnectQos().getMaxSessions();
+   }
+   /** Enforced by ConnectQosDataMBean interface. */
+   public final long getSessionTimeout() {
+      return this.sessionInfo.getConnectQos().getSessionTimeout();
+   }
+   /** Enforced by ConnectQosDataMBean interface. */
+   public final boolean isPtpAllowed() {
+      return this.sessionInfo.getConnectQos().isPtpAllowed();
+   }
+   /** Enforced by ConnectQosDataMBean interface. */
+   public final boolean isPersistent() {
+      return this.sessionInfo.getConnectQos().getData().isPersistent();
+   }
 }
