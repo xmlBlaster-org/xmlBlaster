@@ -3,7 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
- o #13477 Added functionality for session handling
+ o #13477-#13482 Added JMX functionality
+   for session, topic and qeueu handling
 
  o #13470,#13474 Extended query string syntax
    The constructors of
