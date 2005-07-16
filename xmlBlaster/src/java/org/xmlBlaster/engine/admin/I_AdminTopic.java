@@ -71,6 +71,14 @@ public interface I_AdminTopic {
     * Get status dump. 
     */
    public java.lang.String toXml();
+
+   /**
+    * Peek messages from history queue, they are not removed. 
+    * @param num The number of messages to peek, the newest first
+    * @return The dump of the messages
+    */
+   public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException;
+
    /**
     * Invoke operation to erase the topic
     * @return A status message

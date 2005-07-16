@@ -2434,6 +2434,43 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return (String[])retList.toArray(new String[retList.size()]);
    }
 
+   public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException {
+      if (numOfEntries < 1)
+         return new String[] { "Please pass number of messages to peak" };
+      if (this.historyQueue == null)
+         return new String[] { "There is no history queue available" };
+      if (this.historyQueue.getNumOfEntries() < 1)
+         return new String[] { "The history queue is empty" };
+
+      java.util.ArrayList list = this.historyQueue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from history queue failed, the reason is not known" };
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)list.get(i);
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         tmpList.add("<MsgUnit index='"+i+"'>");
+         if (wrapper == null) {
+            tmpList.add("  NOT REFERENCED");
+         }
+         else {
+            tmpList.add("  "+wrapper.getMsgKeyData().toXml());
+            int MAX_LEN = 5000;
+            String content = wrapper.getMsgUnit().getContentStr();
+            if (content.length() > (MAX_LEN+5) ) {
+               content = content.substring(0, MAX_LEN) + " ...";
+            }
+            tmpList.add("  "+content);
+            tmpList.add("  "+wrapper.getMsgQosData().toXml());
+         }
+         tmpList.add("</MsgUnit>");
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+   } 
+
    /** JMX */
    public final String eraseTopic() throws XmlBlasterException {
       EraseKey ek = new EraseKey(glob, uniqueKey);
