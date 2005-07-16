@@ -754,7 +754,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       return subscribe(sessionInfo, xmlKey, subscribeQos, false);
    }   
 */
-   String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
+   public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
@@ -1336,7 +1336,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     *   &lt;/qos>
     * </pre>
     */
-   String[] unSubscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, UnSubscribeQosServer unSubscribeQos) throws XmlBlasterException
+   public String[] unSubscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, UnSubscribeQosServer unSubscribeQos) throws XmlBlasterException
    {
       try {
          if (log.CALL) log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') ...");
