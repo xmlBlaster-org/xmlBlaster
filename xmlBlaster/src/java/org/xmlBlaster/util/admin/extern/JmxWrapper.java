@@ -119,7 +119,8 @@ public class JmxWrapper
       }
 
 
-      if (System.getProperty("com.sun.management.jmxremote") != null) {
+      if (System.getProperty("com.sun.management.jmxremote") != null ||
+          System.getProperty("com.sun.management.jmxremote.port") != null) {
 
          // Create an RMI connector and start it
          //JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:9999/server");
