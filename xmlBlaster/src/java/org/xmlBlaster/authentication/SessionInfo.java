@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.ArrayList;
+
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
@@ -49,6 +51,9 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
 //import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import org.xmlBlaster.util.ReentrantLock;
@@ -830,6 +835,43 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
       return false;
    }
+
+   public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
+      if (numOfEntries < 1)
+         return new String[] { "Please pass number of messages to peak" };
+      if (this.sessionQueue == null)
+         return new String[] { "There is no callback queue available" };
+      if (this.sessionQueue.getNumOfEntries() < 1)
+         return new String[] { "The callback queue is empty" };
+
+      java.util.ArrayList list = this.sessionQueue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from callback queue failed, the reason is not known" };
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)list.get(i);
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         tmpList.add("<MsgUnit index='"+i+"'>");
+         if (wrapper == null) {
+            tmpList.add("  NOT REFERENCED");
+         }
+         else {
+            tmpList.add("  "+wrapper.getMsgKeyData().toXml());
+            int MAX_LEN = 5000;
+            String content = wrapper.getMsgUnit().getContentStr();
+            if (content.length() > (MAX_LEN+5) ) {
+               content = content.substring(0, MAX_LEN) + " ...";
+            }
+            tmpList.add("  "+content);
+            tmpList.add("  "+wrapper.getMsgQosData().toXml());
+         }
+         tmpList.add("</MsgUnit>");
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+   } 
 
    /**
     * keyData is currently unused but it is needed to be consistent with the 

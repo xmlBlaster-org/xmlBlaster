@@ -96,6 +96,12 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public void setDispatcherActive(boolean dispatcherActive);
    /** true if the dispatcher is currently able to dispatch asyncronously */
    public boolean getDispatcherActive();
+   /**
+    * Peek messages from queue, they are not removed
+    * @param num The number of messages to peek, taken from the front
+    * @return The XML dump of the messages
+    */
+   public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException;
    /** gets the entries in the callback queue according to what is specified in the qosData object */
    public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
    

@@ -142,6 +142,10 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getDispatcherActive();
    }
      
+   public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
+      return this.sessionInfo.peekCallbackMessages(numOfEntries);
+   }
+
    /**
     * keyData is currently unused but it is needed to be consistent with the 
     * admin get convention (i.e. either take no parameters or always take a key
