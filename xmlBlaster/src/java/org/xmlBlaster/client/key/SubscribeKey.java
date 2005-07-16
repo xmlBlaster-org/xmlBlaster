@@ -25,12 +25,13 @@ public class SubscribeKey
    private final QueryKeyData queryKeyData;
 
    /**
-    * Constructor with given oid.
-    * @param oid Subscribe to a well known message oid.
+    * Constructor with given oid or url. 
+    * @param query The query string
+    *        For example a topic oid like "Hello" or "oid:Hello"
+    *        or a query like "xpath://key", "domain:CLUSTER"
     */
-   public SubscribeKey(Global glob, String oid) {
-      this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setOid(oid);
+   public SubscribeKey(Global glob, String query) {
+      this.queryKeyData = new QueryKeyData(glob, query);
    }
 
    /**

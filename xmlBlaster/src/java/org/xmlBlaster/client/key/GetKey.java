@@ -23,12 +23,13 @@ public class GetKey
    private final QueryKeyData queryKeyData;
 
    /**
-    * Create a key data holder.  
-    * @param oid Get to a well known message oid.
+    * Create a key data holder to access message(s). 
+    * @param query The query string
+    *        For example a topic oid like "Hello" or "oid:Hello"
+    *        or a query like "xpath://key", "domain:CLUSTER")
     */
-   public GetKey(Global glob, String oid) {
-      this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setOid(oid);
+   public GetKey(Global glob, String query) {
+      this.queryKeyData = new QueryKeyData(glob, query);
    }
 
    /**

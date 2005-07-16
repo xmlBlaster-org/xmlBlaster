@@ -23,12 +23,14 @@ public class UnSubscribeKey
    private final QueryKeyData queryKeyData;
 
    /**
-    * Constructor with given oid.
-    * @param oid UnSubscribe to a well known message oid.
+    * UnSubscribe to a well known message oid/subscriptionId or url. 
+    * @param query The query string
+    *        For example a topic oid like "Hello" or "oid:Hello"
+    *        or a query like "xpath://key", "domain:CLUSTER"
+    *        or an explicit "subscriptionId:__subId:heron-34560459046"
     */
-   public UnSubscribeKey(Global glob, String oid) {
-      this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setOid(oid);
+   public UnSubscribeKey(Global glob, String query) {
+      this.queryKeyData = new QueryKeyData(glob, query);
    }
 
    /**

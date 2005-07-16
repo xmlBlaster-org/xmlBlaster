@@ -24,12 +24,13 @@ public class EraseKey
    private final QueryKeyData queryKeyData;
 
    /**
-    * Create a key data holder.  
-    * @param oid Erase to a well known message oid.
+    * Create a key data holder to erase message(s). 
+    * @param query The query string
+    *        For example a topic oid like "Hello" or "oid:Hello"
+    *        or a query like "xpath://key", "domain:CLUSTER")
     */
-   public EraseKey(Global glob, String oid) {
-      this.queryKeyData = new QueryKeyData(glob);
-      this.queryKeyData.setOid(oid);
+   public EraseKey(Global glob, String query) {
+      this.queryKeyData = new QueryKeyData(glob, query);
    }
 
    /**
