@@ -55,7 +55,7 @@ import com.sun.jmx.trace.Trace;
  * </tr>
  * <tr>
  * <td>3b.</td>
- * <td>xmlBlaster/jmx/jmxremote</td>
+ * <td>xmlBlaster/jmx/rmi</td>
  * <td>true: Start the JDK 1.5 jconsole adaptor by our own coding</td>
  * </tr>
  * </table>
