@@ -66,7 +66,7 @@ import com.sun.jmx.trace.Trace;
  * <pre>
  *     -xmlBlaster/jmx/rmiregistry/port   Specify a port number where rmiregistry listens.
  *                         Default is port 1099
- *     -xmlBlaster/jmx/rmi/hostname Specify a hostname where rmiregistry runs.
+ *     -xmlBlaster/jmx/rmiregistry/hostname Specify a hostname where rmiregistry runs.
  *                         Default is the dns name of the running host.
  * </pre>
  * @see http://java.sun.com/developer/technicalArticles/J2SE/jmx.html
@@ -209,12 +209,11 @@ public class JmxWrapper
 
                try {  // If an external rmiregistry is running cleanup old entries:
                   Naming.unbind(bindName);
-                  //java.rmi.server.UnicastRemoteObject.unexportObject(authRmiServer, true);
                } catch (Exception e) {
-                  log.warn(ME, "Can't shutdown authentication server: " + e.toString());
+                  log.trace(ME, "Can't unbind '" + bindName + "': " + e.toString());
                }
 
-               //String loc = "service:jmx:rmi://"+host+":"+port+"/jndi/" + bindName;
+               //String loc = "service:jmx:rmi://"+rmiRegistryHost+":"+rmiRegistryPort+"/jndi/" + bindName;
                String loc = "service:jmx:rmi:///jndi/" + bindName;
 
                //since JDK 1.5
