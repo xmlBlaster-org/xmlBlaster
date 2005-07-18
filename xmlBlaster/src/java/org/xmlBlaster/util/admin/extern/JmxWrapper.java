@@ -9,12 +9,21 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.XmlBlasterSecurityManager;
 
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
+
+//since JDK 1.5
+//import javax.management.remote.JMXServiceURL;
+//import javax.management.remote.JMXConnectorServerFactory;
+//import javax.management.remote.JMXConnectorServer;
+
+import java.rmi.RemoteException;
+import java.rmi.Naming;
 
 import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
@@ -30,19 +39,39 @@ import com.sun.jmx.trace.Trace;
  * Current supported adaptors are a HTTPAdaptor, the XmlBlasterAdaptor and the JDK1.5 jconsole adaptor.
  * <table>
  * <tr>
+ * <td>1.</td>
  * <td>xmlBlaster/jmx/HtmlAdaptor</td>
- * <td>true</td>
+ * <td>true: Start the adaptor for html-browser access</td>
  * </tr>
  * <tr>
+ * <td>2.</td>
  * <td>xmlBlaster/jmx/XmlBlasterAdaptor</td>
  * <td>true</td>
  * </tr>
  * <tr>
+ * <td>3a.</td>
  * <td>java -Dcom.sun.management.jmxremote ...</td>
- * <td>Start the JDK 1.5 jconsole adaptor</td>
+ * <td>Start the JDK 1.5 jconsole adaptor by the java virtual machine</td>
+ * </tr>
+ * <tr>
+ * <td>3b.</td>
+ * <td>xmlBlaster/jmx/jmxremote</td>
+ * <td>true: Start the JDK 1.5 jconsole adaptor by our own coding</td>
  * </tr>
  * </table>
+ * <p />
+ * Note for 3b.:<br />
+ * A rmiregistry server is created automatically. If there is running already one, that is used.<br />
+ * You can specify another port or host to create/use a rmiregistry server:
+ * <pre>
+ *     -xmlBlaster/jmx/rmiregistry/port   Specify a port number where rmiregistry listens.
+ *                         Default is port 1099
+ *     -xmlBlaster/jmx/rmi/hostname Specify a hostname where rmiregistry runs.
+ *                         Default is the dns name of the running host.
+ * </pre>
  * @see http://java.sun.com/developer/technicalArticles/J2SE/jmx.html
+ * @see org.xmlBlaster.util.XmlBlasterSecurityManager
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html">The admin.jmx requirement</a>
  */
 public class JmxWrapper
 {
@@ -55,7 +84,12 @@ public class JmxWrapper
    /** Export Global.getProperty() to JMX */
    private JmxProperties jmxProperties;
    private JmxLogLevel jmxLogLevel;
+   /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
+   public static final int DEFAULT_REGISTRY_PORT = 1099;
 
+   /**
+    * Create the unique MBeanServer instance. 
+    */
    private MBeanServer getMBeanServer() {
       if (this.mbeanServer == null) {
          synchronized (this) {
@@ -118,17 +152,37 @@ public class JmxWrapper
          log.trace(ME, e.toString());
       }
 
-
-      if (System.getProperty("com.sun.management.jmxremote") != null ||
-          System.getProperty("com.sun.management.jmxremote.port") != null) {
-
-         // Create an RMI connector and start it
-         //JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:9999/server");
-         //JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
-         //cs.start();
-
+      String jndiPath = "/jmxrmi"; // "/jmxconnector";
+      String ssl = System.getProperty("com.sun.management.jmxremote.ssl");
+      String aut = System.getProperty("com.sun.management.jmxremote.authenticate");
+      boolean isAuthenticated = !((ssl==null||"false".equals(ssl)) && (aut==null||"false".equals(aut)));
+      if (System.getProperty("com.sun.management.jmxremote.port") != null) {
+         // For localhost or remote access with specific port
+         // You have to configure authentication!
+         // JDK >= 1.5 automatically creates an RMI connector and start it for us
+         int port = new Integer(System.getProperty("com.sun.management.jmxremote.port")).intValue();
          if (supportsJconsole) {
-            log.info(ME, "'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole'");
+            String loc = "service:jmx:rmi:///jndi/rmi://"+glob.getLocalIP()+":"+port+jndiPath;
+            log.info(ME, "'java -Dcom.sun.management.jmxremote.port=" + port +
+                         "' is specified, JMX is switched on, try to start 'jconsole " + loc + "'");
+            if (!isAuthenticated)
+               log.warn(ME, "Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+            useJmx++;
+         }
+         else {
+            log.info(ME, "'java -Dcom.sun.management.jmxremote.port="+port+"' is specified "+
+                         " but is not supported in this runtime " + System.getProperty("java.runtime.version"));
+         }
+      }
+      else if (System.getProperty("com.sun.management.jmxremote") != null) {
+         // For localhost or remote access with default port 1099
+         // You have to configure authentication!
+         // JDK >= 1.5 automatically creates an RMI connector and start it for us
+         String loc = "service:jmx:rmi:///jndi/rmi://"+glob.getLocalIP()+":"+DEFAULT_REGISTRY_PORT+jndiPath;
+         if (supportsJconsole) {
+            log.info(ME, "'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole' or 'jconsole "+loc+"'");
+            if (!isAuthenticated)
+               log.warn(ME, "Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
             useJmx++;
          }
          else {
@@ -136,9 +190,77 @@ public class JmxWrapper
                          " but is not supported in this runtime " + System.getProperty("java.runtime.version"));
          }
       }
+      else if (glob.getProperty().get("xmlBlaster/jmx/rmi", false)) {
+         // TODO: How to configure authentication???
+         // JDK >= 1.5: Create manually an RMI connector and start it
+         // If there is no rmiregistry around we start one
+         // url ::= service:jmx:protocol:sap
+         // sap ::= //[host[:port]][url-path]
+         if (!supportsJconsole) {
+            log.warn(ME, "JMX setting '-xmlBlaster/jmx/rmi true' ignored in this JVM runtime, you need JDK 1.5 or higher.");
+         }
+         else {
+            try {
+               int rmiRegistryPort = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/port", DEFAULT_REGISTRY_PORT); // 1099
+               String rmiRegistryHost = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/hostname", glob.getLocalIP());
+               startRmiRegistry(rmiRegistryHost, rmiRegistryPort);
+
+               String bindName = "rmi://"+rmiRegistryHost+":"+rmiRegistryPort+jndiPath;
+
+               try {  // If an external rmiregistry is running cleanup old entries:
+                  Naming.unbind(bindName);
+                  //java.rmi.server.UnicastRemoteObject.unexportObject(authRmiServer, true);
+               } catch (Exception e) {
+                  log.warn(ME, "Can't shutdown authentication server: " + e.toString());
+               }
+
+               //String loc = "service:jmx:rmi://"+host+":"+port+"/jndi/" + bindName;
+               String loc = "service:jmx:rmi:///jndi/" + bindName;
+
+               //since JDK 1.5
+               //JMXServiceURL url = new JMXServiceURL(loc);
+               //JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, getMBeanServer());
+               //cs.start();
+
+               // JDK 1.3 and 1.4: Not available so we need to use reflection for JDK 1.5
+               Class clazz = java.lang.Class.forName("javax.management.remote.JMXServiceURL");
+               Class[] paramCls =  new Class[] { java.lang.String.class }; // url location
+               Object[] params = new Object[] { loc };
+               java.lang.reflect.Constructor ctor = clazz.getConstructor(paramCls);
+               Object jMXServiceURL = ctor.newInstance(params);
+
+               clazz = java.lang.Class.forName("javax.management.remote.JMXConnectorServerFactory");
+               paramCls = new Class[] {
+                  java.lang.Class.forName("javax.management.remote.JMXServiceURL"),
+                  java.util.Map.class,                   // properties
+                  javax.management.MBeanServer.class
+               };
+               params = new Object[] {
+                  jMXServiceURL,
+                  null,
+                  getMBeanServer()
+               };
+               java.lang.reflect.Method method = clazz.getMethod("newJMXConnectorServer", paramCls);
+               Object jMXConnectorServer = method.invoke(clazz, params); // Returns "JMXConnectorServer"
+
+               clazz = java.lang.Class.forName("javax.management.remote.JMXConnectorServer");
+               paramCls = new Class[0];
+               params = new Object[0];
+               method = clazz.getMethod("start", paramCls);
+               method.invoke(jMXConnectorServer, params); // finally ... starts JMX
+
+               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "'");
+               useJmx++;
+            }
+            catch(Throwable ex) {
+               ex.printStackTrace();
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not create JMXConnectorServer", ex);
+            }
+         }
+      }
       else {
          if (supportsJconsole) {
-            log.info(ME, "No 'java -Dcom.sun.management.jmxremote' specified, JMX is switched off");
+            log.info(ME, "JMX over RMI is switched off, for details see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
          }
       }
 
@@ -186,6 +308,40 @@ public class JmxWrapper
       }
    }
 
+   /**
+    * Start xmlBlaster security manager and RMI registry. 
+    * @param registryPort xmlBlaster/jmx/rmiregistry/port=1099
+    * @param registryHost xmlBlaster/jmx/rmiregistry/hostname=loclhost
+    */
+   private synchronized void startRmiRegistry(String registryHost, int registryPort) throws XmlBlasterException {
+
+      XmlBlasterSecurityManager.createSecurityManager(glob);
+
+      try {
+         if (registryPort > 0) {
+            // Start a 'rmiregistry' if desired
+            try {
+               java.rmi.registry.LocateRegistry.createRegistry(registryPort);
+               log.info(ME, "Started RMI registry on port " + registryPort);
+            } catch (java.rmi.server.ExportException e) {
+               // Try to bind to an already running registry:
+               try {
+                  java.rmi.registry.LocateRegistry.getRegistry(registryHost, registryPort);
+                  log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                               " we will use this one. You could change the port with e.g. '-xmlBlaster/jmx/rmiregistry/port 1122' to run your own rmiregistry.");
+               }
+               catch (RemoteException e2) {
+                  String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -xmlBlaster/jmx/rmiregistry/port 1122 : " + e.toString();
+                  throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, text, e2);
+               }
+            }
+         }
+      } catch (Exception e) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not initialize RMI registry", e);
+      }
+
+      if (log.TRACE) log.trace(ME, "Initialized RMI registry");
+   }
 
    /**
     * registers the specified mbean into the mbean server.
