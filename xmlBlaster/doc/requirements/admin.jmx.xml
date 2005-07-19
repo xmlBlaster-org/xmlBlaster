@@ -175,6 +175,12 @@ jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
    and one read only and one administrative user:
    </p>
    <pre>
+# jmxremote.password
+# Set permissions to be readable by xmlBlaster user only:
+# Unix:
+#    chmod 600 jmxremote.password
+# Windows NTFS:
+#    cacls jmxremote.password /P %USERNAME%:C
 monitorRole secret
 controlRole secret
    </pre>
@@ -197,6 +203,19 @@ jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
    <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html" target="others">
    <tt>jconsole</tt> online documentation</a>.</p>
 
+   <h3>Handcrafted JMX-RMI startup</h3>
+   <p>If you don't have access to the JVM and can't set the system properties we
+    provide a self-coded JMX-RMI adaptor startup possibility, here is an example:
+    </p>
+   <pre>
+java org.xmlBlaster.Main -xmlBlaster/jmx/rmi true
+                         -xmlBlaster/jmx/rmi/user joe
+                         -xmlBlaster/jmx/rmi/password secret
+
+# Start the GUI (and enter user=controlRole, password=secret):
+jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
+   </pre>
+
    <h3>Jconsole screenshot</h3>
    <p>
       <img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' />
@@ -217,13 +236,6 @@ java -Dcom.sun.management.jmxremote
 
 MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 5.0')
    </pre>
-   <p>
-   You find the jconsole application in the JAVA_HOME\bin directory of
-   JDK 1.5 or above. Start jconsole as the same user and on the same
-   computer as the server.
-   </p>
-   <p>In the MBeans tab of jconsole you find the <tt>org.xmlBlaster</tt> root node.
-   </p>
    <p>Note: The above example is unprotected, you definitely need to configure SSL protection!</p>
 
    <h3>MC4J screenshot</h3>
@@ -255,12 +267,50 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          <td>no</td>
          <td>-</td>
          <td>
-         If given as system property the jconsole monitoring support is switched on.
+         If given as system property the jconsole monitoring support is switched on, the rmiregistry
+         is expected on its default port 1099.
+         </td>
+       </tr>
+       <tr>
+         <td>java -Dcom.sun.management.jmxremote.port=2209</td>
+         <td>String</td>
+         <td>no</td>
+         <td>-</td>
+         <td>
+         If given as system property the jconsole monitoring support is switched on, the rmiregistry
+         uses the given port.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/rmiregistry/jndiPath</td>
+         <td>String</td>
+         <td>no</td>
+         <td>/jmxrmi</td>
+         <td>
+         In a cluster environment where different xmlBlaster instances use the
+         same rmiregistry you need to distinguish the instances.<br />
+         The <i>cluster.node.id</i> could be a nice unifier: "/jmxrmi/"+${cluster.node.id}
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/rmi</td>
+         <td>bool</td>
+         <td>no</td>
+         <td>false</td>
+         <td>
+         If set to true the jconsole monitoring support is switched on, in this
+         case we have implemented the startup overselve. This is useful
+         if you don't have control on the JVM and can't set
+         <tt>java -Dcom.sun.management.jmxremote</tt> properties on JVM startup.
+         For example the wrapper.exe (Windows service registration) does not
+         set the system properties early enough.<br />
+         Please add <tt>-xmlBlaster/jmx/rmi/user joe</tt> and
+         <tt>xmlBlaster/jmx/rmi/password secret</tt> credentials for access authentication.
          </td>
        </tr>
        <tr>
          <td>xmlBlaster/jmx/HtmlAdaptor</td>
-         <td>String</td>
+         <td>bool</td>
          <td>no</td>
          <td>false</td>
          <td>
@@ -305,7 +355,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
        </tr>
        <tr>
          <td>xmlBlaster/jmx/XmlBlasterAdaptor</td>
-         <td>String</td>
+         <td>bool</td>
          <td>no</td>
          <td>false</td>
          <td>
