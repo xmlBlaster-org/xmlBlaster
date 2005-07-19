@@ -569,9 +569,12 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          this.state = DESTROYED;
       }
 
-      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
-      if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
-         topicHandler.entryDestroyed(this);
+      RequestBroker broker = glob.getRequestBroker();
+      if (broker != null) {
+         TopicHandler topicHandler = broker.getMessageHandlerFromOid(getKeyOid());
+         if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
+            topicHandler.entryDestroyed(this);
+      }
    }
 
    /**
