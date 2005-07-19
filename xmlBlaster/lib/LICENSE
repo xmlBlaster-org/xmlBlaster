@@ -324,4 +324,9 @@ only the SNMP subagent module jax.jar is GPL only!
    Compiled for JDK target 1.2
    http://www.jcraft.com/jzlib/
 
+40) jmxremote.jar
+=================
+   Needed for compilation with JDK < 1.5 only
+   to have compiled in JMX - RMI support
+   Version 1.0.1 from http://java.sun.com
 
