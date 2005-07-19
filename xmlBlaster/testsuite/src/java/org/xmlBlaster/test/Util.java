@@ -12,7 +12,13 @@ import org.xmlBlaster.util.def.Constants;
 
 import java.util.Vector;
 
-
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+                                       
 /**
  * Some helper methods for test clients
  */
@@ -128,6 +134,28 @@ public class Util
       for (int ii=0; ii<numGc; ii++) {
          System.gc();
          try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+      }
+   }
+
+   /**
+    * Do an administrative command to the server with a temporaty login session. 
+    * @param command "__sys__UserList" or "__cmd:/node/heron/?clientList"
+    */
+   public static MsgUnit[] adminGet(Global glob, String command) throws XmlBlasterException {
+      I_XmlBlasterAccess connAdmin = null;
+      String user="ADMIN/1";
+      String passwd="secret";
+      try {
+         Global gAdmin = glob.getClone(null);
+         connAdmin = gAdmin.getXmlBlasterAccess();
+         connAdmin.connect(new ConnectQos(gAdmin, user, passwd), null);
+         GetKey gk = new GetKey(glob, command);
+         GetQos gq = new GetQos(glob);
+         MsgUnit[] msgs = connAdmin.get(gk, gq);
+         return msgs;
+      }
+      finally {
+         if (connAdmin != null) { try { connAdmin.disconnect(null); } catch (Throwable et) {} }
       }
    }
 }
