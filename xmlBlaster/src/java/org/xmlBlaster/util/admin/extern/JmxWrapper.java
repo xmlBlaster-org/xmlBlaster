@@ -17,10 +17,11 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 
-//since JDK 1.5
+//since JDK 1.5 or with additional jmxremote.jar
 //import javax.management.remote.JMXServiceURL;
 //import javax.management.remote.JMXConnectorServerFactory;
 //import javax.management.remote.JMXConnectorServer;
+//import javax.management.remote.JMXPrincipal;
 
 import java.rmi.RemoteException;
 import java.rmi.Naming;
@@ -29,6 +30,13 @@ import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
 
 import com.sun.jmx.trace.Trace;
+
+import javax.security.auth.Subject;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
 
 // since JDK 1.5 (instead of javax.management.MBeanServerFactory from separate jmxri.jar from http://java.sun.com/products/JavaManagement/download.html)
 //import java.lang.management.ManagementFactory;
@@ -221,12 +229,43 @@ public class JmxWrapper
                //String loc = "service:jmx:rmi://"+rmiRegistryHost+":"+rmiRegistryPort+"/jndi/" + bindName;
                String loc = "service:jmx:rmi:///jndi/" + bindName;
 
-               //since JDK 1.5
-               //JMXServiceURL url = new JMXServiceURL(loc);
-               //JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, getMBeanServer());
+               //since JDK 1.5 or with including jmxremote.jar for JDK 1.3/1.4
+               final String storedUser = glob.getProperty().get("xmlBlaster/jmx/rmi/user", (String)null);
+               final String storedPassword = glob.getProperty().get("xmlBlaster/jmx/rmi/password", (String)null);
+               Map props = new TreeMap();
+               if (storedUser != null) {
+                  javax.management.remote.JMXAuthenticator auth = new javax.management.remote.JMXAuthenticator() {
+                     public javax.security.auth.Subject authenticate(Object credentials) {
+                        if (log.CALL) log.call(ME, "Calling authenticate(" + ((credentials==null)?"null":credentials.toString()) + ")");
+                        if (!(credentials instanceof String[])) throw new SecurityException("Bad credentials, please pass user name and password");
+                        String[] creds = (String[])credentials;
+                        if (creds.length != 2) throw new SecurityException("Bad credentials, please pass user name and password");
+
+                        String user = creds[0];
+                        String password = creds[1];
+                        if (log.TRACE) log.trace(ME, "Calling authenticate(user=" + user + ", password=" + password + ")");
+
+                        if (password == null) throw new SecurityException("Missing password");
+                        if (!storedUser.equals(user)) throw new SecurityException("Unknown user " + user + ",  please try with user '" + storedUser + "'");
+                        if (!storedPassword.equals(password)) throw new SecurityException("Bad password, please try again");
+
+                        Set principals = new HashSet();
+                        principals.add(new javax.management.remote.JMXPrincipal(user));
+                        return new Subject(true, principals, Collections.EMPTY_SET, Collections.EMPTY_SET);
+                     }
+                  };
+                  props.put("jmx.remote.authenticator", auth); // JMXConnectorServer.AUTHENTICATOR
+               }
+               else {
+                  log.warn(ME, "You should switch on authentication with '-xmlBlaster/jmx/rmi/user' and '-xmlBlaster/jmx/rmi/password'");
+               }
+
+               //since JDK 1.5 or with including jmxremote.jar for JDK 1.3/1.4
+               //javax.management.remote.JMXServiceURL url = new javax.management.remote.JMXServiceURL(loc);
+               //javax.management.remote.JMXConnectorServer cs = javax.management.remote.JMXConnectorServerFactory.newJMXConnectorServer(url, props, getMBeanServer());
                //cs.start();
 
-               // JDK 1.3 and 1.4: Not available so we need to use reflection for JDK 1.5
+               // JDK 1.3 and 1.4: Not available so we need to use reflection
                Class clazz = java.lang.Class.forName("javax.management.remote.JMXServiceURL");
                Class[] paramCls =  new Class[] { java.lang.String.class }; // url location
                Object[] params = new Object[] { loc };
@@ -241,7 +280,7 @@ public class JmxWrapper
                };
                params = new Object[] {
                   jMXServiceURL,
-                  null,
+                  props,
                   getMBeanServer()
                };
                java.lang.reflect.Method method = clazz.getMethod("newJMXConnectorServer", paramCls);
@@ -253,7 +292,7 @@ public class JmxWrapper
                method = clazz.getMethod("start", paramCls);
                method.invoke(jMXConnectorServer, params); // finally ... starts JMX
 
-               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "'");
+               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "' user=" + storedUser);
                useJmx++;
             }
             catch(Throwable ex) {
