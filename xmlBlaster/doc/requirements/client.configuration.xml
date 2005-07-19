@@ -305,9 +305,9 @@ java HelloWorld2 -help
        <session id='-3'>
           <uptime>10050</uptime>
 
-          <numPublished>4</numPublished>
-          <numGets>7</numGets>
-          <numUpdates>614050</numUpdates>
+          <numPublish>4</numPublish>
+          <numGet>7</numGet>
+          <numUpdate>614050</numUpdate>
 
           <dispatch id='callback' sessionId='4e56890ghdFzj0'
                 pingInterval='10000' retries='-1' delay='10000'

@@ -97,9 +97,9 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>get client/joe/1/?numUpdates</td>
+            <td>get client/joe/1/?numUpdate</td>
             <td><pre>
-/node/heron/client/joe/1/?numUpdates=7537
+/node/heron/client/joe/1/?numUpdate=7537
             </pre></td>
             <td>The login session <code>1</code> of user <code>joe</code> has delivered 7537 messages to the callback client up to now
             </td>

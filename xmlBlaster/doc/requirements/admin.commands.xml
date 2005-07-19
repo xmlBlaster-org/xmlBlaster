@@ -149,9 +149,12 @@
             <uptime>10050</uptime>
             <killSession/>
 
-            <numPublished>4</numPublished>
-            <numGets>7</numGets>
-            <numUpdates>614050</numUpdates>
+            <numPublish>4</numPublish>
+            <numGet>7</numGet>
+            <numSubscribe>3</numSubscribe>
+            <numUnSubscribe>3</numUnSubscribe>
+            <numErase>0</numErase>
+            <numUpdate>614050</numUpdate>
 
             <dispatch id='callback' sessionId='4e56890ghdFzj0'
                   pingInterval='10000' retries='-1' delay='10000'
@@ -453,7 +456,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>client/joe/-5/?numUpdates</td>
+            <td>client/joe/-5/?numUpdate</td>
             <td>How many update messages were delivered to joe's session '-5' since server startup?</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
