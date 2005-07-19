@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13491,#13492 JMX Added jmxremote.jar to compile on JDK < 1.5
+
+ o Added administrative access methods, for example
+   "numPublish", "numSubscribe" etc.
+   Renamed "numUpdates" to "numUpdate"
+
  o #13477-#13482 Added JMX functionality
    for session, topic and qeueu handling
 
@@ -26,6 +32,9 @@ Changes for xxxxx [2005-xx-xx]
    accessdenied is thrown from server.
    This can happen when a client session is destroyed in the
    server as an administrative task or by other means.
+   Note: If the client is not fail safe configured and his callback address
+   is buggy, the server always destroys the session and the client
+   always reconnects which could lead to a loop.
 
  o #13461 Dispatcher change (java)
    Moved all protocol driver shutdown calls outside
