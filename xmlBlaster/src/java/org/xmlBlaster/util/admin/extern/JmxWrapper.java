@@ -152,10 +152,15 @@ public class JmxWrapper
          log.trace(ME, e.toString());
       }
 
-      String jndiPath = "/jmxrmi"; // "/jmxconnector";
+      // In a cluster environment set for example jndiPath=="/"+${cluster.node.id}
+      String jndiPath = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/jndiPath", "/jmxrmi"); // "/jmxconnector";
+
       String ssl = System.getProperty("com.sun.management.jmxremote.ssl");
       String aut = System.getProperty("com.sun.management.jmxremote.authenticate");
-      boolean isAuthenticated = !((ssl==null||"false".equals(ssl)) && (aut==null||"false".equals(aut)));
+      String pwd = System.getProperty("com.sun.management.jmxremote.password.file");
+      //boolean isAuthenticated = !((ssl==null||"false".equals(ssl)) && (aut==null||"false".equals(aut)));
+      boolean isAuthenticated = !(ssl==null||"false".equals(ssl)) || pwd!=null;
+      
       if (System.getProperty("com.sun.management.jmxremote.port") != null) {
          // For localhost or remote access with specific port
          // You have to configure authentication!
