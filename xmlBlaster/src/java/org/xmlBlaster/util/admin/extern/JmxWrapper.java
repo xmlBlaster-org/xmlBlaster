@@ -237,17 +237,17 @@ public class JmxWrapper
                   javax.management.remote.JMXAuthenticator auth = new javax.management.remote.JMXAuthenticator() {
                      public javax.security.auth.Subject authenticate(Object credentials) {
                         if (log.CALL) log.call(ME, "Calling authenticate(" + ((credentials==null)?"null":credentials.toString()) + ")");
-                        if (!(credentials instanceof String[])) throw new SecurityException("Bad credentials, please pass user name and password");
+                        if (!(credentials instanceof String[])) throw new SecurityException("xmlBlaster responds: Bad credentials, please pass user name and password");
                         String[] creds = (String[])credentials;
-                        if (creds.length != 2) throw new SecurityException("Bad credentials, please pass user name and password");
+                        if (creds.length != 2) throw new SecurityException("xmlBlaster responds: Bad credentials, please pass user name and password");
 
                         String user = creds[0];
                         String password = creds[1];
                         if (log.TRACE) log.trace(ME, "Calling authenticate(user=" + user + ", password=" + password + ")");
 
-                        if (password == null) throw new SecurityException("Missing password");
-                        if (!storedUser.equals(user)) throw new SecurityException("Unknown user " + user + ",  please try with user '" + storedUser + "'");
-                        if (!storedPassword.equals(password)) throw new SecurityException("Bad password, please try again");
+                        if (password == null) throw new SecurityException("xmlBlaster responds: Missing password");
+                        if (!storedUser.equals(user)) throw new SecurityException("xmlBlaster responds: Unknown user " + user + ",  please try with user '" + storedUser + "'");
+                        if (!storedPassword.equals(password)) throw new SecurityException("xmlBlaster responds: Bad password, please try again");
 
                         Set principals = new HashSet();
                         principals.add(new javax.management.remote.JMXPrincipal(user));
@@ -292,7 +292,7 @@ public class JmxWrapper
                method = clazz.getMethod("start", paramCls);
                method.invoke(jMXConnectorServer, params); // finally ... starts JMX
 
-               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "' user=" + storedUser);
+               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "' and user=" + storedUser);
                useJmx++;
             }
             catch(Throwable ex) {
