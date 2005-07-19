@@ -17,6 +17,8 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 
+import org.xmlBlaster.test.Util;
+
 import junit.framework.*;
 
 
@@ -167,12 +169,15 @@ public class TestSession extends TestCase implements I_Callback
          try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { } // wait until session expires
 
          try {
-            log.info(ME, "Check access ...");
-            con.get("<key oid='__cmd:?freeMem'/>", null);
-            assertTrue("get of expired login session is not possible", false);
+            log.info(ME, "Check that session has dissapeared ...");
+            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
+            assertEquals("Can't access __sys__UserList", 1, msgs.length);
+            log.info(ME, "Got userList=" + msgs[0].getContentStr());
+            assertEquals("Session of " + name + " was not destroyed by failing callback",
+                      -1, msgs[0].getContentStr().indexOf(name));
          }
-         catch (Exception e) {
-            log.info(ME, "Success, no access after session expiry");
+         catch (XmlBlasterException e) {
+            fail("Session was not destroyed: " + e.toString());
          }
       }
       finally { // clean up

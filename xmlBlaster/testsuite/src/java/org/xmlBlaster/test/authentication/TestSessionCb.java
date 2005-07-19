@@ -27,6 +27,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 
+import org.xmlBlaster.test.Util;
 import junit.framework.*;
 
 
@@ -105,10 +106,11 @@ public class TestSessionCb extends TestCase
       log.info(ME, "testSessionCb() ...");
       final Global glob1 = glob.getClone(null);
       final Global glob2 = glob.getClone(null);
+      String name1 = "NUMBER_ONE";
       try {
          log.info(ME, "Connecting ...");
          con1 = glob1.getXmlBlasterAccess();
-         ConnectQos qos = new ConnectQos(glob1);
+         ConnectQos qos = new ConnectQos(glob1, name1, "secret");
          assertInUpdate = null;
          con1.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
@@ -171,13 +173,16 @@ public class TestSessionCb extends TestCase
          assertTrue("Update is missing", assertInUpdate != null);
 
          try {
-            con1.get("<key oid='__cmd:?freeMem'/>", null);
-            fail("XmlBlaster should have killed us because of callback problems");
+            log.info(ME, "Check that session has dissapeared ...");
+            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
+            assertEquals("Can't access __sys__UserList", 1, msgs.length);
+            log.info(ME, "Got userList=" + msgs[0].getContentStr() + " checking for " + name1);
+            assertEquals("Session of " + name1 + " was not destroyed by failing callback",
+                      -1, msgs[0].getContentStr().indexOf(name1));
          }
          catch (XmlBlasterException e) {
-            log.info(ME, "OK, expected destroyed session: " + e.toString());
+            fail("Session was not destroyed: " + e.toString());
          }
-         
       }
       catch (XmlBlasterException e) {
          fail("SessionCb test failed: " + e.toString());

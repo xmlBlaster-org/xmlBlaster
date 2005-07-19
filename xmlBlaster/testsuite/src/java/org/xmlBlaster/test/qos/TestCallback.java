@@ -23,6 +23,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 
+import org.xmlBlaster.test.Util;
 import junit.framework.*;
 
 
@@ -153,13 +154,18 @@ public class TestCallback extends TestCase implements I_Callback
          assertTrue("Expected a dead letter", isDeadMessage);
          isDeadMessage = false;
 
-         try { // this should fail
-            con.subscribe("<key oid='testCallbackMsg'/>", null);
-            assertTrue("Session should be destroyed by xmlBlaster", false);
-            //con.disconnect(null);
+         //Global.waitOnKeyboardHit("Session destroyed? Hit a key to continue");
+         
+         // Check with user "admin" if session of "Tim" has disappeared
+         try {
+            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
+            assertEquals("Can't access __sys__UserList", 1, msgs.length);
+            log.info(ME, "Got userList=" + msgs[0].getContentStr());
+            assertEquals("Session of " + name + " was not destroyed by failing callback",
+                      -1, msgs[0].getContentStr().indexOf(name));
          }
-         catch (Exception e2) {
-            log.info(ME, "SUCCESS: The session was destroyed by xmlBlaster");
+         catch (XmlBlasterException e) {
+            fail("Session was not destroyed: " + e.toString());
          }
       }
       catch (Exception e) {
