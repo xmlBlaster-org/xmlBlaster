@@ -21,6 +21,8 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/qos/storage/ClientQueueProperty.h>
 #include <util/qos/storage/CbQueueProperty.h>
 #include <util/qos/ClientProperty.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 
 #include <vector>
 #include <map>
@@ -31,7 +33,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
  * Holds the connect() QoS XML markup. 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
  */
-class Dll_Export ConnectQosData
+class Dll_Export ConnectQosData : public org::xmlBlaster::util::ReferenceCounterBase
 {
 
 public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
@@ -243,9 +245,13 @@ template <typename T_VALUE> T_VALUE ConnectQosData::getClientProperty(
    return defaultValue;
 }
 
+typedef org::xmlBlaster::util::ReferenceHolder<ConnectQosData> ConnectQosDataRef;
+
 typedef ConnectQosData ConnectQos;
+typedef org::xmlBlaster::util::ReferenceHolder<ConnectQos> ConnectQosRef;
 
 typedef ConnectQosData ConnectReturnQos;
+typedef org::xmlBlaster::util::ReferenceHolder<ConnectReturnQos> ConnectReturnQosRef;
 
 }}}} // namespaces
 

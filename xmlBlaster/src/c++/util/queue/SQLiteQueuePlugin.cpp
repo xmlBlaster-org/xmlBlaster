@@ -229,7 +229,7 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
             if (log_.trace()) log_.trace(ME, "PublishQueueEntry is reference countet");
          }
          else if (methodName == MethodName::CONNECT) {
-            ConnectQos connectQos = connectQosFactory_.readObject(string(msgUnit.qos));
+            ConnectQosRef connectQos = connectQosFactory_.readObject(string(msgUnit.qos));
             ConnectQueueEntry *pq = new ConnectQueueEntry(global_, connectQos,
                                            queueEntryC.priority, queueEntryC.uniqueId);
             if (log_.trace()) log_.trace(ME, "Got ConnectQueueEntry from queue");

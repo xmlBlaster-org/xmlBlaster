@@ -36,8 +36,8 @@ class Dll_Export ConnectionsHandler : public I_Timeout, public org::xmlBlaster::
 {
 private:
    const std::string ME;
-   org::xmlBlaster::util::qos::ConnectQos* connectQos_;
-   org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
+   org::xmlBlaster::util::qos::ConnectQosRef connectQos_;
+   org::xmlBlaster::util::qos::ConnectReturnQosRef connectReturnQos_;
    org::xmlBlaster::client::I_ConnectionProblems* connectionProblemsListener_;
    org::xmlBlaster::client::protocol::I_XmlBlasterConnection* connection_;
    enum States status_;
@@ -71,7 +71,7 @@ public:
     * @param client A handle to your callback if desired or null
     * @return org::xmlBlaster::util::qos::ConnectReturnQos
     */
-   org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+   org::xmlBlaster::util::qos::ConnectReturnQosRef connect(const org::xmlBlaster::util::qos::ConnectQosRef& qos);
 
    /**
     * Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
@@ -155,20 +155,20 @@ public:
     */
    std::string getStatusString() const;
 
-   org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
+   org::xmlBlaster::util::qos::ConnectReturnQosRef connectRaw(const org::xmlBlaster::util::qos::ConnectQosRef& connectQos);
 
    virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() const;
 
-   virtual org::xmlBlaster::util::qos::ConnectReturnQos* getConnectReturnQos();
+   virtual org::xmlBlaster::util::qos::ConnectReturnQosRef getConnectReturnQos();
 
-   virtual org::xmlBlaster::util::qos::ConnectQos* getConnectQos();
+   virtual org::xmlBlaster::util::qos::ConnectQosRef getConnectQos();
 
 protected:
    /** only used inside the class to avoid deadlock */
    long flushQueueUnlocked(org::xmlBlaster::util::queue::I_Queue *queueToFlush, bool doRemove=true);
    org::xmlBlaster::client::qos::PublishReturnQos queuePublish(const org::xmlBlaster::util::MessageUnit& msgUnit);
    org::xmlBlaster::client::qos::SubscribeReturnQos queueSubscribe(const org::xmlBlaster::client::key::SubscribeKey& key, const org::xmlBlaster::client::qos::SubscribeQos& qos);
-   org::xmlBlaster::util::qos::ConnectReturnQos& queueConnect();
+   org::xmlBlaster::util::qos::ConnectReturnQosRef& queueConnect();
    /**
     * @param withInitialPing If true do an immediate ping without delay
     */

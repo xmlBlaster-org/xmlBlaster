@@ -60,12 +60,12 @@ protected:
    std::string logId_;
    org::xmlBlaster::util::MessageUnit* msgUnit_;
    /* TODO: Change that connectQos, queryQos all derive from QosData and are transported inside msgUnit */
-   org::xmlBlaster::util::qos::ConnectQos* connectQos_;
+   org::xmlBlaster::util::qos::ConnectQosRef connectQos_;
 
    /**
     * Specific return value for connect(). 
     */
-   mutable org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
+   mutable org::xmlBlaster::util::qos::ConnectReturnQosRef connectReturnQos_;
    /**
     * Specific return value for publish(). 
     */
@@ -101,7 +101,7 @@ public:
      * @param connectQos We take a clone of it
      */
     MsgQueueEntry(org::xmlBlaster::util::Global& global,
-                  const org::xmlBlaster::util::qos::ConnectQos& connectQos,
+                  const org::xmlBlaster::util::qos::ConnectQosRef& connectQos,
                   const std::string& embeddedType,
                   int priority,
                   bool persistent,
@@ -126,47 +126,7 @@ public:
 
     Global& getGlobal() const { return global_; }
 
-    inline void copy(const MsgQueueEntry& entry)
-    {
-       if (connectQos_ != NULL) {
-          delete connectQos_;
-          connectQos_ = NULL;
-       }
-       if (entry.connectQos_ != NULL) connectQos_ = new org::xmlBlaster::util::qos::ConnectQos(*entry.connectQos_);
-
-       if (msgUnit_ != NULL) {
-          delete msgUnit_;
-          msgUnit_ = NULL;
-       }
-       if (entry.msgUnit_ != NULL) msgUnit_ = new org::xmlBlaster::util::MessageUnit(*entry.msgUnit_);
-
-       if (connectReturnQos_ != NULL) {
-          delete connectReturnQos_;
-          connectReturnQos_ = NULL; 
-       }
-       if (entry.connectReturnQos_ != NULL) 
-          connectReturnQos_ = new org::xmlBlaster::util::qos::ConnectReturnQos(*entry.connectReturnQos_);
-
-       if (publishReturnQos_ != NULL) {
-          delete publishReturnQos_;
-          publishReturnQos_ = NULL; 
-       }
-       if (entry.publishReturnQos_ != NULL) 
-          publishReturnQos_ = new org::xmlBlaster::client::qos::PublishReturnQos(*entry.publishReturnQos_);
-
-       if (statusQosData_ != NULL) {
-          delete statusQosData_;
-          statusQosData_ = NULL; 
-       }
-       if (entry.statusQosData_ != NULL) 
-          statusQosData_ = new org::xmlBlaster::util::qos::StatusQosData(*entry.statusQosData_);
-
-       uniqueId_     = entry.uniqueId_;
-       embeddedType_ = entry.embeddedType_;
-       priority_     = entry.priority_;
-       persistent_      = entry.persistent_;
-       logId_        = logId_;
-    }
+    void copy(const MsgQueueEntry& entry);
 
     /**
      * copy constructor

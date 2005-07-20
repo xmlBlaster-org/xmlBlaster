@@ -52,7 +52,7 @@ namespace org {
       std::string                          passwd_;
       int                             numLogins_;
       DefaultCallback*                defaultCallback_;
-      org::xmlBlaster::util::qos::ConnectReturnQos connectReturnQos_;
+      org::xmlBlaster::util::qos::ConnectReturnQosRef connectReturnQos_;
       std::string                          sessionId_;
       std::string                          xmlBlasterIOR_;
       std::string                          callbackIOR_;
@@ -156,7 +156,7 @@ public:
       /**
        * The new way to connect (i.e. login to xmlBlaster)
        */
-       org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& connectQos);
+       org::xmlBlaster::util::qos::ConnectReturnQosRef connect(const org::xmlBlaster::util::qos::ConnectQosRef& connectQos);
 
        /**
         * Disconnects from the xmlBlaster server (the callback server is not

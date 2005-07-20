@@ -409,7 +409,7 @@ bool SocketDriver::shutdownCb()
    return true;
 }
 
-ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlasterException) // Visual C++ emits a warning with this throw clause
+ConnectReturnQosRef SocketDriver::connect(const ConnectQosRef& qos) //throw (XmlBlasterException) // Visual C++ emits a warning with this throw clause
 {
    if (log_.call()) log_.call(ME, string("connect() ") + string((connection_==0)?"connection_==0":"connection_!=0") +
                               ", secretSessionId_="+secretSessionId_);
@@ -417,14 +417,14 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
    ::ExceptionStruct socketException;
    Lock lock(mutex_);
    try {
-      loginName_ = qos.getUserId();
+      loginName_ = qos->getUserId();
       if (connection_ == 0) {
          reconnectOnIpLevel(); // Connects on IP level only, throws an exception on failure
          if (secretSessionId_ != "") {
-            qos.getSessionQos().setSecretSessionId(secretSessionId_);
+            qos->getSessionQos().setSecretSessionId(secretSessionId_);
          }
          if (connection_ != 0 && connection_->callbackP != 0) {
-            ConnectQos *qq = const_cast<ConnectQos*>(&qos);
+            ConnectQos *qq = const_cast<ConnectQos*>(&(*qos));
             if (qq->getSessionCbQueueProperty().getCurrentCallbackAddress()->getType() == Constants::SOCKET) {
                // Force callback address, it could have changed on reconnect (checked to cb not be a delegate)
                string addr = string("socket://") + string(connection_->callbackP->hostCB) + ":" +
@@ -435,15 +435,15 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
          }
       }
 
-      char *retQos = connection_->connect(connection_, qos.toXml().c_str(),
+      char *retQos = connection_->connect(connection_, qos->toXml().c_str(),
                                           myUpdate, &socketException);
       if (*socketException.errorCode != 0) {
          throw socketException; // Is converted to util::XmlBlasterException in catch_MACRO
       }
       ConnectQosFactory factory(global_);
-      ConnectReturnQos connectReturnQos = factory.readObject(retQos);
+      ConnectReturnQosRef connectReturnQos = factory.readObject(retQos);
       xmlBlasterFree(retQos);
-      secretSessionId_ = connectReturnQos.getSecretSessionId();
+      secretSessionId_ = connectReturnQos->getSecretSessionId();
       return connectReturnQos;
    } catch_MACRO("::connect", false)
 }

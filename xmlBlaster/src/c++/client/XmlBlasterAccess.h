@@ -89,9 +89,9 @@ private:
 
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
    std::string serverNodeId_;
-   org::xmlBlaster::util::qos::ConnectQos connectQos_;
+   org::xmlBlaster::util::qos::ConnectQosRef connectQos_;
    /** The return from connect() */
-   org::xmlBlaster::util::qos::ConnectReturnQos *connectReturnQos_;
+   org::xmlBlaster::util::qos::ConnectReturnQosRef connectReturnQos_;
    /** The dispatcher framework **/
    org::xmlBlaster::util::dispatch::DispatchManager* dispatchManager_;
    /** The callback server */
@@ -152,8 +152,17 @@ public:
     * Calling multiple times for changed connections should be possible but is not deeply tested.
     * @param qos Your configuration desire
     * @param client If not null callback messages will be routed to client.update()
+    * @return The returned QOS for this connection
     */
    org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos, org::xmlBlaster::client::I_Callback *clientCb);
+
+   /**
+    * Access the current ConnectQos instance. 
+    * @return A reference on ConnectQos, you don' need to take care on new/delete, just use it.
+    *         Changes made on the instance are seen in the library as well.
+    */
+   org::xmlBlaster::util::qos::ConnectQosRef getConnectQos();
+   org::xmlBlaster::util::qos::ConnectReturnQosRef getConnectReturnQos();
 
    /**
     * Access the previously with connect() registered callback pointer. 
@@ -271,6 +280,20 @@ public:
 //   std::vector<std::string> erase(const std::string& xmlKey, const std::string& qos);
    std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
+   /** 
+    * Switch callback dispatcher on/off. 
+    * This is a convenience function (see ConnectQos).
+    * @param isActive true: XmlBlaster server delivers callback messages
+    *        false: XmlBlaster server keeps messages for this client in the callback queue
+    */
+   void setCallbackDispatcherActive(bool isActive);
+
+   /**
+    * Convenience method to send an administrative command to xmlBlaster. 
+    * @param command for example "?exit=0" or "client/joe/?dispatcherActive=false" (the "__cmd:" is added by us)
+    * @throws XmlBlasterException on problems
+    */
+   org::xmlBlaster::client::qos::PublishReturnQos sendAdministrativeCommand(const std::string &command);
 
    /**
     * This is the callback method invoked from xmlBlaster

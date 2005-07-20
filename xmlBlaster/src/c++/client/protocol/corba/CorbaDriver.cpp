@@ -239,7 +239,7 @@ bool CorbaDriver::shutdownCb()
    _COMM_CATCH("::shutdownCb", false, false)
 }
 
-ConnectReturnQos CorbaDriver::connect(const ConnectQos& qos)
+ConnectReturnQosRef CorbaDriver::connect(const ConnectQosRef& qos)
 {
    Lock lock(mutex_, orbIsThreadSafe_);
    _COMM_TRY

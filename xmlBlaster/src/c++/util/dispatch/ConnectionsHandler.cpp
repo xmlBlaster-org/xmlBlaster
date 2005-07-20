@@ -32,6 +32,8 @@ using namespace org::xmlBlaster::client::key;
 ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
                                        const string& instanceName)
    : ME(string("ConnectionsHandler-") + instanceName), 
+     connectQos_((ConnectQos*)0),
+     connectReturnQos_((ConnectReturnQos*)0),
      status_(START), 
      global_(global), 
      log_(global.getLog("org.xmlBlaster.util.dispatch")),
@@ -40,9 +42,7 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
      instanceName_(instanceName)
 {
    ClientQueueProperty prop(global_, "");
-   connectQos_         = NULL;
    connectionProblemsListener_ = NULL;
-   connectReturnQos_   = NULL;
    connection_         = NULL;
    queue_              = NULL;
    retries_            = -1;
@@ -67,7 +67,7 @@ ConnectionsHandler::~ConnectionsHandler()
    }
    */
    Lock lock(connectMutex_);
-   string type = connectQos_->getAddress()->getType();
+   string type = (connectQos_.isNull()) ? "SOCKET" : connectQos_->getAddress()->getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
       global_.getDispatchManager().releasePlugin(instanceName_, type, version);
@@ -78,28 +78,25 @@ ConnectionsHandler::~ConnectionsHandler()
       queue_ = NULL;
    }
    if (log_.trace()) log_.trace(ME, "destructor: going to delete the connectQos");
-   delete connectQos_;
-   delete connectReturnQos_;
    status_ = END;
    if (log_.trace()) log_.trace(ME, "destructor ended");
 } 
 
 
-ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
+ConnectReturnQosRef ConnectionsHandler::connect(const ConnectQosRef& qos)
 {
    if (log_.call()) log_.call(ME, string("::connect status is '") + lexical_cast<std::string>(status_) + "'");
-   if (log_.dump()) log_.dump(ME, string("::connect, the qos is: ") + qos.toXml());
+   if (qos.isNull()) {
+      throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME + "::connect", "your connectQos is null");
+   }
+   if (log_.dump()) log_.dump(ME, string("::connect, the qos is: ") + qos->toXml());
    Lock lock(connectMutex_);
    if (isConnected()) {
       log_.warn(ME, "connect: you are already connected");
-      return *connectReturnQos_;
+      return connectReturnQos_;
    }
 
-   if (connectQos_) {
-      delete connectQos_;
-      connectQos_ = 0;
-   }
-   connectQos_ = new ConnectQos(qos);
+   connectQos_ = qos;
 
    global_.setSessionName(connectQos_->getSessionQos().getSessionName());
    global_.setImmutableId(connectQos_->getSessionQos().getRelativeName());
@@ -118,13 +115,9 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    if (!connection_) {
       connection_ = &(global_.getDispatchManager().getPlugin(instanceName_, type, version));
    }
-   if (connectReturnQos_) {
-      delete connectReturnQos_;
-      connectReturnQos_ = 0;
-   }
 
    try {
-      connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+      connectReturnQos_ = connection_->connect(*connectQos_);
       global_.setSessionName(connectReturnQos_->getSessionQos().getSessionName());
       // For "joe/1" it remains immutable; For "joe" there is added the server side generated sessionId "joe/-33":
       global_.setImmutableId(connectReturnQos_->getSessionQos().getRelativeName());
@@ -156,7 +149,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    flushQueue();
 
-   return *connectReturnQos_;
+   return connectReturnQos_;
 }
 
 bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
@@ -291,7 +284,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, org::xmlBlaster::util::MethodName::PUBLISH);
    try {
       // fill in the sender absolute name
-      if (connectReturnQos_) {
+      if (!connectReturnQos_.isNull()) {
          msgUnit.getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
       return connection_->publish(msgUnit);
@@ -312,7 +305,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
    Lock lock(publishMutex_);
 
    // fill in the sender absolute name
-   if (connectReturnQos_) {
+   if (!connectReturnQos_.isNull()) {
       for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
@@ -343,7 +336,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(const vector<MessageUnit
    Lock lock(publishMutex_);
 
    // fill in the sender absolute name
-   if (connectReturnQos_) {
+   if (!connectReturnQos_.isNull()) {
       for (vector<MessageUnit>::size_type i=0;i<msgUnitArr.size();i++) {
          msgUnitArr[i].getQos().setSender(connectReturnQos_->getSessionQos().getSessionName());
       }
@@ -459,14 +452,12 @@ void ConnectionsHandler::timeout(void * /*userData*/)
    if (status_ == POLLING) {
       if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'POLLING'");
       try {
-         if ((connection_) && (connectQos_)) {
+         if (connection_ && !connectQos_.isNull()) {
             if ( log_.trace() ) log_.trace(ME, "ping timeout: going to retry a connection");
  
             string lastSessionId = connectQos_->getSessionQos().getSecretSessionId();
-            ConnectReturnQos retQos = connection_->connect(*connectQos_);
-            if (log_.trace()) log_.trace(ME, string("Successfully reconnected, ConnectRetQos: ") + retQos.toXml());
-            if (connectReturnQos_) delete connectReturnQos_;
-            connectReturnQos_ = new ConnectReturnQos(retQos);
+            connectReturnQos_ = connection_->connect(*connectQos_);
+            if (log_.trace()) log_.trace(ME, string("Successfully reconnected, ConnectRetQos: ") + connectReturnQos_->toXml());
             string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
             log_.info(ME, string("Successfully reconnected as '") + connectReturnQos_->getSessionQos().getAbsoluteName() +
                           "' after " + lexical_cast<string>(currentRetry_) + " attempts");
@@ -525,7 +516,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
 SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
    if (!queue_) {
-      if (!connectQos_) {
+      if (connectQos_.isNull()) {
          throw XmlBlasterException(INTERNAL_SUBSCRIBE, ME + "::queueSubscribe", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       if (log_.trace()) log_.trace(ME+":queueSubscribe", "creating a client queue ...");
@@ -555,7 +546,7 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
 PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 {
    if (!queue_) {
-      if (!connectQos_) {
+      if (connectQos_.isNull()) {
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       if (log_.trace()) log_.trace(ME+":queuePublish", "creating a client queue ...");
@@ -572,7 +563,7 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
    return retQos;
 }
 
-ConnectReturnQos& ConnectionsHandler::queueConnect()
+ConnectReturnQosRef& ConnectionsHandler::queueConnect()
 {
    if (log_.call()) log_.call(ME, string("::queueConnect with sessionQos: '") + connectQos_->getSessionQos().getAbsoluteName() + "'");
    long tmp = connectQos_->getSessionQos().getPubSessionId(); 
@@ -601,7 +592,7 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
       // stopping
    }
    startPinger(true);
-   return *connectReturnQos_;
+   return connectReturnQos_;
 }
 
 
@@ -618,7 +609,7 @@ long ConnectionsHandler::flushQueue()
    //   Lock lock(connectionMutex_);
 
    if (!queue_) {
-      if (!connectQos_) {
+      if (connectQos_.isNull()) {
          log_.error(ME+".flusgQueue", "need to create a queue but the connectQos is NULL (probably never connected)");
       }
       if (log_.trace()) log_.trace(ME+".flushQueue", "creating the client queue ...");
@@ -682,7 +673,7 @@ I_Queue* ConnectionsHandler::getQueue()
 
 bool ConnectionsHandler::isFailsafe() const
 {
-   if (!connectQos_) return false;
+   if (connectQos_.isNull()) return false;
    return connectQos_->getAddress()->getDelay() > 0;
 }
 
@@ -699,14 +690,14 @@ bool ConnectionsHandler::startPinger(bool withInitialPing)
 
    long delay        = 10000;
    long pingInterval = 0;
-   if ( connectQos_ ) {
-      delay        = connectQos_->getAddress()->getDelay();
-      pingInterval = connectQos_->getAddress()->getPingInterval();
-   }
-   else {
+   if (connectQos_.isNull()) {
       ConnectQos tmp(global_);
       delay        = tmp.getAddress()->getDelay();
       pingInterval = tmp.getAddress()->getPingInterval();
+   }
+   else {
+      delay        = connectQos_->getAddress()->getDelay();
+      pingInterval = connectQos_->getAddress()->getPingInterval();
    }
    if (log_.trace()) {
       log_.trace(ME, string("startPinger(status=") + 
@@ -755,23 +746,14 @@ bool ConnectionsHandler::isDead() const
    return status_ == DEAD;
 }
 
-ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
+ConnectReturnQosRef ConnectionsHandler::connectRaw(const ConnectQosRef& connectQos)
 {
    if (log_.call()) log_.call(ME, "::connectRaw");
-   ConnectReturnQos retQos = connection_->connect(connectQos);
-   if (connectQos_) {
-      delete connectQos_;
-      connectQos_ = NULL;
-   }
-   connectQos_ = new ConnectQos(connectQos);
-   if (connectReturnQos_) {
-      delete connectReturnQos_;
-      connectReturnQos_ = NULL;
-   }
-   connectReturnQos_ = new ConnectReturnQos(retQos);
+   connectReturnQos_ = connection_->connect(connectQos);
+   connectQos_ = connectQos;
    log_.info(ME, string("Successfully connected with sessionId = '") + connectReturnQos_->getSessionQos().getSecretSessionId() + "'");
    connectQos_->getSessionQos().setSecretSessionId(connectReturnQos_->getSessionQos().getSecretSessionId());
-   return *connectReturnQos_;
+   return connectReturnQos_;
 }
 
 
@@ -784,14 +766,14 @@ I_XmlBlasterConnection& ConnectionsHandler::getConnection() const
 }
 
 
-ConnectReturnQos* ConnectionsHandler::getConnectReturnQos()
+ConnectReturnQosRef ConnectionsHandler::getConnectReturnQos()
 {
    return connectReturnQos_;
 }
 
-ConnectQos* ConnectionsHandler::getConnectQos()
+ConnectQosRef ConnectionsHandler::getConnectQos()
 {
-   return connectReturnQos_;
+   return connectReturnQos_; // contains everything and is typedef on ConnectQos
 }
 
 /*

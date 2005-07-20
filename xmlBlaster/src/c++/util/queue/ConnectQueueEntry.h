@@ -40,7 +40,7 @@ public:
     * @param type Only "MSG_RAW|connect" is supported
     */
    ConnectQueueEntry(org::xmlBlaster::util::Global& global,
-                     const org::xmlBlaster::util::qos::ConnectQos& connectQos,
+                     const org::xmlBlaster::util::qos::ConnectQosRef& connectQos,
                      int priority=MAX_PRIORITY,
                      org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
@@ -64,9 +64,15 @@ public:
 
    size_t getSizeInBytes() const;
 
-   org::xmlBlaster::util::qos::ConnectQos &getConnectQos() const;
+   /**
+    * @return Can be null ref.isNull()
+    */
+   org::xmlBlaster::util::qos::ConnectQosRef getConnectQos() const;
 
-   org::xmlBlaster::util::qos::ConnectReturnQos &getConnectReturnQos() const;
+   /**
+    * @return Can be null ref.isNull()
+    */
+   org::xmlBlaster::util::qos::ConnectReturnQosRef getConnectReturnQos() const;
 
    std::string toXml(const std::string& indent="") const;
 

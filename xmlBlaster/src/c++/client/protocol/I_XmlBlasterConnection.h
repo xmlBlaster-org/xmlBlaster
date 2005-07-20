@@ -80,7 +80,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * @param client A handle to your callback if desired or null
        * @return org::xmlBlaster::util::qos::ConnectReturnQos
        */
-      virtual org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos) = 0;
+      virtual org::xmlBlaster::util::qos::ConnectReturnQosRef connect(const org::xmlBlaster::util::qos::ConnectQosRef& qos) = 0;
 
       /**
        * Logout from xmlBlaster.

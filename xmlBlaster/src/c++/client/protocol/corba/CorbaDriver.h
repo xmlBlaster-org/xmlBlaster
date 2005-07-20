@@ -95,7 +95,7 @@ namespace org {
       bool shutdownCb();
 
       // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
-      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+      org::xmlBlaster::util::qos::ConnectReturnQosRef connect(const org::xmlBlaster::util::qos::ConnectQosRef& qos);
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();
 //      std::string loginRaw();

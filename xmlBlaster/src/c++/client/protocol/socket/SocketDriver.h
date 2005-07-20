@@ -103,7 +103,8 @@ namespace org {
       //               ::ExceptionStruct *exception);
 
       // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
-      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+      // Note: the const is cast away, the declaration should be changed
+      org::xmlBlaster::util::qos::ConnectReturnQosRef connect(const org::xmlBlaster::util::qos::ConnectQosRef& qos);
             //throw (org::xmlBlaster::util::ExceptionStruct);
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();

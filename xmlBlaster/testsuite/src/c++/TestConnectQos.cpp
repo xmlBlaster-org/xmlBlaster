@@ -187,22 +187,22 @@ public:
 
          ConnectQosFactory factory(global_);
          for (int i=0; i < 2; i++) {
-            ConnectQos connQos = factory.readObject(qos);
-            string qos2 = connQos.toXml();
+            ConnectQosRef connQos = factory.readObject(qos);
+            string qos2 = connQos->toXml();
             connQos = factory.readObject(qos2); // round trip: parse -> dump -> parse again -> check
-            assertEquals(log_, me, "/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445", connQos.getInstanceId(), "check 'instanceId' flag");
-            assertEquals(log_, me, defaultBool, connQos.getPtp(), "check 'ptp' flag");
-            assertEquals(log_, me, defaultBool, connQos.isClusterNode(), "check 'clusterNode' flag");
-            assertEquals(log_, me, defaultBool, connQos.isRefreshSession(), "check 'refreshSession' flag");
-            assertEquals(log_, me, defaultBool, connQos.isDuplicateUpdates(), "check 'duplicateUpdates' flag");
-            assertEquals(log_, me, defaultBool, connQos.isPersistent(), "check 'persistent' flag");
-            assertEquals(log_, me, 123, connQos.getClientProperty("intKey", 0), "check 'intKey' flag");
+            assertEquals(log_, me, "/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445", connQos->getInstanceId(), "check 'instanceId' flag");
+            assertEquals(log_, me, defaultBool, connQos->getPtp(), "check 'ptp' flag");
+            assertEquals(log_, me, defaultBool, connQos->isClusterNode(), "check 'clusterNode' flag");
+            assertEquals(log_, me, defaultBool, connQos->isRefreshSession(), "check 'refreshSession' flag");
+            assertEquals(log_, me, defaultBool, connQos->isDuplicateUpdates(), "check 'duplicateUpdates' flag");
+            assertEquals(log_, me, defaultBool, connQos->isPersistent(), "check 'persistent' flag");
+            assertEquals(log_, me, 123, connQos->getClientProperty("intKey", 0), "check 'intKey' flag");
             // Base64: QmxhQmxhQmxh -> BlaBlaBla
-            assertEquals(log_, me, string("BlaBlaBla"), connQos.getClientProperty("StringKey", string("wrong")), "check 'StringKey' flag");
-            assertEquals(log_, me, "IIOP:01110C332A141532012A0F", connQos.getSecretSessionId(), "check 'secretSessionId' flag");
+            assertEquals(log_, me, string("BlaBlaBla"), connQos->getClientProperty("StringKey", string("wrong")), "check 'StringKey' flag");
+            assertEquals(log_, me, "IIOP:01110C332A141532012A0F", connQos->getSecretSessionId(), "check 'secretSessionId' flag");
             // TODO: other checks!
 
-            log_.info(me, string("connect qos: ") + connQos.toXml());
+            log_.info(me, string("connect qos: ") + connQos->toXml());
          }
       }
    }

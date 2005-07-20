@@ -63,7 +63,7 @@ private:
 
    ClientProperty* clientProperty_;
 
-   org::xmlBlaster::util::qos::ConnectQos connectQos_;
+   org::xmlBlaster::util::qos::ConnectQosDataRef connectQos_;
    /** when the current parsing point should be handled by another qos factory*/
    XmlHandlerBase* subFactory_;
 
@@ -95,7 +95,7 @@ public:
     */
    void endElement(const std::string& name);
 
-   org::xmlBlaster::util::qos::ConnectQosData readObject(const std::string& qos);
+   org::xmlBlaster::util::qos::ConnectQosDataRef readObject(const std::string& qos);
 };
 
 }}}} // namespaces

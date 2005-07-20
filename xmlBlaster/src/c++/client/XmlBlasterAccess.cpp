@@ -31,8 +31,8 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      globalRef_(NULL), 
      log_(global.getLog("org.xmlBlaster.client")),
      serverNodeId_("xmlBlaster"), 
-     connectQos_(global), 
-     connectReturnQos_(0),
+     connectQos_(new ConnectQos(global)), 
+     connectReturnQos_((ConnectReturnQos*)0),
      subscriptionCallbackMap_(),
      updateMutex_(),
      invocationMutex_(global.getProperty().get("xmlBlaster/invocationMutex/recursive", true))
@@ -55,8 +55,8 @@ XmlBlasterAccess::XmlBlasterAccess(GlobalRef globalRef)
      globalRef_(globalRef), 
      log_(global_.getLog("org.xmlBlaster.client")),
      serverNodeId_("xmlBlaster"), 
-     connectQos_(global_), 
-     connectReturnQos_(0),
+     connectQos_(new ConnectQos(global_)), 
+     connectReturnQos_((ConnectReturnQos*)0),
      subscriptionCallbackMap_(),
      updateMutex_(),
      invocationMutex_(globalRef->getProperty().get("xmlBlaster/invocationMutex/recursive", true))
@@ -98,7 +98,7 @@ void XmlBlasterAccess::cleanup(bool doLock)
    }
 
    if (cbServer_) {
-      CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+      CbQueueProperty prop = connectQos_->getSessionCbQueueProperty(); // Creates a default property for us if none is available
       const AddressBaseRef& addr = prop.getCurrentCallbackAddress(); // c++ may not return null
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr->getType(), addr->getVersion() );
       cbServer_ = NULL;
@@ -109,8 +109,6 @@ void XmlBlasterAccess::cleanup(bool doLock)
       delete connection_;
       connection_ = NULL;
    }
-   delete (connectReturnQos_);
-   connectReturnQos_ = 0;
 }
 
 
@@ -125,10 +123,10 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    cleanup(false);
 
    global_.setId(qos.getSessionQos().getAbsoluteName()); // global_.setId(loginName + currentTimeMillis());
-   connectQos_ = qos;
-   connectQos_.setInstanceId(global_.getInstanceId());
+   connectQos_ = new ConnectQos(qos);
+   connectQos_->setInstanceId(global_.getInstanceId());
 
-   SecurityQos securityQos = connectQos_.getSecurityQos();
+   SecurityQos securityQos = connectQos_->getSecurityQos();
 
    ME = string("XmlBlasterAccess-") + getId();
    string typeVersion = global_.getProperty().getStringProperty("queue/defaultPlugin", "CACHE,1.0");
@@ -150,8 +148,9 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
       connection_->initFailsafe(connectionProblems_);
       connectionProblems_ = NULL;
    }
-   if (log_.trace()) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
-   connectReturnQos_ = new ConnectReturnQos(connection_->connect(connectQos_));
+   if (log_.trace()) log_.trace(ME, string("::connect. connectQos: ") + connectQos_->toXml());
+   // do connect() now:
+   connectReturnQos_ = connection_->connect(connectQos_);
 
    ME = string("XmlBlasterAccess-") + connectReturnQos_->getSessionQos().getAbsoluteName();
 
@@ -173,11 +172,36 @@ org::xmlBlaster::client::I_Callback* XmlBlasterAccess::getCallback()
    return this->updateClient_;
 }
 
+void XmlBlasterAccess::setCallbackDispatcherActive(bool isActive)
+{
+   string command = getSessionName() + "/?dispatcherActive=" + lexical_cast<string>(isActive);
+   sendAdministrativeCommand(command);
+   connectQos_->getCbAddress()->setDispatcherActive(isActive);
+}
+
+PublishReturnQos XmlBlasterAccess::sendAdministrativeCommand(const string &command)
+{
+   string oid = string("__cmd:") + command;
+   PublishKey  key(global_, oid); // oid="__cmd:?exit=0"
+   PublishQos  qos(global_);
+   MessageUnit msgUnit(key, "", qos);
+   try {
+      PublishReturnQos ret = publish(msgUnit);
+      if (log_.trace()) log_.trace(ME, "Send '" + command + " '");
+      return ret;
+   }
+   catch (XmlBlasterException &e) {
+      if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
+      throw e;
+   }
+}
+
+
 void XmlBlasterAccess::createDefaultCbServer()
 {
    log_.call(ME, "::createDefaultCbServer");
 
-   CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+   CbQueueProperty prop = connectQos_->getSessionCbQueueProperty(); // Creates a default property for us if none is available
    const AddressBaseRef &addr = prop.getCurrentCallbackAddress();
 
    if(!cbServer_)
@@ -186,8 +210,8 @@ void XmlBlasterAccess::createDefaultCbServer()
    addr->setAddress(cbServer_->getCbAddress());
    addr->setType(cbServer_->getCbProtocol());
    // !!!!! prop.setCallbackAddress(addr);
-   connectQos_.setSessionCbQueueProperty(prop);
-   if (log_.trace()) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_.toXml());
+   connectQos_->setSessionCbQueueProperty(prop);
+   if (log_.trace()) log_.trace(ME, string("::createDefaultCbServer: connectQos: ") + connectQos_->toXml());
    log_.info(ME, "Callback settings: " + prop.getSettings());
 }
 
@@ -202,6 +226,13 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
    if (log_.trace()) log_.trace(ME, "After callback plugin initialize");
    return server;
 }
+
+org::xmlBlaster::util::qos::ConnectQosRef XmlBlasterAccess::getConnectQos() {
+   return connectQos_;
+}
+
+//org::xmlBlaster::util::qos::ConnectReturnQosRef XmlBlasterAccess::getConnectReturnQos() {
+//}
 
 void
 XmlBlasterAccess::initSecuritySettings(const string& /*secMechanism*/, const string& /*secVersion*/)
@@ -227,7 +258,7 @@ void XmlBlasterAccess::leaveServer(const StringMap &/*map*/)
    }
    
    if (cbServer_) {
-      CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+      CbQueueProperty prop = connectQos_->getSessionCbQueueProperty(); // Creates a default property for us if none is available
       AddressBaseRef addr = prop.getCurrentCallbackAddress(); // c++ may not return null
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr->getType(), addr->getVersion() );
       cbServer_ = NULL;
@@ -267,7 +298,7 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
       if (cbServer_) {
          ret3 = cbServer_->shutdownCb();
 
-         CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
+         CbQueueProperty prop = connectQos_->getSessionCbQueueProperty(); // Creates a default property for us if none is available
          const AddressBaseRef &addr = prop.getCurrentCallbackAddress();
          global_.getCbServerPluginManager().releasePlugin( instanceName_, addr->getType(), addr->getVersion() );
          cbServer_ = NULL;
@@ -285,15 +316,15 @@ string XmlBlasterAccess::getId()
 string XmlBlasterAccess::getSessionName()
 {
    string ret;
-   if (connectReturnQos_ != 0) ret = connectReturnQos_->getSessionQos().getAbsoluteName();
-   if (ret == "") ret = connectQos_.getSessionQos().getAbsoluteName();
+   if (!connectReturnQos_.isNull()) ret = connectReturnQos_->getSessionQos().getAbsoluteName();
+   if (ret == "") ret = connectQos_->getSessionQos().getAbsoluteName();
    return ret;
 }
 
 string XmlBlasterAccess::getLoginName()
 {
    try {
-      string nm = connectQos_.getSecurityQos().getUserId();
+      string nm = connectQos_->getSecurityQos().getUserId();
       if (nm != "") return nm;
    }
    catch (XmlBlasterException e) {
@@ -586,7 +617,7 @@ int main(int args, char* argv[])
 
        log.info("main", string("the connect qos is: ") + connectQos.toXml());
 
-       ConnectReturnQos retQos = xmlBlasterAccess.connect(connectQos, NULL);
+       ConnectReturnQosRef retQos = xmlBlasterAccess.connect(connectQos, NULL);
        log.info("", "Successfully connect to xmlBlaster");
 
        if (log.trace()) log.trace("main", "Subscribing using XPath syntax ...");

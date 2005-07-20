@@ -14,10 +14,12 @@ using namespace std;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 
-ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, int priority, Timestamp uniqueId)
+ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQosRef& connectQos, int priority, Timestamp uniqueId)
    : MsgQueueEntry(global, connectQos,
                    org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::CONNECT,
-                   priority, connectQos.isPersistent(), uniqueId)
+                   priority,
+                   (connectQos.isNull() ? false : connectQos->isPersistent()),
+                   uniqueId)
 {
    ME = "ConnectQueueEntry";
    if (log_.call()) log_.call(ME, "ctor ...");
@@ -56,7 +58,7 @@ ConnectQueueEntry::~ConnectQueueEntry() {
 const void* ConnectQueueEntry::getEmbeddedObject() const
 {
    if (log_.call()) log_.call(ME, "getEmbeddedObject() ...");
-   if (connectQos_ == 0) {
+   if (connectQos_.isNull()) {
       return 0;
    }
    if (embeddedType_ != (org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::CONNECT)) // "MSG_RAW|connect"
@@ -101,39 +103,39 @@ const void* ConnectQueueEntry::getEmbeddedObject() const
 const MsgQueueEntry& ConnectQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {
    if (log_.call()) log_.call(ME, "send");
-   if (connectReturnQos_) {
-      delete connectReturnQos_;
-      connectReturnQos_ = NULL;
-   }
    if (log_.dump()) log_.dump(ME, string("send: ") + toXml());
-   connectReturnQos_ = new ConnectReturnQos(connectionsHandler.connectRaw(*connectQos_));
+   connectReturnQos_ = connectionsHandler.connectRaw(connectQos_);
 //   connectionsHandler.setConnectReturnQos(*connectReturnQos_);
    return *this;
 }
 
 size_t ConnectQueueEntry::getSizeInBytes() const
 {
-   if (connectQos_) return sizeof(*connectQos_); // TODO: use toXml().size() ?
-   return 0;
+   if (!connectQos_.isNull()) {
+      return sizeof(*connectQos_); // TODO: use toXml().size() ?
+   }
+   return 1024;
 }
 
-ConnectQos &ConnectQueueEntry::getConnectQos() const
+ConnectQosRef ConnectQueueEntry::getConnectQos() const
 {
-   return *connectQos_;
+   return connectQos_;
 }
 
-ConnectReturnQos &ConnectQueueEntry::getConnectReturnQos() const
+ConnectReturnQosRef ConnectQueueEntry::getConnectReturnQos() const
 {
-   return *connectReturnQos_;
+   return connectReturnQos_;
 }
 
 
 string ConnectQueueEntry::toXml(const string& indent) const
 {
    string extraOffset = "   " + indent;
-   string ret = indent + "<connectQueueEntry>\n" +
-          extraOffset + connectQos_->toXml(indent) +
-          indent + "</connectQueueEntry>\n";
+   string ret = indent + "<connectQueueEntry>\n";
+   if (!connectQos_.isNull()) {
+      ret += extraOffset + connectQos_->toXml(indent);
+   }
+   ret += indent + "</connectQueueEntry>\n";
    return ret;
 }
 

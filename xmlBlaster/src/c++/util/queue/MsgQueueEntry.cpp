@@ -32,10 +32,10 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    : ReferenceCounterBase(), 
      ME("MsgQueueEntry"), 
      global_(global), 
-     log_(global.getLog("org.xmlBlaster.util.queue"))
+     log_(global.getLog("org.xmlBlaster.util.queue")),
+     connectQos_((ConnectQos*)0),
+     connectReturnQos_((ConnectReturnQos*)0)
 {
-   connectQos_       = NULL;
-   connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
    msgUnit_          = new MessageUnit(msgUnit);
    statusQosData_    = NULL;
@@ -47,12 +47,12 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    memset(&blobHolder_, 0, sizeof(BlobHolder));
 }
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
+MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQosRef& connectQos, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue")),
+     connectQos_(*connectQos),  // OK to take a reference only???!!! Should we clone it so that RAM queue behaves same as persistent queue?
+     connectReturnQos_((ConnectReturnQos*)0)
 {
-   connectQos_       = new ConnectQos(connectQos);
    msgUnit_          = NULL;
-   connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
    statusQosData_    = NULL;
    uniqueId_         = uniqueId;
@@ -65,12 +65,12 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const ConnectQos& connectQos, const
 
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, const QueryQosData& queryQosData, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
-   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue"))
+   : ReferenceCounterBase(), ME("MsgQueueEntry"), global_(global), log_(global.getLog("org.xmlBlaster.util.queue")),
+     connectQos_((ConnectQos*)0),
+     connectReturnQos_((ConnectReturnQos*)0)
 {
-   connectQos_       = NULL;
    // The MessageUnit takes a copy of the passed queryKeyData and queryQosData:
    msgUnit_          = new MessageUnit(queryKeyData, string(""), queryQosData);
-   connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
    statusQosData_    = NULL;
    uniqueId_         = uniqueId;
@@ -81,14 +81,44 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const QueryKeyData& queryKeyData, c
    memset(&blobHolder_, 0, sizeof(BlobHolder));
 }
 
+void MsgQueueEntry::copy(const MsgQueueEntry& entry)
+{
+   connectQos_ = new ConnectQos(*entry.connectQos_);
+
+   if (msgUnit_ != NULL) {
+      delete msgUnit_;
+      msgUnit_ = NULL;
+   }
+   if (entry.msgUnit_ != NULL) msgUnit_ = new org::xmlBlaster::util::MessageUnit(*entry.msgUnit_);
+
+   connectReturnQos_ = new ConnectReturnQos(*entry.connectReturnQos_);
+
+   if (publishReturnQos_ != NULL) {
+      delete publishReturnQos_;
+      publishReturnQos_ = NULL; 
+   }
+   if (entry.publishReturnQos_ != NULL) 
+      publishReturnQos_ = new org::xmlBlaster::client::qos::PublishReturnQos(*entry.publishReturnQos_);
+
+   if (statusQosData_ != NULL) {
+      delete statusQosData_;
+      statusQosData_ = NULL; 
+   }
+   if (entry.statusQosData_ != NULL) 
+      statusQosData_ = new org::xmlBlaster::util::qos::StatusQosData(*entry.statusQosData_);
+
+   uniqueId_     = entry.uniqueId_;
+   embeddedType_ = entry.embeddedType_;
+   priority_     = entry.priority_;
+   persistent_      = entry.persistent_;
+   logId_        = logId_;
+}
 
 
 MsgQueueEntry::~MsgQueueEntry()
 {
-   delete connectQos_;
    delete msgUnit_;
    delete publishReturnQos_;
-   delete connectReturnQos_;
    delete statusQosData_;
 
    ::BlobHolder blob;
@@ -99,12 +129,12 @@ MsgQueueEntry::~MsgQueueEntry()
 }
 
 MsgQueueEntry::MsgQueueEntry(const MsgQueueEntry& entry)
-   : ReferenceCounterBase(entry), ME(entry.ME), global_(entry.global_), log_(entry.log_)
+   : ReferenceCounterBase(entry), ME(entry.ME), global_(entry.global_), log_(entry.log_),
+     connectQos_((ConnectQos*)0),
+     connectReturnQos_((ConnectReturnQos*)0)
 {
    memset(&blobHolder_, 0, sizeof(BlobHolder)); // reset cache
-   connectQos_       = NULL;
    msgUnit_          = NULL;
-   connectReturnQos_ = NULL;
    publishReturnQos_ = NULL;
    statusQosData_    = NULL;
    copy(entry);

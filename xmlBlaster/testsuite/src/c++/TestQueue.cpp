@@ -201,40 +201,40 @@ public:
       queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       ConnectQos connQos(global_);
 
-      ConnectQueueEntry e1(global_, ConnectQos(global_), 1);
-      e1.getConnectQos().addClientProperty("X", 7);
+      ConnectQueueEntry e1(global_, ConnectQosRef(new ConnectQos(global_)), 1);
+      e1.getConnectQos()->addClientProperty("X", 7);
       queue_->put(e1);
 
-      ConnectQueueEntry e2(global_, ConnectQos(global_), 5);  // NORM_PRIORITY
-      e2.getConnectQos().addClientProperty("X", 4);
+      ConnectQueueEntry e2(global_, ConnectQosRef(new ConnectQos(global_)), 5);  // NORM_PRIORITY
+      e2.getConnectQos()->addClientProperty("X", 4);
       queue_->put(e2);
 
-      ConnectQueueEntry e3(global_, ConnectQos(global_), 7);
-      e3.getConnectQos().addClientProperty("X", 1);
+      ConnectQueueEntry e3(global_, ConnectQosRef(new ConnectQos(global_)), 7);
+      e3.getConnectQos()->addClientProperty("X", 1);
       queue_->put(e3);
 
-      ConnectQueueEntry e4(global_, ConnectQos(global_), 7);
-      e4.getConnectQos().addClientProperty("X", 2);
+      ConnectQueueEntry e4(global_, ConnectQosRef(new ConnectQos(global_)), 7);
+      e4.getConnectQos()->addClientProperty("X", 2);
       queue_->put(e4);
 
-      ConnectQueueEntry e5(global_, ConnectQos(global_), 1);  // MIN1_PRIORITY
-      e5.getConnectQos().addClientProperty("X", 8);
+      ConnectQueueEntry e5(global_, ConnectQosRef(new ConnectQos(global_)), 1);  // MIN1_PRIORITY
+      e5.getConnectQos()->addClientProperty("X", 8);
       queue_->put(e5);
 
-      ConnectQueueEntry e6(global_, ConnectQos(global_), 5);
-      e6.getConnectQos().addClientProperty("X", 5);
+      ConnectQueueEntry e6(global_, ConnectQosRef(new ConnectQos(global_)), 5);
+      e6.getConnectQos()->addClientProperty("X", 5);
       queue_->put(e6);
 
-      ConnectQueueEntry e7(global_, ConnectQos(global_), 5);
-      e7.getConnectQos().addClientProperty("X", 6);
+      ConnectQueueEntry e7(global_, ConnectQosRef(new ConnectQos(global_)), 5);
+      e7.getConnectQos()->addClientProperty("X", 6);
       queue_->put(e7);
 
-      ConnectQueueEntry e8(global_, ConnectQos(global_), 7);
-      e8.getConnectQos().addClientProperty("X", 3);
+      ConnectQueueEntry e8(global_, ConnectQosRef(new ConnectQos(global_)), 7);
+      e8.getConnectQos()->addClientProperty("X", 3);
       queue_->put(e8);
 
       ConnectQueueEntry e9(global_, connQos, 1);
-      e9.getConnectQos().addClientProperty("X", 9);    // MAX_PRIORITY
+      e9.getConnectQos()->addClientProperty("X", 9);    // MAX_PRIORITY
       queue_->put(e9);
 
       vector<EntryType> ret = queue_->peekWithSamePriority();
@@ -248,24 +248,24 @@ public:
       // unpredictable behavior may result
       //cout << "Trying dynamic cast" << endl;   // On _WINDOWS: /GR  to enable C++ RTTI didn't help (see build.xml)
       const ConnectQueueEntry *connectQueueEntry = dynamic_cast<const ConnectQueueEntry*>(&entry);
-      assertEquals(log_, me, 1, connectQueueEntry->getConnectQos().getClientProperty("X", -1), "2. checking the first entry.");
-      assertEquals(log_, me, 2, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos().getClientProperty("X", -1), "3. checking the second entry.");
-      assertEquals(log_, me, 3, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos().getClientProperty("X", -1), "4. checking the third entry.");
+      assertEquals(log_, me, 1, connectQueueEntry->getConnectQos()->getClientProperty("X", -1), "2. checking the first entry.");
+      assertEquals(log_, me, 2, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos()->getClientProperty("X", -1), "3. checking the second entry.");
+      assertEquals(log_, me, 3, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos()->getClientProperty("X", -1), "4. checking the third entry.");
 
       assertEquals(log_, me, false, queue_->empty(), "5. there should still be entries in the queue.");
       queue_->randomRemove(ret.begin(), ret.end());
       ret = queue_->peekWithSamePriority();
       assertEquals(log_, me, (size_t)3, ret.size(), "6. number of priority 7 msg peeked must be correct.");
-      assertEquals(log_, me, 4, dynamic_cast<const ConnectQueueEntry*>(&(*ret[0]))->getConnectQos().getClientProperty("X", -1), "7. checking the first entry.");
-      assertEquals(log_, me, 5, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos().getClientProperty("X", -1), "8. checking the second entry.");
-      assertEquals(log_, me, 6, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos().getClientProperty("X", -1), "9. checking the third entry.");
+      assertEquals(log_, me, 4, dynamic_cast<const ConnectQueueEntry*>(&(*ret[0]))->getConnectQos()->getClientProperty("X", -1), "7. checking the first entry.");
+      assertEquals(log_, me, 5, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos()->getClientProperty("X", -1), "8. checking the second entry.");
+      assertEquals(log_, me, 6, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos()->getClientProperty("X", -1), "9. checking the third entry.");
             
       queue_->randomRemove(ret.begin(), ret.end());
       ret = queue_->peekWithSamePriority();
       assertEquals(log_, me, (size_t)3, ret.size(), "10. number of priority 7 msg peeked must be correct.");
-      assertEquals(log_, me, 7, dynamic_cast<const ConnectQueueEntry*>(&(*ret[0]))->getConnectQos().getClientProperty("X", -1), "11. checking the first entry.");
-      assertEquals(log_, me, 8, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos().getClientProperty("X", -1), "12. checking the second entry.");
-      assertEquals(log_, me, 9, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos().getClientProperty("X", -1), "13. checking the third entry.");
+      assertEquals(log_, me, 7, dynamic_cast<const ConnectQueueEntry*>(&(*ret[0]))->getConnectQos()->getClientProperty("X", -1), "11. checking the first entry.");
+      assertEquals(log_, me, 8, dynamic_cast<const ConnectQueueEntry*>(&(*ret[1]))->getConnectQos()->getClientProperty("X", -1), "12. checking the second entry.");
+      assertEquals(log_, me, 9, dynamic_cast<const ConnectQueueEntry*>(&(*ret[2]))->getConnectQos()->getClientProperty("X", -1), "13. checking the third entry.");
       queue_->randomRemove(ret.begin(), ret.end());
       assertEquals(log_, me, true, queue_->empty(), "14. the queue should be empty now.");
       log_.info(me, "test ended successfully");

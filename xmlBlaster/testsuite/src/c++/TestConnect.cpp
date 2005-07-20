@@ -122,16 +122,16 @@ public:
          // Login to xmlBlaster
          ConnectQosFactory factory(global_);
          if (conn2_) delete conn2_;
-         ConnectQos connectQos2 = factory.readObject(qos2_);
+         ConnectQosRef connectQos2 = factory.readObject(qos2_);
          conn2_ = new XmlBlasterAccess(global_);
-         conn2_->connect(connectQos2, NULL);
+         conn2_->connect(*connectQos2, NULL);
 
          conn2_->disconnect(DisconnectQos(global_));
          delete conn2_;
          conn2_ = NULL;
 
-         ConnectQos connectQos1 = factory.readObject(qos1_);
-         connection_.connect(connectQos1, this);
+         ConnectQosRef connectQos1 = factory.readObject(qos1_);
+         connection_.connect(*connectQos1, this);
 
       }
       catch (XmlBlasterException &e) {

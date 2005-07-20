@@ -28,7 +28,7 @@ ConnectQosFactory::ConnectQosFactory(Global& global)
 //     securityQos_(global),
 //     serverRef_(Global::getDefaultProtocol()), //"IOR"),
      clientProperty_(0),
-     connectQos_(global)
+     connectQos_((ConnectQos*)0)
 {
    log_.call(ME, "constructor");
    prep();
@@ -80,7 +80,7 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
 
    if (name.compare("qos") == 0) {
      inQos_ = true;
-     connectQos_ = ConnectQos(global_); // kind of reset
+     connectQos_ = new ConnectQos(global_); // kind of reset
      return;
    }
 
@@ -113,14 +113,14 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
 
    if (name.compare("ptp") == 0) {
       if (!inQos_) return;
-      connectQos_.setPtp(true);
+      connectQos_->setPtp(true);
       character_.erase();
       return;
    }
 
    if (name.compare("clusterNode") == 0) {
       if (!inQos_) return;
-      connectQos_.setClusterNode(true);
+      connectQos_->setClusterNode(true);
       character_.erase();
       return;
    }
@@ -128,14 +128,14 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    if (name.compare("refreshSession") == 0) {
       if (!inQos_) return;
       inRefreshSession_ = true;
-      connectQos_.setRefreshSession(true);
+      connectQos_->setRefreshSession(true);
       character_.erase();
       return;
    }
 
    if (name.compare("duplicateUpdates") == 0) {
       if (!inQos_) return;
-      connectQos_.setDuplicateUpdates(true);
+      connectQos_->setDuplicateUpdates(true);
       character_.erase();
       return;
    }
@@ -143,7 +143,7 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    if (name.compare("reconnected") == 0) {
       if (!inQos_) return;
       inReconnected_ = true;
-      connectQos_.setReconnected(true);
+      connectQos_->setReconnected(true);
       character_.erase();
       return;
    }
@@ -158,7 +158,7 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    if (name.compare("persistent") == 0) {
       if (!inQos_) return;
       inIsPersistent_ = true;
-      connectQos_.setPersistent(true);
+      connectQos_->setPersistent(true);
       character_.erase();
       return;
    }
@@ -197,18 +197,18 @@ void ConnectQosFactory::endElement(const string &name) {
    //if (log_.call()) log_.call(ME, "endElement");
    //if (log_.trace()) log_.trace(ME, string("endElement. name:'") + name + string("' character: '") + character_ + string("'"));   
 
-   if (subFactory_) {
+   if (inQos_ && subFactory_) {
       subFactory_->endElement(name);
       if (name.compare("queue") == 0) {
          // determine wether it is a callback or a client queue ...
          QueuePropertyBase help = queuePropertyFactory_.getQueueProperty();
          if (help.getRelating() == Constants::RELATING_CLIENT) {
             ClientQueueProperty prop = help;
-            connectQos_.addClientQueueProperty(prop);
+            connectQos_->addClientQueueProperty(prop);
          }
          else {
              CbQueueProperty prop = help;
-             connectQos_.setSessionCbQueueProperty(prop);
+             connectQos_->setSessionCbQueueProperty(prop);
          }
          subFactory_ = NULL;
       }
@@ -221,11 +221,15 @@ void ConnectQosFactory::endElement(const string &name) {
      return;
    }
 
+   if (!inQos_) {
+      return;
+   }
+
    if (name.compare("securityService") == 0) {
       inSecurityService_ = false;
       character_ += string("\n</securityService>\n");
 //      securityQos_ = securityQosFactory_.parse(character_);
-      connectQos_.setSecurityQos(securityQosFactory_.parse(character_));
+      connectQos_->setSecurityQos(securityQosFactory_.parse(character_));
       character_.erase();
       return;
    }
@@ -237,26 +241,26 @@ void ConnectQosFactory::endElement(const string &name) {
    }
 
    if (name.compare("ptp") == 0) {
-      connectQos_.setPtp(StringTrim::isTrueTrim(character_));
+      connectQos_->setPtp(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
    if (name.compare("clusterNode") == 0) {
-      connectQos_.setClusterNode(StringTrim::isTrueTrim(character_));
+      connectQos_->setClusterNode(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
    if(name.compare("refreshSession") == 0) {
       inRefreshSession_ = false;
-      connectQos_.setRefreshSession(StringTrim::isTrueTrim(character_));
+      connectQos_->setRefreshSession(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
    if (name.compare("duplicateUpdates") == 0) {
-      connectQos_.setDuplicateUpdates(StringTrim::isTrueTrim(character_));
+      connectQos_->setDuplicateUpdates(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
@@ -264,21 +268,21 @@ void ConnectQosFactory::endElement(const string &name) {
    if(name.compare("instanceId") == 0) {
       inInstanceId_ = false;
       StringTrim::trim(character_);
-      connectQos_.setInstanceId(character_);
+      connectQos_->setInstanceId(character_);
       character_.erase();
       return;
    }
 
    if(name.compare("reconnected") == 0) {
       inReconnected_ = false;
-      connectQos_.setReconnected(StringTrim::isTrueTrim(character_));
+      connectQos_->setReconnected(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
 
    if(name.compare("persistent") == 0) {
       inIsPersistent_ = false;
-      connectQos_.setPersistent(StringTrim::isTrueTrim(character_));
+      connectQos_->setPersistent(StringTrim::isTrueTrim(character_));
       character_.erase();
       return;
    }
@@ -292,14 +296,14 @@ void ConnectQosFactory::endElement(const string &name) {
       inServerRef_ = false;
       string address = character_;
 //      serverRef_ = ServerRef(serverRefType_, address);
-      connectQos_.addServerRef(ServerRef(serverRefType_, address));
+      connectQos_->addServerRef(ServerRef(serverRefType_, address));
       character_.erase();
    }
 
    if (name.compare("clientProperty") == 0) {
       inClientProperty_ = false;
       clientProperty_->setValueRaw(character_);
-      connectQos_.addClientProperty(*clientProperty_);
+      connectQos_->addClientProperty(*clientProperty_);
       delete clientProperty_;
       clientProperty_ = 0;
       character_.erase();
@@ -309,7 +313,7 @@ void ConnectQosFactory::endElement(const string &name) {
 }
 
 
-ConnectQosData ConnectQosFactory::readObject(const string& qos)
+ConnectQosDataRef ConnectQosFactory::readObject(const string& qos)
 {
    // this should be synchronized here ....
 //   userId_ = "";
@@ -318,10 +322,10 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    clientProperty_ = 0;
    init(qos);
 //   ConnectQosData data(global_);
-//   connectQos_.setSecurityQos(securityQos_);
-//   connectQos_.addServerRef(serverRef_);
-   connectQos_.setSessionQos(sessionQosFactory_.getData());
-//   connectQos_.setPtp(isPtp_);
+//   connectQos_->setSecurityQos(securityQos_);
+//   connectQos_->addServerRef(serverRef_);
+   connectQos_->setSessionQos(sessionQosFactory_.getData());
+//   connectQos_->setPtp(isPtp_);
 
    return connectQos_;
 }
@@ -366,15 +370,15 @@ int main(int args, char* argv[])
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
    ConnectQosFactory factory(glob);
-   ConnectQosData data = factory.readObject(qos);
-   cout << "sessionId    : " << data.getSecretSessionId() << endl;
-   cout << "userId       : " << data.getUserId() << endl;
-   cout << " type: " << data.getCallbackType() << endl;
-   cout << "is ptp       : " << data.getBoolAsString(data.getPtp()) << endl;
-   cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
-   cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
+   ConnectQosDataRef data = factory.readObject(qos);
+   cout << "sessionId    : " << data->getSecretSessionId() << endl;
+   cout << "userId       : " << data->getUserId() << endl;
+   cout << " type: " << data->getCallbackType() << endl;
+   cout << "is ptp       : " << data->getBoolAsString(data->getPtp()) << endl;
+   cout << "securityQos  : " << data->getSecurityQos().toXml() << endl;
+   cout << "sessionQos   : " << data->getSessionQos().toXml() << endl;
 
-   ServerRef ref = data.getServerRef();
+   ServerRef ref = data->getServerRef();
    cout << "server reference:  " << ref.toXml() << endl;
 
    return 0;

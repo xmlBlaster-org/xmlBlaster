@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13505 Changed C++ ConnectQos to be reference counted
+   Added convenience method XmlBlasterAccess.sendAdministrativeCommand()
+
  o #13502 Bugfix C++ integration of C client library
    Return value of bool update(...) changed to XMLBLASTER_C_bool
    On Windows C++ bool is a 'char' and the C bool is a 'int'

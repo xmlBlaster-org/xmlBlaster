@@ -46,7 +46,7 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
   : orb_(0),
     poa_(0),
     /* loginQos_(), */
-    connectReturnQos_(global), 
+    connectReturnQos_((ConnectReturnQos*)0), 
     global_(global), 
     log_(global.getLog("org.xmlBlaster.client.protocol.corba")),
     msgKeyFactory_(global),
@@ -397,7 +397,7 @@ void CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implO
   return;
 }
 
-ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
+ConnectReturnQosRef CorbaConnection::connect(const ConnectQosRef& connectQos)
 {
    if ( !CORBA::is_nil(xmlBlaster_)) {
       string msg = "You are already logged in, returning cached handle";
@@ -406,11 +406,11 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       return connectReturnQos_;
    }
 
-   loginName_ = connectQos.getUserId();
+   loginName_ = connectQos->getUserId();
    if (log_.call()) log_.call(me(),"connect(" + loginName_ + ") ...");
    try {
       if (CORBA::is_nil(authServer_)) initAuthenticationService();
-      ConnectQos help = connectQos; // since it is a const
+      ConnectQos help = *connectQos; // since it is a const
       string reqQos = help.toXml();
       if (log_.trace()) log_.trace(me(), string("connect req: ") + reqQos);
       string retQos = authServer_->connect(reqQos.c_str());
@@ -418,8 +418,8 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       ConnectQosFactory factory(global_);
       if (log_.dump()) log_.dump(me(), "connect: the connect return qos before parsing: " + retQos);
       connectReturnQos_ = factory.readObject(retQos);
-      sessionId_ = connectReturnQos_.getSecretSessionId();
-      xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
+      sessionId_ = connectReturnQos_->getSecretSessionId();
+      xmlBlasterIOR_ = connectReturnQos_->getServerRef().getAddress();
 
       CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR_.c_str());
       xmlBlaster_ = serverIdl::Server::_narrow(obj.in());
