@@ -358,13 +358,14 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       }
       catch (Exception e) {
          if (e instanceof XmlBlasterException) throw (XmlBlasterException)e;
-         if (argValuesAsStrings.length > 0) {
+         if (log != null && aClass != null && argValuesAsStrings != null && argValuesAsStrings.length > 0 &&
+             argValuesAsStrings[0] != null) {
             log.error(ME, "Invoke for property '" + property + "' with " + argValuesAsStrings.length + " arguments of type " +
                argValuesAsStrings[0].getClass().toString() +
                " on interface " + aClass.toString() + " failed: " + e.toString());
          }
          else {
-            log.error(ME, "Invoke for property '" + property + "' on interface " + aClass.toString() + " failed: " + e.toString());
+            log.error(ME, "Invoke for property '" + property + "' on interface " + ((aClass!=null)?aClass.toString():"") + " failed: " + e.toString());
          }
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: " + e.toString());
       }
