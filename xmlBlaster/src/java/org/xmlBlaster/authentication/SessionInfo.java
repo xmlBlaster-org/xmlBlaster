@@ -609,7 +609,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final String getLoginDate() {
-      long ll = System.currentTimeMillis() + this.uptime;
+      long ll = this.uptime;
       java.sql.Timestamp tt = new java.sql.Timestamp(ll);
       return tt.toString();
    }
