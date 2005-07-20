@@ -179,20 +179,39 @@ void XmlBlasterAccess::setCallbackDispatcherActive(bool isActive)
    connectQos_->getCbAddress()->setDispatcherActive(isActive);
 }
 
-PublishReturnQos XmlBlasterAccess::sendAdministrativeCommand(const string &command)
+string XmlBlasterAccess::sendAdministrativeCommand(const string &command)
 {
-   string oid = string("__cmd:") + command;
-   PublishKey  key(global_, oid); // oid="__cmd:?exit=0"
-   PublishQos  qos(global_);
-   MessageUnit msgUnit(key, "", qos);
-   try {
-      PublishReturnQos ret = publish(msgUnit);
-      if (log_.trace()) log_.trace(ME, "Send '" + command + " '");
-      return ret;
+   if (command.find("=") != string::npos) {
+      string oid = string("__cmd:") + command;
+      PublishKey  key(global_, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
+      PublishQos  qos(global_);
+      MessageUnit msgUnit(key, "", qos);
+      try {
+         PublishReturnQos ret = publish(msgUnit);
+         if (log_.trace()) log_.trace(ME, "Send '" + command + " '");
+         return ret.getState();
+      }
+      catch (XmlBlasterException &e) {
+         if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
+         throw e;
+      }
    }
-   catch (XmlBlasterException &e) {
-      if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
-      throw e;
+   else {
+      string oid = string("__cmd:") + command;
+      GetKey getKey(global_);
+      getKey.setOid(oid);
+      GetQos getQos(global_);
+      try {
+         vector<MessageUnit> msgVec = get(getKey, getQos);
+         if (log_.trace()) log_.trace(ME, "Send '" + command + " ', got array of size " + lexical_cast<string>(msgVec.size()));
+         if (msgVec.size() == 0)
+            return "";
+         return msgVec[0].getContentStr();
+      }
+      catch (XmlBlasterException &e) {
+         if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
+         throw e;
+      }
    }
 }
 

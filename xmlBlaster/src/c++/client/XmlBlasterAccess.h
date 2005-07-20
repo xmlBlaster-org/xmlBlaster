@@ -290,10 +290,14 @@ public:
 
    /**
     * Convenience method to send an administrative command to xmlBlaster. 
-    * @param command for example "?exit=0" or "client/joe/?dispatcherActive=false" (the "__cmd:" is added by us)
+    * If the command contains a '=' it is interpreted as a set() call, else it is used as
+    * a get() call.
+    * @param command for example "client/joe/?dispatcherActive" (a getter) or "client/joe/?dispatcherActive=false" (a setter).
+    *        The "__cmd:" is added by us
+    * @return When setting a value you get the returned state, else the retrieved data
     * @throws XmlBlasterException on problems
     */
-   org::xmlBlaster::client::qos::PublishReturnQos sendAdministrativeCommand(const std::string &command);
+   std::string sendAdministrativeCommand(const std::string &command);
 
    /**
     * This is the callback method invoked from xmlBlaster
