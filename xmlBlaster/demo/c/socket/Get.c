@@ -103,7 +103,6 @@ int main(int argc, char** argv)
       size_t i;
       int iGet;
       const char *getToken = 0;
-      char *queryType = 0;
 
       char key[4098];
       const char *oid = xa->props->getString(xa->props, "oid", "Hello");
@@ -127,17 +126,14 @@ int main(int argc, char** argv)
       if (domain) {
          sprintf(key, "<key domain='%.512s'/>", domain);
          getToken = domain;
-         queryType = "DOMAIN";
       }
       else if (xpath) {
          sprintf(key, "<key queryType='XPATH'>%.512s</key>", xpath);
          getToken = xpath;
-         queryType = "XPATH";
       }
       else {
-         sprintf(key, "<key oid='%.512s'/>", oid);
+         sprintf(key, "<key oid='%.512s' queryType='EXACT'/>", oid);
          getToken = oid;
-         queryType = "EXACT";
       }
 
       if (filterQuery) {
