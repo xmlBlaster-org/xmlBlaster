@@ -45,6 +45,7 @@ private:
    int updateCounter;
    char ptr[1];
    string subscriptionId;
+   bool dispatcherActive;
    bool disconnect;
    bool interactive;
    bool interactiveUpdate;
@@ -99,9 +100,12 @@ public:
          org::xmlBlaster::util::thread::Thread::sleepSecs(1);
          bool stop = false;
          while (!stop) {
-            std::cout << "(Enter 'q' to exit) >> ";
+            string dd = dispatcherActive ? "'d' to deactivate dispatcher" : "'a' to activate dispatcher";
+            std::cout << "(Enter " << dd << " 'q' to exit) >> ";
             std::cin.read(ptr,1);
             if (*ptr == 'q') stop = true;
+            if (*ptr == 'a') connection_.setCallbackDispatcherActive(true);
+            if (*ptr == 'd') connection_.setCallbackDispatcherActive(false);
          }
       }
       else {
@@ -118,6 +122,7 @@ public:
 
    void initEnvironment()
    {
+      dispatcherActive = global_.getProperty().get("dispatcherActive", true);
       disconnect = global_.getProperty().get("disconnect", true);
       interactive = global_.getProperty().get("interactive", true);
       interactiveUpdate = global_.getProperty().get("interactiveUpdate", false);
@@ -160,6 +165,7 @@ public:
       }
 
       log_.info(ME, "Used settings are:");
+      log_.info(ME, "   -dispatcherActive    " + lexical_cast<string>(dispatcherActive));
       log_.info(ME, "   -interactive         " + lexical_cast<string>(interactive));
       log_.info(ME, "   -interactiveUpdate   " + lexical_cast<string>(interactiveUpdate));
       log_.info(ME, "   -updateSleep         " + lexical_cast<string>(updateSleep));
@@ -211,6 +217,7 @@ public:
    {
       connection_.initFailsafe(this);
       ConnectQos connQos(global_);
+      connQos.getCbAddress()->setDispatcherActive(dispatcherActive);
       if (log_.trace()) log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
       ConnectReturnQos retQos = connection_.connect(connQos, this);
       if (log_.trace()) log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
