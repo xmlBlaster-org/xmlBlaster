@@ -92,6 +92,11 @@ public:
       return element_;
    }
 
+   bool isNull() const
+   {
+      return element_ == 0;
+   }
+
    bool operator ==(const ReferenceHolder<T> other) const
    {
       return *element_ == *other.element_;
