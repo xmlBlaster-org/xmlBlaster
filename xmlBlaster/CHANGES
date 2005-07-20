@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13502 Bugfix C++ integration of C client library
+   Return value of bool update(...) changed to XMLBLASTER_C_bool
+   On Windows C++ bool is a 'char' and the C bool is a 'int'
+   This mismatch left 3 bytes on the EAX register undefined and lead to wrong bool settings
+   when passing a bool from C++ to C.
+
  o #13491,#13492 JMX Added jmxremote.jar to compile on JDK < 1.5
 
  o Added administrative access methods, for example
@@ -10,7 +16,7 @@ Changes for xxxxx [2005-xx-xx]
    Renamed "numUpdates" to "numUpdate"
 
  o #13477-#13482 Added JMX functionality
-   for session, topic and qeueu handling
+   for session, topic and queue handling
 
  o #13470,#13474 Extended query string syntax
    The constructors of
