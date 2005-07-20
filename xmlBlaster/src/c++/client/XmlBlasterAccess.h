@@ -282,7 +282,8 @@ public:
 
    /** 
     * Switch callback dispatcher on/off. 
-    * This is a convenience function (see ConnectQos).
+    * This is a convenience function (see ConnectQos). It will update the client side
+    * ConnectQos as well so we don't loose the setting on reconnects after server maintenance.
     * @param isActive true: XmlBlaster server delivers callback messages
     *        false: XmlBlaster server keeps messages for this client in the callback queue
     */
