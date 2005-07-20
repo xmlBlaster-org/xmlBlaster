@@ -47,7 +47,7 @@ protected:
 
 public:
 
-   GetReturnQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::MsgQosData data);
+   GetReturnQos(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::qos::MsgQosData& data);
 
    GetReturnQos(const GetReturnQos& data);
 
