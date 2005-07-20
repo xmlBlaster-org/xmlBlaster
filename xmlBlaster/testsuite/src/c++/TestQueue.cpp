@@ -94,7 +94,7 @@ public:
       log_.info(me, "");
       log_.info(me, "comparison test between ConnectQueueEntry objects.");
 
-      ConnectQos connectQos(global_);
+      ConnectQos *connectQos = new ConnectQos(global_);
       ConnectQueueEntry entry1(global_, connectQos);
       ConnectQueueEntry entry2(global_, connectQos);
       ConnectQueueEntry entry3(global_, connectQos, 2);
@@ -117,7 +117,7 @@ public:
       PublishKey pubKey(global_);
       PublishQos pubQos(global_);
       MessageUnit msgUnit(pubKey, string("comparison test"), pubQos);
-      ConnectQos connectQos(global_);
+      ConnectQos *connectQos = new ConnectQos(global_);
 
       PublishQueueEntry entry1(global_, msgUnit, 2);
       ConnectQueueEntry entry2(global_, connectQos, 3);
@@ -180,7 +180,7 @@ public:
       ClientQueueProperty prop(global_, "");
       queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
       assertEquals(log_, me, true, queue_->empty(), " 1. the queue must be empty after creation");
-      ConnectQos connQos(global_);
+      ConnectQos *connQos = new ConnectQos(global_);
       ConnectQueueEntry entry(global_, connQos);
       queue_->put(entry);
       assertEquals(log_, me, false, queue_->empty(), " 2. the queue must contain entries after invoking put one time");
@@ -199,7 +199,7 @@ public:
       log_.info(me, "this test checks the order in which entries are returned from the queue");
       ClientQueueProperty prop(global_, "");
       queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
-      ConnectQos connQos(global_);
+      ConnectQos *connQos = new ConnectQos(global_);
 
       ConnectQueueEntry e1(global_, ConnectQosRef(new ConnectQos(global_)), 1);
       e1.getConnectQos()->addClientProperty("X", 7);
@@ -280,12 +280,12 @@ public:
       ClientQueueProperty prop(global_, "");
       prop.setMaxEntries(10);
       queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
-      ConnectQos connQos(global_);
-      connQos.setPersistent(false);
+      ConnectQosRef connQos = new ConnectQos(global_);
+      connQos->setPersistent(false);
       int i=0;
       try {
          for (i=0; i < 10; i++) {
-            if (i == 5) connQos.setPersistent(true);
+            if (i == 5) connQos->setPersistent(true);
             ConnectQueueEntry entry(global_, connQos);
             queue_->put(entry);
          }
@@ -315,7 +315,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test checks that an excess of size in bytes really throws an exception");
       ClientQueueProperty prop(global_, "");
-      ConnectQos connQos(global_);
+      ConnectQos *connQos = new ConnectQos(global_);
       ConnectQueueEntry entry(global_, connQos);
       int maxBytes = 10 * entry.getSizeInBytes();
       prop.setMaxBytes(maxBytes);
