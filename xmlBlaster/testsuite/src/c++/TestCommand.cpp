@@ -60,7 +60,6 @@ public:
 class TestCommand: public TestSuite, public virtual I_Callback 
 {
 private:
-   bool   messageArrived_;      // = false;
    int    numReceived_;         //  = 0;         // error checking
    string subscribeOid_;
    string publishOid_;          // = "dummy";
@@ -214,7 +213,7 @@ private:
 
    string update(const string &sessionId,
                UpdateKey &updateKey,
-               const unsigned char *content, long contentSize,
+               const unsigned char */*content*/, long /*contentSize*/,
                UpdateQos &updateQos) 
    {
       log_.info(ME, string("Receiving update of message oid=") +
