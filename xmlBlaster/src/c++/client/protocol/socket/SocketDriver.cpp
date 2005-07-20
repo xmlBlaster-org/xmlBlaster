@@ -99,7 +99,7 @@ using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster::client::qos;
 
-static bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
+static XMLBLASTER_C_bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
                      ::ExceptionStruct *exception);
 
 void SocketDriver::freeResources(bool deleteConnection)
@@ -293,7 +293,7 @@ SocketDriver::~SocketDriver()
    }
 }
 
-bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
+XMLBLASTER_C_bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
                      ::ExceptionStruct *exception)
 {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
@@ -338,7 +338,7 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       }
       strncpy0(exception->errorCode, e.getErrorCodeStr().c_str(), XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
-      return false;
+      return (XMLBLASTER_C_bool)0;
    }
    catch(...) {
       string tmp = "Unidentified exception caught in C++ update(), " + lexical_cast<std::string>(msgUnitArr->len) + " messages are handled as not delivered";
@@ -350,9 +350,9 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       }
       strncpy0(exception->errorCode, "user.update.error", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
-      return false;
+      return (XMLBLASTER_C_bool)0;
    }
-   return true;
+   return (XMLBLASTER_C_bool)1;
 }
 
 I_Callback* SocketDriver::getCallbackClient()

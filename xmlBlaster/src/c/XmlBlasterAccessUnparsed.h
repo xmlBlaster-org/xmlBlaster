@@ -79,7 +79,7 @@ extern "C" {
 */
 struct XmlBlasterAccessUnparsed;
 
-typedef bool (*UpdateFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException);
+typedef XMLBLASTER_C_bool (*UpdateFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException);
 
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef char *( * XmlBlasterAccessUnparsedConnect)(struct XmlBlasterAccessUnparsed *xb, const char * const qos, UpdateFp update, XmlBlasterException *exception);

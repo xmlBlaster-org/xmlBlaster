@@ -31,6 +31,13 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #    define true 1
 #    define false 0
 #  endif
+#	define XMLBLASTER_C_bool bool
+#else
+#if defined(_WINDOWS)
+#define XMLBLASTER_C_bool int
+#else
+#define XMLBLASTER_C_bool bool
+#endif
 #endif
 
 #if defined(_WINDOWS)
