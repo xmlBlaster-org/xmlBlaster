@@ -114,6 +114,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    private boolean isConnected;
 
+   /** Replace e.g. ${ICAO} with command line setting '-ICAO EDDI' */
+   private boolean replaceQosTokens;
+   private boolean replaceKeyTokens;
+   private boolean replaceContentTokens;
+
    /** Encapsulates the content of the current message (useful for encoding) */
    private EncodableData contentData;
    // private boolean inQos, inKey, inContent;
@@ -307,6 +312,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
+      if ("replaceKeyTokens".equals(qName)) {
+         this.replaceKeyTokens = true;
+         return;
+      }
+
       if ("key".equals(qName)) {
          this.inKey++;
          this.key = new StringBuffer();
@@ -314,10 +324,20 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
+      if ("replaceQosTokens".equals(qName)) {
+         this.replaceQosTokens = true;
+         return;
+      }
+
       if ("qos".equals(qName)) {
          this.inQos++;
          this.qos = new StringBuffer();
          this.qos.append(this.writeElementStart(qName, atts));
+         return;
+      }
+
+      if ("replaceContentTokens".equals(qName)) {
+         this.replaceContentTokens = true;
          return;
       }
 
@@ -391,12 +411,50 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       buf.append(qName);
       buf.append('>');
    }
+
+   /**
+    * Replace e.g. ${XY} with the variable from global properties. 
+    * @param text The complete string which may contain zero to many ${...}
+    *             variables, if null we return null
+    * @return The new value where all found ${} are replaced.
+    */
+   public String replaceVariable(String text) {
+      if (text == null) return null;
+      int lastFrom = -1;
+      for (int i=0; i<20; i++) { // max recursion/replacement depth
+         int from = text.indexOf("${");
+         if (from == -1) return text;
+         if (lastFrom != -1 && lastFrom == from) return text; // recursion
+         int to = text.indexOf("}", from);
+         if (to == -1) return text;
+         String key = text.substring(from+2, to);
+         String value = glob.getProperty().get(key, "${"+key+"}");
+         text = text.substring(0,from) + value + text.substring(to+1);
+         lastFrom = from;
+      }
+      return text;
+   }
    
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
     * @param qName
     */
-   private void fireCommand(String qName) throws XmlBlasterException {      
+   private void fireCommand(String qName) throws XmlBlasterException {
+      if (replaceQosTokens) {
+         String tmp = this.qos.toString();
+         this.qos.setLength(0);
+         this.qos.append(replaceVariable(tmp));
+      }
+      if (replaceKeyTokens) {
+         String tmp = this.key.toString();
+         this.key.setLength(0);
+         this.key.append(replaceVariable(tmp));
+      }
+      if (replaceContentTokens) {
+         String tmp = this.content.toString();
+         this.content.setLength(0);
+         this.content.append(replaceVariable(tmp));
+      }
       if ("connect".equals(qName) || !this.isConnected) {
          boolean implicitConnect = !"connect".equals(qName);
          if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
