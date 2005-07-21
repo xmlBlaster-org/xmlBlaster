@@ -188,6 +188,7 @@ static _INLINE_FUNC DbInfo *getDbInfo(I_Queue *queueP) {
 
 /**
  * Access the queue configuration. 
+ * @param queueP The this pointer
  * @return Read only access, 0 on error
  */
 static const QueueProperties *getProperties(I_Queue *queueP)
@@ -220,6 +221,9 @@ static void freeQueue(I_Queue **queuePP)
 
 /**
  * Called internally by createQueue(). 
+ * @param queueP The this pointer
+ * @param queueProperties The configuration
+ * @param exception Can contain error information (out parameter)
  * @return true on success
  */
 static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *queueProperties, ExceptionStruct *exception)
@@ -321,7 +325,7 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
 /**
  * Create the necessary DB table if not already existing. 
  * @param queueP 
- * @param exception
+ * @param exception Can contain error information (out parameter)
  * @return true on success
  */
 static bool createTables(I_Queue *queueP, ExceptionStruct *exception)
@@ -345,6 +349,7 @@ static bool createTables(I_Queue *queueP, ExceptionStruct *exception)
  * @param queueP Is not checked, must not be 0
  * @param queryString The SQL to execute
  * @param comment For logging or exception text
+ * @param exception Can contain error information (out parameter)
  * @return true on success
  */
 static bool execSilent(I_Queue *queueP, const char *queryString, const char *comment, ExceptionStruct *exception)
@@ -404,7 +409,7 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
 */
 
 /**
- * @throws exception The exception is set to *exception->errorCode==0 on success, else to != 0
+ * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  */
 static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, ExceptionStruct *exception)
 {
@@ -518,6 +523,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
  * @param methodName A nice string for logging
  * @param ppVm The virtual machine will be initialized if still 0
  * @param queryString
+ * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  * @return false on error and exception->errorCode is not null
  */
 static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
@@ -569,6 +575,7 @@ static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
  * For each SQL result row parse it into a QueueEntry. 
  * No parameters are checked, they must be valid
  * Implements a ParseDataFp (function pointer)
+ * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  * @return false on error and exception->errorCode is not null
  */
 static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
@@ -661,11 +668,15 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
 /**
  * Execute the query and get the query result. 
  * No parameters are checked, they must be valid
+ * @param queueP  The this pointer
+ * @param methodName The method called
+ * @param pVm sqlite virtual machine
  * @param parseDataFp The function which is called for each SQL result row
  *                    or 0 if no function shall be called
  * @param userP The pointer which is passed to parseDataFp
  * @param finalize true to call sqlite_finalize which deletes the virtual machine,
  *                 false to call  sqlite_reset to reuse the prepared query
+ * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  * @return < 0 on error and exception->errorCode is not null
  *         otherwise the number of successfully parsed rows is returned
  * @todo For INSERT and DELETE return the number of touched entries !!!
@@ -1160,6 +1171,7 @@ Dll_Export void freeQueueEntry(QueueEntry *queueEntry)
 /**
  * NOTE: You need to free the returned pointer with xmlBlasterFree() (which calls free())!
  *
+ * @param queueEntry The data to put to the queue
  * @param maxContentDumpLen for -1 get the complete content, else limit the
  *        content to the given number of bytes
  * @return A ASCII XML formatted entry or NULL if out of memory
