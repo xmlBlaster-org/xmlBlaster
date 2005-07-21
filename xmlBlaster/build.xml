@@ -195,7 +195,7 @@ TODO
    <property name="build.src.cpp.dir" value="${build.src}/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
-   <property name="xerces.include.dir" value="/usr/include/xercesc"/>
+   <property name="xerces.include.dir" value="/usr/include"/>  <!-- Assumes ./xercesc subdirectory -->
    <property name="xerces.lib.dir" value="/usr/lib"/>
    <property name="xerces.lib.name" value="xerces-c"/>
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
@@ -2425,7 +2425,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
-	 <!-- TODO check for Windows!!! -->
+         <!-- TODO check for Windows!!! -->
          <!--sysincludepath location="${xerces.include.dir}/src" if="windows" /-->               <!-- xerces win32 -->
          <!--sysincludepath location="${xerces.include.dir}/src/xercesc" if="windows" /-->       <!-- Since xerces 1.7.0 that Martin Johnson has -->
          <sysincludepath location="${xerces.include.dir}" />           <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->

@@ -8,7 +8,7 @@ Changes for xxxxx [2005-xx-xx]
 
  o #13524 adjusted Xerces-C++ build settings
    Sax2Parser.h und Sax2Parser.cpp: fixed includes
-   Use $xerces.include.dir and $xerces.lib.dir n build.properties to set the location of the
+   Use $xerces.include.dir and $xerces.lib.dir in build.properties to set the location of the
    Xerces-C++ Library to be used for the C++ Part.
    
  o #13513 C++ client library
