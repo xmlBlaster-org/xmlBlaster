@@ -37,6 +37,7 @@ import org.xmlBlaster.util.MsgUnit;
  * <p>
  * The setting <tt>-prepareForPublish true</tt> strips away routing informations if you want to publish
  * a dumped dead message given by -requestFile.</p>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The client.script requirement</a>
  */
 public class XmlScript {
    private static String ME = "XmlScript";
