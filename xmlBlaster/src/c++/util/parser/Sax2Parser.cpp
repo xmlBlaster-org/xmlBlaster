@@ -13,11 +13,11 @@ Comment:   Default handling of Sax callbacks
 #endif
 
 #include <util/parser/Sax2Parser.h>
-#include <sax/SAXException.hpp>
-#include <sax2/SAX2XMLReader.hpp>
-#include <sax2/XMLReaderFactory.hpp>
-#include <util/PlatformUtils.hpp>
-#include <framework/MemBufInputSource.hpp>
+#include <xercesc/sax/SAXException.hpp>
+#include <xercesc/sax2/SAX2XMLReader.hpp>
+#include <xercesc/sax2/XMLReaderFactory.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/framework/MemBufInputSource.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>

@@ -12,9 +12,9 @@ Comment:   Default handling of Sax callbacks
 #include <util/parser/I_Parser.h>
 #include <util/plugin/I_Plugin.h>
 #include <string>
-#include <util/TransService.hpp>
-#include <sax2/DefaultHandler.hpp>
-#include <util/XMLString.hpp>
+#include <xercesc/util/TransService.hpp>
+#include <xercesc/sax2/DefaultHandler.hpp>
+#include <xercesc/util/XMLString.hpp>
 #include <util/StopParseException.h>
 
 #if defined(XERCES_HAS_CPP_NAMESPACE)

@@ -15,8 +15,8 @@ Comment:   The abstraction parser for xml literals
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/PlatformUtils.hpp>
-#include <util/PanicHandler.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/PanicHandler.hpp>
 #include <util/parser/ParserFactory.h>
 #include <util/parser/Sax2Parser.h>
 
@@ -107,7 +107,7 @@ ParserFactory::~ParserFactory()
 std::string ParserFactory::getLocale(org::xmlBlaster::util::Global& global)
 {
    locale_ = global.getProperty().getStringProperty("xmlBlaster/locale", "de_DE.iso-8859-1");
-	return locale_;
+        return locale_;
 }
 
 
@@ -135,7 +135,7 @@ void ParserFactory::initialize(org::xmlBlaster::util::Global& global)
 
 I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler)
 {
-	initialize(global);
+        initialize(global);
 
    try {
       return new Sax2Parser(global, handler);
