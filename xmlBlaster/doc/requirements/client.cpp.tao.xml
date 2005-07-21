@@ -88,19 +88,15 @@
       </p>
       <pre>
 #------------------------------------------------------------------------------
-# C++ UNIX example with ACE+TAO 1.3 and xerces 2.2 using g++ 3.2
-XMLCPP_HOME   = /opt/xerces-c-src2_2_0-bin
-XMLCPP_VER    = 
+# C++ UNIX example with ACE+TAO 1.3 using g++ 3.2
 corba.product = TAO
 CORBACPP_HOME = /opt/ACE_wrappers/TAO
 CORBACPP_VER  = 
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# C++ Windows example with ACE+TAO 1.3 and xerces 2.2 using VC++ 7
+# C++ Windows example with ACE+TAO 1.3 using VC++ 7
 use-msvc      = 1
-XMLCPP_HOME   = C:/Dev/xerces-c2_2_0-win32
-XMLCPP_VER    = _2
 corba.product = TAO
 CORBACPP_HOME = C:/Dev/ACE_wrappers/TAO
 idl.cmd       = C:/Dev/ACE_wrappers/bin/tao_idl.exe

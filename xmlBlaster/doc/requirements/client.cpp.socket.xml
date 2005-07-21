@@ -63,9 +63,7 @@ HelloWorld2 -protocol SOCKET
       </p>
       <pre>
 #------------------------------------------------------------------------------
-# C++ Unix/Linux example with SOCKET plugin and xerces 2.2
-XMLCPP_HOME   = /usr/local/xerces-c
-XMLCPP_VER    = 
+# C++ Unix/Linux example with SOCKET plugin
 COMPILE_SOCKET_PLUGIN=1
 
 COMPILE_CORBA_PLUGIN=0

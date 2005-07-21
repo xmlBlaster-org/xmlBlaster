@@ -195,8 +195,9 @@ TODO
    <property name="build.src.cpp.dir" value="${build.src}/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
-   <property name="XMLCPP_VER" value=""/>  <!-- 1_7_0 -->
-   <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
+   <property name="xerces.include.dir" value="/usr/include/xercesc"/>
+   <property name="xerces.lib.dir" value="/usr/lib"/>
+   <property name="xerces.lib.name" value="xerces-c"/>
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
    <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
    <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
@@ -1955,8 +1956,8 @@ TODO
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
       <echo message=" os.name       = ${os.name}"/>
-      <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
-      <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
+      <echo message=" xerces.include.dir = ${xerces.include.dir}"/>
+      <echo message=" xerces.lib.dir = ${xerces.lib.dir}"/>
       <echo message=" COMPILE_SOCKET_PLUGIN=${COMPILE_SOCKET_PLUGIN}"/>
       <echo message=" COMPILE_CORBA_PLUGIN=${COMPILE_CORBA_PLUGIN}"/>
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
@@ -2389,8 +2390,6 @@ TODO
        -->
       <mkdir dir="${cpp.obj.dir}"/>
 
-      <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
-
       <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
       <cc debug="${cpp.debug}" outtype="${CPP_LINK}"
           outfile="${lib.dir}/${cpp.lib.name}" objdir="${cpp.obj.dir}"
@@ -2425,10 +2424,10 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
-         <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
-         <sysincludepath location="${XMLCPP_HOME}/src/xercesc" if="windows" />       <!-- Since xerces 1.7.0 that Martin Johnson has -->
-         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
-         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
+	 <!-- TODO check for Windows!!! -->
+         <!--sysincludepath location="${xerces.include.dir}/src" if="windows" /-->               <!-- xerces win32 -->
+         <!--sysincludepath location="${xerces.include.dir}/src/xercesc" if="windows" /-->       <!-- Since xerces 1.7.0 that Martin Johnson has -->
+         <sysincludepath location="${xerces.include.dir}" />           <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
          <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
          
@@ -2508,7 +2507,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}${CPP_DEBUG_POSTFIX}" if="windows" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" if="windows" />
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
@@ -2624,8 +2623,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
 
-         <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
-         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />     <!-- Since xerces 1.7.0 -->
+         <sysincludepath location="${xerces.include.dir}" />              <!-- Since xerces 1.7.0 -->
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
@@ -2675,7 +2673,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
-            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" />
@@ -2702,7 +2700,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
 
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
@@ -2731,7 +2729,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
-            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${xerces.lib.dir}" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
             <linkerarg value="-Wl,-rpath=${zlib.lib.dir}" if="XMLBLASTER_ZLIB" />
@@ -2759,7 +2757,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
 
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
@@ -2799,7 +2797,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" if="windows" />
 
             <!-- xmlBlasterClient.dll -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
@@ -2823,7 +2821,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" />
 
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
@@ -2840,11 +2838,11 @@ TODO
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
             <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
-            <!-- linkerarg value="-L${XMLCPP_HOME}/lib" / -->
+            <!-- linkerarg value="-L${xerces.lib.dir}" / -->
             <!-- linkerarg value="-L${lib.dir.absolute}" / -->
             <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
             <!-- Burn .so path into executables: -->
-            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:${lib.dir.absolute}:${XMLCPP_HOME}/lib" if="ORBIX" />
+            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:${lib.dir.absolute}:${xerces.lib.dir}" if="ORBIX" />
 
             <syslibset dir="/lib" libs="dl" />
          </linker>

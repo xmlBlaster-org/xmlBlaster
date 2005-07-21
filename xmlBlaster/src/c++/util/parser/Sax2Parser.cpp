@@ -16,7 +16,7 @@ Comment:   Default handling of Sax callbacks
 #include <sax/SAXException.hpp>
 #include <sax2/SAX2XMLReader.hpp>
 #include <sax2/XMLReaderFactory.hpp>
-#include <xercesc/util/PlatformUtils.hpp>
+#include <util/PlatformUtils.hpp>
 #include <framework/MemBufInputSource.hpp>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>

@@ -40,11 +40,9 @@
       </p>
       <pre>
 #------------------------------------------------------------------------------
-# C++ SunOS 5.8 sparc example with Orbix ASP 5.1 and xerces 1.6 with OMNITHREAD
+# C++ SunOS 5.8 sparc example with Orbix ASP 5.1 with OMNITHREAD
 # compiled with CC: Forte Developer 7 C++ 5.4 2002/03/09
 use-CC        = 1
-XMLCPP_HOME   = /opt/xerces-c1_6_0-SolForCC
-XMLCPP_VER    = 1_6_0
 CORBACPP_HOME = /opt/iona
 corba.product = ORBIX
 CORBACPP_VER  = asp/5.1

@@ -54,9 +54,7 @@ TestGet -ORBInitRef NameService=`cat /tmp/ns.ior` inet:myHost.org:7608 -trace tr
       </p>
       <pre>
 #------------------------------------------------------------------------------
-# C++ Unix/Linux example with mico 2.3.7 and xerces 2.2
-XMLCPP_HOME   = /usr/local/xerces-c
-XMLCPP_VER    = 
+# C++ Unix/Linux example with mico 2.3.7
 CORBACPP_HOME = /usr/local/mico
 corba.product = MICO
 CORBACPP_VER  = 2.3.7

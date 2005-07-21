@@ -12,7 +12,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/parser/I_Parser.h>
 #include <util/plugin/I_Plugin.h>
 #include <string>
-#include <xercesc/util/TransService.hpp>
+#include <util/TransService.hpp>
 #include <sax2/DefaultHandler.hpp>
 #include <util/XMLString.hpp>
 #include <util/StopParseException.h>
