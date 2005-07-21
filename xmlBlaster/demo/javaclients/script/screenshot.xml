@@ -1,0 +1,61 @@
+<!-- java javaclients.script.XmlScript -requestFile screenshot.xml -ICAO EDDI -->
+<xmlBlaster>
+   <replaceQosTokens/> <!-- replace e.g. ${ICAO} with command line setting '-ICAO EDDI' -->
+   <replaceKeyTokens/>
+   <replaceContentTokens/>
+   <connect>
+      <qos>
+      <securityService type="htpasswd" version="1.0"><![CDATA[
+         <user>TestPersistentSession</user>
+         <passwd>secret</passwd>
+      ]]></securityService>
+      <persistent/>
+      <session name='Airport@${ICAO}/1' />
+      <queue relating='connection'><address pingInterval='2000' retries='-1' delay='2000' /></queue>
+      <queue relating='callback' maxEntries='5' maxEntriesCache='2'><callback pingInterval='2000' retries='-1' delay='1000' /></queue>
+   </qos>
+   </connect>
+
+   <wait delay="1000" />
+   <publish>
+      <key oid="ATC.AIS.${ICAO}"><airport name="${ICAO}" /></key>
+      <content>Aeronautical informations</content>
+      <qos/>
+   </publish>
+
+   <publish>
+      <key oid="ATC.AIS.${ICAO}"><airport name="${ICAO}" /></key>
+      <content>Aeronautical informations</content>
+      <qos/>
+   </publish>
+   <publish>
+      <key oid="ATC.NOTAM.${ICAO}"><airport name="${ICAO}" /></key>
+      <content>Notification for airmen</content>
+      <qos/>
+   </publish>
+
+   <get><key oid="ATC.AIS.${ICAO}" /></get>
+
+   <subscribe>
+      <key oid='ATC.AIS.${ICAO}'/>
+   </subscribe>
+   <subscribe>
+      <key oid='ATC.NOTAM.${ICAO}'/>
+   </subscribe>
+   <subscribe>
+      <key queryType="XPATH">/xmlBlaster/key/airport</key>
+   </subscribe>
+   <subscribe>
+      <key oid='ATC.METAR'/>
+   </subscribe>
+
+   <input message="Hit a key to continue # "/>
+
+   <unSubscribe><key oid="test"/></unSubscribe>
+
+   <erase><key oid="test"></key><qos/></erase>
+
+   <wait delay="1000" />
+
+   <disconnect />
+</xmlBlaster>
