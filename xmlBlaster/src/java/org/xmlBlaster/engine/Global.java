@@ -580,7 +580,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            getHttpServer(); // incarnate allow http based access (is currently only used by CORBA)
+            getHttpServer(); // incarnate allow http based access (is for example used for CORBA-IOR download)
          }
          if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
          }

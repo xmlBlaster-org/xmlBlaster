@@ -5,11 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
 Version:   $Id$
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.authentication;
+package org.xmlBlaster.util.http;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.http.I_HttpRequest;
+import org.xmlBlaster.util.http.HttpResponse;
 //import org.xmlBlaster.util.UriAuthority;
 //import org.xmlBlaster.util.Uri;
 import java.util.*;
@@ -33,7 +35,7 @@ import java.io.*;
  * @version $Revision: 1.31 $
  * @author $Author$
  */
-public class HttpIORServer extends Thread
+public class HttpIORServer extends Thread implements I_HttpRequest
 {
    private String ME = "HttpServer";
    private final Global glob;
@@ -63,6 +65,9 @@ public class HttpIORServer extends Thread
          if (log.CALL) log.call(ME, "Internal HttpServer not started, as -bootstrapPort is " + this.HTTP_PORT);
          return;
       }
+
+      registerRequest("/favicon.ico", this);
+
       if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
       setDaemon(true);
       start();
@@ -70,7 +75,7 @@ public class HttpIORServer extends Thread
 
    /**
     * If you want to provide some information over http, register it here. 
-    * @param urlPath The access path which the client uses to access your data
+    * @param urlPath The access path which the client uses to access your data, for example "/AuthenticationService.ior"
     * @param data The data you want to deliver to the client e.g. the CORBA IOR string
     */
    public void registerRequest(String urlPath, String data)
@@ -81,7 +86,21 @@ public class HttpIORServer extends Thread
 
    /**
     * If you want to provide some information over http, register it here. 
+    * @param urlPath The access path which the client uses to access your data,
+    *        for example "/monitor/index.html" or "/favicon.ico"
+    * @param data The data you want to deliver to the client e.g. the CORBA IOR string
+    */
+   public void registerRequest(String urlPath, I_HttpRequest cb)
+   {
+      if (log.TRACE) log.trace(ME, "Registering urlPath: " + urlPath);
+      knownRequests.put(urlPath.trim(), cb);
+   }
+   
+
+   /**
+    * Unregister your http listener. 
     * @param urlPath The access path which the client uses to access your data
+    *        for example "/monitor/index.html" or "/favicon.ico"
     * @param data The data you want to deliver to the client e.g. the CORBA IOR string
     */
    public void removeRequest(String urlPath)
@@ -133,7 +152,7 @@ public class HttpIORServer extends Thread
    {
       if (log.CALL) log.call(ME, "Entering shutdown");
       running = false;
-
+      removeRequest("/favicon.ico");
       boolean closeHack = true;
       if (this.listen != null && closeHack) {
          // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
@@ -155,7 +174,41 @@ public class HttpIORServer extends Thread
          log.warn(ME, "shutdown problem: " + e.toString());
       }
    }
-}
+
+   /**
+    * A HTTP request needs to be processed
+    * @param urlPath The url path like "/monitor" which triggered this call
+    * @param properties The key values from the browser
+    * @return The HTML page to return
+    */
+   public HttpResponse service(String urlPath, Map properties) {
+      try {
+         if (urlPath.indexOf("favicon.ico") != -1) {
+            // set the application icon
+            java.net.URL oUrl;
+            oUrl = this.getClass().getResource("favicon.ico");
+            if (oUrl != null) {
+               InputStream in = oUrl.openStream();
+               String root = in.toString();
+
+               byte[] tmp = new byte[10000];
+               int length = in.read(tmp);
+               in.close();
+
+               byte[] img = new byte[length];
+               System.arraycopy(tmp, 0, img, 0, length);
+               if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
+               return new HttpResponse(img, "image/ico");
+            }
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new IllegalArgumentException("Can't find " + urlPath + ": " + e.toString());
+      }
+      throw new IllegalArgumentException("Can't handle unknown " + urlPath);
+   }
+} // class HttpIORServer
 
 
 /**
@@ -277,28 +330,48 @@ class HandleRequest extends Thread
             return;
          }
 
-         String responseStr = (String)knownRequests.get(resource.trim());
+         // lookup if request is registered
+         resource = resource.trim();
+         Object obj = knownRequests.get(resource);
+         if (obj == null) {
+            Iterator it = knownRequests.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               if (resource.startsWith(key)) {
+                  obj = knownRequests.get(key);
+                  break;
+               }
+            }
+            if (obj == null) {
+               String info = "Ignoring unknown data '" + resource + "' from client " + getSocketInfo() + " request: '" + clientRequest + "'";
+               errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true, info);
+               log.warn(ME, info);
+               return;
+            }
+         }
 
-         if (responseStr == null) {
-            String info = "Ignoring unknown data '" + resource.trim() + "' from client " + getSocketInfo() + " request: '" + clientRequest + "'";
-            errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true, info);
-            log.warn(ME, info);
-            return;
+         HttpResponse httpResponse;
+         if (obj instanceof String) {
+            httpResponse = new HttpResponse((String)obj, "text/plain"); // CORBA IOR
+         }
+         else {
+            I_HttpRequest httpRequest = (I_HttpRequest)obj;             // Registered plugins
+            httpResponse = httpRequest.service(resource, new TreeMap());
          }
 
          // java.net.HttpURLConnection.HTTP_OK:
          errorResponse(oStream, "HTTP/1.1 200 OK", null, false, null);
-         String length = "Content-Length: " + responseStr.length();
+         String length = "Content-Length: " + httpResponse.getContent().length;
          oStream.write((length+CRLF).getBytes());
          //oStream.write(("Transfer-Encoding: chunked"+CRLF).getBytes()); // java.io.IOException: Bogus chunk size
-         oStream.write(("Content-Type: text/plain; charset=iso-8859-1"+CRLF).getBytes());
+         oStream.write(("Content-Type: "+httpResponse.getMimeType()+"; charset=utf-8"+CRLF).getBytes());
          if (!method.equalsIgnoreCase("HEAD")) {
             oStream.write(CRLF.getBytes());
-            oStream.write(responseStr.getBytes());
+            oStream.write(httpResponse.getContent());
          }
          oStream.flush();
       }
-      catch (IOException e) {
+      catch (Throwable e) {
          if (clientRequest == null && first) {
             if (log.TRACE) log.trace(ME, "Ignoring connect/disconnect attempt, probably a xmlBlaster client detecting its IP to use");
          } else {
@@ -341,4 +414,4 @@ class HandleRequest extends Thread
       sb.append(":").append(sock.getLocalPort());
       return sb.toString();
    }
-}
+} // class HandleRequest

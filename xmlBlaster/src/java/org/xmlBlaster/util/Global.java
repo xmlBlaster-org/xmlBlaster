@@ -41,7 +41,7 @@ import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
-import org.xmlBlaster.authentication.HttpIORServer;
+import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;

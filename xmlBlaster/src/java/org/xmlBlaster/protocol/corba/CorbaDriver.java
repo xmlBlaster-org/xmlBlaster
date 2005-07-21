@@ -20,7 +20,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
-import org.xmlBlaster.authentication.HttpIORServer;
+import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.jutils.io.FileUtil;
 import java.io.PrintWriter;
