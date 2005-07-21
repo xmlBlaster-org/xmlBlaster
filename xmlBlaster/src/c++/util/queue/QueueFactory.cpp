@@ -15,7 +15,6 @@ Comment:   Factory to create different queue implementations
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <util/PlatformUtils.hpp>
 #include <util/queue/QueueFactory.h>
 #include <util/queue/RamQueuePlugin.h>
 #include <util/queue/CacheQueuePlugin.h>
