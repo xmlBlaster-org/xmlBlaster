@@ -2304,11 +2304,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     * Enforced by interface LogableDevice
     */
    public void log(int level, String source, String str) {
-      if (LogChannel.LOG_ERROR == level) {
-         this.lastError = "[" + source + "] " + str;
-      }
+      // We may not do any log.xxx() call here because of recursion!!
       if (LogChannel.LOG_WARN == level) {
          this.lastWarning = "[" + source + "] " + str;
+      }
+      else if (LogChannel.LOG_ERROR == level) {
+         this.lastError = "[" + source + "] " + str;
       }
    }
 }

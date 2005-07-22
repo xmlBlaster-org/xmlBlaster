@@ -112,7 +112,6 @@ public class LogNotifierDeviceFactory implements I_LogDeviceFactory {
        * Redirect logging. 
        */
       public void log(int level, String source, String str) {
-      /* TODO: Activate without recursion danger!
          if (this.logNotification != null) {
             if (LogChannel.LOG_WARN == level) {
                this.logNotification.log(level, source, str);
@@ -121,7 +120,6 @@ public class LogNotifierDeviceFactory implements I_LogDeviceFactory {
                this.logNotification.log(level, source, str);
             }
          }
-      */
       }
    }
 }

@@ -2099,6 +2099,11 @@ public class Global implements Cloneable
     */
    public static byte[] getFromClasspath(String file, Object location) {
       try {
+         //java.lang.IllegalArgumentException: Can't handle unknown status.html
+         //  at org.xmlBlaster.util.Global.getFromClasspath(Global.java:2122)
+         //  at org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin.service(HtmlMonitorPlugin.java:151)
+         //  at org.xmlBlaster.util.http.HandleRequest.run(HttpIORServer.java:368)
+         // I had to throw it into org/xmlBlaster/contrib/htmlmonitor to be found because location was 'this' instance of HtmlMonitorPlugin
          java.net.URL oUrl = location.getClass().getResource(file); // "favicon.ico"
          if (oUrl != null) {
             InputStream in = oUrl.openStream();
