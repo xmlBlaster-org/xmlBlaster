@@ -101,7 +101,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       else
          ret = glob.getProperty().get(cmdString, (String)null);
 
-      log.info(ME, "Found for cmd " + cmdString + "=" + ret);
+      if (log.TRACE) log.trace(ME, "Found for cmd " + cmdString + "=" + ret);
       if (ret == null)
          return new MsgUnit[0];
       else {

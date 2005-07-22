@@ -92,7 +92,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       throws XmlBlasterException {
       Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
       String ret = ""+ tmp;
-      log.info(ME, "Retrieved " + cmd.getCommand());
+      if (log.TRACE) log.trace(ME, "Retrieved " + cmd.getCommand());
       if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
 
       MsgUnit[] msgs = null;
