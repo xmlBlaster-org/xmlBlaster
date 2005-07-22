@@ -4,19 +4,27 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
    <meta http-equiv="Refresh" content="10">
-   <script language="JavaScript" type="text/javascript"></script>
    <title>XmlBlaster Status</title>
+   <script language="JavaScript" type="text/javascript">
+      function writeEscaped(text) {
+         text = text.replace("<", "&lt;");
+         text = text.replace(">", "&gt;");
+         document.write(text);
+      }
+   </script>
    <style type="text/css">
       body {
          font-family: verdana, helvetica, arial;
       }
       table.listTable {
          border-width: 0px;
+         width: 500px;
       }
       table.errorTable {
          border-width: 0px;
          padding: 5px;
          font-size: 12px;
+         width: 700px;
       }
       p.head, td.head {
          padding-top: 10px;
@@ -31,25 +39,31 @@
          padding-right: 5px;
          background-color: #CCCCCC;
          font-size: 14px;
+         width: 120px;
          text-align: right;
       }
       p.listValue, td.listValue {
          padding-left: 5px;
          padding-right: 5px;
          background-color: #F9F9F5;
-         width: 580;
          font-size: 12px;
+         width: 380px;
          text-align: left;
       }
       p.errorLabel, td.errorLabel {
          background-color: #AAAAAA;
-         width: 700;
+         width: 700px;
          color: #FFFFFF;
          text-align: rigth;
       }
       p.errorValue, td.errorValue {
          background-color: #F9F9F5;
-         width: 700;
+         width: 700px;
+      }
+      div.alert, p.alert, td.alert {
+         background-color: red;
+         color: #FFFFFF;
+         font-weight: bold;
       }
    </style>
 </head>
@@ -74,7 +88,7 @@
             JVM
          </td>
          <td class="listValue">
-            ${sysprop/?java.vendor} ${sysprop/?java.version}
+            ${sysprop/?java.vendor} ${sysprop/?java.version} ${sysprop/?os.name}
          </td>
       </tr>
       <tr>
@@ -109,7 +123,10 @@
             <script language="JavaScript" type="text/javascript">
                var free = ${?freeMem} / 1000000;
                var used = ${?usedMem} / 1000000;
-               document.write("Free " + free + " MByte / Used " + used + " MByte");
+               if (free < 1.5) /* < 1.5 MB will alert red */
+                  document.write("<div class='alert'>Free " + free + " MByte</div><div>Used " + used + " MByte</div>");
+               else
+                  document.write("<div>Free " + free + " MByte</div><div>Used " + used + " MByte</div>");
             </script>
          </td>
       </tr>
@@ -120,12 +137,14 @@
    <table class="errorTable"border="0" cellpadding="5" cellspacing="0" >
      <tr>
        <td class="errorLabel" width="700">
-           Last Error
+           Last Warning
        </td>
      </tr>
      <tr>
        <td class="erroValue">
-         ${?lastError}
+         <script language="JavaScript" type="text/javascript">
+            writeEscaped("${?lastWarning}");
+         </script>
        </td>
      </tr>
    </table>
@@ -135,12 +154,14 @@
    <table class="errorTable"border="0" cellpadding="5" cellspacing="0" >
      <tr>
        <td class="errorLabel" width="700">
-           Last Warning
+           Last Error
        </td>
      </tr>
      <tr>
        <td class="erroValue">
-         ${?lastWarning}
+         <script language="JavaScript" type="text/javascript">
+            writeEscaped("${?lastError}");
+         </script>
        </td>
      </tr>
    </table>
