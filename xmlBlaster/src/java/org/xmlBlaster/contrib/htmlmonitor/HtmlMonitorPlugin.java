@@ -8,7 +8,6 @@ trace[org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.htmlmonitor;
 
-import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -30,6 +29,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.StringTokenizer;
 import java.io.File;
 
 /**
@@ -43,8 +43,6 @@ import java.io.File;
 &lt;plugin id='HtmlMonitorPlugin.MyCompany' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
    &lt;attribute id='urlPath'>/monitor&lt;/attribute>
    &lt;attribute id='documentRoot'>${user.home}${file.separator}html&lt;/attribute>
-   &lt;attribute id='user'>joe&lt;/attribute>
-   &lt;attribute id='password'>secret&lt;/attribute>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
 &lt;/plugin>
@@ -63,7 +61,7 @@ import java.io.File;
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
+public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    private static Logger log = Logger.getLogger(HtmlMonitorPlugin.class.getName());
    private Global global;
    private PluginInfo pluginInfo;
@@ -110,9 +108,13 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
       this.documentRoot = get("documentRoot", get("user.home","")+get("file.separator","/")+"html");
 
       this.httpServer = this.global.getHttpServer();
-      this.urlPath = get("urlPath", "/monitor");
 
-      this.httpServer.registerRequest(this.urlPath, this);
+      String urlPathList = get("urlPath", "/monitor,/status.html");
+      StringTokenizer st = new StringTokenizer(urlPathList, ",");
+      while (st.hasMoreTokens()) {
+         String path = (String)st.nextToken();
+         this.httpServer.registerRequest(path, this);
+      }
 
       log.info("Loaded HtmlMonitor plugin '" + getType() +
                "', registered with urlPath=" + this.urlPath +
@@ -137,18 +139,27 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
 
    /**
     * A HTTP request needs to be processed
-    * @param urlPath The url path like "/monitor" which triggered this call
+    * @param urlPath The url path like "/monitor/show.html" which triggered this call
+    *        contains the real file name as given in the browser window
     * @param properties The key values from the browser
     * @return The HTML page to return
     */
    public HttpResponse service(String urlPath, Map properties) {
       try {
-         File f = new File(urlPath);
-         String name = (urlPath.toLowerCase().indexOf(".html")!=-1 || urlPath.toLowerCase().indexOf(".htm")!=-1) ? f.getName() : "index.html";
-         if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
-         File template = new File(this.documentRoot, name);
-         String text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
-         if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
+         String text;
+         if (urlPath.equals("/status.html")) {
+            text = new String(this.global.getFromClasspath("status.html", this));
+            if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
+         }
+         else {
+            File f = new File(urlPath);
+            String name = (urlPath.toLowerCase().indexOf(".html")!=-1 || urlPath.toLowerCase().indexOf(".htm")!=-1) ?
+                          f.getName() : "index.html";
+            if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
+            File template = new File(this.documentRoot, name);
+            text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
+         }
          text = replaceAllVariables(text);
          return new HttpResponse(text);
       }
@@ -160,7 +171,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
 
    
    /**
-    * Replace ${...} occurences. 
+    * Replace ${...} occurrences. 
     * @param template The template text containing ${}
     * @return The result text with replaced ${}
     */
@@ -203,7 +214,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
     */
    public void shutdown() throws XmlBlasterException {
       try {
-         this.httpServer.removeRequest(this.urlPath);
+         this.httpServer.removeRequest(this);
       }
       catch (Throwable e) {
          log.warning("Ignoring shutdown problem: " + e.toString());
@@ -212,7 +223,9 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
    }
    
    /**
-    * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
+    * Access a property. 
+    * @param key The key to lookup
+    * @param value The found value
     */
    public String get(String key, String def) {
       if (key == null) return def;
@@ -229,77 +242,5 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
          log.warning(e.toString());
          return def;
       }
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
-    */
-    public void put(String key, String value) {
-       if (value == null)
-          this.global.getProperty().removeProperty(key);
-       else {
-          try {
-             this.global.getProperty().set(key, value);
-          }
-          catch (Exception e) {
-             log.warning(e.toString());
-          }
-       }
-    }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#getLong(java.lang.String, long)
-    */
-   public long getLong(String key, long def) {
-      if (key == null) return def;
-      try {
-        return this.global.get(key, def, null, this.pluginInfo);
-      }
-      catch (XmlBlasterException e) {
-         log.warning(e.toString());
-         return def;
-      }
-   }
-
-    /**
-    * @see org.xmlBlaster.contrib.I_Info#getInt(java.lang.String, int)
-    */
-   public int getInt(String key, int def) {
-      if (key == null) return def;
-      try {
-        return this.global.get(key, def, null, this.pluginInfo);
-      }
-      catch (XmlBlasterException e) {
-         log.warning(e.toString());
-         return def;
-      }
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#getBoolean(java.lang.String, boolean)
-    */
-   public boolean getBoolean(String key, boolean def) {
-      if (key == null) return def;
-      try {
-        return this.global.get(key, def, null, this.pluginInfo);
-      }
-      catch (XmlBlasterException e) {
-         log.warning(e.toString());
-         return def;
-      }
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#getObject(java.lang.String)
-    */
-   public Object getObject(String key) {
-      return null;
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#putObject(java.lang.String, Object)
-    */
-   public Object putObject(String key, Object o) {
-      return null;
    }
 }
