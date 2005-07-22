@@ -450,6 +450,7 @@ keytool -import -alias xmlBlaster -file xmlBlasterTrustStore.Cert -keystore test
       <tt>
 keytool -list -v  -storepass testtest -keystore testStore.joe<br />
 keytool -list -v  -storepass testtest -keystore testStore
+keytool -printcert -file xmlBlasterTrustStore.Cert
       </tt>
 
       <p>
