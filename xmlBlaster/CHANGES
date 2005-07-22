@@ -3,6 +3,15 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13545-#13555 New native web based monitoring
+   Start xmlBlaster and try in your browser:
+     http://YOUR-IP:3412/monitor/status.html
+   See
+     http://www.xmlblaster.org/screenshot.html#native
+   - Added LogNotifierDeviceFactory
+   - Added file loader from CLASSPATH, global.getFromClasspath()
+   - Added more administrative access methods
+
  o #13539 Added native plugin which delivers a simple HTML page
    with the xmlBlaster status.
    The delivered page is configurable to show any administrative command.
