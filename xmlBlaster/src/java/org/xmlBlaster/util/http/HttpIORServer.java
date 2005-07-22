@@ -45,6 +45,10 @@ public class HttpIORServer extends Thread implements I_HttpRequest
    private ServerSocket listen = null;
    private boolean running = true;
 
+   private String icoMimeType = "image/ico";
+   private String icoRequestFile = "favicon.ico";
+   private String icoRequestUrlPath = "/"+icoRequestFile;
+
    private Hashtable knownRequests = new Hashtable();
 
    /**
@@ -66,7 +70,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
          return;
       }
 
-      registerRequest("/favicon.ico", this);
+      registerRequest(icoRequestUrlPath, this);
 
       if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
       setDaemon(true);
@@ -101,11 +105,33 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     * Unregister your http listener. 
     * @param urlPath The access path which the client uses to access your data
     *        for example "/monitor/index.html" or "/favicon.ico"
-    * @param data The data you want to deliver to the client e.g. the CORBA IOR string
     */
    public void removeRequest(String urlPath)
    {
       knownRequests.remove(urlPath.trim());
+   }
+
+   /**
+    * Unregister your http listener. 
+    * @param cb Remove all registered pathes of this registrar. 
+    *        for example "/monitor/index.html" or "/favicon.ico"
+    */
+   public void removeRequest(I_HttpRequest cb)
+   {
+      Iterator it = knownRequests.keySet().iterator();
+      ArrayList list = new ArrayList();
+      while (it.hasNext()) {
+         Object obj = it.next();
+         if (obj instanceof I_HttpRequest) {
+            I_HttpRequest tmp = (I_HttpRequest)obj;
+            if (cb == tmp) {
+               list.add(tmp);
+            }
+         }
+      }
+      for (int i=0; i<list.size(); i++) {
+         knownRequests.remove(list.get(i));
+      }
    }
 
    /**
@@ -152,7 +178,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
    {
       if (log.CALL) log.call(ME, "Entering shutdown");
       running = false;
-      removeRequest("/favicon.ico");
+      removeRequest(icoRequestUrlPath);
       boolean closeHack = true;
       if (this.listen != null && closeHack) {
          // On some JDKs, listen.close() is not immediate (has a delay for about 1 sec.)
@@ -182,32 +208,15 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     * @return The HTML page to return
     */
    public HttpResponse service(String urlPath, Map properties) {
-      try {
-         if (urlPath.indexOf("favicon.ico") != -1) {
-            // set the application icon
-            java.net.URL oUrl;
-            oUrl = this.getClass().getResource("favicon.ico");
-            if (oUrl != null) {
-               InputStream in = oUrl.openStream();
-               String root = in.toString();
-
-               byte[] tmp = new byte[10000];
-               int length = in.read(tmp);
-               in.close();
-
-               byte[] img = new byte[length];
-               System.arraycopy(tmp, 0, img, 0, length);
-               if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
-               return new HttpResponse(img, "image/ico");
-            }
-         }
-      }
-      catch (Throwable e) {
-         e.printStackTrace();
-         throw new IllegalArgumentException("Can't find " + urlPath + ": " + e.toString());
+      if (urlPath.indexOf(icoRequestFile) != -1) {
+         // set the application icon "favicon.ico"
+         byte[] img = this.glob.getFromClasspath(icoRequestFile, this);
+         if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
+         return new HttpResponse(img, icoMimeType);
       }
       throw new IllegalArgumentException("Can't handle unknown " + urlPath);
    }
+
 } // class HttpIORServer
 
 
