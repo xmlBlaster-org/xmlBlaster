@@ -224,7 +224,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             return getErrorText("Ignoring your empty command.");
          }
 
-         if (cmd.trim().equalsIgnoreCase("quit")) {
+         if (cmd.equalsIgnoreCase("quit")) {
             lastCommand = "";
             stopTimer();
             disconnect();
@@ -233,12 +233,12 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          // Commands without login:
 
-         if (cmd.trim().equalsIgnoreCase("time")) {
+         if (cmd.equalsIgnoreCase("time")) {
             lastCommand = cmd;
             return ""+new java.util.Date()+CRLF;
          }
 
-         if (cmd.trim().toUpperCase().startsWith("MEM")) {
+         if (cmd.toUpperCase().startsWith("MEM")) {
             lastCommand = cmd;
             Runtime rt = Runtime.getRuntime();
             return ""+rt.totalMemory()+"/"+rt.freeMemory()+CRLF;
@@ -250,15 +250,16 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             return getErrorText("Ignoring your empty command.");
          }
          String cmdType = (String)st.nextToken();
+         cmdType = cmdType.trim();
 
          if (!st.hasMoreTokens()) {
-            if (cmdType.trim().equalsIgnoreCase("GET") ||
-                cmdType.trim().equalsIgnoreCase("SET") ||
-                cmdType.trim().equalsIgnoreCase("CONNECT")) {
+            if (cmdType.equalsIgnoreCase("GET") ||
+                cmdType.equalsIgnoreCase("SET") ||
+                cmdType.equalsIgnoreCase("CONNECT")) {
                lastCommand = cmd;
                return getErrorText("Ignoring your empty command '" + cmd + "'");
             }
-            if (cmdType.trim().equalsIgnoreCase("echo")) {
+            if (cmdType.equalsIgnoreCase("echo")) {
                lastCommand = cmd;
                return null;
             }
@@ -266,7 +267,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          String query = cmd.substring(cmdType.length()).trim();
 
-         if (cmdType.trim().equalsIgnoreCase("CONNECT")) {
+         if (cmdType.equalsIgnoreCase("CONNECT")) {
             if (!st.hasMoreTokens()) {
                lastCommand = cmd;
                return getErrorText("Please give me a login name and password to connect: '" + cmd + " <name> <passwd>'");
@@ -292,26 +293,26 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          // Commands with login only:
 
-         if (cmd.trim().equalsIgnoreCase("gc")) {
+         if (cmd.equalsIgnoreCase("gc")) {
             lastCommand = cmd;
             System.gc();
             return "OK\r\n";
          }
 
-         if (cmd.trim().toUpperCase().startsWith("EXIT")) {
+         if (cmd.toUpperCase().startsWith("EXIT")) {
             lastCommand = cmd;
             return
               "\r\nYou are going to shutdown remote JVM!\r\n"+
               "Are you sure to do this and stop xmlBlaster? (yes/no): ";
          }
 
-         if (cmd.trim().equalsIgnoreCase("yes")) {
+         if (cmd.equalsIgnoreCase("yes")) {
             if (lastCommand.trim().startsWith("exit")) {
                System.exit(0);
             }
          }
 
-         if (cmd.trim().equalsIgnoreCase("no")) {
+         if (cmd.equalsIgnoreCase("no")) {
             if (lastCommand.trim().toUpperCase().startsWith("EXIT")) {
                lastCommand = "";
                return CRLF;
@@ -322,7 +323,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
-         if (cmdType.trim().equalsIgnoreCase("GET")) {
+         if (cmdType.equalsIgnoreCase("GET")) {
             QueryKeyData keyData = new QueryKeyData(this.glob);
             keyData.setOid("__cmd:" + query);
             MsgUnit[] msgs = commandManager.get(this.addressServer, sessionId, keyData, null);
@@ -337,7 +338,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             }
             return sb.toString() + CRLF;
          }
-         else if (cmdType.trim().equalsIgnoreCase("SET")) {
+         else if (cmdType.equalsIgnoreCase("SET")) {
             SetReturn ret = commandManager.set(this.addressServer, sessionId, query);
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
             return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
