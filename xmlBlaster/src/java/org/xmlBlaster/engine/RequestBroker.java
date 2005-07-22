@@ -458,6 +458,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    }
       */
    final SessionInfo getInternalSessionInfo() {
+      // Note: We could change to 'public' as the CommandManager transports it to public scope already
+      //       with glob.getCommandManager().getSessionInfo()
       return this.unsecureSessionInfo;
    }
 
