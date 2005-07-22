@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13539 Added native plugin which delivers a simple HTML page
+   with the xmlBlaster status.
+   The delivered page is configurable to show any administrative command.
+
  o #13525-13528 Added native http based xmlBlaster monitoring plugin
    (generic HTML design is still under construction)
 
