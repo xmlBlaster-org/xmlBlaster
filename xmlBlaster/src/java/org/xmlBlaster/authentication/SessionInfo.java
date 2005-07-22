@@ -120,7 +120,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
-   private long uptime;
+   private long startupTime;
 
    private ReentrantLock lock = new ReentrantLock();
    
@@ -161,7 +161,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.ME = "SessionInfo-" + this.sessionName.getAbsoluteName();
 
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
-      this.uptime = System.currentTimeMillis();
+      this.startupTime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
@@ -595,7 +595,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final long getUptime() {
-      return (System.currentTimeMillis() - this.uptime)/1000L;
+      return (System.currentTimeMillis() - this.startupTime)/1000L;
    }
 
    public final String getConnectionState() {
@@ -609,7 +609,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final String getLoginDate() {
-      long ll = this.uptime;
+      long ll = this.startupTime;
       java.sql.Timestamp tt = new java.sql.Timestamp(ll);
       return tt.toString();
    }
