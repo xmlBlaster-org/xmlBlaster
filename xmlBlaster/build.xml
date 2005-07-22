@@ -197,7 +197,7 @@ TODO
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
    <property name="xerces.include.dir" value="/usr/include"/>  <!-- Assumes ./xercesc subdirectory -->
    <property name="xerces.lib.dir" value="/usr/lib"/>
-   <property name="xerces.lib.name" value="xerces-c"/>	<!-- On Windows it is xerces-c_2 -->
+   <property name="xerces.lib.name" value="xerces-c"/>  <!-- On Windows it is xerces-c_2 -->
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
    <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
    <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
@@ -641,6 +641,7 @@ TODO
       <copy file="${config.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
       <copy file="${config.dir}/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${config.dir}/favicon.ico" tofile="${build.dest}/org/xmlBlaster/util/http/favicon.ico"/>
+      <copy file="${config.dir}/status.html" tofile="${build.dest}/org/xmlBlaster/contrib/htmlmonitor/status.html"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/AppIcon.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/question.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/question.gif"/>
