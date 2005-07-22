@@ -9,7 +9,9 @@ trace[org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin]=true
 package org.xmlBlaster.contrib.htmlmonitor;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -18,6 +20,11 @@ import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.http.I_HttpRequest;
 import org.xmlBlaster.util.http.HttpResponse;
 import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.I_ReplaceVariable;
+
 
 import java.util.Map;
 import java.util.HashMap;
@@ -63,6 +70,9 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
    private HttpIORServer httpServer;
    private String urlPath;
    private String documentRoot;
+   private CommandManager commandManager;
+   private SessionInfo sessionInfo;
+   private ReplaceVariable replaceVariable = new ReplaceVariable();
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -74,8 +84,8 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
+   public void init(org.xmlBlaster.util.Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
+      this.global = (Global)global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
       boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
       if (jdk14loggingCapture) {
@@ -94,15 +104,16 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
          log.finer("init: plugin user data  : '" + this.pluginInfo.getUserData() + "'");
       }
       
-      // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
-      putObject("org.xmlBlaster.engine.Global", this.global);
+      // We assume that the RequestBroker has created a commandManager already
+      this.commandManager = this.global.getCommandManager(null);
 
-      this.documentRoot = get("documentRoot", get("user.home","YY")+get("file.separator","XXX")+"html");
+      this.documentRoot = get("documentRoot", get("user.home","")+get("file.separator","/")+"html");
 
       this.httpServer = this.global.getHttpServer();
       this.urlPath = get("urlPath", "/monitor");
 
       this.httpServer.registerRequest(this.urlPath, this);
+
       log.info("Loaded HtmlMonitor plugin '" + getType() +
                "', registered with urlPath=" + this.urlPath +
                " using documentRoot=" + this.documentRoot);
@@ -138,12 +149,54 @@ public class HtmlMonitorPlugin implements I_Plugin, I_Info, I_HttpRequest {
          File template = new File(this.documentRoot, name);
          String text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
          if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
+         text = replaceAllVariables(text);
          return new HttpResponse(text);
       }
       catch (Throwable e) {
+         e.printStackTrace();
          return new HttpResponse("<html><h2>" + e.toString() + "</h2></html>");
       }
    }
+
+   
+   /**
+    * Replace ${...} occurences. 
+    * @param template The template text containing ${}
+    * @return The result text with replaced ${}
+    */
+   private String replaceAllVariables(String template) throws XmlBlasterException {
+      String text = replaceVariable.replace(template,
+         new I_ReplaceVariable() {
+            public String get(String key) {
+               try {
+                  return lookup(key);
+               }
+               catch (XmlBlasterException e) {
+                  log.warning("Replacing variable for '" + key + "' failed: " + e.getMessage());
+                  return null;
+               }
+            }
+         });
+      return text;
+   }
+
+   /**
+    * Lookup the given administrative command. 
+    * @return The result of the command
+    */
+   private String lookup(String query) throws XmlBlasterException {
+      QueryKeyData keyData = new QueryKeyData(this.global);
+      keyData.setOid("__cmd:" + query);
+      MsgUnit[] msgs = this.commandManager.get(null, null, keyData, null);
+      if (msgs.length == 0) return null;
+      StringBuffer sb = new StringBuffer(msgs.length * 40);
+      for (int ii=0; ii<msgs.length; ii++) {
+         MsgUnit msg = msgs[ii];
+         sb.append(msg.getContentStr());
+      }
+      return sb.toString();
+   }
+
 
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
