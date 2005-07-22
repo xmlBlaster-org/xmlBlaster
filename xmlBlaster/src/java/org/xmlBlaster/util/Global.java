@@ -16,6 +16,7 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
@@ -44,6 +45,7 @@ import org.xmlBlaster.client.protocol.CbServerPluginManager;
 import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
+import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.def.ErrorCode;
@@ -63,6 +65,8 @@ import java.net.MalformedURLException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
@@ -147,6 +151,8 @@ public class Global implements Cloneable
    private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
    protected XmlProcessor xmlProcessor;
+
+   protected LogNotifierDeviceFactory logNotifierDeviceFactory;
 
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault;
@@ -441,6 +447,14 @@ public class Global implements Cloneable
                devices = getProperty().get("logDevice[" + key + "]", new String[0], ",");
             if (devices == null  ||  devices.length == 0)
                devices = getProperty().get("logDevice", new String[0], ",");
+
+            try {
+               LogableDevice devNoti = getLogNotifierDeviceFactory().getLogDevice(lc);
+               lc.addLogDevice(devNoti);
+            }
+            catch(XmlBlasterException ex) {
+               System.out.println(ME+".initLog(): Error in getting LogNotifierDeviceFactory: " + ex.toString());
+            }
 
             if (devices != null && devices.length > 0) {
                for(int i = 0;i<devices.length;i++) {
@@ -2071,5 +2085,52 @@ public class Global implements Cloneable
          }
       }
       return this.instanceId;
+   }
+
+   /**
+    * Access a file from the CLASSPATH, typically from xmlBlaster.jar
+    *
+    * It is searched in the directory of the package of the calling java class
+    * <tt>org.xmlBlaster.util.http</tt> => <tt>org/xmlBlaster/util/http</tt>
+    * @param file The file to lookup
+    * @return The byte[] of the found file
+    * @exception  IOException  if an I/O error occurs.
+    *             or IllegalArgumentException if not found
+    */
+   public static byte[] getFromClasspath(String file, Object location) {
+      try {
+         java.net.URL oUrl = location.getClass().getResource(file); // "favicon.ico"
+         if (oUrl != null) {
+            InputStream in = oUrl.openStream();
+            String root = in.toString();
+
+            int size = 10;
+            byte[] tmp = new byte[size];
+            ByteArrayOutputStream bo = new ByteArrayOutputStream(size);
+            while (in.available() > 0) {
+               int length = in.read(tmp);
+               bo.write(tmp, 0, length);
+            }
+            in.close();
+            return bo.toByteArray();
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new IllegalArgumentException("Can't find " + file + ": " + e.toString());
+      }
+      throw new IllegalArgumentException("Can't handle unknown " + file);
+   }
+
+   public LogNotifierDeviceFactory getLogNotifierDeviceFactory() throws XmlBlasterException {
+      if (this.logNotifierDeviceFactory == null) {
+         synchronized(this) {
+            if (this.logNotifierDeviceFactory == null) {
+               this.logNotifierDeviceFactory = new LogNotifierDeviceFactory();
+               this.logNotifierDeviceFactory.init(this, new PluginInfo(this, null, "notification", "1.0"));
+            }
+         }
+      }
+      return this.logNotifierDeviceFactory;
    }
 }
