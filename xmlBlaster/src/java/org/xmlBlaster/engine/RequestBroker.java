@@ -8,6 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
+import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -67,6 +68,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 
 import java.util.*;
 
@@ -83,7 +85,7 @@ import java.util.*;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener
+public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener, LogableDevice
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -93,6 +95,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public static long publishedMessages = 0L;
    /** Total count of accessed messages via get() */
    public static long getMessages = 0L;
+
+   private String lastWarning = "";
+   private String lastError = "";
 
    private PersistencePluginManager pluginManager = null;
 
@@ -177,7 +182,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
    // Enforced by I_AdminNode
    /** Incarnation time of this object instance in millis */
-   private long uptime;
+   private long startupTime;
    private long numUpdates = 0L;
    private int maxSessions;
 
@@ -200,9 +205,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.glob = this.authenticate.getGlobal();
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
-      this.uptime = System.currentTimeMillis();
+      this.startupTime = System.currentTimeMillis();
       this.mbeanObjectName = this.glob.registerMBean(null, this);
 
+      // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
+      LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
+      lf.register(LogChannel.LOG_ERROR, this);
 
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {
@@ -2166,9 +2174,23 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public void setRunlevel(String levelStr) throws XmlBlasterException {
       glob.getRunlevelManager().changeRunlevel(levelStr, true);
    }
+   /** Get date when xmlBlaster was started. */
+   public String getStartupDate() {
+      long ll = this.startupTime;
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
    /** How long is the server running (in seconds) */
    public long getUptime() {
-      return (System.currentTimeMillis() - this.uptime)/1000L;
+      return (System.currentTimeMillis() - this.startupTime)/1000L;
+   }
+   /** Access the last logged error */
+   public String getLastWarning() {
+      return this.lastWarning;
+   }
+   /** Access the last logged error */
+   public String getLastError() {
+      return this.lastError;
    }
    /** Memory in bytes */
    public long getFreeMem() {
@@ -2277,5 +2299,16 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getSubscriptionList() {
       return getClientSubscriptions().getSubscriptionList();
    }
-
+   /**
+    * Redirect logging, configure in xmlBlaster.properties. 
+    * Enforced by interface LogableDevice
+    */
+   public void log(int level, String source, String str) {
+      if (LogChannel.LOG_ERROR == level) {
+         this.lastError = "[" + source + "] " + str;
+      }
+      if (LogChannel.LOG_WARN == level) {
+         this.lastWarning = "[" + source + "] " + str;
+      }
+   }
 }

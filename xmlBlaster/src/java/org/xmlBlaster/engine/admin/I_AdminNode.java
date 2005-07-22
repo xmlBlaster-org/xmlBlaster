@@ -55,7 +55,16 @@ public interface I_AdminNode {
     * @return For example "2005-03-21 11:18:12.622"
     */
    public String getServerTimestamp();
+   /** Get date when xmlBlaster was started. */
+   public String getStartupDate();
+   /** Get elapsed seconds since xmlBlaster started */
    public long getUptime();
+
+   /** Access the last logged error. */
+   public String getLastError();
+   /** Access the last logged warning. */
+   public String getLastWarning();
+
    public long getFreeMem();
    public long getTotalMem();
    public long getUsedMem();
