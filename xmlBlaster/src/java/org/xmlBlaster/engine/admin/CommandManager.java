@@ -153,6 +153,12 @@ public final class CommandManager implements I_RunlevelListener
     * @return The found data or an array of size 0 if not found. 
     */
    public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      if (addressServer == null) {
+         addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo
+      }
+      if (sessionId == null) {
+         sessionId = this.sessionInfo.getSecuritySession().getSecretSessionId();
+      }
       String oid = keyData.getOid();
       if (log.CALL) log.call(ME, "get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
@@ -189,6 +195,12 @@ public final class CommandManager implements I_RunlevelListener
     *         setReturn.returnString contains the actually set value or is null if not set. 
     */
    public synchronized final SetReturn set(AddressServer addressServer, String sessionId, String cmd) throws XmlBlasterException {
+      if (addressServer == null) {
+         addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo
+      }
+      if (sessionId == null) {
+         sessionId = this.sessionInfo.getSecuritySession().getSecretSessionId();
+      }
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
