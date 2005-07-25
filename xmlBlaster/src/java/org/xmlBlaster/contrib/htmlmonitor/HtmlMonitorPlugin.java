@@ -25,6 +25,8 @@ import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.I_ReplaceVariable;
 
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -66,7 +68,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    private Global global;
    private PluginInfo pluginInfo;
    private HttpIORServer httpServer;
-   private String urlPath;
+   private Set urlPathClasspathSet = new HashSet();
    private String documentRoot;
    private CommandManager commandManager;
    private SessionInfo sessionInfo;
@@ -108,17 +110,35 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       this.documentRoot = get("documentRoot", get("user.home","")+get("file.separator","/")+"html");
 
       this.httpServer = this.global.getHttpServer();
+      if (this.httpServer == null) {
+         log.info("No http server is available");
+         return;
+      }
 
-      String urlPathList = get("urlPath", "/monitor,/status.html");
+      String urlPathList = get("urlPath", ""); // "/monitor"
       StringTokenizer st = new StringTokenizer(urlPathList, ",");
       while (st.hasMoreTokens()) {
          String path = (String)st.nextToken();
-         this.httpServer.registerRequest(path, this);
+         if (path != null && path.length() > 0) {
+            this.httpServer.registerRequest(path, this);
+         }
+      }
+
+      String urlPathClasspathList = get("urlPath.CLASSPATH", ""); // "status.html"
+      st = new StringTokenizer(urlPathClasspathList, ",");
+      while (st.hasMoreTokens()) {
+         String path = (String)st.nextToken();
+         if (path != null && path.length() > 0) {
+            this.urlPathClasspathSet.add(path);
+            this.httpServer.registerRequest(path, this);
+         }
       }
 
       log.info("Loaded HtmlMonitor plugin '" + getType() +
-               "', registered with urlPath=" + this.urlPath +
-               " using documentRoot=" + this.documentRoot);
+               "', registered with urlPath='" + urlPathList +
+               "' using documentRoot=" + this.documentRoot +
+               " and '" + urlPathClasspathList + "' from CLASSPATH on http://" +
+               this.httpServer.getSocketInfo());
    }
 
    /**
@@ -139,16 +159,24 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
 
    /**
     * A HTTP request needs to be processed
-    * @param urlPath The url path like "/monitor/show.html" which triggered this call
-    *        contains the real file name as given in the browser window
+    * @param urlPath The url path like "/monitor/show.html" or "/status.html" which triggered this call
+    *        contains the real file name as given in the browser window including the
+    *        leading slash '/'.
     * @param properties The key values from the browser
     * @return The HTML page to return
     */
    public HttpResponse service(String urlPath, Map properties) {
+      if (urlPath == null || urlPath.length() < 1) {
+         return new HttpResponse("<html><h2>Empty request, please provide a URL path</h2></html>");
+      }
       try {
          String text;
-         if (urlPath.equals("/status.html")) {
-            text = new String(this.global.getFromClasspath("status.html", this));
+         if (this.urlPathClasspathSet.contains(urlPath)) { // "/status.html"
+            if (urlPath.startsWith("/")) {
+               // "status.html": lookup where the java class resides in xmlBlaster.jar
+               urlPath = urlPath.substring(1);
+            }
+            text = new String(this.global.getFromClasspath(urlPath, this));
             if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
          }
          else {

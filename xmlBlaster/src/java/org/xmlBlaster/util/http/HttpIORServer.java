@@ -217,6 +217,18 @@ public class HttpIORServer extends Thread implements I_HttpRequest
       throw new IllegalArgumentException("Can't handle unknown " + urlPath);
    }
 
+   /**
+    * Access the server settings for logging. 
+    * @return The socket <ip>:<port>, for example "server.xmlBlaster.org:3412"
+    */
+   public String getSocketInfo() {
+      StringBuffer sb = new StringBuffer(196);
+      if (listen == null)
+         return "";
+      sb.append(listen.getInetAddress().getHostAddress());
+      sb.append(":").append(this.HTTP_PORT);
+      return sb.toString();
+   }
 } // class HttpIORServer
 
 
