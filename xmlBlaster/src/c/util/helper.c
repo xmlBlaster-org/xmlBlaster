@@ -181,7 +181,7 @@ Dll_Export void sleepMillis(long millisecs)
 }
 
 /**
- * Create a timestamp in nano seconds elapsed since 1972. 
+ * Create a timestamp in nano seconds elapsed since 1970-01-01. 
  * The timestamp is guaranteed to be ascending and unique.
  */
 Dll_Export int64_t getTimestamp() {
