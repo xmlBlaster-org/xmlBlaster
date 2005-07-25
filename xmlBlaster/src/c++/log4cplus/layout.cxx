@@ -89,7 +89,11 @@ SimpleLayout::formatAndAppend(log4cplus::tostream& output,
 ///////////////////////////////////////////////////////////////////////////////
 
 TTCCLayout::TTCCLayout(bool use_gmtime)
-: dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,%q") ),
+// %q is no formatting option -> VC++ 2005 crashes, it is used to switch on milli/nanoseconds
+// changed to 'qq' or 'QQ' by Marcel Ruff 2005-07-25
+// -> see timehelper.cxx, there it is used
+//: dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,%q") ),
+: dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,qq") ),
   use_gmtime(use_gmtime)
 {
 }
@@ -97,7 +101,11 @@ TTCCLayout::TTCCLayout(bool use_gmtime)
 
 TTCCLayout::TTCCLayout(const log4cplus::helpers::Properties& properties)
 : Layout(properties),
-  dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,%q") ),
+// %q is no formatting option -> VC++ 2005 crashes, it is used to switch on milli/nanoseconds
+// changed to 'qq' or 'QQ' by Marcel Ruff 2005-07-25
+// -> see timehelper.cxx, there it is used
+//  dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,%q") ),
+  dateFormat( LOG4CPLUS_TEXT("%m-%d-%y %H:%M:%S,qq") ),
   use_gmtime(false)
 {
     if(properties.exists( LOG4CPLUS_TEXT("DateFormat") )) {

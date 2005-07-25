@@ -67,7 +67,7 @@
 #endif
 
 
-#define BUFFER_SIZE 40
+#define BUFFER_SIZE 80
 #define ONE_SEC_IN_USEC 1000000
 
 
@@ -204,7 +204,11 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
     buffer[len] = '\0';
     tstring ret(buffer);
 
-    size_t pos = ret.find( LOG4CPLUS_TEXT("%q") );
+    // %q is no formatting option -> VC++ 2005 crashes, it is used to switch on milli/nanoseconds
+    // changed to 'qq' or 'QQ' by Marcel Ruff 2005-07-25
+    // -> see layout.cxx, there it is defined as defaut for "DateFormat"
+    // size_t pos = ret.find( LOG4CPLUS_TEXT("qq") );
+    size_t pos = ret.find( LOG4CPLUS_TEXT("qq") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
         tstring seconds( convertIntegerToString((tv_usec / 1000)) );
@@ -217,7 +221,7 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
         ret = tmp;
     }
 
-    pos = ret.find( LOG4CPLUS_TEXT("%Q") );
+    pos = ret.find( LOG4CPLUS_TEXT("QQ") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
         tstring seconds( convertIntegerToString((tv_usec / 1000)) );
