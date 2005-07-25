@@ -9,10 +9,10 @@
     <script language="JavaScript" type="text/javascript">
     //<![CDATA[
       var key = "${sysprop/?xmlBlaster/monitor/statusRefresh}";
-      var refreshInverval = (key.indexOf("$")==-1) ? key : 12;
+      refreshInverval = (key.indexOf("$")==-1) ? key : 12;
       document.write("<meta http-equiv='Refresh' content='"+refreshInverval+"'>");
     //]]>
-                            </script>
+                                    </script>
 
     <title>XmlBlaster Status</title>
 
@@ -24,7 +24,7 @@
          document.write(text);
       }
     //]]>
-                            </script>
+                                    </script>
     <style type="text/css">
     /*<![CDATA[*/
       body {
@@ -80,7 +80,7 @@
          font-weight: bold;
       }
     /*]]>*/
-                            </style>
+                                    </style>
   </head>
 
   <body>
@@ -133,7 +133,7 @@
                else
                   document.write("<div>Free " + free + " MByte<\/div><div>Used " + used + " MByte<\/div>");
             //]]>
-                                                                      </script>
+                                                                                          </script>
         </td>
       </tr>
     </table>
@@ -152,7 +152,7 @@
           //<![CDATA[
             writeEscaped("${?lastWarning}");
           //]]>
-                                                                      </script>
+                                                                                          </script>
         </td>
       </tr>
     </table>
@@ -171,7 +171,7 @@
           //<![CDATA[
             writeEscaped("${?lastError}");
           //]]>
-                                                                      </script>
+                                                                                          </script>
         </td>
       </tr>
     </table>
@@ -181,14 +181,15 @@
 
     <table class="errorTable" cellspacing="1" summary="overview">
       <tr>
-        <td class="headLabel" width="350"><b><a href="http://www.xmlBlaster.org" target="_blank">XmlBlaster</a> cluster node ${?nodeId}</b></td>
+        <td class="headLabel" width="300"><b><a href="http://www.xmlBlaster.org" target="_blank">XmlBlaster</a> cluster node ${?nodeId}</b></td>
 
-        <td class="headLabel" width="100">
+        <td class="headLabel" width="150">
           <script language="JavaScript" type="text/javascript">
           //<![CDATA[
             document.write("<a href='"+window.location.href+"'>Refresh<\/a>");
+            document.write(" (auto: "+refreshInverval+"sec)");
           //]]>
-                                                                      </script>
+                                                                                          </script>
         </td>
 
         <td class="headLabel" width="250" align="right">${?ServerTimestamp}</td>
