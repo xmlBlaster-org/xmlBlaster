@@ -1,18 +1,32 @@
-<!DOCTYPE html
-  PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html40/strict.dtd">
-<html style="background-color:#EDF0F3;background:#EDF0F3;">
-<head>
-   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-   <meta http-equiv="Refresh" content="10">
-   <title>XmlBlaster Status</title>
-   <script language="JavaScript" type="text/javascript">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html style="background-color:#EDF0F3;background:#EDF0F3;" xmlns="http://www.w3.org/1999/xhtml">
+  <!-- tidy -modif -utf8 -indent -wrap 256 -asxhtml status.html -->
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script language="JavaScript" type="text/javascript">
+    //<![CDATA[
+      var key = "${sysprop/?xmlBlaster/monitor/statusRefresh}";
+      var refreshInverval = (key.indexOf("$")==-1) ? key : 12;
+      document.write("<meta http-equiv='Refresh' content='"+refreshInverval+"'>");
+    //]]>
+                            </script>
+
+    <title>XmlBlaster Status</title>
+
+    <script language="JavaScript" type="text/javascript">
+    //<![CDATA[
       function writeEscaped(text) {
          text = text.replace("<", "&lt;");
          text = text.replace(">", "&gt;");
          document.write(text);
       }
-   </script>
-   <style type="text/css">
+    //]]>
+                            </script>
+    <style type="text/css">
+    /*<![CDATA[*/
       body {
          font-family: verdana, helvetica, arial;
       }
@@ -65,118 +79,121 @@
          color: #FFFFFF;
          font-weight: bold;
       }
-   </style>
-</head>
-<body>
-   <table class="listTable" cellspacing="1" >
+    /*]]>*/
+                            </style>
+  </head>
+
+  <body>
+    <table class="listTable" cellspacing="1" summary="list variables">
       <tr>
-         <td class="head" colspan="2">
-            Monitoring XmlBlaster Status
-         </td>
+        <td class="head" colspan="2">Monitoring XmlBlaster Status</td>
       </tr>
 
       <tr>
-         <td class="listLabel" width="120">
-            Release
-         </td>
-         <td class="listValue">
-            ${?version} - #${?revisionNumber}
-         </td>
+        <td class="listLabel" width="120">Release</td>
+
+        <td class="listValue">${?version} - #${?revisionNumber}</td>
       </tr>
+
       <tr>
-         <td class="listLabel" width="120">
-            JVM
-         </td>
-         <td class="listValue">
-            ${sysprop/?java.vendor} ${sysprop/?java.version} ${sysprop/?os.name}
-         </td>
+        <td class="listLabel" width="120">JVM</td>
+
+        <td class="listValue">${sysprop/?java.vendor} ${sysprop/?java.version} ${sysprop/?os.name}</td>
       </tr>
+
       <tr>
-         <td class="listLabel">
-            Started
-         </td>
-         <td class="listValue">
-            ${?startupDate}<!-- ${sysprop/?user.home} -->
-         </td>
+        <td class="listLabel">Started</td>
+
+        <td class="listValue">${?startupDate}<!-- ${sysprop/?user.home} -->
+        </td>
       </tr>
+
       <tr>
-         <td class="listLabel">
-            Clients
-         </td>
-         <td class="listValue">
-            ${?numClients}
-         </td>
+        <td class="listLabel">Clients</td>
+
+        <td class="listValue">${?numClients}</td>
       </tr>
+
       <tr>
-         <td class="listLabel">
-            Topics
-         </td>
-         <td class="listValue">
-            ${?numTopics}
-         </td>
+        <td class="listLabel">Topics</td>
+
+        <td class="listValue">${?numTopics}</td>
       </tr>
+
       <tr>
-         <td class="listLabel">
-            Memory
-         </td>
-         <td class="listValue">
-            <script language="JavaScript" type="text/javascript">
+        <td class="listLabel">Memory</td>
+
+        <td class="listValue">
+          <script language="JavaScript" type="text/javascript">
+          //<![CDATA[
                var free = ${?freeMem} / 1000000;
                var used = ${?usedMem} / 1000000;
                if (free < 1.5) /* < 1.5 MB will alert red */
-                  document.write("<div class='alert'>Free " + free + " MByte</div><div>Used " + used + " MByte</div>");
+                  document.write("<div class='alert'>Free " + free + " MByte<\/div><div>Used " + used + " MByte<\/div>");
                else
-                  document.write("<div>Free " + free + " MByte</div><div>Used " + used + " MByte</div>");
-            </script>
-         </td>
+                  document.write("<div>Free " + free + " MByte<\/div><div>Used " + used + " MByte<\/div>");
+            //]]>
+                                                                      </script>
+        </td>
       </tr>
-   </table>
-   
-   <br><br>
+    </table>
+    <br />
+     <br />
+     
 
-   <table class="errorTable"border="0" cellpadding="5" cellspacing="0" >
-     <tr>
-       <td class="errorLabel" width="700">
-           Last Warning
-       </td>
-     </tr>
-     <tr>
-       <td class="erroValue">
-         <script language="JavaScript" type="text/javascript">
+    <table class="errorTable" border="0" cellpadding="5" cellspacing="0" summary="list warnings">
+      <tr>
+        <td class="errorLabel" width="700">Last Warning</td>
+      </tr>
+
+      <tr>
+        <td class="erroValue">
+          <script language="JavaScript" type="text/javascript">
+          //<![CDATA[
             writeEscaped("${?lastWarning}");
-         </script>
-       </td>
-     </tr>
-   </table>
+          //]]>
+                                                                      </script>
+        </td>
+      </tr>
+    </table>
+    <br />
+     <br />
+     
 
-   <br><br>
+    <table class="errorTable" border="0" cellpadding="5" cellspacing="0" summary="list errors">
+      <tr>
+        <td class="errorLabel" width="700">Last Error</td>
+      </tr>
 
-   <table class="errorTable"border="0" cellpadding="5" cellspacing="0" >
-     <tr>
-       <td class="errorLabel" width="700">
-           Last Error
-       </td>
-     </tr>
-     <tr>
-       <td class="erroValue">
-         <script language="JavaScript" type="text/javascript">
+      <tr>
+        <td class="erroValue">
+          <script language="JavaScript" type="text/javascript">
+          //<![CDATA[
             writeEscaped("${?lastError}");
-         </script>
-       </td>
-     </tr>
-   </table>
+          //]]>
+                                                                      </script>
+        </td>
+      </tr>
+    </table>
+    <br />
+     <br />
+     
 
-   <br><br>
+    <table class="errorTable" cellspacing="1" summary="overview">
+      <tr>
+        <td class="headLabel" width="350"><b><a href="http://www.xmlBlaster.org" target="_blank">XmlBlaster</a> cluster node ${?nodeId}</b></td>
 
-   <table class="errorTable" cellspacing="1">
-     <tr>
-       <td class="headLabel" width="350">
-         <b><a href="http://www.xmlBlaster.org" target="_blank">XmlBlaster</a> cluster node ${?nodeId}</b>
-       </td>
-       <td class="headLabel" width="350" align="right">
-         ${?ServerTimestamp}
-       </td>
-     </tr>
-   </table>
-</body>
+        <td class="headLabel" width="100">
+          <script language="JavaScript" type="text/javascript">
+          //<![CDATA[
+            document.write("<a href='"+window.location.href+"'>Refresh<\/a>");
+          //]]>
+                                                                      </script>
+        </td>
+
+        <td class="headLabel" width="250" align="right">${?ServerTimestamp}</td>
+      </tr>
+    </table>
+  </body>
 </html>
+
