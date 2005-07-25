@@ -205,7 +205,8 @@
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html -->
    <plugin id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
       <attribute id='documentRoot'>${user.home}${file.separator}html</attribute>
-      <attribute id='urlPath'>/monitor,/status.html</attribute>
+      <attribute id='urlPath'>/monitor</attribute>
+      <attribute id='urlPath.CLASSPATH'>/status.html</attribute>
       <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
