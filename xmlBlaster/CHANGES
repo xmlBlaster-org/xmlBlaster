@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13558 log4cplus port/bugfix to VC++ 2005
+   It crashed in strftime() because of unknown %q option
+
  o #13545-#13555 New native web based monitoring
    Start xmlBlaster and try in your browser:
      http://YOUR-IP:3412/monitor/status.html
