@@ -287,9 +287,10 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
          */
       }
       catch (Exception e) {
-         log.trace(ME, "Can't switch on SSL socket: " + e.toString());
+         if (log.TRACE) log.trace(ME, "Can't switch on SSL socket: " + e.toString() + " : " + e.getCause());
+         Throwable tt = (e.getCause() != null) ? e.getCause() : e;
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_SSLSOCKET, ME, 
-                        "Can't switch on SSL socket, check your keyStore and keyStorePassword or socket configuration", e);
+                        "Can't switch on SSL socket, check your keyStore and keyStorePassword or socket configuration", tt);
       }
       finally {
          System.setProperty("javax.net.ssl.keyStore", "");
@@ -469,9 +470,10 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
          }
       }
       catch (Exception e) {
-         log.trace(ME, "Can't switch on SSL socket: " + e.toString());
+         if (log.TRACE) log.trace(ME, "Can't switch on SSL socket: " + e.toString() + " : " + e.getCause());
+         Throwable tt = (e.getCause() != null) ? e.getCause() : e;
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
-                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+                        "SSL XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", tt);
       }
       finally {
          System.setProperty("javax.net.ssl.trustStore", "");
