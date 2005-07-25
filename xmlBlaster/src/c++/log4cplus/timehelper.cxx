@@ -207,7 +207,7 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
     // %q is no formatting option -> VC++ 2005 crashes, it is used to switch on milli/nanoseconds
     // changed to 'qq' or 'QQ' by Marcel Ruff 2005-07-25
     // -> see layout.cxx, there it is defined as defaut for "DateFormat"
-    // size_t pos = ret.find( LOG4CPLUS_TEXT("qq") );
+    // size_t pos = ret.find( LOG4CPLUS_TEXT("%q") );
     size_t pos = ret.find( LOG4CPLUS_TEXT("qq") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
@@ -221,6 +221,7 @@ Time::getFormattedTime(const log4cplus::tstring& fmt, bool use_gmtime) const
         ret = tmp;
     }
 
+    //pos = ret.find( LOG4CPLUS_TEXT("%Q") );
     pos = ret.find( LOG4CPLUS_TEXT("QQ") );
     if(pos != tstring::npos) {
         tstring tmp(ret.substr(0, pos));
