@@ -56,16 +56,31 @@ public final class MsgFileDumper
     * @param Global Global object holding logging and property informations
     */
    public void init(org.xmlBlaster.util.Global glob) throws XmlBlasterException {
+      init(glob, null);
+   }
+
+   /**
+    * Initializes an instance, creates and checks harddisk path
+    * <p />
+    * @param glob Global object holding logging and property informations
+    * @param path_ The path were to dump or null/empty
+    */
+   public void init(org.xmlBlaster.util.Global glob, String path_) throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("persistence");
       if (log.CALL) log.call(ME, "Entering init()");
-      
-      String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
-      this.path = glob.getProperty().get("Persistence.Path", defaultPath);
-      if (this.path == null) {
-         throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
+
+      if (path_ != null && path_.length() > 0) {
+         this.path = path_;
       }
-      this.path = this.path + (String)System.getProperty("file.separator") + glob.getStrippedId();
+      else {
+         String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
+         this.path = glob.getProperty().get("Persistence.Path", defaultPath);
+         if (this.path == null) {
+            throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
+         }
+         this.path = this.path + (String)System.getProperty("file.separator") + glob.getStrippedId();
+      }
 
       File pp = new File(this.path);
       if (!pp.exists()) {

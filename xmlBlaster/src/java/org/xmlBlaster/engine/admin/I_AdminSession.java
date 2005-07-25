@@ -102,6 +102,12 @@ public interface I_AdminSession extends ConnectQosDataMBean {
     * @return The dump of the messages
     */
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException;
+   /**
+    * Peek messages from callback queue and dump them to a file, they are not removed. 
+    * @param num The number of messages to peek, taken from the front
+    * @return The file names dumped
+    */
+   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws XmlBlasterException;
    /** gets the entries in the callback queue according to what is specified in the qosData object */
    public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
    
