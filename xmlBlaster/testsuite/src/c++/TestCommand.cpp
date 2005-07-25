@@ -213,7 +213,7 @@ private:
 
    string update(const string &sessionId,
                UpdateKey &updateKey,
-               const unsigned char */*content*/, long /*contentSize*/,
+               const unsigned char * /*content*/, long /*contentSize*/,
                UpdateQos &updateQos) 
    {
       log_.info(ME, string("Receiving update of message oid=") +
