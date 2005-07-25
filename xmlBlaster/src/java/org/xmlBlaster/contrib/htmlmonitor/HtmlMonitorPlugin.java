@@ -45,6 +45,7 @@ import java.io.File;
 &lt;plugin id='HtmlMonitorPlugin.MyCompany' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
    &lt;attribute id='urlPath'>/monitor&lt;/attribute>
    &lt;attribute id='documentRoot'>${user.home}${file.separator}html&lt;/attribute>
+   &lt;attribute id='urlPath.CLASSPATH'>/status.html&lt;/attribute>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
 &lt;/plugin>
