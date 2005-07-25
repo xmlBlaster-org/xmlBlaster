@@ -223,8 +223,20 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     */
    public String getSocketInfo() {
       StringBuffer sb = new StringBuffer(196);
-      if (listen == null)
-         return "";
+
+      if (this.listen == null) {
+         if (running) {
+            // Wait on thread to startup
+            for (int i=0; i<10; i++) {
+               try { Thread.currentThread().sleep(20L); } catch( InterruptedException e) {}
+               if (this.listen != null) break;
+            }
+         }
+         if (this.listen == null) {
+            return "";
+         }
+      }
+      
       sb.append(listen.getInetAddress().getHostAddress());
       sb.append(":").append(this.HTTP_PORT);
       return sb.toString();
