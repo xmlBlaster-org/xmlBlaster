@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.http' type='NEW' prio='MEDIUM' status='CLOSED'>
+
+   <topic>XmlBlaster provides a HTML/HTTP plugin interface for your own HTML monitoring pages</topic>
+
+   <description>
+      <h2>The HTML/HTTP native plugin</h2>
+      <p>
+      XmlBlaster provides a very tiny http server implementation which is used
+      for example to provide the CORBA IOR string. You can now add a native
+      plugin and register it with this http server to deliver your own html pages
+      directly from the core of a running xmlBlaster.
+      </p>
+      <p>
+      We provide one such native plugin which delivers a simple status page and additionally
+      allows to deliver any configured HTML page.
+      The HTML pages may contain any administrative command which is replaced on delivery
+      to the browser with the real values. Needless to say, you can use Javascript and
+      CSS in this page to add formatting, calculations and additional value.
+      </p>
+      <p>
+      The plugin is readily configured in <tt>xmlBlasterPlugins.xml</tt>, you can easily add your
+      own plugins in a similar way, just take care to choose another unique id:
+     </p>
+     <pre>
+&lt;plugin id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
+   &lt;attribute id='documentRoot'>${user.home}${file.separator}html&lt;/attribute>
+   &lt;attribute id='urlPath'>/monitor&lt;/attribute>
+   &lt;attribute id='urlPath.CLASSPATH'>/status.html&lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+&lt;/plugin>
+     </pre>
+     <p>
+     This plugins reacts on two browser requests:
+     </p>
+    <table border="1">
+       <tr>
+         <th>urlPath or urlPath.CLASSPATH</th>
+         <th>Browser URL example</th>
+         <th>Comment</th>
+       </tr>
+       <tr>
+         <td>/monitor</td>
+         <td>http://myHost:3412/monitor/XX.html</td>
+         <td>
+         As the URL example starts with the path <tt>/monitor</tt> the HTML file <tt>XX.html</tt>
+         will be searched on the hard disk in the given <tt>documentRoot=/home/joe/html</tt> directory
+         (assuming this users home directory).<br />
+         All administrative commands in the <tt>XX.html</tt> template will be replaced
+         by the server current values and the HTML page is finally delivered to the browser.
+         </td>
+       </tr>
+       <tr>
+         <td>/status.html</td>
+         <td>http://myHost:3412/status.html</td>
+         <td>
+         As the URL example contains the path <tt>/status.html</tt> the HTML file <tt>status.html</tt>
+         will be searched in the CLASSAPTH, that is in <tt>xmlBlaster.jar</tt> in the
+         <tt>xmlBlaster.jar:org/xmlBlaster/contrib/htmlmonitor</tt> directory.
+         All administrative commands in the <tt>status.html</tt> template will be replaced
+         by the server current values and the HTML page is finally delivered to the browser.<br />
+         Note that <tt>xmlBlaster/config/status.html</tt> is used, it is copied into the <tt>xmlBlaster.jar</tt>
+         file during compilation with <tt>build all</tt>.
+         </td>
+       </tr>
+      </table>
+   </description>
+
+   <example lang="any" type="HTML">
+      <h1 id="status">Observing xmlBlaster with a simple status page</h1>
+      <p>XmlBlaster comes ready configured with a simple status HTML page which contains
+      the most important informations. You can easily extend this example to your needs
+      by editing <tt>xmlBlaster/config/status.html</tt> and and put the new file to
+      <tt>xmlBlaster.jar:org/xmlBlaster/contrib/htmlmonitor</tt>.
+      </p>
+      <p>
+      Example on how to access the status page:
+      </p>
+   <pre>
+java org.xmlBlaster.Main
+
+Open URL
+   http://localhost:3412/status.html
+in your browser.
+   </pre>
+   <p>You can change the http port on command line:
+   </p>
+   <pre>
+java org.xmlBlaster.Main -bootstrapPort 9090
+
+Open URL
+   http://localhost:9090
+in your browser.
+   </pre>
+   <h3>status.html screen shot</h3>
+   <p>
+      <img src='status.png' border='0' alt='HTML - xmlBlaster status.html browser screenshot' />
+   </p>
+   <p>Please see <tt>xmlBlaster/config/status.html</tt> for details about this page.</p>
+   </example>
+
+
+   <example lang="any" type="HTML">
+      <h1 id="template">A HTML template example</h1>
+   <pre>
+&lt;html>
+  &lt;head>
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    &lt;meta http-equiv='Refresh' content='10'>
+  &lt;/head>
+
+  &lt;body>
+     &lt;h2>Free Memory: ${?freeMem} bytes&lt;/h2>
+  &lt;/body>
+&lt;/html>
+   </pre>
+   <p>
+   The above example refreshes every 10 seconds and delivers the servers
+   free memory retrieved with the administrative command <tt>${?freeMem}</tt>.
+   </p>
+   <p>
+   The following example reads the command line argument
+   <tt>java org.xmlBlaster.Main -xmlBlaster/monitor/statusRefresh 20</tt> and refreshes
+   with this setting every 20 seconds:
+   </p>
+   <pre>
+&lt;html>
+  &lt;head>
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    &lt;script language="JavaScript" type="text/javascript">
+      var key = "${sysprop/?xmlBlaster/monitor/statusRefresh}";
+      var refreshInverval = (key.indexOf("$")==-1) ? key : 12;
+      document.write("&lt;meta http-equiv='Refresh' content='"+refreshInverval+"'>");
+    &lt;/script>
+    &lt;title>XmlBlaster Status&lt;/title>
+  &lt;/head>
+
+  &lt;body>
+     &lt;h2>Free Memory: ${?freeMem} bytes&lt;/h2>
+  &lt;/body>
+&lt;/html>
+   </pre>
+   <p>Please see <tt>xmlBlaster/config/status.html</tt> for a more complete example.</p>
+   </example>
+
+
+
+   <configuration where="server">
+      <p>
+         HTTP access and the HTML plugin delivered is configured
+         in the <tt>xmlBlaster.properties</tt> configuration file
+         or on command line.
+      </p>
+      <p>Note: Currently there is no password protection available.
+      As the status.html pages is read only this shouldn't cause problems
+      if used behind a firewall.
+      </p>
+
+    <table border="1">
+       <tr>
+         <th>Id (name)</th>
+         <th>Type</th>
+         <th>Manda
+         tory</th>
+         <th>Default value</th>
+         <th>Comment</th>
+       </tr>
+
+       <tr>
+         <td>bootstrapPort</td>
+         <td>int</td>
+         <td>no</td>
+         <td>3412</td>
+         <td>
+         The port where the xmlBlaster native http server listens.
+         The port 0 switches this feature off.
+         </td>
+       </tr>
+       <tr>
+         <td>bootstrapHostname</td>
+         <td>String</td>
+         <td>no</td>
+         <td>localhost</td>
+         <td>
+         The host/IP where the xmlBlaster native http server listens.
+         Useful for multi-homed hosts.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/monitor/statusRefresh</td>
+         <td>int</td>
+         <td>no</td>
+         <td>12</td>
+         <td>
+         The refresh cycle of the HTML page in seconds.
+         This is only evaluated by the <tt>status.html</tt> page.
+         See template <tt>xmlBlaster/config/status.html</tt>, this file
+         is copied during <tt>build all</tt> to xmlBlaster.jar to be available
+         over the CLASSPATH.
+         </td>
+       </tr>
+       <tr>
+         <td>documentRoot</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>${user.home}${file.separator}html</td>
+         <td>
+         This attribute is only used by the HtmlMonitorPlugin native plugin.
+         It specifies the location on the hard disk where the HTML template files are searched.
+         For a user joe on Windows it is typically <tt>C:\Documents And Settings\joe\html</tt>
+         </td>
+       </tr>
+       <tr>
+         <td>urlPath</td>
+         <td>String</td>
+         <td>no</td>
+         <td>/monitor</td>
+         <td>
+         Configure for which URL pathes the native plugin is called.
+         Here, with <tt>http://localhost:3412/monitor/XX.html</tt>,
+         a browser request comes in and the URL path start with <tt>/monitor</tt>.
+         Therefore it is handled by the <tt>HtmlMonitorPlugin</tt> native plugin.
+         The HTML file is searched
+         at the hard disk location <tt>C:\Documents And Settings\joe\html\XX.html</tt>.<br />
+         You can provide a list of pathes separated by a comman ','.
+         </td>
+       </tr>
+       <tr>
+         <td>urlPath.CLASSPATH</td>
+         <td>String</td>
+         <td>no</td>
+         <td>/status.html</td>
+         <td>
+         Configure for which URL pathes the native plugin is called.
+         Here, with <tt>http://localhost:3412/status.html</tt>,
+         a browser request comes in and the <tt>/status.html</tt> page
+         is retrieved over the CLASSPATH from <tt>xmlBlaster.jar</tt>.<br />
+         You can provide a list of pathes separated by a comman ','.
+         </td>
+       </tr>
+    </table>
+   </configuration>
+
+   <todo type="HTML">
+    <ol>
+      <li>Add password protection</li>
+    </ol>
+   </todo>
+
+   <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.telnet</see>
+
+   <author>xmlblast@marcelruff.info</author>
+   <hacker>xmlblast@marcelruff.info</hacker>
+   <date>2005 07 25</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name></name>
+      <comment>
+      </comment>
+      <test tool="SUITE"></test>
+   </testcase>
+
+</requirement>
