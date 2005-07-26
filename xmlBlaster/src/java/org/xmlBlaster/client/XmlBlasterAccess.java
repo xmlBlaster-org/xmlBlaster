@@ -45,6 +45,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -1202,6 +1203,112 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return this.clientQueue.getMaxNumOfEntries();
    }
 
+   /** JMX **/
+   public String invokePublish(String key, String content, String qos) throws Exception {
+      if (key == null || key.length()==0 || key.equalsIgnoreCase("String"))
+         throw new IllegalArgumentException("Please pass a valid XML key like '<key oid='Hello'/> or the simple oid like 'Hello'");
+      if (key.indexOf("<") == -1) {
+         key = "<key oid='" + key + "'/>";
+      }
+      qos = checkQueryKeyQos(key, qos);
+      if (content == null) content = "";
+      try {
+         MsgUnit msgUnit = new MsgUnit(key, content, qos);
+         PublishReturnQos prq = publish(msgUnit);
+         return prq.toString();
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   private String checkQueryKeyQos(String url, String qos) {
+      if (log.TRACE) log.trace(ME, "url=" + url + " qos=" + qos);
+      if (url == null || url.length()==0 || url.equalsIgnoreCase("String"))
+         throw new IllegalArgumentException("Please pass a valid URL like 'xpath://key' or a simple oid like 'Hello'");
+      if (qos == null || qos.length()==0 || qos.equalsIgnoreCase("String")) qos = "<qos/>";
+      return qos;
+   }
+
+   /** JMX **/
+   public String[] invokeUnSubscribe(String url, String qos) throws Exception {
+      qos = checkQueryKeyQos(url, qos);
+      try {
+         UnSubscribeKey usk = new UnSubscribeKey(glob, url);
+         UnSubscribeReturnQos[] usrq = unSubscribe(usk, new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         if (usrq == null) return new String[0];
+         String[] ret = new String[usrq.length];
+         if (ret.length < 1) {
+            return new String[] { "unSubscribe '"+url+"' did not match any subscription" };
+         }
+         for (int i=0; i<usrq.length; i++) {
+            ret[i] = usrq[i].toXml();
+         }
+         return ret;
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   /** JMX **/
+   public String invokeSubscribe(String url, String qos) throws Exception {
+      qos = checkQueryKeyQos(url, qos);
+      try {
+         SubscribeKey usk = new SubscribeKey(glob, url);
+         SubscribeReturnQos srq = subscribe(usk, new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         if (srq == null) return "";
+         return srq.toXml();
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   /** JMX **/
+   public String[] invokeGet(String url, String qos) throws Exception {
+      qos = checkQueryKeyQos(url, qos);
+      try {
+         GetKey gk = new GetKey(glob, url);
+         MsgUnit[] msgs = get(gk, new GetQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         if (msgs == null) return new String[0];
+         if (msgs == null || msgs.length < 1) {
+            return new String[] { "get('"+url+"') did not match any topic" };
+         }
+         ArrayList tmpList = new ArrayList();
+         for (int i=0; i<msgs.length; i++) {
+            tmpList.add("  "+msgs[i].getKeyData().toXml());
+            tmpList.add("  "+msgs[i].getContentStr());
+            tmpList.add("  "+msgs[i].getQosData().toXml());
+         }
+         return (String[])tmpList.toArray(new String[tmpList.size()]);
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   /** JMX **/
+   public String[] invokeErase(String url, String qos) throws Exception {
+      qos = checkQueryKeyQos(url, qos);
+      try {
+         EraseKey ek = new EraseKey(glob, url);
+         EraseReturnQos[] erq = erase(ek, new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)));
+         if (erq == null) return new String[0];
+         String[] ret = new String[erq.length];
+         if (ret.length < 1) {
+            return new String[] { "erase('"+url+"') did not match any topic, nothing is erased." };
+         }
+         for (int i=0; i<erq.length; i++) {
+            ret[i] = erq[i].toXml();
+         }
+         return ret;
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
    /**
     * Sets the DispachManager belonging to this session to active or inactive.
     * It is initially active. Setting it to false temporarly inhibits dispatch of
@@ -1222,31 +1329,39 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return false;
    }
 
-   public synchronized String[] peekClientMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries < 1)
-         return new String[] { "Please pass number of messages to peak" };
-      if (this.clientQueue == null)
-         return new String[] { "There is no client queue available" };
-      if (this.clientQueue.getNumOfEntries() < 1)
-         return new String[] { "The client queue is empty" };
+   public synchronized String[] peekClientMessages(int numOfEntries) throws Exception {
+      try {
+         if (numOfEntries < 1)
+            return new String[] { "Please pass number of messages to peak" };
+         if (this.clientQueue == null)
+            return new String[] { "There is no client queue available" };
+         if (this.clientQueue.getNumOfEntries() < 1)
+            return new String[] { "The client queue is empty" };
 
-      java.util.ArrayList list = this.clientQueue.peek(numOfEntries, -1);
+         java.util.ArrayList list = this.clientQueue.peek(numOfEntries, -1);
 
-      if (list.size() == 0)
-         return new String[] { "Peeking messages from client queue failed, the reason is not known" };
+         if (list.size() == 0)
+            return new String[] { "Peeking messages from client queue failed, the reason is not known" };
 
-      ArrayList tmpList = new ArrayList();
-      for (int i=0; i<list.size(); i++) {
-         MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
-         String dump = "NOT IMPLEMENTED";
-         if (entry instanceof MsgQueuePublishEntry) {
-            MsgQueuePublishEntry pe = (MsgQueuePublishEntry)entry;
-            dump = pe.getMsgUnit().toXml();
+         ArrayList tmpList = new ArrayList();
+         for (int i=0; i<list.size(); i++) {
+            MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
+            if (entry instanceof MsgQueuePublishEntry) {
+               MsgQueuePublishEntry pe = (MsgQueuePublishEntry)entry;
+               tmpList.add("  "+pe.getMsgUnit().getKeyData().toXml());
+               tmpList.add("  "+pe.getMsgUnit().getContentStr());
+               tmpList.add("  "+pe.getMsgUnit().getQosData().toXml());
+            }
+            else {
+               tmpList.add("Unsupported message queue entry '" + entry.getClass().getName() + "'");
+            }
          }
-         tmpList.add("  "+dump);
-      }
 
-      return (String[])tmpList.toArray(new String[tmpList.size()]);
+         return (String[])tmpList.toArray(new String[tmpList.size()]);
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    } 
 
    /**
@@ -1255,8 +1370,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The file names of the dumped messages
     */
-   public synchronized String[] peekClientMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      return this.glob.peekQueueMessagesToFile(this.clientQueue, numOfEntries, path, "client");
+   public synchronized String[] peekClientMessagesToFile(int numOfEntries, String path) throws Exception {
+      try {
+         return this.glob.peekQueueMessagesToFile(this.clientQueue, numOfEntries, path, "client");
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    }
 
    /**
