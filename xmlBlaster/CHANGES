@@ -3,7 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
- o #13575 Added message file dump operations for JMX
+ o #13579,#13580 JMX control for Java clients to monitor and control the client side connection
+
+ o #13575,#13577 Added message file dump operations for JMX
 
  o #13558 log4cplus port/bugfix to VC++ 2005
    It crashed in strftime() because of unknown %q option
