@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client;
 
 import java.util.Map;
+import java.util.ArrayList;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -22,6 +23,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
@@ -67,7 +69,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  * </p>
  */
 public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
-                   implements I_XmlBlasterAccess, I_ConnectionStatusListener
+                   implements I_XmlBlasterAccess, I_ConnectionStatusListener, XmlBlasterAccessMBean
 {
    private String ME = "XmlBlasterAccess";
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
@@ -79,6 +81,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private I_Queue clientQueue;
    /** The dispatcher framework **/
    private DispatchManager dispatchManager;
+   /** Statistic about send/received messages, can be null if there is a DispatchManager around */
+   private DispatchStatistic statistic;
    /** The object handling message delivery problems */
    private I_MsgErrorHandler msgErrorHandler;
    /** Client side helper classes to load the authentication xml string */
@@ -103,6 +107,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private boolean firstWarn = true;
 
    private Timestamp sessionRefreshTimeoutHandle;
+   /** My JMX registration */
+   private Object mbeanObjectName;
+   /** First call to connect() in millis */
+   private long startupTime;
 
    /**
     * Create an xmlBlaster accessor. 
@@ -180,6 +188,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
           
       synchronized (this) {
+
+         if (this.startupTime == 0) {
+            this.startupTime = System.currentTimeMillis();
+         }
          
          if (isConnected() || this.connectInProgress) {
             String text = "connect() rejected, you are connected already, please check your code";
@@ -288,6 +300,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.connectionListener.reachedPolling(ConnectionStateEnum.UNDEF, this);
          }
          log.info(ME, glob.getReleaseId() + ": Login request as " + getId() + " is queued");
+      }
+
+      if (this.connectReturnQos != null) {
+         setServerNodeId(this.connectReturnQos.getServerInstanceId());
+      }
+
+      // JMX register "client/joe/1"
+      if (this.mbeanObjectName == null) {
+         this.mbeanObjectName = this.glob.registerMBean(/*getId()*/null, this);
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");
@@ -445,6 +466,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       this.disconnectInProgress = true;
 
+      this.glob.unregisterMBean(this.mbeanObjectName);
+
       if (disconnectQos == null)
          disconnectQos = new DisconnectQos(glob);
 
@@ -560,24 +583,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return this.connectQos.getSessionName();
       }
       return null;
-   }
-
-   /**
-    * Access the login name.
-    * @return your login name or null if you are not logged in
-    */
-   public String getLoginName() {
-      //if (this.connectReturnQos != null)
-      //   return this.connectReturnQos.getLoginName();
-      //try {
-         if (connectQos != null && connectQos.getSecurityQos() != null) {
-            String nm = connectQos.getSecurityQos().getUserId();
-            if (nm != null && nm.length() > 0)
-               return nm;
-         }
-      //}
-      //catch (XmlBlasterException e) {}
-      return glob.getId(); // "client?";
    }
 
    /**
@@ -917,6 +922,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                log.error(ME, "Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
             }
          }
+         checkForNewConnectReturnQos();
          return;
       }
 
@@ -944,6 +950,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (obj != null) {
          this.connectReturnQos = (ConnectReturnQos)obj;
          glob.removeObjectEntry(key);
+      }
+      if (this.connectReturnQos != null) {
+         setServerNodeId(this.connectReturnQos.getServerInstanceId());
       }
    }
 
@@ -1018,6 +1027,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * Get the connection state. 
+    * String version for JMX access.
+    * @return "UNDEF", "ALIVE", "POLLING", "DEAD"
+    */
+   public String getConnectionState() {
+      return getState().toString();
+   }
+
+   /**
     * <p>Enforced by interface I_ConnectionHandler</p>
     * @return true if the connection to xmlBlaster is operational
     */
@@ -1084,6 +1102,161 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             //this.dispatchManager = null;
          }   
       }
+   }
+
+   /**
+    * @return null if no callback is configured
+    */
+   public final DispatchStatistic getDispatchStatistic() {
+      if (this.statistic == null) {
+         synchronized (this) {
+            if (this.statistic == null) {
+               if (this.dispatchManager != null)
+                  this.statistic = this.dispatchManager.getDispatchStatistic();
+               else
+                  this.statistic = new DispatchStatistic();
+            }
+         }
+      }
+      return this.statistic;
+   }
+
+   /**
+    * Access the login name.
+    * @return your login name or null if you are not logged in
+    */
+   public synchronized final String getLoginName() {
+      SessionName sn = getSessionName();
+      if (sn == null) return "";
+      return sn.getLoginName();
+      /*
+      //if (this.connectReturnQos != null)
+      //   return this.connectReturnQos.getLoginName();
+      //try {
+         if (connectQos != null && connectQos.getSecurityQos() != null) {
+            String nm = connectQos.getSecurityQos().getUserId();
+            if (nm != null && nm.length() > 0)
+               return nm;
+         }
+      //}
+      //catch (XmlBlasterException e) {}
+      return glob.getId(); // "client?";
+      */
+   }
+
+   public final boolean isCallbackConfigured() {
+      return (this.cbServer != null);
+   }
+
+   public final long getUptime() {
+      return (System.currentTimeMillis() - this.startupTime)/1000L;
+   }
+
+   public final String getLoginDate() {
+      long ll = this.startupTime;
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
+
+   public synchronized final long getPublicSessionId() {
+      SessionName sn = getSessionName();
+      if (sn == null) return 0;
+      return sn.getPublicSessionId();
+   }
+
+   public final long getNumPublish() {
+      return getDispatchStatistic().getNumPublish();
+   }
+
+   public final long getNumSubscribe() {
+      return getDispatchStatistic().getNumSubscribe();
+   }
+
+   public final long getNumUnSubscribe() {
+      return getDispatchStatistic().getNumUnSubscribe();
+   }
+
+   public final long getNumGet() {
+      return getDispatchStatistic().getNumGet();
+   }
+
+   public final long getNumErase() {
+      return getDispatchStatistic().getNumErase();
+   }
+
+   public final long getNumUpdateOneway() {
+      return getDispatchStatistic().getNumUpdateOneway();
+   }
+
+   public final long getNumUpdate() {
+      return getDispatchStatistic().getNumUpdate();
+   }
+
+   public synchronized final long getClientQueueNumMsgs() {
+      if (this.clientQueue == null) return 0L;
+      return this.clientQueue.getNumOfEntries();
+   }
+
+   public synchronized final long getClientQueueMaxMsgs() {
+      if (this.clientQueue == null) return 0L;
+      return this.clientQueue.getMaxNumOfEntries();
+   }
+
+   /**
+    * Sets the DispachManager belonging to this session to active or inactive.
+    * It is initially active. Setting it to false temporarly inhibits dispatch of
+    * messages which are in the callback queue. Setting it to true starts the 
+    * dispatch again.
+    * @param dispatchActive
+    */
+   public synchronized void setDispatcherActive(boolean dispatcherActive) {
+      if (this.dispatchManager != null) {
+         this.dispatchManager.setDispatcherActive(dispatcherActive);
+      }
+   }
+   
+   public synchronized  boolean getDispatcherActive() {
+      if (this.dispatchManager != null) {
+         return this.dispatchManager.isDispatcherActive();
+      }
+      return false;
+   }
+
+   public synchronized String[] peekClientMessages(int numOfEntries) throws XmlBlasterException {
+      if (numOfEntries < 1)
+         return new String[] { "Please pass number of messages to peak" };
+      if (this.clientQueue == null)
+         return new String[] { "There is no client queue available" };
+      if (this.clientQueue.getNumOfEntries() < 1)
+         return new String[] { "The client queue is empty" };
+
+      java.util.ArrayList list = this.clientQueue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from client queue failed, the reason is not known" };
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
+         String dump = "NOT IMPLEMENTED";
+         if (entry instanceof MsgQueuePublishEntry) {
+            MsgQueuePublishEntry pe = (MsgQueuePublishEntry)entry;
+            dump = pe.getMsgUnit().toXml();
+         }
+         tmpList.add("  "+dump);
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+   } 
+
+   /**
+    * Peek messages from client queue and dump them to a file, they are not removed. 
+    * @param numOfEntries The number of messages to peek, taken from the front
+    * @param path The path to dump the messages to, it is automatically created if missing.
+    * @return The file names of the dumped messages
+    */
+   public synchronized String[] peekClientMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
+      return this.glob.peekQueueMessagesToFile(this.clientQueue, numOfEntries, path, "client");
    }
 
    /**
