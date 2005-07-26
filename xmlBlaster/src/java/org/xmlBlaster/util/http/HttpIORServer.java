@@ -49,6 +49,10 @@ public class HttpIORServer extends Thread implements I_HttpRequest
    private String icoRequestFile = "favicon.ico";
    private String icoRequestUrlPath = "/"+icoRequestFile;
 
+   private String fishMimeType = "image/gif";
+   private String fishRequestFile = "rainbowfish200.gif";
+   private String fishRequestUrlPath = "/"+fishRequestFile;
+
    private Hashtable knownRequests = new Hashtable();
 
    /**
@@ -71,6 +75,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
       }
 
       registerRequest(icoRequestUrlPath, this);
+      registerRequest(fishRequestUrlPath, this);
 
       if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
       setDaemon(true);
@@ -213,6 +218,11 @@ public class HttpIORServer extends Thread implements I_HttpRequest
          byte[] img = this.glob.getFromClasspath(icoRequestFile, this);
          if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
          return new HttpResponse(img, icoMimeType);
+      }
+      else if (urlPath.indexOf(fishRequestFile) != -1) {
+         byte[] img = this.glob.getFromClasspath(fishRequestFile, this);
+         if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
+         return new HttpResponse(img, fishMimeType);
       }
       throw new IllegalArgumentException("Can't handle unknown " + urlPath);
    }
@@ -408,7 +418,7 @@ class HandleRequest extends Thread
          if (clientRequest == null && first) {
             if (log.TRACE) log.trace(ME, "Ignoring connect/disconnect attempt, probably a xmlBlaster client detecting its IP to use");
          } else {
-            log.error(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
+            log.warn(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
          }
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }
