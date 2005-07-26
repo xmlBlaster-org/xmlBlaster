@@ -16,15 +16,6 @@
 
     <title>XmlBlaster Status</title>
 
-    <script language="JavaScript" type="text/javascript">
-    //<![CDATA[
-      function writeEscaped(text) {
-         text = text.replace("<", "&lt;");
-         text = text.replace(">", "&gt;");
-         document.write(text);
-      }
-    //]]>
-                                    </script>
     <style type="text/css">
     /*<![CDATA[*/
       body {
@@ -47,8 +38,8 @@
          font-weight: bold;
       }
       p.listLabel, td.listLabel {
-         padding-top: 20px;
-         padding-bottom: 20px;
+         padding-top: 12px;
+         padding-bottom: 12px;
          padding-left: 5px;
          padding-right: 5px;
          background-color: #CCCCCC;
@@ -64,10 +55,16 @@
          width: 380px;
          text-align: left;
       }
+      p.warnLabel, td.warnLabel {
+         background-color: #AAAAAA;
+         width: 700px;
+         color: yellow;
+         text-align: rigth;
+      }
       p.errorLabel, td.errorLabel {
          background-color: #AAAAAA;
          width: 700px;
-         color: #FFFFFF;
+         color: red;
          text-align: rigth;
       }
       p.errorValue, td.errorValue {
@@ -84,6 +81,9 @@
   </head>
 
   <body>
+    <table border="0" cellpadding="0" cellspacing="0" width="700">
+    <tr>
+    <td>
     <table class="listTable" cellspacing="1" summary="list variables">
       <tr>
         <td class="head" colspan="2">Monitoring XmlBlaster Status</td>
@@ -137,26 +137,29 @@
         </td>
       </tr>
     </table>
-    <br />
+    </td>
+    <td align="right" valign="top">
+     <img src="/rainbowfish200.gif" width="32"/>
+    </td>
+    </tr>
+    </table>
+     <br />
      <br />
      
 
     <table class="errorTable" border="0" cellpadding="5" cellspacing="0" summary="list warnings">
       <tr>
-        <td class="errorLabel" width="700">Last Warning</td>
+        <td class="warnLabel" width="700">Last Warning</td>
       </tr>
 
       <tr>
         <td class="erroValue">
-          <script language="JavaScript" type="text/javascript">
-          //<![CDATA[
-            writeEscaped("${?lastWarning}");
-          //]]>
-                                                                                          </script>
+            <textarea cols="100" rows="2" readonly="true" wrap="hard">
+${?lastWarning}
+            </textarea>
         </td>
       </tr>
     </table>
-    <br />
      <br />
      
 
@@ -167,16 +170,13 @@
 
       <tr>
         <td class="erroValue">
-          <script language="JavaScript" type="text/javascript">
-          //<![CDATA[
-            writeEscaped("${?lastError}");
-          //]]>
-                                                                                          </script>
+            <textarea cols="100" rows="6" readonly="true" wrap="hard">
+${?lastError}
+            </textarea>
         </td>
       </tr>
     </table>
     <br />
-     <br />
      
 
     <table class="errorTable" cellspacing="1" summary="overview">
