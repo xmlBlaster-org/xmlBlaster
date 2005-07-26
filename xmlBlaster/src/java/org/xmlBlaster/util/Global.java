@@ -39,6 +39,7 @@ import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
@@ -2085,6 +2086,51 @@ public class Global implements Cloneable
          }
       }
       return this.instanceId;
+   }
+
+   /**
+    * Dumps given amount of messages from queue to file. 
+    * @param queue The queue to observe
+    * @param numOfEntries Maximum number of messages to dump
+    * @param path The path to dump the messages to, it is automatically created if missing.
+    * @param label A nice queue name for logging/exceptions
+    * @return The file names dumped, including the path
+    */
+   public String[] peekQueueMessagesToFile(I_Queue queue, int numOfEntries, String path, String label) throws XmlBlasterException {
+         return new String[] { "TO BE IMPLEMENTED peekQueueMessagesToFile()" };
+   /* TODO!!!
+      if (numOfEntries < 1)
+         return new String[] { "Please pass number of messages to peak" };
+      if (queue == null)
+         return new String[] { "There is no " + label + " queue available" };
+      if (queue.getNumOfEntries() < 1)
+         return new String[] { "The " + label + " queue is empty" };
+
+      ArrayList list = queue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
+
+      MsgFileDumper dumper = new MsgFileDumper();
+      if (path == null || path.equalsIgnoreCase("String"))
+         path = "";
+      dumper.init(this, path);
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         ReferenceEntry entry = (ReferenceEntry)list.get(i);
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         if (wrapper == null) {
+            tmpList.add("NOT REFERENCED #" + i);
+         }
+         else {
+            String fileName = dumper.store(wrapper);
+            tmpList.add(fileName);
+         }
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+      */
    }
 
    /**
