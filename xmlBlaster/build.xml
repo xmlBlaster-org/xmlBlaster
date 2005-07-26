@@ -641,6 +641,7 @@ TODO
       <copy file="${config.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
       <copy file="${config.dir}/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${config.dir}/favicon.ico" tofile="${build.dest}/org/xmlBlaster/util/http/favicon.ico"/>
+      <copy file="${config.dir}/rainbowfish200.gif" tofile="${build.dest}/org/xmlBlaster/util/http/rainbowfish200.gif"/>
       <copy file="${config.dir}/status.html" tofile="${build.dest}/org/xmlBlaster/contrib/htmlmonitor/status.html"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/AppIcon.gif"/>
