@@ -2435,7 +2435,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries < 1)
+      if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       if (this.historyQueue == null)
          return new String[] { "There is no history queue available" };

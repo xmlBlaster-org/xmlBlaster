@@ -1331,7 +1331,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    public synchronized String[] peekClientMessages(int numOfEntries) throws Exception {
       try {
-         if (numOfEntries < 1)
+         if (numOfEntries == 0)
             return new String[] { "Please pass number of messages to peak" };
          if (this.clientQueue == null)
             return new String[] { "There is no client queue available" };
