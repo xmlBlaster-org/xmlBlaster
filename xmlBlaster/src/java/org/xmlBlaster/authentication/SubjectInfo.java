@@ -1092,7 +1092,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries < 1)
+      if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       if (this.subjectQueue == null)
          return new String[] { "There is no subject queue available" };

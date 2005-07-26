@@ -836,7 +836,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries < 1)
+      if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       if (this.sessionQueue == null)
          return new String[] { "There is no callback queue available" };
