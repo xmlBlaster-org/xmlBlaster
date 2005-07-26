@@ -35,7 +35,6 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-//import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
@@ -52,7 +51,6 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
@@ -876,41 +874,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    /**
     * Peek messages from callback queue and dump them to a file, they are not removed. 
-    * @param num The number of messages to peek, taken from the front
+    * @param numOfEntries The number of messages to peek, taken from the front
+    * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The file names of the dumped messages
     */
    public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      if (numOfEntries < 1)
-         return new String[] { "Please pass number of messages to peak" };
-      if (this.sessionQueue == null)
-         return new String[] { "There is no callback queue available" };
-      if (this.sessionQueue.getNumOfEntries() < 1)
-         return new String[] { "The callback queue is empty" };
-
-      java.util.ArrayList list = this.sessionQueue.peek(numOfEntries, -1);
-
-      if (list.size() == 0)
-         return new String[] { "Peeking messages from callback queue failed, the reason is not known" };
-
-      MsgFileDumper dumper = new MsgFileDumper();
-      if (path == null || path.equalsIgnoreCase("String"))
-         path = "";
-      dumper.init(glob, path);
-
-      ArrayList tmpList = new ArrayList();
-      for (int i=0; i<list.size(); i++) {
-         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)list.get(i);
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         if (wrapper == null) {
-            tmpList.add("NOT REFERENCED #" + i);
-         }
-         else {
-            String fileName = dumper.store(wrapper);
-            tmpList.add(fileName);
-         }
-      }
-
-      return (String[])tmpList.toArray(new String[tmpList.size()]);
+      return this.glob.peekQueueMessagesToFile(this.sessionQueue, numOfEntries, path, "callback");
    }
 
    /**

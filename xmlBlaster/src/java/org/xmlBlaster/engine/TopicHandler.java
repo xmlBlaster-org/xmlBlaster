@@ -2471,6 +2471,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return (String[])tmpList.toArray(new String[tmpList.size()]);
    } 
 
+   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
+      return this.glob.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");
+   }
+
    /** JMX */
    public final String eraseTopic() throws XmlBlasterException {
       EraseKey ek = new EraseKey(glob, uniqueKey);

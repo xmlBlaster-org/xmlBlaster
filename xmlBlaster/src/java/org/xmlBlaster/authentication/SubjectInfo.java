@@ -34,7 +34,6 @@ import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.admin.I_AdminSession;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -1130,37 +1129,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    } 
 
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      if (numOfEntries < 1)
-         return new String[] { "Please pass number of messages to peak" };
-      if (this.subjectQueue == null)
-         return new String[] { "There is no subject queue available" };
-      if (this.subjectQueue.getNumOfEntries() < 1)
-         return new String[] { "The subject queue is empty" };
-
-      java.util.ArrayList list = this.subjectQueue.peek(numOfEntries, -1);
-
-      if (list.size() == 0)
-         return new String[] { "Peeking messages from subject queue failed, the reason is not known" };
-
-      MsgFileDumper dumper = new MsgFileDumper();
-      if (path == null || path.equalsIgnoreCase("String"))
-         path = "";
-      dumper.init(glob, path);
-
-      ArrayList tmpList = new ArrayList();
-      for (int i=0; i<list.size(); i++) {
-         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)list.get(i);
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         if (wrapper == null) {
-            tmpList.add("NOT REFERENCED #" + i);
-         }
-         else {
-            String fileName = dumper.store(wrapper);
-            tmpList.add(fileName);
-         }
-      }
-
-      return (String[])tmpList.toArray(new String[tmpList.size()]);
+      return this.glob.peekQueueMessagesToFile(this.subjectQueue, numOfEntries, path, "subject");
    }
 
    /**

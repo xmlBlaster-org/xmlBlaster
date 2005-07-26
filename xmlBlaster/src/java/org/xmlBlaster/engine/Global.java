@@ -30,6 +30,10 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolder;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.util.queue.I_Queue;
 
 import java.util.*;
 import org.jutils.init.Property;
@@ -680,6 +684,47 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       }
    }
 
+   /**
+    * Dumps given amount of messages from queue to file. 
+    * @param queue The queue to observe
+    * @param numOfEntries Maximum number of messages to dump
+    * @param path The path to dump the messages to, it is automatically created if missing.
+    * @param label A nice queue name for logging/exceptions
+    * @return The file names dumped, including the path
+    */
+   public String[] peekQueueMessagesToFile(I_Queue queue, int numOfEntries, String path, String label) throws XmlBlasterException {
+      if (numOfEntries < 1)
+         return new String[] { "Please pass number of messages to peak" };
+      if (queue == null)
+         return new String[] { "There is no " + label + " queue available" };
+      if (queue.getNumOfEntries() < 1)
+         return new String[] { "The " + label + " queue is empty" };
+
+      ArrayList list = queue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
+
+      MsgFileDumper dumper = new MsgFileDumper();
+      if (path == null || path.equalsIgnoreCase("String"))
+         path = "";
+      dumper.init(this, path);
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         ReferenceEntry entry = (ReferenceEntry)list.get(i);
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         if (wrapper == null) {
+            tmpList.add("NOT REFERENCED #" + i);
+         }
+         else {
+            String fileName = dumper.store(wrapper);
+            tmpList.add(fileName);
+         }
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+   }
 
    /**
     * Command line usage.

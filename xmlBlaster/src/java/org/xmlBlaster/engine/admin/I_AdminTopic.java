@@ -74,10 +74,18 @@ public interface I_AdminTopic {
 
    /**
     * Peek messages from history queue, they are not removed. 
-    * @param num The number of messages to peek, the newest first
+    * @param numOfEntries The number of messages to peek, the newest first
     * @return The dump of the messages
     */
    public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException;
+
+   /**
+    * Peek messages from history queue and dump them to a file, they are not removed. 
+    * @param numOfEntries The number of messages to peek, taken from the front
+    * @param path The path to dump the messages to, it is automatically created if missing.
+    * @return The absolute file names dumped
+    */
+   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws XmlBlasterException;
 
    /**
     * Invoke operation to erase the topic
