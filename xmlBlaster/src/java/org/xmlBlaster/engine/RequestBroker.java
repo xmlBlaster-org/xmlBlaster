@@ -34,6 +34,7 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -206,7 +207,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
       this.startupTime = System.currentTimeMillis();
-      this.mbeanObjectName = this.glob.registerMBean(null, this);
+      this.mbeanObjectName = this.glob.registerMBean(this.glob.getContextNode(), this);
 
       // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
       LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();

@@ -30,10 +30,10 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolder;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 import java.util.*;
 import org.jutils.init.Property;
@@ -684,6 +684,43 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       }
    }
 
+   public String[] peekMessages(I_Queue queue, int numOfEntries, String label) throws XmlBlasterException {
+      if (numOfEntries == 0)
+         return new String[] { "Please pass number of messages to peak" };
+      if (queue == null)
+         return new String[] { "There is no " + label + " queue available" };
+      if (queue.getNumOfEntries() < 1)
+         return new String[] { "The " + label + " queue is empty" };
+
+      java.util.ArrayList list = queue.peek(numOfEntries, -1);
+
+      if (list.size() == 0)
+         return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
+
+      ArrayList tmpList = new ArrayList();
+      for (int i=0; i<list.size(); i++) {
+         ReferenceEntry entry = (ReferenceEntry)list.get(i);
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         tmpList.add("<MsgUnit index='"+i+"'>");
+         if (wrapper == null) {
+            tmpList.add("  NOT REFERENCED");
+         }
+         else {
+            tmpList.add("  "+wrapper.getMsgKeyData().toXml());
+            int MAX_LEN = 5000;
+            String content = wrapper.getMsgUnit().getContentStr();
+            if (content.length() > (MAX_LEN+5) ) {
+               content = content.substring(0, MAX_LEN) + " ...";
+            }
+            tmpList.add("  <content size='"+content.length()+"'>"+content+"</content>");
+            tmpList.add("  "+wrapper.getMsgQosData().toXml());
+         }
+         tmpList.add("</MsgUnit>");
+      }
+
+      return (String[])tmpList.toArray(new String[tmpList.size()]);
+   } 
+
    /**
     * Dumps given amount of messages from queue to file. 
     * @param queue The queue to observe
@@ -693,7 +730,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * @return The file names dumped, including the path
     */
    public String[] peekQueueMessagesToFile(I_Queue queue, int numOfEntries, String path, String label) throws XmlBlasterException {
-      if (numOfEntries < 1)
+      if (numOfEntries == 0)
          return new String[] { "Please pass number of messages to peak" };
       if (queue == null)
          return new String[] { "There is no " + label + " queue available" };

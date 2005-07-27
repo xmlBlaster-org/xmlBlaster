@@ -8,6 +8,7 @@ package org.xmlBlaster.util.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
 
@@ -140,10 +141,12 @@ public class JmxWrapper
       if (useJmx > 0) {
          // Export Global.getProperty() to JMX
          this.jmxProperties = new JmxProperties(this.glob);
-         registerMBean("syspropList", jmxProperties);
+         ContextNode propNode = new ContextNode(this.glob, ContextNode.TOPIC_SYSPROP_TAG, null, this.glob.getContextNode());
+         registerMBean(propNode, jmxProperties); // "sysprop"
 
          this.jmxLogLevel = new JmxLogLevel(this.glob);
-         registerMBean("logging", jmxLogLevel);
+         ContextNode logNode = new ContextNode(this.glob, ContextNode.TOPIC_LOGGING_TAG, null, this.glob.getContextNode());
+         registerMBean(logNode, jmxLogLevel); // "logging"
       }
    }
 
@@ -387,13 +390,50 @@ public class JmxWrapper
    }
 
    /**
-    * registers the specified mbean into the mbean server.
-    * the name you specify here is of the kind '/node/heron/client/joe'. What will be registered
-    * into the mbean server will then be 'xmlBlaster:name=/node/heron/client/joe'.
-    * @param name the instance for example "joe"
+    * Registers the specified mbean into the mbean server.
+    * A typical registration string is
+    *   <tt>org.xmlBlaster:nodeClass=node,node="heron",clientClass=client,client="joe",queueClass=queue,queue="subject665",entryClass=entry,entry="1002"</tt>
+    * which doesn't conform to the ObjectName recommendation as it does not
+    * contains the 'type=...' property.
+    * We have chosen this as it creates a nice hierarchy in the jconsole GUI tool.
+    * @param contextNode The unique name for JMX observation
     * @param mbean the MBean object instance 
     *        If mbean implements MBeanRegistration:preRegister() we don't need the type, name
     * @return The object name used to register or null on error
+    */
+   public ObjectName registerMBean(ContextNode contextNode, Object mbean) {
+      if (this.mbeanServer == null) return null;
+      if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getRelativeName(ContextNode.SCHEMA_JMX) + ")");
+
+      String hierarchy = (contextNode == null) ? 
+                            ("org.xmlBlaster:type=" + this.glob.getId()) :
+                            contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
+
+      ObjectName objectName = null;
+      try {
+         objectName = new ObjectName(hierarchy);
+         this.mbeanServer.registerMBean(mbean, objectName);
+         if (log.TRACE) log.trace(ME, "Registered MBean '" + objectName.toString() +
+                                      "' for JMX monitoring and control");
+         return objectName;
+      }
+      catch (javax.management.InstanceAlreadyExistsException e) {
+         log.warn(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
+         if (objectName != null) {
+            unregisterMBean(objectName);
+            return registerMBean(contextNode, mbean);
+         }
+         return null;
+      }
+      catch (Exception e) {
+         log.error(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
+         e.printStackTrace();
+         return null;
+      }
+   }
+
+   /**
+    * @deprecated Use ContextNode variant
     */
    public ObjectName registerMBean(String name, Object mbean)// throws XmlBlasterException
    {

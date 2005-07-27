@@ -34,6 +34,7 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -73,6 +74,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                    implements I_XmlBlasterAccess, I_ConnectionStatusListener, XmlBlasterAccessMBean
 {
    private String ME = "XmlBlasterAccess";
+   private ContextNode contextNode;
    /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
    private String serverNodeId = "xmlBlaster";
    private ConnectQos connectQos;
@@ -182,6 +184,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * The unique name of this session instance. 
+    * @return Never null, for example "/xmlBlaster/node/heron/client/joe/session/-2"
+    */
+   public final ContextNode getContextNode() {
+      return this.contextNode;
+   }
+
+   /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
@@ -228,6 +238,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                  this.connectQos.getData().getClientPluginVersion());
 
             this.ME = "XmlBlasterAccess-" + getId();
+            this.contextNode = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, 
+                                       getId(), this.glob.getContextNode());
 
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
@@ -309,7 +321,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       // JMX register "client/joe/1"
       if (this.mbeanObjectName == null) {
-         this.mbeanObjectName = this.glob.registerMBean(/*getId()*/null, this);
+         this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");

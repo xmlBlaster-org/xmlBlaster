@@ -8,6 +8,7 @@ package org.xmlBlaster.util.queue.cache;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
@@ -36,6 +37,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
 public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener, CacheQueueInterceptorPluginMBean
 {
    private String ME;
+   private ContextNode contextNode;
    private LogChannel log;
    private QueuePropertyBase property;             // plugins via I_Queue
    private boolean notifiedAboutAddOrRemove = false;
@@ -242,18 +244,20 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             pluginProperties = new java.util.Properties(); // if loaded from testsuite without a PluginManager
 
          this.property = null;
-         glob = ((QueuePropertyBase)userData).getGlobal();
+         this.glob = ((QueuePropertyBase)userData).getGlobal();
          this.log = glob.getLog("queue");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          if (this.log.CALL) this.log.call(ME, "initialized");
          this.queueId = uniqueQueueId;
+         this.contextNode = new ContextNode(this.glob, ContextNode.QUEUE_MARKER_TAG, 
+                             this.queueId.toString(), this.glob.getContextNode()); // TODO: pass from real parent like SubjectInfo
 
          // For JMX create a short relative name (may not contain ":")
          // for example: "queue_cache_callback_client/joe/-2"
          String name = "queue_cache_" + this.queueId.getId();
          int index = name.indexOf(":");
          if (index >= 0) name = name.substring(0,index) + "_" + name.substring(index+1);
-         this.mbeanObjectName = this.glob.registerMBean(name, this);
+         this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
@@ -674,9 +678,42 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    // JMX
-   public String peekStr() throws XmlBlasterException {
-      I_QueueEntry entry = peek();
-      return (entry == null) ? "" : entry.getLogId(); // no toXml() available ??
+   public String peekStr() throws Exception {
+      try {
+         I_QueueEntry entry = peek();
+         return (entry == null) ? "No entry found" :
+                     entry.getLogId() + " - " + entry.getSizeInBytes() + " bytes - " +
+                     ((entry.isPersistent()) ? "persistent" : "transient") +
+                     " prio=" + entry.getPriority() + 
+                     " " + entry.getEmbeddedType(); // no toXml() available ?? 
+      }
+      catch(XmlBlasterException e) {
+         throw new Exception(e);
+      }
+   }
+
+   // JMX
+   public String[] peekEntries(int numOfEntries) throws Exception {
+      if (numOfEntries == 0)
+         return new String[] { "Please pass number of messages to peak" };
+      try {
+         ArrayList list = peek(numOfEntries, -1L);
+         if (list == null || list.size()<1)
+            return new String[] { "No entry found" };
+         String[] ret = new String[list.size()];
+         for (int i=0; i<list.size(); i++) {
+            I_QueueEntry entry = (I_QueueEntry)list.get(i);
+            // no toXml() available ?? 
+            ret[i] = entry.getLogId() + " - " + entry.getSizeInBytes() + " bytes - " +
+                     ((entry.isPersistent()) ? "persistent" : "transient") +
+                     " prio=" + entry.getPriority() + 
+                     " " + entry.getEmbeddedType(); // no toXml() available ?? 
+         }
+         return ret;
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e);
+      }
    }
 
    /**

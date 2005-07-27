@@ -14,6 +14,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -72,6 +73,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    private String ME = "SubjectInfo";
    private final Global glob;
    private final LogChannel log;
+   private final ContextNode contextNode;
 
    private final Authenticate authenticate;
 
@@ -155,13 +157,24 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
          Thread.dumpStack();
       }
+      this.contextNode = new ContextNode(this.glob, ContextNode.SUBJECT_MARKER_TAG, 
+                                       this.subjectName.getLoginName(), this.glob.getContextNode());
+
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
 
       // JMX register "client/joe"
-      this.mbeanObjectName = this.glob.registerMBean(this.subjectName.getRelativeName(), this.subjectInfoProtector);
+      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this.subjectInfoProtector);
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
+   }
+
+   /**
+    * The unique name of this subject instance. 
+    * @return Never null, for example "/xmlBlaster/node/heron/client/joe"
+    */
+   public final ContextNode getContextNode() {
+      return this.contextNode;
    }
 
    /**
@@ -1092,40 +1105,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries == 0)
-         return new String[] { "Please pass number of messages to peak" };
-      if (this.subjectQueue == null)
-         return new String[] { "There is no subject queue available" };
-      if (this.subjectQueue.getNumOfEntries() < 1)
-         return new String[] { "The subject queue is empty" };
-
-      java.util.ArrayList list = this.subjectQueue.peek(numOfEntries, -1);
-
-      if (list.size() == 0)
-         return new String[] { "Peeking messages from subject queue failed, the reason is not known" };
-
-      ArrayList tmpList = new ArrayList();
-      for (int i=0; i<list.size(); i++) {
-         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)list.get(i);
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         tmpList.add("<MsgUnit index='"+i+"'>");
-         if (wrapper == null) {
-            tmpList.add("  NOT REFERENCED");
-         }
-         else {
-            tmpList.add("  "+wrapper.getMsgKeyData().toXml());
-            int MAX_LEN = 5000;
-            String content = wrapper.getMsgUnit().getContentStr();
-            if (content.length() > (MAX_LEN+5) ) {
-               content = content.substring(0, MAX_LEN) + " ...";
-            }
-            tmpList.add("  "+content);
-            tmpList.add("  "+wrapper.getMsgQosData().toXml());
-         }
-         tmpList.add("</MsgUnit>");
-      }
-
-      return (String[])tmpList.toArray(new String[tmpList.size()]);
+      return this.glob.peekMessages(this.subjectQueue, numOfEntries, "subject");
    } 
 
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {

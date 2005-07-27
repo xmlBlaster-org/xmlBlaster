@@ -86,6 +86,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private String ME = "TopicHandler";
    private final Global glob;
    private final LogChannel log;
+   private final ContextNode contextNode;
 
    private boolean dyingInProgress = false;
 
@@ -181,6 +182,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       this.log = this.glob.getLog("core");
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
+      this.contextNode = new ContextNode(this.glob, ContextNode.TOPIC_MARKER_TAG, uniqueKey, this.glob.getContextNode());
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
@@ -194,7 +196,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       
       // JMX register "topic/hello"
-      this.mbeanObjectName = this.glob.registerMBean(ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey, this);
+      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
 
       if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
       // mimeType and content remains unknown until first data is fed
@@ -217,6 +219,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       this.uniqueKey = keyOid;
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
+      this.contextNode = new ContextNode(this.glob, ContextNode.TOPIC_MARKER_TAG, keyOid, this.glob.getContextNode());
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
       
       //Happens automatically on first publish
@@ -230,8 +233,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       if (log.CALL) log.trace(ME, "Creating new TopicHandler.");
 
-      // JMX register "topic/hellpo"
-      this.mbeanObjectName = this.glob.registerMBean(ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey, this);
+      // JMX register "topic/hello"
+      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
    }
 
    /**
@@ -239,6 +242,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    public String getId() {
       return this.id;
+   }
+
+   /**
+    * The unique name of this topic instance. 
+    * @return Never null, for example "/xmlBlaster/node/heron/topic/hello"
+    */
+   public final ContextNode getContextNode() {
+      return this.contextNode;
    }
 
    /**
@@ -2435,40 +2446,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException {
-      if (numOfEntries == 0)
-         return new String[] { "Please pass number of messages to peak" };
-      if (this.historyQueue == null)
-         return new String[] { "There is no history queue available" };
-      if (this.historyQueue.getNumOfEntries() < 1)
-         return new String[] { "The history queue is empty" };
-
-      java.util.ArrayList list = this.historyQueue.peek(numOfEntries, -1);
-
-      if (list.size() == 0)
-         return new String[] { "Peeking messages from history queue failed, the reason is not known" };
-
-      ArrayList tmpList = new ArrayList();
-      for (int i=0; i<list.size(); i++) {
-         MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)list.get(i);
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         tmpList.add("<MsgUnit index='"+i+"'>");
-         if (wrapper == null) {
-            tmpList.add("  NOT REFERENCED");
-         }
-         else {
-            tmpList.add("  "+wrapper.getMsgKeyData().toXml());
-            int MAX_LEN = 5000;
-            String content = wrapper.getMsgUnit().getContentStr();
-            if (content.length() > (MAX_LEN+5) ) {
-               content = content.substring(0, MAX_LEN) + " ...";
-            }
-            tmpList.add("  "+content);
-            tmpList.add("  "+wrapper.getMsgQosData().toXml());
-         }
-         tmpList.add("</MsgUnit>");
-      }
-
-      return (String[])tmpList.toArray(new String[tmpList.size()]);
+      return this.glob.peekMessages(this.historyQueue, numOfEntries, "history");
    } 
 
    public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {

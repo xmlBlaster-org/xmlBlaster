@@ -27,7 +27,8 @@ public interface I_AdminQueue {
    public java.util.ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)       throws org.xmlBlaster.util.XmlBlasterException;
    //public java.util.ArrayList takeLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)       throws org.xmlBlaster.util.XmlBlasterException;
    //public java.util.ArrayList peekLowest(int, long, org.xmlBlaster.util.queue.I_QueueEntry, boolean)       throws org.xmlBlaster.util.XmlBlasterException;
-   public String peekStr()       throws org.xmlBlaster.util.XmlBlasterException;
+   public String peekStr()       throws Exception;
+   public String[] peekEntries(int numOfEntries)       throws Exception;
    //public java.util.ArrayList peek(int, long)       throws org.xmlBlaster.util.XmlBlasterException;
    //public java.util.ArrayList peekSamePriority(int, long)       throws org.xmlBlaster.util.XmlBlasterException;
    //public java.util.ArrayList peekWithPriority(int, long, int, int)       throws org.xmlBlaster.util.XmlBlasterException;
