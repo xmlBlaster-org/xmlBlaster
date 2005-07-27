@@ -20,6 +20,7 @@ static const char *subscribeToken = 0;
 static char *queryType;
 static int message_counter = 1;
 static long updateSleep = 0l;
+static bool reportUpdateProgress = false;
 static int64_t startTimestamp = 0ll; /* In nano sec */
 static bool verbose = true;
 
@@ -81,6 +82,18 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 }
 
 /**
+ * Access the read socket progress. 
+ * You need to register this function pointer if you want to see the progress of huge messages
+ * on slow connections.
+ */
+static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes) {
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed*)userP;
+   /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+           "Update data progress currBytesRead=%ld nbytes=%ld", (long)currBytesRead, (long)nbytes);*/
+   printf("[client] Update data progress currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);
+}
+
+/**
  * Invoke examples:
  *
  * Subscriber -logLevel TRACE
@@ -121,6 +134,7 @@ int main(int argc, char** argv)
 
    verbose = xa->props->getBool(xa->props, "verbose", verbose);
    updateSleep = xa->props->getLong(xa->props, "updateSleep", 0L);
+   reportUpdateProgress = xa->props->getBool(xa->props, "reportUpdateProgress", false); /* Report update progress */
    updateExceptionErrorCode = xa->props->getString(xa->props, "updateException.errorCode", 0); /* "user.clientCode" */
    updateExceptionMessage = xa->props->getString(xa->props, "updateException.message", 0);  /* "I don't want these messages" */
 
@@ -163,6 +177,11 @@ int main(int argc, char** argv)
       }
       xmlBlasterFree(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
+   }
+
+   if (reportUpdateProgress && xa->callbackP != 0) {
+      xa->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
+      xa->callbackP->readFromSocket.numReadUserP = xa;
    }
 
    { /* subscribe ... */
