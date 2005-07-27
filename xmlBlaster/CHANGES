@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13588 JMX extended for hierarchical view in jconsole (ContextNode)
+
  o #13579,#13580 JMX control for Java clients to monitor and control the client side connection
 
  o #13575,#13577 Added message file dump operations for JMX
