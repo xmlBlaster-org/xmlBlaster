@@ -196,9 +196,6 @@ public class Global implements Cloneable
    //** the entry factory to be used */
    protected I_EntryFactory entryFactory;
 
-   /** Support for JMX access */
-   private JmxWrapper jmxWrapper;
-
    /**
     * Constructs an initial Global object,
     * same as Global(null, true, true)
@@ -277,14 +274,7 @@ public class Global implements Cloneable
     * @return the JmxWrapper used to manage the MBean resources
     */
     public final JmxWrapper getJmxWrapper() throws XmlBlasterException {
-      if (this.jmxWrapper == null) {
-         synchronized (this) {
-            if (this.jmxWrapper == null) {
-               this.jmxWrapper = new JmxWrapper(this);
-            }
-         }
-      }
-      return this.jmxWrapper;
+      return JmxWrapper.getInstance(this);
    }
 
    /**
@@ -324,8 +314,13 @@ public class Global implements Cloneable
     *                   if null nothing happens
     */
    public void unregisterMBean(Object objectName) {
-      if (this.jmxWrapper != null)
-         this.jmxWrapper.unregisterMBean(objectName);
+      if (objectName == null) return;
+      try {
+         getJmxWrapper().unregisterMBean(objectName);
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
+      }
    }
 
    /**

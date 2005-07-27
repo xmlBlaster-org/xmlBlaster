@@ -95,6 +95,21 @@ public class JmxWrapper
    private JmxLogLevel jmxLogLevel;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
+   public static JmxWrapper theJmxWrapper;
+
+   /**
+    * Singleton to avoid that different Global instances create more than one JmxWrapper. 
+    */
+   public static JmxWrapper getInstance(Global glob) throws XmlBlasterException {
+      if (theJmxWrapper == null) {
+         synchronized (JmxWrapper.class) {
+            if (theJmxWrapper == null) {
+               theJmxWrapper = new JmxWrapper(glob);
+            }
+         }
+      }
+      return theJmxWrapper;
+   }
 
    /**
     * Create the unique MBeanServer instance. 
@@ -337,7 +352,7 @@ public class JmxWrapper
             useJmx++;
          }
          catch(Exception ex) {
-            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not create HtmlAdaptorServer", ex);
+            log.error(ME, " Could not create HtmlAdaptorServer: " + ex.toString());
          }
          this.html.start();
       }
