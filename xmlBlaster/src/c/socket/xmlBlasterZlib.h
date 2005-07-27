@@ -94,7 +94,7 @@ extern int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP);
  * @param nbytes The max. size of 'ptr'
  * @return number of bytes read, -1 is EOF
  */
-extern ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes);
+extern ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
 
 /**
  * Cleanup after socket is closed. 

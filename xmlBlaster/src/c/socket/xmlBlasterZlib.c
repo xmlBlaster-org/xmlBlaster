@@ -189,7 +189,7 @@ int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) {
 /**
  * @see xmlBlasterZlib.h
  */
-ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes)
+ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2)
 {
    uInt readBytes = 0;     /* The read, uncompressed bytes */
 
@@ -216,8 +216,14 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
 
       /* Read from socket and uncompress */
       do {
+         if (fpNumRead != 0) {
+            fpNumRead(userP2, (size_t)zlibP->next_out-(size_t)ptr, nbytes); /* Callback with current status */
+         }
          if (zlibP->avail_out == 0) {
             if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u currCompBytes=%u\n", __FILE__, __LINE__, nbytes, zlibReadBufP->currCompBytes);
+            if (fpNumRead != 0) {
+               fpNumRead(userP2, nbytes, nbytes);
+            }
             return nbytes;
          }
 
@@ -248,6 +254,9 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             if (zlibReadBufP->debug) dumpZlib("readn(): inflate() returned", zlibReadBufP, 0);
             if (zlibP->avail_out == 0) {
                if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u\n", __FILE__, __LINE__, nbytes);
+               if (fpNumRead != 0) {
+                  fpNumRead(userP2, nbytes, nbytes);
+               }
                return nbytes;
             }
          }
@@ -289,7 +298,7 @@ int xmlBlaster_initZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) {
 ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes) { return 0; }
 int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { return -1; }
 int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { return -1; }
-ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes) { return 0; }
+ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) { return 0; }
 int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { return -1; }
 
 # endif /* XMLBLASTER_ZLIB */

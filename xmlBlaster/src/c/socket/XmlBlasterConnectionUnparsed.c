@@ -35,8 +35,8 @@ static bool isConnected(XmlBlasterConnectionUnparsed *xb);
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
 static ssize_t writenPlain(void *xb, const int fd, const char *ptr, const size_t nbytes);
 static ssize_t writenCompressed(void *xb, const int fd, const char *ptr, const size_t nbytes);
-static ssize_t readnPlain(void *xb, const int fd, char *ptr, const size_t nbytes);
-static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes);
+static ssize_t readnPlain(void *xb, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
 static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
 
 /**
@@ -83,10 +83,10 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
    xb->useUdpForOneway = false;
-   xb->writeToSocket.funcP = 0;
+   xb->writeToSocket.writeToSocketFuncP = 0;
    xb->writeToSocket.userP = xb;
    xb->zlibWriteBuf = 0;
-   xb->readFromSocket.funcP = 0;
+   xb->readFromSocket.readFromSocketFuncP = 0;
    xb->readFromSocket.userP = xb;
    xb->zlibReadBuf = 0;
    return xb;
@@ -198,18 +198,18 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
             xb->zlibReadBuf->debug = true;
          }
 
-         if (!xb->writeToSocket.funcP) {  /* Accept setting from XmlBlasterAccessUnparsed */
-            xb->writeToSocket.funcP = writenCompressed;
-            xb->readFromSocket.funcP = readnCompressed;
+         if (!xb->writeToSocket.writeToSocketFuncP) {  /* Accept setting from XmlBlasterAccessUnparsed */
+            xb->writeToSocket.writeToSocketFuncP = writenCompressed;
+            xb->readFromSocket.readFromSocketFuncP = readnCompressed;
          }
       }
       else {
          if (strcmp(compressType, "")) {
             xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode.", compressType);
          }
-         if (!xb->writeToSocket.funcP) {  /* Accept setting from XmlBlasterAccessUnparsed */
-            xb->writeToSocket.funcP = writenPlain;
-            xb->readFromSocket.funcP = readnPlain;
+         if (!xb->writeToSocket.writeToSocketFuncP) {  /* Accept setting from XmlBlasterAccessUnparsed */
+            xb->writeToSocket.writeToSocketFuncP = writenPlain;
+            xb->readFromSocket.readFromSocketFuncP = readnPlain;
          }
       }
    }
@@ -626,7 +626,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    
    /* send the header ... */
    if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Lowlevel writing data to socket ...");
-   numSent = xb->writeToSocket.funcP(xb->writeToSocket.userP, udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
+   numSent = xb->writeToSocket.writeToSocketFuncP(xb->writeToSocket.userP, udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
    if (numSent == -1) {
       if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
                                    "Lost connection to xmlBlaster server");
@@ -1309,19 +1309,19 @@ static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, cons
 /**
  * Write uncompressed to socket (not thread safe)
  */
-static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes) {
+static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
    if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,  "readnPlain(%u)", nbytes);
-   return readn(fd, ptr, nbytes);
+   return readn(fd, ptr, nbytes, fpNumRead, userP2);
 }
 
 /**
  * Compress data and send to socket. 
  */
-static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes) {
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    XmlBlasterConnectionUnparsed *xb = (XmlBlasterConnectionUnparsed *)userP;
    if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,  "readnCompressed(%u)", nbytes);
-   return xmlBlaster_readnCompressed(xb->zlibReadBuf, fd, ptr, nbytes);
+   return xmlBlaster_readnCompressed(xb->zlibReadBuf, fd, ptr, nbytes, fpNumRead, userP2);
 }
 
 /**

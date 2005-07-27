@@ -248,6 +248,7 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
     * @todo Return void instead of #bool
     */
    UpdateFp clientsUpdateFp;
+
    bool callbackMultiThreaded;    /**< Shall update messages be transported to the client code in a thread per request? */
    bool lowLevelAutoAck;
    long responseTimeout;

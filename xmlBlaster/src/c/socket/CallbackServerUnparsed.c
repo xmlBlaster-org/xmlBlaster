@@ -21,7 +21,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb);
 static bool isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp);
 static ssize_t writenPlain(void *cb, const int fd, const char *ptr, const size_t nbytes);
-static ssize_t readnPlain(void *cb, const int fd, char *ptr, const size_t nbytes);
+static ssize_t readnPlain(void *cb, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
 static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp);
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
 static void voidSendResponse(CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArr);
@@ -32,6 +32,13 @@ static void voidSendResponseOrException(bool success, CallbackServerUnparsed *cb
 static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
 static void shutdownCallbackServer(CallbackServerUnparsed *cb);
 static void closeAcceptSocket(CallbackServerUnparsed *cb);
+
+/*
+static void xmlBlasterNumRead_test(void *xb, const size_t currBytesRead, const size_t nbytes) {
+   printf("xmlBlasterSocket.c: DEUBG ONLY currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);
+}
+*/
+
 
 /**
  * See header for a description. 
@@ -71,11 +78,12 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->sendXmlBlasterException = voidSendXmlBlasterException;
    cb->sendResponseOrException = voidSendResponseOrException;
 
-   cb->writeToSocket.funcP = writenPlain;
+   cb->writeToSocket.writeToSocketFuncP = writenPlain;
    cb->writeToSocket.userP = cb;
 
-   cb->readFromSocket.funcP = readnPlain;
+   cb->readFromSocket.readFromSocketFuncP = readnPlain;
    cb->readFromSocket.userP = cb;
+   cb->readFromSocket.numReadFuncP = 0; /* xmlBlasterNumRead_test */
    return cb;
 }
 
@@ -126,9 +134,8 @@ static ssize_t writenPlain(void *userP, const int fd, const char *ptr, const siz
 /**
  * Read data from socket, uncompress data if needed (not thread safe)
  */
-static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes) {
-   if (userP) userP = 0; /* To avoid compiler warning */
-   return readn(fd, ptr, nbytes);
+static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
+   return readn(fd, ptr, nbytes, fpNumRead, userP2);
 }
 
 static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp) {
@@ -573,7 +580,7 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
                              data, dataLen, cb->logLevel >= XMLBLASTER_LOG_DUMP, &rawMsgLen);
    free(data);
 
-   /*ssize_t numSent =*/(void) cb->writeToSocket.funcP(cb->updateCbUserData, cb->acceptSocket, rawMsg, (int)rawMsgLen);
+   /*ssize_t numSent =*/(void) cb->writeToSocket.writeToSocketFuncP(cb->updateCbUserData, cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
 
@@ -613,7 +620,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    free(blob.data);
    free((char *)msgUnit.content);
 
-   /*ssize_t numSent =*/(void) cb->writeToSocket.funcP(cb->updateCbUserData, cb->acceptSocket, rawMsg, (int)rawMsgLen);
+   /*ssize_t numSent =*/(void) cb->writeToSocket.writeToSocketFuncP(cb->updateCbUserData, cb->acceptSocket, rawMsg, (int)rawMsgLen);
 
    free(rawMsg);
 }

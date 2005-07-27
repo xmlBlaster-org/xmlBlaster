@@ -91,7 +91,7 @@ enum MSG_FLAG_POS_ENUM {
 
 extern void closeSocket(int fd);
 extern ssize_t writen(const int fd, const char *ptr, const size_t nbytes);
-extern ssize_t readn(const int fd, char *ptr, const size_t nbytes);
+extern ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP);
 
 /**
  * Creates a raw blob to push over a socket as described in the protocol.socket requirement. 

@@ -60,10 +60,13 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
  * @param fd The socket descriptor
  * @param ptr A buffer which is big enough to hold nbytes
  * @param nbytes The number of bytes to read
+ * @param currBytesRead Out parameter about the currently read number of bytes (read by another thread without mutex)
+ * @param fpNumRead Function pointer, if not null we make a callback about the progress
+ * @param userP Is bounced back to fpNumRead
  * @return number of bytes read, -1 is EOF
  * @author W. Richard Stevens
  */
-ssize_t readn(const int fd, char *ptr, const size_t nbytes)
+ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP)
 {
    ssize_t nread;
    ssize_t nleft;
@@ -72,11 +75,12 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes)
 
    while(nleft > 0) {
       nread = recv(fd, ptr, (int)nleft, flag); /* read() is deprecated on Win */
-      if (nread < 0)
-         return nread; /* error, return < 0 */
-      else if (nread == 0 || nread == -1) /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
+      if (nread <= 0)  /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
          break;        /* EOF is -1 */
       nleft -= nread;
+      if (fpNumRead != 0) {
+         fpNumRead(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
+      }
       ptr += nread;
    }
    return (ssize_t)nbytes-nleft;
@@ -311,7 +315,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
       numRead = recv(xmlBlasterSocket, packet, MAX_PACKET_SIZE, 0);
    else
       /* read the first 10 bytes to determine the length */
-      numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
+      numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->userP);
    if (numRead <= 0 || *stopP == true) {
       return false; /* EOF on socket */
    }
@@ -355,7 +359,8 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
       numRead -= MSG_LEN_FIELD_LEN;
    }
    else
-      numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
+      numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN,
+                          (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->userP);
    if (numRead <= 0 || *stopP == true) {
       free(rawMsg);
       return false; /* EOF on socket */

@@ -59,8 +59,8 @@ static void interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
 static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception);
 static ssize_t writenPlain(void *xa, const int fd, const char *ptr, const size_t nbytes);
 static ssize_t writenCompressed(void *xa, const int fd, const char *ptr, const size_t nbytes);
-static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nbytes);
-static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes);
+static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void * userP2);
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void * userP2);
 
 Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const char* const* argv) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
@@ -278,18 +278,18 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    compressType = xa->props->getString(xa->props, "dispatch/connection/plugin/socket/compress/type", compressType);
          
    if (!strcmp(compressType, "zlib:stream")) {
-      xa->connectionP->writeToSocket.funcP = writenCompressed;
+      xa->connectionP->writeToSocket.writeToSocketFuncP = writenCompressed;
       xa->connectionP->writeToSocket.userP = xa;
-      xa->connectionP->readFromSocket.funcP = readnCompressed;
+      xa->connectionP->readFromSocket.readFromSocketFuncP = readnCompressed;
       xa->connectionP->readFromSocket.userP = xa;
    }
    else {
       if (strcmp(compressType, "")) {
          xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode", compressType);
       }
-      xa->connectionP->writeToSocket.funcP = writenPlain;
+      xa->connectionP->writeToSocket.writeToSocketFuncP = writenPlain;
       xa->connectionP->writeToSocket.userP = xa;
-      xa->connectionP->readFromSocket.funcP = readnPlain;
+      xa->connectionP->readFromSocket.readFromSocketFuncP = readnPlain;
       xa->connectionP->readFromSocket.userP = xa;
    }
 
@@ -313,15 +313,15 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    xa->callbackP->logUserP = xa->logUserP;
 
    if (!strcmp(compressType, "zlib:stream")) {
-      xa->callbackP->writeToSocket.funcP = writenCompressed;
+      xa->callbackP->writeToSocket.writeToSocketFuncP = writenCompressed;
       xa->callbackP->writeToSocket.userP = xa;
-      xa->callbackP->readFromSocket.funcP = readnCompressed;
+      xa->callbackP->readFromSocket.readFromSocketFuncP = readnCompressed;
       xa->callbackP->readFromSocket.userP = xa;
    }
    else {
-      xa->callbackP->writeToSocket.funcP = writenPlain;
+      xa->callbackP->writeToSocket.writeToSocketFuncP = writenPlain;
       xa->callbackP->writeToSocket.userP = xa;
-      xa->callbackP->readFromSocket.funcP = readnPlain;
+      xa->callbackP->readFromSocket.readFromSocketFuncP = readnPlain;
       xa->callbackP->readFromSocket.userP = xa;
    }
 
@@ -1029,7 +1029,7 @@ static ssize_t writenCompressed(void *userP, const int fd, const char *ptr, cons
 /**
  * Read uncompressed to socket (thread safe)
  */
-static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nbytes) {
+static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    int rc;
    ssize_t ret;
 
@@ -1038,7 +1038,7 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
    rc = pthread_mutex_lock(&xa->readnMutex);
    if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
 
-   ret = readn(fd, ptr, nbytes);
+   ret = readn(fd, ptr, nbytes, fpNumRead, userP2);
 
    rc = pthread_mutex_unlock(&xa->readnMutex);
    if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);
@@ -1049,7 +1049,7 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
 /**
  * Read data from socket, uncompress it if necessary. 
  */
-static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes) {
+static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
    int rc;
    ssize_t ret;
 
@@ -1059,7 +1059,7 @@ static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_
    rc = pthread_mutex_lock(&xa->readnMutex);
    if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_lock(readnMutex) returned %d.", rc);
 
-   ret = xmlBlaster_readnCompressed(xa->connectionP->zlibReadBuf, fd, ptr, nbytes);
+   ret = xmlBlaster_readnCompressed(xa->connectionP->zlibReadBuf, fd, ptr, nbytes, fpNumRead, userP2);
 
    rc = pthread_mutex_unlock(&xa->readnMutex);
    if (rc != 0) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "pthread_mutex_unlock(readnMutex) returned %d.", rc);

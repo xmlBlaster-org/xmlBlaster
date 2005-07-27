@@ -27,21 +27,38 @@ extern "C" {
 /** Declare function pointer to write to socket */
 typedef ssize_t ( * XmlBlasterWriteToSocketFunc)(void *xb, const int fd, const char *ptr, const size_t nbytes);
 /** Declare function pointer to read from socket */
-typedef ssize_t ( * XmlBlasterReadFromSocketFunc)(void *xb, const int fd, char *ptr, const size_t nbytes);
+typedef ssize_t ( * XmlBlasterReadFromSocketFunc)(void *xb, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2);
 
 /**
  * Holds a callback function pointer and its user pointer (the 'this' pointer). 
  */
 typedef struct {
-   XmlBlasterReadFromSocketFunc funcP;
+   XmlBlasterReadFromSocketFunc readFromSocketFuncP;
    void *userP;
+   /** Register listener for socket read progress, can be NULL if nobody is interested */
+   /**
+    * You can register a function pointer listener to be informed about the socket read progress. 
+    * The function will be called than and again during reading the socket with the currently read bytes.
+    * Example:
+    * <pre>
+    * static void progress(void *numReadUserP, const size_t currBytesRead, const size_t nbytes) {
+    *     printf("currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);
+    * }
+    * </pre>
+    * The pointer may remain NULL.
+    */
+   XmlBlasterNumReadFunc numReadFuncP;
+   /**
+    * This will be looped through to numReadFuncP. 
+    */
+   void *numReadUserP;
 } XmlBlasterReadFromSocketFuncHolder;
 
 /**
  * Holds a callback function pointer and its user pointer (the 'this' pointer, first argument). 
  */
 typedef struct {
-   XmlBlasterWriteToSocketFunc funcP;
+   XmlBlasterWriteToSocketFunc writeToSocketFuncP;
    void *userP;
 } XmlBlasterWriteToSocketFuncHolder;
 

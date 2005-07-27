@@ -113,5 +113,13 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 
 #define XB_USE_PTHREADS 1 /**< Used to dump thread ID in default logging output, undef it if you run single threaded */
 
+/**
+ * Declare function callback pointer about how many bytes are read from socket. 
+ * @param userP A user pointer
+ * @param currBytesRead The currently number of bytes read
+ * @param nbytes Totally expected bytes
+ */
+typedef void ( * XmlBlasterNumReadFunc)(void *xb, const size_t currBytesRead, const size_t nbytes);
+
 #endif /* XMLBLASTER_basicDefs_H */
 
