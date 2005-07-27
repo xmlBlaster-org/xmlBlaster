@@ -135,11 +135,13 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
          }
       }
 
+      String path = (urlPathClasspathList.indexOf("/status.html") != -1) ? "/status.html" : "/...";
+
       log.info("Loaded HtmlMonitor plugin '" + getType() +
                "', registered with urlPath='" + urlPathList +
                "' using documentRoot=" + this.documentRoot +
-               " and '" + urlPathClasspathList + "' from CLASSPATH on http://" +
-               this.httpServer.getSocketInfo());
+               " and '" + urlPathClasspathList + "' from CLASSPATH, try http://" +
+               this.httpServer.getSocketInfo() + path);
    }
 
    /**
