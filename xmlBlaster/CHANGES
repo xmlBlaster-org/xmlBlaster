@@ -14,7 +14,7 @@ Changes for xxxxx [2005-xx-xx]
 
  o #13545-#13568 New native web based monitoring
    Start xmlBlaster and try in your browser:
-     http://YOUR-IP:3412/monitor/status.html
+     http://YOUR-IP:3412/status.html
    See
      http://www.xmlblaster.org/screenshot.html#native
    - Added LogNotifierDeviceFactory
