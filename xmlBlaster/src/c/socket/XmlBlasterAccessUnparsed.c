@@ -939,20 +939,10 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
       }
 
       /*
-        The user automatically calls ACK during his update() processing
-        We only use one dispatcher thread to guarantee sequence of messages.
-      */
-      /*
-      if (xa->guaranteeUpdateSequence) {
-         if (xa->threadCounter > 0) {
-            if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-               "Waiting on %d threads to finish update() processing", (int)xa->threadCounter);
-         }
-         while (xa->threadCounter > 0) {
-            sleepMillis(10);
-         }
-         xa->lastUpdateContainer = container;
-      }
+        Guaranteed sequence:
+        The server uses max one thread to deliver update() for each client
+        If the update contains an array of messages those are handled as a
+        complete bulk in the correct sequence here.
       */
 
       /* this thread will deliver the update message to the client code,
