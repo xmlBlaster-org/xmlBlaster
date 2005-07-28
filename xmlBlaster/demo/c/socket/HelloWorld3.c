@@ -8,7 +8,7 @@ Compile:   cd xmlBlaster; build c
            (Win: copy xmlBlaster\src\c\socket\pthreadVC2.dll to your PATH)
            Manually:
             cd xmlBlaster/src/c
-            gcc -Wall -g -Wno-long-long -D_REENTRANT -I. -o HelloWorld3 
+            gcc -g -Wall -pedantic -Wno-long-long -D_REENTRANT -I. -o HelloWorld3 
                 ../../demo/c/socket/HelloWorld3.c util/?*.c socket/?*.c -pthread
 Invoke:    HelloWorld3 -help
 See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
