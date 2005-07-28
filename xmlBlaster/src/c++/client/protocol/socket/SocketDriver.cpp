@@ -96,9 +96,8 @@ static void myLogger(void *logUserP,
 static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes) {
    org::xmlBlaster::client::protocol::socket::SocketDriver *sd =
          (org::xmlBlaster::client::protocol::socket::SocketDriver *)userP;
-   org::xmlBlaster::util::I_Log& log = sd->getLog();
-   //std::cout << "SocketDriver DEBUG ONLY: Update data progress currBytesRead=" << currBytesRead << " nbytes=" << nbytes << std::endl;
-   //log.error("SocketDriver", "DEBUG ONLY: Update data progress currBytesRead=" +
+   //org::xmlBlaster::util::I_Log& log = sd->getLog();
+   //if (log.trace()) log.trace("SocketDriver", "Update data progress currBytesRead=" +
    //                          org::xmlBlaster::util::lexical_cast<std::string>(currBytesRead) +
    //                          " nbytes=" + org::xmlBlaster::util::lexical_cast<std::string>(nbytes));
    if (sd->progressListener_ != 0) {

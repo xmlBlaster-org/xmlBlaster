@@ -383,7 +383,7 @@ vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& q
    _COMM_CATCH("::erase", false, false)
 }
 
-I_ProgressListener* CorbaDriver::registerProgressListener(I_ProgressListener *listener) {
+I_ProgressListener* CorbaDriver::registerProgressListener(I_ProgressListener *) {
    log_.warn("CorbaDriver", "registerProgressListener() is not implemented, we ignore the provided listener.");
    return 0;
 }
