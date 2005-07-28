@@ -28,6 +28,8 @@ const int    DEFAULT_port               = 3412;
 const string DEFAULT_type               = Global::getDefaultProtocol(); //"IOR";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
+const int    DEFAULT_burstModeMaxEntries= -1;
+const long   DEFAULT_burstModeMaxBytes  = -1L;
 const bool   DEFAULT_oneway             = false;
 const bool   DEFAULT_dispatcherActive   = true;
 const string DEFAULT_compressType       = "";
@@ -57,6 +59,8 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
    port_                = DEFAULT_port;
    version_             = DEFAULT_version;
    collectTime_         = DEFAULT_collectTime;
+   burstModeMaxEntries_ = DEFAULT_burstModeMaxEntries;
+   burstModeMaxBytes_   = DEFAULT_burstModeMaxBytes;
    pingInterval_        = defaultPingInterval_;
    retries_             = defaultRetries_;
    delay_               = defaultDelay_;
@@ -265,6 +269,36 @@ void AddressBase::setCollectTime(long collectTime)
 {
    if (collectTime < 0) collectTime_ = 0;
    else collectTime_ = collectTime;
+}
+
+int AddressBase::getBurstModeMaxEntries() const
+{
+   return burstModeMaxEntries_;
+}
+
+void AddressBase::setBurstModeMaxEntries(int burstModeMaxEntries)
+{
+   if (burstModeMaxEntries < -1) {
+      burstModeMaxEntries_ = -1;
+   }
+   else if (burstModeMaxEntries == 0) {
+      log_.warn(ME, string("<burstMode maxEntries='") + lexical_cast<std::string>(burstModeMaxEntries) + string("'> is not supported and may cause strange behavior"));
+      burstModeMaxEntries_ = burstModeMaxEntries;
+   }
+   else {
+      burstModeMaxEntries_ = burstModeMaxEntries;
+   }
+}
+
+long AddressBase::getBurstModeMaxBytes() const
+{
+   return burstModeMaxBytes_;
+}
+
+void AddressBase::setBurstModeMaxBytes(long burstModeMaxBytes)
+{
+   if (burstModeMaxBytes < -1) burstModeMaxBytes_ = -1;
+   else burstModeMaxBytes_ = burstModeMaxBytes;
 }
 
 /**
@@ -501,10 +535,14 @@ string AddressBase::toXml(const string& extraOffset) const
    ret += string(">");
    if (getRawAddress() != "")
       ret += offset + string("   ") + getRawAddress();
-   if (getCollectTime() != DEFAULT_collectTime) {
+   if (getCollectTime() != DEFAULT_collectTime || getBurstModeMaxEntries() != DEFAULT_burstModeMaxEntries || getBurstModeMaxBytes() != DEFAULT_burstModeMaxBytes) {
       ret += offset2 + string("<burstMode");
       if (getCollectTime() != DEFAULT_collectTime)
          ret += string(" collectTime='") + lexical_cast<std::string>(getCollectTime()) + string("'");
+      if (getBurstModeMaxEntries() != DEFAULT_burstModeMaxEntries)
+         ret += string(" maxEntries='") + lexical_cast<std::string>(getBurstModeMaxEntries()) + string("'");
+      if (getBurstModeMaxBytes() != DEFAULT_burstModeMaxBytes)
+         ret += string(" maxBytes='") + lexical_cast<std::string>(getBurstModeMaxBytes()) + string("'");
       ret += string("/>");
    }
    if (getCompressType() != DEFAULT_compressType)

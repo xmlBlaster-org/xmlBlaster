@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.18 2004/08/29 17:39:26 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**
@@ -36,6 +36,8 @@ inline void Address::initialize()
    setType(global_.getProperty().getStringProperty("protocol", getType()));
    setType(global_.getProperty().getStringProperty("dispatch/connection/protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("dispatch/connection/burstMode/collectTime", DEFAULT_collectTime));
+   setBurstModeMaxEntries(global_.getProperty().getIntProperty("dispatch/connection/burstMode/maxEntries", DEFAULT_burstModeMaxEntries));
+   setBurstModeMaxBytes(global_.getProperty().getLongProperty("dispatch/connection/burstMode/maxBytes", DEFAULT_burstModeMaxBytes));
    setPingInterval(global_.getProperty().getLongProperty("dispatch/connection/pingInterval", defaultPingInterval_));
    setRetries(global_.getProperty().getIntProperty("dispatch/connection/retries", defaultRetries_));
    setDelay(global_.getProperty().getLongProperty("dispatch/connection/delay", defaultDelay_));
@@ -50,6 +52,8 @@ inline void Address::initialize()
 
       setType(global_.getProperty().getStringProperty("dispatch/connection/protocol["+nodeId_+"]", getType()));
       setCollectTime(global_.getProperty().getLongProperty("dispatch/connection/burstMode/collectTime["+nodeId_+"]", getCollectTime()));
+      setBurstModeMaxEntries(global_.getProperty().getIntProperty("dispatch/connection/burstMode/maxEntries["+nodeId_+"]", getBurstModeMaxEntries()));
+      setBurstModeMaxBytes(global_.getProperty().getLongProperty("dispatch/connection/burstMode/maxBytes["+nodeId_+"]", getBurstModeMaxBytes()));
       setPingInterval(global_.getProperty().getLongProperty("dispatch/connection/pingInterval["+nodeId_+"]", getPingInterval()));
       setRetries(global_.getProperty().getIntProperty("dispatch/connection/retries["+nodeId_+"]", getRetries()));
       setDelay(global_.getProperty().getLongProperty("dispatch/connection/delay["+nodeId_+"]", getDelay()));
@@ -148,6 +152,12 @@ string Address::usage()
    text += string("   -dispatch/connection/burstMode/collectTime [" + lexical_cast<std::string>(DEFAULT_collectTime) + "]\n");
    text += string("                       Number of milliseconds we shall collect publish messages.\n");
    text += string("                       This allows performance tuning, try set it to 200.\n");
+   text += string("   -dispatch/connection/burstMode/maxEntries [" + lexical_cast<std::string>(DEFAULT_burstModeMaxEntries) + "]\n");
+   text += string("                       The maximum number of queue entries to send in a bulk.\n");
+   text += string("                       -1L takes all entries of highest priority available in the ram queue in a bulk.\n");
+   text += string("   -dispatch/connection/burstMode/maxBytes [" + lexical_cast<std::string>(DEFAULT_burstModeMaxBytes) + "]\n");
+   text += string("                       The maximum bulk size of invocations.\n");
+   text += string("                       -1L takes all entries of highest priority available in the ram queue in a bulk.\n");
  //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
    text += string("   -dispatch/connection/pingInterval [" + lexical_cast<std::string>(defaultPingInterval_) + "]\n");
    text += string("                       Pinging every given milliseconds.\n");
@@ -170,7 +180,7 @@ string Address::usage()
 using namespace std;
 using namespace org::xmlBlaster::util::qos::address;
 
-/** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
+/** For testing */
 int main(int args, char* argv[])
 {
    try {

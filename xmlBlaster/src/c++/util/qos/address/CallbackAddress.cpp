@@ -22,6 +22,8 @@ inline void CallbackAddress::initialize()
    setType(global_.getProperty().getStringProperty("protocol", getType()));
    setType(global_.getProperty().getStringProperty("dispatch/callback/protocol", getType()));
    setCollectTime(global_.getProperty().getLongProperty("dispatch/callback/burstMode/collectTime", DEFAULT_collectTime)); // sync update()
+   setBurstModeMaxEntries(global_.getProperty().getIntProperty("dispatch/callback/burstMode/maxEntries", DEFAULT_burstModeMaxEntries));
+   setBurstModeMaxBytes(global_.getProperty().getLongProperty("dispatch/callback/burstMode/maxBytes", DEFAULT_burstModeMaxBytes));
    setPingInterval(global_.getProperty().getLongProperty("dispatch/callback/pingInterval", defaultPingInterval_));
    setRetries(global_.getProperty().getIntProperty("dispatch/callback/retries", defaultRetries_));
    setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay", defaultDelay_));
@@ -37,6 +39,8 @@ inline void CallbackAddress::initialize()
       setPort(global_.getProperty().getIntProperty("dispatch/callback/port["+nodeId_+"]", getPort()));
       setType(global_.getProperty().getStringProperty("dispatch/callback/protocol["+nodeId_+"]", getType()));
       setCollectTime(global_.getProperty().getLongProperty("dispatch/callback/burstMode/collectTime["+nodeId_+"]", collectTime_));
+      setBurstModeMaxEntries(global_.getProperty().getIntProperty("dispatch/callback/burstMode/maxEntries["+nodeId_+"]", getBurstModeMaxEntries()));
+      setBurstModeMaxBytes(global_.getProperty().getLongProperty("dispatch/callback/burstMode/maxBytes["+nodeId_+"]", getBurstModeMaxBytes()));
       setPingInterval(global_.getProperty().getLongProperty("dispatch/callback/pingInterval["+nodeId_+"]", pingInterval_));
       setRetries(global_.getProperty().getIntProperty("dispatch/callback/retries["+nodeId_+"]", retries_));
       setDelay(global_.getProperty().getLongProperty("dispatch/callback/delay["+nodeId_+"]", delay_));
@@ -113,6 +117,12 @@ string CallbackAddress::usage()
    text += string("   -dispatch/callback/burstMode/collectTime [") + lexical_cast<std::string>(DEFAULT_collectTime) + string("]\n");
    text += string("                       Number of milliseconds xmlBlaster shall collect callback messages.\n");
    text += string("                       The burst mode allows performance tuning, try set it to 200.\n");
+   text += string("   -dispatch/callback/burstMode/maxEntries [" + lexical_cast<std::string>(DEFAULT_burstModeMaxEntries) + "]\n");
+   text += string("                       The maximum number of callback queue entries to send in a bulk.\n");
+   text += string("                       -1L takes all entries of highest priority available in the callback ram queue in a bulk.\n");
+   text += string("   -dispatch/callback/burstMode/maxBytes [" + lexical_cast<std::string>(DEFAULT_burstModeMaxBytes) + "]\n");
+   text += string("                       The maximum bulk size of callback messages.\n");
+   text += string("                       -1L takes all entries of highest priority available in the callback ram queue in a bulk.\n");
 
    text += string("   -dispatch/callback/oneway [") + lexical_cast<std::string>(DEFAULT_oneway) + string("]\n");
    text += string("                       Shall the update() messages be send oneway (no application level ACK).\n");

@@ -31,6 +31,8 @@ extern Dll_Export const int       DEFAULT_port;
 extern Dll_Export const std::string    DEFAULT_type;
 extern Dll_Export const std::string    DEFAULT_version;
 extern Dll_Export const long      DEFAULT_collectTime;
+extern Dll_Export const int       DEFAULT_burstModeMaxEntries;
+extern Dll_Export const long      DEFAULT_burstModeMaxBytes;
 extern Dll_Export const bool      DEFAULT_oneway;
 extern Dll_Export const bool      DEFAULT_dispatcherActive;
 extern Dll_Export const std::string    DEFAULT_compressType;
@@ -84,6 +86,19 @@ protected:
    
    /** BurstMode: The time to collect messages for publish/update */
    long collectTime_; //  = DEFAULT_collectTime;
+
+   /**
+    * How many messages maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    * Defaults to all available of highest priority
+    */
+   int burstModeMaxEntries_; //  = -1
+
+   /**
+    * How many bytes maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    */
+   long burstModeMaxBytes_; //  = -1L
    
    /** Ping interval: pinging every given milliseconds */
    long pingInterval_; //  = getDefaultPingInterval();
@@ -299,6 +314,34 @@ public:
     * @param The time to collect in milliseconds
     */
    void setCollectTime(long collectTime);
+
+   /**
+    * How many messages maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    */
+   int getBurstModeMaxEntries() const;
+
+   /**
+    * How many messages maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    * @param -1 takes all available messages from highest priority in a bulk (default)
+    *        only limited by burstModeMaxBytes
+    */
+   void setBurstModeMaxEntries(int burstModeMaxEntries);
+
+   /**
+    * How many bytes maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    */
+   long getBurstModeMaxBytes() const;
+
+   /**
+    * How many bytes maximum shall the callback thread take in one bulk out of the
+    * callback queue and deliver to the client in one bulk. 
+    * @param -1 takes all available messages from highest priority in a bulk (default)
+    *        only limited by burstModeMaxEntries
+    */
+   void setBurstModeMaxBytes(long BurstModeMaxBytes);
 
    /**
     * How long to wait between pings to the callback server. 
