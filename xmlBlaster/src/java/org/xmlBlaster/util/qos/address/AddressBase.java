@@ -625,7 +625,7 @@ public abstract class AddressBase
 
    public void setBurstModeMaxEntries(int burstModeMaxEntries) {
       if (burstModeMaxEntries == 0)
-         log.warn(ME, "<burstMode maxEntries=" + burstModeMaxEntries + " is not supported and may cause strange behavior");
+         log.warn(ME, "<burstMode maxEntries='" + burstModeMaxEntries + "'> is not supported and may cause strange behavior");
       else if (burstModeMaxEntries < -1)
          burstModeMaxEntries = -1;
       
@@ -642,7 +642,7 @@ public abstract class AddressBase
 
    public void setBurstModeMaxBytes(long burstModeMaxBytes) {
       if (burstModeMaxBytes == 0)
-         log.warn(ME, "<burstMode maxBytes=" + burstModeMaxBytes + " is not supported and may cause strange behavior");
+         log.warn(ME, "<burstMode maxBytes='" + burstModeMaxBytes + "'> is not supported and may cause strange behavior");
       else if (burstModeMaxBytes < -1L)
          burstModeMaxBytes = -1L;
 

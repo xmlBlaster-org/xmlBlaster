@@ -120,12 +120,12 @@ public class CallbackAddress extends AddressBase
       text += "                       The burst mode allows performance tuning, try set it to 200.\n";
       text += "   -dispatch/" + this.instanceName + "/burstMode/maxEntries\n";
       text += "                       The maximum bulk size of a callback invocation [" + DEFAULT_burstModeMaxEntries + "]\n";
-      text += "                       -1 takes all entries available in the callback RAM queue\n";
-      text += "                       possibly limited by maxBytes\n";
+      text += "                       -1 takes all entries of highest priority available in the\n";
+      text += "                       callback RAM queue possibly limited by maxBytes\n";
       text += "   -dispatch/" + this.instanceName + "/burstMode/maxBytes\n";
       text += "                       The maximum bulk size of a callback invocation [" + DEFAULT_burstModeMaxBytes + "]\n";
-      text += "                       -1L takes all entries available in the callback RAM queue\n";
-      text += "                       possibly limited by maxEntries\n";
+      text += "                       -1L takes all entries of highest priority available in the\n";
+      text += "                       callback RAM queue possibly limited by maxEntries\n";
       text += "   -dispatch/" + this.instanceName + "/oneway\n";
       text += "                       Shall the update() messages be send oneway (no\n";
       text += "                       application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
