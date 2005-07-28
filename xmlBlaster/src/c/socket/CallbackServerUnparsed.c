@@ -84,6 +84,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->readFromSocket.readFromSocketFuncP = readnPlain;
    cb->readFromSocket.userP = cb;
    cb->readFromSocket.numReadFuncP = 0; /* xmlBlasterNumRead_test */
+   cb->readFromSocket.numReadUserP = 0;
    return cb;
 }
 
@@ -712,6 +713,7 @@ static void shutdownCallbackServer(CallbackServerUnparsed *cb)
          "Closed listener socket");
    }
 
+   cb->readFromSocket.numReadFuncP = 0;
    /*
    for(i=0; i<10; i++) {
       if (cb->isShutdown) {

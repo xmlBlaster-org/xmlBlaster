@@ -315,7 +315,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
       numRead = recv(xmlBlasterSocket, packet, MAX_PACKET_SIZE, 0);
    else
       /* read the first 10 bytes to determine the length */
-      numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->userP);
+      numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->numReadUserP);
    if (numRead <= 0 || *stopP == true) {
       return false; /* EOF on socket */
    }
@@ -360,7 +360,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    else
       numRead = fpHolder->readFromSocketFuncP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN,
-                          (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->userP);
+                          (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN, fpHolder->numReadFuncP, fpHolder->numReadUserP);
    if (numRead <= 0 || *stopP == true) {
       free(rawMsg);
       return false; /* EOF on socket */
