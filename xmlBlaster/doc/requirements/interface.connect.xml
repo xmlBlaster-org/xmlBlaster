@@ -76,7 +76,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
       &lt;callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='10000'
           retries='-1' delay='10000' oneway='false' dispatcherActive='true' dispatchPlugin='undef'>
          IOR:10000010033200000099000010....
-         &lt;burstMode collectTime='400' maxEntries='20' maxBytes='-1L' />
+         &lt;burstMode collectTime='400' maxEntries='20' maxBytes='-1' />
          &lt;compress type='gzip' minSize='3000'/> &lt;!-- only implemented for SOCKET protocol -->
          &lt;ptp>true&lt;/ptp>
       &lt;/callback>
@@ -199,7 +199,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
    <td><a NAME="burstMode"></a>&lt;burstMode></td>
    <td>
     <p>
-    The &lt;burstMode collectTime='0' maxEntries='-1' maxBytes='-1L' /> settings in the
+    The &lt;burstMode collectTime='0' maxEntries='-1' maxBytes='-1' /> settings in the
     callback section controls how xmlBlaster delivers the callback messages to its subscribers - or the PtP
     messages to the destination clients.<br />
     <b>collectTime</b> The default setting above does not wait on more messages after one has arrived (<tt>collectTime=0</tt>)
