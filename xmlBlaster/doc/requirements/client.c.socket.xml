@@ -1105,7 +1105,17 @@ Solaris:
             <td>true</td>
             <td>Every callback call is a separate thread (the update() function).
                 Like this you can call methods like publish() or subscribe()
-                from within the update() call</td>
+                from within the update() call.<br />
+                The sequence of the message arrival in your update() function
+                is still guaranteed: XmlBlaster uses a maximum of one thread for each client
+                to deliver updates.
+                If xmlBlaster sends an array of messages
+                the complete array is delivered. If you want to avoid
+                to receive more than one message per update call adjust this
+                with setting
+                <tt>-dispatch/callback/burstMode/maxEntries 1</tt> for this
+                client or generally in the server.
+            </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 

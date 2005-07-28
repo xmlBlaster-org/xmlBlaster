@@ -196,6 +196,30 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
    </td>
    </tr>
    <tr>
+   <td><a NAME="burstMode"></a>&lt;burstMode></td>
+   <td>
+    <p>
+    The &lt;burstMode collectTime='0' maxEntries='-1' maxBytes='-1L' /> settings in the
+    callback section controls how xmlBlaster delivers the callback messages to its subscribers - or the PtP
+    messages to the destination clients.<br />
+    <b>collectTime</b> The default setting above does not wait on more messages after one has arrived (<tt>collectTime=0</tt>)
+    and delivers it immediately. You can for example change this to wait some 20 milliseconds
+    and then send those in a bulk for higher performance.<br />
+    <b>maxEntries</b> When xmlBlaster checks the callback queue for a client it takes out
+    all messages in the RAM queue with the highest priority and sends them in a bulk
+    to the client. This guarantees good performance but may have drawbacks in some use cases.
+    For example if the client is behind a slow dial up line and the callback queue contains
+    60 messages with same priority and a size of 1MByte each the client has to wait
+    until the complete 60MByte has arrived. If he switches off his PC after getting 59MByte
+    the complete bulk is considered as not delivered by xmlBlaster and will be redilvered
+    after the client logs in again. In such cases setting <tt>maxEntries=1</tt> is a good choice.<br />
+    <b>maxBytes</b> The maximum bytes to collect for a bulk send. Usually
+    you leave this on unlimited and play with maxEntries. At least one message
+    will be delivered even if it is bigger than maxBytes.
+    </p>
+   </td>
+   </tr>
+   <tr>
    <td>persistence</td>
    <td>
     <p>

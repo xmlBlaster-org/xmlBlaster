@@ -92,7 +92,7 @@ in your browser.
 java org.xmlBlaster.Main -bootstrapPort 9090
 
 Open URL
-   http://localhost:9090
+   http://localhost:9090/status.html
 in your browser.
    </pre>
    <h3>status.html screen shot</h3>
