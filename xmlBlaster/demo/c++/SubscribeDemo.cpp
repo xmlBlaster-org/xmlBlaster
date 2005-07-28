@@ -26,6 +26,16 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
+class SubscribeDemo;
+class ProgressListener : public org::xmlBlaster::client::protocol::I_ProgressListener
+{
+   SubscribeDemo *demoP;
+   public:
+   ProgressListener(SubscribeDemo *p) { this->demoP = p; }
+   void progress(const std::string& name, unsigned long currBytesRead, unsigned long numBytes);
+};
+
+
 /**
  * This subscriber subscribes on the topic 'Hello' and dumps
  * the received messages. 
@@ -42,6 +52,7 @@ private:
    Global&          global_;
    I_Log&           log_;
    XmlBlasterAccess connection_;
+   ProgressListener progressListener;
    int updateCounter;
    char ptr[1];
    string subscriptionId;
@@ -51,6 +62,7 @@ private:
    bool interactiveUpdate;
    bool firstTime;
    long updateSleep;
+   bool reportUpdateProgress;
    string updateExceptionErrorCode;
    string updateExceptionMessage;
    string updateExceptionRuntime;
@@ -80,6 +92,7 @@ public:
         global_(glob), 
         log_(glob.getLog("demo")),
         connection_(global_),
+        progressListener(this),
         updateCounter(0)
    {
       initEnvironment();
@@ -87,6 +100,8 @@ public:
       firstTime = true;
       execute();
    }
+
+   I_Log& getLog() { return log_; }
 
    void execute()
    {
@@ -127,6 +142,7 @@ public:
       interactive = global_.getProperty().get("interactive", true);
       interactiveUpdate = global_.getProperty().get("interactiveUpdate", false);
       updateSleep = global_.getProperty().get("updateSleep", 0L);
+      reportUpdateProgress = global_.getProperty().get("reportUpdateProgress", false);
       updateExceptionErrorCode = global_.getProperty().get("updateException.errorCode", string(""));
       updateExceptionMessage = global_.getProperty().get("updateException.message", string(""));
       updateExceptionRuntime = global_.getProperty().get("updateException.runtime", string(""));
@@ -169,6 +185,7 @@ public:
       log_.info(ME, "   -interactive         " + lexical_cast<string>(interactive));
       log_.info(ME, "   -interactiveUpdate   " + lexical_cast<string>(interactiveUpdate));
       log_.info(ME, "   -updateSleep         " + lexical_cast<string>(updateSleep));
+      log_.info(ME, "   -reportUpdateProgress      " + lexical_cast<string>(reportUpdateProgress));
       log_.info(ME, "   -updateException.errorCode " + updateExceptionErrorCode);
       log_.info(ME, "   -updateException.message   " + updateExceptionMessage);
       log_.info(ME, "   -updateException.runtime   " + updateExceptionRuntime);
@@ -221,6 +238,9 @@ public:
       if (log_.trace()) log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
       ConnectReturnQos retQos = connection_.connect(connQos, this);
       if (log_.trace()) log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
+      if (reportUpdateProgress) {
+         connection_.registerProgressListener(&progressListener);
+      }
    }
 
    void subscribe()
@@ -392,6 +412,11 @@ public:
       return Constants::RET_OK;
    }
 };
+
+void ProgressListener::progress(const std::string& name, unsigned long currBytesRead, unsigned long numBytes) {
+   demoP->getLog().info("SubscribeDemo", name + "Progress of incoming message is currBytesRead=" +
+            lexical_cast<string>(currBytesRead) + " nbytes=" + lexical_cast<string>(numBytes));
+}
 
 /**
  * Try
