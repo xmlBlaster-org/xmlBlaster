@@ -937,6 +937,24 @@ static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
             msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
          }
       }
+
+      /*
+        The user automatically calls ACK during his update() processing
+        We only use one dispatcher thread to guarantee sequence of messages.
+      */
+      /*
+      if (xa->guaranteeUpdateSequence) {
+         if (xa->threadCounter > 0) {
+            if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+               "Waiting on %d threads to finish update() processing", (int)xa->threadCounter);
+         }
+         while (xa->threadCounter > 0) {
+            sleepMillis(10);
+         }
+         xa->lastUpdateContainer = container;
+      }
+      */
+
       /* this thread will deliver the update message to the client code,
          Note: we need a thread pool cache for better performance */
       xa->threadCounter++;

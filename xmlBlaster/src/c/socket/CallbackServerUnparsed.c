@@ -134,7 +134,8 @@ static ssize_t writenPlain(void *userP, const int fd, const char *ptr, const siz
 /**
  * Read data from socket, uncompress data if needed (not thread safe)
  */
-static ssize_t readnPlain(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
+static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
+   if (userP) userP = 0; /* To avoid compiler warning */
    return readn(fd, ptr, nbytes, fpNumRead, userP2);
 }
 
