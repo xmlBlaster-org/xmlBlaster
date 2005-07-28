@@ -186,11 +186,25 @@ private:
       if (log_.trace()) log_.trace(ME, "sendAdministrativeCommand() ...");
       //string command = "?clientList";
       {
+         string command = global_.getId()+"/?dispatcherActive";
+         log_.info(ME, string("Trying command '" + command + "'"));
+         try {
+            string ret = connection_.sendAdministrativeCommand(command);
+            log_.info(ME, string("Success: " + command + " returned '" + ret + "'"));
+            assert(true == lexical_cast<bool>(ret));
+         }
+         catch(XmlBlasterException &e) {
+            log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
+            assert(0);
+         }
+      }
+      {
          string command = global_.getId()+"/?dispatcherActive=false";
          log_.info(ME, string("Trying command '" + command + "'"));
          try {
             string ret = connection_.sendAdministrativeCommand(command);
             log_.info(ME, string("Success: " + command + " returned '" + ret + "'"));
+            assert(ret == "OK");
          }
          catch(XmlBlasterException &e) {
             log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
@@ -203,6 +217,33 @@ private:
          try {
             string ret = connection_.sendAdministrativeCommand(command);
             log_.info(ME, string("Success: " + command + " returned '" + ret + "'"));
+            assert(false == lexical_cast<bool>(ret));
+         }
+         catch(XmlBlasterException &e) {
+            log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
+            assert(0);
+         }
+      }
+      {
+         string command = "set " + global_.getId()+"/?dispatcherActive=true";
+         log_.info(ME, string("Trying command '" + command + "'"));
+         try {
+            string ret = connection_.sendAdministrativeCommand(command);
+            log_.info(ME, string("Success: " + command + " returned '" + ret + "'"));
+            assert(ret == "OK");
+         }
+         catch(XmlBlasterException &e) {
+            log_.warn(ME, string("XmlBlasterException: ") + e.toXml());
+            assert(0);
+         }
+      }
+      {
+         string command = "get " + global_.getId()+"/?dispatcherActive";
+         log_.info(ME, string("Trying command '" + command + "'"));
+         try {
+            string ret = connection_.sendAdministrativeCommand(command);
+            log_.info(ME, string("Success: " + command + " returned '" + ret + "'"));
+            assert(true == lexical_cast<bool>(ret));
          }
          catch(XmlBlasterException &e) {
             log_.warn(ME, string("XmlBlasterException: ") + e.toXml());

@@ -295,6 +295,8 @@ public:
     * a get() call.
     * @param command for example "client/joe/?dispatcherActive" (a getter) or "client/joe/?dispatcherActive=false" (a setter).
     *        The "__cmd:" is added by us
+    *        To enforce a getter or setter you can write "get client/joe/?dispatcherActive" or
+    *        "set client/joe/?dispatcherActive=false"
     * @return When setting a value you get the returned state, else the retrieved data
     * @throws XmlBlasterException on problems
     */

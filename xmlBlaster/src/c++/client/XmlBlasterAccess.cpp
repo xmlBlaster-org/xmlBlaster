@@ -181,35 +181,39 @@ void XmlBlasterAccess::setCallbackDispatcherActive(bool isActive)
 
 string XmlBlasterAccess::sendAdministrativeCommand(const string &command)
 {
-   if (command.find("=") != string::npos) {
-      string oid = string("__cmd:") + command;
+   bool isGet = command.find("get ") == 0 || command.find("GET ") == 0;
+   bool isSet = command.find("set ") == 0 || command.find("SET ") == 0;
+   const string cmd = ((isGet || isSet)) ? command.substr(4) : command;
+   
+   if (isSet || (!isGet && cmd.find("=") != string::npos)) {
+      string oid = string("__cmd:") + cmd;
       PublishKey  key(global_, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
       PublishQos  qos(global_);
       MessageUnit msgUnit(key, "", qos);
       try {
          PublishReturnQos ret = publish(msgUnit);
-         if (log_.trace()) log_.trace(ME, "Send '" + command + " '");
+         if (log_.trace()) log_.trace(ME, "Send '" + cmd + " '");
          return ret.getState();
       }
       catch (XmlBlasterException &e) {
-         if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
+         if (log_.trace()) log_.trace(ME, "Sending of '" + cmd + " ' failed: " + e.getMessage());
          throw e;
       }
    }
    else {
-      string oid = string("__cmd:") + command;
+      string oid = string("__cmd:") + cmd;
       GetKey getKey(global_);
       getKey.setOid(oid);
       GetQos getQos(global_);
       try {
          vector<MessageUnit> msgVec = get(getKey, getQos);
-         if (log_.trace()) log_.trace(ME, "Send '" + command + " ', got array of size " + lexical_cast<string>(msgVec.size()));
+         if (log_.trace()) log_.trace(ME, "Send '" + cmd + " ', got array of size " + lexical_cast<string>(msgVec.size()));
          if (msgVec.size() == 0)
             return "";
          return msgVec[0].getContentStr();
       }
       catch (XmlBlasterException &e) {
-         if (log_.trace()) log_.trace(ME, "Sending of '" + command + " ' failed: " + e.getMessage());
+         if (log_.trace()) log_.trace(ME, "Sending of '" + cmd + " ' failed: " + e.getMessage());
          throw e;
       }
    }
