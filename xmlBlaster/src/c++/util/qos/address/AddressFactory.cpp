@@ -125,9 +125,17 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
             address_->setCollectTime(XmlHandlerBase::getLongValue((*iter).second));
             found = true;
          }
+         else if (((*iter).first).compare("maxEntries") == 0) {
+            address_->setBurstModeMaxEntries(XmlHandlerBase::getIntValue((*iter).second));
+            found = true;
+         }
+         else if (((*iter).first).compare("maxBytes") == 0) {
+            address_->setBurstModeMaxBytes(XmlHandlerBase::getLongValue((*iter).second));
+            found = true;
+         }
          iter++;
       }
-      if (!found) log_.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
+      if (!found) log_.error(ME, "Missing attributes in login-qos <burstMode>");
       return;
    }
 
