@@ -85,6 +85,7 @@ namespace org {
       virtual ~SocketDriver();
 
    public:
+      org::xmlBlaster::client::protocol::I_ProgressListener *progressListener_;
 
       // methods inherited from org::xmlBlaster::client::protocol::I_CallbackServer
       void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client);
@@ -155,6 +156,11 @@ namespace org {
        * @enforcedBy I_Plugin
        */
       std::string getVersion() { static std::string version = "1.0"; return version; }
+
+      /**
+       * @see org::xmlBlaster::client::protocol::I_CallbackServer#registerProgressListener
+       */
+      org::xmlBlaster::client::protocol::I_ProgressListener* registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener);
    };
 
 }}}}} // namespaces

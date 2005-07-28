@@ -21,6 +21,9 @@ static void myLogger(void *logUserP,
                      XMLBLASTER_LOG_LEVEL level,
                      const char *location, const char *fmt, ...);
 
+//static ::XmlBlasterNumReadFunc callbackProgressListener;  // what's wrong with this?
+static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes);
+
 /**
  * Customized logging output is handled by this method. 
  * <p>
@@ -85,6 +88,24 @@ static void myLogger(void *logUserP,
    }
 }
 
+/**
+ * Access the read socket progress. 
+ * You need to register this function pointer if you want to see the progress of huge messages
+ * on slow connections.
+ */
+static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes) {
+   org::xmlBlaster::client::protocol::socket::SocketDriver *sd =
+         (org::xmlBlaster::client::protocol::socket::SocketDriver *)userP;
+   org::xmlBlaster::util::I_Log& log = sd->getLog();
+   //std::cout << "SocketDriver DEBUG ONLY: Update data progress currBytesRead=" << currBytesRead << " nbytes=" << nbytes << std::endl;
+   //log.error("SocketDriver", "DEBUG ONLY: Update data progress currBytesRead=" +
+   //                          org::xmlBlaster::util::lexical_cast<std::string>(currBytesRead) +
+   //                          " nbytes=" + org::xmlBlaster::util::lexical_cast<std::string>(nbytes));
+   if (sd->progressListener_ != 0) {
+      sd->progressListener_->progress("", currBytesRead, nbytes);
+   }
+}
+
 namespace org {
  namespace xmlBlaster {
   namespace client {
@@ -96,6 +117,7 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster::client::qos;
 
@@ -723,6 +745,21 @@ vector<EraseReturnQos> SocketDriver::erase(const EraseKey& key, const EraseQos& 
       return ret;
    } catch_MACRO("::erase", false)
    return vector<EraseReturnQos>();
+}
+
+I_ProgressListener* SocketDriver::registerProgressListener(I_ProgressListener *listener) {
+   I_ProgressListener *old = this->progressListener_;
+   this->progressListener_ = listener;
+   if (connection_->callbackP != 0) {
+      connection_->callbackP->readFromSocket.numReadUserP = this;
+      if (this->progressListener_ && connection_->callbackP != 0) {
+         connection_->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
+      }
+      else {
+         connection_->callbackP->readFromSocket.numReadFuncP = 0; // Dangerous: not thread safe, TODO: Add a mutex
+      }
+   }
+   return old;
 }
 
 string SocketDriver::usage()

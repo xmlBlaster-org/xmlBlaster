@@ -28,6 +28,7 @@ Comment:   Interface for clients, used by xmlBlaster to send messages back
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <client/I_Callback.h>
+#include <client/protocol/I_ProgressListener.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 
@@ -67,6 +68,14 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
        * @return true if everything went fine.
        */
       virtual bool shutdownCb() = 0;
+
+      /**
+       * Register a listener for to receive information about the progress of incoming data. 
+       * Only one listener is supported, the last call overwrites older calls.
+       * @param listener Your listener, pass 0 to unregister.
+       * @return The previously registered listener or 0
+       */
+      virtual org::xmlBlaster::client::protocol::I_ProgressListener* registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener) = 0;
 };
 
 }}}} // namespaces

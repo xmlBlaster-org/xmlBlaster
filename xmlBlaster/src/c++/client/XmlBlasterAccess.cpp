@@ -250,6 +250,11 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
    return server;
 }
 
+org::xmlBlaster::client::protocol::I_ProgressListener* XmlBlasterAccess::registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener)
+{
+   return (this->cbServer_) ? this->cbServer_->registerProgressListener(listener) : 0;
+}
+
 org::xmlBlaster::util::qos::ConnectQosRef XmlBlasterAccess::getConnectQos() {
    return connectQos_;
 }

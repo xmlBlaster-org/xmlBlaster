@@ -20,6 +20,7 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
+using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -380,6 +381,11 @@ vector<EraseReturnQos> CorbaDriver::erase(const EraseKey& key, const EraseQos& q
       }
       return ret;
    _COMM_CATCH("::erase", false, false)
+}
+
+I_ProgressListener* CorbaDriver::registerProgressListener(I_ProgressListener *listener) {
+   log_.warn("CorbaDriver", "registerProgressListener() is not implemented, we ignore the provided listener.");
+   return 0;
 }
 
 std::string CorbaDriver::usage()

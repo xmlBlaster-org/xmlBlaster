@@ -119,6 +119,10 @@ namespace org {
 
       std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
+      /**
+       * @see org::xmlBlaster::client::protocol::I_CallbackServer#registerProgressListener
+       */
+      org::xmlBlaster::client::protocol::I_ProgressListener* registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener);
 
 
       // following methods are not defined in any parent class

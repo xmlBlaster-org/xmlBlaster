@@ -184,6 +184,14 @@ public:
    org::xmlBlaster::client::protocol::I_CallbackServer* initCbServer(const std::string& loginName, const std::string& type, const std::string& version);
 
    /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   org::xmlBlaster::client::protocol::I_ProgressListener* registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener);
+
+   /**
     * Initializes the little client helper framework for authentication.
     * <p />
     * The first goal is a proper loginQoS xml std::string for authentication.
