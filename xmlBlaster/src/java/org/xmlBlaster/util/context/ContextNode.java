@@ -227,6 +227,41 @@ public final class ContextNode
    }
 
    /**
+    * Parse the given string. 
+    * @param url For example 
+    *             "/xmlBlaster/node/heron/client/joe/session/2"
+    * @return The lowest ContextNode instance, you can navigate upwards with getParent()
+    *         or null.
+    */
+   public static ContextNode valueOf(Global glob, String url) {
+      if (url == null)
+         return null;
+      String lower = url.toLowerCase();
+      if (lower.startsWith("org.xmlblaster") || lower.startsWith("xpath")) {
+         throw new IllegalArgumentException("ContextNode.valueOf(): Unkown schema in '" + url + "'");
+      }
+      if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/")) {
+         String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
+         ContextNode node = ROOT_NODE;
+         for (int i=0; i<toks.length; i++) {
+            String tok = toks[i];
+            if (i == 0 && "xmlBlaster".equals(tok)) {
+               node = ROOT_NODE;
+               continue;
+            }
+            if (i == toks.length-1) {
+               glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
+               break;
+            }
+            node = new ContextNode(glob, tok, toks[i+1], node);
+            i++;
+         }
+         return node;
+      }
+      throw new IllegalArgumentException("ContextNode.valueOf(): not implemented: '" + url + "'");
+   }
+
+   /**
     * Dump state of this object into XML.
     * <br>
     * @return XML dump of ContextNode
