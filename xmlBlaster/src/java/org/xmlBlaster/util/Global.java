@@ -815,11 +815,19 @@ public class Global implements Cloneable
    }
 
    /**
-    * The unique name of this xmlBlaster server instance.
+    * The unique name of this instance.
     * @return Can be null during startup
     */
-   public final ContextNode getContextNode() {
+   public ContextNode getContextNode() {
       return this.contextNode;
+   }
+
+   /**
+    * The unique name of this instance.
+    * @param contextNode The new node id
+    */
+   public void setContextNode(ContextNode contextNode) {
+      this.contextNode = contextNode;
    }
 
    /**
@@ -879,7 +887,7 @@ public class Global implements Cloneable
     * Currently set by enging.Global, used server side only.
     * @param a unique id
     */
-   public void setId(String id) {
+   public synchronized void setId(String id) {
       this.id = id;
       if (this.contextNode == null) {
          this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), ContextNode.ROOT_NODE);
@@ -963,12 +971,16 @@ public class Global implements Cloneable
    /**
     * Get a deep clone (everything is independent from the origin).
     * <p />
-    * The properties and log channels are copied with a deep copy
+    * The properties and log channels and ContextNode are copied with a deep copy
     * manipulating these will not affect the original Global.<br />
     * All other attributes are initialized as on startup.
     */
    protected Object clone() {
-      return new Global(Property.propsToArgs(this.property.getProperties()), false, false);
+      Global g = new Global(Property.propsToArgs(this.property.getProperties()), false, false);
+      if (this.contextNode != null) {
+         g.setContextNode(new ContextNode(g, this.contextNode.getClassName(), this.contextNode.getInstanceName(), this.contextNode.getParent()));
+      }
+      return g;
    }
 
    /**
