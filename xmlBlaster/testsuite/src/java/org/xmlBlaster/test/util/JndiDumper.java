@@ -64,8 +64,11 @@ public class JndiDumper {
     * com.sun.jndi.fscontext.RefFSContextFactory
     * com.ibm.ejs.ns.jndi.CNInitialContextFactory
     * com.ibm.websphere.naming.WsnInitialContextFactory
-    * 
+    *
     * java -Djava.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory org.xmlBlaster.test.util.JndiDumper -startNamingService true -fillNames true
+    *
+    * Dump rmiregistry:
+    * java -Djava.naming.factory.initial=com.sun.jndi.rmi.registry.RegistryContextFactory -Djava.naming.provider.url=rmi://localhost:1099 org.xmlBlaster.test.util.JndiDumper -fillNames false
     * </pre>
     */
    public static void main(String[] args) {
