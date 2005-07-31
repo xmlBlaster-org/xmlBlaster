@@ -231,11 +231,11 @@ public final class ContextNode
     * @param url For example 
     *             "/xmlBlaster/node/heron/client/joe/session/2"
     * @return The lowest ContextNode instance, you can navigate upwards with getParent()
-    *         or null.
+    *         or ContextNode.ROOT_NODE==null.
     */
    public static ContextNode valueOf(Global glob, String url) {
-      if (url == null)
-         return null;
+      if (url == null || url.length() == 0)
+         return ROOT_NODE;
       String lower = url.toLowerCase();
       if (lower.startsWith("org.xmlblaster") || lower.startsWith("xpath")) {
          throw new IllegalArgumentException("ContextNode.valueOf(): Unkown schema in '" + url + "'");
