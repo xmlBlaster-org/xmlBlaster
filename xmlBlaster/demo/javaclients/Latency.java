@@ -8,7 +8,6 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -69,7 +68,7 @@ public class Latency implements I_Callback
 
          SubscribeKey sk = new SubscribeKey(glob, "Latency");
          SubscribeQos sq = new SubscribeQos(glob);
-         String subId = con.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          int numSend = glob.getProperty().get("numSend", 10);
 
@@ -77,7 +76,7 @@ public class Latency implements I_Callback
             startTime = System.currentTimeMillis();
             con.publish(msgUnit);
             while (true) {
-               try { Thread.currentThread().sleep(50); } catch( InterruptedException i) {}
+               try { Thread.sleep(50); } catch( InterruptedException i) {}
                if (messageArrived) {
                   messageArrived = false;
                   break;
@@ -85,7 +84,7 @@ public class Latency implements I_Callback
             }
          }
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait a second to receive update()
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // wait a second to receive update()
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
