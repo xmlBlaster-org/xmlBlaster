@@ -217,7 +217,13 @@ Author:    xmlBlaster@marcelruff.info
                   <td>
                   <a>
                      <xsl:attribute name="href">../api/<xsl:value-of select="translate(.,'.','/')"/>.html</xsl:attribute>
-                     <xsl:value-of select="."/>
+                     <xsl:attribute name="target">others</xsl:attribute>
+                     <xsl:if test="@label=''">
+                        <xsl:value-of select="."/>
+                     </xsl:if>
+                     <xsl:if test="@label!=''">
+                        <xsl:value-of select="@label"/>
+                     </xsl:if>
                   </a>
                   </td>
                 </xsl:otherwise>
