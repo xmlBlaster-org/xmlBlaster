@@ -318,7 +318,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          </td>
        </tr>
        <tr>
-         <td>xmlBlaster/jmx/hostname</td>
+         <td>xmlBlaster/jmx/HtmlAdaptor/hostname</td>
          <td>String</td>
          <td>no</td>
          <td>localhost</td>
@@ -327,7 +327,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          </td>
        </tr>
        <tr>
-         <td>xmlBlaster/jmx/port</td>
+         <td>xmlBlaster/jmx/HtmlAdaptor/port</td>
          <td>int</td>
          <td>no</td>
          <td>8082</td>
@@ -384,8 +384,14 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
    </todo>
 
    <see type="REQ">admin.commands</see>
+   <see type="API" label="Node specific usage details">org.xmlBlaster.engine.admin.I_AdminNode</see>
+   <see type="API" label="Subject specific usage details">org.xmlBlaster.engine.admin.I_AdminSubject</see>
+   <see type="API" label="Session specific usage details">org.xmlBlaster.engine.admin.I_AdminSession</see>
+   <see type="API" label="Topic specific usage details">org.xmlBlaster.engine.admin.I_AdminTopic</see>
+   <see type="API" label="Subscription specific usage details">org.xmlBlaster.engine.admin.I_AdminSubscription</see>
+   <see type="API" label="Queue specific usage details">org.xmlBlaster.util.admin.I_AdminQueue</see>
    <see type="INTERNET" label="JMX homepage">http://java.sun.com/products/JavaManagement/index.jsp</see>
-   <see type="INTERNET" label="JMX tutorial">http://java.sun.com/j2se/1.5.0/docs/guide/jmx/tutorial/tutorialTOC.html</see>
+   <see type="INTERNET" label="JMX guide">http://java.sun.com/j2se/1.5.0/docs/guide/jmx/</see>
    <see type="INTERNET" label="JMX tips">http://java.sun.com/developer/EJTechTips/2005/tt0222.html#1</see>
    <see type="INTERNET" label="JMX tech-article">http://java.sun.com/developer/technicalArticles/J2SE/jmx.html</see>
    <see type="INTERNET" label="JMX Understand jconsole">http://java.sun.com/developer/technicalArticles/J2SE/jconsole.html</see>
