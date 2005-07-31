@@ -327,7 +327,7 @@ public class JmxWrapper
 
       if (glob.getProperty().get("xmlBlaster/jmx/HtmlAdaptor", false)) {
          try {
-            String hostname = glob.getProperty().get("xmlBlaster/jmx/hostname", glob.getLocalIP());
+            String hostname = glob.getProperty().get("xmlBlaster/jmx/HtmlAdaptor/hostname", glob.getLocalIP());
             int port = glob.getProperty().get("xmlBlaster/jmx/HtmlAdaptor/port", 8082);
             String loginName = glob.getProperty().get("xmlBlaster/jmx/HtmlAdaptor/loginName", (String)null);
             String password = glob.getProperty().get("xmlBlaster/jmx/HtmlAdaptor/password", "secret");
@@ -418,7 +418,8 @@ public class JmxWrapper
     */
    public ObjectName registerMBean(ContextNode contextNode, Object mbean) {
       if (this.mbeanServer == null) return null;
-      if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getRelativeName(ContextNode.SCHEMA_JMX) + ")");
+      if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
+      //Thread.dumpStack();
 
       String hierarchy = (contextNode == null) ? 
                             ("org.xmlBlaster:type=" + this.glob.getId()) :
