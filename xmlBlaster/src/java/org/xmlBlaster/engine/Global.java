@@ -164,6 +164,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
+    * The unique name of this xmlBlaster server instance.
+    * @return Can be null during startup
+    */
+   public final ContextNode getContextNode() {
+      return super.contextNode;
+   }
+
+   /**
     * Unique id of the xmlBlaster server, changes on each restart. 
     * If 'node/heron' is restarted, the instanceId changes.
     * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
