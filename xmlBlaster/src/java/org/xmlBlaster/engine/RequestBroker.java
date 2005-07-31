@@ -13,7 +13,6 @@ import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.key.KeyData;
@@ -34,7 +33,6 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -58,8 +56,6 @@ import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
-import org.xmlBlaster.engine.persistence.PersistencePluginManager;
-import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.authentication.Authenticate;
@@ -68,7 +64,6 @@ import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
-import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 
 import java.util.*;
@@ -99,8 +94,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
    private String lastWarning = "";
    private String lastError = "";
-
-   private PersistencePluginManager pluginManager = null;
 
    /** the authentication service */
    private Authenticate authenticate = null;          // The authentication service
@@ -141,11 +134,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    private final Map subscriptionListenerMap = Collections.synchronizedMap(new TreeMap());
 
    /**
-    * For listeners who want to be informed about erase() of messages.
-    */
-   private final Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
-
-   /**
     * This is a handle on the big DOM tree with all XmlKey keys (all message meta data)
     */
    private BigXmlKeyDOM bigXmlKeyDOM = null;
@@ -184,9 +172,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    // Enforced by I_AdminNode
    /** Incarnation time of this object instance in millis */
    private long startupTime;
-   private long numUpdates = 0L;
-   private int maxSessions;
-
+   
    /** State during construction */
    private static final int UNDEF = -1;
    private static final int ALIVE = 0;
@@ -232,7 +218,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.unsecureSessionInfo = authenticate.unsecureCreateSession(connectQos);
 
       try {
-         CommandManager manager = glob.getCommandManager(this.unsecureSessionInfo);
+         glob.getCommandManager(this.unsecureSessionInfo);
       }
       catch(XmlBlasterException e) {
          log.error(ME, e.toString());
@@ -247,8 +233,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       accessPluginManager = new AccessPluginManager(glob);
 
       publishPluginManager = new PublishPluginManager(glob);
-
-      pluginManager = new PersistencePluginManager(glob);
 
       this.clientSubscriptions = new ClientSubscriptions(glob, this, authenticate);
 
@@ -1110,7 +1094,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
          TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
          if (topicHandler == null || topicHandler.getMsgKeyData() == null) {
-            return new KeyData[] { (KeyData)null }; // add arr[0]=null as a place holder
+            return new KeyData[] { null }; // add arr[0]=null as a place holder
          }
          // return new KeyData[] { topicHandler.getMsgKeyData() };
          return new KeyData[] { queryKeyData };
@@ -1170,7 +1154,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
          TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
          if (topicHandler == null) {
-            return new TopicHandler[] { (TopicHandler)null }; // add arr[0]=null as a place holder
+            return new TopicHandler[] { null }; // add arr[0]=null as a place holder
          }
          return new TopicHandler[] { topicHandler };
       }
@@ -1471,18 +1455,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
          return publish(sessionInfo, msgUnit, true);
       }
-   }
-
-   /**
-    * Internal publishing helper.
-    */
-   private String[] publish(SessionInfo sessionInfo, MsgUnit[] msgUnitArr) throws XmlBlasterException
-   {
-      String[] retArr = new String[msgUnitArr.length];
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         retArr[ii] = publish(sessionInfo, msgUnitArr[ii]);
-      }
-      return retArr;
    }
 
    /**
@@ -1872,7 +1844,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             oidSet.add(topicHandler.getUniqueKey());
             if (eraseQos.getData().containsHistoryQos()) {
                if (log.TRACE) log.trace(ME, "Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
-               long num = topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
+               topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
             }
             else { // erase the complete topic
                try {
@@ -2231,11 +2203,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       final long exitSleep = glob.getProperty().get("xmlBlaster.exit.delay", 2000L);
       Timeout exitTimeout = new Timeout("XmlBlaster ExitTimer");
-      Timestamp timeoutHandle = exitTimeout.addTimeoutListener(new I_Timeout() {
+      exitTimeout.addTimeoutListener(new I_Timeout() {
             public void timeout(Object userData) {
                log.info(ME, "Administrative exit(" + exitVal + ") after exit-timeout of " + exitSleep + " millis.");
                try {
-                  int errors = glob.getRunlevelManager().changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
+                  glob.getRunlevelManager().changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
                }
                catch(Throwable e) {
                   log.warn(ME, "Administrative exit(" + exitVal + ") problems: " + e.toString());
