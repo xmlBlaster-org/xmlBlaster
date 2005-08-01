@@ -282,22 +282,6 @@ public class Global implements Cloneable
     * Start xmlBlaster with <code>java -Dcom.sun.management.jmxremote org.xmlBlaster.Main</code>
     * You can access xmlBlaster from 'jconsole' delivered with JDK1.5 or above.
     * The root node is always the cluster node id.
-    * @param name the instance for example "client/joe/-1"
-    * @param mbean the MBean object instance 
-    * @return The object name used to register or null on error
-    * @since 1.0.4
-    * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
-    * @deprecated Use ContextNode variant
-    */
-   public ObjectName registerMBean(String name, Object mbean) throws XmlBlasterException {
-      return getJmxWrapper().registerMBean(name, mbean);
-   }
-
-   /**
-    * JMX support. 
-    * Start xmlBlaster with <code>java -Dcom.sun.management.jmxremote org.xmlBlaster.Main</code>
-    * You can access xmlBlaster from 'jconsole' delivered with JDK1.5 or above.
-    * The root node is always the cluster node id.
     * @param contextNode Used to retrieve a unique instance name for the given MBean
     * @param mbean the MBean object instance 
     * @return The object name used to register or null on error
