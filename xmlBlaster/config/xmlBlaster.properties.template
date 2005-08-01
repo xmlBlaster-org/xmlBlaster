@@ -210,6 +210,20 @@ JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
                   colNamePrefix=XB_,\
                   dbAdmin=true
 
+# Settings for the persistence plugins (StoragePlugin and QueuePlugin)
+# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar):
+JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                  url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
+                  user=sa,\
+                  password=xxx,\
+                  connectionPoolSize=5,\
+                  connectionBusyTimeout=90000,\
+                  maxWaitingThreads=300,\
+                  tableNamePrefix=XB_,\
+                  entriesTableName=ENTRIES,\
+                  colNamePrefix=XB_,\
+                  dbAdmin=true
+
 # for HSQLDB (the default embedded database)
 # DB is created in users home tmp directory, e.g. "/home/joe/tmp/xmlBlaster_192_168_1_4_3412.*"
 # The term "$_{xmlBlaster_uniqueId}" is replaced by JdbcConnectionPool.java to a unique ID
@@ -263,6 +277,7 @@ StoragePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
 StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
@@ -282,6 +297,7 @@ QueuePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[ldbc]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[SQLite]}
 
@@ -333,6 +349,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    ORG.as220.tinySQL.dbfFileDriver:\
                    oracle.jdbc.driver.OracleDriver:\
                    com.microsoft.jdbc.sqlserver.SQLServerDriver:\
+                   com.microsoft.sqlserver.jdbc.SQLServerDriver:\
                    com.mysql.jdbc.Driver:\
                    org.postgresql.Driver:\
                    org.firebirdsql.jdbc.FBDriver:\
@@ -347,6 +364,7 @@ JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
 JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
 JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
+JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
 JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boolean=char(1),blob=blob,blobVarName=ablob,keyAttr=not null
 
 #------------------------------------------------------------------------------
