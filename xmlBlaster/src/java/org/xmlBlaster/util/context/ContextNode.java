@@ -44,6 +44,8 @@ public final class ContextNode
    public final static String SCHEMA_XPATH = "xpath";
    /** For JMX conforming ObjectName string */
    public final static String SCHEMA_JMX = "jmx";
+   /** For JMX conforming ObjectName string, "org.xmlBlaster:" is our JMX domain */
+   public final static String SCHEMA_JMX_DOMAIN = "org.xmlBlaster";
    /** For URL conforming string */
    public final static String SCHEMA_URL = "url";
 
@@ -69,6 +71,12 @@ public final class ContextNode
       this.parent = parent;
    }
 
+   /*
+   public Global getGlobal() {
+      return this.glob;
+   }
+   */
+
    public String getClassName() {
       return this.className;
    }
@@ -89,6 +97,44 @@ public final class ContextNode
     */
    public ContextNode getParent() {
       return this.parent;
+   }
+
+   /**
+    * Walk up the hierarchy and return the matching ContextNode. 
+    * @param className The context node to retrieve
+    * @return The parent node or null
+    */
+   public ContextNode getParent(String className) {
+      if (className == null) {
+         return null;
+      }
+      if (className.equals(this.getClassName())) {
+         return this;
+      }
+      if (this.parent != null ) {
+         return this.parent.getParent(className);
+      }
+      return null;
+   }
+
+   /**
+    * Walk up the hierarchy until we find the given className and rename the instance name. 
+    *
+    * For example rename
+    *  "org.xmlBlaster:nodeClass=node,node=clientSUB1,clientClass=connection,connection=jack"
+    * to
+    *  "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack"
+    * 
+    * @param newParentNode The new parent name to use, e.g. "heron"
+    */
+   public void changeParentName(final ContextNode newParentNode) {
+      if (newParentNode == null) {
+         return;
+      }
+      ContextNode found = getParent(newParentNode.getClassName());
+      if (found != null) {
+         found.setInstanceName(newParentNode.getInstanceName());
+      }
    }
 
    public void addChild(ContextNode child) {
@@ -139,7 +185,7 @@ public final class ContextNode
          // "org.xmlBlaster:nodeClass=node,node=heron,clientClass=client,client=joe,queueClass=queue,queue=subject665,entryClass=entry,entry=1002"
          // like this jconsole creates a nice tree (see JmxWrapper.java for a discussion)
          if (this.parent == ROOT_NODE) {
-            return sb.append("org.xmlBlaster:").append("nodeClass=node,node=").append(ObjectName.quote(this.instanceName)).toString();
+            return sb.append(SCHEMA_JMX_DOMAIN).append(":").append("nodeClass=node,node=").append(ObjectName.quote(this.instanceName)).toString();
          }
          sb.append(this.parent.getAbsoluteName(schema));
          sb.append(",").append(this.className).append("Class=").append(this.className);
@@ -196,7 +242,7 @@ public final class ContextNode
       StringBuffer sb = new StringBuffer(256);
       if (SCHEMA_JMX.equalsIgnoreCase(schema)) {
          // "org.xmlBlaster:clientClass=client,client=joe"
-         sb.append("org.xmlBlaster:");
+         sb.append(SCHEMA_JMX_DOMAIN).append(":");
          sb.append(this.className).append("Class=").append(this.className);
          if (this.instanceName != null) {
             sb.append(",").append(this.className).append("=").append(ObjectName.quote(this.instanceName));
@@ -237,7 +283,7 @@ public final class ContextNode
       if (url == null || url.length() == 0)
          return ROOT_NODE;
       String lower = url.toLowerCase();
-      if (lower.startsWith("org.xmlblaster") || lower.startsWith("xpath")) {
+      if (lower.startsWith("xpath")) {
          throw new IllegalArgumentException("ContextNode.valueOf(): Unkown schema in '" + url + "'");
       }
       if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/")) {
@@ -255,6 +301,30 @@ public final class ContextNode
             }
             node = new ContextNode(glob, tok, toks[i+1], node);
             i++;
+         }
+         return node;
+      }
+      else if (url.startsWith(SCHEMA_JMX_DOMAIN+":")) { // SCHEMA_JMX
+         // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
+    	 int index = url.indexOf(":");
+         String tmp = url.substring(index+1);
+         String[] toks = org.jutils.text.StringHelper.toArray(tmp, ",");
+         ContextNode node = ROOT_NODE;
+         for (int i=0; i<toks.length; i++) {
+            index = toks[i].indexOf("=");
+            String className = (index > 0) ? toks[i].substring(index+1) : null;
+            if (className.startsWith("\""))
+            	className = className.substring(1,className.length()-1);
+            if (i == toks.length-1) {
+               glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class '" + className + "'");
+               break;
+            }
+            index = toks[i+1].indexOf("=");
+            String instanceName = (index > 0) ? toks[i+1].substring(index+1) : null;
+            if (instanceName.startsWith("\""))
+            	instanceName = instanceName.substring(1,instanceName.length()-1);
+            i++;
+            node = new ContextNode(glob, className, instanceName, node);
          }
          return node;
       }
