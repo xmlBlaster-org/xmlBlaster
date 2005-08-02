@@ -36,9 +36,9 @@ public final class ContextNode
    /** Use to mark a topic */
    public final static String TOPIC_MARKER_TAG = "topic";
    /** Use to mark a system and configuration properties and command line arguments */
-   public final static String TOPIC_SYSPROP_TAG = "sysprop";
+   public final static String SYSPROP_MARKER_TAG = "sysprop";
    /** Use to mark logging settings */
-   public final static String TOPIC_LOGGING_TAG = "logging";
+   public final static String LOGGING_MARKER_TAG = "logging";
 
    /** For XPath conforming query */
    public final static String SCHEMA_XPATH = "xpath";
@@ -55,7 +55,7 @@ public final class ContextNode
    private ArrayList childs;
 
    //Placeholder for top level node
-   public final static ContextNode ROOT_NODE = (ContextNode)null; // new ContextNode(null, "/xmlBlaster", "", (ContextNode)null);
+   public final static ContextNode ROOT_NODE = null; // new ContextNode(null, "/xmlBlaster", "", (ContextNode)null);
 
    /**
     * @param className The tag name like 'node' (ContextNode.CLUSTER_MARKER_TAG) or 'client' (ContextNode.SUBJECT_MARKER_TAG)
@@ -124,6 +124,31 @@ public final class ContextNode
     *  "org.xmlBlaster:nodeClass=node,node=clientSUB1,clientClass=connection,connection=jack"
     * to
     *  "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack"
+    *
+    * Checks the current node as well.
+    * 
+    * @param className The class to change, e.g. "node"
+    * @param instanceName The new name to use, e.g. "heron"
+    */
+   public void changeParentName(String className, String instanceName) {
+      if (className == null) {
+         return;
+      }
+      ContextNode found = getParent(className);
+      if (found != null) {
+         found.setInstanceName(instanceName);
+      }
+   }
+
+   /**
+    * Walk up the hierarchy until we find the given className and rename the instance name. 
+    *
+    * For example rename
+    *  "org.xmlBlaster:nodeClass=node,node=clientSUB1,clientClass=connection,connection=jack"
+    * to
+    *  "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack"
+    *
+    * Checks the current node as well.
     * 
     * @param newParentNode The new parent name to use, e.g. "heron"
     */
@@ -306,7 +331,7 @@ public final class ContextNode
       }
       else if (url.startsWith(SCHEMA_JMX_DOMAIN+":")) { // SCHEMA_JMX
          // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
-    	 int index = url.indexOf(":");
+         int index = url.indexOf(":");
          String tmp = url.substring(index+1);
          String[] toks = org.jutils.text.StringHelper.toArray(tmp, ",");
          ContextNode node = ROOT_NODE;
@@ -314,16 +339,15 @@ public final class ContextNode
             index = toks[i].indexOf("=");
             String className = (index > 0) ? toks[i].substring(index+1) : null;
             if (className.startsWith("\""))
-            	className = className.substring(1,className.length()-1);
-            if (i == toks.length-1) {
-               glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class '" + className + "'");
-               break;
-            }
-            index = toks[i+1].indexOf("=");
-            String instanceName = (index > 0) ? toks[i+1].substring(index+1) : null;
-            if (instanceName.startsWith("\""))
-            	instanceName = instanceName.substring(1,instanceName.length()-1);
-            i++;
+                className = className.substring(1,className.length()-1);
+            String instanceName = null;
+                if (i < toks.length-1) {
+               index = toks[i+1].indexOf("=");
+               instanceName = (index > 0) ? toks[i+1].substring(index+1) : null;
+               if (instanceName.startsWith("\""))
+                instanceName = instanceName.substring(1,instanceName.length()-1);
+               i++;
+                }
             node = new ContextNode(glob, className, instanceName, node);
          }
          return node;
