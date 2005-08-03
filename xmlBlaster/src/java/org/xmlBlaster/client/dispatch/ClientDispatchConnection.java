@@ -19,7 +19,7 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -117,36 +117,52 @@ public final class ClientDispatchConnection extends DispatchConnection
          publish(msgArr_);
          return;
       }
-
+      
       for (int ii=0; ii<msgArr_.length; ii++) {
          try {
             if (MethodName.PUBLISH_ONEWAY == msgArr_[ii].getMethodName()) {
                MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
                publish(tmp);
+               //Not for oneway
+               //if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.PUBLISH == msgArr_[ii].getMethodName()) {
                MsgQueueEntry[] tmp = new MsgQueueEntry[] { msgArr_[ii] };
                publish(tmp);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.GET == msgArr_[ii].getMethodName()) {
                get(msgArr_[ii]);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.SUBSCRIBE == msgArr_[ii].getMethodName()) {
                subscribe(msgArr_[ii]);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.UNSUBSCRIBE == msgArr_[ii].getMethodName()) {
                unSubscribe(msgArr_[ii]);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.ERASE == msgArr_[ii].getMethodName()) {
                erase(msgArr_[ii]);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.CONNECT == msgArr_[ii].getMethodName()) {
                connect(msgArr_[ii]);
                this.connectEntry = msgArr_[ii]; // remember it
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else if (MethodName.DISCONNECT == msgArr_[ii].getMethodName()) {
                this.connectEntry = null;
                disconnect(msgArr_[ii]);
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(msgArr_[ii]);
             }
             else {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Message type '" + msgArr_[ii].getEmbeddedType() + "' is not implemented");
@@ -159,9 +175,9 @@ public final class ClientDispatchConnection extends DispatchConnection
                log.warn(ME, "Server changed sessionId, trying reconnect now: " + e.toString());
                //reconnect();   // loops?!
                connect(this.connectEntry);
-               String key = glob.getId() + "/ConnectReturnQos";
-               if (log.TRACE) log.trace(ME, "Server changed sessionId to " + this.connectReturnQos.getServerInstanceId() + ", storing key=" + key);
-               glob.addObjectEntry(key, this.connectReturnQos); // Transport back
+               I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+               if (postSendListener != null) postSendListener.postSend(this.connectEntry);
+               if (log.TRACE) log.trace(ME, "Server changed sessionId to " + this.connectReturnQos.getServerInstanceId());
                ii--;
             }
             else {
@@ -507,9 +523,13 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.connectReturnQos = null;
       try {
          this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
-
-         String key = glob.getId() + "/ConnectReturnQos";
-         glob.addObjectEntry(key, this.connectReturnQos); // Transport back if reconnect was triggered from timer or locally
+         if (this.connectEntry != null) {
+            if (this.connectEntry.wantReturnObj()) {
+               this.connectEntry.setReturnObj(this.connectReturnQos);
+            }
+            I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+            if (postSendListener != null) postSendListener.postSend(this.connectEntry);
+         }
       }
       catch (XmlBlasterException e) {
          log.error(ME, "reconnect(): Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());

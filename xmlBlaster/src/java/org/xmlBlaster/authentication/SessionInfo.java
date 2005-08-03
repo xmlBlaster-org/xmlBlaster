@@ -7,8 +7,6 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import java.util.ArrayList;
-
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
@@ -52,7 +50,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 
-import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 //import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
 import org.xmlBlaster.util.ReentrantLock;
@@ -107,7 +105,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private final Object EXPIRY_TIMER_MONITOR = new Object();
    private final SessionInfoProtector sessionInfoProtector;
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private JmxMBeanHandle mbeanHandle;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -197,7 +195,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
 
       // JMX register "client/joe/1"
-      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this.sessionInfoProtector);
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this.sessionInfoProtector);
    }
 
    public final boolean isAlive() {
@@ -308,7 +306,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
-      this.glob.unregisterMBean(this.mbeanObjectName);
+      this.glob.unregisterMBean(this.mbeanHandle);
       this.lock.lock();
       try {
          this.isShutdown = true;
@@ -857,8 +855,13 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The file names of the dumped messages
     */
-   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      return this.glob.peekQueueMessagesToFile(this.sessionQueue, numOfEntries, path, "callback");
+   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception {
+      try {
+         return this.glob.peekQueueMessagesToFile(this.sessionQueue, numOfEntries, path, "callback");
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    }
 
    /**

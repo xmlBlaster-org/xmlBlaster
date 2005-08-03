@@ -23,6 +23,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -46,7 +47,6 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -59,6 +59,7 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 /**
  * This is the default implementation of the java client side remote access to xmlBlaster. 
@@ -71,15 +72,19 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  * </p>
  */
 public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
-                   implements I_XmlBlasterAccess, I_ConnectionStatusListener, XmlBlasterAccessMBean
+                   implements I_XmlBlasterAccess, I_ConnectionStatusListener, I_PostSendListener, XmlBlasterAccessMBean
 {
    private String ME = "XmlBlasterAccess";
    private ContextNode contextNode;
-   /** The cluster node id (name) to which we want to connect, needed for nicer logging, can be null */
-   private String serverNodeId = "xmlBlaster";
+   /**
+    * The cluster node id (name) to which we want to connect, needed for nicer logging, typically null
+    * Can be set manually from outside before connect
+    */
+   private String serverNodeId = null;
    private ConnectQos connectQos;
    /** The return from connect() */
    private ConnectReturnQos connectReturnQos;
+   private long jmxPublicSessionId;
    /** Client side queue during connection failure */
    private I_Queue clientQueue;
    /** The dispatcher framework **/
@@ -111,7 +116,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    private Timestamp sessionRefreshTimeoutHandle;
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private JmxMBeanHandle mbeanHandle;
    /** First call to connect() in millis */
    private long startupTime;
 
@@ -138,7 +143,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          // it is a engine.Global!
          throw new IllegalArgumentException("XmlBlasterAccess can't be created with a engine.Global, please clone a org.xmlBlaster.util.Global to create me");
       }
-      setServerNodeId(super.glob.getId());
       this.updateDispatcher = new UpdateDispatcher(super.glob);
    }
 
@@ -153,10 +157,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public XmlBlasterAccess(String[] args) {
       super(new Global(args, true, false));
-      //if (glob.wantsHelp()) {
-      //   usage();
-      //}
-      setServerNodeId(super.glob.getId());
       this.updateDispatcher = new UpdateDispatcher(super.glob);
    }
 
@@ -166,6 +166,18 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public synchronized void registerConnectionListener(I_ConnectionStateListener connectionListener) {
       if (log.CALL) log.call(ME, "Initializing registering connectionListener");
       this.connectionListener = connectionListener;
+   }
+
+   /**
+    * Called after a messages is send, but not for oneway messages. 
+    * Enforced by I_PostSendListener 
+    * @param msgQueueEntry, includes the returned QoS
+    */
+   public final void postSend(MsgQueueEntry msgQueueEntry) {
+      if (msgQueueEntry.getMethodName() == MethodName.CONNECT) {
+         this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
+         setContextNodeId(this.connectReturnQos.getServerInstanceId());
+      }
    }
 
    /**
@@ -181,6 +193,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler) {
       this.msgErrorHandler = msgErrorHandler;
+   }
+
+   public String getConnectionQueueId() {
+      if (this.clientQueue != null) {
+         return this.clientQueue.getStorageId().toString();
+      }
+      return "";
    }
 
    /**
@@ -238,12 +257,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                  this.connectQos.getData().getClientPluginVersion());
 
             this.ME = "XmlBlasterAccess-" + getId();
-            this.contextNode = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, 
-                                       getId(), this.glob.getContextNode());
+            setContextNodeId(getServerNodeId());
 
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
-               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, getId());
+               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, getId()+System.currentTimeMillis()+Global.getCounter()); //getContextNode().toString());
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
@@ -259,6 +277,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses());
 
+               this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
+               
                if (log.TRACE) log.trace(ME, "Switching to synchronous delivery mode ...");
                this.dispatchManager.trySyncMode(true);
 
@@ -291,7 +311,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       if (isAlive()) {
-         checkForNewConnectReturnQos();
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
@@ -316,12 +335,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       if (this.connectReturnQos != null) {
-         setServerNodeId(this.connectReturnQos.getServerInstanceId());
-      }
-
-      // JMX register "client/joe/1"
-      if (this.mbeanObjectName == null) {
-         this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
+         setContextNodeId(this.connectReturnQos.getServerInstanceId());
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");
@@ -479,7 +493,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       this.disconnectInProgress = true;
 
-      this.glob.unregisterMBean(this.mbeanObjectName);
+      this.glob.unregisterMBean(this.mbeanHandle);
 
       if (disconnectQos == null)
          disconnectQos = new DisconnectQos(glob);
@@ -600,20 +614,106 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Allows to set the node name for nicer logging.
+    * Typically used by cluster clients and not by ordinary clients 
+    * @param serverNodeId For example "/node/heron/instanceId/1233435" or "/node/heron"
     */
    public void setServerNodeId(String nodeId) {
-      this.serverNodeId = nodeId;
+      if (nodeId == null) return;
+      if (nodeId.startsWith("/node") || nodeId.startsWith("/xmlBlaster/node"))
+         this.serverNodeId = nodeId;
+      else
+         this.serverNodeId = "/node/" + nodeId;
    }
-
+   
    /**
     * The cluster node id (name) to which we want to connect.
     * <p />
     * Needed only for nicer logging when running in a cluster.<br />
-    * Is configurable with "-server.node.id golan"
-    * @return e.g. "golan", defaults to "xmlBlaster"
+    * Is configurable with "-server.node.id golan" until a successful connect
+    * @return e.g. "/node/golan" or /xmlBlaster/node/heron"
     */
    public String getServerNodeId() {
-      return this.serverNodeId;
+      if (this.contextNode != null) return this.contextNode.getParent(ContextNode.CLUSTER_MARKER_TAG).getAbsoluteName();
+      if (this.serverNodeId != null) return this.serverNodeId;
+      return this.glob.getInstanceId();
+   }
+
+   /**
+    * Set my identity. 
+    * @param serverNodeId For example "/node/heron/instanceId/1233435" or "/node/heron"
+    */
+   private void setContextNodeId(String nodeId) {
+      if (nodeId == null) return;
+      if (nodeId.indexOf("/") == -1) nodeId = "/node/"+nodeId; // add CLUSTER_MARKER_TAG to e.g. "/node/avalon.mycomp.com"
+
+      String oldClusterObjectName = "";      // e.g. "org.xmlBlaster:nodeClass=node,node=clientSUB1"
+      String oldServerNodeInstanceName = ""; // e.g. "clientSUB1"
+      ContextNode clusterContext = null;
+      if (this.contextNode != null) {
+         // same instance as glob.getContextNode():
+         clusterContext = this.contextNode.getParent(ContextNode.CLUSTER_MARKER_TAG);
+         oldServerNodeInstanceName = clusterContext.getInstanceName();
+         oldClusterObjectName = clusterContext.getAbsoluteName(ContextNode.SCHEMA_JMX);
+      }
+
+      // Verify the publicSessionId ...
+      try {
+         if (this.mbeanHandle != null && this.jmxPublicSessionId != getPublicSessionId()) {
+            /*int count = */this.glob.getJmxWrapper().renameMBean(this.mbeanHandle.getObjectInstance().getObjectName().toString(),
+                           ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId());
+            this.mbeanHandle.getContextNode().setInstanceName(""+getPublicSessionId());
+            this.jmxPublicSessionId = getPublicSessionId();
+         }
+         if (this.mbeanHandle == null &&
+             this.contextNode != null &&
+             !this.contextNode.getInstanceName().equals(""+getPublicSessionId())) {
+            this.contextNode.setInstanceName(""+getPublicSessionId());
+         }
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Ignoring problem during JMX session registration: " + e.toString());
+      }
+      
+      // parse new cluster node name ...
+      ContextNode tmp = ContextNode.valueOf(this.glob, nodeId);
+      ContextNode tmpClusterContext = (tmp==null)?null:tmp.getParent(ContextNode.CLUSTER_MARKER_TAG);
+      if (tmpClusterContext == null) {
+         log.error(ME, "Ignoring unknown serverNodeId '" + nodeId + "'");
+         return;
+      }
+      String newServerNodeInstanceName = tmpClusterContext.getInstanceName(); // e.g. "heron"
+
+      if (oldServerNodeInstanceName.equals(newServerNodeInstanceName)) {
+         return; // nothing to do, same cluster name
+      }
+
+      this.glob.getContextNode().setInstanceName(newServerNodeInstanceName);
+      if (clusterContext == null) {
+         clusterContext = this.glob.getContextNode();
+         if (getLoginName() != null && getLoginName().length() > 0) {
+            ContextNode contextNodeSubject = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, getLoginName(), clusterContext);
+            this.contextNode = new ContextNode(this.glob, ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId(), contextNodeSubject);
+         }
+      }
+      else {
+         clusterContext.setInstanceName(newServerNodeInstanceName);
+      }
+      
+      try {
+         // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
+         // For example our connectionQueue or our plugins
+         if (oldClusterObjectName.length() > 0) {
+            int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, newServerNodeInstanceName);
+            if (log.TRACE) log.trace(ME, "Renamed " + num + " jmx nodes to new '" + nodeId + "'");
+         }
+
+         if (this.mbeanHandle == null && this.contextNode != null) {   // "org.xmlBlaster:nodeClass=node,node=heron"
+            this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+         }         
+      }
+      catch (XmlBlasterException e) {
+          log.warn(ME, "Ignoring problem during JMX registration: " + e.toString());
+       }
    }
 
    /**
@@ -625,52 +725,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (log.TRACE) log.trace(ME, "Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
       }
-      /* is currently handled in ClientDispatchConnection.java:
-      catch (XmlBlasterException e) {
-         if (this.connectQos != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
-            // Happens if the client was killed in the server by an admin task
-            // and has tried to reconnect with the old sessionId
-            MsgQueueConnectEntry ce = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
-            this.connectReturnQos = (ConnectReturnQos)queueMessage(ce);
-            this.connectReturnQos.getData().setInitialConnectionState(this.dispatchManager.getDispatchConnectionsHandler().getState());
-
-            this.clientQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-            if (log.TRACE) log.trace(ME, "Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
-            return entry.getReturnObj();
-         }
-         else {
-            throw e;
-         }
-      }
-      */
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME, e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
          //msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, null, xmlBlasterException));
-         throw xmlBlasterException; // internal errors or not in failsafe mode: throw back to client
-      }
-   }
-
-   private void queueMessage(MsgQueueEntry[] entries) throws XmlBlasterException {
-      try {
-         this.clientQueue.put(entries, I_Queue.USE_PUT_INTERCEPTOR);
-      }
-      /* is currently handled in ClientDispatchConnection.java:
-      catch (XmlBlasterException e) {
-         if (this.connectEntry != null && e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED)) {
-            // Happens if the client was killed in the server by an admin task
-            // and has tried to reconnect with the old sessionId
-            connect(this.connectEntry);
-         }
-         else {
-            throw e;
-         }
-      }
-      */
-      catch (Throwable e) {
-         if (log.TRACE) log.trace(ME, e.toString());
-         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
-         // this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entries, null, xmlBlasterException));
          throw xmlBlasterException; // internal errors or not in failsafe mode: throw back to client
       }
    }
@@ -935,7 +993,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                log.error(ME, "Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
             }
          }
-         checkForNewConnectReturnQos();
          return;
       }
 
@@ -947,25 +1004,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          cleanupForNewServer();
       }
 
-      checkForNewConnectReturnQos();
-
       if (this.connectionListener != null) {
          this.connectionListener.reachedAlive(oldState, this);
-      }
-   }
-
-   /**
-    * The ClientDispatchConnection.java may have done a new connect()
-    */
-   private void checkForNewConnectReturnQos() {
-      String key = glob.getId() + "/ConnectReturnQos";
-      Object obj = glob.getObjectEntry(key); // New ConnectReturnQos ?
-      if (obj != null) {
-         this.connectReturnQos = (ConnectReturnQos)obj;
-         glob.removeObjectEntry(key);
-      }
-      if (this.connectReturnQos != null) {
-         setServerNodeId(this.connectReturnQos.getServerInstanceId());
       }
    }
 
@@ -1140,7 +1180,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public synchronized final String getLoginName() {
       SessionName sn = getSessionName();
-      if (sn == null) return "";
+      if (sn == null) return "xmlBlasterClient";
       return sn.getLoginName();
       /*
       //if (this.connectReturnQos != null)
@@ -1563,7 +1603,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             }
 
             int numGetCached = 4;
-            SynchronousCache syncCache = xmlBlasterAccess.createSynchronousCache(100);
+            xmlBlasterAccess.createSynchronousCache(100);
             for (int i=0; i<numGetCached; i++) {
                log.info(ME, "Hit a key to getCached '" + oid + "' #"+i+"/"+numGetCached);
                try { System.in.read(); } catch(java.io.IOException e) {}

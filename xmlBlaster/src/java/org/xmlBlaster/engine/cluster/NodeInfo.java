@@ -190,6 +190,7 @@ public final class NodeInfo
       this.remoteGlob.setBootstrapAddress(getAddress());
 
       // Shall we allow a configurable user name for cluster slave logins?
+      // TODO: Change this "/1" to use a SessionName instance:
       data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
       // The password is from the environment -passwd or more specific -passwd[heron]
       // Or from the XML securityQos
@@ -320,6 +321,7 @@ public final class NodeInfo
                throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
                          "Can't connect to node '" + getId() + "', address is null");
             }
+            // TODO: Change this "/1" to use a SessionName instance:
             data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
             // The password is from the environment -passwd or more specific -passwd[heron]
             postInitialize();

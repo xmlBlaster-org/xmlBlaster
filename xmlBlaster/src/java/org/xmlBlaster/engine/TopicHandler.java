@@ -10,7 +10,6 @@ import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
@@ -25,12 +24,10 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
-//import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -58,10 +55,10 @@ import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 
 import org.xmlBlaster.client.qos.PublishReturnQos;
 
@@ -165,7 +162,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private Map msgUnitWrapperUnderConstruction = new HashMap();
 
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private JmxMBeanHandle mbeanHandle;
 
    /**
     * Use this constructor if a subscription is made on a yet unknown topic.
@@ -196,7 +193,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       
       // JMX register "topic/hello"
-      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
       // mimeType and content remains unknown until first data is fed
@@ -234,7 +231,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (log.CALL) log.trace(ME, "Creating new TopicHandler.");
 
       // JMX register "topic/hello"
-      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
    }
 
    /**
@@ -810,7 +807,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                         "the combination '" + status + "' is not handled");
                   }
                   if (i>0) { try { Thread.sleep(1L); } catch( InterruptedException ie) {}}
-                  ConnectReturnQosServer q = authenticate.connect(connectQosServer);
+                  /*ConnectReturnQosServer q = */authenticate.connect(connectQosServer);
                   receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
                   if (receiverSessionInfo == null) continue;
                   receiverSessionInfo.getLock().lock();
@@ -988,9 +985,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (sub.getSubscribeCounter() > 1)
          return;
 
-      Object oldOne;
+      //Object oldOne;
       synchronized(this.subscriberMap) {
-         oldOne = this.subscriberMap.put(sub.getSubscriptionId(), sub);
+         /*oldOne = */this.subscriberMap.put(sub.getSubscriptionId(), sub);
       }
 
       sub.addTopicHandler(this);
@@ -1804,7 +1801,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       long numHistory = 0L;
       ArrayList notifyList = null;
 
-      this.glob.unregisterMBean(this.mbeanObjectName);
+      this.glob.unregisterMBean(this.mbeanHandle);
 
       synchronized (this) {
          if (this.dyingInProgress || isDead()) {
@@ -2449,8 +2446,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return this.glob.peekMessages(this.historyQueue, numOfEntries, "history");
    } 
 
-   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      return this.glob.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");
+   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws Exception {
+      try {
+         return this.glob.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    }
 
    /** JMX */

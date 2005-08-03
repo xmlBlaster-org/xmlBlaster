@@ -63,7 +63,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private Object peekSync = new Object();
 
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private Object mbeanHandle;
 
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
@@ -257,7 +257,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String name = "queue_cache_" + this.queueId.getId();
          int index = name.indexOf(":");
          if (index >= 0) name = name.substring(0,index) + "_" + name.substring(index+1);
-         this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this);
+         this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
@@ -470,7 +470,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             for (int i=0; i < queueEntries.length; i++) {
                if (queueEntries[i].isPersistent()) {
                   persistentsFromEntries.add(queueEntries[i]);
-                  sizeOfPersistents += ((I_QueueEntry)queueEntries[i]).getSizeInBytes();
+                  sizeOfPersistents += queueEntries[i].getSizeInBytes();
                   numOfPersistents++;
                }
                else sizeOfEntries += queueEntries[i].getSizeInBytes();
@@ -514,7 +514,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                      if (this.transientQueue.getNumOfEntries() == 0)
                         swaps = this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
                      else {
-                        swaps = this.transientQueue.takeLowest((int)queueEntries.length, sizeOfEntries, null, true);
+                        swaps = this.transientQueue.takeLowest(queueEntries.length, sizeOfEntries, null, true);
                         needsLoading = true;
                      }
                      if (this.log.TRACE) {
@@ -1147,7 +1147,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#getMaxNumOfEntries()
     */
    public long getMaxNumOfEntries() {
-      long ret = 0L;
       if (isPersistenceAvailable())
          return this.persistentQueue.getMaxNumOfEntries();
       return this.transientQueue.getMaxNumOfEntries();
@@ -1186,7 +1185,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#getMaxNumOfBytes()
     */
    synchronized public long getMaxNumOfBytes() {
-      long ret = 0L;
       if (isPersistenceAvailable())
          return this.persistentQueue.getMaxNumOfBytes();
       return this.transientQueue.getMaxNumOfBytes();
@@ -1237,7 +1235,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          return;
       }
       this.isDown = true;
-      this.glob.unregisterMBean(this.mbeanObjectName);
+      this.glob.unregisterMBean(this.mbeanHandle);
       long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
       if (numTransients > 0) {
          log.warn(ME, "Shutting down cache queue which contains " + numTransients + " transient messages");

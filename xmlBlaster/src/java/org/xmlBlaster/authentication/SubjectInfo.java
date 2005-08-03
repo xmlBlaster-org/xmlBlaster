@@ -30,7 +30,7 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
@@ -40,7 +40,6 @@ import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
 import org.xmlBlaster.engine.MsgErrorHandler;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -132,7 +131,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    private long instanceId = 0L;
 
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private JmxMBeanHandle mbeanHandle;
 
    /**
     * <p />
@@ -164,7 +163,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       this.dispatchStatistic = new DispatchStatistic();
 
       // JMX register "client/joe"
-      this.mbeanObjectName = this.glob.registerMBean(this.contextNode, this.subjectInfoProtector);
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this.subjectInfoProtector);
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
    }
@@ -316,7 +315,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             return;
          }
 
-         this.glob.unregisterMBean(this.mbeanObjectName);
+         this.glob.unregisterMBean(this.mbeanHandle);
 
          if (getSubjectQueue().getNumOfEntries() < 1)
             log.info(ME, "Destroying SubjectInfo. Nobody is logged in and no queue entries available");
@@ -1108,8 +1107,13 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       return this.glob.peekMessages(this.subjectQueue, numOfEntries, "subject");
    } 
 
-   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
-      return this.glob.peekQueueMessagesToFile(this.subjectQueue, numOfEntries, path, "subject");
+   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception {
+      try {
+         return this.glob.peekQueueMessagesToFile(this.subjectQueue, numOfEntries, path, "subject");
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    }
 
    /**

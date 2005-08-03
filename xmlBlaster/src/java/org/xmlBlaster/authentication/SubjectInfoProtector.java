@@ -68,7 +68,7 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
       return this.subjectInfo.peekSubjectMessages(numOfEntries);
    }
-   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
+   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception {
       return this.subjectInfo.peekSubjectMessagesToFile(numOfEntries, path);
    }
 }

@@ -311,7 +311,7 @@ abstract public class DispatchConnection implements I_Timeout
       if (isPing) {
          if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
          try {
-            String result = ping("", false);
+            /*String result = */ping("", false);
          }
          catch (XmlBlasterException e) {
             if (isDead()) {
@@ -328,7 +328,7 @@ abstract public class DispatchConnection implements I_Timeout
             if (log.TRACE) log.trace(ME, "timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
             reconnect(); // The ClientDispatchConnection may choose to ping only
             try {
-               String result = ping("", false);
+               /*String result = */ping("", false);
             } 
             catch (XmlBlasterException e) {
                if (isDead()) {

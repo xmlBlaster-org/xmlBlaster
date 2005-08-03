@@ -14,9 +14,9 @@ import org.xmlBlaster.util.XmlBlasterSecurityManager;
 
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
+import javax.management.QueryExp;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
 
 //since JDK 1.5 or with additional jmxremote.jar
 //import javax.management.remote.JMXServiceURL;
@@ -30,14 +30,14 @@ import java.rmi.Naming;
 import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
 
-import com.sun.jmx.trace.Trace;
-
 import javax.security.auth.Subject;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.Iterator;
 
 // since JDK 1.5 (instead of javax.management.MBeanServerFactory from separate jmxri.jar from http://java.sun.com/products/JavaManagement/download.html)
 //import java.lang.management.ManagementFactory;
@@ -87,15 +87,22 @@ public class JmxWrapper
    private final Global glob;
    private final LogChannel log;
    private final String ME;
-   private static MBeanServer mbeanServer;
-   private static HtmlAdaptorServer html;
+   private MBeanServer mbeanServer;
+   private HtmlAdaptorServer html;
    private int useJmx;
+   /**
+    * We hold an own map for mbeans registered to support renaming. 
+    * The key is the objectName.toString() and the value is the JmxMBeanHandle instance.
+    */
+   private Map mbeanMap = new HashMap();
    /** Export Global.getProperty() to JMX */
    private JmxProperties jmxProperties;
+   private JmxMBeanHandle jmxPropertiesHandle;
    private JmxLogLevel jmxLogLevel;
+   private JmxMBeanHandle jmxLogLevelHandle;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
-   public static JmxWrapper theJmxWrapper;
+   private static JmxWrapper theJmxWrapper;
 
    /**
     * Singleton to avoid that different Global instances create more than one JmxWrapper. 
@@ -156,15 +163,33 @@ public class JmxWrapper
       if (useJmx > 0) {
          // Export Global.getProperty() to JMX
          this.jmxProperties = new JmxProperties(this.glob);
-         ContextNode propNode = new ContextNode(this.glob, ContextNode.TOPIC_SYSPROP_TAG, null, this.glob.getContextNode());
-         registerMBean(propNode, jmxProperties); // "sysprop"
+         ContextNode propNode = new ContextNode(this.glob, ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
+         this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
 
          this.jmxLogLevel = new JmxLogLevel(this.glob);
-         ContextNode logNode = new ContextNode(this.glob, ContextNode.TOPIC_LOGGING_TAG, null, this.glob.getContextNode());
-         registerMBean(logNode, jmxLogLevel); // "logging"
+         ContextNode logNode = new ContextNode(this.glob, ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
    }
+   
+   public void shutdown() {
+      if (this.mbeanServer == null) return;
 
+      if (this.jmxPropertiesHandle != null) {
+         unregisterMBean(this.jmxPropertiesHandle);
+         this.jmxPropertiesHandle = null;
+      }
+      if (this.jmxLogLevelHandle != null) {
+         unregisterMBean(this.jmxLogLevelHandle);
+         this.jmxLogLevelHandle = null;
+      }
+      // TODO: Implement complete shutdown
+      //javax.management.MBeanServerFactory.releaseMBeanServer(this.mbeanServer);
+   }
+
+   /**
+    * Initialize the MBean server and adaptors. 
+    */
    public synchronized void init() throws XmlBlasterException {
       
       if (this.mbeanServer == null) return;
@@ -182,7 +207,7 @@ public class JmxWrapper
       String jndiPath = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/jndiPath", "/jmxrmi"); // "/jmxconnector";
 
       String ssl = System.getProperty("com.sun.management.jmxremote.ssl");
-      String aut = System.getProperty("com.sun.management.jmxremote.authenticate");
+      //String aut = System.getProperty("com.sun.management.jmxremote.authenticate");
       String pwd = System.getProperty("com.sun.management.jmxremote.password.file");
       //boolean isAuthenticated = !((ssl==null||"false".equals(ssl)) && (aut==null||"false".equals(aut)));
       boolean isAuthenticated = !(ssl==null||"false".equals(ssl)) || pwd!=null;
@@ -222,7 +247,6 @@ public class JmxWrapper
          }
       }
       else if (glob.getProperty().get("xmlBlaster/jmx/rmi", false)) {
-         // TODO: How to configure authentication???
          // JDK >= 1.5: Create manually an RMI connector and start it
          // If there is no rmiregistry around we start one
          // url ::= service:jmx:protocol:sap
@@ -341,7 +365,11 @@ public class JmxWrapper
             }
             
             ObjectName html_name = new ObjectName("Adaptor:name=html,port="+port);
-            this.mbeanServer.registerMBean(this.html, html_name);
+
+            ObjectInstance objectInstance = this.mbeanServer.registerMBean(this.html, html_name);
+            JmxMBeanHandle handle = new JmxMBeanHandle(objectInstance, null, this.html);
+            this.mbeanMap.put(html_name.toString(), handle);
+            
             if (loginName == null) {
                log.info(ME, "Registered JMX HTML adaptor on http://"+hostname+":"+port +
                         ". No authentication is configured with 'xmlBlaster/jmx/HtmlAdaptor/loginName=...'");
@@ -405,6 +433,57 @@ public class JmxWrapper
    }
 
    /**
+    * Reorganize the registration for a new parent node. 
+    * @param oldName The existing registry, is used to lookup all matching sub-entries.
+    *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
+    * @param newNodeClass The new parent node like
+    *        "org.xmlBlaster:nodeClass=node,node=heron"
+    * @return The resulting registration like
+    *        "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack,queueClass=queue,queue=connection-99"
+    */
+   public synchronized int renameMBean(String oldName, String classNameToChange, String instanceName) {
+      if (this.mbeanServer == null) return 0;
+      if (useJmx == 0) return 0;
+      if (oldName == null || classNameToChange == null) return 0;
+      int count = 0;
+      if (log.CALL) log.call(ME, "JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "'");
+      try {
+         // e.g. "org.xmlBlaster:nodeClass=node,node=clientSUB1,*"
+         ObjectName query = new ObjectName(oldName+",*");
+         QueryExp queryExp = null;
+         Set mbeanSet = this.mbeanServer.queryMBeans(query, queryExp);
+         if (mbeanSet.size() == 0) {
+            if (log.TRACE) log.trace(ME, "JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "', nothing found for '" + query + "'");
+            return count;
+         }
+         Iterator it = mbeanSet.iterator();
+         while (it.hasNext()) {
+            ObjectInstance instance = (ObjectInstance)it.next();
+            ObjectName tmp = instance.getObjectName();
+            JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
+            if (mbeanHandle == null) {
+               log.error(ME, "Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               continue;
+            }
+            this.mbeanServer.unregisterMBean(tmp);
+            this.mbeanMap.remove(tmp.toString());
+            ContextNode renamed = ContextNode.valueOf(this.glob, tmp.toString());
+            renamed.changeParentName(classNameToChange, instanceName);
+            if (log.TRACE) log.trace(ME, "Renamed '" + oldName + "' to '" + renamed.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
+            registerMBean(renamed, mbeanHandle.getMBean(), mbeanHandle);
+            this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
+            count++;
+         }
+         return count;
+      }
+      catch (Exception e) {
+         log.error(ME, "JMX rename registration problem from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "': " + e.toString());
+         e.printStackTrace();
+         return count;
+      }
+   }
+
+   /**
     * Registers the specified mbean into the mbean server.
     * A typical registration string is
     *   <tt>org.xmlBlaster:nodeClass=node,node="heron",clientClass=client,client="joe",queueClass=queue,queue="subject665",entryClass=entry,entry="1002"</tt>
@@ -414,10 +493,18 @@ public class JmxWrapper
     * @param contextNode The unique name for JMX observation
     * @param mbean the MBean object instance 
     *        If mbean implements MBeanRegistration:preRegister() we don't need the type, name
-    * @return The object name used to register or null on error
+    * @return The JmxMBeanHandle with object name used to register or null on error
+    *         Note: You may not take a clone of it as we may change attributes of this instance
+    *         during renaming operations.
     */
-   public ObjectName registerMBean(ContextNode contextNode, Object mbean) {
+   public synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) {
+           return registerMBean(contextNode, mbean, null);
+   }
+   
+   private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle) {
       if (this.mbeanServer == null) return null;
+      if (useJmx == 0) return null;
+      if (contextNode == null) return null;
       if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
       //Thread.dumpStack();
 
@@ -428,56 +515,25 @@ public class JmxWrapper
       ObjectName objectName = null;
       try {
          objectName = new ObjectName(hierarchy);
-         this.mbeanServer.registerMBean(mbean, objectName);
+         ObjectInstance objectInstance = this.mbeanServer.registerMBean(mbean, objectName);
+         if (mbeanHandle == null) {
+            mbeanHandle = new JmxMBeanHandle(objectInstance, contextNode, mbean);
+            this.mbeanMap.put(objectName.toString(), mbeanHandle);
+         }
+         else {
+             // Update the mbeanHandle of the registrar wit the new ObjectName:
+                 mbeanHandle.setObjectInstance(objectInstance);
+         }
          if (log.TRACE) log.trace(ME, "Registered MBean '" + objectName.toString() +
                                       "' for JMX monitoring and control");
-         return objectName;
+         return mbeanHandle;
       }
       catch (javax.management.InstanceAlreadyExistsException e) {
          log.warn(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          if (objectName != null) {
+            this.mbeanMap.remove(objectName.toString());
             unregisterMBean(objectName);
             return registerMBean(contextNode, mbean);
-         }
-         return null;
-      }
-      catch (Exception e) {
-         log.error(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
-         e.printStackTrace();
-         return null;
-      }
-   }
-
-   /**
-    * @deprecated Use ContextNode variant
-    */
-   public ObjectName registerMBean(String name, Object mbean)// throws XmlBlasterException
-   {
-      if (this.mbeanServer == null) return null;
-      if (log.CALL) log.call(ME, "registerMBean(" + name + ")");
-
-      String hierarchy = "org.xmlBlaster:type=" + this.glob.getId();
-      /*
-      String hierarchy = getId();// + ":";
-      if (type != null)
-         hierarchy += ":type="+type;
-      */
-      if (name != null)
-         hierarchy += ",name="+name;
-
-      ObjectName objectName = null;
-      try {
-         objectName = new ObjectName(hierarchy);
-         this.mbeanServer.registerMBean(mbean, objectName);
-         if (log.TRACE) log.trace(ME, "Registered MBean '" + objectName.toString() +
-                                      "' for JMX monitoring and control");
-         return objectName;
-      }
-      catch (javax.management.InstanceAlreadyExistsException e) {
-         log.warn(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
-         if (objectName != null) {
-            unregisterMBean(objectName);
-            return registerMBean(name, mbean);
          }
          return null;
       }
@@ -493,17 +549,25 @@ public class JmxWrapper
     * @param objectName The object you got from registerMBean() of type ObjectName,
     *                   if null nothing happens
     */
-   public void unregisterMBean(Object objectName)// throws XmlBlasterException
+   public synchronized void unregisterMBean(ObjectName objectName)// throws XmlBlasterException
    {
       if (objectName == null) return;
       if (this.mbeanServer == null) return;
+      if (useJmx == 0) return;
       if (log.CALL) log.call(ME, "Unregister MBean '" + objectName.toString() + "'");
       try {
-         this.mbeanServer.unregisterMBean((ObjectName)objectName);
+         Object removed = this.mbeanMap.remove(objectName.toString());
+         this.mbeanServer.unregisterMBean(objectName);
+         if (removed == null)
+            log.error(ME, "No JMX MBean instance of " + objectName.toString() + " removed");
       }
       catch (Exception e) {
          log.error(ME, "JMX unregistration problems: " + e.toString());
       }
+   }
+
+   public void unregisterMBean(JmxMBeanHandle jmxMBeanHandle) {
+      unregisterMBean(jmxMBeanHandle.getObjectInstance().getObjectName());
    }
 
    /**

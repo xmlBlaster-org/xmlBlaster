@@ -145,7 +145,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             }
             if (log.DUMP) log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
-            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
+            /*ConnectReturnQos retQos = */this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
          }
          catch(XmlBlasterException e) {
             if (e.isInternal()) {

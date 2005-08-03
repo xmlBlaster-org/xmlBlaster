@@ -155,12 +155,12 @@ public final class ClusterManager implements I_RunlevelListener
                String nodeIdName = (String)iter.next();       // e.g. "heron" from "cluster.node.master[heron]=..."
                String xml = (String)nodeMap.get(nodeIdName);  // The "<clusternode>..." xml ASCII string for heron
                if (xml == null || xml.length() < 1) {
-                  log.info(ME, "Ignoring envrionment setting -" + env[ii]);
+                  log.info(ME, "Ignoring environment setting -" + env[ii]);
                   continue;
                }
-               if (log.TRACE) log.trace(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
+               if (log.TRACE) log.trace(ME, "Parsing environment -" + env[ii] + " for node '" + nodeIdName + "' ...");
                NodeParser nodeParser = new NodeParser(this.glob, this, xml, sessionInfo); // fills the info to ClusterManager
-               log.info(ME, "Envrionment for node '" + nodeIdName + "' parsed.");
+               log.info(ME, "Environment for node '" + nodeIdName + "' parsed.");
             }
          }
       }

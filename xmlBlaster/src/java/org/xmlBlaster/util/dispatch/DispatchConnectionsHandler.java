@@ -66,6 +66,7 @@ abstract public class DispatchConnectionsHandler
    protected final LogChannel log;
    protected final DispatchManager dispatchManager;
    protected final DispatchStatistic statistic;
+   protected I_PostSendListener postSendListener;
 
    /** holds all DispatchConnection instances */
    private ArrayList conList = new ArrayList();
@@ -88,6 +89,23 @@ abstract public class DispatchConnectionsHandler
 
    public final DispatchManager getDispatchManager() {
       return this.dispatchManager;
+   }
+
+   /**
+    * Access the listener for send messages. 
+    * @return Returns the postSendListener or null if none is registered
+    */
+   public final I_PostSendListener getPostSendListener() {
+	  return this.postSendListener;
+   }
+
+   /**
+    * Register a listener to get notifications when a messages is successfully send. 
+    * Max one can be registered, any old one will be overwritten 
+    * @param postSendListener The postSendListener to set.
+    */
+   public final void registerPostSendListener(I_PostSendListener postSendListener) {
+      this.postSendListener = postSendListener;
    }
 
    /**

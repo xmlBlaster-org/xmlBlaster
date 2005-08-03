@@ -11,6 +11,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -41,6 +42,15 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    }
 
    public abstract I_ClientPlugin getSecurityPlugin();
+   
+   /**
+    * Access the statistic holder. 
+    * Implementing classes should provide a valid statistic handle.
+    * @return Can be null
+    */
+   public DispatchStatistic getDispatchStatistic() {
+          return null;
+   }
 
    /**
     * It parses the string literals passed in the argument list and calls
@@ -92,6 +102,9 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
 
          String ret = update(cbSessionId, updateKey, content, updateQos);
 
+         DispatchStatistic statistic = getDispatchStatistic();
+         if (statistic != null) statistic.incrNumUpdate(1);
+         
          // export (encrypt) return value
          if (secPlgn != null) {
             ret = secPlgn.exportMessage(ret);
@@ -117,7 +130,21 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral)
    {
       try {
-         update(cbSessionId, updateKeyLiteral, content, updateQosLiteral);
+         I_ClientPlugin secPlgn = getSecurityPlugin();
+         if (secPlgn != null) {
+            updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
+            content = secPlgn.importMessage(content);
+            updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
+         }
+
+         UpdateKey updateKey = new UpdateKey(glob, updateKeyLiteral);
+         UpdateQos updateQos = new UpdateQos(glob, updateQosLiteral);
+         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
+
+         update(cbSessionId, updateKey, content, updateQos);
+
+         DispatchStatistic statistic = getDispatchStatistic();
+         if (statistic != null) statistic.incrNumUpdateOneway(1);
       }
       catch (Throwable e) {
          log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
@@ -162,11 +189,19 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     */
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
    {
-      try {
-         update(cbSessionId, msgUnitArr);
+      if (msgUnitArr == null) {
+         log.warn(ME, "Entering updateOneway() with null array.");
+         return;
       }
-      catch (Throwable e) {
-         log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
+      if (msgUnitArr.length == 0) {
+         log.warn(ME, "Entering updateOneway() with 0 messages.");
+         return;
+      }
+      if (log.CALL) log.call(ME, "Receiving updateOneway of " + msgUnitArr.length + " messages ...");
+
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         MsgUnitRaw msgUnit = msgUnitArr[ii];
+         updateOneway(cbSessionId, msgUnit.getKey(), msgUnit.getContent(), msgUnit.getQos());
       }
    }
 

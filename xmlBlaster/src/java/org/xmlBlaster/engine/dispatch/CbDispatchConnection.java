@@ -20,6 +20,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -223,6 +224,8 @@ public final class CbDispatchConnection extends DispatchConnection
                // create object
                try {
                   msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
+                  I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
+                  if (postSendListener != null) postSendListener.postSend(msgArr_[i]);
                }
                catch (Throwable e) {
                   log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());

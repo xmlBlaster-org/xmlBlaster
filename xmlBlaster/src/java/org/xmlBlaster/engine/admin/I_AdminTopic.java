@@ -85,7 +85,7 @@ public interface I_AdminTopic {
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The absolute file names dumped
     */
-   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws XmlBlasterException;
+   public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws Exception;
 
    /**
     * Invoke operation to erase the topic

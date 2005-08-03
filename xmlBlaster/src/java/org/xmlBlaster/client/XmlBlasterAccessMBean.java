@@ -43,6 +43,12 @@ public interface XmlBlasterAccessMBean {
    public long getPublicSessionId();
 
    /**
+    * Access the unique id of my client side queue. 
+    * @return For example "connection:SUB17692784598"
+    */
+   public String getConnectionQueueId();
+
+   /**
     * Get date when client logged in.
     * @return For example "2005-07-25 12:34:16.79"
     */

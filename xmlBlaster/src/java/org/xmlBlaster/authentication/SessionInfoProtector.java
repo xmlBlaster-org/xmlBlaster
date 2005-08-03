@@ -155,7 +155,7 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getCbQueueEntries(keyData, qosData);
    }
 
-   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws XmlBlasterException {
+   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception {
       return this.sessionInfo.peekCallbackMessagesToFile(numOfEntries, path);
    }
 

@@ -65,6 +65,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import java.util.*;
 
@@ -179,7 +180,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    private int state = UNDEF;
 
    /** My JMX registration */
-   private Object mbeanObjectName;
+   private JmxMBeanHandle mbeanHandle;
 
 
    /**
@@ -193,7 +194,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.log = glob.getLog("core");
       glob.setRequestBroker(this);
       this.startupTime = System.currentTimeMillis();
-      this.mbeanObjectName = this.glob.registerMBean(this.glob.getContextNode(), this);
+      this.mbeanHandle = this.glob.registerMBean(this.glob.getContextNode(), this);
 
       // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
       LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
@@ -333,7 +334,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            this.glob.unregisterMBean(this.mbeanObjectName);
+            this.glob.unregisterMBean(this.mbeanHandle);
          }
       }
    }

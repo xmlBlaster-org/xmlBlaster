@@ -40,5 +40,5 @@ public interface I_AdminSubject {
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The absolute file names dumped
     */
-   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws XmlBlasterException;
+   public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception;
 }

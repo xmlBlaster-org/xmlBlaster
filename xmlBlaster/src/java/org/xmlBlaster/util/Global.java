@@ -66,20 +66,21 @@ import java.net.MalformedURLException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
 import java.net.Socket;
+
+import javax.management.ObjectName;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
-import javax.management.ObjectName;
 
 /**
  * Global variables to avoid singleton. 
@@ -270,6 +271,8 @@ public class Global implements Cloneable
       objectMap = Collections.synchronizedMap(new HashMap());
    }
 
+   public static int getCounter() { return counter; }
+
    /**
     * @return the JmxWrapper used to manage the MBean resources
     */
@@ -288,7 +291,7 @@ public class Global implements Cloneable
     * @since 1.0.5
     * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
     */
-   public ObjectName registerMBean(ContextNode contextNode, Object mbean) throws XmlBlasterException {
+   public JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) throws XmlBlasterException {
       return getJmxWrapper().registerMBean(contextNode, mbean);
    }
 
@@ -300,7 +303,10 @@ public class Global implements Cloneable
    public void unregisterMBean(Object objectName) {
       if (objectName == null) return;
       try {
-         getJmxWrapper().unregisterMBean(objectName);
+         if (objectName instanceof JmxMBeanHandle)
+            getJmxWrapper().unregisterMBean((JmxMBeanHandle)objectName);
+         else
+            getJmxWrapper().unregisterMBean((ObjectName)objectName);
       }
       catch (XmlBlasterException e) {
          log.warn(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
@@ -679,14 +685,6 @@ public class Global implements Cloneable
       catch (JUtilsException e) {
          throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
       }
-   }
-
-   /**
-    * private, called from constructor
-    * @return -1 on error
-    */
-   private int initProps(String[] args) {
-      return initProps(args,true);
    }
 
    /**
@@ -1712,7 +1710,15 @@ public class Global implements Cloneable
 
       if (log.TRACE) log.trace(ME, "Destroying util.Global handle");
 
-
+      /* This is a singleton, so only the last Global instance may do a shutdown
+      try {
+         getJmxWrapper().shutdown();
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Ignoring: " + e.toString());
+      }
+      */
+      
       //Thread.currentThread().dumpStack();
       if (this.dispatchWorkerPool != null) {
          this.dispatchWorkerPool.shutdown();

@@ -108,7 +108,7 @@ public interface I_AdminSession extends ConnectQosDataMBean {
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The absolute file names dumped
     */
-   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws XmlBlasterException;
+   public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception;
    /** gets the entries in the callback queue according to what is specified in the qosData object */
    public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
    

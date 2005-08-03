@@ -315,16 +315,22 @@ public final class ContextNode
          String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
-            String tok = toks[i];
-            if (i == 0 && "xmlBlaster".equals(tok)) {
+            String className = toks[i];
+            if (i == 0 && "xmlBlaster".equals(className)) {
                node = ROOT_NODE;
                continue;
             }
             if (i == toks.length-1) {
-               glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
-               break;
+               if (node != null && ContextNode.SUBJECT_MARKER_TAG.equals(node.getClassName())) {
+                   className = ContextNode.SESSION_MARKER_TAG;
+                   i--; // Hack: We add "session" for "client/joe/1" -> "client/joe/session/1" for backward compatibility
+               }
+               else {
+                  glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
+                  break;
+               }
             }
-            node = new ContextNode(glob, tok, toks[i+1], node);
+            node = new ContextNode(glob, className, toks[i+1], node);
             i++;
          }
          return node;
