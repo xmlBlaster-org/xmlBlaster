@@ -88,9 +88,9 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
  */
 static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed*)userP;
-   /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-           "Update data progress currBytesRead=%ld nbytes=%ld", (long)currBytesRead, (long)nbytes);*/
-   printf("[client] Update data progress currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+           "Update data progress currBytesRead=%ld nbytes=%ld", (long)currBytesRead, (long)nbytes);
+   /*printf("[client] Update data progress currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);*/
 }
 
 /**
