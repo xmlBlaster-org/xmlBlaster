@@ -3,6 +3,15 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13629 JMX now reconfigures registration for java clients on connect
+   - Introduced JmxMBeanHandle
+   - Fixed numUpdate() and numUpdateOneway() statistic on client side
+   - Added I_PostSendListener to be notified when a queued messages was
+     successfully send
+
+ o #13626 MS SQLServer 2005 support added
+   See xmlBlaster/config/xmlBlaster.properties.template
+
  o #13593 C client library
    Added progress listener function pointer to access the number of read bytes on socket during receive
    Try C demo: Subscriber -session.name "SUB/1" -reportUpdateProgress true
