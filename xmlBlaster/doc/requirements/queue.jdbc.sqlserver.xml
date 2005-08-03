@@ -4,7 +4,7 @@
 <requirement id='queue.jdbc.sqlserver' type='NEW' prio='MIDDLE' status='CLOSED'>
    <topic>
         XmlBlaster has an advanced queuing facility. Among others one tested persistence layer is offered by
-        communicating with Microsoft SQL Server database.
+        communicating with Microsoft SQL Server 2000 and 2005 database.
     </topic>
     <description>
        <p>The generic plugin for jdbc based queues has been tested against Microsoft SQL Server by
@@ -34,6 +34,7 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
     </description>
 
     <example lang="Java" type="HTML">
+        <h2>Setup SQL Server 2000</h2>
     <p>This is a configuration example from xmlBlaster.properties, please adjust
     it with your password:
     </p>
@@ -59,6 +60,42 @@ QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 
 JdbcDriver.mapping[MicrosoftSQLServer]=\
   string=CHAR(128),longint=numeric (19),boolean=char(1),blob=image
+    </pre>
+    <p>After starting xmlBlaster (without errors) you can query a table:</p>
+    <pre>
+MS-Dos Command line:
+
+osql -E
+1> use  xmlBlaster
+2> go
+1> select * from XB_ENTRIES
+2> go
+    </pre>
+   </example>
+
+    <example lang="Java" type="HTML">
+        <h2>Setup SQL Server 2005</h2>
+    <p>This is a configuration example from xmlBlaster.properties, please adjust
+    it with your password:
+    </p>
+    <pre>
+JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerPoolingDataSource
+### JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                  url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
+                  user=sa,\
+                  password=xxx,\
+                  connectionPoolSize=5,\
+                  connectionBusyTimeout=90000,\
+                  maxWaitingThreads=300,\
+                  tableNamePrefix=XB_,\
+                  entriesTableName=ENTRIES,\
+                  colNamePrefix=XB_,\
+                  dbAdmin=true
+StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
+QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
+JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
     </pre>
     <p>After starting xmlBlaster (without errors) you can query a table:</p>
     <pre>
