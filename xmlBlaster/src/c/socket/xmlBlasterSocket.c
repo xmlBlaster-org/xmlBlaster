@@ -78,9 +78,14 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
       if (nread <= 0)  /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
          break;        /* EOF is -1 */
       nleft -= nread;
+
       if (fpNumRead != 0) {
-         fpNumRead(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
+         XmlBlasterNumReadFunc fp = fpNumRead;
+         if (fp != 0) { /* copy to temporary to avoid 0 if the user un-registers from another thread (but avoid overhead of synchronize) */
+            fp(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
+         }
       }
+
       ptr += nread;
    }
    return (ssize_t)nbytes-nleft;
