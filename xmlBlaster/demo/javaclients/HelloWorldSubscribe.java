@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Date;
 
@@ -141,7 +140,7 @@ public class HelloWorldSubscribe implements I_Callback
       this.fileLock = glob.getProperty().get("fileLock", "");           // add extension for lock file during Fixed file name instead of topic as file name, ".lck"
       this.fileHeader = glob.getProperty().get("fileHeader", "");       // add a header text to the file, e.g. "<?xml version='1.0' encoding='UTF-8' ?>\n"
       this.historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
-      boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
+      this.historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
       this.filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
       this.filterVersion = glob.getProperty().get("filter.version", "1.0");
       this.filterQuery = glob.getProperty().get("filter.query", "");
