@@ -49,7 +49,8 @@ public class Sql92Selector implements I_Selector {
          if (this.log.TRACE) {
             ex.printStackTrace();
          }
-         throw new XmlBlasterException(this.global,ErrorCode.USER_ILLEGALARGUMENT, "Selector.select: could not interpret the query '" + query + "'");
+         throw new XmlBlasterException(this.global,ErrorCode.USER_ILLEGALARGUMENT,
+                   "Sql92Selector", "Selector.select: could not interpret the query '" + query + "'", ex);
       }
    }
    

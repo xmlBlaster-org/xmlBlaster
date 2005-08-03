@@ -85,6 +85,10 @@ public class EncodableData implements java.io.Serializable, Cloneable
       return this.type;
    }
 
+   public boolean isStringType() {
+      return this.type == null || "String".equalsIgnoreCase(this.type); // Constants.TYPE_STRING
+   }
+
    /**
     * The real, raw content size (not the base64 size)
     * @return -1 if not set

@@ -351,7 +351,7 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
        }   
        String str = clientProperty.getStringValue();
        if (this.log.TRACE) this.logBuffer.append(propertyName).append("(").append(str).append(")");
-       if (clientProperty.getType() == null) { // then it is a string
+       if (clientProperty.isStringType()) {
           return symbol(Sql92Symbols.STRING, str);
        }
        return symbol(Sql92Symbols.NUMBER, new Double(str));
