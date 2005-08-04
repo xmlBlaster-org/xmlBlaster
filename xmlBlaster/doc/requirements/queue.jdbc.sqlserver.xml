@@ -79,8 +79,7 @@ osql -E
     it with your password:
     </p>
     <pre>
-JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerPoolingDataSource
-### JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
+JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                   url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
