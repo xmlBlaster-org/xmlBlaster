@@ -249,14 +249,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          if (this.log.CALL) this.log.call(ME, "initialized");
          this.queueId = uniqueQueueId;
-         this.contextNode = new ContextNode(this.glob, ContextNode.QUEUE_MARKER_TAG, 
-                             this.queueId.toString(), this.glob.getContextNode()); // TODO: pass from real parent like SubjectInfo
 
-         // For JMX create a short relative name (may not contain ":")
-         // for example: "queue_cache_callback_client/joe/-2"
-         String name = "queue_cache_" + this.queueId.getId();
-         int index = name.indexOf(":");
-         if (index >= 0) name = name.substring(0,index) + "_" + name.substring(index+1);
+         // For JMX instanceName may not contain ","
+         this.contextNode = new ContextNode(this.glob, ContextNode.QUEUE_MARKER_TAG, 
+                             this.queueId.getStrippedId(), this.glob.getContextNode()); // TODO: pass from real parent like SubjectInfo
          this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();

@@ -88,6 +88,7 @@ public interface I_Map extends I_StorageProblemNotifier
    /**
     * Removes all the transient entries (the ones which have the flag 'persistent'
     * set to false.
+    * @return Number of entries erased
     */
    int removeTransient() throws XmlBlasterException;
 
@@ -151,7 +152,7 @@ public interface I_Map extends I_StorageProblemNotifier
    void shutdown();
 
    /**
-    * performs what has to be done when the Map Plugin shuts down.
+    * Performs what has to be done when the Map Plugin shuts down.
     */
    boolean isShutdown();
 

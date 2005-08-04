@@ -94,6 +94,7 @@ public interface I_Queue extends I_StorageProblemNotifier
    /**
     * Gets the references of the entries in the queue. Note that the data
     * which is referenced here may be changed by other threads.
+    * @return Array with reference numbers
     */
    long[] getEntryReferences() throws XmlBlasterException;
 
@@ -144,7 +145,8 @@ public interface I_Queue extends I_StorageProblemNotifier
       throws XmlBlasterException;
 
    /**
-    * Returns the unique ID of this queue
+    * Returns the unique ID of this queue. 
+    * @return For example "history_heronhello"
     */
    StorageId getStorageId();
 
@@ -285,7 +287,7 @@ public interface I_Queue extends I_StorageProblemNotifier
    long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException;
 
    /**
-    * Removes the first element in the queue
+    * Removes the first element in the queue. 
     * This method does not block.
     * @return the size in bytes of the removed elements
     * @throws XmlBlasterException if the underlying implementation gets an exception.
@@ -335,13 +337,13 @@ public interface I_Queue extends I_StorageProblemNotifier
    long getNumOfPersistentEntries();
 
    /**
-    * returns the maximum number of elements for this queue
+    * Returns the maximum number of elements for this queue
     * @return The maximum number of elements in the queue
     */
    long getMaxNumOfEntries();
 
    /**
-    * Returns the amount of bytes currently in the queue
+    * Returns the amount of bytes currently in the queue. 
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
@@ -417,7 +419,7 @@ public interface I_Queue extends I_StorageProblemNotifier
    boolean isTransient();
 
    /**
-    * Remove all queue entries
+    * Remove all queue entries. 
     * @return The number of entries erased
     */
    public long clear();
@@ -488,6 +490,7 @@ public interface I_Queue extends I_StorageProblemNotifier
    public String usage();
 
    /**
+    * Dump state to XML string. 
     * @param extraOffset Indent the dump with given ASCII blanks
     * @return An xml encoded dump
     */

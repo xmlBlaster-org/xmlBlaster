@@ -18,6 +18,8 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.jutils.time.TimeHelper;
 import java.util.Vector;
 
@@ -27,9 +29,10 @@ import java.util.Vector;
  * concerning a subscription of exactly one MsgUnit of exactly one Client. 
  * <p />
  */
-public final class SubscriptionInfo implements I_AdminSubscription /* implements Comparable see SORT_PROBLEM */
+public final class SubscriptionInfo implements /*I_AdminSubscription,*/ SubscriptionInfoMBean /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
+   private ContextNode contextNode;
 
    /** The global handle */
    private Global glob;
@@ -60,6 +63,9 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
 
    /** uniqueId used to store this in queue */
    private long persistenceId = -1L; 
+
+   /** My JMX registration */
+   private JmxMBeanHandle mbeanHandle;
 
    /**
     * Use this constructor for an exact subscription.
@@ -99,6 +105,12 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
 
       initSubscriptionId(); // initialize the unique id this.uniqueKey
       ME += "-" + this.uniqueKey ;
+
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(this.glob, ContextNode.SUBSCRIPTION_MARKER_TAG, 
+                           this.uniqueKey, this.glob.getContextNode());
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
@@ -143,7 +155,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /**
     * For this query subscription remember all resulted child subscriptions
     */
-   public void addSubscription(SubscriptionInfo subs)
+   public synchronized void addSubscription(SubscriptionInfo subs)
    {
       if (childrenVec == null) childrenVec = new Vector();
       childrenVec.addElement(subs);
@@ -152,7 +164,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    /**
     * For this query subscription remember all resulted subscriptions
     */
-   public void removeChildSubscription(SubscriptionInfo subs)
+   public synchronized void removeChildSubscription(SubscriptionInfo subs)
    {
       if (childrenVec == null) return;
 
@@ -397,6 +409,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     */
    public void shutdown() throws XmlBlasterException
    {
+      this.glob.unregisterMBean(this.mbeanHandle);
       if (querySub != null) {
          querySub.removeChildSubscription(this);
       }
@@ -556,5 +569,25 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    public String getCreationTimestamp() {
       return org.jutils.time.TimeHelper.getDateTimeDump(this.creationTime);
    }
-   
+   public String getSubscribeQosStr() {
+      return (this.subscribeQos==null) ? "" : this.subscribeQos.toXml();
+   }
+   public String[] getAccessFilters() {
+      AccessFilterQos[] arr = subscribeQos.getAccessFilterArr();
+      if (arr == null) return new String[0];
+      String[] ret = new String[arr.length];
+      for (int i=0; i<arr.length; i++) {
+         ret[i] = arr[i].toXml();
+      }
+      return ret;
+   }
+   public synchronized String[] getDependingSubscriptions() {
+      if (this.childrenVec==null || this.childrenVec.size() < 1) return new String[0];
+      String[] ret = new String[this.childrenVec.size()];
+      for (int i=0; i<this.childrenVec.size(); i++) {
+         SubscriptionInfo info = (SubscriptionInfo)this.childrenVec.elementAt(i);
+         ret[i] = info.toXml();
+      }
+      return ret;
+   }
 }

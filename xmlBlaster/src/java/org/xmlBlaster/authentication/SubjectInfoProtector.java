@@ -29,6 +29,10 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       return this.subjectInfo.getUptime();
    }
 
+   public String getCreationDate() {
+      return this.subjectInfo.getCreationDate();
+   }
+
    public long getNumUpdate() {
       return this.subjectInfo.getNumUpdate();
    }

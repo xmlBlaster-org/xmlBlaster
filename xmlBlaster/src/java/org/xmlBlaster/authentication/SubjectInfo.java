@@ -100,7 +100,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
-   private long uptime;
+   private long startupTime;
    private int maxSessions;
    
    /** State during and after construction */
@@ -246,7 +246,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             this.securityCtx = securityCtx;
          }
 
-         this.uptime = System.currentTimeMillis();
+         this.startupTime = System.currentTimeMillis();
 
          this.maxSessions = glob.getProperty().get("session.maxSessions", SessionQos.DEFAULT_maxSessions);
          if (glob.getId() != null)
@@ -996,10 +996,16 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    //=========== Enforced by I_AdminSubject and SubjectInfoProtector.java ================
    /**
-    * @return uptime in seconds
+    * @return startupTime in seconds
     */
    long getUptime() {
-      return (System.currentTimeMillis() - this.uptime)/1000L;
+      return (System.currentTimeMillis() - this.startupTime)/1000L;
+   }
+
+   public final String getCreationDate() {
+      long ll = this.startupTime;
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
    }
 
    /**

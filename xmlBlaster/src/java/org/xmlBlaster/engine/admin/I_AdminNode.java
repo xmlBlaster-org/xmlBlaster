@@ -165,7 +165,20 @@ public interface I_AdminNode {
    public void exit() throws XmlBlasterException;
    public void setExit(String exitValue) throws XmlBlasterException;
 
+   /**
+    * Access the bootstrap host name. 
+    * This IP or DNS hostname is used for IOR download (CORBA) and for our
+    * internal tiny http server. 
+    * @return The hostname where xmlBlaster listens on
+    */
    public String getHostname();
+
+   /**
+    * Access the bootstrap port number. 
+    * This port is used for IOR download (CORBA) and for our
+    * internal tiny http server. 
+    * @return The port number, for example 3412
+    */
    public int getPort();
 
    /**

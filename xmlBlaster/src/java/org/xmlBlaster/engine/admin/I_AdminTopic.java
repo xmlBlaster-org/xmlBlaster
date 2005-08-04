@@ -20,24 +20,66 @@ import org.xmlBlaster.util.qos.QueryQosData;
  * @since 1.0.4
  */
 public interface I_AdminTopic {
+   /**
+    * The unique identifier of this topic. 
+    * @return e.g. "/node/heron/topic/Hello"
+    */
    public java.lang.String getId();
+   /**
+    * Check if this topic is query-able by XPath. 
+    * @return true if the DOM entry exists
+    */
    public boolean getDomTreeExists();
    public boolean getTopicXmlExists();
+   /**
+    * Access the topics xml key. 
+    * @return The XML string
+    */
    public String getTopicXml() throws org.xmlBlaster.util.XmlBlasterException;
    //org.xmlBlaster.engine.SubscriptionInfo removeSubscriber(java.lang.String);
+   /**
+    * Access the topic key oid. 
+    * @return Value of &lt;key oid=''/>
+    */
    public java.lang.String getUniqueKey();
+   /**
+    * Access the topics content mime. 
+    * @return Value of &lt;key contentMime=''/>
+    */
    public java.lang.String getContentMime();
+   /**
+    * Access the topics content mime extended. 
+    * @return Value of &lt;key contentMimeExtended=''/>
+    */
    public java.lang.String getContentMimeExtended();
+   /**
+    * Access the number of registered subscribers on this topic. 
+    * @return Number of subscriptions
+    */
    public int getNumSubscribers();
    public boolean getExactSubscribersExist();
+   /**
+    * Get number of queued history messages. 
+    * @return Number of messages
+    */
    public long getNumOfHistoryEntries();
+   /**
+    * Get number of queued history messages which are in the cache. 
+    * @return Number of cached messages
+    */
    public long getNumOfCacheEntries();
+   /*
    public boolean isUndef();
    public boolean isUnconfigured();
    public boolean isAlive();
    public boolean isUnreferenced();
    public boolean isSoftErased();
    public boolean isDead();
+   */
+   /**
+    * Get the life cycle status of this topic. 
+    * @return "ALIVE" or "DEAD" etc.
+    */
    public java.lang.String getStateStr();
    /**
     * Get a list of all subscribers of this topic. 

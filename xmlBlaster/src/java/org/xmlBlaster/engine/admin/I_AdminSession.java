@@ -92,7 +92,14 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public String getSubscriptionDump() throws XmlBlasterException;
    /** Invoke operation to destroy the session (force logout) */
    public String killSession() throws XmlBlasterException;
-   /** activates/inhibits the dispatch of messages to this session */
+   /**
+    * Activates/inhibits the dispatch of messages to this session. 
+    * This is a very helpful operation as you can temporary stop sending
+    * messages to a client, they are nicely queued and after activating again
+    * the messages are send. 
+    * @param dispatcherActive true: callback messages are send to the client if connected
+    *        false: messages are hold back
+    */
    public void setDispatcherActive(boolean dispatcherActive);
    /** true if the dispatcher is currently able to dispatch asyncronously */
    public boolean getDispatcherActive();

@@ -33,8 +33,12 @@ public final class ContextNode
    public final static String CONNECTION_MARKER_TAG = "connection";
    /** Use to mark a queue */
    public final static String QUEUE_MARKER_TAG = "queue";
+   /** Use to mark a message store map */
+   public final static String MAP_MARKER_TAG = "map";
    /** Use to mark a topic */
    public final static String TOPIC_MARKER_TAG = "topic";
+   /** Use to mark a subscription */
+   public final static String SUBSCRIPTION_MARKER_TAG = "subscription";
    /** Use to mark a system and configuration properties and command line arguments */
    public final static String SYSPROP_MARKER_TAG = "sysprop";
    /** Use to mark logging settings */

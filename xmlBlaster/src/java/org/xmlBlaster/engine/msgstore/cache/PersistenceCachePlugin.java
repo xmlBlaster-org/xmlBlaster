@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.msgstore.cache;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -31,21 +32,25 @@ import java.util.ArrayList;
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
-public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblemListener, I_Map
+public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblemListener, I_Map, PersistenceCachePluginMBean
 {
    private String ME;
+   private ContextNode contextNode;
    private Global glob;
    private LogChannel log;
 
 //   private java.util.Properties pluginProperties; // properties via I_Plugin
    private QueuePropertyBase property;            // properties via I_Map
    boolean isDown = true;
-   private StorageId queueId;
+   private StorageId storageId;
 
    private I_Map transientStore;
    private I_Map persistentStore;
    private boolean isConnected = false;
    private PluginInfo pluginInfo = null;
+
+   /** My JMX registration */
+   private Object mbeanHandle;
 
    /*
     * this boolean is set only under the time a recovery after having reconnected
@@ -122,7 +127,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
          this.property = null;
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
-         this.queueId = uniqueQueueId;
+         this.storageId = uniqueQueueId;
          try {
             this.property = (QueuePropertyBase)userData;
          }
@@ -130,6 +135,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't configure queue, your properties are invalid", e);
          }
          if (log.CALL) log.call(ME, "Entering initialize(" + getType() + ", " + getVersion() + ")");
+
+         // For JMX instanceName may not contain ","
+         this.contextNode = new ContextNode(this.glob, ContextNode.MAP_MARKER_TAG, 
+                             this.storageId.getStrippedId(), this.glob.getContextNode()); // TODO: pass from real parent like TopicInfo
+         this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
          // StoragePluginManager pluginManager = (StoragePluginManager)this.glob.getObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager");
          StoragePluginManager pluginManager = glob.getStoragePluginManager();
@@ -155,7 +165,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
             this.isConnected = true;
             // to be notified about reconnections / disconnections
-//            this.glob.getJdbcQueueManager(this.queueId).registerStorageProblemListener(this);
+//            this.glob.getJdbcQueueManager(this.storageId).registerStorageProblemListener(this);
             this.persistentStore.registerStorageProblemListener(this);
 
             if (log.TRACE) log.trace(ME, "Created persistent part:" + this.persistentStore.toXml(""));
@@ -210,6 +220,42 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       } // isDown?
    }
 
+   // JMX
+   public String getStorageIdStr() {
+      return getStorageId().toString();
+   }
+
+   // JMX
+   public int removeById(long uniqueId) throws Exception {
+      try {
+         return remove(uniqueId);
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   // JMX
+   public String removeOldestEntry() throws Exception {
+      try {
+         I_MapEntry entry = removeOldest();
+         return (entry==null) ? null : entry.toString();
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
+   // JMX
+   public int removeTransientEntries() throws Exception {
+      try {
+         return removeTransient();
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
+   }
+
    /**
     * We set the cache props to the real props for RAM queue running under a cacheQueue
     */
@@ -252,6 +298,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public Object getProperties() {
       return this.property;
+   }
+
+   // JMX
+   public String getPropertyStr() {
+      return (this.property == null) ? "" : this.property.toXml();
    }
 
    /**
@@ -417,7 +468,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * Returns the unique ID of this queue
     */
    public StorageId getStorageId() {
-      return this.queueId;
+      return this.storageId;
    }
 
    /**
@@ -649,7 +700,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       /*
       try {
          // to be notified about reconnections / disconnections
-         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+         this.glob.getJdbcQueueManager(this.storageId).unregisterListener(this);
       }
       catch (Exception ex) {
          this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
@@ -668,6 +719,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
+      this.glob.unregisterMBean(this.mbeanHandle);
       long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
       if (numTransients > 0) {
          log.warn(ME, "Shutting down persistence cache which contains " + numTransients + " transient messages");
@@ -677,7 +729,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          this.persistentStore.shutdown();
 
       try {
-//         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+//         this.glob.getJdbcQueueManager(this.storageId).unregisterListener(this);
          if (this.persistentStore != null)
             this.persistentStore.unRegisterStorageProblemListener(this);
       }
@@ -760,7 +812,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       this.isDown = true;
 
       try {
-//         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+//         this.glob.getJdbcQueueManager(this.storageId).unregisterListener(this);
          if (this.persistentStore != null)
             this.persistentStore.unRegisterStorageProblemListener(this);
       }

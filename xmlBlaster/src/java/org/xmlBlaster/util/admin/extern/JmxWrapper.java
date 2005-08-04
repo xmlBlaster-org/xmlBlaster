@@ -438,6 +438,7 @@ public class JmxWrapper
     *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
     * @param newNodeClass The new parent node like
     *        "org.xmlBlaster:nodeClass=node,node=heron"
+    *        Note: Instance names may not contain commas "," for example "joe,Smith" is not valid
     * @return The resulting registration like
     *        "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack,queueClass=queue,queue=connection-99"
     */
@@ -491,6 +492,7 @@ public class JmxWrapper
     * contains the 'type=...' property.
     * We have chosen this as it creates a nice hierarchy in the jconsole GUI tool.
     * @param contextNode The unique name for JMX observation
+    *        Note: Instance names may not contain commas "," for example "joe,Smith" is not valid
     * @param mbean the MBean object instance 
     *        If mbean implements MBeanRegistration:preRegister() we don't need the type, name
     * @return The JmxMBeanHandle with object name used to register or null on error
