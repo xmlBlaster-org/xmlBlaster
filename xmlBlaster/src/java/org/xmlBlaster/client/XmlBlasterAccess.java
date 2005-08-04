@@ -261,7 +261,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
             try {
                ClientQueueProperty prop = this.connectQos.getClientQueueProperty();
-               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, getId()+System.currentTimeMillis()+Global.getCounter()); //getContextNode().toString());
+               // The storageId must remain the same after a client restart
+               String storageIdStr = getId();
+               if (getPublicSessionId() == 0 ) {
+                  // having no public sessionId we need to generate a unique queue name
+                  storageIdStr += System.currentTimeMillis()+Global.getCounter();
+               }
+               StorageId queueId = new StorageId(Constants.RELATING_CLIENT, storageIdStr);
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                       this.connectQos.getClientQueueProperty());
                if (this.clientQueue == null) {
@@ -635,7 +641,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public String getServerNodeId() {
       if (this.contextNode != null) return this.contextNode.getParent(ContextNode.CLUSTER_MARKER_TAG).getAbsoluteName();
       if (this.serverNodeId != null) return this.serverNodeId;
-      return this.glob.getInstanceId();
+      return this.glob.getInstanceId(); // Changes for each restart
    }
 
    /**
