@@ -106,6 +106,12 @@ public class XmlBlasterAccessTest extends TestCase {
             xmlBlasterAccess = glob.getXmlBlasterAccess();
          }
 
+         xmlBlasterAccess.setServerNodeId("/node/test");
+         assertEquals("", "/node/test", xmlBlasterAccess.getServerNodeId());
+
+         xmlBlasterAccess.setServerNodeId("FRISH FISH");
+         assertEquals("", "/node/FRISH FISH", xmlBlasterAccess.getServerNodeId());
+
          try {
             ConnectQos connectQos = new ConnectQos(glob);
             Address address = new Address(glob);
@@ -159,12 +165,6 @@ public class XmlBlasterAccessTest extends TestCase {
          assertTrue("", xmlBlasterAccess.getConnectQos() == null);
          assertTrue("", xmlBlasterAccess.getId() != null);
          assertTrue("", xmlBlasterAccess.getSessionName() == null);
-
-         xmlBlasterAccess.setServerNodeId(null);
-         assertTrue("", xmlBlasterAccess.getServerNodeId() == null);
-
-         xmlBlasterAccess.setServerNodeId("FRISH FISH");
-         assertEquals("", "FRISH FISH", xmlBlasterAccess.getServerNodeId());
 
          try {
             xmlBlasterAccess.subscribe((SubscribeKey)null, null);
