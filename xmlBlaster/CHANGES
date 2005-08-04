@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13638 Added JMX observation for SubscriptionInfo and the I_Map cache implementation
+   Added javadoc for JMX methods, see for example I_AdminNode
+
  o #13635 Fixed Sql92Filter mime plugin bug reported by Nelson Silva
    <clientProperty name='canal' type='String'>teste2</clientProperty>
    Filtering failed when type='String' was specified
