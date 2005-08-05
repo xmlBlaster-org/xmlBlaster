@@ -137,8 +137,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          if (log.CALL) log.call(ME, "Entering initialize(" + getType() + ", " + getVersion() + ")");
 
          // For JMX instanceName may not contain ","
+         String instanceName = this.glob.validateJmxValue(this.storageId.getId());
          this.contextNode = new ContextNode(this.glob, ContextNode.MAP_MARKER_TAG, 
-                             this.storageId.getStrippedId(), this.glob.getContextNode()); // TODO: pass from real parent like TopicInfo
+                             instanceName, this.glob.getContextNode()); // TODO: pass from real parent like TopicInfo
          this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
          // StoragePluginManager pluginManager = (StoragePluginManager)this.glob.getObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager");

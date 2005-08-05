@@ -119,6 +119,28 @@ public class JmxWrapper
    }
 
    /**
+    * Constructs an initial JmxWrapper object.
+    */
+   public JmxWrapper(Global glob) throws XmlBlasterException
+   {
+      this.glob = glob;
+      this.log = glob.getLog("jmx");
+      this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
+      getMBeanServer(); // Initialize this.mbeanServer
+      init();
+      if (useJmx > 0) {
+         // Export Global.getProperty() to JMX
+         this.jmxProperties = new JmxProperties(this.glob);
+         ContextNode propNode = new ContextNode(this.glob, ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
+         this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
+
+         this.jmxLogLevel = new JmxLogLevel(this.glob);
+         ContextNode logNode = new ContextNode(this.glob, ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
+      }
+   }
+   
+   /**
     * Create the unique MBeanServer instance. 
     */
    private MBeanServer getMBeanServer() {
@@ -151,40 +173,22 @@ public class JmxWrapper
    }
 
    /**
-    * Constructs an initial JmxWrapper object.
+    * JMX property values may not contain a comma ','. 
+    * Here we replace commas with an underscore.
+    * Even if we use quoted ObjectName values the comma is not allowed.
+    * @param value The value to verify
+    * @return The beautified value to be usable as a value for JMX properties
     */
-   public JmxWrapper(Global glob) throws XmlBlasterException
-   {
-      this.glob = glob;
-      this.log = glob.getLog("jmx");
-      this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
-      getMBeanServer(); // Initialize this.mbeanServer
-      init();
-      if (useJmx > 0) {
-         // Export Global.getProperty() to JMX
-         this.jmxProperties = new JmxProperties(this.glob);
-         ContextNode propNode = new ContextNode(this.glob, ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
-         this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
-
-         this.jmxLogLevel = new JmxLogLevel(this.glob);
-         ContextNode logNode = new ContextNode(this.glob, ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
-         this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
+   public String validateJmxValue(String value) {
+      if (value == null) return value;
+      while (true) {
+         int index = value.indexOf(",");
+         if (index >= 0)
+            value = value.substring(0,index) + "_" + value.substring(index+1);
+         else
+            break;
       }
-   }
-   
-   public void shutdown() {
-      if (this.mbeanServer == null) return;
-
-      if (this.jmxPropertiesHandle != null) {
-         unregisterMBean(this.jmxPropertiesHandle);
-         this.jmxPropertiesHandle = null;
-      }
-      if (this.jmxLogLevelHandle != null) {
-         unregisterMBean(this.jmxLogLevelHandle);
-         this.jmxLogLevelHandle = null;
-      }
-      // TODO: Implement complete shutdown
-      //javax.management.MBeanServerFactory.releaseMBeanServer(this.mbeanServer);
+      return value;
    }
 
    /**
@@ -599,5 +603,20 @@ public class JmxWrapper
          log.error(ME,"Error when registering new Connector >>  " + e.toString() );
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not start embedded xmlBlasterConnector", e);
       }
+   }
+
+   public void shutdown() {
+      if (this.mbeanServer == null) return;
+
+      if (this.jmxPropertiesHandle != null) {
+         unregisterMBean(this.jmxPropertiesHandle);
+         this.jmxPropertiesHandle = null;
+      }
+      if (this.jmxLogLevelHandle != null) {
+         unregisterMBean(this.jmxLogLevelHandle);
+         this.jmxLogLevelHandle = null;
+      }
+      // TODO: Implement complete shutdown
+      //javax.management.MBeanServerFactory.releaseMBeanServer(this.mbeanServer);
    }
 }

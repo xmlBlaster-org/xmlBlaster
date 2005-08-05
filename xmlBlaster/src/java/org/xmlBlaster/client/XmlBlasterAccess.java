@@ -697,7 +697,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (clusterContext == null) {
          clusterContext = this.glob.getContextNode();
          if (getLoginName() != null && getLoginName().length() > 0) {
-            ContextNode contextNodeSubject = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, getLoginName(), clusterContext);
+            String instanceName = this.glob.validateJmxValue(getLoginName());
+            ContextNode contextNodeSubject = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, instanceName, clusterContext);
             this.contextNode = new ContextNode(this.glob, ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId(), contextNodeSubject);
          }
       }

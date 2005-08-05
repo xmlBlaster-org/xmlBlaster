@@ -107,8 +107,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       ME += "-" + this.uniqueKey ;
 
       // For JMX instanceName may not contain ","
+      String instanceName = this.glob.validateJmxValue(this.uniqueKey);
       this.contextNode = new ContextNode(this.glob, ContextNode.SUBSCRIPTION_MARKER_TAG, 
-                           this.uniqueKey, this.glob.getContextNode());
+                           instanceName, this.glob.getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
@@ -375,6 +376,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return this.uniqueKey;
    }
 
+   /**
+    * For JMX the uniqueKey may not contain commas ','. 
+    */
    private void initSubscriptionId() throws XmlBlasterException {
       if (this.uniqueKey == null) {
          if (this.querySub != null) {
@@ -428,6 +432,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * This static method may be used from external objects to get the unique key
     * of a subscription. 
     * <p />
+    * For JMX the uniqueKey may not contain commas ','. 
+    *
     * @param clusterWideUnique If false the key is unique for this xmlBlaster instance only
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>__subId:heron-53</code>

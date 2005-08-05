@@ -251,8 +251,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          this.queueId = uniqueQueueId;
 
          // For JMX instanceName may not contain ","
+         String instanceName = this.glob.validateJmxValue(this.queueId.getId());
          this.contextNode = new ContextNode(this.glob, ContextNode.QUEUE_MARKER_TAG, 
-                             this.queueId.getStrippedId(), this.glob.getContextNode()); // TODO: pass from real parent like SubjectInfo
+                             instanceName, this.glob.getContextNode()); // TODO: pass from real parent like SubjectInfo
          this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();

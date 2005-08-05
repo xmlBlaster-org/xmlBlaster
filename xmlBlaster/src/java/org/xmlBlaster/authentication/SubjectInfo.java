@@ -156,8 +156,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
          Thread.dumpStack();
       }
+
+      String instanceName = this.glob.validateJmxValue(this.subjectName.getLoginName());
       this.contextNode = new ContextNode(this.glob, ContextNode.SUBJECT_MARKER_TAG, 
-                                       this.subjectName.getLoginName(), this.glob.getContextNode());
+                                       instanceName, this.glob.getContextNode());
 
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
