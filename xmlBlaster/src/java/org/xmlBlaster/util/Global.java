@@ -856,6 +856,7 @@ public class Global implements Cloneable
     * @return e.g. "http_www_xmlBlaster_org_homex"
     */
    public static final String getStrippedString(String text) {
+      if (text == null) return null;
       String strippedId = StringHelper.replaceAll(text, "/", "");
       // JMX does not like commas, but we can't introduce this change in 1.0.5
       // as the persistent queue names would change and this is not backward compatible
@@ -885,7 +886,9 @@ public class Global implements Cloneable
     * @param a unique id
     */
    public synchronized void setId(String id) {
+      if (id == null) return;
       this.id = id;
+      if (getStrippedId() == null) return;
       if (this.contextNode == null) {
          String instanceName = validateJmxValue(getStrippedId());
          this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, instanceName, ContextNode.ROOT_NODE);

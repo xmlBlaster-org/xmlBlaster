@@ -212,6 +212,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public final void setId(String id) {
       super.setId(id);
+      if (id == null) return;
       this.nodeId = new NodeId(id); // ContextNode should replace NodeId one day
       this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
    }
