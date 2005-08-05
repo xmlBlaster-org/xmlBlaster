@@ -562,6 +562,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
       log.plain(ME, "   java org.xmlBlaster.Main -logFile /tmp/test.log -logDevice file,console");
       log.plain(ME, "   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081");
+      log.plain(ME, "   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main");
       log.plain(ME, "   java org.xmlBlaster.Main -?");
       log.plain(ME, "See xmlBlaster.properties for more options");
       log.plain(ME, "");
