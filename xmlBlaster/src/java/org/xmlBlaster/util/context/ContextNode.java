@@ -214,7 +214,9 @@ public final class ContextNode
          // "org.xmlBlaster:nodeClass=node,node=heron,clientClass=client,client=joe,queueClass=queue,queue=subject665,entryClass=entry,entry=1002"
          // like this jconsole creates a nice tree (see JmxWrapper.java for a discussion)
          if (this.parent == ROOT_NODE) {
-            return sb.append(SCHEMA_JMX_DOMAIN).append(":").append("nodeClass=node,node=").append(ObjectName.quote(this.instanceName)).toString();
+            sb.append(SCHEMA_JMX_DOMAIN).append(":").append("nodeClass=node,node=");
+            sb.append((this.instanceName==null)?"null":ObjectName.quote(this.instanceName));
+            return sb.toString();
          }
          sb.append(this.parent.getAbsoluteName(schema));
          sb.append(",").append(this.className).append("Class=").append(this.className);
