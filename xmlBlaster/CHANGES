@@ -3,6 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13649 Added JMX methods
+   - I_ProgressListener for SOCKET protocol plugin
+   - Callback delivery states and statistics
+   - Added client side queue dumping
+
  o #13638 Added JMX observation for SubscriptionInfo and the I_Map cache implementation
    Added javadoc for JMX methods, see for example I_AdminNode
 
