@@ -119,10 +119,20 @@ public interface I_AdminNode {
    public String getLastError();
 
    /**
+    * Clear the last exception text. 
+    */
+   public void clearLastError();
+
+   /**
     * Access the last logged warning.
     * @return The complete information about the last warning logged
     */
    public String getLastWarning();
+
+   /**
+    * Clear the last warning text. 
+    */
+   public void clearLastWarning();
 
     /**
      * Returns the amount of free memory in the Java Virtual Machine.
@@ -196,6 +206,12 @@ public interface I_AdminNode {
     * @return A comma separated list
     */
    public String getClientList();
+
+   /**
+    * Shows the clients which have a alive callback connection. 
+    * @return The client session names
+    */
+   public String[] getAliveCallbackClients();
 
    /**
     * Get the number of system properties. 

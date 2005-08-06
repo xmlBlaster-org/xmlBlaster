@@ -14,6 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.protocol.I_ProgressListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,23 +136,34 @@ public class Parser
    private Buf buf = new Buf();
    private byte[] first10 = new byte[NUM_FIELD_LEN];
 
+   /** If not null somebody wants to be notified about the current bytes send over socket */
+   private I_ProgressListener progressListener;
+
 
    /**
     * The same parser object may be reused.
     */
    public Parser(Global glob) {
-      this(glob, (byte)0, (String)null, (MethodName)null, (String)null);
+      this(glob, (byte)0, (String)null, (MethodName)null, (String)null, null);
    }
 
+   public Parser(Global glob, I_ProgressListener progressListener) {
+      this(glob, (byte)0, (String)null, (MethodName)null, (String)null, progressListener);
+   }
 
    public Parser(Global glob, byte type, MethodName methodName, String sessionId) {
-      this(glob, type, (String)null, methodName, sessionId);
+      this(glob, type, (String)null, methodName, sessionId, null);
    }
 
+   public Parser(Global glob, byte type, MethodName methodName, String sessionId, I_ProgressListener progressListener) {
+      this(glob, type, (String)null, methodName, sessionId, progressListener);
+   }
 
-   public Parser(Global glob, byte type, String requestId, MethodName methodName, String sessionId) {
+   public Parser(Global glob, byte type, String requestId, MethodName methodName,
+                 String sessionId, I_ProgressListener progressListener) {
       this.glob = glob;
       this.log = glob.getLog("socket");
+      this.progressListener = progressListener;
       msgVec = new Vector();
       initialize();
       setType(type);
@@ -478,6 +490,7 @@ public class Parser
       int remainLength = NUM_FIELD_LEN;
       int lenRead;
       int msgLength = 0;
+      I_ProgressListener listener = null;
       synchronized (in) {
          {
             int off = 0;
@@ -501,6 +514,11 @@ public class Parser
             throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
          }
 
+         listener = this.progressListener;
+         if (listener != null) {
+            listener.progressRead("", 10, msgLength);
+         }
+
          if (log.TRACE) log.trace(ME, "Got first 10 bytes of total length=" + msgLength);
          if (msgLength == NUM_FIELD_LEN)
             return null; // An empty message only contains the header 10 bytes
@@ -518,6 +536,12 @@ public class Parser
          remainLength = msgLength - buf.offset;
          while ((lenRead = in.read(buf.buf, buf.offset, remainLength)) != -1) {
             remainLength -= lenRead;
+
+            listener = this.progressListener;
+            if (listener != null) {
+               listener.progressRead("", 10, msgLength);
+            }
+            
             if (remainLength == 0) break;
             buf.offset += lenRead;
             //log.info(ME, "Receive: lenRead=" + lenRead + " buf.offset=" + buf.offset + " remainLength=" + remainLength);
@@ -530,6 +554,10 @@ public class Parser
       if (remainLength != 0) // assert
          throw new IOException("Internal error, can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
 
+      listener = this.progressListener;
+      if (listener != null) {
+         listener.progressRead("", msgLength, msgLength);
+      }
       return buf;
    }
 
@@ -581,8 +609,6 @@ public class Parser
       }
 
       String qos = null;
-      String xmlKey = null;
-      byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
          qos = toString(buf);
          if (buf.offset >= buf.buf.length) {

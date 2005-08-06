@@ -25,7 +25,6 @@ import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;

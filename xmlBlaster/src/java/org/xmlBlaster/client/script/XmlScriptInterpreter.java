@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.io.File;
 
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -732,6 +733,36 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          else if (this.inContent > 0) this.content.append(this.cdata);
          else super.character.append(this.cdata);
          this.cdata = new StringBuffer();
+      }
+   }
+
+   public static String wrapForScripting(MsgUnit msgUnit, String comment) {
+      String xml = msgUnit.toXml("", Integer.MAX_VALUE);
+      StringBuffer sb = new StringBuffer(xml.length()+1024);
+      sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+      sb.append("\n<xmlBlaster>");
+      if (comment != null) sb.append("\n<!-- " + comment + " -->");
+      sb.append("\n <").append(msgUnit.getMethodName().toString()).append(">");
+      sb.append(xml);
+      sb.append("\n </").append(msgUnit.getMethodName().toString()).append(">");
+      sb.append("\n</xmlBlaster>");
+      return sb.toString();
+   }
+
+   public static String dumpToFile(String path, String fn, String xml) throws XmlBlasterException {
+      try {
+         if (path != null) {
+            File dir = new File(path);
+            dir.mkdirs();
+         }
+         File to_file = new File(path, fn);
+         FileOutputStream to = new FileOutputStream(to_file);
+         to.write(xml.getBytes());
+         to.close();
+         return to_file.toString();
+      }
+      catch (java.io.IOException e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "dumpToFile", "Please check your '"+path+"' or file name '" + fn + "'", e);
       }
    }
    

@@ -96,7 +96,7 @@ abstract public class DispatchConnectionsHandler
     * @return Returns the postSendListener or null if none is registered
     */
    public final I_PostSendListener getPostSendListener() {
-	  return this.postSendListener;
+          return this.postSendListener;
    }
 
    /**
@@ -281,16 +281,19 @@ abstract public class DispatchConnectionsHandler
 
    /** Call by DispatchConnection on state transition */
    final void toAlive(DispatchConnection con) {
+      con.registerProgressListener(this.statistic);
       updateState(null);
    }
 
    /** Call by DispatchConnection on state transition */
    final void toPolling(DispatchConnection con) {
+      con.registerProgressListener(null);
       updateState(null);
    }
 
    /** Call by DispatchConnection on state transition */
    final void toDead(DispatchConnection con, XmlBlasterException ex) {
+      con.registerProgressListener(null);
       removeDispatchConnection(con); // does updateState()
       updateState(ex);
    }
@@ -451,7 +454,7 @@ abstract public class DispatchConnectionsHandler
    }
 
    /**
-    * @return A container holding some statistical delivery information
+    * @return A container holding some statistical delivery information, is never null
     */
    public final DispatchStatistic getDispatchStatistic() {
       return this.statistic; 

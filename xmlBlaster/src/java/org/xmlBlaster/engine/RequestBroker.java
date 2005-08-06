@@ -2162,9 +2162,15 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getLastWarning() {
       return this.lastWarning;
    }
+   public void clearLastWarning() {
+      this.lastWarning = "";
+   }
    /** Access the last logged error */
    public String getLastError() {
       return this.lastError;
+   }
+   public void clearLastError() {
+      this.lastError = "";
    }
    /** Memory in bytes */
    public long getFreeMem() {
@@ -2233,6 +2239,19 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    }
    public int getMaxClients() {
       return authenticate.getMaxSubjects();
+   }
+   public String[] getAliveCallbackClients() {
+      SessionInfo[] arr = this.authenticate.getSessionInfoArr();
+      if (arr == null || arr.length == 0) return new String[0];
+      ArrayList list = new ArrayList(arr.length);
+      for (int i=0; i<arr.length; i++) {
+         SessionInfo info = arr[i];
+         org.xmlBlaster.util.dispatch.DispatchManager manager = info.getDispatchManager();
+         if (manager != null && manager.getDispatchConnectionsHandler().isAlive()) {
+            list.add(info.getSessionName().getAbsoluteName());
+         }
+      }
+      return (String[])list.toArray(new String[list.size()]);
    }
    /** These are the login names returned, every client may be logged in multiple times
        which you can't see here */

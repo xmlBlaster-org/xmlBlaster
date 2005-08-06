@@ -25,6 +25,8 @@ public interface I_AdminSession extends ConnectQosDataMBean {
 
    /** Access the cluster wide unique identifier: /node/heron/client/<loginName>/<publicSessionId> */
    public String getId();
+   /** Access the configuration */
+   public String getQos();
    /** Get the login name. */
    public String getLoginName();
    /** Check if a callback was configured, if client has passed a callback address on connect. */
@@ -35,8 +37,39 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public long getPublicSessionId();
    /** Get date when client logged in. */
    public String getLoginDate();
-   /* Get the estimated date when the session expires if no refresh occures */
+   /** Get the estimated date when the session expires if no refresh occures */
    public String getSessionTimeoutExpireDate();
+   /**
+    * Get the date when last time a ALIVE state was reached. 
+    * An alive client is reachable with its callback connection.
+    * @return For example "2005-03-21 11:18:12.622"
+    */
+   public String getAliveSinceDate();
+   /**
+    * Get the date when last time a POLLING state was reached. 
+    * A polling client is not reachable with its callback connection.
+    * @return For example "2005-03-21 11:18:12.622"
+    */
+   public String getPollingSinceDate();
+
+   /**
+    * Holds the last exception text for JMX.
+    * Typically a user exception thrown from the remote client or a communication exception.
+    * @return The exception text or "" but never null
+    */
+   public String getLastCallbackException();
+
+   /**
+    * Clear the last exception text. 
+    */
+   public void clearLastCallbackException();
+
+   /**
+    * Holds the total amount of exceptions since startup. 
+    * @return The number of exceptions occurred
+    */
+   public int getNumCallbackExceptions();
+
    /** Invoke operation to reactivate the session expiry to full value */
    public void refreshSession() throws XmlBlasterException;
    /** Uptime in seconds */
@@ -55,6 +88,30 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public long getNumUpdateOneway();
    /** How many messages where sent to this clients login session */
    public long getNumUpdate();
+   /* The number of bytes read from the currently incoming message */
+   /*public long getCurrBytesRead(); Not yet implemented */
+   /* The size of the currently incoming message */
+   /*public long getNumBytesToRead();*/
+   /* Overall bytes received since startup */
+   /*public long getOverallBytesRead(); */
+   /**
+    * The number of bytes read from the currently outgoing message or response. 
+    * Note: Currently only implemented by the SOCKET protocol driver
+    * @return Number of bytes written
+    */
+   public long getCurrBytesWritten();
+   /**
+    * The size of the currently outgoing message or response
+    * Note: Currently only implemented by the SOCKET protocol driver
+    * @return Number of bytes written
+    */
+   public long getNumBytesToWrite();
+   /**
+    * Overall bytes send since startup
+    * Note: Currently only implemented by the SOCKET protocol driver
+    * @return Number of bytes written
+    */
+   public long getOverallBytesWritten();
    /** How many messages are in this clients session callback queue */
    public long getCbQueueNumMsgs();
    /** How many messages are max. allowed in this clients session callback queue */

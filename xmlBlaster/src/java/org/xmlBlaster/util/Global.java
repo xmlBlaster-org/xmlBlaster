@@ -40,6 +40,8 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
@@ -47,6 +49,7 @@ import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.def.ErrorCode;
@@ -59,6 +62,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 
 import java.util.Properties;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -873,12 +877,7 @@ public class Global implements Cloneable
     * @see org.xmlBlaster.util.admin.extern.JmxWrapper#validateJmxValue(String)
     */
    public final String validateJmxValue(String value) {
-      try {
-         return getJmxWrapper().validateJmxValue(value);
-      }
-      catch (XmlBlasterException e) {
-         return value;
-      }
+      return JmxWrapper.validateJmxValue(value);
    }
 
    /**
@@ -2122,6 +2121,7 @@ public class Global implements Cloneable
 
    /**
     * Dumps given amount of messages from queue to file. 
+    * TODO: This method is only partly implemented
     * @param queue The queue to observe
     * @param numOfEntries Maximum number of messages to dump
     * @param path The path to dump the messages to, it is automatically created if missing.
@@ -2129,8 +2129,6 @@ public class Global implements Cloneable
     * @return The file names dumped, including the path
     */
    public String[] peekQueueMessagesToFile(I_Queue queue, int numOfEntries, String path, String label) throws XmlBlasterException {
-         return new String[] { "TO BE IMPLEMENTED peekQueueMessagesToFile()" };
-   /* TODO!!!
       if (numOfEntries < 1)
          return new String[] { "Please pass number of messages to peak" };
       if (queue == null)
@@ -2143,26 +2141,35 @@ public class Global implements Cloneable
       if (list.size() == 0)
          return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
 
-      MsgFileDumper dumper = new MsgFileDumper();
-      if (path == null || path.equalsIgnoreCase("String"))
-         path = "";
-      dumper.init(this, path);
+      if (path != null && path.equalsIgnoreCase("String")) path = null;
 
       ArrayList tmpList = new ArrayList();
       for (int i=0; i<list.size(); i++) {
-         ReferenceEntry entry = (ReferenceEntry)list.get(i);
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         if (wrapper == null) {
-            tmpList.add("NOT REFERENCED #" + i);
-         }
-         else {
-            String fileName = dumper.store(wrapper);
-            tmpList.add(fileName);
-         }
-      }
+         MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
+         if (entry.isExpired() || entry.isDestroyed()) continue;
+         
+         String fn = entry.getKeyOid() + entry.getUniqueId() + ".xml";
+         String xml = null;
 
+         if (entry instanceof MsgQueuePublishEntry) {
+            MsgQueuePublishEntry pub = (MsgQueuePublishEntry)entry;
+            xml = XmlScriptInterpreter.wrapForScripting(pub.getMsgUnit(),
+               "Try to publish again: java javaclients.script.XmlScript -prepareForPublish true -requestFile 'thisFileName'");
+            tmpList.add(fn);
+         }
+         else { // TODO: Get a proper dump, here we only dump the queueEntry information but not the message itself
+            StringBuffer sb = new StringBuffer(4096);
+            sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            sb.append("\n<xmlBlaster>");
+            sb.append("\n <!-- Content dump is not yet implemented -->");
+            sb.append(entry.toXml());
+            sb.append("\n</xmlBlaster>");
+            xml = sb.toString();
+         }
+         String fullName = XmlScriptInterpreter.dumpToFile(path, fn, xml);
+         tmpList.add(fullName);
+      }
       return (String[])tmpList.toArray(new String[tmpList.size()]);
-      */
    }
 
    /**
@@ -2185,7 +2192,6 @@ public class Global implements Cloneable
          java.net.URL oUrl = location.getClass().getResource(file); // "favicon.ico"
          if (oUrl != null) {
             InputStream in = oUrl.openStream();
-            String root = in.toString();
 
             int size = 10;
             byte[] tmp = new byte[size];

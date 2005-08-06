@@ -154,7 +154,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
 
             byte packetBuffer[] = new byte[MAX_PACKET_SIZE];
             DatagramPacket packet = new DatagramPacket(packetBuffer, packetBuffer.length);
-            Parser receiver = new Parser(glob);
+            Parser receiver = new Parser(glob, null);
             listenerReadyUDP = true;
             while (runningUDP) {
                try {

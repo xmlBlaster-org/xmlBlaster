@@ -16,6 +16,7 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.protocol.I_ProgressListener;
 
 /**
  * Holding all necessary infos to establish a remote connection
@@ -192,6 +193,13 @@ abstract public class DispatchConnection implements I_Timeout
     * if necessary, for oneway updates it is null
     */
    abstract public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException;
+
+   /**
+    * Should be overwritten by extending classes. 
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      return null;
+   }
 
    /**
     * Send the messages back to the client. 

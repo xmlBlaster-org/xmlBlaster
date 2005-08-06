@@ -1252,12 +1252,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return getDispatchStatistic().getNumUpdate();
    }
 
-   public synchronized final long getClientQueueNumMsgs() {
+   public synchronized final long getConnectionQueueNumMsgs() {
       if (this.clientQueue == null) return 0L;
       return this.clientQueue.getNumOfEntries();
    }
 
-   public synchronized final long getClientQueueMaxMsgs() {
+   public synchronized final long getConnectionQueueMaxMsgs() {
       if (this.clientQueue == null) return 0L;
       return this.clientQueue.getMaxNumOfEntries();
    }

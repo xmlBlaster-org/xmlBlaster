@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.I_ProgressListener;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
@@ -172,6 +173,10 @@ public class CallbackEmailDriver implements I_CallbackDriver
       return sb.toString();
    }
 
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      return null;
+   }
 
    /**
     * This method shuts down the driver.

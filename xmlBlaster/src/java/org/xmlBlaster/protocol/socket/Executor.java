@@ -18,6 +18,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.engine.qos.AddressServer;
+import org.xmlBlaster.protocol.I_ProgressListener;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -80,6 +81,8 @@ public abstract class Executor implements ExecutorBase
    private AddressBase addressConfig;
    /** Holds remote "host:port" for logging */
    protected String remoteSocketStr;
+   /** A listener may register to receive send/receive progress informations */
+   protected I_ProgressListener progressListener;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -149,6 +152,16 @@ public abstract class Executor implements ExecutorBase
       }
       else
          this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
+   }
+
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      I_ProgressListener oldOne = this.progressListener;
+      this.progressListener = listener;
+      return oldOne;
+   }
+
+   public final I_ProgressListener getProgressListener() {
+      return this.progressListener;
    }
 
    /**
@@ -563,7 +576,8 @@ public abstract class Executor implements ExecutorBase
     */
    protected final void executeResponse(Parser receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
       Parser returner = new Parser(glob, Parser.RESPONSE_BYTE, receiver.getRequestId(),
-                           receiver.getMethodName(), receiver.getSecretSessionId());
+                           receiver.getMethodName(), receiver.getSecretSessionId(),
+                           this.progressListener);
       if (response instanceof String)
          returner.addMessage((String)response);
       else if (response instanceof String[])
@@ -584,7 +598,9 @@ public abstract class Executor implements ExecutorBase
     */
    protected final void executeException(Parser receiver, XmlBlasterException e, boolean udp) throws XmlBlasterException, IOException {
       e.isServerSide(glob.isServerSide());
-      Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSecretSessionId());
+      Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(),
+                                   receiver.getMethodName(), receiver.getSecretSessionId(),
+                                   this.progressListener);
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
@@ -593,10 +609,15 @@ public abstract class Executor implements ExecutorBase
       if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
 
+   /**
+    * Flush the data to the socket. 
+    */
    void sendMessage(byte[] msg, boolean udp) throws IOException {
+      I_ProgressListener listener = this.progressListener;
+      if (listener != null) {
+         listener.progressWrite("", 0, msg.length);
+      }
       if (udp && this.sockUDP!=null) {
-         java.net.InetAddress ia = sock.getInetAddress();
-         int port = sock.getPort();
          DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
          //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
          sockUDP.send(dp);
@@ -608,6 +629,9 @@ public abstract class Executor implements ExecutorBase
             oStream.flush();
             if (log.TRACE) log.trace(ME, "TCP data is send");
          }
+      }
+      if (listener != null) {
+         listener.progressWrite("", msg.length, msg.length);
       }
    }
 

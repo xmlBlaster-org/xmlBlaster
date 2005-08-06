@@ -34,6 +34,10 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getLoginName();
    }
 
+   public final String getQos() {
+      return this.sessionInfo.getQos();
+   }
+
    public final boolean isCallbackConfigured() {
       return this.sessionInfo.isCallbackConfigured();
    }
@@ -52,6 +56,26 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
 
    public final String getSessionTimeoutExpireDate() {
       return this.sessionInfo.getSessionTimeoutExpireDate();
+   }
+
+   public final String getAliveSinceDate() {
+      return this.sessionInfo.getAliveSinceDate();
+   }
+
+   public final String getPollingSinceDate() {
+      return this.sessionInfo.getPollingSinceDate();
+   }
+
+   public final String getLastCallbackException() {
+      return this.sessionInfo.getLastCallbackException();
+   }
+
+   public final void clearLastCallbackException() {
+      this.sessionInfo.clearLastCallbackException();
+   }
+
+   public final int getNumCallbackExceptions() {
+      return this.sessionInfo.getNumCallbackExceptions();
    }
 
    public final void refreshSession() throws XmlBlasterException {
@@ -104,6 +128,26 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
 
    public final long getNumSubscriptions() {
       return this.sessionInfo.getNumSubscriptions();
+   }
+
+   public final long getCurrBytesRead() {
+      return this.sessionInfo.getDispatchStatistic().getCurrBytesRead();
+   }
+   public final long getNumBytesToRead() {
+      return this.sessionInfo.getDispatchStatistic().getNumBytesToRead();
+   }
+   public final long getOverallBytesRead() {
+      return this.sessionInfo.getDispatchStatistic().getOverallBytesRead();
+   }
+
+   public final long getCurrBytesWritten() {
+      return this.sessionInfo.getDispatchStatistic().getCurrBytesWritten();
+   }
+   public final long getNumBytesToWrite() {
+      return this.sessionInfo.getDispatchStatistic().getNumBytesToWrite();
+   }
+   public final long getOverallBytesWritten() {
+      return this.sessionInfo.getDispatchStatistic().getOverallBytesWritten();
    }
 
    public final String subscribe(String url, String qos) throws XmlBlasterException {

@@ -638,7 +638,7 @@ final public class Authenticate implements I_RunlevelListener
    /**
     * Returns a current snapshot of all sessions
     */
-   private final SessionInfo[] getSessionInfoArr() {
+   public final SessionInfo[] getSessionInfoArr() {
       synchronized(this.sessionInfoMap) {
          return (SessionInfo[])this.sessionInfoMap.values().toArray((new SessionInfo[this.sessionInfoMap.size()]));
       }

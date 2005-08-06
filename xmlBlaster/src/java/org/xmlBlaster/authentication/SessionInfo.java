@@ -340,7 +340,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * @return null if no callback is configured
+    * @return never null but empty if no callback is configured
     */
    public final DispatchStatistic getDispatchStatistic() {
       if (this.statistic == null) {
@@ -599,6 +599,10 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    //=========== Enforced by I_AdminSession ================
+   public String getQos() {
+      return (this.connectQos == null) ? "" : this.connectQos.toXml();
+   }
+
    public final boolean isCallbackConfigured() {
       return hasCallback();
    }
@@ -631,6 +635,36 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       long ll = System.currentTimeMillis() + timeToLife;
       java.sql.Timestamp tt = new java.sql.Timestamp(ll);
       return tt.toString();
+   }
+
+   // JMX
+   public final String getAliveSinceDate() {
+      if (this.dispatchManager == null) return "";
+      long ll = this.dispatchManager.getAliveSinceTime();
+      if (ll == 0) return "";
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
+
+   // JMX
+   public final String getPollingSinceDate() {
+      if (this.dispatchManager == null) return "";
+      long ll = this.dispatchManager.getPollingSinceTime();
+      if (ll == 0) return "";
+      java.sql.Timestamp tt = new java.sql.Timestamp(ll);
+      return tt.toString();
+   }
+
+   public final String getLastCallbackException() {
+      return getDispatchStatistic().getLastDeliveryException();
+   }
+
+   public final void clearLastCallbackException() {
+      getDispatchStatistic().setLastDeliveryException("");
+   }
+
+   public final int getNumCallbackExceptions() {
+      return getDispatchStatistic().getNumDeliveryExceptions();
    }
 
    public final long getNumPublish() {

@@ -51,6 +51,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private final String typeVersion;
    /** If > 0 does burst mode */
    private long collectTime = -1L;
+   private long toAliveTime = 0;
+   private long toPollingTime = 0;
 
    private boolean dispatchWorkerIsActive = false;
 
@@ -208,6 +210,22 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
+    * Get timestamp when we went to ALIVE state. 
+    * @return millis timestamp
+    */
+   public final long getAliveSinceTime() {
+      return this.toAliveTime;
+   }
+
+   /**
+    * Get timestamp when we went to POLLING state. 
+    * @return millis timestamp
+    */
+   public final long getPollingSinceTime() {
+      return this.toPollingTime;
+   }
+
+   /**
     * Call by DispatchConnectionsHandler on state transition
     * NOTE: toAlive is called initially when a protocol plugin is successfully loaded
     * but we don't know yet if it ever is able to connect
@@ -225,6 +243,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       try {
          this.inAliveTransition = true;
+
+         if (this.toAliveTime <= this.toPollingTime) {
+            this.toAliveTime = System.currentTimeMillis();
+         }
 
          this.burstModeMaxEntries = addr.getBurstModeMaxEntries();
          this.burstModeMaxBytes = addr.getBurstModeMaxBytes();
@@ -256,6 +278,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    void toPolling(ConnectionStateEnum oldState) {
 
       if (log.CALL) log.call(ME, "Switch from " + oldState + " to POLLING");
+      if (this.toPollingTime <= this.toAliveTime) {
+         this.toPollingTime = System.currentTimeMillis();
+      }
       switchToASyncMode();
 
       // 1. We allow a client to intercept and for example destroy all entries in the queue
@@ -378,6 +403,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage() + toXml(""));
          return;
       }
+
+      getDispatchStatistic().setLastDeliveryException(throwable.toString());
+      getDispatchStatistic().incrNumDeliveryExceptions(1);
 
       if (throwable instanceof XmlBlasterException) {
          XmlBlasterException ex = (XmlBlasterException)throwable;

@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.I_ProgressListener;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 
@@ -203,6 +204,11 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public boolean isAlive() {
       return true;
+   }
+
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      return null;
    }
 
    /**

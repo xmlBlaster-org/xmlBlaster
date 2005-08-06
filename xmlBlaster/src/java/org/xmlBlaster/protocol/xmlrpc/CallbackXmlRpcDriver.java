@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.I_ProgressListener;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
@@ -213,6 +214,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "XmlRpc callback ping failed", e);
       }
+   }
+
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      return null;
    }
 
    /**

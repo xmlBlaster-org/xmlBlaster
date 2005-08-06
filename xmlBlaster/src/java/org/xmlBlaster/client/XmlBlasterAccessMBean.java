@@ -79,11 +79,11 @@ public interface XmlBlasterAccessMBean {
    /** How many messages where received by this clients login session */
    public long getNumUpdate();
    
-   /** How many messages are in this clients session callback queue */
-   public long getClientQueueNumMsgs();
+   /** How many messages are in this client side queue */
+   public long getConnectionQueueNumMsgs();
    
-   /** How many messages are max. allowed in this clients session callback queue */
-   public long getClientQueueMaxMsgs();
+   /** How many messages are max. allowed in this client side queue */
+   public long getConnectionQueueMaxMsgs();
    
    /**
     * Publish a message. 

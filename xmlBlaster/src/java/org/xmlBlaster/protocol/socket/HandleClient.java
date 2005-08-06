@@ -142,14 +142,14 @@ public class HandleClient extends Executor implements Runnable
       }
       try {
          if (expectingResponse) {
-            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
+            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
             parser.addMessage(msgArr);
             Object response = execute(parser, WAIT_ON_RESPONSE, false);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId);
+            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
             parser.addMessage(msgArr);
             execute(parser, ONEWAY, this.driver.useUdpForOneway());
             return null;
@@ -191,7 +191,7 @@ public class HandleClient extends Executor implements Runnable
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
       try {
          String cbSessionId = "";
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
          parser.addMessage(qos);
          Object response = execute(parser, WAIT_ON_RESPONSE, false);
          if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
@@ -296,7 +296,7 @@ public class HandleClient extends Executor implements Runnable
     */
    public void run() {
       if (log.CALL) log.call(ME, "Handling client request ...");
-      Parser receiver = new Parser(glob);
+      Parser receiver = new Parser(glob, progressListener);
       try {
          if (log.TRACE)
             log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());

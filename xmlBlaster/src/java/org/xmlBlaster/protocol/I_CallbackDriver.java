@@ -89,6 +89,14 @@ public interface I_CallbackDriver extends I_Plugin
    public boolean isAlive();
 
    /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener);
+
+   /**
     * Shut down the driver.
     * <p />
     */

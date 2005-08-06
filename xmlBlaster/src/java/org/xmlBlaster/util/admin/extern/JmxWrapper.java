@@ -179,7 +179,7 @@ public class JmxWrapper
     * @param value The value to verify
     * @return The beautified value to be usable as a value for JMX properties
     */
-   public String validateJmxValue(String value) {
+   public static String validateJmxValue(String value) {
       if (value == null) return value;
       while (true) {
          int index = value.indexOf(",");
@@ -535,7 +535,7 @@ public class JmxWrapper
          return mbeanHandle;
       }
       catch (javax.management.InstanceAlreadyExistsException e) {
-         log.warn(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
+         log.warn(ME, "Ignoring JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          if (objectName != null) {
             this.mbeanMap.remove(objectName.toString());
             unregisterMBean(objectName);

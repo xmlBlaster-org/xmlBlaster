@@ -6,11 +6,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch;
 
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.protocol.I_ProgressListener;
 
 /**
- * Collecting data on how many messages are successfully delivered. 
+ * Collecting data on how many messages / bytes are successfully delivered. 
  */
-public class DispatchStatistic
+public class DispatchStatistic implements I_ProgressListener
 {
    private long numUpdate = 0L;
    private long numUpdateOneway = 0L;
@@ -21,6 +22,78 @@ public class DispatchStatistic
    private long numErase = 0L;
    private long numGet = 0L;
    private long numDisconnect = 0L;
+   
+   /** Holds the last exception text for JMX. */
+   private String lastDeliveryException = "";
+   /** Count the exceptions occurred since startup. */
+   private int numDeliveryExceptions = 0;
+   
+   /** The number of bytes read from the currently incoming message */
+   private long currBytesRead;
+   /** The size of the currently incoming message */
+   private long numBytesToRead;
+   /** Overall bytes received since startup */
+   private long overallBytesRead;
+   /* The time-stamp when the last message was fully read */
+   /*private long lastReadTimestamp; Not yet implemented as we should ignore the ping */
+   
+   /** The number of bytes written from the currently outgoing message */
+   private long currBytesWritten;
+   /** The size of the currently outgoing message */
+   private long numBytesToWrite;
+   /** Overall bytes send since startup */
+   private long overallBytesWritten;
+
+   /* The time-stamp when the last message was fully written */
+   /*private long lastWrittenTimestamp; Not yet implemented as we should ignore the ping */
+
+   /**
+    * Implements I_ProgressListener interface. 
+    */
+   public void progressRead(String name, long currBytesRead, long numBytes) {
+      if (currBytesRead == numBytes) {
+          this.overallBytesRead += numBytes;
+      }
+      this.currBytesRead = currBytesRead;
+      this.numBytesToRead = numBytes;
+   }
+
+   /**
+    * Implements I_ProgressListener interface. 
+    */
+   public void progressWrite(String name, long currBytesWritten, long numBytes) {
+      if (currBytesWritten == numBytes) {
+          this.overallBytesWritten += numBytes;
+      }
+      this.currBytesWritten = currBytesWritten;
+      this.numBytesToWrite = numBytes;
+   }
+
+   /** The number of bytes read from the currently incoming message */
+   public final long getCurrBytesRead() {
+      return this.currBytesRead;
+   }
+   /** The size of the currently incoming message */
+   public final long getNumBytesToRead() {
+      return this.numBytesToRead;
+   }
+   /** Overall bytes received since startup */
+   public final long getOverallBytesRead() {
+      return this.overallBytesRead;
+   }
+
+   /** The number of bytes read from the currently outgoing message or response */
+   public final long getCurrBytesWritten() {
+      return this.currBytesWritten;
+   }
+   /** The size of the currently outgoing message or response */
+   public final long getNumBytesToWrite() {
+      return this.numBytesToWrite;
+   }
+   /** Overall bytes send since startup */
+   public final long getOverallBytesWritten() {
+      return this.overallBytesWritten;
+   }
 
    /**
     * Add count messages which where updated
@@ -157,6 +230,34 @@ public class DispatchStatistic
     */ 
    public final long getNumDisconnect() {
       return this.numDisconnect;
+   }
+
+   /**
+    * Holds the last exception text for JMX. 
+    */
+   public final String getLastDeliveryException() {
+      return this.lastDeliveryException;
+   }
+
+   /**
+    * Set the last exception text for JMX. 
+    */
+   public final void setLastDeliveryException(String lastDeliveryException) {
+      this.lastDeliveryException = lastDeliveryException;
+   }
+
+   /**
+    * Count the exceptions occurred since startup. 
+    */
+   public final void incrNumDeliveryExceptions(int count) {
+      this.numDeliveryExceptions += count;
+   }
+
+   /**
+    * Count the exceptions occurred since startup. 
+    */
+   public final int getNumDeliveryExceptions() {
+      return this.numDeliveryExceptions;
    }
 
    /**
