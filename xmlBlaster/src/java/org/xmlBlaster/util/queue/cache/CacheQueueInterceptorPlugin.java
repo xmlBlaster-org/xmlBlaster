@@ -560,8 +560,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    // JMX
-   public String getStorageIdStr() {
-      return getStorageId().toString();
+   public String getQueueName() {
+      return getStorageId().getStrippedId();
    }
 
    /**

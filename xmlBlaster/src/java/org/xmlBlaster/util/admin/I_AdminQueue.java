@@ -42,10 +42,10 @@ public interface I_AdminQueue {
    public long[] getEntryReferences() throws org.xmlBlaster.util.XmlBlasterException;
 
    /**
-    * Returns the unique ID of this queue. 
+    * Returns the unique ID of this queue as found in the database XB_ENTRIES.queueName column. 
     * @return For example "history_heronhello"
     */
-   public String getStorageIdStr();
+   public String getQueueName();
 
    /**
     * Takes given number of entries out of the queue. The ordering is first priority and secondly timestamp.

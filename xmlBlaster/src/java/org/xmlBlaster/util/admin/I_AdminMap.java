@@ -26,9 +26,10 @@ public interface I_AdminMap {
     */
    public String getPropertyStr();
    /**
-    * Returns the unique ID of this storage. 
+    * Returns the unique ID of this queue as found in the database XB_ENTRIES.queueName column. 
+    * @return For example "topicStore_heron"
     */
-   public String getStorageIdStr();
+   public String getQueueName();
    /**
     * Remove the specified storage entry. 
     * @param uniqueId The entry identifier

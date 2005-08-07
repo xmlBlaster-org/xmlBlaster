@@ -75,7 +75,10 @@ public class StorageId implements java.io.Serializable
    }
 
    /**
-    * The id usable for file names. 
+    * The id usable for file names and is used for the queue and message-store names. 
+    * <p>
+    * NOTE: This name should never change in future xmlBlaster releases.
+    * If it changes the new release would not find old database entries!
     * @return e.g. "history_nodeheronclientjoe-2"
     * @see Global#getStrippedString(String)
     */

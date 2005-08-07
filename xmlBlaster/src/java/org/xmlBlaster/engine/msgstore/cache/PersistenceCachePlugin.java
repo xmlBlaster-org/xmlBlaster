@@ -222,8 +222,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    // JMX
-   public String getStorageIdStr() {
-      return getStorageId().toString();
+   public String getQueueName() {
+      return getStorageId().getStrippedId();
    }
 
    // JMX
