@@ -15,6 +15,8 @@ package org.xmlBlaster.util.dispatch;
  */
 public final class ConnectionStateEnum implements java.io.Serializable
 {
+   private static final long serialVersionUID = -8057592644593066934L;
+
    private final int connectionState;
 
    private ConnectionStateEnum(int connectionState) {
