@@ -5,7 +5,6 @@ import org.xmlBlaster.client.protocol.http.common.I_CallbackRaw;
 import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
 
 import java.applet.Applet;
-import java.awt.Graphics;
 import java.awt.TextArea;
 import java.awt.Color;
 import java.util.Hashtable;
@@ -75,7 +74,6 @@ public class XmlScript extends Applet implements I_CallbackRaw, ActionListener
    /** Event-handler called on button click */
    public void actionPerformed(ActionEvent ev) {
       String command = ev.getActionCommand();
-      Object obj = ev.getSource();
       try {
          if(command.equals("connect")){
             // Connect to xmlBlaster server
