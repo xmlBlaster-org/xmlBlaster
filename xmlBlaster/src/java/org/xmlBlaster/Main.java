@@ -20,7 +20,6 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -84,8 +83,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     }
 
 
-   public Main(Global glob, MainGUI controlPanel) {
-      this.controlPanel = controlPanel;
+   public Main(Global glob, MainGUI controlPanel_) {
+      controlPanel = controlPanel_;
       controlPanel.xmlBlasterMain = this;
       init(glob);
    }
@@ -362,34 +361,6 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             log.warn(ME, e.toString());
          }
       }
-   }
-
-   /**
-    * Generate a unique xmlBlaster instance ID.
-    * This is the last fallback to create a cluster node id:
-    * <ol>
-    *   <li>cluster.node.id : The environment is checked for a given cluster node id</li>
-    *   <li>address :         The protocol drivers are checked if one has established a socket</li>
-    *   <li>createNodeId :    We generate a unique node id</li>
-    * </ol>
-    *  @return unique ID
-    */
-   private String createNodeId() throws XmlBlasterException
-   {
-      String ip;
-      try  {
-         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-         ip = addr.getHostAddress();
-      } catch (Exception e) {
-         log.warn(ME, "Can't determin your IP address");
-         ip = "localhost";
-      }
-
-      StringBuffer buf = new StringBuffer(256);
-      buf.append("ClusterNodeId-").append(ip).append("-").append(System.currentTimeMillis());
-      String nodeName = buf.toString();
-      if (log.TRACE) log.trace(ME, "Created node id='" + nodeName + "'");
-      return nodeName;
    }
 
    public boolean isHalted() {
