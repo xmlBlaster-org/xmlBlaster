@@ -3,6 +3,13 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+ o #13656 Bugifx Memoryleak for XPath unSubscribes
+   On XPath subscriptions which hit many topics the unSubscribe
+   could lead to a memory leak in the server.
+
+ o #13655 JMX: Fixed so that JMX queue names displayed are identical
+   to the database name XB_ENTRIES.queueNames
+
  o #13649 Added JMX methods
    - I_ProgressListener for SOCKET protocol plugin
    - Callback delivery states and statistics
