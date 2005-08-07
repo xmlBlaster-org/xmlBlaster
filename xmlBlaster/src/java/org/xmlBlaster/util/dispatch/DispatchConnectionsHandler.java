@@ -160,6 +160,7 @@ abstract public class DispatchConnectionsHandler
                      tmpCon.setAddress(cbAddr[ii]);
                      conList.add(tmpCon); // reuse
                      reconfiguredCon = tmpCon;
+                     tmpCon.registerProgressListener(this.statistic); // presistent SOCKET cb after restart
                      break;
                   }
                }
@@ -170,6 +171,7 @@ abstract public class DispatchConnectionsHandler
                      try {
                         conList.add(con);
                         con.initialize();
+                        con.registerProgressListener(this.statistic);
                      }
                      catch (XmlBlasterException e) {
                         if (e.isCommunication()) { // Initial POLLING ?
