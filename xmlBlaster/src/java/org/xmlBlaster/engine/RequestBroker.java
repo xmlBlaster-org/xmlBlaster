@@ -1367,11 +1367,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          if (SubscriptionInfo.isSubscribeId(id)) {
             SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getOid());
             if (subs != null) {
-               Vector childs = subs.getChildrenSubscriptions();
+               SubscriptionInfo[] childs = subs.getChildrenSubscriptions();
                if (childs != null) {
-                  if (log.TRACE) log.trace(ME, "unSubscribe() Traversing " + childs.size() + " childs");
-                  for (int ii=0; ii<childs.size(); ii++) {
-                     SubscriptionInfo so = (SubscriptionInfo)childs.elementAt(ii);
+                  if (log.TRACE) log.trace(ME, "unSubscribe() Traversing " + childs.length + " childs");
+                  for (int ii=0; ii<childs.length; ii++) {
+                     SubscriptionInfo so = childs[ii];
                      fireUnSubscribeEvent(so);
                      subscriptionIdSet.add(so.getSubscriptionId());
                      so = null;
@@ -1398,9 +1398,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                   continue;
                }
 
-               Vector subs = topicHandler.findSubscriber(sessionInfo);
-               for (int jj=0; subs != null && jj<subs.size(); jj++) {
-                  SubscriptionInfo sub = (SubscriptionInfo)subs.elementAt(jj);
+               SubscriptionInfo[] subs = topicHandler.findSubscriber(sessionInfo);
+               for (int jj=0; jj<subs.length; jj++) {
+                  SubscriptionInfo sub = subs[jj];
                   if (sub != null) {
                      fireUnSubscribeEvent(sub);
                      subscriptionIdSet.add(sub.getSubscriptionId());
@@ -1895,7 +1895,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
-         MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
+         MsgQosData msgQosData = (MsgQosData)this.publishQosLoginEvent.getData().clone();
          // __sessionId is deprecated, please use __publicSessionId
          msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
          msgQosData.addClientProperty("__publicSessionId", sessionInfo.getPublicSessionId());

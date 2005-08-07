@@ -1430,24 +1430,26 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    /**
-    * Returns a Vector with SubscriptionInfo instances of this session
+    * Returns SubscriptionInfo instances of this session
     * (a session may subscribe the same message multiple times). 
     * <p />
     * This searches from a given SessionInfo.
+    * @return never null but can be of length==0
     */
-   public final Vector findSubscriber(SessionInfo sessionInfo) {
-      Vector vec = null;
+   public final SubscriptionInfo[] findSubscriber(SessionInfo sessionInfo) {
       synchronized(this.subscriberMap) {
+         ArrayList list = null;
          Iterator iterator = this.subscriberMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (sub.getSessionInfo().isSameSession(sessionInfo)) {
-               if (vec == null) vec = new Vector();
-               vec.addElement(sub);
+               if (list == null) list = new ArrayList();
+               list.add(sub);
             }
          }
+         if (list == null) return new SubscriptionInfo[0];
+         return (SubscriptionInfo[])list.toArray(new SubscriptionInfo[list.size()]);
       }
-      return vec;
    }
 
    /**

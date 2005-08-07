@@ -8,7 +8,6 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.engine.admin.I_AdminSubscription;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
@@ -158,8 +157,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public synchronized void addSubscription(SubscriptionInfo subs)
    {
-      if (childrenVec == null) childrenVec = new Vector();
-      childrenVec.addElement(subs);
+      if (this.childrenVec == null) this.childrenVec = new Vector();
+      this.childrenVec.addElement(subs);
    }
 
    /**
@@ -167,9 +166,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public synchronized void removeChildSubscription(SubscriptionInfo subs)
    {
-      if (childrenVec == null) return;
+      if (this.childrenVec == null) return;
 
-      boolean found = childrenVec.remove(subs);
+      boolean found = this.childrenVec.remove(subs);
       
       if (!found) {
          log.error(ME, "Failed to remove XPATH children subscription " + uniqueKey);
@@ -184,8 +183,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * For this query subscription return all resulted subscriptions
     * @return null if not a query subscription with children
     */
-   public Vector getChildrenSubscriptions() {
-      return childrenVec;
+   public synchronized SubscriptionInfo[] getChildrenSubscriptions() {
+      if (this.childrenVec==null) return null;
+      return (SubscriptionInfo[])this.childrenVec.toArray(new SubscriptionInfo[this.childrenVec.size()]);
    }
 
    public boolean isQuery() {
@@ -482,8 +482,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       if (this.querySub != null) {
          sb.append(" parent='").append(this.querySub.getSubscriptionId()).append("'");
       }
-      if (this.childrenVec != null) {
-         sb.append(" numChilds='").append(this.childrenVec.size()).append("'");
+      SubscriptionInfo[] childrenSubs = getChildrenSubscriptions();
+      if (childrenSubs != null) {
+         sb.append(" numChilds='").append(childrenSubs.length).append("'");
       }
       sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
       sb.append(">");
@@ -498,10 +499,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
          sb.append(extraOffset+Constants.INDENT).append("<!-- subscribe qos is null ERROR -->");
       //sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
       //sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
-      if (this.childrenVec != null) {
-         for (int ii=0; ii<this.childrenVec.size(); ii++) {
-            SubscriptionInfo child = (SubscriptionInfo)this.childrenVec.elementAt(ii);
-            sb.append(offset).append(" <child>").append(child.getSubscriptionId()).append("</child>");
+      if (childrenSubs != null) {
+         for (int ii=0; ii<childrenSubs.length; ii++) {
+            sb.append(offset).append(" <child>").append(childrenSubs[ii].getSubscriptionId()).append("</child>");
          }
       }
       sb.append(offset).append("</subscription>");
