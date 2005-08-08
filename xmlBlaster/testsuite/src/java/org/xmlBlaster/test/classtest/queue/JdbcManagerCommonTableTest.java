@@ -175,7 +175,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          retHolder = this.manager.deleteFirstEntries(queueName, 1L, 10000L);
          assertEquals(me + " deleteFirstEntries check", 1, retHolder.countEntries);
 
-         ArrayList arrayList = this.manager.getEntriesByPriority(storageId, -1, -1, 0, 9);
+         ArrayList arrayList = this.manager.getEntriesByPriority(storageId, -1, -1, 0, 9, null);
          assertEquals(me + " getEntriesByPriority check", 1, arrayList.size());
 
 
@@ -187,7 +187,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          arrayList = this.manager.getEntriesBySamePriority(storageId, -1, -1);
          assertEquals(me + " getEntriesBySamePriority check", 1, arrayList.size());
 
-         arrayList = this.manager.getEntries(storageId, -1, -1);
+         arrayList = this.manager.getEntries(storageId, -1, -1, null);
          assertEquals(me + " getEntries check", 2, arrayList.size());
 
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);

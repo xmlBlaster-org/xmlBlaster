@@ -5,7 +5,9 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
@@ -32,10 +34,11 @@ public class I_MapTest extends TestCase {
    private String ME = "I_MapTest";
    protected Global glob;
    protected LogChannel log;
-   private StopWatch stopWatch = new StopWatch();
 
    private final boolean IS_DURABLE = true;
    private final boolean IS_TRANSIENT = false;
+
+   private int entryCounter = 0;
 
    private I_Map currMap;
    private int currImpl;
@@ -486,7 +489,7 @@ public class I_MapTest extends TestCase {
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
             for (int ii=0; ii<10; ii++) {
-               I_MapEntry[] results = i_map.getAll();
+               I_MapEntry[] results = i_map.getAll(null);
                assertEquals("Missing entry", queueEntries.length, results.length);
                assertEquals(ME+": Wrong result", queueEntries[0].getUniqueId(), results[0].getUniqueId());
                assertEquals(ME+": Wrong result", queueEntries[1].getUniqueId(), results[1].getUniqueId());
@@ -495,6 +498,18 @@ public class I_MapTest extends TestCase {
             assertEquals("", 3, i_map.getNumOfEntries());
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
+            I_MapEntry[] results = i_map.getAll(new I_EntryFilter() {
+               public I_Entry intercept(I_Entry entry) {
+                  entryCounter++;
+                  if (entryCounter == 2)
+                     return null;
+                  return entry;
+               }
+            });
+            assertEquals("Missing entry", queueEntries.length-1, results.length);
+            assertEquals(ME+": Wrong result", queueEntries[0].getUniqueId(), results[0].getUniqueId());
+            assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), results[1].getUniqueId());
+            
             i_map.clear();
             log.info(ME, "#1 Success, getAll()");
          }
@@ -571,7 +586,7 @@ public class I_MapTest extends TestCase {
             assertEquals("", queueEntries.length, i_map.getNumOfEntries());
 
             for (int ii=0; ii<10; ii++) {
-               I_MapEntry[] results = i_map.getAll();
+               I_MapEntry[] results = i_map.getAll(null);
                for(int jj=0; jj<results.length; jj++) {
                   log.info(ME, "#" + jj + ": " + results[jj].getUniqueId());
                }
