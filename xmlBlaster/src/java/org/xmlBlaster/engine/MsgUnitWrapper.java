@@ -46,6 +46,7 @@ import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
  */
 public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCallback
 {
+   private static final long serialVersionUID = -3883804885824516337L;
    private transient final static String ME = "MsgUnitWrapper-";
    private transient final Global glob;
    private transient final LogChannel log;
@@ -53,7 +54,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private transient int referenceCounter;        // total number of references, is swapped to persistence as well
    private transient final long uniqueId;
    private transient final String uniqueIdStr;    // cache uniqueId as String
-   private transient final StorageId storageId;   // the unique cache name
    private transient I_Map ownerCache;
    private transient final String embeddedType;
    /** used to tell to the MsgQueueEntry if a return value is desidered */
@@ -123,7 +123,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       }
       this.msgUnit = msgUnit;
       this.ownerCache = ownerCache;
-      this.storageId = (storageId!=null) ? storageId : ((this.ownerCache!=null) ? this.ownerCache.getStorageId() : null);
       this.referenceCounter = referenceCounter;
       this.historyReferenceCounter = historyReferenceCounter;
       this.embeddedType = (embeddedType == null) ? ServerEntryFactory.ENTRY_TYPE_MSG_XML : embeddedType;
@@ -160,7 +159,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
                      =  38 + this.qosData.size() + this.keyData.size() + this.content.length + 38 + 38
 
                 Postgres example:
-                  1077011447218000001     xmlBlaster_192_168_1_4_3412     msgUnitStore_xmlBlaster_192_168_1_4_3412myMessage       5       MSG_XML T       3833    ¬í\\000\\005ur\\000\\023[Ljava.lang.Object;\\220ÎX\\237\\020s)l\\002\\000\\000xp\\000\\000\\000\\005t\\002\\026\\012 <qos>\\012  <subscribable>false</subscribable>\\012  <destination forceQueuing='true'>/node/xmlBlaster_192_168_1_4_3412/client/Subscriber</destination>\\012  <sender>/node/xmlBlaster_192_168_1_4_3412/client/Publisher/1</sender>\\012  <priority>MAX</priority>\\012  <expiration lifeTime='360000' remainingLife='271805' forceDestroy='false'/>\\012  <rcvTimestamp nanos='1077011447218000001'/>\\012  <persistent/>\\012  <route>\\012   <node id='xmlBlaster_192_168_1_4_3412' stratum='0' timestamp='1077011447218000001' dirtyRead='false'/>\\012  </route>\\012  <isPublish/>\\012 </qos>t\\000.\\012 <key oid='myMessage' contentMime='txt/xml'/>ur\\000\\002[B¬ó\\027ø\\006\\010Tà\\002\\000\\000xp\\000\\000\\0005I'm message B-376 of type myMessage sent in a PtP waysr\\000\\021java.lang.Integer\\022â ¤÷\\201\\2078\\002\\000\\001I\\000\\005valuexr\\000\\020java.lang.Number\\206¬\\225\\035\\013\\224à\\213\\002\\000\\000xp\\000\\000\\000\\001sq\\000~\\000\\006\\000\\000\\000\\000
+                  1077011447218000001     xmlBlaster_192_168_1_4_3412     msgUnitStore_xmlBlaster_192_168_1_4_3412myMessage       5       MSG_XML T       3833    ï¿½ï¿½\\000\\005ur\\000\\023[Ljava.lang.Object;\\220ï¿½X\\237\\020s)l\\002\\000\\000xp\\000\\000\\000\\005t\\002\\026\\012 <qos>\\012  <subscribable>false</subscribable>\\012  <destination forceQueuing='true'>/node/xmlBlaster_192_168_1_4_3412/client/Subscriber</destination>\\012  <sender>/node/xmlBlaster_192_168_1_4_3412/client/Publisher/1</sender>\\012  <priority>MAX</priority>\\012  <expiration lifeTime='360000' remainingLife='271805' forceDestroy='false'/>\\012  <rcvTimestamp nanos='1077011447218000001'/>\\012  <persistent/>\\012  <route>\\012   <node id='xmlBlaster_192_168_1_4_3412' stratum='0' timestamp='1077011447218000001' dirtyRead='false'/>\\012  </route>\\012  <isPublish/>\\012 </qos>t\\000.\\012 <key oid='myMessage' contentMime='txt/xml'/>ur\\000\\002[Bï¿½ï¿½\\027ï¿½\\006\\010Tï¿½\\002\\000\\000xp\\000\\000\\0005I'm message B-376 of type myMessage sent in a PtP waysr\\000\\021java.lang.Integer\\022â ¤ï¿½\\201\\2078\\002\\000\\001I\\000\\005valuexr\\000\\020java.lang.Number\\206ï¿½\\225\\035\\013\\224ï¿½\\213\\002\\000\\000xp\\000\\000\\000\\001sq\\000~\\000\\006\\000\\000\\000\\000
              
              => 382 + msgUnit.size()
 
@@ -452,6 +451,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    public final String toXml() {
       return toXml((String)null);
+   }
+   
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (getMsgUnit() != null)
+         out.write(getMsgUnit().toXml().getBytes());
    }
 
    /**

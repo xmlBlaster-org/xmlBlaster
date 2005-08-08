@@ -171,4 +171,11 @@ public class SubscribeEntry implements I_MapEntry {
    public final void setSortTimestamp(Timestamp timestamp) {
       this.sortTimestamp = timestamp;
    }
+
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (this.key != null)
+         out.write(this.key.getBytes());
+      if (this.qos != null)
+         out.write(this.qos.getBytes());
+   }
 }

@@ -23,7 +23,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  */
 public final class MsgQueueDisconnectEntry extends MsgQueueEntry
 {
-   private final static String ME = "DisconnectQueueEntry";
+   private static final long serialVersionUID = 2227605254463221335L;
    private final DisconnectQos disconnectQos;
    private SessionName receiver;
    private final long immutableSizeInBytes;
@@ -127,6 +127,11 @@ public final class MsgQueueDisconnectEntry extends MsgQueueEntry
     */
    public final boolean isInternal() {
       return true;
+   }
+
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (this.disconnectQos != null)
+         out.write(this.disconnectQos.toXml().getBytes());
    }
 
    /**

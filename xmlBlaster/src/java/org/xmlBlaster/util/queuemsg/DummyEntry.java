@@ -1,8 +1,10 @@
 package org.xmlBlaster.util.queuemsg;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.def.PriorityEnum;
 
@@ -107,9 +109,12 @@ public class DummyEntry extends MsgQueueEntry {
       else return this.sizeOfMsg;
    }
 
-   
    public final void setPersistent(boolean persistent) {
       this.persistent = persistent;
    }
 
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (this.content != null)
+         out.write(this.content);
+   }
 }

@@ -168,4 +168,10 @@ public class SessionEntry implements I_MapEntry {
    public final void setSortTimestamp(Timestamp timestamp) {
       this.sortTimestamp = timestamp;
    }
+
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (this.qos == null) return;
+      out.write(this.qos.getBytes());
+   }
+   
 }

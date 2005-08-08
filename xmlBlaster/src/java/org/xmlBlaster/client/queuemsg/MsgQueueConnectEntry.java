@@ -24,7 +24,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  */
 public final class MsgQueueConnectEntry extends MsgQueueEntry
 {
-   private final static String ME = "ConnectQueueEntry";
+   private static final long serialVersionUID = -2955028300581264869L;
    private final ConnectQosData connectQosData;
    private SessionName receiver;
    private final long immutableSizeInBytes;
@@ -128,6 +128,11 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
       return true;
    }
 
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (this.connectQosData != null)
+         out.write(this.connectQosData.toXml().getBytes());
+   }
+   
    /**
     * Returns a shallow clone
     */

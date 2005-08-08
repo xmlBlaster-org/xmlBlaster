@@ -6,8 +6,12 @@ Comment:   Interface for a map (persistent and cache)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore;
 
+import java.io.OutputStream;
+import java.util.Properties;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
 
@@ -52,9 +56,11 @@ public interface I_Map extends I_StorageProblemNotifier
 
    /**
     * Retrieve all entries in the storage, please take care on memory consumption.
+    * @param entryFilter null to get everything. If specified you can filter by this
+    * callback the wanted entries.
     * @return A current snapshot of all entries
     */
-   I_MapEntry[] getAll() throws XmlBlasterException;
+   I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException;
    
    /**
     * Adds one entry and automatically increments the reference counter. 
@@ -173,6 +179,14 @@ public interface I_Map extends I_StorageProblemNotifier
     */
    String toXml(String extraOffset);
 
+   /**
+    * Dump all entries of this map to the given output stream. 
+    * The messages are XML formatted.
+    * @param out The output stream to dump the entries
+    * @param props Configuration properties, not yet specified, just pass null
+    * @return Number of entries dumped
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception;
 
    /**
     * @param entry the entry to change. This is the old entry, i.e. the entry on which the modification

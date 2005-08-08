@@ -82,5 +82,11 @@ public interface I_Entry extends java.io.Serializable
     *         or if it has not been put in the storage yet.
     */
    boolean isStored();
-
+   
+   /**
+    * Dump content to xml representation
+    * @param out The stream to dump to
+    * @param props Control porperties
+    */
+   void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException;
 }

@@ -24,6 +24,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
@@ -31,7 +32,6 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
 import java.util.ArrayList;
-import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.io.ByteArrayInputStream;
@@ -65,7 +65,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final I_EntryFactory factory;
    private final WeakHashMap listener;
    private final static String DUMMY_VALUE = "A";
-   private final TreeSet queues;
 
    private final String tableNamePrefix;
    private final String colNamePrefix;
@@ -76,7 +75,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String blobTxt = null;
    private String booleanTxt = null;
 
-   private boolean dbInitialized = false;
    private int maxStatementLength = 0;
    private boolean isConnected = true;
 
@@ -87,7 +85,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String dataIdColName;
    private String keyAttr;
 
-   private final boolean AUTO_COMMIT = true;
    private final String managerName;
 
    PreparedStatement pingPrepared = null;
@@ -113,8 +110,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     final static int PERSISTENT = 5;
     final static int SIZE_IN_BYTES = 6;
     final static int BLOB = 7;
-
-
+    
    /**
     * @param JdbcConnectionPool the pool to be used for the connections to
     *        the database. IMPORTANT: The pool must have been previously
@@ -168,7 +164,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       Hashtable names = pool.getMapping();
-      this.queues = new TreeSet();
       this.listener = new WeakHashMap();
 
       this.stringTxt = (String)names.get("string");
@@ -197,7 +192,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       // this.queueIncrement = this.pool.getTableAllocationIncrement(); // 2
 
       this.entriesTableName = this.tableNamePrefix + 
-                            (String)pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
+                            pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
       this.entriesTableName = this.entriesTableName.toUpperCase();
 
       // byteSize and dataId are reserved in MS-SQLServer, prefixing other column names are not yet coded
@@ -934,7 +929,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       // retrieve all tables to delete
       if (this.log.CALL)  log.call(ME, "wipeOutDB");
 
-      PreparedQuery query = null;
       int count = 0;
       Connection conn = null;
       try {
@@ -947,7 +941,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (SQLException ex) {
-            if (checkIfDBLoss(conn, getLogId(null, "wipeOutDB"), (SQLException)ex))
+            if (checkIfDBLoss(conn, getLogId(null, "wipeOutDB"), ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
                this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped. Reason: " + ex.toString());
@@ -1060,10 +1054,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.log.CALL) this.log.call(ME, "setUp");
       if (this.log.TRACE) this.log.trace(getLogId(null, "setUp"), "Initializing the first time the pool");
       tablesCheckAndSetup(this.pool.isDbAdmin());
-      this.dbInitialized = true;
    }
 
-   private final ArrayList processResultSet(ResultSet rs, StorageId storageId, int numOfEntries, long numOfBytes, boolean onlyId)
+   private final ArrayList processResultSet(ResultSet rs, StorageId storageId,
+                             int numOfEntries, long numOfBytes, boolean onlyId,
+                             I_EntryFilter entryFilter)
       throws SQLException, XmlBlasterException {
 
       if (this.log.CALL) this.log.call(getLogId(storageId.getStrippedId(), "processResultSet"), "Entering");
@@ -1071,7 +1066,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       ArrayList entries = new ArrayList();
       int count = 0;
       long amount = 0L;
-      long currentAmount = 0L;
 
       while ( (rs.next()) && ((count < numOfEntries) || (numOfEntries < 0)) &&
          ((amount < numOfBytes) || (numOfBytes < 0))) {
@@ -1084,8 +1078,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             /*String queueName =*/ rs.getString(QUEUE_NAME); // preStatement.setString(3, queueName);
             int prio = rs.getInt(PRIO);                // preStatement.setInt(4, prio);
             String typeName = rs.getString(TYPE_NAME);      // preStatement.setString(5, typeName);
+            if (typeName != null) typeName = typeName.trim();
             //this only to make ORACLE happy since it does not support BOOLEAN
             String persistentAsChar = rs.getString(PERSISTENT);
+            if (persistentAsChar != null) persistentAsChar = persistentAsChar.trim();
             boolean persistent = false;
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
@@ -1097,7 +1093,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (this.log.DUMP)
                   this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
 //               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
-               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
+               I_Entry entry = this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId);
+               if (entryFilter != null)
+                  entry = entryFilter.intercept(entry);
+               entries.add(entry);
                amount += sizeInBytes;
             }
          }
@@ -1729,7 +1728,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param maxPrio the maximum priority to retrieve (inclusive).
     *
     */
-   public ArrayList getEntriesByPriority(StorageId storageId, int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
+   public ArrayList getEntriesByPriority(StorageId storageId, int numOfEntries,
+                             long numOfBytes, int minPrio, int maxPrio, I_EntryFilter entryFilter)
       throws XmlBlasterException {
 
       String queueName = storageId.getStrippedId();
@@ -1749,7 +1749,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query =null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
-         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesByPriority"), "Found " + ret.size() + " entries");
          return ret;
       }
@@ -1818,7 +1818,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Request: '" + req + "'");
 
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
-         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         I_EntryFilter entryFilter = null;
+         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
          return ret;
       }
@@ -1851,7 +1852,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public ArrayList getEntries(StorageId storageId, int numOfEntries, long numOfBytes)
+   public ArrayList getEntries(StorageId storageId, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter)
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       if (this.log.CALL) this.log.call(getLogId(queueName, "getEntries"), "Entering");
@@ -1866,7 +1867,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
-         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
          return ret;
       }
@@ -1911,7 +1912,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
-         ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
+         I_EntryFilter entryFilter = null;
+         ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false, entryFilter);
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesWithLimit"), "Found " + ret.size() + " entries");
          return ret;
       }
@@ -1961,7 +1963,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "removeEntriesWithLimit"), "Request: '" + req + "'");
          int ret = update(req);
          if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
-         return (long)ret;
+         return ret;
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeEntriesWithLimit", "", ex); 
@@ -1995,13 +1997,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Request: '" + req + "'");
          query = new PreparedQuery(pool, req, this.log, -1);
 
-         ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
+         ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false, null);
 
          for (int i=1; i < requests.size(); i++) {
             req = (String)requests.get(i);
             if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Request: '" + req + "'");
             query.inTransactionRequest(req /*, -1 */);
-            ret.addAll(processResultSet(query.rs, storageId, -1, -1L, false));
+            ret.addAll(processResultSet(query.rs, storageId, -1, -1L, false, null));
          }
          if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Found " + ret.size() + " entries");
          return ret;
@@ -2180,7 +2182,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       return sb.toString();
    }
-
 
    /**
     * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 

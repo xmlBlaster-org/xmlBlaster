@@ -372,6 +372,17 @@ public class ReferenceEntry extends MsgQueueEntry
       return obj;
    }
 
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      try { 
+         MsgUnit msgUnit = getMsgUnit();
+         if (msgUnit != null)
+            out.write(msgUnit.toXml().getBytes());
+      }
+      catch (XmlBlasterException e) {
+         ;
+      }
+   }
+   
    /**
     * Returns a shallow clone
     */

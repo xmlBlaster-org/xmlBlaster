@@ -23,7 +23,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  */
 public final class MsgQueueEraseEntry extends MsgQueueEntry
 {
-   private final static String ME = "EraseQueueEntry";
+   private static final long serialVersionUID = 3720551167058323026L;
    private final EraseQos eraseQos;
    private final EraseKey eraseKey;
    private SessionName receiver;
@@ -141,6 +141,11 @@ public final class MsgQueueEraseEntry extends MsgQueueEntry
     */
    public boolean isInternal() {
       return true;
+   }
+
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      out.write(this.eraseKey.toXml().getBytes());
+      out.write(this.eraseQos.toXml().getBytes());
    }
 
    /**

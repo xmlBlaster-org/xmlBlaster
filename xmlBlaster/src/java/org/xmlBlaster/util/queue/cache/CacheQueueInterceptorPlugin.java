@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -29,6 +30,10 @@ import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Properties;
+import java.io.OutputStream;
 
 /**
  * @author laghi@swissinfo.org
@@ -52,7 +57,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private boolean isConnected = false;
 
    /** object used to control the swapping performance */
-   private CacheControlParam controlParam;
+   //private CacheControlParam controlParam;
    private PluginInfo pluginInfo;
 
    private I_QueueEntry referenceEntry;
@@ -302,7 +307,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
             setProperties(userData);
             // not used yet
-            this.controlParam = new CacheControlParam((QueuePropertyBase)getProperties());
+            //this.controlParam = new CacheControlParam((QueuePropertyBase)getProperties());
 
             loadFromPersistence();
 
@@ -415,11 +420,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
-    * @see I_Queue#getEntries()
+    * @see I_Queue#getEntries(I_EntryFilter)
     */
-   public ArrayList getEntries() throws XmlBlasterException {
-      // currently not implemented
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries not implemented");
+   public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
+           if (this.persistentQueue == null) return new ArrayList();
+           return this.persistentQueue.getEntries(entryFilter);
    }
 
    /**
@@ -1401,5 +1406,36 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          return this.queueSizeListeners != null;
       else
          return this.queueSizeListeners.contains(listener);
+   }
+
+   /**
+    * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
+      I_Queue queue = this.persistentQueue;
+      if (queue != null) {
+         return queue.embeddedObjectsToXml(out, null);
+      }
+      log.warn(ME, "Sorry, dumping transient entries to '" + out + "' is not implemented");
+      return 0;
+   }
+   
+   /**
+    * @see I_AdminQueue#dumpEmbeddedObjectsToFile(String)
+    */
+   public String dumpEmbeddedObjectsToFile(String fileName) throws Exception {
+      if (fileName == null || fileName.equalsIgnoreCase("String")) {
+         fileName = this.queueId.getStrippedId() + ".xml";
+      }
+      File to_file = new File(fileName);
+      if (to_file.getParent() != null) {
+         to_file.getParentFile().mkdirs();
+      }
+      FileOutputStream out = new FileOutputStream(to_file);
+      out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes());
+      out.write(("\n<"+this.queueId.getPrefix()+">").getBytes());
+      long count = embeddedObjectsToXml(out, null);
+      out.write(("\n</"+this.queueId.getPrefix()+">").getBytes());
+      return "Dumped " + count + " entries to '" + to_file.toString() + "'";
    }
 }

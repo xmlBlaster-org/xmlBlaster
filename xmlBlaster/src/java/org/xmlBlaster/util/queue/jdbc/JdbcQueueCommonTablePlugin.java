@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -25,9 +26,12 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
+import java.io.OutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 
 /**
@@ -41,7 +45,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private String ME;
    private StorageId storageId;
    private boolean notifiedAboutAddOrRemove = false;
-   private String associatedTable = null;
    private Global glob;
    private LogChannel log;
    private QueuePropertyBase property;
@@ -62,6 +65,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
    private ArrayList queueSizeListeners;
    private Object queueSizeListenersSync = new Object();
+   private int entryCounter;
 
    public boolean isTransient() {
       return false;
@@ -305,10 +309,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 
    /**
-    * @see I_Queue#getEntries()
+    * @see I_Queue#getEntries(I_EntryFilter)
     */
-   public ArrayList getEntries() throws XmlBlasterException {
-      return this.manager.getEntries(getStorageId(), -1, -1L);
+   public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
+      return this.manager.getEntries(getStorageId(), -1, -1L, entryFilter);
    }
 
    /**
@@ -324,7 +328,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          if (this.putListener.putPre(queueEntry) == false)
             return;
       }
-      put((I_Entry)queueEntry);
+      put(queueEntry);
 
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(queueEntry);
@@ -466,9 +470,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       ArrayList ret = null;
+      I_EntryFilter entryFilter = null;
       synchronized(this.modificationMonitor) {
          try {
-            ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes);
+            ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes, entryFilter);
 
             long ids[] = new long[ret.size()];
             for (int i=0; i < ids.length; i++)
@@ -553,7 +558,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public I_QueueEntry peek() throws XmlBlasterException
    {
-      ArrayList ret = this.manager.getEntries(getStorageId(), 1, -1L);
+      I_EntryFilter entryFilter = null;
+      ArrayList ret = this.manager.getEntries(getStorageId(), 1, -1L, entryFilter);
       if (ret.size() < 1) return null;
       return (I_QueueEntry)ret.get(0);
    }
@@ -564,7 +570,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      ArrayList ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes);
+      I_EntryFilter entryFilter = null;
+      ArrayList ret = this.manager.getEntries(getStorageId(), numOfEntries, numOfBytes, entryFilter);
       return ret;
    }
 
@@ -582,7 +589,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), numOfEntries, numOfBytes, minPriority, maxPriority);
+      I_EntryFilter entryFilter = null;
+      ArrayList ret = this.manager.getEntriesByPriority(getStorageId(), numOfEntries, numOfBytes, minPriority, maxPriority, entryFilter);
       return ret;
    }
 
@@ -742,7 +750,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
       if (queueEntries == null || queueEntries.length == 0) return new boolean[0];
-      boolean ret[] = new boolean[queueEntries.length];
 
       long[] ids = new long[queueEntries.length];
 
@@ -1212,8 +1219,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    /**
     * @see I_Map#getAll()
     */
-   public I_MapEntry[] getAll() throws XmlBlasterException {
-      ArrayList list = peek(-1, -1);
+   public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
+      ArrayList list = this.manager.getEntries(getStorageId(), -1, -1L, entryFilter);
       return (I_MapEntry[])list.toArray(new I_MapEntry[list.size()]);
    }
 
@@ -1352,5 +1359,26 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return this.queueSizeListeners.contains(listener);
    }
 
+   /**
+    * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
+    */
+   public long embeddedObjectsToXml(final OutputStream out, Properties props) throws Exception {
+      if (out == null) return 0;
+      entryCounter = 0;
+      /*I_Entry[] results = */getAll(new I_EntryFilter() {
+         public I_Entry intercept(I_Entry entry) {
+            entryCounter++;
+            try {
+               entry.embeddedObjectToXml(out, null);
+            }
+            catch (IOException e) {
+               log.warn(ME, "Ignoring dumpToFile() problem: "+e.toString());
+            }
+            return null;
+         }
+      });
+      
+      return entryCounter;
+   }
 }
 

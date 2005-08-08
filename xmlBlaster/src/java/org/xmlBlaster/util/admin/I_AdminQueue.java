@@ -203,4 +203,12 @@ public interface I_AdminQueue {
     * @return An xml encoded dump
     */
    public java.lang.String toXml();
+
+   /**
+    * Dump all entries of this queue to a file. 
+    * The messages are XML formatted.
+    * @param fileName The file name to dump, may contain a path.
+    * @return Status string
+    */
+   public String dumpEmbeddedObjectsToFile(String fileName) throws Exception;
 }

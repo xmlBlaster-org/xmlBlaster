@@ -20,6 +20,7 @@ import org.xmlBlaster.util.queue.StorageId;
  */
 public final class MsgQueueHistoryEntry extends ReferenceEntry
 {
+   private static final long serialVersionUID = -2967395648378724198L;
    private final static String ME = "MsgQueueHistoryEntry";
 
    /**

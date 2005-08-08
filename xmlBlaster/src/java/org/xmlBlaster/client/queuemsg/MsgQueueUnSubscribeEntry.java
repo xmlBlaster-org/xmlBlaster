@@ -140,6 +140,11 @@ public final class MsgQueueUnSubscribeEntry extends MsgQueueEntry
       return true;
    }
 
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      out.write(this.unSubscribeKey.toXml().getBytes());
+      out.write(this.unSubscribeQos.toXml().getBytes());
+   }
+	   
    /**
     * Returns a shallow clone
     */

@@ -10,6 +10,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 
 import java.util.ArrayList;
+import java.util.Properties;
+import java.io.OutputStream;
 
 
 /**
@@ -94,16 +96,20 @@ public interface I_Queue extends I_StorageProblemNotifier
    /**
     * Gets the references of the entries in the queue. Note that the data
     * which is referenced here may be changed by other threads.
+    * The entries are not removed.
     * @return Array with reference numbers
     */
    long[] getEntryReferences() throws XmlBlasterException;
 
    /**
     * Gets a copy of the entries (e.g the messages) in the queue. 
-    * If the queue
-    * is modified, this copy will not be affected. This method is useful for client browsing.
+    * If the queue is modified, this copy will not be affected.
+    *  This method is useful for client browsing, the entries are not removed
+    *  @param entryFilter if not null the you can control which entries to return
+    *  with the callback entryFilter.intercept(I_Entry).
+    *  @return The found entries
     */
-   ArrayList getEntries() throws XmlBlasterException;
+   ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException;
 
    // This is not true: Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
 
@@ -495,4 +501,13 @@ public interface I_Queue extends I_StorageProblemNotifier
     * @return An xml encoded dump
     */
    public String toXml(String extraOffset);
+
+   /**
+    * Dump all entries of this queue to the given output stream. 
+    * The messages are XML formatted.
+    * @param out The output stream to dump the entries
+    * @param props Configuration properties, not yet specified, just pass null
+    * @return Number of entries dumped
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception;
 }

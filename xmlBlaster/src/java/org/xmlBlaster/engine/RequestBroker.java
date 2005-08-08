@@ -409,7 +409,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info(ME, "Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
 
-            I_MapEntry[] mapEntryArr = this.topicStore.getAll();
+            I_MapEntry[] mapEntryArr = this.topicStore.getAll(null);
             boolean fromPersistenceStore = true;
             for(int i=0; i<mapEntryArr.length; i++) {
                TopicEntry topicEntry = (TopicEntry)mapEntryArr[i];
@@ -1636,7 +1636,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                }
                else {
                   if (! publishQos.isFromPersistenceStore()) {
-                     log.warn(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                     if (msgKeyData.isInternal()) {
+                        if (log.TRACE) log.trace(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                     }
+                     else {
+                        log.warn(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                     }
                   }
                }
             }

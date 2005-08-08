@@ -6,6 +6,7 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.admin;
 
+
 /**
  * Declares available methods of a map implementation for administration. 
  * <p />
@@ -103,4 +104,12 @@ public interface I_AdminMap {
     * @return true if shutdown
     */
    public boolean isShutdown();
+
+   /**
+    * Dump all entries of this map to a file. 
+    * The messages are XML formatted.
+    * @param fileName The file name to dump, may contain a path.
+    * @return Status string
+    */
+   public String dumpEmbeddedObjectsToFile(String fileName) throws Exception;
 }

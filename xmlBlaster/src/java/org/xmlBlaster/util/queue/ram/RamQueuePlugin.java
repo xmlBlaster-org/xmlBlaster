@@ -12,6 +12,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Global;
 
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -30,6 +31,8 @@ import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Properties;
+import java.io.OutputStream;
 
 
 /**
@@ -49,7 +52,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private LogChannel log;
    private I_QueuePutListener putListener;
    private boolean isShutdown = false;
-   private final I_QueueEntry[] DUMMY_ARR = new I_QueueEntry[0];
    private MsgComparator comparator;
    private final int MAX_PRIO = 9; // see PriorityEnum.MAX_PRIORITY
    private long sizeInBytes = 0L;
@@ -160,8 +162,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    /**
     * Gets a copy of the entries (the messages) in the queue. If the queue
     * is modified, this copy will not be affected. This method is useful for client browsing.
+    * THIS METHOD IS NOT IMPLEMENTED
+    * @throws XmlBlasterException always
     */
-   public ArrayList getEntries() throws XmlBlasterException {
+   public ArrayList getEntries(I_EntryFilter entryFilter) throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries() is not implemented");
    }
 
@@ -203,7 +207,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public long clear() {
       long ret = 0L;      
       synchronized(this) {
-         ret = (long)this.storage.size();
+         ret = this.storage.size();
 
          // Take a copy to avoid java.util.ConcurrentModificationException
          I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
@@ -391,7 +395,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (limitEntry == null) return ret;
       synchronized (this) {
          SortedSet set = this.storage.headSet(limitEntry);
-         ret = (long)set.size();
+         ret = set.size();
          this.storage.removeAll(set);
          if (inclusive) {
             if (this.storage.remove(limitEntry)) ret++;
@@ -913,6 +917,14 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          return this.queueSizeListeners != null;
       else
          return this.queueSizeListeners.contains(listener);
+   }
+
+   /**
+    * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) {
+      log.warn(ME, "Sorry, dumping transient entries is not implemented");
+      return 0;
    }
 }
 

@@ -11,9 +11,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Entry;
-// import org.xmlBlaster.util.queue.jdbc.I_ConnectionStateListener;
-// import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -22,10 +20,13 @@ import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
-import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * @author laghi@swissinfo.org
@@ -514,7 +515,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * as if we have swapped messages they won't fit to memory. 
     * @see I_Map#getAll()
     */
-   public I_MapEntry[] getAll() throws XmlBlasterException {
+   public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering getAll()");
       synchronized (this) {
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
@@ -529,14 +530,14 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          if (true) {
             java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
 
-            I_MapEntry[] ramEntries = this.transientStore.getAll();
+            I_MapEntry[] ramEntries = this.transientStore.getAll(entryFilter);
             for(int i=0; i<ramEntries.length; i++) {
                map.put(new Long(ramEntries[i].getUniqueId()), ramEntries[i]);
             }
             //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
 
             if (this.persistentStore != null) {
-               I_MapEntry[] persistEntries = this.persistentStore.getAll();
+               I_MapEntry[] persistEntries = this.persistentStore.getAll(entryFilter);
                for(int i=0; i<persistEntries.length; i++) {
                   map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
                }
@@ -546,7 +547,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             return (I_MapEntry[])map.values().toArray(new I_MapEntry[map.size()]);
          }
          else {
-            return this.transientStore.getAll();
+            return this.transientStore.getAll(entryFilter);
          }
       }
    }
@@ -899,5 +900,35 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
    }
 
+   /**
+    * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
+      I_Map ps = this.persistentStore;
+      if (ps != null) {
+         return ps.embeddedObjectsToXml(out, null);
+      }
+      log.warn(ME, "Sorry, dumping transient entries to '" + out + "' is not implemented");
+      return 0;
+   }
+   
+   /**
+    * @see I_AdminMap#dumpEmbeddedObjectsToFile(String)
+    */
+   public String dumpEmbeddedObjectsToFile(String fileName) throws Exception {
+      if (fileName == null || fileName.equalsIgnoreCase("String")) {
+         fileName = this.storageId.getStrippedId() + ".xml";
+      }
+      File to_file = new File(fileName);
+      if (to_file.getParent() != null) {
+         to_file.getParentFile().mkdirs();
+      }
+      FileOutputStream out = new FileOutputStream(to_file);
+      out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes());
+      out.write(("\n<"+this.storageId.getPrefix()+">").getBytes());
+      long count = embeddedObjectsToXml(out, null);
+      out.write(("\n</"+this.storageId.getPrefix()+">").getBytes());
+      return "Dumped " + count + " entries to '" + to_file.toString() + "'";
+   }
 
 }

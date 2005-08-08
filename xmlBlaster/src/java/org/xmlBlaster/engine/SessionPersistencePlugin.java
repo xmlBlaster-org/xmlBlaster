@@ -75,7 +75,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * @throws XmlBlasterException
     */
    private HashMap recoverSessions() throws XmlBlasterException {
-      I_MapEntry[] entries = this.sessionStore.getAll();
+      I_MapEntry[] entries = this.sessionStore.getAll(null);
       HashMap sessionIds = new HashMap();
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SessionEntry) {
@@ -113,7 +113,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * @throws XmlBlasterException
     */   
    private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
-      I_MapEntry[] entries = this.subscribeStore.getAll();
+      I_MapEntry[] entries = this.subscribeStore.getAll(null);
       
       for (int i=0; i < entries.length; i++) {
          if (entries[i] instanceof SubscribeEntry) {

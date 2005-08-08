@@ -11,6 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 // import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -21,12 +22,15 @@ import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.Timestamp;
 
+import java.io.OutputStream;
+import java.util.Properties;
 import java.util.TreeSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.Iterator; 
 import java.util.Comparator;
+import java.util.ArrayList;
 
 /**
  * Mapping messages in RAM only. 
@@ -124,12 +128,23 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    /**
     * @see I_Map#getAll()
     */
-   public I_MapEntry[] getAll() throws XmlBlasterException {
+   public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "getAll()");
+      I_MapEntry[] entries = null;
       synchronized (this.storage) {
          // sortTimestamp remains as all entries are touched
-         return (I_MapEntry[])this.storage.values().toArray(new I_MapEntry[this.storage.size()]);
+                 entries = (I_MapEntry[])this.storage.values().toArray(new I_MapEntry[this.storage.size()]);
       }
+      if (entryFilter == null)
+         return entries;
+          
+      ArrayList list = new ArrayList();
+      for (int i=0; i<entries.length; i++) {
+         I_MapEntry entry = (I_MapEntry)entryFilter.intercept(entries[i]);
+         if (entry != null)
+                list.add(entry);
+      }
+      return (I_MapEntry[])list.toArray(new I_MapEntry[list.size()]);
    }
 
    /**
@@ -259,7 +274,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public long clear() {
       if (log.CALL) log.call(ME, "clear()");
       synchronized(this.storage) {
-         long ret = (long)this.storage.size();
+         long ret = this.storage.size();
 
          Iterator iter = this.storage.values().iterator();
          while (iter.hasNext()) {
@@ -443,10 +458,20 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    /**
+    * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
+    */
+   public long embeddedObjectsToXml(OutputStream out, Properties props) {
+      log.warn(ME, "Sorry, dumping transient entries is not implemented");
+      return 0;
+   }
+
+   /**
     * Sorts the entries in the the last recent added order (no real LRU). 
     */
    class LruComparator implements Comparator, java.io.Serializable
    {
+      private static final long serialVersionUID = -8286998211709086682L;
+
       // We compare the MsgUnitWrapper by its cache entry timestamp
       public final int compare(Object o1, Object o2) {
          I_MapEntry id1 = (I_MapEntry)o1;

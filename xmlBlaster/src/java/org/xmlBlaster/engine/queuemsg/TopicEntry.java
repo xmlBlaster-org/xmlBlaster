@@ -295,6 +295,11 @@ public final class TopicEntry implements I_MapEntry
       this.sortTimestamp = timestamp;
    }
 
+   public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      if (getMsgUnit() != null)
+         out.write(getMsgUnit().toXml().getBytes());
+   }
+   
    /**
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 
     * <pre> 
