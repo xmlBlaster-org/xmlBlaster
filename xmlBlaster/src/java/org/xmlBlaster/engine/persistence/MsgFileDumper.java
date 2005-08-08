@@ -109,7 +109,7 @@ public final class MsgFileDumper
    public String createFileName(String oid, long timestamp) {
       //return oid + "-" + timestamp;
       Timestamp ts = new Timestamp(timestamp);
-      return oid + "-" + ts.toString();
+      return Global.getStrippedString(oid + "-" + ts.toString());
    }
 
    public String getPersistencePath() {
