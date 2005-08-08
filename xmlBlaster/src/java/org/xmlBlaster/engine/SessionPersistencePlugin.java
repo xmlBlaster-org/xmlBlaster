@@ -121,6 +121,14 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SubscribeEntry entry = (SubscribeEntry)entries[i];
             String qos = entry.getQos();
             QueryQosData qosData = this.queryQosFactory.readObject(qos);
+
+            ClientProperty clientProperty = qosData.getClientProperty(Constants.PERSISTENCE_ID);
+            if (clientProperty == null) {
+               log.error(ME, "SubscribeQos with missing " + Constants.PERSISTENCE_ID + ": " + qosData.toXml());
+               long uniqueId = new Timestamp().getTimestamp();
+               qosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(this.global, Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
+            }
+            
             boolean initialUpdates = qosData.getInitialUpdateProp().getValue();
             if (initialUpdates) {
                qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "true"));
@@ -199,6 +207,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          }
          else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
          this.isOK = true;
+
 
          // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
@@ -313,6 +322,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "subscriptionAdd '" + e.getSubscriptionInfo().getId() + "'");
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".subscriptionAdded: invoked when plugin already shut down");
+      //Thread.dumpStack();
 
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       KeyData data = subscriptionInfo.getKeyData();
