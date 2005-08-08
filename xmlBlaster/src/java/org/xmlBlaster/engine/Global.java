@@ -705,6 +705,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (list.size() == 0)
          return new String[] { "Peeking messages from " + label + " queue failed, the reason is not known" };
 
+      int maxLength = getProperty().get("xmlBlaster/peekMessages/maxLength", 5000);
+
       ArrayList tmpList = new ArrayList();
       for (int i=0; i<list.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)list.get(i);
@@ -715,12 +717,11 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
          else {
             tmpList.add("  "+wrapper.getMsgKeyData().toXml());
-            int MAX_LEN = 5000;
             String content = wrapper.getMsgUnit().getContentStr();
-            if (content.length() > (MAX_LEN+5) ) {
-               content = content.substring(0, MAX_LEN) + " ...";
+            if (content.length() > (maxLength+5) ) {
+               content = content.substring(0, maxLength) + " ...";
             }
-            tmpList.add("  <content size='"+content.length()+"'>"+content+"</content>");
+            tmpList.add("  <content size='"+wrapper.getMsgUnit().getContent().length+"'>"+content+"</content>");
             tmpList.add("  "+wrapper.getMsgQosData().toXml());
          }
          tmpList.add("</MsgUnit>");
