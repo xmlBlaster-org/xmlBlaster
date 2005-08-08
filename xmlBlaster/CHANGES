@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for xxxxx [2005-xx-xx]
 ==============================
+
+ o Tested C and C++ client library with icc 9.0 (the new Intel C++ compiler release)
+
  o #13656 Bugifx Memoryleak for XPath unSubscribes
    On XPath subscriptions which hit many topics the unSubscribe
    could lead to a memory leak in the server.
