@@ -11,6 +11,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -157,7 +158,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
               if ( obj == null) {
                  JdbcConnectionPool pool = new JdbcConnectionPool();
                  pool.initialize(this.glob, pluginInfo.getParameters());
-                 manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName);
+                 manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName, this);
                  pool.registerStorageProblemListener(manager);
                  manager.setUp();
                  if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
@@ -1366,7 +1367,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (out == null) return 0;
       entryCounter = 0;
       /*I_Entry[] results = */getAll(new I_EntryFilter() {
-         public I_Entry intercept(I_Entry entry) {
+         public I_Entry intercept(I_Entry entry, I_Storage storage) {
             entryCounter++;
             try {
                entry.embeddedObjectToXml(out, null);

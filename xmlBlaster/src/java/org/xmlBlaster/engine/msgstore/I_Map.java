@@ -12,6 +12,7 @@ import java.util.Properties;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
 
@@ -21,7 +22,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
  * All methods are reentrant and thread safe
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_Map extends I_StorageProblemNotifier
+public interface I_Map extends I_Storage, I_StorageProblemNotifier
 {
    /**
     * Is called after the instance is created.

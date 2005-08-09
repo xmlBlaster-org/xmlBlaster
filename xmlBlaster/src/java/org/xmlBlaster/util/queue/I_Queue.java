@@ -38,7 +38,7 @@ import java.io.OutputStream;
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
-public interface I_Queue extends I_StorageProblemNotifier
+public interface I_Queue extends I_Storage, I_StorageProblemNotifier
 {
    public final boolean IGNORE_PUT_INTERCEPTOR = true;
    public final boolean USE_PUT_INTERCEPTOR = false;
@@ -420,11 +420,6 @@ public interface I_Queue extends I_StorageProblemNotifier
    int removeTransient() throws XmlBlasterException;
 
    /**
-    * @return true for RAM based queue, false for other types like CACHE and JDBC queues
-    */
-   boolean isTransient();
-
-   /**
     * Remove all queue entries. 
     * @return The number of entries erased
     */
@@ -435,7 +430,6 @@ public interface I_Queue extends I_StorageProblemNotifier
     * Persistent entries will NOT be deleted.
     */
    public void shutdown();
-
 
    /**
     * removes the head of the queue until (but not included) the entry specified

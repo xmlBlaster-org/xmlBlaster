@@ -25,7 +25,6 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.key.QueryKeySaxFactory;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -35,6 +34,7 @@ import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -66,7 +66,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private StorageId subscribeStorageId;
    private ConnectQosSaxFactory connectQosFactory;
    private QueryQosSaxFactory queryQosFactory;
-   private QueryKeySaxFactory queryKeyFactory;
    private AddressServer addressServer;
    private Object sync = new Object();
    
@@ -123,7 +122,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             duplicateCounter = 0;
             final java.util.Map duplicates = new java.util.TreeMap();
             /*I_MapEntry[] results = */this.subscribeStore.getAll(new I_EntryFilter() {
-               public I_Entry intercept(I_Entry entry) {
+               public I_Entry intercept(I_Entry entry, I_Storage storage) {
+                  if (storage.isTransient()) return null;
                   try {
                      SubscribeEntry subscribeEntry = (SubscribeEntry)entry;
                      //QueryKeyData keyData = queryKeyFactory.readObject(subscribeEntry.getKey());
@@ -132,7 +132,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                      String key = qosData.getSubscriptionId();
                      if (log.TRACE) log.trace(ME, "Cleanup of duplicate subscriptions, key=" + key);
                      if (duplicates.containsKey(key)) {
-                        if (duplicateCounter == 0)
+                        //if (duplicateCounter == 0)
                            log.warn(ME, "Cleanup of duplicate subscriptions, this may take a while, please wait ...");
                         duplicateCounter++;
                         //log.warn(ME, "Removing duplicate subscription '" + key + "' oid=" + keyData.getOid());
@@ -234,7 +234,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
          this.connectQosFactory = new ConnectQosSaxFactory(this.global);
          this.queryQosFactory = new QueryQosSaxFactory(this.global);
-         this.queryKeyFactory = new QueryKeySaxFactory(this.global);
          // init the storages
          QueuePropertyBase sessionProp = new SessionStoreProperty(this.global, this.global.getStrippedId());   
          if (sessionProp.getMaxEntries() > 0L) {
@@ -316,7 +315,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
       // Persist it
       long uniqueId = new Timestamp().getTimestamp();
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
+      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
       if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
       sessionInfo.setPersistenceUniqueId(uniqueId);
       this.sessionStore.put(entry);

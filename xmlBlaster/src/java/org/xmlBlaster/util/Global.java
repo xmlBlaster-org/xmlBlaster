@@ -1515,68 +1515,6 @@ public class Global implements Cloneable
       }
    }
 
-
-   /**
-    * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
-    * configuration name specified by defaultConfName (default is 'JDBC'). You can overwrite these 
-    * properties entirely or partially with 'properties'.
-    * @param confType the name of the configuration to use as default. If you pass null, then 
-    *                 'JDBC' will be taken.
-    * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
-    * @param properties the properties to use to overwrite the default properties. If you pass null, no 
-    *        properties will be overwritten, and the default will be used.
-    * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
-    *        has effect if the JdbcManagerCommonTable is used.
-    */
-/*
-   public void wipeOutDB(String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
-      throws XmlBlasterException {
-      if (confType == null) confType = "JDBC";
-      if (confVersion == null) confVersion = "1.0";
-      QueuePluginManager pluginManager = new QueuePluginManager(this);
-      PluginInfo pluginInfo = new PluginInfo(this, pluginManager, confType, confVersion);
-      // clone the properties (to make sure they only belong to us) ...
-      java.util.Properties
-         ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
-      //overwrite our onw properties ...
-      if (properties != null) {
-         java.util.Enumeration enumer = properties.keys();
-         while (enumer.hasMoreElements()) {
-            String key =(String)enumer.nextElement();
-            ownProperties.put(key, properties.getProperty(key));
-         }
-      }
-      JdbcConnectionPool pool = new JdbcConnectionPool();
-      try {
-         pool.initialize(this, pluginInfo.getParameters());
-      }
-      catch (ClassNotFoundException ex) {
-         this.log.error(ME, "wipOutDB class not found: " + ex.getMessage());
-         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
-      }
-      catch (SQLException ex) {
-         throw new XmlBlasterException(this, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
-      }
-
-      // determine which jdbc manager class to use
-      String queueClassName = pluginInfo.getClassName();
-      if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
-         this.log.error(ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
-      }
-      else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
-         // then it is a JdbcManagerCommontTable
-         // then it is a JdbcManager
-         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null);
-         pool.registerStorageProblemListener(manager);
-         manager.setUp();
-         manager.wipeOutDB(setupNewTables);
-      }
-      else {
-         throw new XmlBlasterException(this, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
-      }
-   }
-*/
-
    /**
     * This notation is URLEncoder since JDK 1.4.
     * To avoid deprecation warnings

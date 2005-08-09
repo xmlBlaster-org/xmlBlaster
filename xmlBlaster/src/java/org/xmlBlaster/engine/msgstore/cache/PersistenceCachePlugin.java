@@ -68,6 +68,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       this.isConnected = false;
    }
 
+   public boolean isTransient() {
+      return this.transientStore.isTransient() && (this.persistentStore == null || this.persistentStore.isTransient());
+   }
 
    /**
     * Triggered by persistent store (JDBC) on reconnection

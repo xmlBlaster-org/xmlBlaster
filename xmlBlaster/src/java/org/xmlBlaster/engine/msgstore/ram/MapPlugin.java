@@ -100,6 +100,10 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       return mapId;
    }
 
+   public boolean isTransient() {
+      return true;
+   }
+
    public void finalize() {
       if (log.TRACE) log.trace(ME, "finalize - garbage collected");
    }
@@ -140,7 +144,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
           
       ArrayList list = new ArrayList();
       for (int i=0; i<entries.length; i++) {
-         I_MapEntry entry = (I_MapEntry)entryFilter.intercept(entries[i]);
+         I_MapEntry entry = (I_MapEntry)entryFilter.intercept(entries[i], this);
          if (entry != null)
                 list.add(entry);
       }

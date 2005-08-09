@@ -26,6 +26,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
@@ -86,6 +87,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String keyAttr;
 
    private final String managerName;
+   private final I_Storage storage;
 
    PreparedStatement pingPrepared = null;
 
@@ -112,16 +114,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     final static int BLOB = 7;
     
    /**
+    * @param storage TODO
     * @param JdbcConnectionPool the pool to be used for the connections to
     *        the database. IMPORTANT: The pool must have been previously
     *        initialized.
     */
-   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory, String managerName)
+   public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory, String managerName, I_Storage storage)
       throws XmlBlasterException {
       this.managerName = managerName;
       this.pool = pool;
       this.glob = this.pool.getGlobal();
       this.log = glob.getLog("jdbc");
+      this.storage = storage;
       if (this.log.CALL) this.log.call(ME, "Constructor called");
 
       this.factory = factory;
@@ -1095,7 +1099,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 //               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                I_Entry entry = this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId);
                if (entryFilter != null)
-                  entry = entryFilter.intercept(entry);
+                  entry = entryFilter.intercept(entry, this.storage);
                entries.add(entry);
                amount += sizeInBytes;
             }
@@ -2233,7 +2237,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
          // then it is a JdbcManager
-         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null, "cleaner");
+         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null, "cleaner", null);
          pool.registerStorageProblemListener(manager);
          manager.setUp();
          manager.wipeOutDB(setupNewTables);
