@@ -252,7 +252,7 @@ public final class RunlevelManager
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
             if (code == null) {
                this.log.warn(ME, "startupPlugins. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
-               Thread.dumpStack();
+               ex.printStackTrace();
             }
             else {
                throw new XmlBlasterException(this.glob, code, ME + ".startupPlugins",  "Can't load plugin '" + pluginConfig.getId() + "'", ex);
