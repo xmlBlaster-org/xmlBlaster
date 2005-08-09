@@ -6,6 +6,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
@@ -499,7 +500,7 @@ public class I_MapTest extends TestCase {
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
             I_MapEntry[] results = i_map.getAll(new I_EntryFilter() {
-               public I_Entry intercept(I_Entry entry) {
+               public I_Entry intercept(I_Entry entry, I_Storage storage) {
                   entryCounter++;
                   if (entryCounter == 2)
                      return null;

@@ -46,7 +46,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          JdbcConnectionPool pool = new JdbcConnectionPool();
          pool.initialize(this.glob, prop);
 
-         this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion());
+         this.manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), pluginInfo.getTypeVersion(), null);
          this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
