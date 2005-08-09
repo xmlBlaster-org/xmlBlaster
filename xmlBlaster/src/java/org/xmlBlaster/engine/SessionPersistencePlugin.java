@@ -70,6 +70,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private Object sync = new Object();
    
    private int duplicateCounter;
+   private int errorCounter;
    
    /**
     * 
@@ -115,11 +116,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * 
     * @throws XmlBlasterException
     */   
-   private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
+   private void recoverSubscriptions(final HashMap sessionIds) throws XmlBlasterException {
       {
          boolean checkForDuplicateSubscriptions = this.global.getProperty().get("xmlBlaster/checkForDuplicateSubscriptions", false);
          if (checkForDuplicateSubscriptions) {
             duplicateCounter = 0;
+            errorCounter = 0;
             final java.util.Map duplicates = new java.util.TreeMap();
             /*I_MapEntry[] results = */this.subscribeStore.getAll(new I_EntryFilter() {
                public I_Entry intercept(I_Entry entry, I_Storage storage) {
@@ -129,6 +131,17 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                      //QueryKeyData keyData = queryKeyFactory.readObject(subscribeEntry.getKey());
                      QueryQosData qosData = queryQosFactory.readObject(subscribeEntry.getQos());
                      //String key = keyData.getOid() + qosData.getSender().getAbsoluteName();
+
+                     SessionName sessionName = new SessionName(global, subscribeEntry.getSessionName());
+                     Object found = sessionIds.get(sessionName.getAbsoluteName());
+                     if (found == null) {
+                        if (errorCounter == 0) {
+                           log.warn(ME, "Ignoring invalid entry '" + sessionName.getAbsoluteName() + "' as user is not known");
+                        }
+                        errorCounter++;
+                        return null;
+                     }
+
                      String key = qosData.getSubscriptionId();
                      if (log.TRACE) log.trace(ME, "Cleanup of duplicate subscriptions, key=" + key);
                      if (duplicates.containsKey(key)) {
@@ -156,7 +169,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                while (it.hasNext()) {
                   this.subscribeStore.put((I_MapEntry)duplicates.get(it.next()));
                }
-               log.warn(ME, "Removed " + (duplicateCounter-duplicates.size()) + " identical subscriptions, keeping " + duplicates.size());
+               log.warn(ME, "Removed " + (duplicateCounter-duplicates.size()) + " identical subscriptions, keeping " + duplicates.size() + ". Ignored " + errorCounter + " invalid subscriptions as no session was found");
             }
          }
       }
