@@ -36,6 +36,8 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_Entry;
 
 /**
  * SessionPersistencePlugin provides the persistent storage for both sessions
@@ -67,6 +69,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private QueryKeySaxFactory queryKeyFactory;
    private AddressServer addressServer;
    private Object sync = new Object();
+   
+   private int duplicateCounter;
    
    /**
     * 
@@ -114,7 +118,49 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     */   
    private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
       {
+         boolean checkForDuplicateSubscriptions = this.global.getProperty().get("xmlBlaster/checkForDuplicateSubscriptions", false);
+         if (checkForDuplicateSubscriptions) {
+            duplicateCounter = 0;
+            final java.util.Map duplicates = new java.util.TreeMap();
+            /*I_MapEntry[] results = */this.subscribeStore.getAll(new I_EntryFilter() {
+               public I_Entry intercept(I_Entry entry) {
+                  try {
+                     SubscribeEntry subscribeEntry = (SubscribeEntry)entry;
+                     //QueryKeyData keyData = queryKeyFactory.readObject(subscribeEntry.getKey());
+                     QueryQosData qosData = queryQosFactory.readObject(subscribeEntry.getQos());
+                     //String key = keyData.getOid() + qosData.getSender().getAbsoluteName();
+                     String key = qosData.getSubscriptionId();
+                     if (log.TRACE) log.trace(ME, "Cleanup of duplicate subscriptions, key=" + key);
+                     if (duplicates.containsKey(key)) {
+                        if (duplicateCounter == 0)
+                           log.warn(ME, "Cleanup of duplicate subscriptions, this may take a while, please wait ...");
+                        duplicateCounter++;
+                        //log.warn(ME, "Removing duplicate subscription '" + key + "' oid=" + keyData.getOid());
+                        //subscribeStore.remove(subscribeEntry);
+                     }
+                     else {
+                        duplicates.put(key, subscribeEntry);
+                     }
+                  }
+                  catch (XmlBlasterException e) {
+                     log.error(ME, "Ignoring unexpected problem in checkForDuplicateSubscriptions :" + e.toString());
+                  }
+                  return null;
+               }
+            });
+            if (duplicateCounter > 0) {
+               this.subscribeStore.clear();
+               if (this.subscribeStore.getNumOfEntries() > 0)
+                     log.error(ME, "Internal prpblem with checkForDuplicateSubscriptions");
+               java.util.Iterator it = duplicates.keySet().iterator();
+               while (it.hasNext()) {
+                  this.subscribeStore.put((I_MapEntry)duplicates.get(it.next()));
+               }
+               log.warn(ME, "Removed " + (duplicateCounter-duplicates.size()) + " identical subscriptions, keeping " + duplicates.size());
+            }
+         }
       }
+      
       I_MapEntry[] entries = this.subscribeStore.getAll(null);
       
       for (int i=0; i < entries.length; i++) {
@@ -209,8 +255,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          }
          else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
          this.isOK = true;
-
-//glob.getProperty().get("Persistence.LazyRecovery", true);
 
          // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
