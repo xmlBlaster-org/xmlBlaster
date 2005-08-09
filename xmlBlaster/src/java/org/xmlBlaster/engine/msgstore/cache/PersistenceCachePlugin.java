@@ -538,8 +538,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
             if (this.persistentStore != null) {
                I_MapEntry[] persistEntries = this.persistentStore.getAll(entryFilter);
-               for(int i=0; i<persistEntries.length; i++) {
-                  map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+               if (persistEntries != null) {
+                  for(int i=0; i<persistEntries.length; i++) {
+                     if (persistEntries[i] == null) continue;
+                     map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+                  }
                }
                //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
             }
