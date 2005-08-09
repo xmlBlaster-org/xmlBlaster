@@ -132,7 +132,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                      String key = qosData.getSubscriptionId();
                      if (log.TRACE) log.trace(ME, "Cleanup of duplicate subscriptions, key=" + key);
                      if (duplicates.containsKey(key)) {
-                        //if (duplicateCounter == 0)
+                        if (duplicateCounter == 0)
                            log.warn(ME, "Cleanup of duplicate subscriptions, this may take a while, please wait ...");
                         duplicateCounter++;
                         //log.warn(ME, "Removing duplicate subscription '" + key + "' oid=" + keyData.getOid());
