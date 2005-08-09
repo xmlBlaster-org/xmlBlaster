@@ -113,6 +113,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
     * @throws XmlBlasterException
     */   
    private void recoverSubscriptions(HashMap sessionIds) throws XmlBlasterException {
+      {
+      }
       I_MapEntry[] entries = this.subscribeStore.getAll(null);
       
       for (int i=0; i < entries.length; i++) {
@@ -208,6 +210,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          else if (log.TRACE) log.trace(ME, Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
          this.isOK = true;
 
+//glob.getProperty().get("Persistence.LazyRecovery", true);
 
          // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
@@ -357,7 +360,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
       else  {    // ... or from a recovery ?
          // TODO handle by recoverSubscriptions(..)
-         subscribeQosData.getClientProperties().remove(Constants.PERSISTENCE_ID);
+         // No remove: To avoid danger of looping we keep the marker (Marcel 2005-08-08)
+         //   subscribeQosData.getClientProperties().remove(Constants.PERSISTENCE_ID);
+
          long uniqueId = clientProperty.getLongValue();
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
