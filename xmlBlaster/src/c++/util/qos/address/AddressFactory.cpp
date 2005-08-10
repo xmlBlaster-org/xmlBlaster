@@ -101,7 +101,7 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
             address_->dispatchPlugin_ = tmpValue;
          }
          else {
-            log_.error(ME, string("Ignoring unknown attribute ") +
+            log_.warn(ME, string("Ignoring unknown attribute ") +
               tmpName +  string(" in ") + address_->rootTag_ + string(" section."));
          }
          iter++;
@@ -135,7 +135,7 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
          }
          iter++;
       }
-      if (!found) log_.error(ME, "Missing attributes in login-qos <burstMode>");
+      if (!found) log_.warn(ME, "Missing attributes in login-qos <burstMode>");
       return;
    }
 
