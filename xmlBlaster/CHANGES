@@ -4,12 +4,15 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn (subversion) changes
 ================================
 
- 0 #13677 Added I_Storage
+ o #13680 Added prevention of duplicate persistent subscribes in persistent storage
+
+ o #13677 Added I_Storage
 
  o #13667-13669 Added embedded message dumper for persistent queue and persistent map implementation
  
  o #13667 JDBC persistence: Trimming columns 'type' and 'flag'
    After DB export -> import there could occur some white spaces
+
 
 Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
 ============================================================
