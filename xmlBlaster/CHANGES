@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Current svn (subversion) changes
-================================
+Changes for 1.0.6 [2005-08-10] #13684 "Xmas release patch 6"
+============================================================
 
  o #13680 Added prevention of duplicate persistent subscribes in persistent storage
 
