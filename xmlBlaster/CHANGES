@@ -17,6 +17,10 @@ Changes for 1.0.6 [2005-08-10] #13684 "Xmas release patch 6"
 Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
 ============================================================
 
+ o NOTE: You need to remove the 'HtmlMonitorPlugin'
+   section in xmlBlasterPlugins.xml to be able to run with JDK 1.3.
+   It uses the logging from JDK 1.4.
+
  o Tested C and C++ client library with icc 9.0 (the new Intel C++ compiler release)
 
  o #13656 Bugifx Memoryleak for XPath unSubscribes
