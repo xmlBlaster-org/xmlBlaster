@@ -48,6 +48,33 @@
      Common approaches for these tasks are
      </h3>
      <ol>
+       <li><h4>JMX support for xmlBlaster</h4>
+         <p>
+         <a href="http://java.sun.com/products/JavaManagement/index.html" target="others">The Java Management Extensions (JMX)</a>
+         is the definite way to go in the Java only world. Here is a description on how to control xmlBlaster with
+         any JMX conforming tool:
+         <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html" target="others">xmlBlaster-JMX with jconsole or HTML adaptor</a>
+         </p>
+       </li>
+       <li><h4>Telnet access to xmlBlaster</h4>
+         <p>
+         It is possible to do all management tasks using a standard telnet client.
+         See the <a href="admin.telnet.html" target="others">admin.telnet</a> requirement.
+         </p>
+       </li>
+       <li><h4>Message based xmlBlaster administration</h4>
+         <p>
+         With the use of internal xmlBlaster messages it is possible to query and administer
+         xmlBlaster from any connected client.
+         </p>
+       </li>
+       <li><h4>HTML based native xmlBlaster administration</h4>
+         <p>
+         XmlBlaster provides a simple, embedded HTTP server with a plugin
+         to display easily customizable HTML pages about internal xmlBlaster states.
+         See the <a href="admin.http.html" target="others">admin.http</a> requirement.
+         </p>
+       </li>
        <li><h4>An xmlBlaster SNMP agent</h4>
          <p>
          SNMP is the standard for network management.
@@ -57,25 +84,6 @@
          <p>
          XmlBlaster has a registered SNMP number under iso.org.dod.internet.private.enterprise (1.3.6.1.4.1), our tree leaf is 1.3.6.1.4.1.11662<br />
          See <a href="http://www.iana.org/assignments/enterprise-numbers" target="others">PRIVATE ENTERPRISE NUMBERS</a>.
-         </p>
-       </li>
-       <li><h4>JMX support for xmlBlaster</h4>
-         <p>
-         <a href="http://java.sun.com/products/JavaManagement/index.html" target="others">The Java Management Extensions (JMX)</a>
-         is the definite way to go in the Java only world. Here are links covering
-         <a href="http://www.volantec.biz/snmp.htm" target="others">JMX with SNMP adaptor</a>
-         </p>
-       </li>
-       <li><h4>telnet access to xmlBlaster</h4>
-         <p>
-         It is possible to do all management tasks using a standard telnet client.
-         See the <a href="admin.telnet.html">admin.telnet</a> requirement.
-         </p>
-       </li>
-       <li><h4>Message based xmlBlaster administration</h4>
-         <p>
-         With the use of internal xmlBlaster messages it is possible to query and administer
-         xmlBlaster from any connected client.
          </p>
        </li>
        <li><h4>Native xmlBlaster administration GUI control panel</h4>
@@ -105,9 +113,10 @@
 
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.jmx</see>
-   <see type="REQ">admin.snmp</see>
+   <see type="REQ">admin.http</see>
    <see type="REQ">admin.telnet</see>
    <see type="REQ">admin.messages</see>
+   <see type="REQ">admin.snmp</see>
    <see type="REQ">admin.deploy</see>
 
    <author>xmlBlaster@marcelruff.info</author>
