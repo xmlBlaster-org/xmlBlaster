@@ -207,7 +207,7 @@
       <attribute id='documentRoot'>${user.home}${file.separator}html</attribute>
       <attribute id='urlPath'>/monitor</attribute>
       <attribute id='urlPath.CLASSPATH'>/status.html</attribute>
-      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail=''/>
       <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
    <!--===============================================-->
