@@ -139,6 +139,14 @@ public class JmxWrapper
          this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
    }
+
+   /**
+    * Check if JMX is activated. 
+    * @return true if JMX is in use
+    */
+   public boolean isActivated() {
+      return (this.mbeanServer != null) && (this.useJmx != 0);
+   }
    
    /**
     * Create the unique MBeanServer instance. 

@@ -77,6 +77,10 @@ import java.util.Enumeration;
 import java.net.Socket;
 
 import javax.management.ObjectName;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.Notification;
+import javax.management.AttributeChangeNotification;
+
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -201,6 +205,9 @@ public class Global implements Cloneable
    //** the entry factory to be used */
    protected I_EntryFactory entryFactory;
 
+   /** JMX notification sequence number. */
+   protected long sequenceNumber = 1;
+
    /**
     * Constructs an initial Global object,
     * same as Global(null, true, true)
@@ -282,6 +289,38 @@ public class Global implements Cloneable
     */
     public final JmxWrapper getJmxWrapper() throws XmlBlasterException {
       return JmxWrapper.getInstance(this);
+   }
+
+   /**
+    * Check if JMX is activated. 
+    * @return true if JMX is in use
+    */
+   public boolean isJmxActivated() {
+      try {
+         return getJmxWrapper().isActivated();
+      }
+      catch (XmlBlasterException e) {
+         return false;
+      }
+   }
+
+   /**
+    * Send an administrative notification. 
+    */
+   public void sendNotification(NotificationBroadcasterSupport source,
+          String msg, String attributeName,
+          String attributeType, Object oldValue, Object newValue) {
+      if (isJmxActivated()) {
+         Notification n = new AttributeChangeNotification(source,
+            sequenceNumber++,
+            System.currentTimeMillis(),
+            msg,
+            attributeName,
+            attributeType,
+            oldValue,
+            newValue);
+         source.sendNotification(n);
+      }
    }
 
    /**

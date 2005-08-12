@@ -69,6 +69,9 @@ import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import java.util.*;
 
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.AttributeChangeNotification;
+import javax.management.MBeanNotificationInfo;
 
 /**
  * This is the central message broker, all requests are routed through this singleton.
@@ -82,7 +85,7 @@ import java.util.*;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener, LogableDevice
+public final class RequestBroker extends NotificationBroadcasterSupport implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener, LogableDevice
 {
    private String ME = "RequestBroker";
    private final Global glob;
@@ -1898,6 +1901,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       SessionInfo sessionInfo = e.getSessionInfo();
       if (log.TRACE) log.trace(ME, "Login event for client " + sessionInfo.toString());
 
+      this.glob.sendNotification(this, "Client '" + sessionInfo.getSessionName().getAbsoluteName() + "' logged in",
+         "clientNew", "java.lang.String", "", sessionInfo.getSessionName().getAbsoluteName());
+
       if (this.publishLoginEvent) {
          this.publishQosLoginEvent.clearRoutes();
          MsgQosData msgQosData = (MsgQosData)this.publishQosLoginEvent.getData().clone();
@@ -1929,6 +1935,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
       SessionInfo sessionInfo = e.getSessionInfo();
+
+      this.glob.sendNotification(this, "Client '" + sessionInfo.getSessionName().getAbsoluteName() + "' logged out",
+         "clientRemoved", "java.lang.String", sessionInfo.getSessionName().getAbsoluteName(), "");
 
       if (this.publishLogoutEvent) {
          if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
@@ -2297,17 +2306,43 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public String getSubscriptionList() {
       return getClientSubscriptions().getSubscriptionList();
    }
+
+
    /**
     * Redirect logging, configure in xmlBlaster.properties. 
     * Enforced by interface LogableDevice
     */
    public void log(int level, String source, String str) {
       // We may not do any log.xxx() call here because of recursion!!
+      String newLog = "[" + source + "] " + str;
+
+      // Remember error text
       if (LogChannel.LOG_WARN == level) {
-         this.lastWarning = "[" + source + "] " + str;
+         this.lastWarning = newLog;
       }
       else if (LogChannel.LOG_ERROR == level) {
-         this.lastError = "[" + source + "] " + str;
+         // Emit JMX notification
+         this.glob.sendNotification(this, "New " + LogChannel.bitToLogLevel(level) + " logging occurred",
+            "lastError", "java.lang.String", this.lastError, newLog);
+         this.lastError = newLog;
       }
+   }
+   /**
+    * Declare available notification event types. 
+    */
+   public MBeanNotificationInfo[] getNotificationInfo() {
+      String[] types = new String[] {
+         AttributeChangeNotification.ATTRIBUTE_CHANGE
+      };
+
+      String name = AttributeChangeNotification.class.getName();
+      MBeanNotificationInfo loggingEventInfo =
+         new MBeanNotificationInfo(types, name, "Error logging events of cluster node '" + this.glob.getId() + "'");
+      MBeanNotificationInfo loginEventInfo =
+         new MBeanNotificationInfo(types, name, "Client login events of cluster node '" + this.glob.getId() + "'");
+      MBeanNotificationInfo logoutEventInfo =
+         new MBeanNotificationInfo(types, name, "Client logout events of cluster node '" + this.glob.getId() + "'");
+
+      return new MBeanNotificationInfo[] {loggingEventInfo, loginEventInfo, logoutEventInfo};
    }
 }
