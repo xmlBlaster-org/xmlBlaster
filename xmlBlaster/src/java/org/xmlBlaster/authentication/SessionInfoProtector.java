@@ -162,8 +162,13 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.unSubscribe(url, qos);
    }
 
-   public final String[] getSubscriptions() throws XmlBlasterException {
-      return this.sessionInfo.getSubscriptions();
+   public final String[] getSubscriptions() throws Exception {
+      try {
+         return this.sessionInfo.getSubscriptions();
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.toString());
+      }
    }
 
    public final String getSubscriptionList() throws XmlBlasterException {

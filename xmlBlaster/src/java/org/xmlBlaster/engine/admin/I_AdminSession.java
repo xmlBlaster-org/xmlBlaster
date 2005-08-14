@@ -120,7 +120,10 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public String[] getSubscribedTopics();
    /** How many topics are currently subscribed */
    public long getNumSubscriptions();
-   /** Comma separated list of all subscriptionId of this login session */
+   /**
+    * Comma separated list of all subscriptionId of this login session
+    * @deprecated Please use getSubscriptions() instead
+    */
    public String getSubscriptionList() throws XmlBlasterException;
    /**
     * Invoke operation to unSubscribe one/many topics. 
@@ -143,8 +146,11 @@ public interface I_AdminSession extends ConnectQosDataMBean {
     * @return The status string
     */
    public String subscribe(String url, String qos) throws XmlBlasterException;
-   /** Get all subscriptionId of this login session */
-   public String[] getSubscriptions() throws XmlBlasterException;
+   /**
+    * Access a list of all subscriptionId of this login session
+    * @return An array with subscriptionId
+    */
+   public String[] getSubscriptions() throws Exception;
    /** An XML dump of all subscriptions of this login session */
    public String getSubscriptionDump() throws XmlBlasterException;
    /** Invoke operation to destroy the session (force logout) */

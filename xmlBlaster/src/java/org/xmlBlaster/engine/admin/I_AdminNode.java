@@ -25,8 +25,15 @@ public interface I_AdminNode {
    /**
     * Get the names of all known xmlBlaster cluster nodes. 
     * @return A comma separated list of cluster node names
+    * @deprecated Please use getNodes() instead
     */
    public String getNodeList();
+
+   /**
+    * Get the names of all known xmlBlaster cluster nodes. 
+    * @return A comma separated list of cluster node names
+    */
+   public String[] getNodes();
 
    /**
     * Get my cluster node name. 
@@ -204,8 +211,15 @@ public interface I_AdminNode {
    /**
     * Get the client names. 
     * @return A comma separated list
+    * @deprecated Please use getClients() instead
     */
    public String getClientList();
+
+   /**
+    * Get the client names. 
+    * @return An array with all client names
+    */
+   public String[] getClients();
 
    /**
     * Shows the clients which have a alive callback connection. 
@@ -221,6 +235,7 @@ public interface I_AdminNode {
    /**
     * Get the system properties. 
     * @return A comma separated list
+    * @deprecated Will be removed
     */
    public String getSyspropList();
 
@@ -232,8 +247,15 @@ public interface I_AdminNode {
    /**
     * Get the topics. 
     * @return A comma separated list
+    * @deprecated Please use getTopics() instead
     */
    public String getTopicList();
+
+   /**
+    * Get the topics. 
+    * @return An array of all topic names
+    */
+   public String[] getTopics();
 
    /**
     * Get the number of subscriptions. 
@@ -244,8 +266,15 @@ public interface I_AdminNode {
    /**
     * Get the subscriptions. 
     * @return A comma separated list
+    * @deprecated Please use getSubscriptions() instead
     */
    public String getSubscriptionList();
+
+   /**
+    * Get the subscriptions ids. 
+    * @return An array of all subscription ids
+    */
+   public String[] getSubscriptions();
 
    //public void setMaxClients(int maxClients);
 }

@@ -2115,6 +2115,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          return glob.getId();
       }
    }
+   public String[] getNodes() {
+      if (glob.useCluster() == false) return new String[] { glob.getId() };
+      try {
+         return glob.getClusterManager().getNodes();
+      } catch(XmlBlasterException e) {
+         return new String[] { glob.getId() };
+      }
+   }
    public String getNodeId() {
       return glob.getId();
    }
@@ -2272,9 +2280,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public String getClientList() {
       return authenticate.getSubjectList();
    }
+   public String[] getClients() {
+      return authenticate.getSubjects();
+   }
    public int getNumSysprop() {
       return glob.getProperty().getProperties().size();
    }
+   /** @deprecated Is not supported anymore */
    public String getSyspropList() {
       java.util.Properties props = glob.getProperty().getProperties();
       StringBuffer sb = new StringBuffer(props.size()*30);
@@ -2300,11 +2312,24 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
       return sb.toString();
    }
+   public String[] getTopics() {
+      TopicHandler[] topicHandlerArr = getTopicHandlerArr();
+      if (topicHandlerArr == null || topicHandlerArr.length == 0)
+         return new String[0];
+      String[] ret = new String[topicHandlerArr.length];
+      for (int i=0; i<topicHandlerArr.length; i++) {
+         ret[i] = topicHandlerArr[i].getUniqueKey();
+      }
+      return ret;
+   }
    public int getNumSubscriptions() {
       return getClientSubscriptions().getNumSubscriptions();
    }
    public String getSubscriptionList() {
       return getClientSubscriptions().getSubscriptionList();
+   }
+   public String[] getSubscriptions() {
+      return getClientSubscriptions().getSubscriptions();
    }
 
 

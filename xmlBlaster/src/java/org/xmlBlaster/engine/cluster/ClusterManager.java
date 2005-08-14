@@ -565,6 +565,22 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    /**
+    * Access a list of known cluster nodes e.g. "heron","avalon","bilbo","frodo"
+    * @return If cluster is switched off just our node
+    */
+   public final String[] getNodes() {
+      ClusterNode[] clusterNodes = getClusterNodes();
+      if (clusterNodes == null || clusterNodes.length == 0) {
+         return new String[0];
+      }
+      String[] nodes = new String[clusterNodes.length];
+      for(int i=0; i<clusterNodes.length; i++) {
+         nodes[i] = clusterNodes[i].getId();
+      }
+      return nodes;
+   }
+
+   /**
     * Access the informations belonging to a node id
     * @return The ClusterNode instance or null if unknown
     */

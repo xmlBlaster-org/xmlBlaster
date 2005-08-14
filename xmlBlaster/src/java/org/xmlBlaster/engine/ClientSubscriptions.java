@@ -187,6 +187,23 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       }
       return sb.toString();
    }
+   public String[] getSubscriptions() {
+      ArrayList list = new ArrayList(10+this.clientSubscriptionMap.size());
+      synchronized(this.clientSubscriptionMap) {
+         Iterator iterator = this.clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               Iterator iterator2 = subMap.values().iterator();
+               while (iterator2.hasNext()) {
+                  SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
+                  list.add(sub.getSubscriptionId());
+               }
+            }
+         }
+      }
+      return (String[])list.toArray(new String[list.size()]);
+   }
 
    /**
     * Access all subscriptions of a client

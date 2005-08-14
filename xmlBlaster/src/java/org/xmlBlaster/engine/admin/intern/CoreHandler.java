@@ -15,11 +15,13 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_AdminNode;
+import org.xmlBlaster.engine.admin.I_AdminTopic;
 import org.xmlBlaster.engine.admin.I_AdminSubscription;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
@@ -91,7 +93,18 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    private MsgUnit[] doGetInvoke(CommandWrapper cmd, String property, Object impl, Class clazz) 
       throws XmlBlasterException {
       Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
-      String ret = ""+ tmp;
+      String ret = "";
+      if (tmp instanceof String[]) {
+         String[] tmpArr = (String[])tmp;
+         for (int i=0; i<tmpArr.length; i++) {
+            ret += tmpArr[i];
+            if (i < tmpArr.length-1)
+               ret += "\n";
+         }
+      }
+      else {
+         ret = ""+ tmp;
+      }
       if (log.TRACE) log.trace(ME, "Retrieved " + cmd.getCommand());
       if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
 
@@ -150,6 +163,36 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
             return doGetInvoke(cmd, sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
          }
+      }
+      else if (registerKey.equals("topic")) {
+         String topicId = cmd.getUserNameLevel();
+         if (topicId == null || topicId.length() < 1 || topicId.startsWith("?"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid topicId in '" + cmd.getCommand() + "' with '" + topicId + "' is invalid");
+
+         TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(topicId);
+         if (topicHandler == null)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid topicId in '" + cmd.getCommand() + "' topicId '" + topicId + "' is unknown");
+
+         String methodName = cmd.getFifthLevel();
+         if (methodName == null || methodName.length() < 1)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid method name in '" + cmd.getCommand() + "'.");
+
+         if (methodName.startsWith("?")) {
+            // for example "/node/heron/topic/hello/?topicId"
+            return doGetInvoke(cmd, methodName.substring(1), topicHandler, I_AdminTopic.class);
+         }
+      }
+      else if (registerKey.equals("queue")) {
+         String queueId = cmd.getUserNameLevel();
+         if (queueId == null || queueId.length() < 1 || queueId.startsWith("?"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid queueId in '" + cmd.getCommand() + "' with '" + queueId + "' is invalid");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Administer queue is not implemented");
+      }
+      else if (registerKey.equals("map")) {
+         String mapId = cmd.getUserNameLevel();
+         if (mapId == null || mapId.length() < 1 || mapId.startsWith("?"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid mapId in '" + cmd.getCommand() + "' with '" + mapId + "' is invalid");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Administer map is not implemented");
       }
       else if (registerKey.equals("subscription")) {
          String subscriptionId = cmd.getUserNameLevel();
@@ -353,7 +396,19 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
          Object obj = method.invoke (impl, argValues);
          log.info(ME, "Successful invoked set method '" + property + "'");
-         if (obj != null) log.warn(ME, "Ignoring returned value of set method '" + property + "'");
+         if (obj != null) {
+            log.trace(ME, "Ignoring returned value of set method '" + property + "'");
+            if (obj instanceof String[]) {
+               String[] tmpArr = (String[])obj;
+               String ret = "";
+               for (int i=0; i<tmpArr.length; i++) {
+                  ret += tmpArr[i];
+                  if (i < tmpArr.length-1)
+                     ret += "\n";
+               }
+               obj = ret;
+            }
+         }
          return obj;
       }
       catch (Exception e) {

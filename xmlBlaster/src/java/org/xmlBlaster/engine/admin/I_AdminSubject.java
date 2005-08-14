@@ -63,6 +63,11 @@ public interface I_AdminSubject {
     */
    public String getSessionList();
    /**
+    * Get a list of all session names for this subject. 
+    * @return Array of session names
+    */
+   public String[] getSessions();
+   /**
     * Navigate to a session instance. 
     * @param pubSessionId The public session ID of the session to lookup
     * @return The found session interface

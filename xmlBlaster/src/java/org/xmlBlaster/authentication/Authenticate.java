@@ -864,6 +864,31 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
+    * Get a current snapshot of all known subjects. 
+    * @return The subjects known
+    */
+   public SubjectInfo[] getSubjectInfoArr() {
+      synchronized(this.loginNameSubjectInfoMap) {
+         return (SubjectInfo[])this.loginNameSubjectInfoMap.values().toArray(new SubjectInfo[this.loginNameSubjectInfoMap.size()]);
+      }
+   }
+
+   /**
+    * Access a list of login names e.g. "joe","jack","averell","william"
+    * @return An array of length 0 if no clients available
+    */
+   public String[] getSubjects() {
+      SubjectInfo[] arr = getSubjectInfoArr();
+      if (arr == null || arr.length == 0)
+         return new String[0];
+      String[] ret = new String[arr.length];
+      for (int i=0; i<arr.length; i++) {
+         ret[i] = arr[i].getLoginName();
+      }
+      return ret;
+   }
+
+   /**
     * Access a list of login names e.g. "joe,jack,averell,william"
     * @return An empty string if no clients available
     */

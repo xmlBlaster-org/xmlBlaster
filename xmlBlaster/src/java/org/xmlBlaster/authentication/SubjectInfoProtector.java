@@ -61,6 +61,15 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       return this.subjectInfo.getSessionList();
    }
 
+   public String[] getSessions() {
+      SessionInfo[] arr = this.subjectInfo.getSessions();
+      String[] ret = new String[arr.length];
+      for (int i=0; i<arr.length; i++) {
+         ret[i] = ""+arr[i].getPublicSessionId();
+      }
+      return ret;
+   }
+
    public I_AdminSession getSessionByPubSessionId(long pubSessionId) {
       return this.subjectInfo.getSessionByPubSessionId(pubSessionId);
    }
