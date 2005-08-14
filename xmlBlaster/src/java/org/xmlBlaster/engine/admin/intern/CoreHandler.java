@@ -42,6 +42,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    private Global glob = null;
    private LogChannel log = null;
    private CommandManager commandManager = null;
+   private String listSeparator = "\n";
 
    /**
     * This is called after creation of the plugin. 
@@ -53,6 +54,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
       this.ME = "CoreHandler" + this.glob.getLogPrefixDashed();
+      this.listSeparator = this.glob.getProperty().get("xmlBlaster/admin/listSeparator", this.listSeparator);
       this.commandManager.register("DEFAULT", this);
       this.commandManager.register("client", this);
       this.commandManager.register("subscription", this);
@@ -99,7 +101,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          for (int i=0; i<tmpArr.length; i++) {
             ret += tmpArr[i];
             if (i < tmpArr.length-1)
-               ret += "\n";
+               ret += this.listSeparator; // "\n";
          }
       }
       else {
@@ -404,7 +406,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
                for (int i=0; i<tmpArr.length; i++) {
                   ret += tmpArr[i];
                   if (i < tmpArr.length-1)
-                     ret += "\n";
+                     ret += this.listSeparator; // "\n";
                }
                obj = ret;
             }
