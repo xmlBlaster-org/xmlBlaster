@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #13702 Added memory heap observation, see '-xmlBlaster/jmx/observeLowMemory true' in
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
+
  o #13694 Sending JMX notifications on client login/logout and on log.error
 
 
