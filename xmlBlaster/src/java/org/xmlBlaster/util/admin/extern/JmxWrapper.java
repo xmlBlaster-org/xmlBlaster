@@ -163,17 +163,6 @@ public class JmxWrapper
                Long max = (Long)comp.get("max");
                maxJvmBytes = max.longValue();
             }
-            /* Since JDK 1.5
-               See http://java.sun.com/j2se/1.5.0/docs/api/java/lang/management/MemoryPoolMXBean.html
-               // java.lang.management.MemoryMXBean
-               MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
-               NotificationEmitter emitter = (NotificationEmitter) mbean;
-               MemoryListener listener = new MemoryListener();
-               emitter.addNotificationListener(listener, null, null);
-               MemoryUsage usage = mbean.getHeapMemoryUsage() ;
-               System.out.println("JVM may use max " + usage.getMax());
-               // The MemoryPoolMBean.UsageThreshold is not implemented on Linux/WinXP (UsageThresholdSupported==false)!
-            */
 
             log.info(ME, "Physical RAM size is " + Global.byteString(total) + "," +
                          " this JVM may use max " + Global.byteString(maxJvmBytes) +

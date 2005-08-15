@@ -130,7 +130,7 @@ public class LowMemoryDetector {
 }
 
    /**
-    * The default handler just logs the situation. 
+    * The default handler just logs the situation or exits if configured.  
     */
    class DefaultLowMemoryListener implements NotificationListener {
       boolean exitOnThreshold;
@@ -139,20 +139,33 @@ public class LowMemoryDetector {
          this.exitOnThreshold = Global.instance().getProperty().get("xmlBlaster/jmx/exitOnMemoryThreshold", this.exitOnThreshold);
       }
 
+      /**
+       * Called when memory threshold is reached. 
+       */
       public void handleNotification(Notification notification, Object handback)  {
          String notifType = notification.getType();
          if (notifType.equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {
             MemoryPoolMXBean pool = (MemoryPoolMXBean)handback;
+            long usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
             Global.instance().getLog("jmx").error("DefaultLowMemoryListener",
                "Memory is low! maxJvmMemory=" + Global.byteString(LowMemoryDetector.maxJvmMemory()) +
                ", committed for heap=" + Global.byteString(pool.getUsage().getCommitted()) +
                ", max for heap=" + Global.byteString(pool.getUsage().getMax()) +
                ", threshold reached=" + Global.byteString(pool.getUsageThreshold()) +
+               ", currently used=" + Global.byteString(usedMem) +
                ", count=" + pool.getUsageThresholdCount());
             if (this.exitOnThreshold) {
-               Global.instance().getLog("jmx").error("DefaultLowMemoryListener",
-                  "Exiting now because of low memory (see '-xmlBlaster/jmx/exitOnMemoryThreshold true'");
-               System.exit(-9);
+               System.gc();
+               try { Thread.sleep(1); } catch (Exception e) {}
+               System.gc();
+               try { Thread.sleep(1); } catch (Exception e) {}
+               usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+               if (pool.getUsageThreshold() > usedMem) {
+                  Global.instance().getLog("jmx").error("DefaultLowMemoryListener",
+                     "Exiting now because of low memory (see '-xmlBlaster/jmx/exitOnMemoryThreshold true'");
+                  System.exit(-9);
+               }
+               Global.instance().getLog("jmx").info("DefaultLowMemoryListener", "Garbage collected to usedMem=" + Global.byteString(usedMem) + ", we continue");
             }
          }
       }
