@@ -32,11 +32,14 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
         </ol>
 
         <h3>Note on temporary memory consumption</h3>
-        <p>Expect the Microsoft JDBC driver to temporary allocate the 13 fold
+        <p>Expect the Microsoft JDBC driver to temporary allocate the 5 fold
         of the real message size during writing to persistence.
-        If your message is of size 2 MByte, the JDBC driver may for
-        a short period of time allocate 26 MBytes. This is no memory
-        leak as it is only temporary. The amount is depending on the
+        If your persistent message is of size 40 MByte,
+        xmlBlaster may for a short period of time allocate 240 MBytes of RAM
+        (200 MBytes are allocated by the JDBC driver and 40 MBytes by xmlBlaster
+        for the message itself).
+        This is no JDBC driver memory leak as it is only temporary.
+        The amount is depending on the
         quality of the used JDBC driver.
         </p>
 
