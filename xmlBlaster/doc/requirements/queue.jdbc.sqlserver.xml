@@ -31,6 +31,15 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
         <li>xmlBlaster creates on startup automatically the needed table</li>
         </ol>
 
+        <h3>Note on temporary memory consumption</h3>
+        <p>Expect the Microsoft JDBC driver to temporary allocate the 13 fold
+        of the real message size during writing to persistence.
+        If your message is of size 2 MByte, the JDBC driver may for
+        a short period of time allocate 26 MBytes. This is no memory
+        leak as it is only temporary. The amount is depending on the
+        quality of the used JDBC driver.
+        </p>
+
     </description>
 
     <example lang="Java" type="HTML">
