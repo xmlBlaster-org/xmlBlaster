@@ -2199,4 +2199,43 @@ public class Global implements Cloneable
       }
       return this.logNotifierDeviceFactory;
    }
+
+   /**
+    * Build a nice, human readable string for the size in MB/KB/Bytes.
+    * <br><b>Example:</b><br>
+    * <code>System.out.println(Memory.DataLenStr(136000));</code><br>
+    *  -> "136 KB"
+    * @param size is the size in bytes
+    * @return a nice readable memory string
+    */
+   public static final String byteString(long size) {
+      // 1060970496 bytes  532742144 bytes
+      // 1.060 GBytes      532.742 MByte
+      long gBytes = size / 1000000000L;
+      long mBytes = size % 1000000000L / 1000000L;
+      long kBytes = size % 1000000L / 1000L;
+      long bytes = size % 1000L;
+      String str;
+      if (gBytes != 0) {
+         long a = Math.abs(mBytes);
+         String z = (a < 10) ? "00" : ((a < 100) ? "0" : "");
+         str = "" + gBytes + "." + z + a + " GBytes";
+      }
+      else {
+         if (mBytes != 0) {
+            long a = Math.abs(kBytes);
+            String z = (a < 10) ? "00" : ((a < 100) ? "0" : "");
+            str = "" + mBytes + "." + z + a + " MBytes";
+         }
+         else
+            if (kBytes != 0) {
+               long a = Math.abs(bytes);
+               String z = (a < 10) ? "00" : ((a < 100) ? "0" : "");
+               str = "" + kBytes + "." + z + a + " KBytes";
+            }
+            else
+               str = "" + bytes + " Bytes";
+      }
+      return str;
+   }
 }
