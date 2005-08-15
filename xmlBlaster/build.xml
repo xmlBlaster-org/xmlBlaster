@@ -474,6 +474,7 @@ TODO
 
       <switch value="${java.specification.version}">
          <case value="1.5"> <!-- for JDK 1.5 choose 1.4, otherwise it won't compile generics in JMS api -->
+            <property name="isJdk15" value="true" />
             <property name="JVM.target" value="1.4" />
             <property name="JVM.source" value="1.4" />
             <property name="DO_FILTERING" value="true" />
@@ -627,6 +628,7 @@ TODO
             <exclude name="**/servlet/Req*.java"/>
             <exclude name="**/client/protocol/http/j2me/UrlConnectionMicro.java"/> <!-- We need Base64.java -->
             <exclude name="**/client/protocol/http/j2me/XmlBlasterAccessJ2ME.java"/>
+            <exclude name="**/util/admin/extern/LowMemoryDetector.java" unless="isJdk15"/>
             <!-- Activate excludes to compile with JDK 1.2 -->
             <patternset id="jdk12.notcompatible.sources">
                <!-- 
