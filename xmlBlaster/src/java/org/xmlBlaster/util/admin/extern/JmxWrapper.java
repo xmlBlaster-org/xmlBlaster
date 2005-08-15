@@ -138,6 +138,50 @@ public class JmxWrapper
          ContextNode logNode = new ContextNode(this.glob, ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
          this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
+
+      if (useJmx > 0 && this.mbeanServer != null) {
+         // display some statistics ...
+         try {
+            // javap com.sun.management.UnixOperatingSystem
+            ObjectName name = new ObjectName("java.lang:type=OperatingSystem");
+            Object obj = this.mbeanServer.getAttribute(name, "TotalPhysicalMemorySize"); 
+            long total = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+            obj = this.mbeanServer.getAttribute(name, "CommittedVirtualMemorySize"); 
+            long committed = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+            obj = this.mbeanServer.getAttribute(name, "MaxFileDescriptorCount"); 
+            long descriptors = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+
+            
+            name = new ObjectName("java.lang:type=Memory");
+            obj = this.mbeanServer.getAttribute(name, "HeapMemoryUsage"); 
+            long maxJvmBytes = 0;
+            if (obj instanceof javax.management.openmbean.CompositeDataSupport) {
+               //java.lang.management.MemoryUsage.getMax()
+               javax.management.openmbean.CompositeDataSupport comp = 
+                 (javax.management.openmbean.CompositeDataSupport)obj;
+               Long max = (Long)comp.get("max");
+               maxJvmBytes = max.longValue();
+            }
+            /* Since JDK 1.5
+               See http://java.sun.com/j2se/1.5.0/docs/api/java/lang/management/MemoryPoolMXBean.html
+               // java.lang.management.MemoryMXBean
+               MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
+               NotificationEmitter emitter = (NotificationEmitter) mbean;
+               MemoryListener listener = new MemoryListener();
+               emitter.addNotificationListener(listener, null, null);
+               MemoryUsage usage = mbean.getHeapMemoryUsage() ;
+               System.out.println("JVM may use max " + usage.getMax());
+               // The MemoryPoolMBean.UsageThreshold is not implemented on Linux/WinXP (UsageThresholdSupported==false)!
+            */
+
+            log.info(ME, "Physical RAM size is " + Global.byteString(total) + "," +
+                         " this JVM may use max " + Global.byteString(maxJvmBytes) +
+                         " and max " + descriptors + " file descriptors");
+
+         }
+         catch (Exception e) {
+         }
+      }
    }
 
    /**
