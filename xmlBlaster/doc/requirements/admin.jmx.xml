@@ -362,6 +362,36 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          XmlBlaster native adaptor: true switches it on.
          </td>
        </tr>
+       <tr>
+         <td>xmlBlaster/jmx/observeLowMemory</td>
+         <td>bool</td>
+         <td>no</td>
+         <td>true</td>
+         <td>
+         Since JDK 1.5: If true we check for critical RAM usage.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/memoryThresholdFactor</td>
+         <td>float</td>
+         <td>no</td>
+         <td>0.9</td>
+         <td>
+         Since JDK 1.5: If the RAM of the JVM is used up to 90%
+         we will log an error.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/exitOnMemoryThreshold</td>
+         <td>bool</td>
+         <td>no</td>
+         <td>false</td>
+         <td>
+         Since JDK 1.5, if changed to true:
+         If <code>xmlBlaster/jmx/memoryThresholdFactor</code>
+         is hit xmlBlaster will shutdown.
+         </td>
+       </tr>
     </table>
    </configuration>
 
