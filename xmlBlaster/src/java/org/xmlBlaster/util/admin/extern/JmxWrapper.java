@@ -457,10 +457,15 @@ public class JmxWrapper
          boolean observeLowMemory = glob.getProperty().get("xmlBlaster/jmx/observeLowMemory", true);
          if (observeLowMemory) {
             try {
+               // JDK 1.3 and 1.4: Not available so we need to use reflection
                Class clazz = java.lang.Class.forName("org.xmlBlaster.util.admin.extern.LowMemoryDetector");
                if (clazz != null) {
-                  java.lang.reflect.Constructor ctor = clazz.getConstructor(null);
-                  this.defaultLowMemoryDetector = ctor.newInstance(null);
+                  Class[] paramCls =  new Class[] { float.class }; // url location
+                  java.lang.reflect.Constructor ctor = clazz.getConstructor(paramCls);
+
+                  float thresholdFactor = glob.getProperty().get("xmlBlaster/jmx/memoryThresholdFactor", (float)0.9);
+                  Object[] params = new Object[] { new Float(thresholdFactor) };
+                  this.defaultLowMemoryDetector = ctor.newInstance(params);
                }
             }
             catch (Exception e) {

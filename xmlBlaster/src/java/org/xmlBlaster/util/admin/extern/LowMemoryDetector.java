@@ -55,7 +55,7 @@ public class LowMemoryDetector {
     * Default ctor for 90% threshold and registered DefaultLowMemoryListener. 
     */
    public LowMemoryDetector() {
-      this(0.9);
+      this((float)0.9);
       register(new DefaultLowMemoryListener());
    }
 
@@ -63,7 +63,7 @@ public class LowMemoryDetector {
     * @param thresholdFactor Use typically 0.9, if 90% of heap is used up the
     * listener is triggered
     */
-   public LowMemoryDetector(double thresholdFactor) {
+   public LowMemoryDetector(float thresholdFactor) {
       this.thresholdFactor = thresholdFactor;
       // http://java.sun.com/j2se/1.5.0/docs/api/java/lang/management/MemoryPoolMXBean.html
       this.mbeanServer = MBeanServerFactory.createMBeanServer();
@@ -77,32 +77,35 @@ public class LowMemoryDetector {
             // "Tenured Gen" = pool.getName()
             long myThreshold = (long)(this.thresholdFactor * (double)this.pool.getUsage().getMax()); //getCommitted());
             this.pool.setUsageThreshold(myThreshold);
-            System.out.println("Adding maxJvmMemory=" + maxJvmMemory() +
-                  ", committed for heap=" + this.pool.getUsage().getCommitted() +
-                  ", max for heap=" + this.pool.getUsage().getMax() +
-                  ", used threshold=" + this.pool.getUsageThreshold());
+            //System.out.println("Adding maxJvmMemory=" + maxJvmMemory() +
+            //      ", committed for heap=" + this.pool.getUsage().getCommitted() +
+            //      ", max for heap=" + this.pool.getUsage().getMax() +
+            //      ", used threshold=" + this.pool.getUsageThreshold());
             break;
          }
       }
+
+      register(new DefaultLowMemoryListener());
    }
 
    /**
     * Register your low memory listener. 
     */
    public void register(NotificationListener listener) {
-       // register for notification ...
-       MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
-       NotificationEmitter emitter = (NotificationEmitter) mbean;
-       emitter.addNotificationListener(listener, null, this.pool);
+      if (this.pool != null) {
+         // register for notification ...
+         MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
+         NotificationEmitter emitter = (NotificationEmitter) mbean;
+         emitter.addNotificationListener(listener, null, this.pool);
+      }
    }
 
-
    /**
-    * Tester: java -Xms1M -Xmx2M -Dcom.sun.management.jmxremote org.xmlBlaster.util.admin.extern.LowMemoryDetector
+    * Tester: java -Xms1M -Xmx2M -Dcom.sun.management.jmxremote -DxmlBlaster/jmx/exitOnMemoryThreshold=true org.xmlBlaster.util.admin.extern.LowMemoryDetector
     */
    public static void main(String[] args) throws java.io.IOException {
       
-      LowMemoryDetector mem = new LowMemoryDetector(0.9);
+      LowMemoryDetector mem = new LowMemoryDetector((float)0.9);
       mem.register(new DefaultLowMemoryListener());
 
       ArrayList list = new ArrayList();
