@@ -103,6 +103,7 @@ public class JmxWrapper
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    private static JmxWrapper theJmxWrapper;
+   private Object defaultLowMemoryDetector;
 
    /**
     * Singleton to avoid that different Global instances create more than one JmxWrapper. 
@@ -449,6 +450,22 @@ public class JmxWrapper
          catch (XmlBlasterException ex) {
             log.error(ME,"Error when starting xmlBlasterConnector " + ex.toString());
             ex.printStackTrace();
+         }
+      }
+
+      if (this.useJmx > 0) {
+         boolean observeLowMemory = glob.getProperty().get("xmlBlaster/jmx/observeLowMemory", true);
+         if (observeLowMemory) {
+            try {
+               Class clazz = java.lang.Class.forName("org.xmlBlaster.util.admin.extern.LowMemoryDetector");
+               if (clazz != null) {
+                  java.lang.reflect.Constructor ctor = clazz.getConstructor(null);
+                  this.defaultLowMemoryDetector = ctor.newInstance(null);
+               }
+            }
+            catch (Exception e) {
+               log.warn(ME, "org.xmlBlaster.util.admin.extern.LowMemoryDetector is not available for low memory detection");
+            }
          }
       }
    }
