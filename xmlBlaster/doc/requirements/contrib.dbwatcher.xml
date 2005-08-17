@@ -960,6 +960,20 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          you don't need to configure anything here.
          </td>
        </tr>
+
+       <tr>
+         <td>changeDetector. postUpdateStatement</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         Here you can define an update statement to perform in the same transaction after
+	 having processed the detected data. For example you could do some cleanup here
+	 with a DELETE statement.
+         </td>
+       </tr>
+
+
        <tr>
          <td>converter.rootName</td>
          <td>String</td>
