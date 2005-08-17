@@ -8,6 +8,7 @@ Version:   $Id$
 package org.xmlBlaster.util;
 
 import org.xml.sax.*;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 
@@ -129,7 +130,10 @@ public class XmlQoSBase extends SaxHandlerBase
       if (name.equalsIgnoreCase("clientProperty")) {
          String tmp = character.toString().trim();
          if (this.clientProperty != null) {
-            this.clientProperty.setValueRaw(tmp);
+            if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
+               this.clientProperty.setValue(tmp);
+            else
+               this.clientProperty.setValueRaw(tmp);
          }
          return true;
       }

@@ -86,7 +86,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    }
 
    public boolean isStringType() {
-      return this.type == null || "String".equalsIgnoreCase(this.type); // Constants.TYPE_STRING
+      return this.type == null || "String".equalsIgnoreCase(this.type) || this.type.length() < 1; // Constants.TYPE_STRING
    }
 
    /**
@@ -312,16 +312,28 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
    /**
     * Dump state of this object into a XML ASCII string.
+    */
+   public final String toXml(String offset) {
+      return toXml(offset, null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
+    * @param tmpTagName the tag name to be used for this output. If you
+    * specify the default will be used, i.e. what has been passed in the constructor.
     * @return internal state of the EncodableData as a XML ASCII string
     */
-   public final String toXml(String extraOffset) {
+   public final String toXml(String extraOffset, String tmpTagName) {
+      if (tmpTagName == null)
+         tmpTagName = this.tagName;
+      
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<").append(tagName);
+      sb.append(offset).append("<").append(tmpTagName);
       if (getName() != null) {
          sb.append(" name='").append(getName()).append("'");
       }
@@ -344,7 +356,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
          if (this.forceCdata) sb.append("<![CDATA[");
          sb.append(val);
          if (this.forceCdata) sb.append("]]>");
-         sb.append("</").append(this.tagName).append(">");
+         sb.append("</").append(tmpTagName).append(">");
       }
 
       return sb.toString();
