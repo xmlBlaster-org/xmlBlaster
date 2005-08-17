@@ -31,10 +31,10 @@
  &lt;desc>
   &lt;command>INSERT&lt;/command>
   &lt;ident>EDDI&lt;/ident>
-  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
+  &lt;colname type='DATE' nullable='0'>DATUM&lt;/colname>
   &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>
               CPU&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20' readOnly='true'>COL1&lt;/colname>
   &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2'
               precision='10'>ICAO_ID&lt;/colname>
  &lt;/desc>
@@ -569,10 +569,10 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
  &lt;desc>
   &lt;command>INSERT&lt;/command>
   &lt;ident>EDDI&lt;/ident>
-  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
+  &lt;colname type='DATE' nullable='0'>DATUM&lt;/colname>
   &lt;colname type='NUMBER' precision='11' scale='0'
               signed='false'>CPU&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20' readOnly='true'>COL1&lt;/colname>
   &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2'
               precision='10'>ICAO_ID&lt;/colname>
  &lt;/desc>
