@@ -22,8 +22,8 @@ import org.xmlBlaster.contrib.I_Info;
  &lt;desc>
   &lt;command>INSERT&lt;/command>
   &lt;ident>AFTN_CIRCUIT_STATE&lt;/ident>
-  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' isNullable='0'>CPU&lt;/colname>
+  &lt;colname type='DATE' nullable='0'>DATUM&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' nullable='0'>CPU&lt;/colname>
  &lt;/desc>
  &lt;row num='0'>
   &lt;col name='DATUM'>2005-01-05 15:41:36.0&lt;/col>

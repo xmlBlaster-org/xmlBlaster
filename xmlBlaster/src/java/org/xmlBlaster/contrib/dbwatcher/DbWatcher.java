@@ -15,7 +15,6 @@ import java.util.StringTokenizer;
 import java.sql.Connection;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;

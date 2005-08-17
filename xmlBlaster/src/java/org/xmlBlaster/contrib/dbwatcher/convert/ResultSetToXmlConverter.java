@@ -44,10 +44,10 @@ import org.xmlBlaster.contrib.I_Info;
  &lt;desc>
   &lt;command>INSERT&lt;/command>
   &lt;ident>AFTN_CIRCUIT_STATE&lt;/ident>
-  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' isSigned='false'>CPU&lt;/colname>
+  &lt;colname type='DATE' nullable='0'>DATUM&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' signed='false'>CPU&lt;/colname>
   &lt;colname type='NUMBER' precision='10' scale='3'>OLG&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='8' isNullable='0'>FS_ST&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='8' nullable='0'>FS_ST&lt;/colname>
  &lt;/desc>
  &lt;row num='0'>
   &lt;col name='DATUM'>2005-01-05 15:41:36.0&lt;/col>
@@ -220,12 +220,12 @@ public class ResultSetToXmlConverter implements I_DataConverter
                   buf.append(" precision='").append(meta.getPrecision(i)).append("'");
                if (meta.getScale(i) > 0)
                   buf.append(" scale='").append(meta.getScale(i)).append("'");
-               if (meta.isNullable(i)!=ResultSetMetaData.columnNullable)
-                  buf.append(" isNullable='").append(meta.isNullable(i)).append("'");
+               // always write this since it is not a boolean and it has no default ...
+               buf.append(" nullable='").append(meta.isNullable(i)).append("'");
                if (meta.isSigned(i)==false)
-                  buf.append(" isSigned='").append(meta.isSigned(i)).append("'");
+                  buf.append(" signed='").append(meta.isSigned(i)).append("'");
                if (meta.isReadOnly(i)==true)
-                  buf.append(" isReadOnly='").append(meta.isReadOnly(i)).append("'");
+                  buf.append(" readOnly='").append(meta.isReadOnly(i)).append("'");
                buf.append(">");
                buf.append(meta.getColumnName(i));
                buf.append("</colname>");

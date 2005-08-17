@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.sql.Connection;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
@@ -88,7 +87,8 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  * Note that the previous timestamp value is hold in RAM only, after
  * plugin restart it is lost and a complete set of data is send again.
  * </p>
- * @author Marcel Ruff 
+ * @author Marcel Ruff
+ * @author Michele Laghi 
  */
 public class TimestampChangeDetector implements I_ChangeDetector
 {
@@ -109,6 +109,9 @@ public class TimestampChangeDetector implements I_ChangeDetector
    String MINSTR = " ";
    protected String queryMeatStatement;
 
+   // additions for replication ...
+   protected String postUpdateStatement;
+   
    /**
     * @param info
     * @param changeListener
@@ -167,6 +170,11 @@ public class TimestampChangeDetector implements I_ChangeDetector
       this.useGroupCol = this.groupColName != null;
       if (this.groupColName == null)
          this.groupColName = this.info.get("mom.topicName", "db.change.event");
+      
+      this.postUpdateStatement = this.info.get("changeDetector.postUpdateStatement", null);
+      if (this.postUpdateStatement != null)
+         this.postUpdateStatement = this.postUpdateStatement.trim();
+      
    }
 
    /**
@@ -265,6 +273,11 @@ public class TimestampChangeDetector implements I_ChangeDetector
                changeCount++;
             }
             oldTimestamp = newTimestamp;
+            
+            // TODO rollback in case of an exception and distributed transactions ...
+            if (this.postUpdateStatement != null) {
+               this.dbPool.update(conn, this.postUpdateStatement);
+            }
          }
       }
       catch (Exception e) {
