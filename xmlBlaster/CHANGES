@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #13713,#13714 C++ Fixed progress listener registration in offline mode
+
  o #13710 fixed an empty type attr in EncodableData is now a String. Parsing of 
    ClientProperty is now autoencoding on unencoded strings.
 
