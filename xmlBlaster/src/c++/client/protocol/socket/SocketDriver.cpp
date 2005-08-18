@@ -100,7 +100,7 @@ static void callbackProgressListener(void *userP, const size_t currBytesRead, co
    //if (log.trace()) log.trace("SocketDriver", "Update data progress currBytesRead=" +
    //                          org::xmlBlaster::util::lexical_cast<std::string>(currBytesRead) +
    //                          " nbytes=" + org::xmlBlaster::util::lexical_cast<std::string>(nbytes));
-   if (sd->progressListener_ != 0) {
+   if (sd != 0 && sd->progressListener_ != 0) {
       sd->progressListener_->progress("", currBytesRead, nbytes);
    }
 }
@@ -299,6 +299,7 @@ void SocketDriver::reconnectOnIpLevel(void)
          if (log_.trace()) log_.trace(ME, string("Reconnection to xmlBlaster failed, please start the server or check your network: ") + socketException.message);
          throw socketException;
       }
+      registerProgressListener(this->progressListener_); // Re-register
       if (log_.trace()) log_.trace(ME, "After createCallbackServer");
    } catch_MACRO("::initialize", true)
 }
@@ -749,7 +750,7 @@ vector<EraseReturnQos> SocketDriver::erase(const EraseKey& key, const EraseQos& 
 I_ProgressListener* SocketDriver::registerProgressListener(I_ProgressListener *listener) {
    I_ProgressListener *old = this->progressListener_;
    this->progressListener_ = listener;
-   if (connection_->callbackP != 0) {
+   if (connection_ && connection_->callbackP != 0) {
       connection_->callbackP->readFromSocket.numReadUserP = this;
       if (this->progressListener_ && connection_->callbackP != 0) {
          connection_->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
