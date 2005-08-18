@@ -73,17 +73,18 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
    int flag = 0; /* MSG_WAITALL; */
    nleft = (ssize_t)nbytes;
 
+   if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
+      fpNumRead(userP, (ssize_t)0, nbytes); /* Callback with startup status */
+   }
+
    while(nleft > 0) {
       nread = recv(fd, ptr, (int)nleft, flag); /* read() is deprecated on Win */
       if (nread <= 0)  /* -1 is error, 0 is no more data to read which should not happen as we are blocking */
          break;        /* EOF is -1 */
       nleft -= nread;
 
-      if (fpNumRead != 0) {
-         XmlBlasterNumReadFunc fp = fpNumRead;
-         if (fp != 0) { /* copy to temporary to avoid 0 if the user un-registers from another thread (but avoid overhead of synchronize) */
-            fp(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
-         }
+      if (fpNumRead != 0 && nbytes > 10) { /* Ignore to report the msgLength read (first 10 bytes of a message) */
+         fpNumRead(userP, (ssize_t)nbytes-nleft, nbytes); /* Callback with current status */
       }
 
       ptr += nread;
