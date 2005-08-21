@@ -284,7 +284,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
     */
    public int update(Connection conn, String command) throws Exception {
       if (conn == null)
-         return update(conn, command);
+         return update(command);
       
       Statement   stmt = null;
       ResultSet   rs = null;
