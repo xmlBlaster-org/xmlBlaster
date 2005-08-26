@@ -4,7 +4,7 @@
 <requirement id='engine.service.rdbms' type='NEW' prio='LOW' status="CLOSED">
    <topic>
       XmlBlaster provides a framework to send SQL statements to arbitrary databases simultaneously
-      and receive query results xml encoded.
+      and receive query results xml encoded (JDK 1.5 or higher only)
    </topic>
    <description>
       <p>

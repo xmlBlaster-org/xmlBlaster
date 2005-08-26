@@ -4,6 +4,17 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #137187,#13718 Ported to use native XML parser when running with JDK 1.5
+   But still uses crimson for JDK 1.2,1.3 and 1.4
+   See
+    http://www.xmlBlaster.org/FAQ.html#xml-parser
+    http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/XmlNotPortable.html
+   - xmlBlaster.properties has changed
+   - engine.service.rdbms requirements will only run with JDK 1.5 from now on
+
+tar czvf xmlBlaster-XML-JDK15.tgz src/java/org/xmlBlaster/protocol/jdbc/XmlDBAdapter.java src/java/org/xmlBlaster/protocol/jdbc/DBAdapterUtils.java src/java/org/xmlBlaster/protocol/jdbc/ConnectionDescriptor.java src/java/org/xmlBlaster/util/XmlNotPortable.java src/java/org/xmlBlaster/util/SaxHandlerBase.java src/java/org/xmlBlaster/util/Global.java src/java/org/xmlBlaster/util/JAXPFactory.java doc/requirements/engine.service.rdbms.xml config/xmlBlaster.properties.template CHANGES
+src/java/org/xmlBlaster/protocol/jdbc/XmlDBAdapter.java
+
  o #13713,#13714 C++ Fixed progress listener registration in offline mode
 
  o #13710 fixed an empty type attr in EncodableData is now a String. Parsing of 
