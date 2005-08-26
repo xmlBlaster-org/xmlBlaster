@@ -9,11 +9,8 @@ Changes for current repository (svn)
    See
     http://www.xmlBlaster.org/FAQ.html#xml-parser
     http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/XmlNotPortable.html
-   - xmlBlaster.properties has changed
+   - xmlBlaster.properties has changed, please use the new template
    - engine.service.rdbms requirements will only run with JDK 1.5 from now on
-
-tar czvf xmlBlaster-XML-JDK15.tgz src/java/org/xmlBlaster/protocol/jdbc/XmlDBAdapter.java src/java/org/xmlBlaster/protocol/jdbc/DBAdapterUtils.java src/java/org/xmlBlaster/protocol/jdbc/ConnectionDescriptor.java src/java/org/xmlBlaster/util/XmlNotPortable.java src/java/org/xmlBlaster/util/SaxHandlerBase.java src/java/org/xmlBlaster/util/Global.java src/java/org/xmlBlaster/util/JAXPFactory.java doc/requirements/engine.service.rdbms.xml config/xmlBlaster.properties.template CHANGES
-src/java/org/xmlBlaster/protocol/jdbc/XmlDBAdapter.java
 
  o #13713,#13714 C++ Fixed progress listener registration in offline mode
 
