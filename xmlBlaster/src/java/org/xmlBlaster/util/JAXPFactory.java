@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+
 /**
  * Factory for JAXP factories.
  *
@@ -29,10 +30,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
  *
  * @author Peter Antman
  */
-
 public class JAXPFactory {
 
-   private final static String ME = "JAXPFactory";
    private final static JAXPFactory factory = new JAXPFactory();
 
    /**
@@ -48,6 +47,9 @@ public class JAXPFactory {
     */
    public static SAXParserFactory newSAXParserFactory(String factoryName)
       throws FactoryConfigurationError {
+      if (factoryName == null || factoryName.length() < 1) {
+         return newSAXParserFactory();
+      }
       try {
          SAXParserFactory spf = (SAXParserFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
          return  spf;
@@ -55,6 +57,7 @@ public class JAXPFactory {
          throw new FactoryConfigurationError(e,e.getMessage());
       } // end of try-catch
    }
+   
    /**
     * Use the default DocumentBuilderFactory.
     */
@@ -62,18 +65,23 @@ public class JAXPFactory {
       throws FactoryConfigurationError {
       return DocumentBuilderFactory.newInstance();
    }
+
    /**
     * Use the DocumentBuilderFactory class specifyed.
     */
    public static DocumentBuilderFactory newDocumentBuilderFactory(String factoryName)
       throws FactoryConfigurationError {
+      if (factoryName == null || factoryName.length() < 1) {
+         return newDocumentBuilderFactory();
+      }
       try {
          DocumentBuilderFactory dbf = (DocumentBuilderFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
          return dbf;
       } catch (Exception e) {
          throw new FactoryConfigurationError(e,e.getMessage());
-      } // end of try-catch
+      }
    }
+
    /**
     * Use the default TransformerFactory.
     */
@@ -81,55 +89,20 @@ public class JAXPFactory {
       throws TransformerFactoryConfigurationError {
       return TransformerFactory.newInstance();
    }
+
    /**
     * Use the TransformerFactory class specifyed.
     */
    public static TransformerFactory newTransformerFactory(String factoryName)
       throws TransformerFactoryConfigurationError {
+      if (factoryName == null || factoryName.length() < 1) {
+         return newTransformerFactory();
+      }
       try {
          TransformerFactory tf = (TransformerFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
          return tf;
       } catch (Exception e) {
          throw new TransformerFactoryConfigurationError(e,e.getMessage());
       } // end of try-catch
-   }
-
-   /**
-    * Load the given classname from the thread context classloader.
-    */
-   private static Object newInstance(String className)
-      throws InstanceException{
-      try {
-         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-         if (classLoader == null) {
-            Global.instance().getLog("core").warn(ME, "newInstance: 'Thread.currentThread().getContextClassLoader()' returns null!");
-            return Class.forName(className).newInstance();
-         }
-         Class fac =classLoader.loadClass(className);
-         if (fac == null) {
-            Global.instance().getLog("core").warn(ME, "newInstance: 'classLoader.loadClass(" + className + ")' returns null!");
-         }
-
-         return fac.newInstance();
-
-      } catch (ClassNotFoundException e) {
-         throw new InstanceException("Could not find class: "+className,e);
-      } catch(Exception e) {
-         throw new InstanceException("Exception: " + e.toString() + "Could not load factory: "+className,e);
-      }
-   }
-
-
-   static class InstanceException extends Exception {
-      private Exception exception;
-
-      InstanceException(String msg, Exception x) {
-         super(msg);
-         this.exception = x;
-      }
-
-      Exception getException() {
-         return exception;
-      }
    }
 }

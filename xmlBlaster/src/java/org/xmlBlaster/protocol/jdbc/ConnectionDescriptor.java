@@ -22,7 +22,7 @@ public class ConnectionDescriptor {
    private String       password = "";
    private String       interaction = "query";
    private String       command = "";
-   private String       connectionkey = "";
+   //private String       connectionkey = "";
    private long         connectionlifespan = 300000;
    private boolean      confirmation = true;
    private String       documentrootnode = "dbadapterresults";
@@ -43,11 +43,13 @@ public class ConnectionDescriptor {
    /**
     */
    private void parse() {
-      Node        firstNode = document.getFirstChild();
-      org.apache.crimson.tree.TreeWalker  tw = new org.apache.crimson.tree.TreeWalker(firstNode);
-      Node        curNode = null;
+      Node firstNode = document.getFirstChild();
+      //org.apache.crimson.tree.TreeWalker  tw = new org.apache.crimson.tree.TreeWalker(firstNode);
+      //Ported to org/w3c/dom/traversal/TreeWalker.java DOM Level 2, since JDK 1.5 (marcel 2005-08-22)
+      org.w3c.dom.traversal.TreeWalker tw = org.xmlBlaster.util.XmlNotPortable.getTreeWalker(document, null);
+      Node curNode = null;
 
-      while ((curNode = (Node) tw.getNext()) != null) {
+      while ((curNode = tw.nextNode()) != null) { // crimson: tw.getNext()
          if (curNode.getNodeType() == Node.ELEMENT_NODE
                  && curNode.getNodeName().equalsIgnoreCase("database:url")) {
             if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
@@ -92,9 +94,9 @@ public class ConnectionDescriptor {
          }
          else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:connectionkey")) {
-            if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
-               connectionkey = curNode.getFirstChild().getNodeValue();
-            }
+            //if (curNode.getFirstChild().getNodeType() == Node.TEXT_NODE) {
+            //   connectionkey = curNode.getFirstChild().getNodeValue();
+            //}
          }
          else if (curNode.getNodeType() == Node.ELEMENT_NODE
                   && curNode.getNodeName().equalsIgnoreCase("database:connectionlifespan")) {

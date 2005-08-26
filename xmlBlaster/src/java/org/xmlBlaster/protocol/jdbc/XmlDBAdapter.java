@@ -138,16 +138,20 @@ public class XmlDBAdapter
 
       ConnectionDescriptor descriptor = null;
 
-      if (log.TRACE) log.trace(ME, "Get connection ...");
-      descriptor = new ConnectionDescriptor(document);
 
       try {
+         if (log.TRACE) log.trace(ME, "Get connection ...");
+         descriptor = new ConnectionDescriptor(document);
          if (log.TRACE) log.trace(ME, "Access DB ...");
          document = queryDB(descriptor);
       }
       catch (XmlBlasterException e) {
          //log.error(e.id, "query failed: " + e.getMessage());
          return getResponseMessage(e.toXml().getBytes(), "XmlBlasterException");
+      }
+      catch (Throwable e) {
+         //log.error(e.id, "query failed: " + e.getMessage());
+         return getResponseMessage(e.toString().getBytes(), "Exception");
       }
 
       if (descriptor.getConfirmation()) {
@@ -252,16 +256,7 @@ public class XmlDBAdapter
     */
    private Document createEmptyDocument() throws XmlBlasterException
    {
-      //kkrafft2 (09/04/2002): the DocumentBuilderFactory should be switched by xmlBlaster.properties
-      String factoryBackup = System.getProperty("javax.xml.parsers.DocumentBuilderFactory");
-      String newFactory = glob.getProperty().get("javax.xml.parsers.DocumentBuilderFactory", "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl");
-      System.setProperty("javax.xml.parsers.DocumentBuilderFactory",newFactory);
-      // !!! performance: should we have a singleton?
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      // restory factory
-      if( factoryBackup != null )
-         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",factoryBackup);
-
+      DocumentBuilderFactory factory = this.glob.getDocumentBuilderFactory();
 
       factory.setValidating(false);
       factory.setIgnoringComments(false);
