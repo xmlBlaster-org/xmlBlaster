@@ -201,7 +201,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
       LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
-      lf.register(LogChannel.LOG_ERROR, this);
+      lf.register(LogChannel.LOG_ERROR|LogChannel.LOG_WARN, this);
 
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {

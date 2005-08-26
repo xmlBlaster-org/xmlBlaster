@@ -2,7 +2,6 @@
 Name:      LogNotifierDeviceFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Logging into JDK 1.4 java.util.logging
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.log;
 
@@ -18,16 +17,16 @@ import org.jutils.log.LogableDevice;
 import org.jutils.log.LogChannel;
 
 import java.util.Properties;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework. 
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14">The util.log.plugin requirement</a>
+ * Factory to register to get a notification if a log.error or log.warn occurs. 
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html">The util.log.plugin requirement</a>
  */
 public class LogNotifierDeviceFactory implements I_LogDeviceFactory {
    private static final String ME = "LogNotifierDeviceFactory";
    private org.xmlBlaster.util.Global glob;
-   /** This is the log used in this class. Errors logged to this log channel will not be sent per email to avoid recursivity. */
-   private LogChannel log;
    private PluginInfo info;
    private LogNotifierDevice logNotifierDevice; // This factory has exactly one device instance
    
@@ -85,7 +84,10 @@ public class LogNotifierDeviceFactory implements I_LogDeviceFactory {
    class LogNotifierDevice implements LogableDevice {
       
       private LogNotifierDeviceFactory factory;
-      private LogableDevice logNotification; // Just change to map for multiple registrants on demand
+      private Set errorListenerSet = new HashSet();
+      private LogableDevice[] errorCache;
+      private Set warnListenerSet = new HashSet();
+      private LogableDevice[] warnCache;
       
       /**
        * Constructor. 
@@ -97,27 +99,77 @@ public class LogNotifierDeviceFactory implements I_LogDeviceFactory {
       /**
        * Register a listener (currently max one). 
        * This listener may NOT use logging himself to avoid recursion
-       * @param level Which levels you are interested in. Currently ignored, only ERROR are forwarded.
+       * @param level Which levels you are interested in. Pass LogConstants.LOG_ERROR|LogConstants.LOG_WARN to register for all available levels.
        * @param logNotification The interface to send the logging
        */
-      public void register(int level, LogableDevice logNotification) {
-         this.logNotification = logNotification;
+      public synchronized void register(int level, LogableDevice logNotification) {
+         if ((LogChannel.LOG_WARN & level) != 0) {
+            this.warnListenerSet.add(logNotification);
+            this.warnCache = null;
+         }
+         if ((LogChannel.LOG_ERROR & level) != 0) {
+            this.errorListenerSet.add(logNotification);
+            this.errorCache = null;
+         }
       }
 
-      public void unregister(int level, LogableDevice logNotification) {
-         this.logNotification = null;
+      /**
+       * Remove the listener. 
+       * @param level Which levels you want to remove. Pass LogConstants.LOG_ERROR|LogConstants.LOG_WARN to unregister for all available levels.
+       */
+      public synchronized void unregister(int level, LogableDevice logNotification) {
+         if ((LogChannel.LOG_WARN & level) != 0) {
+            this.warnListenerSet.remove(logNotification);
+            this.warnCache = null;
+         }
+         if ((LogChannel.LOG_ERROR & level) != 0) {
+            this.errorListenerSet.remove(logNotification);
+            this.errorCache = null;
+         }
+      }
+
+      /**
+       * Get a snapshot of warn listeners. 
+       */
+      public LogableDevice[] getWarnListeners() {
+         if (this.warnCache == null) {
+            synchronized (this) {
+               if (this.warnCache == null) {
+                  this.warnCache = (LogableDevice[])this.warnListenerSet.toArray(new LogableDevice[this.warnListenerSet.size()]);
+               }
+            }
+         }
+         return this.warnCache;
+      }
+
+      /**
+       * Get a snapshot of error listeners. 
+       */
+      public LogableDevice[] getErrorListeners() {
+         if (this.errorCache == null) {
+            synchronized (this) {
+               if (this.errorCache == null) {
+                  this.errorCache = (LogableDevice[])this.errorListenerSet.toArray(new LogableDevice[this.errorListenerSet.size()]);
+               }
+            }
+         }
+         return this.errorCache;
       }
 
       /**
        * Redirect logging. 
        */
       public void log(int level, String source, String str) {
-         if (this.logNotification != null) {
-            if (LogChannel.LOG_WARN == level) {
-               this.logNotification.log(level, source, str);
+         if (LogChannel.LOG_WARN == level) {
+            LogableDevice[] arr = getWarnListeners();
+            for (int i=0; i<arr.length; i++) {
+               arr[i].log(level, source, str);
             }
-            else if (LogChannel.LOG_ERROR == level) {
-               this.logNotification.log(level, source, str);
+         }
+         else if (LogChannel.LOG_ERROR == level) {
+            LogableDevice[] arr = getErrorListeners();
+            for (int i=0; i<arr.length; i++) {
+               arr[i].log(level, source, str);
             }
          }
       }
