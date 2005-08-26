@@ -1482,7 +1482,17 @@ public class Global implements Cloneable
    /**
     * Get the configured SAXParserFactory.
     *
-    * <p>The implementation of the SAXParser factory is decided by the property <code>javax.xml.parsers.SAXParserFactory</code> if available in Global, othervise the default <code>org.apache.crimson.jaxp.SAXParserFactoryImpl</code>is returned</p>
+    * <p>
+    * The implementation of the SAXParser factory is decided
+    * by the property <code>javax.xml.parsers.SAXParserFactory</code>
+    * if available in Global, otherwise the JDK1.4 default
+    * <code>org.apache.crimson.jaxp.SAXParserFactoryImpl</code>is returned<br />
+    * For JDK < 1.4 we use this as well and deliver it in xmlBlaster/lib/jaxp.jar and parser.jar
+    * </p>
+    * <p>The JDK 1.5 default would be
+    *    <code>com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl</code>
+    *
+    * @see #getDocumentBuilderFactory()
     */
     public SAXParserFactory getSAXParserFactory() throws XmlBlasterException{
       if ( saxFactory == null) {
@@ -1491,7 +1501,8 @@ public class Global implements Cloneable
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
                   "javax.xml.parsers.SAXParserFactory",
-                  "org.apache.crimson.jaxp.SAXParserFactoryImpl")
+                  (XmlNotPortable.JVM_VERSION<=14) ? "org.apache.crimson.jaxp.SAXParserFactoryImpl" :
+                  "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl")
                );
          } catch (FactoryConfigurationError e) {
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "SAXParserFactoryError", e);
@@ -1503,17 +1514,35 @@ public class Global implements Cloneable
    /**
     * Get the configured  DocumentBuilderFactoryFactory.
     *
-    * <p>The implementation of the  DocumentBuilderFactory is decided by the property <code>javax.xml.parsers.DocumentBuilderFactory</code> if available in Global, othervise the default <code>org.apache.crimson.jaxp.DocumentBuilderFactoryImpl</code>is returned</p>
+    * <p>
+    * The implementation of the  DocumentBuilderFactory is decided by the property
+    * <code>javax.xml.parsers.DocumentBuilderFactory</code> if available in Global,
+    * otherwise the default <code>org.apache.crimson.jaxp.DocumentBuilderFactoryImpl</code>
+    * is returned for JDK 1.3 and smaller.
+    * </p>
+    * Currently only crimson is actually possible to use for JDK 1.3 and JDK 1.4
+    * (see xmlBlaster/lib/parser.jar#/META-INF/services setting)
+    * </p>
+    * <p>
+    * For JDK 1.5 the default delivered parser is used:
+    * <code>com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl</code>
+    * and xmlBlaster/lib/parser.jar and jaxp.jar are obsolete.
+    * For JDK 1.5 or higher any DOM Level 3 compliant parser should be OK.
+    * </p>
     */
-   public DocumentBuilderFactory getDocumentBuilderFactory()throws XmlBlasterException {
+   public DocumentBuilderFactory getDocumentBuilderFactory() throws XmlBlasterException {
       if ( docBuilderFactory == null) {
          try {
             if (log.DUMP) log.dump(ME, getProperty().toXml());
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
                   "javax.xml.parsers.DocumentBuilderFactory",
-                  "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl")
+                  (XmlNotPortable.JVM_VERSION<=14) ? "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl" :
+                   "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl")
                );
+               // We need to force "com.sun..." for JDK 1.5 as otherwise
+               // the xmlBlaster/lib/parser.jar#/META-INF/services settings would choose crimson
+               // As soon as we drop parser.jar we can leave this property==null
          } catch (FactoryConfigurationError e) {
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "DocumentBuilderFactoryError", e);
          } // end of try-catch
@@ -1523,15 +1552,24 @@ public class Global implements Cloneable
    /**
     * Get the configured  TransformerFactory.
     *
-    * <p>The implementation of the   TransformerFactory is decided by the property <code>javax.xml.transform.TransformerFactory</code> if available in Global, othervise the default <code>org.apache.xalan.processor.TransformerFactoryImpl</code>is returned</p>
+    * <p>The implementation of the   TransformerFactory is decided by the property
+    * <code>javax.xml.transform.TransformerFactory</code> if available in Global,
+    * otherwise the default <code>org.apache.xalan.processor.TransformerFactoryImpl</code>
+    * is returned
+    * </p>
+    * <p>The JDK 1.5 default would be
+    * <code>com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl</code>
+    *
+    * @see #getDocumentBuilderFactory()
     */
-   public TransformerFactory getTransformerFactory()throws XmlBlasterException {
+   public TransformerFactory getTransformerFactory() throws XmlBlasterException {
       if ( transformerFactory == null) {
          try {
             transformerFactory =JAXPFactory.newTransformerFactory(
                getProperty().get(
                   "javax.xml.transform.TransformerFactory",
-                  "org.apache.xalan.processor.TransformerFactoryImpl")
+                  (XmlNotPortable.JVM_VERSION<=14) ? "org.apache.xalan.processor.TransformerFactoryImpl" :
+                  "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl")
                );
          } catch (TransformerFactoryConfigurationError e) {
             throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "TransformerFactoryError", e);
