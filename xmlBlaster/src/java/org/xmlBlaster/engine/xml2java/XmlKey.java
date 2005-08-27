@@ -15,6 +15,7 @@ import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.engine.Global;
 
 import org.w3c.dom.NamedNodeMap;
@@ -112,7 +113,7 @@ public final class XmlKey
    /**
     *  We need this query manager to allow checking if an existing XPath subscription matches this new message type.
     */
-   private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
+   //private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
 
    /**
@@ -390,7 +391,7 @@ public final class XmlKey
             String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
             XmlToDom tinyDomHandle = new XmlToDom(glob,tmp);
             xmlKeyDoc = tinyDomHandle.getXmlDoc();
-            queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
+            //queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
          } catch (Exception e) {
             String text = "Problems building tiny key DOM tree\n" + xmlKey_literal + "\n for XPath subscriptions check: " + e.getMessage();
             log.warn(ME + ".MergeNodeError", text);
@@ -398,7 +399,8 @@ public final class XmlKey
          }
       }
       try {
-         Enumeration nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xpath);
+         //Enumeration nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xpath);
+         Enumeration nodeIter = XmlNotPortable.getNodeSetFromXPath(xpath, xmlKeyDoc);
          if (nodeIter != null && nodeIter.hasMoreElements()) {
             log.info(ME, "XPath subscription '" + xpath + "' matches message '" + getKeyOid() + "'");
             return true;
@@ -419,7 +421,7 @@ public final class XmlKey
    public void cleanupMatch()
    {
       if (log.TRACE) log.trace(ME, "Releasing tiny DOM tree");
-      queryMgr = null;
+      //queryMgr = null;
       xmlKeyDoc = null;
    }
 

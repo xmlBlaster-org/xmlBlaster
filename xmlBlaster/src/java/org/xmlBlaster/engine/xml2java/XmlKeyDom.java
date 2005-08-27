@@ -51,7 +51,7 @@ public class XmlKeyDom implements I_MergeDomNode
    private final Global glob;
    private final LogChannel log;
 
-   protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
+   //protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
    protected Document xmlKeyDoc = null;
 
@@ -90,19 +90,18 @@ public class XmlKeyDom implements I_MergeDomNode
    }
 
 
-   /**
+   /*
     * Accesing the query manager for XPath.
     * <p />
     * queryMgr is instantiated if null
     * @return the query manager
-    */
    protected final com.fujitsu.xml.omquery.DomQueryMgr getQueryMgr()
    {
       if (queryMgr == null)
          queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
       return queryMgr;
    }
-
+   */
 
    /**
     * Adding a new &lt;key> node to the xmlBlaster xmlKey tree.
@@ -117,7 +116,7 @@ public class XmlKeyDom implements I_MergeDomNode
       // !!! PENDING: If same key oid exists, remove the old and replace with new
 
       XmlNotPortable.mergeNode(xmlKeyDoc, node);
-      queryMgr = null; // needs to be reloaded, since the Document changed
+      //queryMgr = null; // needs to be reloaded, since the Document changed
       return node;
    }
 
@@ -143,8 +142,10 @@ public class XmlKeyDom implements I_MergeDomNode
 
       Enumeration nodeIter;
       try {
-         if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = " + xpathQuery);
-         nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
+         if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = '" + xpathQuery + "'");
+         //nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
+         nodeIter = XmlNotPortable.getNodeSetFromXPath(xpathQuery, xmlKeyDoc);
+         if (log.TRACE) log.trace(ME, "Node iter done");
       } catch (Exception e) {
          log.warn(ME + ".InvalidQuery", "Sorry, can't access, query syntax is wrong for '" + xpathQuery + "' : " + e.toString());
          throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
