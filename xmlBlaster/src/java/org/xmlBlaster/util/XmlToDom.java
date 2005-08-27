@@ -7,11 +7,13 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-//import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+
 import org.xml.sax.InputSource;
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import java.util.StringTokenizer;
 
@@ -63,7 +65,7 @@ public class XmlToDom
 
       if (!this.xmlKey_literal.startsWith("<")) {
          log.error(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
-         throw new XmlBlasterException(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
 
       }
    }
@@ -131,19 +133,23 @@ public class XmlToDom
 
       java.io.StringReader reader = new java.io.StringReader(xmlKey_literal);
       InputSource input = new InputSource(reader);
+      //input.setEncoding("UTF-8");
       //input.setEncoding("ISO-8859-2");
       //input.setSystemId("9999999999");
 
-      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = glob.getXmlProcessor().getXmlProcessorImpl();
-
       try {
-         xmlDoc = xmlProc.load(input);
+         DocumentBuilderFactory dbf = glob.getDocumentBuilderFactory();
+         DocumentBuilder db = dbf.newDocumentBuilder();
+         xmlDoc = db.parse(input);
+      } catch (javax.xml.parsers.ParserConfigurationException e) {
+         log.error(ME+".IO", "Problems when building DOM parser: " + e.toString() + "\n" + xmlKey_literal);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string\n" + xmlKey_literal, e);
       } catch (java.io.IOException e) {
          log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
-         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       } catch (org.xml.sax.SAXException e) {
-         log.error(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
-         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         log.warn(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       }
 
       rootNode = xmlDoc.getDocumentElement();
@@ -157,7 +163,7 @@ public class XmlToDom
    {
       org.w3c.dom.Node tmpRootNode = rootNode;
       if (log.TRACE) log.trace(ME, "Entering mergeRootNode() ...");
-      org.w3c.dom.Node node = merger.mergeNode(tmpRootNode);
+      /*org.w3c.dom.Node node = */merger.mergeNode(tmpRootNode);
       rootNode = tmpRootNode;  // everything successful, assign the rootNode
    }
 

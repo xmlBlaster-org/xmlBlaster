@@ -160,8 +160,6 @@ public class Global implements Cloneable
 
    private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
-   protected XmlProcessor xmlProcessor;
-
    protected LogNotifierDeviceFactory logNotifierDeviceFactory;
 
    protected Hashtable logChannels = new Hashtable();
@@ -1412,16 +1410,6 @@ public class Global implements Cloneable
       return dispatchPluginManager;
    }
 
-   public final XmlProcessor getXmlProcessor() throws XmlBlasterException {
-      if (this.xmlProcessor == null) {
-         synchronized (XmlProcessor.class) {
-            if (this.xmlProcessor == null)
-               this.xmlProcessor = new XmlProcessor(this);
-         }
-      }
-      return this.xmlProcessor;
-   }
-
    /**
     * Access the xmlBlaster Classloader.
     * Every Global instance may have an own factory instance.
@@ -1778,10 +1766,6 @@ public class Global implements Cloneable
 
       shutdownHttpServer();
 
-      if (this.xmlProcessor != null) {
-         this.xmlProcessor.shutdown();
-         this.xmlProcessor = null;
-      }
       /*
       try {
          unregisterJmx();

@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * XmlNotPortable holds static methods for parser dependent code. 
@@ -33,6 +34,13 @@ public class XmlNotPortable
 {
    private static final String ME = "XmlNotPortable";
    private static final LogChannel log = Global.instance().getLog("core");
+   private static java.lang.reflect.Method method_newXPath = null;
+   private static Class[] paramCls_StringDocument = null;
+   private static Class clazz_XPathFactory = null;
+   private static Class clazz_XPath = null;
+   private static Class clazz_QName = null;
+   private static Object instance_XPathFactory = null;
+   private static Object field_NODESET = null;
    /** We only distinguish:
     * 13 for all JDK <= 1.3
     * 14 for JDK 1.4
@@ -56,6 +64,79 @@ public class XmlNotPortable
       }
       else {
          JVM_VERSION = 15; // or above
+      }
+   }
+
+   /**
+    * Do XPath query on DOM
+    */
+   public static Enumeration getNodeSetFromXPath(String expression, org.w3c.dom.Document document) throws XmlBlasterException {
+      try {
+         if (JVM_VERSION >= 15) {
+            //javax.xml.xpath.XPath xpath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
+            //final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)xpath.evaluate(expression, document, javax.xml.xpath.XPathConstants.NODESET);
+            if (method_newXPath == null) {
+               synchronized(XmlNotPortable.class) {
+                  if (method_newXPath == null) {
+                     clazz_XPathFactory = java.lang.Class.forName("javax.xml.xpath.XPathFactory");
+                     Class[] paramCls = new Class[0];
+                     Object[] params = new Object[0];
+                     java.lang.reflect.Method method = clazz_XPathFactory.getMethod("newInstance", paramCls);
+                     instance_XPathFactory = method.invoke(clazz_XPathFactory, params);
+                     method_newXPath = clazz_XPathFactory.getMethod("newXPath", paramCls);
+
+                     clazz_XPath = java.lang.Class.forName("javax.xml.xpath.XPath");
+
+                     Class clazz_XPathConstants = java.lang.Class.forName("javax.xml.xpath.XPathConstants");
+                     clazz_QName = java.lang.Class.forName("javax.xml.namespace.QName");
+                     java.lang.reflect.Field field = clazz_XPathConstants.getDeclaredField("NODESET");
+                     field_NODESET = field.get(null);
+                     paramCls_StringDocument = new Class[] { 
+                                      java.lang.String.class,
+                                      java.lang.Object.class, // org.w3c.dom.Document.class,
+                                      clazz_QName };
+                  }
+               }
+            }
+            
+            Object xpath = method_newXPath.invoke(instance_XPathFactory, new Object[0]);
+            Object[] params = new Object[] { expression, document, field_NODESET };
+            java.lang.reflect.Method method_evaluate = clazz_XPath.getMethod("evaluate", paramCls_StringDocument);
+            final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)method_evaluate.invoke(xpath, params);
+
+            final int length = nodes.getLength();
+            return new java.util.Enumeration() {
+               int i=0;
+               public boolean hasMoreElements() {
+                  return i<length;
+               }
+               public Object nextElement() {
+                  i++;
+                  return nodes.item(i-1);
+               }
+            };
+         }
+         else {
+            // JDK < 1.5: james clark XSL parser with fujitsu wrapper for XPath:
+            // see xmlBlaster/lib/xtdash.jar and xmlBlaster/lib/omquery.jar
+            //com.fujitsu.xml.omquery.DomQueryMgr queryMgr =
+            //      new com.fujitsu.xml.omquery.DomQueryMgr(document);
+            //return queryMgr.getNodesByXPath(document, expression);
+            Class clazz = java.lang.Class.forName("com.fujitsu.xml.omquery.DomQueryMgr");
+            Class[] paramCls = new Class[] { org.w3c.dom.Document.class };
+            Object[] params = new Object[] { document };
+            java.lang.reflect.Constructor ctor = clazz.getConstructor(paramCls);
+            Object domQueryMgr = ctor.newInstance(params);
+
+            paramCls = new Class[] { org.w3c.dom.Node.class, java.lang.String.class };
+            params = new Object[] { document, expression };
+            java.lang.reflect.Method method = clazz.getMethod("getNodesByXPath", paramCls);
+            return (Enumeration)method.invoke(domQueryMgr, params);
+         }
+      }
+      catch (Exception e) { // javax.xml.xpath.XPathExpressionException or com.jclark.xsl.om.XSLException
+         e.printStackTrace();
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't process XPath expression '" + expression + "'", e);
       }
    }
 
@@ -91,6 +172,7 @@ public class XmlNotPortable
       }
       
       if (JVM_VERSION == 14) {
+         // see http://java.sun.com/xml/jaxp/dist/1.1/docs/tutorial/xslt/2_write.html
          try {
             if (log.TRACE) log.trace(ME, "write - Using JDK 1.4 DOM implementation");
             javax.xml.transform.TransformerFactory tf = javax.xml.transform.TransformerFactory.newInstance();
