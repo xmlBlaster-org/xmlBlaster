@@ -85,7 +85,9 @@ public class AlertScheduler extends TimerTask implements I_AlertProducer
     * Used by scheduler thread internally. 
     */
    public void run() {
+      // Thread.currentThread().setName("DbWatcher-Scheduler");
       if (log.isLoggable(Level.FINE)) log.fine("Checking now Database again. pollInterval=" + this.period + " ...");
+
       try {
          this.changeDetector.checkAgain(null);
       }

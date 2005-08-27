@@ -9,6 +9,7 @@ package org.xmlBlaster.contrib.dbwatcher.detector;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -190,13 +191,17 @@ public class TimestampChangeDetector implements I_ChangeDetector
       // We need the connection for detection and in the same transaction to the queryMeat
       Connection conn = null;
       boolean reported = false;
-
+      boolean exceptionOccured = false;
+      
       if (attrMap != null && attrMap.containsKey("oldTimestamp")) {
          this.oldTimestamp = (String)attrMap.get("oldTimestamp");
          log.info("Reconfigured oldTimestamp to '" +this.oldTimestamp + "' as given by attrMap");
       }
 
       try {
+         conn = this.dbPool.reserve(); // This has been added 2005-08-27 (Michele Laghi)
+         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // TOO RESTRICTIVE IN MOST CASES !!!
+         
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
             public void result(ResultSet rs) throws Exception {
                if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
@@ -281,13 +286,21 @@ public class TimestampChangeDetector implements I_ChangeDetector
          }
       }
       catch (Exception e) {
+         exceptionOccured = true;
+         if (conn != null) {
+            try {
+               conn.rollback();
+            }
+            catch (SQLException ex) {
+            }
+         }
          if (!reported) {
             log.severe("Panic: Change detection failed for '" +
                        this.changeDetectStatement + "': " + e.toString()); 
          }
       }
       finally {
-         if (conn != null) {
+         if (conn != null && !exceptionOccured) {
             conn.commit();
             this.dbPool.release(conn);
          }
