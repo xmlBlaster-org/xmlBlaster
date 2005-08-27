@@ -171,17 +171,19 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
    private synchronized DbUpdateInfoDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
       if (tableName == null)
          throw new Exception(ME + ".getTableDescription: the table name is null");
+      log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");
       // TODO to be changed later (upcase / lowcase fix later)
       DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName.toLowerCase());
       if (description != null)
          return description;
       DatabaseMetaData meta = conn.getMetaData();
       ResultSet rs = null;
+      log.info("Retrieving table meta information from database: schema='" + schema + "' tableName='" + tableName + "'");
 
       description = new DbUpdateInfoDescription();
       description.setIdentity(tableName);
       try {
-         rs = meta.getColumns(null, schema, tableName, null);
+         rs = meta.getColumns(null, null/*schema*/, tableName, null);
          while (rs.next()) {
             String colName = rs.getString(4);
             int type = rs.getInt(5);
@@ -191,6 +193,10 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
             colDescription.setSqlType(type);
             colDescription.setColName(colName);
             description.addColumnDescription(colDescription);
+            log.info("Table Meta info: name='" + tableName + "' colName='" + colName + "' type='" + type + "'");
+         }
+         if (description.getUpdateInfoColDescriptions().length == 0) {
+            log.severe("No table meta information for database schema='" + schema + "' tableName='" + tableName + "' found");
          }
       }
       finally {
@@ -199,14 +205,20 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
       }
       
       try {
-         rs = meta.getPrimaryKeys(null, schema, tableName);
+         rs = meta.getPrimaryKeys(null, null/*schema*/, tableName);
          List pk = new ArrayList();
+         int count = 0;
          while (rs.next()) {
+            count++;
             String colName = rs.getString(4);
             DbUpdateInfoColDescription colDescription = description.getUpdateInfoColDescription(colName);
             if (colDescription == null)
                throw new Exception(ME + ".getTableDescription: the column name '" + colName + "' was among the PK but not in the table meta description");
             colDescription.setPrimaryKey(true);
+            log.info("Primary key found colName=" + colName);
+         }
+         if (count == 0) {
+            log.severe("No primary key found for table '" + tableName + "'");
          }
       }
       finally {
