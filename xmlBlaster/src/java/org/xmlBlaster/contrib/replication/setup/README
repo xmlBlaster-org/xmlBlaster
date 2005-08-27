@@ -1,0 +1,4 @@
+Here an example on how to start a standalone DbWriter
+
+java org.xmlBlaster.contrib.dbwriter.DbWriterExample
+
