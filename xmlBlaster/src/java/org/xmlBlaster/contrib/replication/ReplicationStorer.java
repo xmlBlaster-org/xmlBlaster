@@ -171,7 +171,8 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
    private synchronized DbUpdateInfoDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
       if (tableName == null)
          throw new Exception(ME + ".getTableDescription: the table name is null");
-      DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName);
+      // TODO to be changed later (upcase / lowcase fix later)
+      DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName.toLowerCase());
       if (description != null)
          return description;
       DatabaseMetaData meta = conn.getMetaData();
@@ -212,7 +213,8 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
          if (rs != null)
             rs.close();
       }
-      this.tableMap.put(tableName, description);
+      // TODO change this later, now lowcase
+      this.tableMap.put(tableName.toLowerCase(), description);
       return description;
    }
 
