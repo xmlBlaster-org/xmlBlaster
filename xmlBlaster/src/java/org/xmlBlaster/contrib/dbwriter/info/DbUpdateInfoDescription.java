@@ -119,7 +119,6 @@ public class DbUpdateInfoDescription {
                   tmp == Types.DATALINK ||
                   tmp == Types.JAVA_OBJECT ||
                   tmp == Types.LONGVARBINARY ||
-                  tmp == Types.LONGVARCHAR ||
                   tmp == Types.OTHER ||
                   tmp == Types.STRUCT ||
                   tmp == Types.VARBINARY) {
@@ -195,7 +194,7 @@ public class DbUpdateInfoDescription {
                      tmp == Types.DATALINK ||
                      tmp == Types.JAVA_OBJECT ||
                      tmp == Types.LONGVARBINARY ||
-                     tmp == Types.LONGVARCHAR ||
+                     /*tmp == Types.LONGVARCHAR ||*/
                      tmp == Types.OTHER ||
                      tmp == Types.STRUCT ||
                      tmp == Types.VARBINARY) {
