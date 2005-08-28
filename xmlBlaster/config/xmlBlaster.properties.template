@@ -216,6 +216,7 @@ JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueComm
                   url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
                   user=sa,\
                   password=xxx,\
+                  configurationIdentifier=MicrosoftSQLServer2005,\
                   connectionPoolSize=5,\
                   connectionBusyTimeout=90000,\
                   maxWaitingThreads=300,\
@@ -357,8 +358,10 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    com.sybase.jdbc2.jdbc.SybDriver:\
                    SQLite.JDBCDriver
 
-# Now you can configure your database access.
-
+# Now you can configure your database types.
+# Note: In the case below the default [...] key is the returned value of
+#       JDBC DatabaseMetaData.getDatabaseProductName()
+#       It can be re-configured with 'configurationIdentifier=...'
 JdbcDriver.mapping[HSQLDatabaseEngine]=string=VARCHAR,longint=BIGINT,int=INTEGER,blob=BINARY,boolean=CHAR
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1)
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
