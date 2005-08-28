@@ -112,21 +112,13 @@ public class DbUpdateInfoDescription {
             if (prop == null) 
                throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found in xml message:" + row.toXml(""));
 
-            int tmp = col.getSqlType(); 
-            if ( tmp == Types.BINARY ||
-                  tmp == Types.BLOB ||
-                  tmp == Types.CLOB ||
-                  tmp == Types.DATALINK ||
-                  tmp == Types.JAVA_OBJECT ||
-                  tmp == Types.LONGVARBINARY ||
-                  tmp == Types.OTHER ||
-                  tmp == Types.STRUCT ||
-                  tmp == Types.VARBINARY) {
-
+            if (isBinaryType(col.getSqlType())) {
+               log.info("Handling insert column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
                ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
                st.setBinaryStream(i + 1, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
             }
             else {
+               log.info("Handling insert column=" + colName + " (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
                st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
             }
          }
@@ -137,7 +129,19 @@ public class DbUpdateInfoDescription {
             st.close();
       }
    }
-   
+
+   private boolean isBinaryType(int type) {
+      return ( type == Types.BINARY ||
+            type == Types.BLOB ||
+            type == Types.CLOB ||
+            type == Types.DATALINK ||
+            type == Types.JAVA_OBJECT ||
+            type == Types.LONGVARBINARY ||
+            type == Types.OTHER ||
+            type == Types.STRUCT ||
+            type == Types.VARBINARY);
+   }
+
    public int delete(Connection conn, DbUpdateInfoRow row) throws Exception {
       addPreparedStatements(conn);
       PreparedStatement st = null;
@@ -187,22 +191,13 @@ public class DbUpdateInfoDescription {
                if (prop == null) 
                   throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
 
-               int tmp = col.getSqlType(); 
-               if ( tmp == Types.BINARY ||
-                     tmp == Types.BLOB ||
-                     tmp == Types.CLOB ||
-                     tmp == Types.DATALINK ||
-                     tmp == Types.JAVA_OBJECT ||
-                     tmp == Types.LONGVARBINARY ||
-                     /*tmp == Types.LONGVARCHAR ||*/
-                     tmp == Types.OTHER ||
-                     tmp == Types.STRUCT ||
-                     tmp == Types.VARBINARY) {
-
+               if (isBinaryType(col.getSqlType())) {
+                  log.info("Handling update column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
                   ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
                   st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
                }
                else {
+                  log.info("Handling update column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
                   st.setObject(count++, prop.getObjectValue(), col.getSqlType());
                }
             }
