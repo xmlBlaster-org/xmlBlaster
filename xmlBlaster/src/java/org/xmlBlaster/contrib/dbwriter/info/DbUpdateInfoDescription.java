@@ -187,7 +187,25 @@ public class DbUpdateInfoDescription {
                ClientProperty prop = row.getColumn(colName);
                if (prop == null) 
                   throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-               st.setObject(count++, prop.getObjectValue(), col.getSqlType());
+
+               int tmp = col.getSqlType(); 
+               if ( tmp == Types.BINARY ||
+                     tmp == Types.BLOB ||
+                     tmp == Types.CLOB ||
+                     tmp == Types.DATALINK ||
+                     tmp == Types.JAVA_OBJECT ||
+                     tmp == Types.LONGVARBINARY ||
+                     tmp == Types.LONGVARCHAR ||
+                     tmp == Types.OTHER ||
+                     tmp == Types.STRUCT ||
+                     tmp == Types.VARBINARY) {
+
+                  ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+                  st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+               }
+               else {
+                  st.setObject(count++, prop.getObjectValue(), col.getSqlType());
+               }
             }
          }
 
