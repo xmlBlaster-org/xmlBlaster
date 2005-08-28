@@ -178,7 +178,16 @@ public class DbUpdateInfoDescription {
             ClientProperty prop = row.getColumn(colName);
             if (prop == null) 
                throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-            st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
+
+            if (isBinaryType(col.getSqlType())) {
+               log.info("Handling update column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
+               ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+               st.setBinaryStream(i + 1, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+            }
+            else {
+               log.info("Handling update column=" + colName + " (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
+               st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
+            }
          }
          
          int count = this.columnDescriptionList.size() +1;
@@ -192,12 +201,12 @@ public class DbUpdateInfoDescription {
                   throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
 
                if (isBinaryType(col.getSqlType())) {
-                  log.info("Handling update column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
+                  log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
                   ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
                   st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
                }
                else {
-                  log.info("Handling update column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
+                  log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
                   st.setObject(count++, prop.getObjectValue(), col.getSqlType());
                }
             }
