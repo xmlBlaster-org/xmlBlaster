@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -44,7 +45,7 @@ public class DbUpdateInfoDescription {
    private String insertStatementTxt;
    private boolean hasAddedStatements;
 
-
+   private static Logger log = Logger.getLogger(DbUpdateInfoDescription.class.getName());
 
    public DbUpdateInfoDescription() {
       this.columnDescriptionList = new ArrayList();
@@ -83,11 +84,18 @@ public class DbUpdateInfoDescription {
             bufUpd2.append(colName).append(" = ? ");
          }
       }
+      
+      String wherePart = bufUpd2.toString().trim();
+      if (wherePart.length() > 0)
+         wherePart = " WHERE " + wherePart;
+      
       this.insertStatementTxt = "INSERT INTO " + table + " (" + buf1.toString() + ") VALUES (" + buf2.toString() + ")";
-      this.updateStatementTxt = "UPDATE " + table + " SET " + bufUpd1.toString() + " WHERE " + bufUpd2.toString();
-      this.deleteStatementTxt = "DELETE FROM " + table + " WHERE " + bufUpd2.toString();
-System.out.println(this.insertStatementTxt + "\n" + this.updateStatementTxt + "\n" + this.deleteStatementTxt + "\n");
+      this.updateStatementTxt = "UPDATE " + table + " SET " + bufUpd1.toString() + wherePart;
+      this.deleteStatementTxt = "DELETE FROM " + table + wherePart;
       this.hasAddedStatements = true;
+      log.info("statement for insert: \"" + this.insertStatementTxt + "\"");
+      log.info("statement for update: \"" + this.updateStatementTxt + "\"");
+      log.info("statement for delete: \"" + this.deleteStatementTxt + "\"");
    }
    
    public int insert(Connection conn, DbUpdateInfoRow row) throws Exception {

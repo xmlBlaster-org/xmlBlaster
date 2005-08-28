@@ -36,13 +36,25 @@ public class DbUpdateInfoRow {
    private List columnKeys;
    
    private int position;
+   
+   private boolean caseSensitive; 
 
+   /**
+    * Convenience constructor which will pass caseSensitive false.
+    * @param position the position of the row.
+    */
    public DbUpdateInfoRow(int position) {
+      this(position, false);
+   }
+   
+   
+   public DbUpdateInfoRow(int position, boolean caseSensitive) {
       this.attributes = new HashMap();
       this.columns = new HashMap();
       this.attributeKeys = new ArrayList();
       this.columnKeys = new ArrayList();
       this.position = position;
+      this.caseSensitive = caseSensitive;
    }
 
 
@@ -74,8 +86,23 @@ public class DbUpdateInfoRow {
       list.add(name);
    }
    
+   /**
+    * Returns the requested attribute. If 'caseSensitive' has been set, the characters of the key are compared
+    * case sensitively. If it is set to false, then it first searches for the case sensitive match, if nothing
+    * is found it looks for the lowercase of the key, and finally if still no match it looks for the uppercase
+    * alternative. If none of these is found, null is returned.
+    *  
+    * @param key the key of the attribute
+    * @return the ClientProperty object associated with the key, or if none found, null is returned.
+    */
    public ClientProperty getAttribute(String key) {
-      return (ClientProperty)this.attributes.get(key);
+      ClientProperty prop = (ClientProperty)this.attributes.get(key);
+      if (!this.caseSensitive && prop == null) {
+         prop = (ClientProperty)this.attributes.get(key.toLowerCase());
+         if (prop == null)
+            prop = (ClientProperty)this.attributes.get(key.toUpperCase());
+      }
+      return prop;
    }
    
    
@@ -91,7 +118,13 @@ public class DbUpdateInfoRow {
    
    
    public ClientProperty getColumn(String key) {
-      return (ClientProperty)this.columns.get(key);
+      ClientProperty prop = (ClientProperty)this.columns.get(key);
+      if (!this.caseSensitive && prop == null) {
+         prop = (ClientProperty)this.columns.get(key.toLowerCase());
+         if (prop == null)
+            prop = (ClientProperty)this.columns.get(key.toUpperCase());
+      }
+      return prop;
    }
    
    /**
@@ -127,6 +160,16 @@ public class DbUpdateInfoRow {
       }
       sb.append(offset).append("</").append(ROW_TAG).append(">");
       return sb.toString();
+   }
+
+
+   public boolean isCaseSensitive() {
+      return caseSensitive;
+   }
+
+
+   public void setCaseSensitive(boolean caseSensitive) {
+      this.caseSensitive = caseSensitive;
    }
    
 }

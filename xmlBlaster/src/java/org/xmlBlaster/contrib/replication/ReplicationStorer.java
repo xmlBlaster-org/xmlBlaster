@@ -57,9 +57,9 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
    
    public void store(DbUpdateInfo info) throws Exception {
       String command = info.getDescription().getCommand();
-      String identity = info.getDescription().getIdentity();
+      String identity = info.getDescription().getIdentity(); // this is the tableName
       
-      log.info(ME + ".store invoked '" + command + "' and '" + identity + "'");
+      log.info(ME + ".store invoked for cmd='" + command + "' and identity (table name) ='" + identity + "'");
       if (command != null) {
          if (info.getRows().size() < 1) {
             log.warning(ME + ".store invoked with no rows. Not doing anything. " + info.toXml(""));
@@ -173,7 +173,9 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
          throw new Exception(ME + ".getTableDescription: the table name is null");
       log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");
       // TODO to be changed later (upcase / lowcase fix later)
-      DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName.toLowerCase());
+      tableName = tableName.toLowerCase();
+      
+      DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName);
       if (description != null)
          return description;
       DatabaseMetaData meta = conn.getMetaData();
