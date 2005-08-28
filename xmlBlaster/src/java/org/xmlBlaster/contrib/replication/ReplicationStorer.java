@@ -59,7 +59,7 @@ public class ReplicationStorer implements I_Storer, ReplicationConstants {
       String command = info.getDescription().getCommand();
       String identity = info.getDescription().getIdentity(); // this is the tableName
       
-      log.info(ME + ".store invoked for cmd='" + command + "' and identity (table name) ='" + identity + "'");
+      log.info(ME + ".store invoked for cmd='" + command + "' and identity ='" + identity + "'");
       if (command != null) {
          if (info.getRows().size() < 1) {
             log.warning(ME + ".store invoked with no rows. Not doing anything. " + info.toXml(""));
