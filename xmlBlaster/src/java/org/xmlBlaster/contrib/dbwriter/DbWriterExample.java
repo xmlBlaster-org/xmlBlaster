@@ -26,6 +26,9 @@ import org.xmlBlaster.contrib.dbwatcher.Info;
  * <p>
  * <tt>java -Djava.util.logging.config.file=testlog.properties org.xmlBlaster.contrib.dbwriter.Example -db.password secret</tt>
  * </p>
+ * java -Djdbc.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver -Ddb.url=jdb
+c:sqlserver://localhost:1433/database=xmlBlaster -Ddb.user=xmlblast -Ddb.password=secret org.xmlBlaster.contrib.dbwriter.DbWriterExample -pro
+tocol SOCKET -plugin/socket/hostname laghi
  * @author Marcel Ruff
  */
 public class DbWriterExample {
