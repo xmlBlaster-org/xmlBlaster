@@ -7,9 +7,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter.info;
 
 
+import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -109,7 +111,25 @@ public class DbUpdateInfoDescription {
             ClientProperty prop = row.getColumn(colName);
             if (prop == null) 
                throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found in xml message:" + row.toXml(""));
-            st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
+
+            int tmp = col.getSqlType(); 
+            if ( tmp == Types.BINARY ||
+                  tmp == Types.BLOB ||
+                  tmp == Types.CLOB ||
+                  tmp == Types.DATALINK ||
+                  tmp == Types.JAVA_OBJECT ||
+                  tmp == Types.LONGVARBINARY ||
+                  tmp == Types.LONGVARCHAR ||
+                  tmp == Types.OTHER ||
+                  tmp == Types.STRUCT ||
+                  tmp == Types.VARBINARY) {
+
+               ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+               st.setBinaryStream(i + 1, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+            }
+            else {
+               st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
+            }
          }
          return st.executeUpdate();
       }
