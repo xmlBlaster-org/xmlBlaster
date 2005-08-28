@@ -108,7 +108,7 @@ public class DbUpdateInfoDescription {
             String colName = col.getColName();
             ClientProperty prop = row.getColumn(colName);
             if (prop == null) 
-               throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
+               throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found in xml message:" + row.toXml(""));
             st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
          }
          return st.executeUpdate();
