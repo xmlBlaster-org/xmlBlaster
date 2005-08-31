@@ -29,9 +29,9 @@
 -- it simple be the user 'postgres'):                                           
 -- ---------------------------------------------------------------------------- 
 
-CREATE FUNCTION plpgsql_call_handler()                                       
+CREATE OR REPLACE FUNCTION plpgsql_call_handler()                                       
        RETURNS language_handler AS '$libdir/plpgsql' LANGUAGE C;             
-CREATE FUNCTION plpgsql_validator(oid)                                       
+CREATE OR REPLACE FUNCTION plpgsql_validator(oid)                                       
        RETURNS void AS '$libdir/plpgsql' LANGUAGE C;                         
 CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql                                   
        HANDLER plpgsql_call_handler VALIDATOR plpgsql_validator;             
@@ -217,6 +217,8 @@ DECLARE blobCont BYTEA;
 	comment TEXT;
 	oid     TEXT;
 	tmp     TEXT;
+	newRow  ROW;
+	colVar  RECORD;
 BEGIN
     oldCont = NULL;
     newCont = NULL;
@@ -229,6 +231,11 @@ BEGIN
 		 colToXmlBASE64('email', blobCont) || 
 		 colToXmlBASE64('photo', old.photo);
        oid = old.oid;
+       newRow = new;
+       FOR colVar IN new.* LOOP
+          RAISE NOTICE 'entry %', colVar;
+       END LOOP;
+
     END IF;
 
     IF (TG_OP != 'DELETE') THEN
@@ -239,7 +246,6 @@ BEGIN
 		 colToXmlBASE64('email', blobCont) || 
 		 colToXmlBASE64('photo', new.photo);
        oid = new.oid;
-
     END IF;
     INSERT INTO replitems (transaction, dbId, tableName, guid, action, schema, 
                            content, oldContent, version) values 
@@ -322,6 +328,14 @@ $replSystem$ LANGUAGE 'plpgsql';
 -- ON PG_TABLES
 -- FOR EACH ROW
 -- EXECUTE PROCEDURE replSystem();
+
+CREATE OR REPLACE RULE tableChanges AS ON INSERT TO pg_tables DO
+       INSERT INTO replitems (transaction, dbId, tableName, guid, action, schema, 
+                              content, oldContent, version) values 
+                              (CURRENT_TIMESTAMP,current_database(),
+     			      new.tablename, NULL, 'CREATE', NULL, NULL, 
+			      NULL, '0.0');
+
 
 -- ---------------------------------------------------------------------------- 
 -- THE TRIGGER FOR THE replTest TABLE                                           
