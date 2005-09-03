@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,9 @@ public class DirectoryManager {
    
    private Set lockFiles;
    
-   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex) throws XmlBlasterException {
+   private boolean copyOnMove;
+   
+   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex, boolean copyOnMove) throws XmlBlasterException {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
@@ -73,6 +76,7 @@ public class DirectoryManager {
          this.lockExt = tmp.substring(1); // '*.gif' -> '.gif' 
       }
       this.lockFiles = new HashSet();
+      this.copyOnMove = copyOnMove;
    }
 
    /**
@@ -82,7 +86,7 @@ public class DirectoryManager {
     * @return
     * @throws XmlBlasterException
     */
-   private File initDirectory(File parent, String propName, String dirName) throws XmlBlasterException {
+   private File initDirectory(File parent, String propNameForLogging, String dirName) throws XmlBlasterException {
       File dir = null;
       if (dirName != null) {
          File tmp = new File(dirName);
@@ -114,7 +118,7 @@ public class DirectoryManager {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to write to the directory '" + dir.getAbsolutePath() + "'");
       }
       else {
-         this.log.info(ME, "Constructor: the '" + propName + "' property is not set. Instead of moving concerned entries they will be deleted");
+         this.log.info(ME, "Constructor: the '" + propNameForLogging + "' property is not set. Instead of moving concerned entries they will be deleted");
       }
       return dir;
    }
@@ -352,7 +356,27 @@ public class DirectoryManager {
             if (!ret)
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not delete the existing file '" + destinationFile.getCanonicalPath() + "' to '" + destinationDirectory.getName() + "' before moving avay '" + relativeName + "' after processing");
          }
-         file.renameTo(destinationFile);
+         if (copyOnMove) {
+            BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
+            FileOutputStream os = new FileOutputStream(destinationFile);
+            long length = file.length();
+            long remaining = length;
+            final int BYTE_LENGTH = 100000; // For the moment it is hardcoded
+            byte[] buf = new byte[BYTE_LENGTH];
+            while (remaining > 0) {
+               int tot = bis.read(buf);
+               remaining -= tot;
+               os.write(buf, 0, tot);
+            }
+            bis.close();
+            os.close();
+            file.delete();
+         }
+         else {
+            boolean ret = file.renameTo(destinationFile);
+            if (!ret)
+               throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+         }
       }
       catch (Throwable ex) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: ", ex); 

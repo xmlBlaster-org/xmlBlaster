@@ -22,7 +22,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.address.Address;
 
 
 /**
@@ -110,7 +109,9 @@ public class Publisher implements I_Timeout {
       MsgUnit msgUnit = new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
       String filterType = this.global.get("filterType", "simple", null, pluginConfig);
       boolean isTrueRegex = "regex".equalsIgnoreCase(filterType);
-      this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, fileFilter, sent, discarded, lockExtention, isTrueRegex);
+      boolean copyOnMove = this.global.get("copyOnMove", false, null, pluginConfig);
+      this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, 
+                                                   fileFilter, sent, discarded, lockExtention, isTrueRegex, copyOnMove);
       
    }
    
