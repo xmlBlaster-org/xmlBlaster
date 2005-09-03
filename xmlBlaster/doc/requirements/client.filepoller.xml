@@ -306,6 +306,17 @@ and here a minimalistic one:
 		of type 'simple'.
          </td>
        </tr>
+       <tr>
+         <td>copyOnMove</td>
+         <td>boolean</td>
+         <td>false</td>
+         <td><b>optional</b>: This flag has only effect if <b>sent</b> or <b>discarted</b> have been defined. If this 
+	     flag is false (or not set) then the file will be simply moved (or renamed). This is fast but it does not 
+	     work on all systems. Particularly on non-local file systems this is known to fail. Setting this flag to
+	     <i>true</i> forces a complete copy/delete of the file. This is slower but works even on file systems
+	     mounted remotely like nfs, samba or cifs.
+         </td>
+       </tr>
      </table>   
 
    </configuration>
