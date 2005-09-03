@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current repository (svn)
 ====================================
+ 
+ o #13750 added flag copyOnMove to file poller (allows archiving on remotely mounted file systems)
 
  o #13726,#13727 Removed jclark-omquery-xpath engine dependeny from xmlBlaster core for JDK >= 1.5
 
