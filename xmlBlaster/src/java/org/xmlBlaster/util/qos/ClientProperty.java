@@ -30,6 +30,7 @@ public final class ClientProperty extends EncodableData
     * @param name  The unique property key
     * @param type The data type of the value
     * @param encoding null or Constants.ENCODING_BASE64="base64"
+    * @deprecated you should use the constructors with no global
     */
    public ClientProperty(Global glob, String name, String type, String encoding) {
       super("clientProperty", name, type, encoding);
@@ -41,7 +42,28 @@ public final class ClientProperty extends EncodableData
     * @param type The data type of the value
     * @param encoding null or Constants.ENCODING_BASE64="base64"
     */
+   public ClientProperty(String name, String type, String encoding) {
+      super("clientProperty", name, type, encoding);
+      ME = "ClientProperty";
+   }
+
+   /**
+    * @param name  The unique property key
+    * @param type The data type of the value
+    * @param encoding null or Constants.ENCODING_BASE64="base64"
+    * @deprecated you should use the alternative with no global.
+    */
    public ClientProperty(Global glob, String name, String type, String encoding, String value) {
+      super("clientProperty", name, type, encoding, value);
+      ME = "ClientProperty";
+   }
+
+   /**
+    * @param name  The unique property key
+    * @param type The data type of the value
+    * @param encoding null or Constants.ENCODING_BASE64="base64"
+    */
+   public ClientProperty(String name, String type, String encoding, String value) {
       super("clientProperty", name, type, encoding, value);
       ME = "ClientProperty";
    }
@@ -51,7 +73,7 @@ public final class ClientProperty extends EncodableData
     * @param name  The unique property key
     * @param value The binary data
     */
-   public ClientProperty(Global glob, String name, byte[] value) {
+   public ClientProperty(String name, byte[] value) {
       super("clientProperty", name, value);
       ME = "ClientProperty";
    }
