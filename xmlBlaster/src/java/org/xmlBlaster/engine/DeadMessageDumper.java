@@ -12,7 +12,6 @@ import java.io.IOException;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -230,13 +229,13 @@ public class DeadMessageDumper implements I_Plugin {
             }
 
             if (doEncode) {
-               EncodableData data = new EncodableData(this.global, "content", null, Constants.TYPE_BLOB, Constants.ENCODING_BASE64);
+               EncodableData data = new EncodableData("content", null, Constants.TYPE_BLOB, Constants.ENCODING_BASE64);
                data.setValue(content);
                data.setSize(content.length);
                to.write(data.toXml(" ").getBytes());
             }
             else {
-               EncodableData data = new EncodableData(this.global, "content", null, null, null);
+               EncodableData data = new EncodableData("content", null, null, null);
                //String charSet = "UTF-8"; // "ISO-8859-1", "US-ASCII"
                //data.setValue(new String(content, charSet), null);
                data.setValueRaw(new String(content));
