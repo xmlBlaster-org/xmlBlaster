@@ -349,7 +349,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          String sizeStr = atts.getValue("size"); // long
          String type = atts.getValue("type");
          String encoding = atts.getValue("encoding");
-         this.contentData = new EncodableData(this.glob, "content", null, type, encoding);
+         this.contentData = new EncodableData("content", null, type, encoding);
          String tmp = atts.getValue("link");
          if (tmp != null && tmp.length() > 0) this.link = tmp;
          // this.content.append(this.writeElementStart(qName, atts));
