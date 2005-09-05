@@ -1,11 +1,12 @@
 package org.xmlBlaster.test.classtest;
 
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.def.Constants;
-
-import org.custommonkey.xmlunit.*;
 
 /**
  * Test ClientProperty. 
@@ -305,6 +306,21 @@ public class ClientPropertyTest extends XMLTestCase {
       }
    }
 
+   public void testClientPropertyParsing() throws Exception {
+      
+      String xml =  "<qos>\n" +
+         "  <isPublish/>\n" + 
+         "  <clientProperty name='StringKey' type=''><![CDATA[Bla<BlaBla]]></clientProperty>\n" + 
+         "</qos>";      
+      
+      MsgQosSaxFactory parser = new MsgQosSaxFactory(this.glob);
+      MsgQosData data = parser.readObject(xml);
+      ClientProperty prop = data.getClientProperty("StringKey");
+      System.out.println(prop.toXml());
+      assertEquals("", true, prop.isBase64());
+      
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.ClientPropertyTest
@@ -315,16 +331,17 @@ public class ClientPropertyTest extends XMLTestCase {
       try {
          ClientPropertyTest testSub = new ClientPropertyTest("ClientPropertyTest");
          testSub.setUp();
-         //testSub.testClientProperty();
-         //testSub.testClientPropertyEncoding();
+         testSub.testClientProperty();
+         testSub.testClientPropertyEncoding();
          testSub.testClientPropertyCtorEncoding();
-         //testSub.testClientPropertyTypes();
-         //testSub.testClientPropertyAutoEncoding();
-         //testSub.tearDown();
+         testSub.testClientPropertyTypes();
+         testSub.testClientPropertyAutoEncoding();
+         testSub.testClientPropertyParsing();
+         testSub.tearDown();
       }
       catch(Throwable e) {
          e.printStackTrace();
-         //fail(e.toString());
+         fail(e.toString());
       }
    }
 }
