@@ -65,9 +65,9 @@ public class Sql92SelectorTest extends TestCase {
       Map map;
       String encoding = null;
       ClientProperty prop1, prop2, prop3;
-      prop1 = new ClientProperty(this.glob, "age"   , "integer", encoding, "23"         );
-      prop2 = new ClientProperty(this.glob, "city"  ,      null, encoding, "London"     );
-      prop3 = new ClientProperty(this.glob, "amount",  "double", encoding, "100.1234567");
+      prop1 = new ClientProperty("age"   , "integer", encoding, "23"         );
+      prop2 = new ClientProperty("city"  ,      null, encoding, "London"     );
+      prop3 = new ClientProperty("amount",  "double", encoding, "100.1234567");
       
       // set : 0  (0:0:0)
       map = new HashMap();
