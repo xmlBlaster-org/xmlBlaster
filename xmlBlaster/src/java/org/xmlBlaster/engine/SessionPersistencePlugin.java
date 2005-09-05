@@ -187,12 +187,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             if (clientProperty == null) {
                log.error(ME, "SubscribeQos with missing " + Constants.PERSISTENCE_ID + ": " + qosData.toXml());
                long uniqueId = new Timestamp().getTimestamp();
-               qosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(this.global, Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
+               qosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
             }
             
             boolean initialUpdates = qosData.getInitialUpdateProp().getValue();
             if (initialUpdates) {
-               qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(this.global, ORIGINAL_INITIAL_UPDATES, "boolean", null, "true"));
+               qosData.getClientProperties().put(ORIGINAL_INITIAL_UPDATES, new ClientProperty(ORIGINAL_INITIAL_UPDATES, "boolean", null, "true"));
             }
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
             String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
@@ -404,7 +404,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       ClientProperty clientProperty = subscribeQosData.getClientProperty(Constants.PERSISTENCE_ID);
       if (clientProperty == null) {
          long uniqueId = new Timestamp().getTimestamp();
-         subscribeQosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(this.global, Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
+         subscribeQosData.getClientProperties().put(Constants.PERSISTENCE_ID, new ClientProperty(Constants.PERSISTENCE_ID, "long", null, "" + uniqueId));
          QueryKeyData subscribeKeyData = (QueryKeyData)data;
          
          // to be found when the client usubscribes after a server crash ...
