@@ -34,7 +34,7 @@ public class ClientPropertyTest extends XMLTestCase {
    }
 
    public void testClientProperty() throws Exception {
-      ClientProperty clientProperty = new ClientProperty(this.glob, "StringKey", null, null);
+      ClientProperty clientProperty = new ClientProperty("StringKey", null, null);
       assertEquals("", "StringKey", clientProperty.getName());
       assertEquals("", null, clientProperty.getType());
       assertEquals("", null, clientProperty.getEncoding());
@@ -50,7 +50,7 @@ public class ClientPropertyTest extends XMLTestCase {
 
    public void testClientPropertyEncoding() throws Exception {
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "StringKey", "String", Constants.ENCODING_BASE64);
+         ClientProperty clientProperty = new ClientProperty("StringKey", "String", Constants.ENCODING_BASE64);
          assertEquals("", "StringKey", clientProperty.getName());
          assertEquals("", "String", clientProperty.getType());
          assertEquals("", Constants.ENCODING_BASE64, clientProperty.getEncoding());
@@ -109,7 +109,7 @@ public class ClientPropertyTest extends XMLTestCase {
    }
 
    public void testClientPropertyAutoEncoding() throws Exception {
-      ClientProperty clientProperty = new ClientProperty(this.glob, "StringKey", "", "");
+      ClientProperty clientProperty = new ClientProperty("StringKey", "", "");
       assertEquals("", "StringKey", clientProperty.getName());
       assertEquals("", "", clientProperty.getType());
       assertEquals("", "", clientProperty.getEncoding());
@@ -134,7 +134,7 @@ public class ClientPropertyTest extends XMLTestCase {
 
    public void testClientPropertyTypes() throws Exception {
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", "int", null);
+         ClientProperty clientProperty = new ClientProperty("key", "int", null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "int", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -153,7 +153,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_BOOLEAN, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_BOOLEAN, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "boolean", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -172,7 +172,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_DOUBLE, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_DOUBLE, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "double", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -191,7 +191,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_FLOAT, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_FLOAT, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "float", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -211,7 +211,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_BYTE, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_BYTE, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "byte", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -230,7 +230,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_LONG, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_LONG, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "long", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -249,7 +249,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", Constants.TYPE_SHORT, null);
+         ClientProperty clientProperty = new ClientProperty("key", Constants.TYPE_SHORT, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", "short", clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
@@ -268,7 +268,7 @@ public class ClientPropertyTest extends XMLTestCase {
          System.out.println(xml);
       }
       {
-         ClientProperty clientProperty = new ClientProperty(this.glob, "key", null, null);
+         ClientProperty clientProperty = new ClientProperty("key", null, null);
          assertEquals("", "key", clientProperty.getName());
          assertEquals("", null, clientProperty.getType());
          assertEquals("", null, clientProperty.getEncoding());
