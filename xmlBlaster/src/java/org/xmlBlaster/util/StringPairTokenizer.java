@@ -43,7 +43,7 @@ public class StringPairTokenizer {
             String key = tok.substring(0,pos).trim();
             String value = tok.substring(pos+1).trim(); 
             if (wantClientProperties) 
-               ret.put(key, new ClientProperty(glob, key, null, null, value));
+               ret.put(key, new ClientProperty(key, null, null, value));
             else
                ret.put(key, value);
          }
