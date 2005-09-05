@@ -7,8 +7,7 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xml.sax.*;
-import org.xmlBlaster.util.def.Constants;
+import org.xml.sax.Attributes;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 
@@ -90,7 +89,7 @@ public class XmlQoSBase extends SaxHandlerBase
          return true;
       }
       if (name.equalsIgnoreCase("clientProperty")) {
-         this.clientProperty = new ClientProperty(this.glob, attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
+         this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
          character.setLength(0);
          return true;
       }
