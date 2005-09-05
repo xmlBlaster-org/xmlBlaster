@@ -89,7 +89,7 @@ public class ClientPropertyTest extends XMLTestCase {
    public void testClientPropertyCtorEncoding() throws Exception {
       {
          String value = "Bla<<";
-         ClientProperty clientProperty = new ClientProperty(this.glob, "StringKey",
+         ClientProperty clientProperty = new ClientProperty("StringKey",
                                           ClientProperty.getPropertyType(value), null, value);
          assertEquals("", "StringKey", clientProperty.getName());
          assertEquals("", null, clientProperty.getType()); // defaults to String
