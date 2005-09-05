@@ -2,26 +2,16 @@ package org.xmlBlaster.test.classtest.qos;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.MsgQosSaxFactory;
-import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.client.qos.GetReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-
-import junit.framework.*;
 
 import org.apache.commons.codec.binary.Base64;
 import java.util.Hashtable;
+
+import junit.framework.TestCase;
 
 /**
  * Test MsgQosSaxFactory. 
@@ -57,7 +47,7 @@ public class MsgQosTest extends TestCase {
       qos.setState("AA");
       assertEquals("state", "AA", qos.getState());
 
-      ClientProperty cp = new ClientProperty(this.glob, "aKey", "byte[]", Constants.ENCODING_BASE64, "bla");
+      ClientProperty cp = new ClientProperty("aKey", "byte[]", Constants.ENCODING_BASE64, "bla");
       qos.addClientProperty(cp);
       Hashtable jxPath = qos.toJXPath();
       String value = (String)jxPath.get("/qos/clientProperty[@name='aKey']/text()");
