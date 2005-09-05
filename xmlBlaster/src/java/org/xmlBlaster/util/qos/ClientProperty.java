@@ -32,7 +32,7 @@ public final class ClientProperty extends EncodableData
     * @param encoding null or Constants.ENCODING_BASE64="base64"
     */
    public ClientProperty(Global glob, String name, String type, String encoding) {
-      super(glob, "clientProperty", name, type, encoding);
+      super("clientProperty", name, type, encoding);
       ME = "ClientProperty";
    }
 
@@ -42,7 +42,7 @@ public final class ClientProperty extends EncodableData
     * @param encoding null or Constants.ENCODING_BASE64="base64"
     */
    public ClientProperty(Global glob, String name, String type, String encoding, String value) {
-      super(glob, "clientProperty", name, type, encoding, value);
+      super("clientProperty", name, type, encoding, value);
       ME = "ClientProperty";
    }
 
@@ -52,7 +52,7 @@ public final class ClientProperty extends EncodableData
     * @param value The binary data
     */
    public ClientProperty(Global glob, String name, byte[] value) {
-      super(glob, "clientProperty", name, value);
+      super("clientProperty", name, value);
       ME = "ClientProperty";
    }
 
