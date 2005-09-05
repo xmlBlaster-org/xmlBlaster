@@ -6,7 +6,6 @@ Comment:   Handling one client property of QosData
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.apache.commons.codec.binary.Base64;
 
@@ -26,7 +25,6 @@ import org.apache.commons.codec.binary.Base64;
 public class EncodableData implements java.io.Serializable, Cloneable
 {
    protected String ME = "EncodableData";
-   private final transient Global glob;
    private final String name;
    private String type;
    /** The value encoded as specified with encoding */
@@ -43,8 +41,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @param type The data type of the value
     * @param encoding null or Constants.ENCODING_BASE64="base64"
     */
-   public EncodableData(Global glob, String tagName, String name, String type, String encoding) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+   public EncodableData(String tagName, String name, String type, String encoding) {
       this.tagName = tagName;
       this.name = name;
       this.type = type;
@@ -56,8 +53,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @param type The data type of the value
     * @param encoding null or Constants.ENCODING_BASE64="base64"
     */
-   public EncodableData(Global glob, String tagName, String name, String type, String encoding, String value) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+   public EncodableData(String tagName, String name, String type, String encoding, String value) {
       this.name = name;
       this.tagName = tagName;
       this.type = type;
@@ -70,8 +66,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @param name  The unique property key
     * @param value The binary data
     */
-   public EncodableData(Global glob, String tagName, String name, byte[] value) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+   public EncodableData(String tagName, String name, byte[] value) {
       this.name = name;
       this.tagName = tagName;
       setValue(value);
