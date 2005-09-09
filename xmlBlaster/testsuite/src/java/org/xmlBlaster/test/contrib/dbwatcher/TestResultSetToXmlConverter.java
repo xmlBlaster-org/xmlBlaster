@@ -104,9 +104,15 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       String driverClass = System.getProperty("jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
       ////System.setProperty("jdbc.drivers", driverClass);
 
+      /*
       String dbUrl = System.getProperty("db.url", "jdbc:oracle:thin:@localhost:1521:orcl");
       String dbUser = System.getProperty("db.user", "system");
       String dbPassword = System.getProperty("db.password", "");
+      */
+      
+      String dbUrl = System.getProperty("db.url", "jdbc:oracle:thin:@desktop:1521:test");
+      String dbUser = System.getProperty("db.user", "system");
+      String dbPassword = System.getProperty("db.password", "frifra20");
       
       //String fs = System.getProperty("file.separator");
       //String dbUrl = "jdbc:hsqldb:"+System.getProperty("user.home")+fs+"tmp"+fs+"testpoll";
