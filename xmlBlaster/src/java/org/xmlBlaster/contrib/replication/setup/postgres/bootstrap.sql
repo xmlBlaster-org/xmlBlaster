@@ -233,7 +233,7 @@ $repl_col2xml_cdata$ LANGUAGE 'plpgsql';
 -- dropped or altered.                                                          
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_check_structure() 
+CREATE OR REPLACE FUNCTION repl_check_structure()
    RETURNS TEXT AS $repl_check_structure$
    DECLARE colVar  RECORD;
            counter INT4;
@@ -299,4 +299,30 @@ BEGIN
     RETURN 'OK';
 END;
 $repl_check_structure$ LANGUAGE 'plpgsql';
+
+
+-- ---------------------------------------------------------------------------- 
+-- repl_tables_func is invoked by the trigger on repl_tables.                   
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION repl_tables_func() 
+   RETURNS trigger AS $repl_tables_func$
+   DECLARE
+      ret TEXT;
+BEGIN
+   ret = repl_check_structure();
+   RETURN NULL;
+END;
+$repl_tables_func$ LANGUAGE 'plpgsql';
+
+
+-- ---------------------------------------------------------------------------- 
+-- repl_tables_trigger is invoked when a change occurs on repl_tables.          
+-- ---------------------------------------------------------------------------- 
+
+CREATE TRIGGER repl_tables_trigger AFTER UPDATE OR DELETE OR INSERT
+ON repl_tables
+FOR EACH ROW
+EXECUTE PROCEDURE repl_tables_func();
+
 

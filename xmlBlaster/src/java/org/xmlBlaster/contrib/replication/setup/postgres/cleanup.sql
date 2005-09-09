@@ -1,8 +1,13 @@
 -- ---------------------------------------------------------------------------- 
--- Written by Michele Laghi (michele.laghi@avitech-ag.com) 2005-08-09           
---                                                                              
+-- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
+-- Cleanup sql script to clean up the system resources for the master part of   
+-- the replication with xmlBlaster for Postgres                                 
 -- ---------------------------------------------------------------------------- 
 
+DROP TRIGGER repl_tables_trigger ON repl_tables CASCADE;
+-- FLUSH DROP TRIGGER repl_tables_trigger ON repl_tables CASCADE                
+DROP FUNCTION repl_tables_func() CASCADE;
+-- FLUSH FUNCTION repl_tables_func() CASCADE                                    
 DROP VIEW repl_cols_view CASCADE;
 -- FLUSH (dropped repl_cols_view)                                               
 DROP TABLE repl_tables CASCADE;
@@ -27,4 +32,5 @@ DROP FUNCTION repl_check_structure(text) CASCADE;
 -- FLUSH DROP FUNCTION repl_check_structure() CASCADE                           
 DROP FUNCTION repl_needs_prot(text) CASCADE;
 -- FLUSH DROP FUNCTION repl_needs_prot() CASCADE                                
+
 

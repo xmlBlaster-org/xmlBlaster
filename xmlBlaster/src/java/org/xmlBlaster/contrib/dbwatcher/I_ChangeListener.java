@@ -7,10 +7,6 @@ package org.xmlBlaster.contrib.dbwatcher;
 
 import java.sql.Connection;
 
-import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
-
-
 /**
  * Interface which reports back changes to the observed data. 
  *
