@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.util.HashMap;
@@ -82,6 +83,8 @@ import org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter;
 public class ReplicationConverter extends ResultSetToXmlConverter implements ReplicationConstants {
    private static Logger log = Logger.getLogger(ReplicationConverter.class.getName());
    
+   private I_DbSpecific dbSpecific;
+   
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -98,6 +101,44 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       super(info);
    }
    
+   public static I_DbSpecific getDbSpecific(I_Info info) throws Exception {
+      String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificDefault");
+      I_DbSpecific dbSpecific = null;
+      if (dbSpecificClass.length() > 0) {
+         ClassLoader cl = ReplicationConverter.class.getClassLoader();
+         dbSpecific = (I_DbSpecific)cl.loadClass(dbSpecificClass).newInstance();
+         dbSpecific.init(info);
+         if (log.isLoggable(Level.FINE)) log.fine(dbSpecificClass + " created and initialized");
+     }
+     else
+        log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
+      return dbSpecific;
+   }
+   
+   /**
+    * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#init(I_Info)
+    */
+   public synchronized void init(I_Info info) throws Exception {
+      super.init(info);
+      this.dbSpecific = getDbSpecific(info);
+   }
+   
+   /**
+    * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#shutdown
+    */
+   public synchronized void shutdown() throws Exception {
+      try {
+         if (this.dbSpecific != null)
+            this.dbSpecific.shutdown();
+      }
+      finally {
+         this.dbSpecific = null;
+         super.shutdown();
+      }
+   }
+   
+   
+   
    /**
     * Add another result set to the XML string
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#addInfo(ResultSet, int)
@@ -111,8 +152,8 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
      
-      if (numberOfColumns != 10)
-         throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 10 but was " + numberOfColumns);
+      if (numberOfColumns != 11)
+         throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 11 but was " + numberOfColumns);
       
       int replKey = rs.getInt(1);
       Timestamp transactionTimestamp = rs.getTimestamp(2);
@@ -120,10 +161,11 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       String tableName = rs.getString(4);
       String guid = rs.getString(5);
       String action = rs.getString(6);
-      String schema = rs.getString(7);
-      String newContent = rs.getString(8); // could be null
-      String oldContent = rs.getString(9);
-      String version = rs.getString(10);
+      String catalog = rs.getString(7);
+      String schema = rs.getString(8);
+      String newContent = rs.getString(9); // could be null
+      String oldContent = rs.getString(10);
+      String version = rs.getString(11);
       
       // this.ident = tableName; // we let the replication table name to avoid multiple msg on same transaction
       // this.command = action;
@@ -154,20 +196,6 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       }
 
       if (what == ALL || what == ROW_ONLY) {
-         buf.append("\n <row num='").append(""+this.rowCounter).append("'>");
-         this.rowCounter++;
-
-         if (action.equalsIgnoreCase(INSERT_ACTION)) {
-            buf.append(newContent);
-         }
-         else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-            buf.append(newContent);
-            // TODO add the old content for check in an attribute (only if configured that way)
-            // could be useful for debugging and inconsistency detection.
-         }
-         else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-            buf.append(oldContent);
-         }
 
          Map completeAttrs = new HashMap();
          completeAttrs.put(TABLE_NAME_ATTR, tableName);
@@ -175,22 +203,54 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
          completeAttrs.put(TRANSACTION_ATTR, transactionTimestamp.toString());
          completeAttrs.put(DB_ID_ATTR, dbId);
          completeAttrs.put(GUID_ATTR, guid);
+         completeAttrs.put(CATALOG_ATTR, catalog);
          completeAttrs.put(SCHEMA_ATTR, schema);
          completeAttrs.put(VERSION_ATTR, version);
          completeAttrs.put(ACTION_ATTR, action);
          
-         if (this.transformer != null) {
-            Map attr = this.transformer.transform(rs, this.rowCounter);
-            if (attr != null) {
-               completeAttrs.putAll(attr);
-            }
+         boolean doContinue = true;
+
+         if (action.equalsIgnoreCase(CREATE_ACTION)) {
+            log.info("addInfo: going to create a new table '" + tableName + "'");
+            this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs);
+            doContinue = false;
          }
-         this.out.write(buf.toString().getBytes(this.charSet));
-         buf.setLength(0);
-         addInfo(completeAttrs);
-         buf.append("\n </row>");
+         else if (action.equalsIgnoreCase(DROP_ACTION)) {
+            log.warning("DROP not implemented yet");
+            doContinue = false;
+         }
+         else if (action.equalsIgnoreCase(ALTER_ACTION)) {
+            log.warning("ALTER not implemented yet");
+            doContinue = false;
+         }
+         else if (action.equalsIgnoreCase(INSERT_ACTION)) {
+            buf.append(newContent);
+         }
+         else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
+            buf.append(newContent);
+         }
+         else if (action.equalsIgnoreCase(DELETE_ACTION)) {
+            buf.append(oldContent);
+         }
+
+         if (doContinue) { // add rows only if it is a non-structural change (i.e. only on INSERT/UPDATE/DELETE)
+            buf.append("\n <row num='").append(""+this.rowCounter).append("'>");
+            this.rowCounter++;
+
+            if (this.transformer != null) {
+               Map attr = this.transformer.transform(rs, this.rowCounter);
+               if (attr != null) {
+                  completeAttrs.putAll(attr);
+               }
+            }
+            this.out.write(buf.toString().getBytes(this.charSet));
+            buf.setLength(0);
+            addInfo(completeAttrs);
+            buf.append("\n </row>");
+         }
       }
 
       this.out.write(buf.toString().getBytes(this.charSet));
    }
+
 }

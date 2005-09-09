@@ -19,6 +19,9 @@
 --  information and the dbWriter will be able to recreate the information about 
 --  the primary key.                                                            
 --                                                                              
+-- NOTES:                                                                       
+-- Avoid the usage of TRUNCATE in the tables to be replicated, since the        
+-- deletion seems not to detect such a change.                                  
 -- ---------------------------------------------------------------------------- 
 
 
@@ -45,6 +48,22 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
 -- INSERT INTO replCounter VALUES (0);                                          
 
 -- ---------------------------------------------------------------------------- 
+-- WE FIRST CREATE THE TABLE HOLDING A LIST OF ALL TABLES TO BE REPLICATED      
+-- ---------------------------------------------------------------------------- 
+
+CREATE TABLE replTables (tableName VARCHAR(30) PRIMARY KEY);
+
+
+-- ---------------------------------------------------------------------------- 
+-- create the currentTables as a placeholder for the current tables (this is    
+-- used to detect a CREATE TABLE and a DROP TABLE                               
+-- ---------------------------------------------------------------------------- 
+
+CREATE TABLE currentTables AS SELECT relname FROM pg_statio_user_tables WHERE 
+       relname IN (SELECT tableName FROM replTables);
+
+
+-- ---------------------------------------------------------------------------- 
 -- create the test tables to be replicated (here two equal tables are created)  
 -- ---------------------------------------------------------------------------- 
 
@@ -57,9 +76,8 @@ CREATE TABLE repltest2 (uniqueId integer, name text, surname text, email text,
 -- and now populate the tables which have been created ...                      
 -- ---------------------------------------------------------------------------- 
 
-INSERT INTO repltest (oid, uniqueId, name, surname) VALUES (30000, 100, 'laghi', 'michele');
-
-
+INSERT INTO repltest (oid, uniqueId, name, surname) VALUES (30000, 100, 
+           'laghi', 'michele');
 INSERT INTO repltest VALUES (1, 'laghi', 'michele', 'laghi@swissinfo.org', 
            'emty image here');
 INSERT INTO repltest VALUES (2, 'laghi', 'michele', 'laghi@avitech-ag.com',
@@ -89,10 +107,10 @@ INSERT INTO repltest2 VALUES (0, 'else', 'somebody',
 -- trigger.                                                                     
 -- ---------------------------------------------------------------------------- 
 
-DROP SEQUENCE testSeq;
+-- DROP SEQUENCE testSeq;
 -- CREATE SEQUENCE testSeq;
 -- 
-DROP FUNCTION triggerTest CASCADE;
+-- DROP FUNCTION triggerTest;
 -- CREATE OR REPLACE FUNCTION triggerTest() RETURNS TRIGGER AS $triggerTest$
 -- BEGIN
 --    INSERT INTO repltest VALUES (nextval('testSeq'), 'trigger', 'one', 
@@ -101,27 +119,84 @@ DROP FUNCTION triggerTest CASCADE;
 -- END;
 -- $triggerTest$ LANGUAGE 'plpgsql';
 -- 
-DROP TRIGGER triggerTest1 ON replTest CASCADE;
+-- DROP TRIGGER triggerTest1 ON replTest CASCADE;
 -- CREATE TRIGGER triggerTest1
 -- AFTER DELETE
 -- ON repltest
 -- FOR EACH ROW
 -- EXECUTE PROCEDURE triggerTest();
 -- 
-DROP TRIGGER triggerTest2 ON replTest2 CASCADE;
+-- DROP TRIGGER triggerTest2 ON replTest2 CASCADE;
 -- CREATE TRIGGER triggerTest2
 -- AFTER DELETE
 -- ON repltest2
 -- FOR EACH ROW
 -- EXECUTE PROCEDURE triggerTest();
 
+DROP RULE tableChanges ON replitems CASCADE;
 
+
+-- ---------------------------------------------------------------------------- 
+-- A Difference between these two means that an ALTER operation has been        
+-- invoked.                                                                     
+-- ---------------------------------------------------------------------------- 
+
+DROP VIEW replColsView;
+
+CREATE VIEW replColsView AS SELECT attname,(SELECT relname FROM pg_class 
+       WHERE oid=attrelid) AS owner,atttypid,attlen,attnotnull,attnum FROM 
+       pg_attribute WHERE attnum > 0 AND (SELECT relname FROM pg_class WHERE 
+       oid=attrelid) IN (SELECT tablename FROM repltables) 
+       ORDER BY owner, attnum;
+
+DROP TABLE replColsTable;
+
+CREATE TABLE replColsTable AS SELECT attname,(SELECT relname FROM pg_class 
+       WHERE oid=attrelid) AS owner,atttypid,attlen,attnotnull,attnum FROM 
+       pg_attribute WHERE attnum > 0 AND (SELECT relname FROM pg_class WHERE 
+       oid=attrelid) IN (SELECT tablename FROM repltables) 
+       ORDER BY owner, attnum;
 
 -- ---------------------------------------------------------------------------- 
 -- NOW WE START WITH THE STANDARD PART (will be in one single transaction)      
 -- ---------------------------------------------------------------------------- 
 
 START TRANSACTION;
+
+
+CREATE OR REPLACE FUNCTION isAltered(name text) RETURNS BOOLEAN AS $isAltered$
+DECLARE
+   colVar RECORD;
+   md5A TEXT;
+   md5B TEXT;
+   tmp  TEXT;
+BEGIN
+   FOR colVar IN (SELECT * FROM replColsTable WHERE owner=$1) LOOP
+      md5A = colVar.attname;
+      tmp = colVar.atttypid;
+      md5A = md5A || tmp;
+      tmp = colVar.attlen;
+      md5A = md5A || tmp;
+      tmp = colvar.attnotnull;
+      md5A = md5A || tmp;
+      tmp = colVar.attnum;
+      md5A = md5A || tmp;
+   END LOOP;
+   FOR colVar IN (SELECT * FROM replColsView WHERE owner=$1) LOOP
+      md5B = colVar.attname;
+      tmp = colVar.atttypid;
+      md5B = md5B || tmp;
+      tmp = colVar.attlen;
+      md5B = md5B || tmp;
+      tmp = colvar.attnotnull;
+      md5B = md5B || tmp;
+      tmp = colVar.attnum;
+      md5B = md5B || tmp;
+   END LOOP;
+
+   RETURN md5A != md5B;
+END;
+$isAltered$ LANGUAGE 'plpgsql';
 
 
 -- ---------------------------------------------------------------------------- 
@@ -132,9 +207,10 @@ START TRANSACTION;
 -- ---------------------------------------------------------------------------- 
 
 DROP SEQUENCE replSeq;
+-- DROP RULE tableChanges ON replitems CASCADE;
 CREATE SEQUENCE replSeq MINVALUE 1 MAXVALUE 1000000 CYCLE;
 
-DROP TABLE replitems;
+DROP TABLE replitems CASCADE;
 CREATE TABLE replitems (replKey INTEGER DEFAULT nextval('replSeq'), 
              transaction TIMESTAMP, dbId VARCHAR(15), tableName VARCHAR(15), 
 	     guid VARCHAR(15), action VARCHAR(10), schema VARCHAR(40), 
@@ -193,6 +269,75 @@ $colToXmlCDATA$ LANGUAGE 'plpgsql';
 
 
 -- ---------------------------------------------------------------------------- 
+-- checkCreateDropAlter is used to check wether a table has been created,       
+-- dropped or altered.                                                          
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION checkCreateDropAlter() 
+   RETURNS text AS $checkCreateDropAlter$
+   DECLARE colVar  RECORD;
+           counter INT4;
+BEGIN
+    counter = 0;
+    FOR colVar IN (SELECT relname FROM currentTables WHERE relname NOT IN (
+               SELECT relname FROM pg_statio_user_tables WHERE relname IN 
+	       (SELECT tableName FROM replTables)))
+    LOOP
+      INSERT INTO replitems (transaction, dbId, tableName, guid, action, 
+                             schema, content, oldContent, version) values 
+                             (CURRENT_TIMESTAMP, current_database(),
+                             colVar.relname, colVar.oid, 'DROP', 
+			     current_schema(), NULL, NULL, '0.0');
+      counter = 1;
+    END LOOP;					 
+    FOR colVar IN (SELECT relname FROM pg_statio_user_tables WHERE relname 
+	       IN (SELECT tableName FROM replTables) AND (relname NOT 
+	       IN (SELECT relname FROM currentTables)))
+      LOOP
+      INSERT INTO replitems (transaction, dbId, tableName, guid, action, 
+                             schema, content, oldContent, version) values 
+                             (CURRENT_TIMESTAMP,current_database(),
+                             colVar.relname, colVar.oid, 'CREATE', 
+			     current_schema(), NULL, NULL, '0.0');
+      counter = 1;
+    END LOOP;
+    IF counter > 0 THEN
+       TRUNCATE currentTables;
+       FOR colVar IN (SELECT relname FROM pg_statio_user_tables WHERE relname 
+                  IN (SELECT tableName FROM replTables))
+       LOOP 
+         INSERT INTO currentTables (relname) VALUES (colVar.relname);
+       END LOOP;
+    --    the following would not work (probably because table is cached)         
+    --    CREATE TABLE currentTables AS SELECT relname FROM pg_statio_user_tables;
+    END IF;
+    -- now CREATE and DROP have been handled ...                                  
+    -- now we must handle ALTER TABLE (or column)                                 
+    counter = 0;
+    FOR colVar IN (SELECT relname FROM currentTables) LOOP
+       IF isAltered(colVar.relname) = 't' THEN
+         INSERT INTO replitems (transaction, dbId, tableName, guid, action, 
+                                schema, content, oldContent, version) values 
+                                (CURRENT_TIMESTAMP,current_database(),
+                                colVar.relname, colVar.oid, 'ALTER', 
+				current_schema(), NULL, NULL, '0.0');
+	 counter = 1;
+       END IF;
+    END LOOP;
+    IF counter > 0 THEN
+      TRUNCATE replColsTable;
+      FOR colVar IN (SELECT * FROM replColsView) LOOP
+         INSERT INTO replColsTable VALUES (colVar.attname, colVar.owner, 
+	                                   colVar.atttypid, colVar.attlen, 
+					   colVar.attnotnull, colVar.attnum);
+      END LOOP;
+    END IF;
+    RETURN 'OK';
+END;
+$checkCreateDropAlter$ LANGUAGE 'plpgsql';
+
+
+-- ---------------------------------------------------------------------------- 
 --                                                                              
 -- BELOW THE BUSINESS SPECIFIC OPERATIONS AND FUNCTIONS ARE DEFINED             
 --                                                                              
@@ -217,13 +362,13 @@ DECLARE blobCont BYTEA;
 	comment TEXT;
 	oid     TEXT;
 	tmp     TEXT;
-	newRow  ROW;
-	colVar  RECORD;
 BEGIN
     oldCont = NULL;
     newCont = NULL;
+    tmp = checkCreateDropAlter();
+
     IF (TG_OP != 'INSERT') THEN
-       -- this is needed since conversion from text to bytea must be done ...
+-- this is needed since conversion from text to bytea must be done ...          
        blobCont = old.email; 
        oldCont = colToXml('uniqueId',old.uniqueId) || 
                  colToXml('name', old.name) || 
@@ -231,11 +376,6 @@ BEGIN
 		 colToXmlBASE64('email', blobCont) || 
 		 colToXmlBASE64('photo', old.photo);
        oid = old.oid;
-       newRow = new;
-       FOR colVar IN new.* LOOP
-          RAISE NOTICE 'entry %', colVar;
-       END LOOP;
-
     END IF;
 
     IF (TG_OP != 'DELETE') THEN
@@ -246,17 +386,16 @@ BEGIN
 		 colToXmlBASE64('email', blobCont) || 
 		 colToXmlBASE64('photo', new.photo);
        oid = new.oid;
+
     END IF;
     INSERT INTO replitems (transaction, dbId, tableName, guid, action, schema, 
                            content, oldContent, version) values 
                            (CURRENT_TIMESTAMP,current_database(),
-			   TG_RELNAME, oid, TG_OP, current_schema(), newCont, oldCont, '0.0');
+			   TG_RELNAME, oid, TG_OP, current_schema(), newCont, 
+			   oldCont, '0.0');
     tmp = inet_client_addr();
     comment = 'current user \'' || current_user || '\' session_user \'' ||
               session_user || '\' current schema \'' || current_schema() || '\'';
--- TG_OP, TG_NAME || '-' || 
---			   TG_WHEN || '-' || TG_LEVEL
---	       || \' inet_client_addr \'' || tmp || '\'';
     RAISE NOTICE 'NEW REPL. ITEM %', comment;
 
     IF (TG_OP = 'DELETE') THEN RETURN OLD;
@@ -264,9 +403,6 @@ BEGIN
     RETURN NEW;
 END;
 $replTestGroup$ LANGUAGE 'plpgsql';
-
-
-
 
 -- ---------------------------------------------------------------------------- 
 -- replSystem is the function needed to detect CREATE TABLE and DROP TABLE      
@@ -322,19 +458,23 @@ $replSystem$ LANGUAGE 'plpgsql';
 -- ---------------------------------------------------------------------------- 
 
 
--- DROP TRIGGER triggerReplSystem ON pg_tables CASCADE;
--- CREATE TRIGGER triggerReplSystem
--- AFTER DELETE OR INSERT
--- ON PG_TABLES
--- FOR EACH ROW
--- EXECUTE PROCEDURE replSystem();
+-- DROP TRIGGER triggerReplSystem ON pg_statio_user_tables CASCADE;
+--CREATE TRIGGER triggerReplSystem
+--AFTER DELETE OR INSERT
+--ON pg_tables
+--FOR EACH ROW
+--EXECUTE PROCEDURE replSystem();			       
 
-CREATE OR REPLACE RULE tableChanges AS ON INSERT TO pg_tables DO
-       INSERT INTO replitems (transaction, dbId, tableName, guid, action, schema, 
-                              content, oldContent, version) values 
-                              (CURRENT_TIMESTAMP,current_database(),
-     			      new.tablename, NULL, 'CREATE', NULL, NULL, 
-			      NULL, '0.0');
+
+
+-- IMPORTANT: Rules do not have effect on table creation (no effect on pg_tables
+-- nor on pg_statio_user_tables                                                 
+CREATE OR REPLACE RULE tableChanges AS ON INSERT TO pg_attribute DO ALSO
+      INSERT INTO replitems (transaction, dbId, tableName, guid, action, schema, 
+                             content, oldContent, version) values 
+                             (CURRENT_TIMESTAMP,current_database(),
+    			      new.attname, NULL, 'CREATE', NULL, NULL, 
+     		      NULL, '0.0');
 
 
 -- ---------------------------------------------------------------------------- 
@@ -365,6 +505,20 @@ EXECUTE PROCEDURE replTestGroup();
 -- ---------------------------------------------------------------------------- 
 
 COMMIT;
+
+
+-- update currentTables after it has been detected that something changed
+-- DROP TABLE currentTables;
+-- CREATE TABLE currentTables AS SELECT relname FROM pg_statio_user_tables;
+
+-- list of all tables which have been dropped since last update:
+-- select relname from currentTables where relname NOT IN (select relname from pg_statio_user_tables);
+
+-- list of all tables which have been created since last update (note the lowercases):
+-- select relname from pg_statio_user_tables where relname NOT IN (select relname from currentTables) AND relname != 'currenttables';
+
+
+
 
 -- FOR TESTING INVOKE:                                                          
 -- update repltest SET email='test@one.com' where name='laghi' AND uniqueId=1;  

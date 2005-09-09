@@ -11,9 +11,11 @@ public interface ReplicationConstants {
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
    public final static String REPL_KEY_ATTR = "replKey";
+   public final static String EXTRA_REPL_KEY_ATTR = "extraReplKey";
    public final static String TRANSACTION_ATTR = "transaction";
    public final static String DB_ID_ATTR = "dbId";
    public final static String GUID_ATTR = "guid";
+   public final static String CATALOG_ATTR = "catalog";
    public final static String SCHEMA_ATTR = "schema";
    public final static String VERSION_ATTR = "version";
    public final static String ACTION_ATTR = "action";
@@ -25,5 +27,6 @@ public interface ReplicationConstants {
    public final static String DELETE_ACTION = "DELETE";
    public final static String DROP_ACTION = "DROP";
    public final static String CREATE_ACTION = "CREATE";
+   public final static String ALTER_ACTION = "ALTER";
    
 }

@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------- 
--- Written by Michele Laghi (michele.laghi@avitech-ag.com) 2005-08-09           
+-- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
 --                                                                              
 -- Some Comments:                                                               
 --  The effect of triggers has been checked. An open issue is how to determine  
@@ -138,9 +138,9 @@ CREATE SEQUENCE repl_seq MINVALUE 1 MAXVALUE 1000000000 CYCLE;
 
 CREATE TABLE repl_items (repl_key INTEGER DEFAULT nextval('repl_seq'), 
              trans_stamp TIMESTAMP, dbId VARCHAR(30), tablename VARCHAR(30), 
-	     guid VARCHAR(30), action VARCHAR(15), schema VARCHAR(30), 
-	     content TEXT, oldContent TEXT, version VARCHAR(10), 
-	     PRIMARY KEY (repl_key));
+	     guid VARCHAR(30), db_action VARCHAR(15), db_catalog VARCHAR(30),
+	     db_schema VARCHAR(30), content TEXT, oldContent TEXT, 
+	     version VARCHAR(10), PRIMARY KEY (repl_key));
 
 -- ---------------------------------------------------------------------------- 
 -- repl_needs_prot (prot stands for protection) detects wether a protection to  
@@ -243,22 +243,24 @@ BEGIN
                IN (SELECT relname FROM pg_statio_user_tables WHERE relname IN 
 	       (SELECT tablename FROM repl_tables)))
     LOOP
-      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, action, 
-                             schema, content, oldContent, version) values 
-                             (CURRENT_TIMESTAMP, current_database(),
-                             colVar.relname, colVar.oid, 'DROP', 
-			     current_schema(), NULL, NULL, '0.0');
+      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+                             db_catalog, db_schema, content, oldContent, 
+			     version) values (CURRENT_TIMESTAMP, 
+			     current_database(), colVar.relname, colVar.oid, 
+			     'DROP', NULL, current_schema(), NULL, NULL, 
+			     '0.0');
       counter = 1;
     END LOOP;					 
     FOR colVar IN (SELECT relname FROM pg_statio_user_tables WHERE relname 
 	       IN (SELECT tablename FROM repl_tables) AND (relname NOT 
 	       IN (SELECT relname FROM repl_current_tables)))
       LOOP
-      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, action, 
-                             schema, content, oldContent, version) values 
-                             (CURRENT_TIMESTAMP,current_database(),
-                             colVar.relname, colVar.oid, 'CREATE', 
-			     current_schema(), NULL, NULL, '0.0');
+      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+                             db_catalog, db_schema, content, oldContent, 
+			     version) values (CURRENT_TIMESTAMP, 
+			     current_database(), colVar.relname, colVar.oid, 
+			     'CREATE', NULL, current_schema(), NULL, NULL, 
+			     '0.0');
       counter = 1;
     END LOOP;
     IF counter > 0 THEN
@@ -277,11 +279,12 @@ BEGIN
     counter = 0;
     FOR colVar IN (SELECT relname FROM repl_current_tables) LOOP
        IF repl_is_altered(colVar.relname) = 't' THEN
-         INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, action, 
-                                schema, content, oldContent, version) values 
-                                (CURRENT_TIMESTAMP,current_database(),
-                                colVar.relname, colVar.oid, 'ALTER', 
-				current_schema(), NULL, NULL, '0.0');
+         INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+                                db_catalog, db_schema, content, oldContent, 
+				version) VALUES (CURRENT_TIMESTAMP, 
+				current_database(), colVar.relname, colVar.oid, 
+				'ALTER', NULL, current_schema(), NULL, NULL, 
+				'0.0');
 	 counter = 1;
        END IF;
     END LOOP;

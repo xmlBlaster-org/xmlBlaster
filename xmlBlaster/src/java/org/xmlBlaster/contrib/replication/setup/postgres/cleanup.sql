@@ -23,8 +23,8 @@ DROP FUNCTION repl_col2xml_base64(name text, content bytea) CASCADE;
 -- FLUSH DROP FUNCTION repl_col2xml_base64(name text, content bytea) CASCADE    
 DROP FUNCTION repl_col2xml_cdata(name text, content text) CASCADE;
 -- FLUSH DROP FUNCTION repl_col2xml_cdata(name text, content text) CASCADE      
-DROP FUNCTION repl_check_structure() CASCADE;
+DROP FUNCTION repl_check_structure(text) CASCADE;
 -- FLUSH DROP FUNCTION repl_check_structure() CASCADE                           
-DROP FUNCTION repl_needs_prot() CASCADE;
+DROP FUNCTION repl_needs_prot(text) CASCADE;
 -- FLUSH DROP FUNCTION repl_needs_prot() CASCADE                                
 
