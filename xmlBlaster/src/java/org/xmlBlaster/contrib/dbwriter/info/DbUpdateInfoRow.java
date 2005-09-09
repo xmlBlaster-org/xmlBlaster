@@ -12,6 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -19,7 +22,6 @@ public class DbUpdateInfoRow {
 
    public final static String ROW_TAG = "row";
    public final static String COL_TAG = "col";
-   public final static String ATTR_TAG = "attr";
    public final static String NUM_ATTR = "num";
    
    /**
@@ -39,22 +41,13 @@ public class DbUpdateInfoRow {
    
    private boolean caseSensitive; 
 
-   /**
-    * Convenience constructor which will pass caseSensitive false.
-    * @param position the position of the row.
-    */
-   public DbUpdateInfoRow(int position) {
-      this(position, false);
-   }
-   
-   
-   public DbUpdateInfoRow(int position, boolean caseSensitive) {
+   public DbUpdateInfoRow(I_Info info, int position) {
       this.attributes = new HashMap();
       this.columns = new HashMap();
       this.attributeKeys = new ArrayList();
       this.columnKeys = new ArrayList();
       this.position = position;
-      this.caseSensitive = caseSensitive;
+      this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
    }
 
 
@@ -69,21 +62,22 @@ public class DbUpdateInfoRow {
    
    
    /**
-    * Stores the client property as a new value. Note that it is not allowed to store an attribute with the same name
-    * multiple times.
-    * @throws IllegalArgumentException if the entry already existed or if the value was null.
+    * Stores the client property as a new value. If the attribute is found, then its value is overwritten.
     * @param value the value to store as an attribute.
     */
-   private final static void storeProp(ClientProperty value, Map map, List list) {
+   final static void storeProp(ClientProperty value, Map map, List list) {
       if (value == null)
          throw new IllegalArgumentException("RecordRow.storeProp: the value is null, which is not allowed");
       String name = value.getName();
       if (name == null)
          throw new IllegalArgumentException("RecordRow.storeProp: the name of the value is null, which is not allowed");
-      if (map.containsKey(name))
-         throw new IllegalArgumentException("RecordRow.storeProp: the value '" + name + "' exists already, this is not allowed");
-      map.put(name, value);
-      list.add(name);
+      if (map.containsKey(name)) {
+         map.put(name, value);
+      }
+      else {
+         map.put(name, value);
+         list.add(name);
+      }
    }
    
    /**
@@ -107,9 +101,7 @@ public class DbUpdateInfoRow {
    
    
    /**
-    * Stores the client property as a new value. Note that it is not allowed to store an attribute with the same name
-    * multiple times.
-    * @throws IllegalArgumentException if the entry already existed or if the value was null.
+    * Stores the client property as a new value. It it exists already it is overwritten.
     * @param value the value to store as an attribute.
     */
    public void setAttribute(ClientProperty value) {
@@ -156,7 +148,7 @@ public class DbUpdateInfoRow {
       while (iter.hasNext()) {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
-         sb.append(prop.toXml(extraOffset + "  ", ATTR_TAG));
+         sb.append(prop.toXml(extraOffset + "  ", DbUpdateParser.ATTR_TAG));
       }
       sb.append(offset).append("</").append(ROW_TAG).append(">");
       return sb.toString();

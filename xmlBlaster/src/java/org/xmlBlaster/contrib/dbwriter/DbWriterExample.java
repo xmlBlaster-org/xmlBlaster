@@ -143,9 +143,7 @@ public class DbWriterExample {
          prefs.put("mom.subscribeKey", subscribeKey);
          
          prefs.put("mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
-         
-         
-         prefs.put("storer.class", "org.xmlBlaster.contrib.replication.ReplicationStorer");
+         prefs.put("dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
          
          setPref("example.sleep", "0L", prefs);
          // setPref("pingInterval", "10000L", prefs);

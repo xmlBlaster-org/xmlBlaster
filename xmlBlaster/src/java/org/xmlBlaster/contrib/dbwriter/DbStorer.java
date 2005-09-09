@@ -9,7 +9,7 @@ package org.xmlBlaster.contrib.dbwriter;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 
-public class DbStorer implements I_Storer {
+public class DbStorer implements I_Writer {
 
    public void store(DbUpdateInfo info) throws Exception {
       // TODO Auto-generated method stub

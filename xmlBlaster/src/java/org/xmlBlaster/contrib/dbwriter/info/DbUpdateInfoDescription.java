@@ -13,9 +13,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -47,13 +53,103 @@ public class DbUpdateInfoDescription {
    private String insertStatementTxt;
    private boolean hasAddedStatements;
 
+   private Map attributes;
+   private List attributeKeys;
+   private boolean caseSensitive;
+   
    private static Logger log = Logger.getLogger(DbUpdateInfoDescription.class.getName());
 
-   public DbUpdateInfoDescription() {
+   public DbUpdateInfoDescription(I_Info info) {
       this.columnDescriptionList = new ArrayList();
+      this.attributes = new HashMap();
+      this.attributeKeys = new ArrayList();
+      this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
    }
 
 
+   public String[] getAttributeNames() {
+      return (String[])this.attributeKeys.toArray(new String[this.attributeKeys.size()]);
+   }
+
+   public void clearColumnDescriptions() {
+      if (this.columnDescriptionList != null)
+         this.columnDescriptionList.clear();
+   }
+   
+   public Map getAttributesClone() {
+      if (this.attributes == null)
+         return new HashMap();
+      return new HashMap(this.attributes);
+   }
+   
+   /**
+    * Returns the requested attribute. If 'caseSensitive' has been set, the characters of the key are compared
+    * case sensitively. If it is set to false, then it first searches for the case sensitive match, if nothing
+    * is found it looks for the lowercase of the key, and finally if still no match it looks for the uppercase
+    * alternative. If none of these is found, null is returned.
+    *  
+    * @param key the key of the attribute
+    * @return the ClientProperty object associated with the key, or if none found, null is returned.
+    */
+   public ClientProperty getAttribute(String key) {
+      ClientProperty prop = (ClientProperty)this.attributes.get(key);
+      if (!this.caseSensitive && prop == null) {
+         prop = (ClientProperty)this.attributes.get(key.toLowerCase());
+         if (prop == null)
+            prop = (ClientProperty)this.attributes.get(key.toUpperCase());
+      }
+      return prop;
+   }
+   
+   
+   /**
+    * Stores the client property as a new value.
+    * 
+    * @param value the value to store as an attribute.
+    */
+   public void setAttribute(ClientProperty value) {
+      DbUpdateInfoRow.storeProp(value, this.attributes, this.attributeKeys);
+   }
+   
+   /**
+    * Stores the String as a new value. The passed String is directly transformed into a ClientProperty object. 
+    * @param value the value to store as an attribute.
+    */
+   public void setAttribute(String key, String value) {
+      ClientProperty prop = new ClientProperty(key, null, null, value);
+      DbUpdateInfoRow.storeProp(prop, this.attributes, this.attributeKeys);
+   }
+   
+   /**
+    * It copies (stores) all entries found in the map into the attributes. As values only String and ClientProperty
+    * objects are allowed. If another type is found, an IllegalArgumentException is thrown. If null is passed, 
+    * nothing is done.
+    * 
+    * @param map
+    */
+   public void addAttributes(Map map) {
+      if (map == null || map.size() < 1)
+         return;
+      Iterator iter = map.keySet().iterator();
+      while (iter.hasNext()) {
+         Object key = iter.next();
+         if (key == null)
+            continue;
+         Object val = map.get(key);
+         if (val == null)
+            continue;
+         if (val instanceof String) {
+            this.setAttribute((String)key, (String)val);
+         }
+         else if (val instanceof ClientProperty) {
+            this.setAttribute((ClientProperty)val);
+         }
+         else {
+            throw new IllegalArgumentException("DbUpdateInfoDescription.addAttributes can only be done on String or ClientProperty, but '" + key + "' has a value of type '" + val.getClass().getName() + "'");
+         }
+      }
+   }
+   
    private synchronized final void addPreparedStatements(Connection conn) throws SQLException {
       if (this.hasAddedStatements)
          return;
@@ -253,7 +349,12 @@ public class DbUpdateInfoDescription {
    public DbUpdateInfoColDescription getUpdateInfoColDescription(String colName) {
       for (int i=0; i < this.columnDescriptionList.size(); i++) {
          DbUpdateInfoColDescription tmp = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
-         if (tmp.getColName().equalsIgnoreCase(colName))
+         if (tmp == null) 
+            continue;
+         String tmpColName = tmp.getColName();
+         if (tmpColName == null)
+            continue;
+         if (tmpColName.equalsIgnoreCase(colName))
             return tmp;
       }
       return null;
@@ -273,6 +374,12 @@ public class DbUpdateInfoDescription {
          sb.append(desc.toXml(extraOffset + "  "));
       }
       
+      Iterator iter = this.attributeKeys.iterator();
+      while (iter.hasNext()) {
+         Object key = iter.next();
+         ClientProperty prop = (ClientProperty)this.attributes.get(key);
+         sb.append(prop.toXml(extraOffset + "  ", DbUpdateParser.ATTR_TAG));
+      }
       sb.append(offset).append("</").append(DESC_TAG).append(">");
       return sb.toString();
    }

@@ -21,11 +21,11 @@ public class DbWriter implements I_EventHandler {
    
    private static Logger log = Logger.getLogger(DbWriter.class.getName());
    public final static String DB_POOL_KEY = "db.pool";
-   
+   public final static String CASE_SENSITIVE_KEY = "dbWriter.caseSensitive";
    private I_Info info;
    private I_ContribPlugin eventEngine;
    private I_Parser parser;
-   private I_Storer storer;
+   private I_Writer writer;
    private I_DbPool dbPool;
    private boolean poolOwner;
    private int changeCount;
@@ -78,7 +78,7 @@ public class DbWriter implements I_EventHandler {
       // Now we load all plugins to do the job
       String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.dbwriter.MomEventEngine").trim();
       String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.DbUpdateParser").trim();
-      String storerClass = this.info.get("storer.class", "org.xmlBlaster.contrib.dbwriter.Storer").trim();
+      String writerClass = this.info.get("dbWriter.writer.class", "org.xmlBlaster.contrib.dbwriter.Writer").trim();
    
       if (parserClass.length() > 0) {
           this.parser = (I_Parser)cl.loadClass(parserClass).newInstance();
@@ -88,13 +88,13 @@ public class DbWriter implements I_EventHandler {
       else
          log.info("Couldn't initialize I_Parser, please configure 'parser.class' if you need a conversion.");
       
-      if (storerClass.length() > 0) {
-         this.storer = (I_Storer)cl.loadClass(storerClass).newInstance();
-         this.storer.init(info);
-          if (log.isLoggable(Level.FINE)) log.fine(storerClass + " created and initialized");
+      if (writerClass.length() > 0) {
+         this.writer = (I_Writer)cl.loadClass(writerClass).newInstance();
+         this.writer.init(info);
+          if (log.isLoggable(Level.FINE)) log.fine(writerClass + " created and initialized");
       }
       else
-         log.severe("Couldn't initialize I_Storer, please configure 'storer.class'.");
+         log.severe("Couldn't initialize I_Storer, please configure 'dbWriter.writer.class'.");
 
       this.isAlive = true;
       if (momClass.length() > 0) {
@@ -127,7 +127,7 @@ public class DbWriter implements I_EventHandler {
       this.isAlive = false;
       shutdown(this.eventEngine);
       shutdown(this.parser);
-      shutdown(this.storer);
+      shutdown(this.writer);
       if (this.poolOwner && this.dbPool != null) {
          this.dbPool.shutdown();
          this.dbPool = null;
@@ -140,7 +140,7 @@ public class DbWriter implements I_EventHandler {
          throw new Exception("update topic='" + topic + "' happens when we not alive");
       }
       DbUpdateInfo updateInfo = this.parser.parse(content);
-      this.storer.store(updateInfo);
+      this.writer.store(updateInfo);
    }
    
    

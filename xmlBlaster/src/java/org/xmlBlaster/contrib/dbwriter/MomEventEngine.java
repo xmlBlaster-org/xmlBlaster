@@ -43,7 +43,7 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
       
       this.eventHandler = (I_EventHandler)info.getObject("org.xmlBlaster.contrib.dbwriter.DbWriter");
       if (this.eventHandler == null)
-         throw new Exception("init: the event handler is null (probably not correctly registered");
+         throw new Exception("init: the event handler is null (probably not correctly registered)");
       
       boolean isRunningNative = true;
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");

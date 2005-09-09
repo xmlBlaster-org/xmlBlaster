@@ -93,7 +93,7 @@ public class XmlParserBase extends SaxHandlerBase {
          return true;
       }
       if (this.allowedTagNames.contains(name)) {
-         this.clientProperty = new ClientProperty(this.glob, attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
+         this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
          character.setLength(0);
          return true;
       }
