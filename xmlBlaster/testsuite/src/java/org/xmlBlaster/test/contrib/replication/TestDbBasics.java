@@ -113,8 +113,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       setProp(info, "db.user", "postgres");
       setProp(info, "db.password", "");
       setProp(info, "replication.mapper.tables", "test_replication=test_replication2");
-      setProp(info, "mom.class", "org.xmlBlaster.test.contrib.replication.TestDbBasics");
-      
    }
 
    /**
