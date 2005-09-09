@@ -68,7 +68,6 @@ public class DbWatcher implements I_ChangeListener {
    private I_ChangeDetector changeDetector;
    private I_DbPool dbPool;
    private I_AlertProducer[] alertProducerArr;
-   private boolean poolOwner;
    private int changeCount;
    
    /**
@@ -85,6 +84,49 @@ public class DbWatcher implements I_ChangeListener {
     */
    public DbWatcher(I_Info info) throws Exception {
       init(info);
+   }
+
+   public static I_ChangePublisher getChangePublisher(I_Info info, String owner) throws Exception {
+      synchronized (info) {
+         I_ChangePublisher publisher = (I_ChangePublisher)info.getObject("mom.publisher");
+         if (publisher == null) {
+            ClassLoader cl = DbWatcher.class.getClassLoader();
+            String momClass = info.get("mom.class", "org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher").trim();
+            if (momClass.length() > 0) {
+               publisher = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
+               publisher.init(info);
+               info.putObject("mom.publisher", publisher);
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine(momClass + " created and initialized");
+               info.put("mom.publisher.owner", owner);
+            }
+            else
+               log.severe("Couldn't initialize I_ChangePublisher, please configure 'mom.class'.");
+         }
+         return publisher;
+      }
+   }
+
+   
+   public static I_DbPool getDbPool(I_Info info, String owner) throws Exception {
+      synchronized (info) {
+         I_DbPool dbPool = (I_DbPool)info.getObject("db.pool");
+         if (dbPool == null) {
+            ClassLoader cl = DbWatcher.class.getClassLoader();
+            String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+            if (dbPoolClass.length() > 0) {
+                dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+                dbPool.init(info);
+                if (log.isLoggable(Level.FINE)) 
+                   log.fine(dbPoolClass + " created and initialized");
+            }
+            else
+               throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
+            info.put("db.pool..owner", owner);
+            info.putObject("db.pool", dbPool);
+         }
+         return dbPool;
+      }
    }
    
    /**
@@ -106,25 +148,12 @@ public class DbWatcher implements I_ChangeListener {
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
       if (this.queryMeatStatement != null) {
-         this.dbPool = (I_DbPool)info.getObject("db.pool");
-         if (this.dbPool == null) {
-            String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
-            if (dbPoolClass.length() > 0) {
-                this.dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
-                this.dbPool.init(info);
-                if (log.isLoggable(Level.FINE)) log.fine(dbPoolClass + " created and initialized");
-            }
-            else
-               throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
-            this.poolOwner = true;
-            this.info.putObject("db.pool", this.dbPool);
-         }
+         this.dbPool = getDbPool(this.info, "DbWatcher");
       }
 
       // Now we load all plugins to do the job
       
       String converterClass = this.info.get("converter.class", "org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter").trim();
-      String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher").trim();
       String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector").trim();
       String alerSchedulerClasses = this.info.get("alertProducer.class", "org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler").trim(); // comma separated list
    
@@ -135,19 +164,13 @@ public class DbWatcher implements I_ChangeListener {
       }
       else
          log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
-      
-      if (momClass.length() > 0) {
-         this.publisher = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
-         this.publisher.init(info);
-          if (log.isLoggable(Level.FINE)) log.fine(momClass + " created and initialized");
-      }
-      else
-         log.severe("Couldn't initialize I_ChangePublisher, please configure 'mom.class'.");
-      
+
+      this.publisher = getChangePublisher(this.info, "DbWatcher");
+
       if (changeDetectorClass.length() > 0) {
          this.changeDetector = (I_ChangeDetector)cl.loadClass(changeDetectorClass).newInstance();
          this.changeDetector.init(info, (I_ChangeListener)this, this.dataConverter);
-          if (log.isLoggable(Level.FINE)) log.fine(changeDetectorClass + " created and initialized");
+         if (log.isLoggable(Level.FINE)) log.fine(changeDetectorClass + " created and initialized");
       }
       else
          log.severe("Couldn't initialize I_ChangeDetector, please configure 'changeDetector.class'.");
@@ -294,7 +317,8 @@ public class DbWatcher implements I_ChangeListener {
                             dataConverter.done();
                             resultXml = bout.toString();
                          }
-                         hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                         if (resultXml != null && resultXml.length() > 0) 
+                            hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
                          changeCount++;
                          bout = null;
                       }
@@ -322,7 +346,8 @@ public class DbWatcher implements I_ChangeListener {
                       dataConverter.done();
                       resultXml = bout.toString();
                    }
-                   hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                   if (resultXml != null && resultXml.length() > 0) 
+                      hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
                    changeCount++;
                 }
                 catch (Exception e) {
@@ -414,8 +439,21 @@ public class DbWatcher implements I_ChangeListener {
       }
       try { if (this.changeDetector != null) this.changeDetector.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
       try { if (this.dataConverter != null) this.dataConverter.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
-      try { if (this.publisher != null) this.publisher.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
-      if (this.poolOwner && this.dbPool != null) {
+      
+      try {
+         boolean publisherOwner = this.info.get("mom.publisher.owner", "").equals("DbWatcher");
+         if (this.publisher != null && publisherOwner) { 
+            this.publisher.shutdown();
+            this.publisher = null;
+            this.info.putObject("mom.publisher", null);
+         }
+      } 
+      catch(Throwable e) { 
+         e.printStackTrace(); log.warning(e.toString()); 
+      }
+
+      boolean poolOwner = this.info.get("db.pool.owner", "").equals("DbWatcher");
+      if (poolOwner && this.dbPool != null) {
          this.dbPool.shutdown();
          this.dbPool = null;
          this.info.putObject("db.pool", null);

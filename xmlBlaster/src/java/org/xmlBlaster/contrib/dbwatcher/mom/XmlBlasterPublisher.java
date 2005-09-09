@@ -35,8 +35,6 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 
 /**
