@@ -423,9 +423,20 @@ public class HelloWorldSubscribe implements I_Callback
                org.jutils.io.FileUtil.writeFile(lckFile, "Writing " + fileName + " ...");
             }
             //byte[] tmp = "<?xml version='1.0' encoding='UTF-8' ?>\n".getBytes() + content;
+            /*
             String tmp = new String(content);
             if (this.fileHeader.length() > 0) {
                tmp = this.fileHeader + new String(content);
+            }
+
+            org.jutils.io.FileUtil.writeFile(fileName, tmp);
+            */
+            byte[] tmp = content;
+            if (this.fileHeader.length() > 0) {
+               byte[] fh = this.fileHeader.getBytes();
+               tmp = new byte[fh.length+content.length];
+               System.arraycopy(fh, 0, tmp, 0, fh.length);
+               System.arraycopy(content, 0, tmp, fh.length, content.length);
             }
 
             org.jutils.io.FileUtil.writeFile(fileName, tmp);
