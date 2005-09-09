@@ -116,6 +116,7 @@ public class TestReplication extends XMLTestCase {
       setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from repl_items");
       setProp(readerInfo, "converter.addMeta", "false");
       setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
+      setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
       
       // and here for the dbWriter ...
       // ---- Database settings -----
@@ -270,8 +271,8 @@ public class TestReplication extends XMLTestCase {
          sql = "INSERT INTO " + tableName + " (name, age) VALUES ('michele', 80)";
          pool.update(sql);
 
-         // we artificially trigger the initial filling of the repl_items table 
-         dbSpecific.forceTableChangeCheck();
+         // we artificially trigger the initial filling of the repl_items table (not necessary anymore since handled by alerter) 
+         // dbSpecific.forceTableChangeCheck();
          
          /* The DbWatcher shall now detect a table creation and an insert (after maximum two seconds)
           * here the xmlBlaster must run to allow the DbWatcher publish the messages.
