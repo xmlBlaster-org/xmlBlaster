@@ -3,7 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current repository (svn)
 ====================================
- 
+
+ o #13786 fixed bug on DbWatcher (TimestampChangeDetector) when number of digits changed it 
+   previously did not detect change.
+  
  o #13764 Added constructors with no global to ClientProperties (other are deprecated)
 
  o #13753 removed Global from EncodableData
