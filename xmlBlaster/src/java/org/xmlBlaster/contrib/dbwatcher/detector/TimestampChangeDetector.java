@@ -178,6 +178,22 @@ public class TimestampChangeDetector implements I_ChangeDetector
       
    }
 
+   
+   /**
+    * Compares the two strings as numerical values. If the newTimestamp is really newer than the oldTimestamp,
+    * then it returns true, false otherwise.
+    * 
+    * @param oldTimestamp
+    * @param newTimestamp
+    * @return
+    */
+   private final boolean compareTo(String oldTimestamp, String newTimestamp) {
+      int ret = newTimestamp.length() - oldTimestamp.length();
+      if (ret == 0)
+         return oldTimestamp.compareTo(newTimestamp) > 0;
+      return ret < 0;
+   }
+   
    /**
     * Check the observed data for changes. 
     * @param attrMap Currently "oldTimestamp" can be passed to force a specific scan
@@ -229,7 +245,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
                     newTimestamp = MINSTR;
                   if (oldTimestamp == null || !oldTimestamp.equals(newTimestamp)) {
                     changeCommand = (tableExists) ? "UPDATE" : "CREATE";
-                    if (oldTimestamp != null && oldTimestamp.compareTo(newTimestamp) > 0) {
+                    if (oldTimestamp != null && compareTo(oldTimestamp, newTimestamp)) {
                        // The newest entry was removed -> 
                        //changeCommand=DELETE
                        // as other DELETE are not detected, we ignore this one as well
