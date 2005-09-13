@@ -1,0 +1,5 @@
+to replicate you can invoke:
+java org.xmlBlaster.contrib.replication.ReplicationAgent -help
+
+and follow the description there.
+

@@ -335,12 +335,16 @@ public class ReplicationAgent {
          System.out.println("You could have several instances of slaves running but only one master instance on the same topic.");
          System.out.println("\n");
          System.out.println("The content of the property files follows the java properties syntax");
-         System.out.println("For the master the configuration parameters are (here displayed with the associated values)");
+         System.out.println("For the master the configuration parameters are (here displayed with the associated default values)");
          System.out.println("===========================================================================================");
          System.out.println(displayProperties(usedPropsMap, readerInfo));
-         System.out.println("\nFor the slave the configuration parameters are (here displayed with the associated values) ");
+         System.out.println("\nFor the slave the configuration parameters are (here displayed with the associated default values) ");
          System.out.println("===========================================================================================");
          System.out.println(displayProperties(usedPropsMap, writerInfo));
+         System.out.println("\nif you want the default configuration parameters but only a few exceptions, you don't need to specify");
+         System.out.println("file names for the properties. You can set these with the JVM arguments as for example:");
+         System.out.println("java -Dmom.loginName=dummyName org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
+         System.out.println("\n");
          ret = true;
       }
       cfgInfo.put("masterFilename", masterFilename);
