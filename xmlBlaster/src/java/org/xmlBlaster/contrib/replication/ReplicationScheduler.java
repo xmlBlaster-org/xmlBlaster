@@ -25,7 +25,7 @@ public class ReplicationScheduler extends AlertScheduler {
 
    
    private I_DbSpecific dbSpecific;
-   
+   private boolean isInit;
    
    /**
     * 
@@ -46,9 +46,12 @@ public class ReplicationScheduler extends AlertScheduler {
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#init(I_Info)
     */
-   public void init(I_Info info, I_ChangeDetector changeDetector) throws Exception {
+   public synchronized void init(I_Info info, I_ChangeDetector changeDetector) throws Exception {
+      if (this.isInit)
+         return;
       this.dbSpecific = ReplicationConverter.getDbSpecific(info);
       super.init(info, changeDetector);
+      this.isInit = true;
    }
    
    /**
@@ -68,7 +71,9 @@ public class ReplicationScheduler extends AlertScheduler {
     * Stop the scheduler. 
     * @see org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer#shutdown
     */
-   public void shutdown() throws Exception {
+   public synchronized void shutdown() throws Exception {
+      if (this.dbSpecific == null)
+         return;
       try {
          super.shutdown();
       }

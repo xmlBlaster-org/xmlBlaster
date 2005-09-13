@@ -19,6 +19,7 @@ public interface ReplicationConstants {
    public final static String SCHEMA_ATTR = "schema";
    public final static String VERSION_ATTR = "version";
    public final static String ACTION_ATTR = "action";
+   public final static String OLD_CONTENT_ATTR = "oldContent";
    
    // commands
    public final static String REPLICATION_CMD = "REPLICATION";

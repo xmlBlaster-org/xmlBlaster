@@ -14,6 +14,13 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 
 public interface I_DbSpecific extends I_ContribPlugin {
 
+   /** 
+    * key for the property defining if the publisher is needed on the implementation of this interface.
+    * This is used since this interface can be used on both master and slave. On the slave however it will
+    * never need a publisher.
+    */
+   final static String NEEDS_PUBLISHER_KEY = "_replication.specific.needsPublisher";
+
    /**
     * This method is invoked for the initial setup of the database. In production this method is probably
     * never called.

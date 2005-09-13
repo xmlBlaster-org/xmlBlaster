@@ -50,18 +50,19 @@ public class ReplicationAgent {
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
-   private Map usedPropsMap = new HashMap();
-   
-   private String masterFilename;
-   private String slaveFilename;
-   
    public static void main(String[] args) {
-      ReplicationAgent agent = new ReplicationAgent();
+      I_Info cfgInfo = new PropertiesInfo(new Properties());
+      cfgInfo.putObject("usedPropsMap", new HashMap());
       try {
-         if (agent.displayHelpAndCheck(args)) {
+         if (displayHelpAndCheck(args, cfgInfo)) {
             System.exit(-1);
          }
-         agent.setup();
+         cfgSetup(cfgInfo);
+         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
+         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
+         
+         ReplicationAgent agent = new ReplicationAgent();
+         agent.init(readerInfo, writerInfo);
          agent.process();
          agent.shutdown();
 
@@ -84,22 +85,21 @@ public class ReplicationAgent {
     * @param key
     * @param val
     */
-   private void setProp(I_Info info, String key, String val) {
+   private static void setProp(Map usedPropsMap, I_Info info, String key, String val) {
       String tmp = info.get(key, null);
       if (tmp == null)
          info.put(key, val);
-      Map map = (Map)this.usedPropsMap.get(info); 
+      Map map = (Map)usedPropsMap.get(info); 
       if (map == null) {
          map = new TreeMap();
-         this.usedPropsMap.put(info, map);
+         usedPropsMap.put(info, map);
       }
       String val1 = info.get(key, null);
       if (val1 != null)
          map.put(key, val1);
    }
 
-   
-   private void setupProperties(I_Info readerInfo, I_Info writerInfo) {
+   private static void setupProperties(Map map, I_Info readerInfo, I_Info writerInfo) {
       // we hardcode the first ...
       if (readerInfo != null) {
          readerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
@@ -107,21 +107,20 @@ public class ReplicationAgent {
                "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
                "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
                "org.postgresql.Driver");
-         setProp(readerInfo, "db.url", "jdbc:postgresql:test//localhost");
-         setProp(readerInfo, "db.user", "postgres");
-         setProp(readerInfo, "db.password", "");
-         setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
-         setProp(readerInfo, "mom.topicName", "trans_stamp");
-         setProp(readerInfo, "alertScheduler.pollInterval", "2000");
-         setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
-         setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from repl_items");
-         setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM repl_items ORDER BY repl_key");
-         setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from repl_items");
-         setProp(readerInfo, "converter.addMeta", "false");
-         setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
-         setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
-         setProp(readerInfo, "replication.doBootstrap", "true");
-         
+         setProp(map, readerInfo, "db.url", "jdbc:postgresql:test//localhost");
+         setProp(map, readerInfo, "db.user", "postgres");
+         setProp(map, readerInfo, "db.password", "");
+         setProp(map, readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
+         setProp(map, readerInfo, "mom.topicName", "trans_stamp");
+         setProp(map, readerInfo, "alertScheduler.pollInterval", "2000");
+         setProp(map, readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
+         setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from repl_items");
+         setProp(map, readerInfo, "db.queryMeatStatement", "SELECT * FROM repl_items ORDER BY repl_key");
+         setProp(map, readerInfo, "changeDetector.postUpdateStatement", "DELETE from repl_items");
+         setProp(map, readerInfo, "converter.addMeta", "false");
+         setProp(map, readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
+         setProp(map, readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
+         setProp(map, readerInfo, "replication.doBootstrap", "true");
       }
       
       // and here for the dbWriter ...
@@ -132,80 +131,142 @@ public class ReplicationAgent {
                "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
                "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
                "org.postgresql.Driver");
-         setProp(writerInfo, "db.url", "jdbc:postgresql:test//localhost");
-         setProp(writerInfo, "db.user", "postgres");
-         setProp(writerInfo, "db.password", "");
-         setProp(writerInfo, "mom.loginName", "DbWriter/1");
-         setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2");
+         setProp(map, writerInfo, "db.url", "jdbc:postgresql:test//localhost");
+         setProp(map, writerInfo, "db.user", "postgres");
+         setProp(map, writerInfo, "db.password", "");
+         setProp(map, writerInfo, "mom.loginName", "DbWriter/1");
+         setProp(map, writerInfo, "replication.mapper.tables", "test1=test1_replica,test2=test2_replica,test3=test3_replica");
          String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_stamp'/>");
-         setProp(writerInfo, "mom.subscribeKey", subscribeKey);
-         setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
-         setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
+         setProp(map, writerInfo, "mom.subscribeKey", subscribeKey);
+         setProp(map, writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
+         setProp(map, writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
          // these are pure xmlBlaster specific properties
-         setProp(writerInfo, "dispatch/callback/retries", "-1");
-         setProp(writerInfo, "dispatch/callback/delay", "10000");
-         setProp(writerInfo, "queue/callback/maxEntries", "10000");
+         setProp(map, writerInfo, "dispatch/callback/retries", "-1");
+         setProp(map, writerInfo, "dispatch/callback/delay", "10000");
+         setProp(map, writerInfo, "queue/callback/maxEntries", "10000");
       }
    }
 
-   private void initProperties(String[] args) {
-      this.readerInfo = new PropertiesInfo(new Properties(System.getProperties()));
-      this.writerInfo = new PropertiesInfo(new Properties(System.getProperties()));
-      setupProperties(this.readerInfo, this.writerInfo);
+   private static void initProperties(String[] args, I_Info cfgInfo) {
+      Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
+      I_Info readerInfo = new PropertiesInfo(new Properties(System.getProperties()));
+      I_Info writerInfo = new PropertiesInfo(new Properties(System.getProperties()));
+      usedPropsMap.put(readerInfo, new TreeMap());
+      usedPropsMap.put(writerInfo, new TreeMap());
+      cfgInfo.putObject("readerInfo", readerInfo);
+      cfgInfo.putObject("writerInfo", writerInfo);
+      setupProperties(usedPropsMap, readerInfo, writerInfo);
    }
    /**
     * Configure database access.
     */
-   protected void setup() throws Exception {
-      if (this.masterFilename != null) {
+   public static void cfgSetup(I_Info cfgInfo) throws Exception {
+      String masterFilename = cfgInfo.get("masterFilename", null);
+      String slaveFilename = cfgInfo.get("slaveFilename", null);
+      Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
+      I_Info readerInfo = null;
+      I_Info writerInfo = null;
+      if (masterFilename != null) {
          Properties props = new Properties(System.getProperties());
-         if (!this.masterFilename.equalsIgnoreCase("default")) {
-            FileInputStream fis = new FileInputStream(this.masterFilename);
+         if (!masterFilename.equalsIgnoreCase("default")) {
+            FileInputStream fis = new FileInputStream(masterFilename);
             props.load(fis);
             fis.close();
          }
-         this.readerInfo = new PropertiesInfo(props);
+         readerInfo = new PropertiesInfo(props);
       }
-      if (this.slaveFilename != null) {
+      if (slaveFilename != null) {
          Properties props = new Properties(System.getProperties());
-         if (!this.slaveFilename.equalsIgnoreCase("default")) {
+         if (!slaveFilename.equalsIgnoreCase("default")) {
             System.out.println("slave is initializing");
-            FileInputStream fis = new FileInputStream(this.slaveFilename);
+            FileInputStream fis = new FileInputStream(slaveFilename);
             props.load(fis);
             fis.close();
          }
-         this.writerInfo = new PropertiesInfo(props);
+         writerInfo = new PropertiesInfo(props);
       }
-      setupProperties(this.readerInfo, this.writerInfo);
-
+      setupProperties(usedPropsMap, readerInfo, writerInfo);
+      cfgInfo.putObject("readerInfo", readerInfo);
+      cfgInfo.putObject("writerInfo", writerInfo);
+   }
+      
+    
+   public void init(I_Info readerInfo, I_Info writerInfo) throws Exception {
+      this.readerInfo = readerInfo;
+      this.writerInfo = writerInfo;
       if (this.writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
       }
       if (this.readerInfo != null) {
-         log.info("setUp: Instantiating DbWatcher");
-         this.dbWatcher = new DbWatcher();
-         this.dbWatcher.init(this.readerInfo);
-         this.dbWatcher.startAlertProducers();
+         try {
+            log.info("setUp: Instantiating DbWatcher");
+            this.dbWatcher = new DbWatcher();
+            this.dbWatcher.init(this.readerInfo);
+            
+            I_DbSpecific dbSpecific = null;
+            if (this.readerInfo != null) {
+               if (this.readerInfo.getBoolean("replication.doBootstrap", false)) {
+                  boolean needsPublisher = readerInfo.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
+                  dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo); // done only on master !!!
+                  readerInfo.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "" + needsPublisher); // back to original
+                  I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+                  if (pool == null)
+                     throw new Exception("ReplicationAgent.init: the db pool is null");
+                  Connection conn = pool.reserve();
+                  try {
+                     dbSpecific.bootstrap(conn);
+                  }
+                  catch (Exception ex) {
+                     ex.printStackTrace();
+                     pool.erase(conn);
+                     conn = null;
+                  }
+                  finally {
+                     if (conn != null)
+                        pool.release(conn);
+                  }
+               }
+            }
+            this.dbWatcher.startAlertProducers();
+         }
+         catch (Exception ex) {
+            if (this.dbWriter != null) {
+               try {
+                  this.dbWriter.shutdown();
+               }
+               catch (Exception e) {
+                  ex.printStackTrace();
+               }
+            }
+            throw ex;
+         }
       }
    }
 
-   protected void shutdown() throws Exception {
+   public void shutdown() throws Exception {
+      Exception e = null;
       if (this.readerInfo != null) {
-         this.dbWatcher.stopAlertProducers();
-         this.dbWatcher.shutdown();
-         this.dbWatcher = null;
+         try {
+            this.dbWatcher.shutdown();
+            this.dbWatcher = null;
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            e = ex;
+         }
       }
       if (this.readerInfo != null) {
          this.dbWriter.shutdown();
          this.dbWriter = null;
       }
-      
+      if (e != null)
+         throw e;
    }
 
-   private String displayProperties(I_Info info) {
-      Map map = (Map)this.usedPropsMap.get(info);
+   private static String displayProperties(Map usedPropsMap, I_Info info) {
+      Map map = (Map)usedPropsMap.get(info);
       int length = map.size();
       String[] keys = (String[])map.keySet().toArray(new String[length]);
       StringBuffer buf = new StringBuffer(4096);
@@ -221,7 +282,10 @@ public class ReplicationAgent {
    }
    
    
-   private boolean displayHelpAndCheck(String[] args) {
+   private static boolean displayHelpAndCheck(String[] args, I_Info cfgInfo) {
+      String masterFilename = null;
+      String slaveFilename = null;
+      
       boolean needsHelp = false;
       if(args.length == 0)
          needsHelp = true;
@@ -237,22 +301,26 @@ public class ReplicationAgent {
             }
             if (args[i].equalsIgnoreCase("-master")) {
                if (i == (args.length-1) || args[i+1].startsWith("-")) {
-                  this.masterFilename = "default";
+                  masterFilename = "default";
                }
                else
-                  this.masterFilename = args[i+1];
+                  masterFilename = args[i+1];
             }
             if (args[i].equalsIgnoreCase("-slave")) {
                if (i == (args.length-1) || args[i+1].startsWith("-")) {
-                  this.slaveFilename = "default";
+                  slaveFilename = "default";
                }
                else
-                  this.slaveFilename = args[i+1];
+                  slaveFilename = args[i+1];
             }
          }
       }
+      boolean ret = false;
       if (needsHelp) {
-         initProperties(args);
+         initProperties(args, cfgInfo);
+         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
+         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
+         Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
          System.out.println("usage: java org.xmlBlaster.contrib.replication.ReplicationAgent [-master masterPropertiesFilename] [-slave slavePropertiesFilename]");
          System.out.println("for example :");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties");
@@ -269,14 +337,17 @@ public class ReplicationAgent {
          System.out.println("The content of the property files follows the java properties syntax");
          System.out.println("For the master the configuration parameters are (here displayed with the associated values)");
          System.out.println("===========================================================================================");
-         System.out.println(this.displayProperties(this.readerInfo));
+         System.out.println(displayProperties(usedPropsMap, readerInfo));
          System.out.println("\nFor the slave the configuration parameters are (here displayed with the associated values) ");
          System.out.println("===========================================================================================");
-         System.out.println(displayProperties(this.writerInfo));
-         return true;
+         System.out.println(displayProperties(usedPropsMap, writerInfo));
+         ret = true;
       }
-      return false;
+      cfgInfo.put("masterFilename", masterFilename);
+      cfgInfo.put("slaveFilename", slaveFilename);
+      return ret;
    }
+   
    
    public final void process() throws Exception {
       log.info("Start");
@@ -299,14 +370,6 @@ public class ReplicationAgent {
       try {
          conn  = pool.reserve();
          
-         I_DbSpecific dbSpecific = null;
-         if (this.readerInfo != null) {
-            if (this.readerInfo.getBoolean("replication.doBootstrap", false)) {
-               dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo); // done only on master !!!
-               dbSpecific.bootstrap(conn);
-            }
-         }
-
          System.out.println(prompt + "make your sql statement");
          System.out.print(prompt);
          

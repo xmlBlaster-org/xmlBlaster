@@ -49,6 +49,9 @@ private final static String ME = "ReplicationWriter";
       this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
+
+      // this avoids the publisher to be instantiated (since we are on the slave side)
+      this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
       this.dbSpecific = ReplicationConverter.getDbSpecific(info); 
       
       String mapperClass = info.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");

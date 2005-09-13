@@ -82,7 +82,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public void init(I_Info info) throws Exception {
       log.info("going to initialize the resources");
       this.info = info;
-      this.publisher = DbWatcher.getChangePublisher(this.info, "SpecificDefault");
+      boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
+      if (needsPublisher)
+         this.publisher = DbWatcher.getChangePublisher(this.info, "SpecificDefault");
       this.dbPool = DbWatcher.getDbPool(this.info, "SpecificDefault");
       this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
    }
@@ -126,6 +128,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       Map map = new HashMap(); 
       map.put("_command", "CREATE");
       // and later put the part number inside
+      if (this.publisher == null)
+         throw new Exception("SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
       return this.publisher.publish("", this.dbUpdateInfo.toXml(""), map);
    }
 
@@ -172,20 +176,33 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
          publishCreate(0);
          
-         // create the function and trigger here
-         String createString = this.createTableFunctionAndTrigger(this.dbUpdateInfo.getDescription());
-         if (createString == null || createString.length() < 1)
-            throw new Exception("SpecificDefault.readNewTable: could not generate the sql command for the creation of the table '" + table + "'");
-         // add the function to the DB here
+         // check if function and trigger are necessary (they are only if the table has to be replicated.
+         // it does not need this if the table only needs an initial synchronization.
          
+         String sql = "SELECT replicate FROM repl_tables WHERE tablename='" + table + "'";
+         Statement st = conn.createStatement();
+         ResultSet rs = st.executeQuery(sql);
+         String doReplicate = "f"; // if the entry does not even exsist, then it is not replicated
+         if (rs.next()) {
+            doReplicate = rs.getString(1);
+         }
+         rs.close();
+         st.close();
          // retrieve the Sequence number here ...
          this.newReplKey = incrementReplKey(conn);
-         // add the trigger here
-         Statement st = conn.createStatement();
-         st.executeUpdate(createString);
-         
-         String sql = new String("SELECT * FROM " + table);
-         // TODO chunk it up in several messages here ...
+         if (doReplicate.equalsIgnoreCase("t")) { // stands for 'true'
+            // create the function and trigger here
+            String createString = this.createTableFunctionAndTrigger(this.dbUpdateInfo.getDescription());
+            if (createString == null || createString.length() < 1)
+               throw new Exception("SpecificDefault.readNewTable: could not generate the sql command for the creation of the table '" + table + "'");
+            // add the function to the DB here
+            // add the trigger here
+            log.info("adding functions and triggers to '" + table + "':\n\n" + createString);
+            st = conn.createStatement();
+            st.executeUpdate(createString);
+            st.close();
+         }
+         sql = new String("SELECT * FROM " + table);
          this.dbPool.select(conn, sql, false, this);
          conn.commit();
          conn.setTransactionIsolation(oldTransIsolation);
@@ -288,20 +305,22 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    protected String createVariableSqlPart(DbUpdateInfoDescription description, String prefix) {
       DbUpdateInfoColDescription[] cols = description.getUpdateInfoColDescriptions();
-      StringBuffer buf = new StringBuffer("       oldCont = '';\n");
+      StringBuffer buf = new StringBuffer("       ").append(prefix).append("Cont = '';\n");
 
       for (int i=0; i < cols.length; i++) {
          String colName = cols[i].getColName();
          int type = cols[i].getSqlType();
          if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY || type == Types.STRUCT) {
             buf.append("       blobCont = " + prefix + "." + colName + ";\n");
-            buf.append("       " + prefix + "Cont = " + prefix + "Cont || repl_col2xml_base64('" + colName + "', blobCont);\n");
+            buf.append("       tmp = " + prefix + "Cont || repl_col2xml_base64('" + colName + "', blobCont);\n");
+            buf.append("       " + prefix + "Cont = tmp;\n");
          }
          else {
-            buf.append("       " + prefix + "Cont = " + prefix + "Cont || repl_col2xml('" + colName + "'," + prefix + "." + colName + ");\n");
+            buf.append("       tmp = " + prefix + "Cont || repl_col2xml('" + colName + "'," + prefix + "." + colName + ");\n");
+            buf.append("       " + prefix + "Cont = tmp;\n");
          }
       }
-      buf.append("       oid = new.oid;\n");
+      buf.append("       oid = ").append(prefix).append(".oid;\n");
       return buf.toString();
    }
    
@@ -387,9 +406,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public void forceTableChangeCheck() throws Exception {
       Connection conn = null;
       CallableStatement st = null;
-      String sql = null;// remove this after testing TODO
       try {
-         sql = "{? = call repl_check_structure()}";
+         String sql = "{? = call repl_check_structure()}";
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          st = conn.prepareCall(sql);

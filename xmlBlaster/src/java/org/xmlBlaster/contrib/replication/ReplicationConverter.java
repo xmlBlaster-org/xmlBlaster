@@ -11,85 +11,38 @@ import java.util.logging.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
+import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
- * <p />
- * Configurations are:
- * <ul>
- *   <li><tt>converter.rootName</tt>
- *       The root tag name, defaults to <tt>sql</tt>
- *   </li>
- *   <li><tt>converter.addMeta</tt>
- *       Suppress meta information, the CREATE statement however will
- *       always transport the meta tags
- *   </li>
- *    <li><tt>charSet</tt>  The encoding, defaults to <tt>UTF-8</tt></li>
- *    <li><tt>transformer.class</tt>
- *      If not empty or null the specified plugin implementing
- *       {@link org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer} is loaded. 
- *      This plugin is called once for each xml dump and adds <tt>&lt;attr></tt> tags as returned by the plugin
- *    </li>
- * </ul>
- * <p>
- * Here is an example XML dump, note that all meta data settings (like isNullable)
- * are as described in JDBC (see ResultSetMetaData.java):
- * <pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
- &lt;desc>
-  &lt;command>INSERT&lt;/command>
-  &lt;ident>AFTN_CIRCUIT_STATE&lt;/ident>
-  &lt;colname type='DATE' nullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' signed='false'>CPU&lt;/colname>
-  &lt;colname type='NUMBER' precision='10' scale='3'>OLG&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='8' nullable='0'>FS_ST&lt;/colname>
- &lt;/desc>
- &lt;row num='0'>
-  &lt;col name='DATUM'>2005-01-05 15:41:36.0&lt;/col>
-  &lt;col name='CPU'>238089&lt;/col>
-  &lt;col name='OLG'>-12.333&lt;/col>
-  &lt;col name='FS_ST'>GW&lt;/col>
-  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
-  &lt;attr name='CIRCUIT_STATE'>OPERATIVE&lt;/attr>
- &lt;/row>
- &lt;row num='1'>
-  &lt;col name='DATUM'>2005-01-05 15:41:36.0&lt;/col>
-  &lt;col name='CPU'>238092&lt;/col>
-  &lt;col name='OLG'>1.513&lt;/col>
-  &lt;col name='FS_ST'>GW&lt;/col>
-  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
-  &lt;attr name='CIRCUIT_STATE'>OPERATIVE&lt;/attr>
- &lt;/row>
-&lt;/sql>
- * </pre>
- * <p>
- * The additional &lt;attr> tags can be created by configuring an
- * {@link I_AttributeTransformer} plugin.
- * </p>
- * <p>
- * This class is not thread save,
- * use separate instances if used by multiple threads.
- * </p>
  * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter
+ * @see org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter
  * @author Michele Laghi
  */
-public class ReplicationConverter extends ResultSetToXmlConverter implements ReplicationConstants {
+public class ReplicationConverter implements I_DataConverter, ReplicationConstants {
    private static Logger log = Logger.getLogger(ReplicationConverter.class.getName());
    
    private I_DbSpecific dbSpecific;
+   private DbUpdateInfo dbUpdateInfo;
+   private I_Info info;
+   private I_AttributeTransformer transformer;
+   private OutputStream out;
+   
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
-   public ReplicationConverter() { 
-      super();
+   public ReplicationConverter() {
    }
 
    /**
@@ -98,9 +51,16 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
     * @throws Exception If transformer instantiation fails
     */
    public ReplicationConverter(I_Info info) throws Exception {
-      super(info);
+      this();
+      init(info);
    }
    
+   /**
+    * This method creates every time a new instance
+    * @param info
+    * @return
+    * @throws Exception
+    */
    public static I_DbSpecific getDbSpecific(I_Info info) throws Exception {
       String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificDefault");
       I_DbSpecific dbSpecific = null;
@@ -119,7 +79,14 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#init(I_Info)
     */
    public synchronized void init(I_Info info) throws Exception {
-      super.init(info);
+      this.info = info;
+      ClassLoader cl = this.getClass().getClassLoader();
+      String transformerClassName = info.get("transformer.class", "");
+      if (transformerClassName != null && transformerClassName.length() > 0) {
+         this.transformer = (I_AttributeTransformer)cl.loadClass(transformerClassName).newInstance();
+         this.transformer.init(info);
+         log.info("Loaded transformer pluing '" + transformerClassName + "'");
+      }
       this.dbSpecific = getDbSpecific(info);
    }
    
@@ -133,7 +100,6 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       }
       finally {
          this.dbSpecific = null;
-         super.shutdown();
       }
    }
    
@@ -146,8 +112,6 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
    public void addInfo(ResultSet rs, int what) throws Exception {
       if (rs == null)
          throw new IllegalArgumentException("ReplicationConverter: Given ResultSet is null");
-      if (this.out == null)
-         throw new IllegalArgumentException("ReplicationConverter: Please call setOutputStream() first"); 
 
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
@@ -167,36 +131,16 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
       String oldContent = rs.getString(10);
       String version = rs.getString(11);
       
-      // this.ident = tableName; // we let the replication table name to avoid multiple msg on same transaction
-      // this.command = action;
-      this.command = REPLICATION_CMD; // since it can be different on a row basis ...
-
-      StringBuffer buf = new StringBuffer(4096);
-      
-      if (this.rowCounter == 0L) {
-         // Create the header meta information
-         buf.append("\n <desc>");
-         if (this.command != null) {
-            buf.append("\n  <command>").append(this.command).append("</command>");
-         }
-         if (this.ident != null) {
-            buf.append("\n  <ident>").append(this.ident).append("</ident>");
-         }
+      if (this.dbUpdateInfo.getRowCount() == 0L) {
 
          if (this.transformer != null) {
             Map attr = this.transformer.transform(rs, -1);
             if (attr != null) {
-               this.out.write(buf.toString().getBytes(this.charSet));
-               buf.setLength(0);
-               addInfo(attr);
+               this.dbUpdateInfo.getDescription().addAttributes(attr);
             }
          }
-         buf.append("\n </desc>");
-         this.commandIsAdded = true;
       }
-
       if (what == ALL || what == ROW_ONLY) {
-
          Map completeAttrs = new HashMap();
          completeAttrs.put(TABLE_NAME_ATTR, tableName);
          completeAttrs.put(REPL_KEY_ATTR, "" + replKey);
@@ -208,49 +152,53 @@ public class ReplicationConverter extends ResultSetToXmlConverter implements Rep
          completeAttrs.put(VERSION_ATTR, version);
          completeAttrs.put(ACTION_ATTR, action);
          
-         boolean doContinue = true;
-
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             log.info("addInfo: going to create a new table '" + tableName + "'");
             this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs);
-            doContinue = false;
          }
          else if (action.equalsIgnoreCase(DROP_ACTION)) {
             log.warning("DROP not implemented yet");
-            doContinue = false;
          }
          else if (action.equalsIgnoreCase(ALTER_ACTION)) {
             log.warning("ALTER not implemented yet");
-            doContinue = false;
          }
          else if (action.equalsIgnoreCase(INSERT_ACTION)) {
-            buf.append(newContent);
+            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-            buf.append(newContent);
+            completeAttrs.put(OLD_CONTENT_ATTR, oldContent);
+            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-            buf.append(oldContent);
+            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, oldContent, this.transformer);
+            row.addAttributes(completeAttrs);
          }
 
-         if (doContinue) { // add rows only if it is a non-structural change (i.e. only on INSERT/UPDATE/DELETE)
-            buf.append("\n <row num='").append(""+this.rowCounter).append("'>");
-            this.rowCounter++;
-
-            if (this.transformer != null) {
-               Map attr = this.transformer.transform(rs, this.rowCounter);
-               if (attr != null) {
-                  completeAttrs.putAll(attr);
-               }
-            }
-            this.out.write(buf.toString().getBytes(this.charSet));
-            buf.setLength(0);
-            addInfo(completeAttrs);
-            buf.append("\n </row>");
-         }
       }
+   }
 
-      this.out.write(buf.toString().getBytes(this.charSet));
+   public void addInfo(Map attributeMap) throws Exception {
+      // nothing to be done here
+   }
+
+   public int done() throws Exception {
+      int ret = this.dbUpdateInfo.getRowCount(); 
+      this.out.write(this.dbUpdateInfo.toXml("").getBytes());
+      this.out.flush();
+      this.dbUpdateInfo = null;
+      return ret;
+   }
+
+   public void setOutputStream(OutputStream out, String command, String ident) throws Exception {
+      this.out = out;
+      this.dbUpdateInfo = new DbUpdateInfo(this.info);
+      DbUpdateInfoDescription description = new DbUpdateInfoDescription(this.info);
+      description.setCommand(REPLICATION_CMD);
+      if (ident != null)
+         description.setIdentity(ident);
+      this.dbUpdateInfo.setDescription(description);
    }
 
 }
