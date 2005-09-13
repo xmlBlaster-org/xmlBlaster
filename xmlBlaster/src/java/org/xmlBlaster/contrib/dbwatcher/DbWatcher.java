@@ -317,8 +317,7 @@ public class DbWatcher implements I_ChangeListener {
                             dataConverter.done();
                             resultXml = bout.toString();
                          }
-                         if (resultXml != null && resultXml.length() > 0) 
-                            hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                         hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
                          changeCount++;
                          bout = null;
                       }
@@ -346,8 +345,7 @@ public class DbWatcher implements I_ChangeListener {
                       dataConverter.done();
                       resultXml = bout.toString();
                    }
-                   if (resultXml != null && resultXml.length() > 0) 
-                      hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                   hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
                    changeCount++;
                 }
                 catch (Exception e) {
