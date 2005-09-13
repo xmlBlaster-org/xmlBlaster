@@ -41,6 +41,9 @@ public class DbUpdateInfoRow {
    
    private boolean caseSensitive; 
 
+   /** If this is set, then no columns must be filled and this is used to print it out as xml */
+   private String colsRawContent;
+   
    public DbUpdateInfoRow(I_Info info, int position) {
       this.attributes = new HashMap();
       this.columns = new HashMap();
@@ -59,6 +62,40 @@ public class DbUpdateInfoRow {
    public String[] getColumnNames() {
       return (String[])this.columnKeys.toArray(new String[this.columnKeys.size()]);
    }
+   
+
+   
+   /**
+    * It copies (stores) all entries found in the map into the attributes. As values only String and ClientProperty
+    * objects are allowed. If another type is found, an IllegalArgumentException is thrown. If null is passed, 
+    * nothing is done.
+    * 
+    * @param map
+    */
+   final static void addProps(Map map, Map destinationMap, List destinationList) {
+      if (map == null || map.size() < 1)
+         return;
+      Iterator iter = map.keySet().iterator();
+      while (iter.hasNext()) {
+         Object key = iter.next();
+         if (key == null)
+            continue;
+         Object val = map.get(key);
+         if (val == null)
+            continue;
+         if (val instanceof String) {
+            ClientProperty prop = new ClientProperty((String)key, null, null, (String)val);
+            storeProp(prop, destinationMap, destinationList);
+         }
+         else if (val instanceof ClientProperty) {
+            storeProp((ClientProperty)val, destinationMap, destinationList);
+         }
+         else {
+            throw new IllegalArgumentException("DbUpdateInfoDescription.addAttributes can only be done on String or ClientProperty, but '" + key + "' has a value of type '" + val.getClass().getName() + "'");
+         }
+      }
+   }
+   
    
    
    /**
@@ -108,6 +145,26 @@ public class DbUpdateInfoRow {
       storeProp(value, this.attributes, this.attributeKeys);
    }
    
+   /**
+    * Stores the String as a new value. The passed String is directly transformed into a ClientProperty object. 
+    * @param value the value to store as an attribute.
+    */
+   public void setAttribute(String key, String value) {
+      ClientProperty prop = new ClientProperty(key, null, null, value);
+      DbUpdateInfoRow.storeProp(prop, this.attributes, this.attributeKeys);
+   }
+   
+   /**
+    * It copies (stores) all entries found in the map into the attributes. As values only String and ClientProperty
+    * objects are allowed. If another type is found, an IllegalArgumentException is thrown. If null is passed, 
+    * nothing is done.
+    * 
+    * @param map
+    */
+   public void addAttributes(Map map) {
+      addProps(map, this.attributes, this.attributeKeys);
+   }
+   
    
    public ClientProperty getColumn(String key) {
       ClientProperty prop = (ClientProperty)this.columns.get(key);
@@ -122,11 +179,13 @@ public class DbUpdateInfoRow {
    /**
     * Stores the client property as a new value. Note that it is not allowed to store an attribute with the same name
     * multiple times.
-    * @throws IllegalArgumentException if the entry already existed or if the value was null.
+    * @throws IllegalArgumentException if the entry already existed, if the value is null or if the raw columns have already been set.
     * @param value the value to store as an attribute.
     */
    public void setColumn(ClientProperty value) {
-      storeProp(value, this.columns, this.columnKeys);
+      if (this.colsRawContent != null)
+         throw new IllegalStateException("DbUpdateInfoRow.setColumn can not be invoked since the raw value '" + this.colsRawContent + "' has already been set");
+         storeProp(value, this.columns, this.columnKeys);
    }
    
    
@@ -138,13 +197,18 @@ public class DbUpdateInfoRow {
       sb.append(offset).append("<").append(ROW_TAG);
       sb.append(" ").append(NUM_ATTR).append("='").append(this.position).append("'>");
 
-      Iterator iter = this.columnKeys.iterator();
-      while (iter.hasNext()) {
-         Object key = iter.next();
-         ClientProperty prop = (ClientProperty)this.columns.get(key);
-         sb.append(prop.toXml(extraOffset + "  ", COL_TAG));
+      if (this.colsRawContent != null) {
+        sb.append("  ").append(this.colsRawContent); 
       }
-      iter = this.attributeKeys.iterator();
+      else {
+         Iterator iter = this.columnKeys.iterator();
+         while (iter.hasNext()) {
+            Object key = iter.next();
+            ClientProperty prop = (ClientProperty)this.columns.get(key);
+            sb.append(prop.toXml(extraOffset + "  ", COL_TAG));
+         }
+      }
+      Iterator iter = this.attributeKeys.iterator();
       while (iter.hasNext()) {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
@@ -162,6 +226,22 @@ public class DbUpdateInfoRow {
 
    public void setCaseSensitive(boolean caseSensitive) {
       this.caseSensitive = caseSensitive;
+   }
+
+
+   public String getColsRawContent() {
+      return this.colsRawContent;
+   }
+
+
+   /**
+    * @param colsRawContent
+    * @throws IllegalStateException if at least one column has already been set.
+    */
+   public void setColsRawContent(String colsRawContent) {
+      if (this.columns.size() > 0)
+         throw new IllegalStateException("DbUpdateInfoRow.setColsRawContent can not be invoked since there are already '" + this.columns.size() + "' columns defined");
+      this.colsRawContent = colsRawContent;
    }
    
 }

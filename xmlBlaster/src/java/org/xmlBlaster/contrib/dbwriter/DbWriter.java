@@ -55,7 +55,7 @@ public class DbWriter implements I_EventHandler {
     * @param info Configuration
     * @throws Exception Can be of any type
     */
-   public void init(I_Info info) throws Exception {
+   public synchronized void init(I_Info info) throws Exception {
       if (info == null) throw new IllegalArgumentException("Missing configuration, info is null");
       this.info = info;
       this.info.putObject("org.xmlBlaster.contrib.dbwriter.DbWriter", this);
@@ -123,7 +123,7 @@ public class DbWriter implements I_EventHandler {
     * Cleanup resources.
     * @throws Exception Can be of any type 
     */
-   public void shutdown() throws Exception {
+   public synchronized void shutdown() throws Exception {
       this.isAlive = false;
       shutdown(this.eventEngine);
       shutdown(this.parser);
@@ -135,9 +135,9 @@ public class DbWriter implements I_EventHandler {
       }
    }
 
-   public void update(String topic, String content, Map attrMap) throws Exception {
+   public synchronized void update(String topic, String content, Map attrMap) throws Exception {
       if (!this.isAlive) {
-         throw new Exception("update topic='" + topic + "' happens when we not alive");
+         throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
       }
       DbUpdateInfo updateInfo = this.parser.parse(content);
       this.writer.store(updateInfo);

@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
+import org.xmlBlaster.contrib.dbwriter.I_Parser;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -56,6 +58,9 @@ public class DbUpdateInfoDescription {
    private Map attributes;
    private List attributeKeys;
    private boolean caseSensitive;
+   private boolean hasPk;
+   /** this is only needed for tables which do not have any PK and on updates */
+   private I_Parser parser;
    
    private static Logger log = Logger.getLogger(DbUpdateInfoDescription.class.getName());
 
@@ -64,6 +69,13 @@ public class DbUpdateInfoDescription {
       this.attributes = new HashMap();
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
+      try {
+         this.parser = new DbUpdateParser();
+         this.parser.init(info);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
    }
 
 
@@ -128,26 +140,7 @@ public class DbUpdateInfoDescription {
     * @param map
     */
    public void addAttributes(Map map) {
-      if (map == null || map.size() < 1)
-         return;
-      Iterator iter = map.keySet().iterator();
-      while (iter.hasNext()) {
-         Object key = iter.next();
-         if (key == null)
-            continue;
-         Object val = map.get(key);
-         if (val == null)
-            continue;
-         if (val instanceof String) {
-            this.setAttribute((String)key, (String)val);
-         }
-         else if (val instanceof ClientProperty) {
-            this.setAttribute((ClientProperty)val);
-         }
-         else {
-            throw new IllegalArgumentException("DbUpdateInfoDescription.addAttributes can only be done on String or ClientProperty, but '" + key + "' has a value of type '" + val.getClass().getName() + "'");
-         }
-      }
+      DbUpdateInfoRow.addProps(map, this.attributes, this.attributeKeys);
    }
    
    private synchronized final void addPreparedStatements(Connection conn) throws SQLException {
@@ -160,6 +153,15 @@ public class DbUpdateInfoDescription {
       StringBuffer bufUpd2 = new StringBuffer();
 
       boolean firstPK = true;
+      this.hasPk = false;
+      for (int i=0; i < this.columnDescriptionList.size(); i++) {
+         DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i); 
+         if (col.isPrimaryKey()) {
+            this.hasPk = true;
+            break;
+         }
+      }
+      
       for (int i=0; i < this.columnDescriptionList.size(); i++) {
          DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i); 
          String colName = col.getColName();
@@ -169,7 +171,7 @@ public class DbUpdateInfoDescription {
             buf2.append(" , ");
             bufUpd1.append(" , ");
          }
-         if (col.isPrimaryKey()) {
+         if (col.isPrimaryKey() || !this.hasPk) {
             if (!firstPK) {
                bufUpd2.append(" AND ");
             }
@@ -178,7 +180,7 @@ public class DbUpdateInfoDescription {
          buf1.append(colName);
          buf2.append(" ? ");
          bufUpd1.append(colName).append("= ? ");
-         if (col.isPrimaryKey()) {
+         if (col.isPrimaryKey() || !this.hasPk) {
             bufUpd2.append(colName).append(" = ? ");
          }
       }
@@ -246,7 +248,7 @@ public class DbUpdateInfoDescription {
          int count = 1;
          for (int i=0; i < this.columnDescriptionList.size(); i++) {
             DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
-            if (col.isPrimaryKey()) {
+            if (col.isPrimaryKey() || !this.hasPk) {
                String colName = col.getColName();
                ClientProperty prop = row.getColumn(colName);
                if (prop == null) 
@@ -288,26 +290,54 @@ public class DbUpdateInfoDescription {
          
          int count = this.columnDescriptionList.size() +1;
          
-         for (int i=0; i < this.columnDescriptionList.size(); i++) {
-            DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
-            if (col.isPrimaryKey()) {
-               String colName = col.getColName();
-               ClientProperty prop = row.getColumn(colName);
-               if (prop == null) 
-                  throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
+         if (this.hasPk) {
+            for (int i=0; i < this.columnDescriptionList.size(); i++) {
+               DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
+               if (col.isPrimaryKey()) {
+                  String colName = col.getColName();
+                  ClientProperty prop = row.getColumn(colName);
+                  if (prop == null) 
+                     throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
 
-               if (isBinaryType(col.getSqlType())) {
-                  log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
-                  ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-                  st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
-               }
-               else {
-                  log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
-                  st.setObject(count++, prop.getObjectValue(), col.getSqlType());
+                  if (isBinaryType(col.getSqlType())) {
+                     log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
+                     ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+                     st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+                  }
+                  else {
+                     log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
+                     st.setObject(count++, prop.getObjectValue(), col.getSqlType());
+                  }
                }
             }
          }
+         else { // no PK, then we need the old content for almost uniqueness
+            ClientProperty oldRowProp = row.getAttribute(ReplicationConstants.OLD_CONTENT_ATTR);
+            if (oldRowProp != null) {
+               StringBuffer buf = new StringBuffer("<sql><desc></desc><row num='0'>").append(oldRowProp.getStringValue()).append("</row></sql>");
+               DbUpdateInfo oldRowDbUpdateInfo = this.parser.parse(buf.toString());
+               if (oldRowDbUpdateInfo.getRows().size() < 1)
+                  throw new Exception("no old rows retrieved for the entry on update when no PK is defined for the table");
+               DbUpdateInfoRow oldRow = (DbUpdateInfoRow)oldRowDbUpdateInfo.getRows().get(0);
+               for (int i=0; i < this.columnDescriptionList.size(); i++) {
+                  DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
+                  String colName = col.getColName();
+                  ClientProperty prop = oldRow.getColumn(colName);
+                  if (prop == null) 
+                     throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + oldRow.toXml(""));
 
+                  if (isBinaryType(col.getSqlType())) {
+                     log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
+                     ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+                     st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+                  }
+                  else {
+                     log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
+                     st.setObject(count++, prop.getObjectValue(), col.getSqlType());
+                  }
+               }
+            }
+         }
          return st.executeUpdate();
       }
       finally {

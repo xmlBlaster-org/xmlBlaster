@@ -262,7 +262,10 @@ public class DbUpdateInfo implements ReplicationConstants {
             }
          }
       }
-      
+   }
+
+   public final int getRowCount() {
+      return getRows().size();
    }
    
    /**
@@ -275,7 +278,7 @@ public class DbUpdateInfo implements ReplicationConstants {
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
       List rows = getRows();
-      int count = 0;
+      int count = getRowCount();
       DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
       getRows().add(row);
       for (int i=1; i<=numberOfColumns; i++) {
@@ -285,14 +288,28 @@ public class DbUpdateInfo implements ReplicationConstants {
       }
       if (transformer != null) {
          Map attr = transformer.transform(rs, count);
-         if (attr != null) {
-            Iterator iter = attr.entrySet().iterator();
-            while (iter.hasNext()) {
-               Map.Entry entry = (Map.Entry)iter.next();
-               ClientProperty prop = new ClientProperty((String)entry.getKey(), null, null, entry.getValue().toString());
-               row.setAttribute(prop);
-            }
-         }
+         if (attr != null)
+            row.addAttributes(attr);
+      }
+      return row;
+   }
+   
+   /**
+    * Result set must come from a select spaning over a single table.
+    * @param rawContent the raw content of all the columns belonging to this row.
+    * @param conn
+    * @throws SQLException
+    */
+   public DbUpdateInfoRow fillOneRow(ResultSet rs, String rawContent, I_AttributeTransformer transformer) throws Exception {
+      List rows = getRows();
+      int count = getRowCount();
+      DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
+      getRows().add(row);
+      row.setColsRawContent(rawContent);
+      if (transformer != null) {
+         Map attr = transformer.transform(rs, count);
+         if (attr != null)
+            row.addAttributes(attr);
       }
       return row;
    }
