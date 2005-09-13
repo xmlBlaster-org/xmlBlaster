@@ -114,6 +114,20 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       
       dbPool = setUpDbPool(info);
       dbSpecific = setUpDbSpecific(info, null);
+      Connection conn = null;
+      try {
+         conn = dbPool.reserve();
+         log.info("setUp: going to cleanup now ...");
+         dbSpecific.cleanup(conn);
+         log.info("setUp: cleanup done, going to bootstrap now ...");
+         dbSpecific.bootstrap(conn);
+      }
+      catch (Exception ex) {
+         if (conn != null)
+            dbPool.release(conn);
+      }
+      
+      
       try {
          dbPool.update("DROP TRIGGER test_dbspecific_trigger ON test_dbspecific CASCADE");
       } catch(Exception e) {
@@ -267,6 +281,12 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          int ret = pool.update(sql[1]);
          // don't do this since oracle 10.1.0 returns zero (don't know why)
          // assertEquals("the number of created tables must be one", 1, ret);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      try {
          dbSpecific.readNewTable(null, null, "test_dbspecific", null);
       }
       catch (Exception ex) {

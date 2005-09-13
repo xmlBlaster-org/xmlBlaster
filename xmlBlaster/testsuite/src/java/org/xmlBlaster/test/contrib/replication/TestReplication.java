@@ -15,10 +15,9 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
-import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
-import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
+import org.xmlBlaster.contrib.replication.ReplicationAgent;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
 /**
@@ -40,8 +39,10 @@ public class TestReplication extends XMLTestCase {
    private I_Info readerInfo;
    private I_Info writerInfo;
    
-   private DbWatcher dbWatcher;
-   private DbWriter dbWriter;
+   private ReplicationAgent agent;
+   
+   // private DbWatcher dbWatcher;
+   // private DbWriter dbWriter;
    
    /**
     * Start the test.
@@ -117,6 +118,7 @@ public class TestReplication extends XMLTestCase {
       setProp(readerInfo, "converter.addMeta", "false");
       setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
       setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
+      setProp(readerInfo, "replication.doBootstrap", "true");
       
       // and here for the dbWriter ...
       // ---- Database settings -----
@@ -129,7 +131,8 @@ public class TestReplication extends XMLTestCase {
       setProp(writerInfo, "db.user", "postgres");
       setProp(writerInfo, "db.password", "");
       setProp(writerInfo, "mom.loginName", "DbWriter/1");
-      setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2");
+      setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica");
+
       String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_stamp'/>");
       setProp(writerInfo, "mom.subscribeKey", subscribeKey);
       setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
@@ -173,6 +176,7 @@ public class TestReplication extends XMLTestCase {
        * replication.bootstrapFile
        * replication.cleanupFile
        * replication.dbSpecific.class
+       * replication.doBootstrap
        * replication.mapper.class
        * replication.mapper.tables
        * replication.overwriteTables
@@ -192,13 +196,28 @@ public class TestReplication extends XMLTestCase {
       this.readerInfo = new PropertiesInfo(new Properties(System.getProperties()));
       this.writerInfo = new PropertiesInfo(new Properties(System.getProperties()));
       setupProperties(this.readerInfo, this.writerInfo);
-      log.info("setUp: Instantiating DbWatcher");
-      this.dbWatcher = new DbWatcher();
-      this.dbWatcher.init(this.readerInfo);
-      log.info("setUp: Instantiating DbWriter");
-      this.dbWriter = new DbWriter();
-      this.dbWriter.init(this.writerInfo);
-      this.dbWatcher.startAlertProducers();
+
+      // we use the writerInfo since this will not instantiate an publisher
+      I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(this.writerInfo);
+      I_DbPool pool = (I_DbPool)this.writerInfo.getObject("db.pool");
+      Connection conn = null;
+      try {
+         conn = pool.reserve();
+         log.info("setUp: going to cleanup now ...");
+         dbSpecific.cleanup(conn);
+         log.info("setUp: cleanup done, going to bootstrap now ...");
+         dbSpecific.bootstrap(conn);
+         dbSpecific.shutdown();
+         dbSpecific = null;
+      }
+      catch (Exception ex) {
+         if (conn != null)
+            pool.release(conn);
+      }
+      
+      log.info("setUp: Instantiating");
+      this.agent = new ReplicationAgent();
+      this.agent.init(this.readerInfo, this.writerInfo);
       log.info("setUp: terminated");
    }
 
@@ -208,11 +227,8 @@ public class TestReplication extends XMLTestCase {
    protected void tearDown() throws Exception {
       super.tearDown();
       // here we should also cleanup all resources on the database : TODO
-      this.dbWatcher.stopAlertProducers();
-      this.dbWatcher.shutdown();
-      this.dbWriter.shutdown();
-      this.dbWatcher = null;
-      this.dbWriter = null;
+      this.agent.shutdown();
+      this.agent = null;
    }
 
    /**
