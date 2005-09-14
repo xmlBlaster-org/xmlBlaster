@@ -36,10 +36,10 @@ print "\nResults for a get($queryKey):";
 for $i (0 .. $#msgUnits) {
    for $j (0 .. $#{$msgUnits[$i]}) {
       print "\n-------------#$j-------------------";
-      $key = $msgUnits[$i][j][0];
-      $contentBase64AndEncoded = $msgUnits[$i][j][1];
+      $key = $msgUnits[$i][$j][0];
+      $contentBase64AndEncoded = $msgUnits[$i][$j][1];
       $content = decode_base64($contentBase64AndEncoded->value());
-      $qos = $msgUnits[$i][j][2];
+      $qos = $msgUnits[$i][$j][2];
       print $key;
       print "\n<content>" . $content . "</content>\n";
       print $qos;
