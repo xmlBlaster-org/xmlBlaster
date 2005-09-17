@@ -2331,6 +2331,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public String[] getSubscriptions() {
       return getClientSubscriptions().getSubscriptions();
    }
+   public String displayClassInfo(String clazzName) {
+      if (clazzName == null || clazzName.trim().length() < 1) {
+         throw new IllegalArgumentException("Please pass a full qualified java class name to displayClassInfo()");
+      }
+      try {
+         Class clazz = java.lang.Class.forName(clazzName);
+         StringBuffer results = new StringBuffer();
+         org.xmlBlaster.util.classloader.ClassLoaderUtils.displayClassInfo(clazz, results);
+         return results.toString();
+      }
+      catch (ClassNotFoundException e) {
+         return "Class '" + clazzName + "' not found in '" + System.getProperty("java.class.path") + "'";
+      }
+   }
 
 
    /**

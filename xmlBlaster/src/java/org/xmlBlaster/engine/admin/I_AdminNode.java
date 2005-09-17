@@ -276,5 +276,12 @@ public interface I_AdminNode {
     */
    public String[] getSubscriptions();
 
+   /**
+    * Check if the given java class is known and wherefrom it was loaded. 
+    * @param className for example "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    * @return The info
+    */
+   public String displayClassInfo(String clazzName);
+
    //public void setMaxClients(int maxClients);
 }
