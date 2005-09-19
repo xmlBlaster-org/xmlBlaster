@@ -1,112 +1,66 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-	<xs:complexType name="attrType">
-		<xs:simpleContent>
-			<xs:extension base="attrSimpleType">
-				<xs:attribute name="name" use="required">
-					<xs:simpleType>
-						<xs:restriction base="xs:NMTOKEN">
-							<xs:enumeration value="LR"/>
-							<xs:enumeration value="SUBNET_ID"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:attribute>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
-	<xs:simpleType name="attrSimpleType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="SRANIL"/>
-			<xs:enumeration value="TCP"/>
-			<xs:enumeration value="X25"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:complexType name="colType">
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="name" use="required">
-					<xs:simpleType>
-						<xs:restriction base="xs:NMTOKEN">
-							<xs:enumeration value="COL1"/>
-							<xs:enumeration value="CPU"/>
-							<xs:enumeration value="DATUM"/>
-							<xs:enumeration value="ICAO_ID"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:attribute>
-				<xs:attribute name="encoding" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
-	<xs:complexType name="colnameType">
-		<xs:simpleContent>
-			<xs:extension base="colnameSimpleType">
-				<xs:attribute name="type" use="required">
-					<xs:simpleType>
-						<xs:restriction base="xs:NMTOKEN">
-							<xs:enumeration value="DATE"/>
-							<xs:enumeration value="NUMBER"/>
-							<xs:enumeration value="VARCHAR2"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:attribute>
-				<xs:attribute name="isNullable" type="xs:boolean"/>
-				<xs:attribute name="precision">
-					<xs:simpleType>
-						<xs:restriction base="xs:NMTOKEN">
-							<xs:enumeration value="10"/>
-							<xs:enumeration value="11"/>
-							<xs:enumeration value="20"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:attribute>
-				<xs:attribute name="scale" type="xs:boolean"/>
-				<xs:attribute name="signed" type="xs:boolean"/>
-				<xs:attribute name="isReadOnly" type="xs:boolean"/>
-				<xs:attribute name="table" type="xs:string"/>
-				<xs:attribute name="schema" type="xs:string"/>
-				<xs:attribute name="catalog" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
-	<xs:simpleType name="colnameSimpleType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="COL1"/>
-			<xs:enumeration value="CPU"/>
-			<xs:enumeration value="DATUM"/>
-			<xs:enumeration value="ICAO_ID"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="command" type="xs:string"/>
-	<xs:complexType name="descType">
-		<xs:sequence>
-			<xs:element ref="command"/>
-			<xs:element ref="ident"/>
-			<xs:element name="colname" type="colnameType" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:element name="ident" type="xs:string"/>
-	<xs:complexType name="rowType">
-		<xs:sequence>
-			<xs:element name="col" type="colType" maxOccurs="unbounded"/>
-			<xs:element name="attr" type="attrType" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-		<xs:attribute name="num" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:NMTOKEN">
-					<xs:enumeration value="0"/>
-					<xs:enumeration value="1"/>
-					<xs:enumeration value="2"/>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-	</xs:complexType>
-	<xs:element name="sql">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="desc" type="descType"/>
-				<xs:element name="row" type="rowType" maxOccurs="unbounded"/>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-</xs:schema>
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns=""
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="">
+  <xsd:element name="sql" type="sql"/>
+  <xsd:complexType name="sql">
+    <xsd:sequence>
+      <xsd:element name="desc" type="desc"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="row" type="row"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="desc">
+    <xsd:sequence>
+      <xsd:element name="command" type="xsd:token"/>
+      <xsd:element name="ident" type="xsd:token"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="colname" type="colname"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="attr" type="attr"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="colname">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="nullable" type="xsd:int"/>
+        <xsd:attribute name="type" type="xsd:token"/>
+        <xsd:attribute name="precision" type="xsd:int"/>
+        <xsd:attribute name="scale" type="xsd:int"/>
+        <xsd:attribute name="signed" type="xsd:boolean"/>
+        <xsd:attribute name="readOnly" type="xsd:boolean"/>
+        <xsd:attribute name="catalog" type="xsd:token"/>
+        <xsd:attribute name="fkCatalog" type="xsd:token"/>
+        <xsd:attribute name="fkCol" type="xsd:token"/>
+        <xsd:attribute name="fkDef" type="xsd:token"/>
+        <xsd:attribute name="fkDelRule" type="xsd:token"/>
+        <xsd:attribute name="fkSchema" type="xsd:token"/>
+        <xsd:attribute name="fkSeq" type="xsd:int"/>
+        <xsd:attribute name="fkTable" type="xsd:token"/>
+        <xsd:attribute name="fkUpdRule" type="xsd:token"/>
+        <xsd:attribute name="pk" type="xsd:boolean"/>
+        <xsd:attribute name="schema" type="xsd:token"/>
+        <xsd:attribute name="table" type="xsd:token"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="attr">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="name" type="xsd:token"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="row">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="col" type="col"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="attr" type="attr"/>
+    </xsd:sequence>
+    <xsd:attribute name="num" type="xsd:int"/>
+  </xsd:complexType>
+  <xsd:complexType name="col">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="name" type="xsd:token"/>
+        <xsd:attribute name="encoding" type="xsd:token"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+</xsd:schema>
