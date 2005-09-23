@@ -5,16 +5,20 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.ByteArrayInputStream;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.logging.Logger;
 
+import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
@@ -44,6 +48,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    private I_Info info;
    private I_DbPool pool;
    private I_DbSpecific dbSpecific;
+   private DbMetaHelper dbHelper;
    
    /**
     * Start the test.
@@ -56,6 +61,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       // junit.swingui.TestRunner.run(TestDbBasics.class);
       TestDbBasics test = new TestDbBasics();
       try {
+         test.setUp();
+         test.testOracleInternalFunctions();
+         test.tearDown();
+
          test.setUp();
          test.testFunctions();
          test.tearDown();
@@ -129,12 +138,14 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       assertNotNull("the dbSpecific shall not be null", dbSpecific);
       Connection conn = this.pool.reserve();
       try {
+         this.dbHelper = new DbMetaHelper(this.pool);
          log.info("setUp: going to cleanup now ...");
          this.dbSpecific.cleanup(conn);
          log.info("setUp: cleanup done, going to bootstrap now ...");
          this.dbSpecific.bootstrap(conn);
       }
       catch (Exception ex) {
+         log.warning(ex.getMessage());
          if (conn != null)
             this.pool.release(conn);
       }
@@ -147,6 +158,170 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       super.tearDown();
    }
 
+   
+   /**
+    * This method makes some calls to system functions which are specific to oracle.
+    * 
+    * The tested functions are:
+    * CHAR(8) repl_base64_helper(val INTEGER) (this is only tested for no exception thrown)
+    * CLOB repl_base64_enc_raw(msg RAW)
+    * CLOB repl_base64_enc_blob(msg BLOB)
+    * CLOB repl_base64_enc_clob(msg CLOB)
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testOracleInternalFunctions() throws Exception {
+      log.info("Start testOracleInternalFunctions");
+
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      
+      try {
+         conn  = pool.reserve();
+         String sql = null;
+         {
+            sql = "{? = call repl_base64_helper(?, ?)}";
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               st.setInt(2, 2);
+               st.setLong(3, 1000L);
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               // no assert here, just testing for exceptions 
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+
+         {
+            sql = "{? = call repl_base64_enc_raw(?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               
+               int nmax = 256;
+               byte[] in = new byte[nmax];
+               for (int i=0; i < nmax; i++) {
+                  in[i] = (byte)i;
+               }
+               st.setBytes(2, in);
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               
+               byte[] out = Base64.decodeBase64(ret.getBytes());
+               assertEquals("wrong number of return values ", in.length, out.length);
+               for (int i=0; i < in.length; i++) {
+                  assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
+               }
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+      
+         {
+            sql = "{? = call repl_base64_enc_varchar2(?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+
+               String test = "this is a simple base64 encoding test for clobs";
+               st.setString(2, test);
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               
+               String out = new String(Base64.decodeBase64(ret.getBytes()));
+               assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+
+         {
+            sql = "{? = call repl_base64_enc_blob(?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               
+               int nmax = 32000;
+               byte[] in = new byte[nmax];
+               for (int i=0; i < nmax; i++) {
+                  in[i] = (byte)i;
+               }
+               
+               // ByteArray
+               ByteArrayInputStream bais = new ByteArrayInputStream(in);
+               st.setBinaryStream(2, bais, in.length);
+               st.registerOutParameter(1, Types.CLOB);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               
+               byte[] out = Base64.decodeBase64(ret.getBytes());
+               assertEquals("wrong number of return values ", in.length, out.length);
+               for (int i=0; i < in.length; i++) {
+                  assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
+               }
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+      
+         {
+            sql = "{? = call repl_base64_enc_clob(?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+
+               String test = "this is a simple base64 encoding test for clobs";
+               st.setString(2, test);
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               
+               String out = new String(Base64.decodeBase64(ret.getBytes()));
+               assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+
+   
+   
+   
+   
+   
+   
 
    /**
     * This method makes some calls to system functions.
@@ -163,19 +338,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn  = pool.reserve();
          String sql = null;
          {
-            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
-            CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "test");
-            st.setString(3, "prova");
-            st.registerOutParameter(1, Types.VARCHAR);
-            ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
-            rs.close();
-            st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='test'>prova</col>", ret);
-         }
-         {
             sql = "{? = call repl_col2xml_cdata(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "test");
@@ -186,20 +348,20 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             rs.close();
             st.close();
             System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='test'><![CDATA[prova]]></col>", ret);
+            assertEquals(sql, "<col name=\"test\"><![CDATA[prova]]></col>", ret);
          }
          {
             sql = "{? = call repl_col2xml_base64(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "test");
-            st.setString(3, "prova");
-            st.registerOutParameter(1, Types.VARCHAR);
+            st.setBytes(3, "prova".getBytes());
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
             String ret = st.getString(1);
             rs.close();
             st.close();
             System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='test' encoding='base64'>cHJvdmE=</col>", ret);
+            assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", ret);
          }
          // now testing the repl_needs_prot for the three cases ...
          { // needs no protection
@@ -275,7 +437,20 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             rs.close();
             st.close();
             System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='colName'>colValue</col>", ret);
+            assertEquals(sql, "<col name=\"colName\">colValue</col>", ret);
+         }
+         {
+            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
+            CallableStatement st = conn.prepareCall(sql);
+            st.setString(2, "test");
+            st.setString(3, "prova");
+            st.registerOutParameter(1, Types.VARCHAR);
+            ResultSet rs = st.executeQuery();
+            String ret = st.getString(1);
+            rs.close();
+            st.close();
+            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            assertEquals(sql, "<col name=\"test\">prova</col>", ret);
          }
          { // needs BASE64
             sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
@@ -288,7 +463,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             rs.close();
             st.close();
             System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='colName' encoding='base64'>PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", ret);
+            assertEquals(sql, "<col name=\"colName\" encoding=\"base64\">PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", ret);
          }
          { // needs CDATA
             sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
@@ -301,20 +476,23 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             rs.close();
             st.close();
             System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name='colName'><![CDATA[c&lt;olValue]]></col>", ret);
+            assertEquals(sql, "<col name=\"colName\"><![CDATA[c&lt;olValue]]></col>", ret);
          }
          // now test the counter ... (this invocation is used in SpecificDefault.incrementReplKey
          {
-            long oldVal = 0L;
+            long oldVal = 0;
             for (int i=0; i < 2; i++) {
-               sql = "{? = call nextval('repl_seq')}";
+               // sql = "{? = call nextval('repl_seq')}";
+               sql = "{? = call repl_increment()}";
                CallableStatement st = conn.prepareCall(sql);
-               st.registerOutParameter(1, Types.BIGINT);
+               // st.registerOutParameter(1, Types.BIGINT);
+               st.registerOutParameter(1, Types.INTEGER);
                ResultSet rs = st.executeQuery();
+               // long ret = st.getLong(1);
                long ret = st.getLong(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'. The maximum integer value is '" + Integer.MAX_VALUE + "'");
                if (i == 0)
                   oldVal = ret;
                else
@@ -343,11 +521,15 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn.setAutoCommit(true);
          String tableName = "test_replication";
          // clean up ...
-         try { pool.update("DROP TABLE " + tableName + " CASCADE"); } catch (Exception ex) { }
+         String cascade = "";
+         // String cascade = " CASCADE";
+         try { pool.update("DROP TABLE " + tableName + cascade); } catch (Exception ex) { }
 
          String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), age INT, PRIMARY KEY (name))";
          pool.update(sql);
-         ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
+         String storedTableName = this.dbHelper.getIdentifier(tableName);
+         assertNotNull("the storage case of '" + tableName + "' could not be determined", storedTableName);
+         ResultSet rs = conn.getMetaData().getTables(null, null, storedTableName, null);
          boolean tableExists = rs.next();
          rs.close();
          rs = null;
