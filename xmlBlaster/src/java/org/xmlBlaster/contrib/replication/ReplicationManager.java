@@ -10,9 +10,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -58,13 +60,14 @@ public class ReplicationManager {
     * 
     * @param filename
     * @param method
-    * @return
+    * @return List of String[]
     * @throws Exception
     */
-   public static String[] getContentFromClasspath(String filename, String method, String separator) throws Exception {
+   public static List getContentFromClasspath(String filename, String method, String flushSeparator, String cmdSeparator) throws Exception {
       if (filename == null)
          throw new Exception(method + ": no filename specified");
       ArrayList list = new ArrayList();
+      ArrayList internalList = new ArrayList();
       try {
          Enumeration enm = ReplicationManager.class.getClassLoader().getResources(filename);
          if(enm.hasMoreElements()) {
@@ -75,11 +78,21 @@ public class ReplicationManager {
                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                String line = null;
                while ( (line = reader.readLine()) != null) {
-                  if (line.trim().startsWith(separator)) {
+                  if (line.trim().startsWith(cmdSeparator)) {
                      String tmp =  buf.toString();
                      if (tmp.length() > 0)
-                        list.add(tmp);
+                        internalList.add(tmp);
                      buf = new StringBuffer();
+                  }
+                  else if (line.trim().startsWith(flushSeparator)) {
+                     if (buf.length() > 0)
+                        internalList.add(buf.toString());
+                     if (internalList.size() >0) {
+                        String[] tmp = (String[])internalList.toArray(new String[internalList.size()]);
+                        list.add(tmp);
+                        internalList.clear();
+                        buf = new StringBuffer();
+                     }
                   }
                   else {
                      line = line.trim();
@@ -89,7 +102,14 @@ public class ReplicationManager {
                }
                String end = buf.toString().trim();
                if (end.length() > 0)
-                  list.add(end);
+                  internalList.add(end);
+               if (internalList.size() >0) {
+                  String[] tmp = (String[])internalList.toArray(new String[internalList.size()]);
+                  list.add(tmp);
+                  internalList.clear();
+                  buf = null;
+               }
+               
             }
             catch(IOException ex) {
                log.warning("init: could not read properties from '" + url.getFile() + "' : " + ex.getMessage());
@@ -101,10 +121,17 @@ public class ReplicationManager {
                   + url.getFile() + "' please check that the correct one has been loaded (see info above)"
                );
             }
-            return (String[])list.toArray(new String[list.size()]);
+            return list;
          }
          else {
-            throw new Exception("init: no file found with the name '" + filename + "' can not bootstrap");
+            ClassLoader cl = ReplicationManager.class.getClassLoader();
+            StringBuffer buf = new StringBuffer();
+            if (cl instanceof URLClassLoader) {
+               URL[] urls = ((URLClassLoader)cl).getURLs();
+               for (int i=0; i < urls.length; i++) 
+                  buf.append(urls[i].toString()).append("\n");
+            }
+            throw new Exception("init: no file found with the name '" + filename + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
          }
       }
       catch(IOException e) {

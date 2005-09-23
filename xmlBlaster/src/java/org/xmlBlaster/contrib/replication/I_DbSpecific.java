@@ -87,5 +87,18 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    void forceTableChangeCheck() throws Exception;
+
+   
+   /**
+    * Increments and retreives the repl_key sequence counter. The connection must not be null.
+    * This method has been made available to the interface for the sole purpose to test it in the 
+    * testsuite. Otherwise it is used internally by the implementations of this interface.
+    * 
+    * @param conn the connection (it must not be null)
+    * @return the new sequence value for the repl_key sequence.
+    * @throws Exception if an exception occurs.
+    */
+   int incrementReplKey(Connection conn) throws Exception;
+   
    
 }

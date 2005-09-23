@@ -185,7 +185,7 @@ DECLARE pos INT;
 BEGIN
    pos = repl_needs_prot(content);
    IF pos = 0 THEN
-      RETURN '<col name=\'' || name || '\'>' || content || '</col>';
+      RETURN '<col name="' || name || '">' || content || '</col>';
    END IF;
    IF pos = 1 THEN 
       RETURN repl_col2xml_cdata(name, content);
@@ -206,7 +206,7 @@ $repl_col2xml$ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION repl_col2xml_base64(name text, content bytea) 
 RETURNS text AS $repl_col2xml_base64$
 BEGIN
-   RETURN '<col name=\'' || name || '\' encoding=\'base64\'>' ||  
+   RETURN '<col name="' || name || '" encoding="base64">' ||  
            encode(content,'base64') || '</col>';
 END;
 $repl_col2xml_base64$ LANGUAGE 'plpgsql';
@@ -222,7 +222,7 @@ $repl_col2xml_base64$ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION repl_col2xml_cdata(name text, content text) 
 RETURNS text AS $repl_col2xml_cdata$
 BEGIN
-   RETURN '<col name=\'' || name || '\'><![CDATA[' || 
+   RETURN '<col name="' || name || '"><![CDATA[' || 
            content || ']]></col>';
 END;
 $repl_col2xml_cdata$ LANGUAGE 'plpgsql';
@@ -324,5 +324,18 @@ CREATE TRIGGER repl_tables_trigger AFTER UPDATE OR DELETE OR INSERT
 ON repl_tables
 FOR EACH ROW
 EXECUTE PROCEDURE repl_tables_func();
+
+
+-- ---------------------------------------------------------------------------- 
+-- repl_tables_func is invoked by the trigger on repl_tables.                   
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION repl_increment() 
+   RETURNS INTEGER AS $repl_increment$
+BEGIN
+   RETURN nextval('repl_seq');
+END;
+$repl_increment$ LANGUAGE 'plpgsql';
+
 
 

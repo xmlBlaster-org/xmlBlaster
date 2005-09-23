@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -42,24 +43,45 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    private I_DbPool dbPool;
    private int rowsPerMessage = 10;
    private DbUpdateInfo dbUpdateInfo;
-   private long newReplKey;
+   private int newReplKey;
    
+   /**
+    * Not doing anything.
+    */
    public SpecificDefault() {
    }
    
+   /**
+    * Reads the content to be executed from a file.
+    * @param conn The connection on which to operate. Must not be null.
+    * @param method The method which uses this invocation (used for logging purposes).
+    * @param propKey The name (or key) of the property to retrieve. The content of this property is the bootstrap file name 
+    * @param propDefault The default of the property.
+    * @throws Exception if an exception occurs when reading the bootstrap file.
+    */
    private void updateFromFile(Connection conn, String method, String propKey, String propDefault) throws Exception {
       Statement st = null;
       String bootstrapFileName = this.info.get(propKey, propDefault);
-      final String SEPARATOR = "-- FLUSH";
-      String[] sqls = ReplicationManager.getContentFromClasspath(bootstrapFileName, method, SEPARATOR);
-      for (int i=0; i < sqls.length; i++) {
+      final String FLUSH_SEPARATOR = "-- FLUSH";
+      final String CMD_SEPARATOR = "-- EOC";
+      List sqls = ReplicationManager.getContentFromClasspath(bootstrapFileName, method, FLUSH_SEPARATOR, CMD_SEPARATOR);
+      for (int i=0; i < sqls.size(); i++) {
+         String[] cmds = (String[])sqls.get(i);
          try {
             conn.setAutoCommit(true);
             st = conn.createStatement();
-            st.execute(sqls[i]);
+            
+            for (int j=0; j < cmds.length; j++) {
+               if (cmds[j].trim().length() > 0)
+                  st.addBatch(cmds[j]);
+            }
+            st.executeBatch();
          }
          catch (SQLException ex) {
-            log.warning("operation:\n" + sqls[i] + "\n failed: " + ex.getMessage());
+            StringBuffer buf = new StringBuffer();
+            for (int j=0; j < cmds.length; j++)
+               buf.append(cmds[j]).append("\n");
+            log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
             // ex.printStackTrace();
          }
          finally {
@@ -70,15 +92,25 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          }
       }
    }
-   
+
+   /**
+    * @see I_DbSpecific#bootstrap(Connection)
+    */
    public void bootstrap(Connection conn) throws Exception {
       updateFromFile(conn, "bootstrap", "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql");
    }
 
+   /**
+    * @see I_DbSpecific#cleanup(Connection)
+    */
    public void cleanup(Connection conn) throws Exception {
-      updateFromFile(conn, "cleanup", "replication.cleanup", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
+      updateFromFile(conn, "cleanup", "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
    }
    
+   /**
+    * @see I_DbSpecific#init(I_Info)
+    * 
+    */
    public void init(I_Info info) throws Exception {
       log.info("going to initialize the resources");
       this.info = info;
@@ -89,6 +121,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
    }
 
+   /**
+    * @see I_DbSpecific#shutdown()
+    */
    public void shutdown() throws Exception {
       try {
          log.info("going to shutdown: cleaning up resources");
@@ -111,6 +146,20 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
    }
 
+   /**
+    * Publishes a 'CREATE TABLE' operation to the XmlBlaster. It is used on the DbWatcher side. Note that it 
+    * is also used to publish the INSERT commands related to a CREATE TABLE operation, i.e. if on a CREATE TABLE
+    * operation it is found that the table is already populated when reading it, then these INSERT operations 
+    * are published with this method.
+    * 
+    * @param counter The counter indicating which message number it is. The create opeation itself will have '0',
+    * the subsequent associated INSERT operations will have an increasing number (it is the number of the message
+    * not the number of the associated INSERT operation).
+    *  
+    * @return a uniqueId identifying this publish operation.
+    * 
+    * @throws Exception
+    */
    private String publishCreate(int counter) throws Exception {
       log.info("publishCreate invoked for counter '" + counter + "'");
       DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
@@ -136,19 +185,28 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
    /**
     * Increments and retreives the repl_key sequence counter. The connection must not be null.
+    * 
+    * Description of sequences for oracle:
+    * http://www.lc.leidenuniv.nl/awcourse/oracle/server.920/a96540/statements_615a.htm#2067095
+    * 
+    * 
     * @param conn
     * @return
     * @throws Exception
+    * @see I_DbSpecific#incrementReplKey(Connection)
+    * 
     */
-   public long incrementReplKey(Connection conn) throws Exception {
+   public int incrementReplKey(Connection conn) throws Exception {
       if (conn == null)
          throw new Exception("SpecificDefault.incrementReplKey: the DB connection is null");
       CallableStatement st = null;
       try {
-         st = conn.prepareCall("{? = call nextval('repl_seq')}");
-         st.registerOutParameter(1, Types.BIGINT);
+         // st = conn.prepareCall("{? = call nextval('repl_seq')}");
+         st = conn.prepareCall("{? = call repl_increment()}");
+         // st.registerOutParameter(1, Types.BIGINT);
+         st.registerOutParameter(1, Types.INTEGER);
          st.executeQuery();
-         return st.getLong(1);
+         return st.getInt(1);
       }
       finally {
          try {  if (st != null) st.close(); } catch(Exception ex) { }
@@ -156,7 +214,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
    
    /**
-    * 
+    * @see I_DbSpecific#readNewTable(String, String, String, Map)
     */
    public void readNewTable(String catalog, String schema, String table, Map attrs) throws Exception {
       Connection conn = this.dbPool.reserve();
@@ -225,7 +283,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
-    * 
+    * @see I_ResultCb#init(ResultSet)
     */
    public void result(ResultSet rs) throws Exception {
       boolean hasPublishedAlready = false;
@@ -257,6 +315,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
    }
    
+   /**
+    * Helper method used to construct the CREATE TABLE statement part belonging to a single COLUMN.
+    * @param colInfoDescription
+    * @return
+    */
    private StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
       String type = colInfoDescription.getType();
       int charLength = colInfoDescription.getCharLength();
@@ -269,7 +332,10 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       StringBuffer buf = new StringBuffer(colInfoDescription.getColName()).append(" ").append(type);
       return buf;
    }
-   
+
+   /**
+    * @see I_DbSpecific#getCreateTableStatement(DbUpdateInfoDescription, I_Mapper)
+    */
    public String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
       DbUpdateInfoColDescription[] cols = infoDescription.getUpdateInfoColDescriptions();
       StringBuffer buf = new StringBuffer(1024);
@@ -333,8 +399,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public String createTableFunctionAndTrigger(DbUpdateInfoDescription infoDescription) {
 
       String tableName = infoDescription.getIdentity();  // should be the table name
-      String functionName =  tableName + "_func";
-      String triggerName = tableName + "_trigger";
+      String functionName =  tableName + "_repl_f";
+      String triggerName = tableName + "_repl_t";
       
       StringBuffer buf = new StringBuffer();
       buf.append("-- ---------------------------------------------------------------------------- \n");
