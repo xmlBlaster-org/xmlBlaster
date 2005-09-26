@@ -356,4 +356,21 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
       return sb.toString();
    }
+
+   public static void main(String[] args) {
+      if (args.length == 0) {
+         System.err.println("Usage: java org.xmlBlaster.util.EncodableData base64");
+         System.err.println("Usage: java org.xmlBlaster.util.EncodableData -e literal");
+         System.exit(1);
+      }
+      if (args.length == 1) {
+         byte[] content = Base64.decodeBase64(args[0].getBytes());
+         System.out.println("'" + args[0] + "' -> '" + new String(content) + "'");
+      }
+      else {
+         byte[] content = Base64.encodeBase64(args[1].getBytes(), false);
+         System.out.println("'" + args[1] + "' -> '" + new String(content) + "'");
+      }
+      
+   }
 }
