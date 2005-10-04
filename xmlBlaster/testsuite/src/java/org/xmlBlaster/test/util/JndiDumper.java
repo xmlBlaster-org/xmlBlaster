@@ -43,12 +43,17 @@ public class JndiDumper {
       String offset = buf.toString();
       NamingEnumeration enumer = context.list("");
       while (enumer.hasMore()) {
-         NameClassPair pair = (NameClassPair)enumer.next();
-         Object obj = context.lookup(pair.getName());
-         if (obj instanceof Context) scanContext(contextName + pair.getName() + "/", (Context)obj, out);         
-         else {
-            out.println(offset +  pair.getName() + " class='" + pair.getClassName() + "'");            
-//            out.println(tmpOffset + " class='" + pair.getClassName() + "'");            
+         try {
+            NameClassPair pair = (NameClassPair)enumer.next();
+            Object obj = context.lookup(pair.getName());
+            if (obj instanceof Context) scanContext(contextName + pair.getName() + "/", (Context)obj, out);         
+            else {
+               out.println(offset +  pair.getName() + " class='" + pair.getClassName() + "'");            
+   //            out.println(tmpOffset + " class='" + pair.getClassName() + "'");            
+            }
+         }
+         catch (javax.naming.CommunicationException e) {
+            out.println("Ignoring problem: " + e.toString());
          }
       }
    }
@@ -64,11 +69,14 @@ public class JndiDumper {
     * com.sun.jndi.fscontext.RefFSContextFactory
     * com.ibm.ejs.ns.jndi.CNInitialContextFactory
     * com.ibm.websphere.naming.WsnInitialContextFactory
+    * org.jnp.interfaces.NamingContextFactory       (JBoss)
     *
     * java -Djava.naming.factory.initial=com.ibm.websphere.naming.WsnInitialContextFactory org.xmlBlaster.test.util.JndiDumper -startNamingService true -fillNames true
     *
     * Dump rmiregistry:
     * java -Djava.naming.factory.initial=com.sun.jndi.rmi.registry.RegistryContextFactory -Djava.naming.provider.url=rmi://localhost:1099 org.xmlBlaster.test.util.JndiDumper -fillNames false
+    * JBoss:
+    * java -Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory  -Djava.naming.provider.url=jnp://localhost:1099 org.xmlBlaster.test.util.JndiDumper -fillNames false
     * </pre>
     */
    public static void main(String[] args) {
