@@ -24,9 +24,11 @@ import java.util.Hashtable;
 public class HelloWorld3 extends Applet implements I_CallbackRaw
 {
    I_XmlBlasterAccessRaw xb;
+   HelloWorld3 applet;
    TextArea textArea;
 
    public void init(){
+      this.applet = this;
       System.out.println("HelloWorld3: Applet.init() called");
       try {
          setBackground(Color.white);
@@ -36,37 +38,63 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
          this.textArea.setForeground(Color.black);
          add(this.textArea);
          repaint();
-
-         this.xb = new XmlBlasterAccessRaw(this);
-         this.xb.connect(null, this);
-         print("Connected to xmlBlaster");
-
-         Hashtable subReturnQos = this.xb.subscribe("<key oid='HELLO'/>", "<qos/>");
-         print("Subscribed, id=" + subReturnQos.get("/qos/subscribe/@id"));
-
-         Hashtable pubReturnQos = this.xb.publish("<key oid='HELLO'/>",
-                                 "Hello World".getBytes(), "<qos/>");
-         print("Published 'HELLO', returned status is " +
-                     pubReturnQos.get("/qos/state/@id"));
-
-         Hashtable[] unSubReturnQos = this.xb.unSubscribe("<key oid='" +
-                   subReturnQos.get("/qos/subscribe/@id")+"'/>", "<qos/>");
-         print("UnSubscribed " + unSubReturnQos.length + " topics");
-
-         Msg[] msgs = this.xb.get("<key oid='HELLO'/>", "<qos/>");
-         for (int i=0; i<msgs.length; i++) {
-            print("Get returned key=" + msgs[i].getKey().get("/key/@oid") +
-                                    " content=" + msgs[i].getContentStr());
-         }
-
-         Hashtable[] eraseReturnQos=this.xb.erase("<key oid='HELLO'/>","<qos/>");
-         print("Erase " + eraseReturnQos.length + " topics");
       }
       catch (Exception e) {
-         print("No connection to xmlBlaster: " + e.toString());
          e.printStackTrace();
-         showStatus("HelloWorld3: No connection to xmlBlaster");
+         showStatus("HelloWorld3: Can't initialize applet");
       }
+   }
+ 
+   public void start() {
+      System.out.println("HelloWorld3: Applet.start() called");
+      repaint();
+      Thread t = new Thread() { // Start a new thread so that screen display is not blocked
+         public void run() {
+            try {
+               xb = new XmlBlasterAccessRaw(applet);
+               xb.connect(null, applet); // registers applet.update() callback method
+               print("Connected to xmlBlaster");
+
+               Hashtable pingReturnQos = xb.ping("<qos/>");
+               print("Ping, servlet->xmlBlaster connection state is " + pingReturnQos.get("/qos/state/@info"));
+
+               Hashtable subReturnQos = xb.subscribe("<key oid='HELLO'/>", "<qos/>");
+               print("Subscribed, id=" + subReturnQos.get("/qos/subscribe/@id"));
+
+               Hashtable pubReturnQos = xb.publish("<key oid='HELLO'/>",
+                                       "Hello World".getBytes(), "<qos/>");
+               print("Published 'HELLO', returned status is " +
+                           pubReturnQos.get("/qos/state/@id"));
+
+               Hashtable[] unSubReturnQos = xb.unSubscribe("<key oid='" +
+                         subReturnQos.get("/qos/subscribe/@id")+"'/>", "<qos/>");
+               print("UnSubscribed " + unSubReturnQos.length + " topics");
+
+               Msg[] msgs = xb.get("<key oid='HELLO'/>", "<qos/>");
+               for (int i=0; i<msgs.length; i++) {
+                  print("Get returned key=" + msgs[i].getKey().get("/key/@oid") +
+                                          " content=" + msgs[i].getContentStr());
+               }
+
+               Hashtable[] eraseReturnQos=xb.erase("<key oid='HELLO'/>","<qos/>");
+               print("Erase " + eraseReturnQos.length + " topics");
+
+               for (int i=0; i<10; i++) {
+                  try { Thread.sleep(2000); } catch (InterruptedException e) {}
+                  Hashtable h = xb.ping("<qos/>");
+                  print("Ping, servlet->xmlBlaster connection state is " + h.get("/qos/state/@info"));
+               }
+
+               print("Bye!");
+            }
+            catch (Exception e) {
+               print("No connection to xmlBlaster: " + e.toString());
+               e.printStackTrace();
+               showStatus("HelloWorld3: No connection to xmlBlaster");
+            }
+         }
+      };
+      t.start();
    }
  
    private void print(String text) {

@@ -61,6 +61,16 @@ public interface I_XmlBlasterAccessRaw
    public boolean isConnected();
 
    /**
+    * Returns "/qos/state/@info"="OK" if communication from servlet to xmlBlaster is OK
+    * <br />
+    * Returns "/qos/state/@info"="POLLING" if communication from servlet to xmlBlaster is down but polling
+    * <br />
+    * Returns "/qos/state/@info"="DEAD" if communication from servlet to xmlBlaster is permanently lost
+    * @return never null, contains QoS in XJPath format
+    */
+   public Hashtable ping(java.lang.String qos) throws Exception;
+
+   /**
     * @return never null, contains QoS in XJPath format
     */
    public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception;

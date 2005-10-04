@@ -35,10 +35,18 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
 
 4. Start tomcat
 
-   Before you need to edit tomcat.sh and add out jar file in front of
-   the tomcat CLASSPATH:
+   Our xmlBlaster/demo/http/WEB-INF/web.xml is configured to
+   use the SOCKET protocol to communicate from the servlet to xmlBlaster,
+   like this no specific tomcat configuration is needed.
 
-   export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb/jacorb.jar:${XMLBLASTER_HOME}/lib/jacorb/logkit-1.2.jar:${XMLBLASTER_HOME}/lib/jacorb/avalon-framework-4.1.5.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
+      $TOMCAT_HOME/bin/startup.sh
+
+   (
+    If you want to switch to CORBA:
+    Before you need to edit tomcat.sh and add out jar file in front of
+    the tomcat CLASSPATH:
+    export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb/jacorb.jar:${XMLBLASTER_HOME}/lib/jacorb/logkit-1.2.jar:${XMLBLASTER_HOME}/lib/jacorb/avalon-framework-4.1.5.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
+   )
 
 
 5a. Start you browser and the DHTML demo:

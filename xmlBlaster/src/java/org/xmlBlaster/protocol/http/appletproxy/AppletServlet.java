@@ -15,6 +15,8 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
 import org.xmlBlaster.client.protocol.http.common.MsgHolder;
@@ -482,7 +484,25 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          String xmlRequest = msg.getKey(); // in case of xmlScript the request is sent as the key (all other are null)
          byte[] content = msg.getContent();
          
-         if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
+         if (actionType.equals(I_XmlBlasterAccessRaw.PING_NAME)) { // "ping"
+            if (log.TRACE) log.trace(ME, "ping arrived, qos=" + qos);
+            Hashtable map = new Hashtable();
+            if (xmlBlaster.isAlive()) {
+               map.put("/qos/state/@id", Constants.STATE_OK);
+               map.put("/qos/state/@info", ConnectionStateEnum.ALIVE.toString()); // "ALIVE"
+            }
+            else if (xmlBlaster.isPolling()) {
+               map.put("/qos/state/@id", Constants.STATE_OK);
+               map.put("/qos/state/@info", ConnectionStateEnum.POLLING.toString()); // "POLLING"
+            }
+            else {
+               map.put("/qos/state/@id", Constants.STATE_WARN);
+               map.put("/qos/state/@info", ConnectionStateEnum.DEAD.toString()); // "DEAD"
+            }
+            returnObject = map;
+         }
+
+         else if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
             if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
       
             if (oid != null) {
@@ -605,7 +625,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       } catch (XmlBlasterException e) {
          log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
-      } catch (Exception e) {
+      } catch (Throwable e) {
          log.error(ME, "Exception: " + e.toString());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, XmlBlasterException.convert(this.initialGlobal, ME, "", e).getMessage());
       }

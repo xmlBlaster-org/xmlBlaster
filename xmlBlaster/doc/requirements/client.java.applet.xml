@@ -222,7 +222,7 @@
    <h3>Quick start installation of the above applet</h3>
 <p>
 You can try it with tomcat locally (no apache is necessary,
-i had tomcat 3.2.4, 4.1.29 and 5.0.14 to test it, others should work as well):
+i had tomcat 3.2.4, 4.1.29, 5.0.14 and 5.5 to test it, others should work as well):
 </p>
 <h3>
 1. Create a war file:

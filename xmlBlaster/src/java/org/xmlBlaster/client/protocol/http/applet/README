@@ -28,7 +28,7 @@ Start the applet in a browser:
 
 
 A similar approach we have implemented for a browser without an applet,
-using the same servlets:
+using similar servlets:
 See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
      http://www.xmlblaster.org/xmlBlaster/demo/http/index.html
 

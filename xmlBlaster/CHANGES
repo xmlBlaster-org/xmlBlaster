@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #13805 Added applet ping method, extended example applet and docu
+
  o #13786 fixed bug on DbWatcher (TimestampChangeDetector) when number of digits changed it 
    previously did not detect change.
   
@@ -22,6 +24,9 @@ Changes for current repository (svn)
     http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/XmlNotPortable.html
    - xmlBlaster.properties has changed, please use the new template
    - engine.service.rdbms requirements will only run with JDK 1.5 from now on
+   Please remove those lines in your xmlBlaster.properties:
+     javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
+     javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
 
  o #13713,#13714 C++ Fixed progress listener registration in offline mode
 

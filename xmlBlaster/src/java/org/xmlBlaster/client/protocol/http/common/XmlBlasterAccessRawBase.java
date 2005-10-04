@@ -165,16 +165,21 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       return (String)postRequest("xmlScript", xmlRequest, null, null, !ONEWAY);
    }
 
+   public Hashtable ping(java.lang.String qos) throws Exception {
+      log("DEBUG", new StringBuffer("ping(qos=").append(qos).append(")").toString());
+      return (Hashtable)postRequest(PING_NAME, null, qos, null, !ONEWAY);
+   }
+
    public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", new StringBuffer("subscribe(key=").append(xmlKey).append(")").toString());
-      return (Hashtable)postRequest("subscribe", xmlKey, qos, null, !ONEWAY);
+      return (Hashtable)postRequest(SUBSCRIBE_NAME, xmlKey, qos, null, !ONEWAY);
    }
 
    public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", new StringBuffer("get(key=").append(xmlKey).append(")").toString());
       //String keyEnc = encode(xmlKey, "UTF-8");
       //String qosEnc = encode(qos, "UTF-8");
-      Vector list = (Vector)postRequest("get", xmlKey, qos, null, !ONEWAY);
+      Vector list = (Vector)postRequest(GET_NAME, xmlKey, qos, null, !ONEWAY);
       Msg[] msgs = new Msg[list.size()/3];
       for (int i=0; i<list.size()/3; i++) {
          log("DEBUG", "Synchronous get is not implented");
@@ -188,17 +193,17 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public Hashtable[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", new StringBuffer("unSubscribe(key=").append(xmlKey).append(")").toString());
-      return (Hashtable[])postRequest("unSubscribe", xmlKey, qos, null, !ONEWAY);
+      return (Hashtable[])postRequest(UNSUBSCRIBE_NAME, xmlKey, qos, null, !ONEWAY);
    }
 
    public Hashtable publish(String xmlKey, byte[] content, String qos) throws Exception {
       log("DEBUG", new StringBuffer("publish(key=").append(xmlKey).append(")").toString());
-      return (Hashtable)postRequest("publish", xmlKey, qos, content, !ONEWAY);
+      return (Hashtable)postRequest(PUBLISH_NAME, xmlKey, qos, content, !ONEWAY);
    }
 
    public Hashtable[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", new StringBuffer("erase(key=").append(xmlKey).append(")").toString());
-      return (Hashtable[])postRequest("erase", xmlKey, qos, null, !ONEWAY);
+      return (Hashtable[])postRequest(ERASE_NAME, xmlKey, qos, null, !ONEWAY);
    }
 
    public void disconnect(String qos) {
@@ -403,6 +408,10 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
                }
                else if (GET_NAME.equals(method)) {
                   Vector returnQos = (Vector)ois.readObject();
+                  returnObject = returnQos;
+               }
+               else if (PING_NAME.equals(method)) {
+                  Hashtable returnQos = (Hashtable)ois.readObject();
                   returnObject = returnQos;
                }
                else if (SUBSCRIBE_NAME.equals(method)) {
