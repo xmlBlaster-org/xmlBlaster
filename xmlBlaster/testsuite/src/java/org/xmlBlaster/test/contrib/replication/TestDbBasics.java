@@ -140,9 +140,9 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       try {
          this.dbHelper = new DbMetaHelper(this.pool);
          log.info("setUp: going to cleanup now ...");
-         this.dbSpecific.cleanup(conn);
+         this.dbSpecific.cleanup(conn, false);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         this.dbSpecific.bootstrap(conn);
+         this.dbSpecific.bootstrap(conn, false);
       }
       catch (Exception ex) {
          log.warning(ex.getMessage());
@@ -191,7 +191,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                String ret = st.getString(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                // no assert here, just testing for exceptions 
             }
             catch (SQLException sqlEx) {
@@ -216,7 +216,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                String ret = st.getString(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                
                byte[] out = Base64.decodeBase64(ret.getBytes());
                assertEquals("wrong number of return values ", in.length, out.length);
@@ -242,7 +242,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                String ret = st.getString(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                
                String out = new String(Base64.decodeBase64(ret.getBytes()));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
@@ -272,7 +272,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                String ret = st.getString(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                
                byte[] out = Base64.decodeBase64(ret.getBytes());
                assertEquals("wrong number of return values ", in.length, out.length);
@@ -298,10 +298,32 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                String ret = st.getString(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                
                String out = new String(Base64.decodeBase64(ret.getBytes()));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+
+         {
+            sql = "{? = call repl_check_tables(?,?,?,?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+
+               String test = "table1"; // it does not exist but serves the purpose here.
+               st.setString(2, test);
+               st.setString(3, "INSERT");
+               st.setString(4, "");
+               st.setString(5, "");
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               rs.close();
+               st.close();
             }
             catch (SQLException sqlEx) {
                sqlEx.printStackTrace();
@@ -317,12 +339,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    }
 
    
-   
-   
-   
-   
-   
-
    /**
     * This method makes some calls to system functions.
     * @throws Exception Any type is possible
@@ -347,7 +363,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"test\"><![CDATA[prova]]></col>", ret);
          }
          {
@@ -360,7 +376,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", ret);
          }
          // now testing the repl_needs_prot for the three cases ...
@@ -373,7 +389,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             int ret = st.getInt(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 0, ret);
          }
          { // needs BASE64
@@ -385,7 +401,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             int ret = st.getInt(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 2, ret);
          }
          { // needs CDATA
@@ -397,7 +413,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             int ret = st.getInt(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
          { // needs CDATA
@@ -409,7 +425,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             int ret = st.getInt(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
          { // needs CDATA
@@ -421,7 +437,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             int ret = st.getInt(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
          
@@ -436,7 +452,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"colName\">colValue</col>", ret);
          }
          {
@@ -449,7 +465,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"test\">prova</col>", ret);
          }
          { // needs BASE64
@@ -462,7 +478,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"colName\" encoding=\"base64\">PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", ret);
          }
          { // needs CDATA
@@ -475,7 +491,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             String ret = st.getString(1);
             rs.close();
             st.close();
-            System.out.println("The return value of the query '" + sql + "' is '" + ret + "'");
+            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"colName\"><![CDATA[c&lt;olValue]]></col>", ret);
          }
          // now test the counter ... (this invocation is used in SpecificDefault.incrementReplKey
@@ -492,7 +508,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                long ret = st.getLong(1);
                rs.close();
                st.close();
-               System.out.println("The return value of the query '" + sql + "' is '" + ret + "'. The maximum integer value is '" + Integer.MAX_VALUE + "'");
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'. The maximum integer value is '" + Integer.MAX_VALUE + "'");
                if (i == 0)
                   oldVal = ret;
                else
@@ -536,7 +552,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          assertTrue("The table '" + tableName + "' has not been created", tableExists);
          
          // add the tables to be detected to the repl_tables table
-         pool.update("INSERT INTO repl_tables VALUES ('" + tableName + "','t')");
+         pool.update("INSERT INTO repl_tables VALUES ('" + tableName + "','t', 'CREATING')");
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -548,7 +564,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          String action = rs.getString(6);
          assertEquals("The table name in repl_items for action CREATE is wrong", tableName, name);
          assertEquals("The action in repl_items for action CREATE is wrong", "CREATE", action);
-
          assertFalse("The number of entries in the repl_items table is too big, there should be only one entry", rs.next());
          st.close();
          rs.close();

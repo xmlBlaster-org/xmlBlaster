@@ -204,9 +204,9 @@ public class TestReplication extends XMLTestCase {
       try {
          conn = pool.reserve();
          log.info("setUp: going to cleanup now ...");
-         dbSpecific.cleanup(conn);
+         dbSpecific.cleanup(conn, false);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         dbSpecific.bootstrap(conn);
+         dbSpecific.bootstrap(conn, false);
          dbSpecific.shutdown();
          dbSpecific = null;
       }
@@ -247,7 +247,7 @@ public class TestReplication extends XMLTestCase {
       assertNotNull("the dbSpecific shall not be null", dbSpecific);
       try {
          conn  = pool.reserve();
-         dbSpecific.bootstrap(conn);
+         dbSpecific.bootstrap(conn, false);
          pool.release(conn);
       
          String tableName = "test_replication";

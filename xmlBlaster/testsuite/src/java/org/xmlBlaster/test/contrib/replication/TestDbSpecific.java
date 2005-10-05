@@ -45,12 +45,30 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     private static I_DbPool dbPool;
     private static I_DbSpecific dbSpecific;
     private static String currentMethod; // since there are two instances running (I_ChangePublisher also)
-    private static String[] sql = new String[] {
+    private boolean doCheck = false;
+    
+    private static String[] sqlPostgres = new String[] {
        "CREATE TABLE test_dbspecific (name VARCHAR(20) PRIMARY KEY)",
        "CREATE TABLE test_dbspecific (col1 CHAR, col2 CHAR(5), col3 VARCHAR, col4 VARCHAR(10), col5 int, col6 int2, col7 bytea, col8 boolean, PRIMARY KEY (col1, col2))",
        "CREATE TABLE test_dbspecific (col1 REAL, col2 REAL[10], col3 FLOAT, col4 FLOAT[4], col5 double precision, col6 double precision[4], col7 date, col8 date[100], col9 timestamp, col10 timestamp[8], PRIMARY KEY (col1, col2))",
        "CREATE TABLE test_dbspecific (col1 bpchar, col2 int[3][4][5], PRIMARY KEY (col1))"
     };
+
+    private static String[] sqlOracle = new String[] {
+       "CREATE TABLE test_dbspecific (one CHARACTER(10),two CHARACTER VARYING(5),three CHAR VARYING(30),(30),PRIMARY KEY (one, two))",
+       "CREATE TABLE test_dbspecific (one LONG,two DECIMAL(10,3),three INTEGER,four SMALLINT,five FLOAT(3),PRIMARY KEY (three))",
+       "CREATE TABLE test_dbspecific (two VARCHAR2(10),three VARCHAR2(10 BYTE), four VARCHAR2(10 CHAR),eight VARCHAR(10 BYTE),PRIMARY KEY(two, three ,four))",
+       "CREATE TABLE test_dbspecific (one CHAR,two CHAR(10),three CHAR(10 BYTE),four CHAR(10 CHAR),five NCHAR,six NCHAR(10),seven CLOB,eight NCLOB,nine BLOB,ten BFILE)",
+       "CREATE TABLE test_dbspecific (one NUMBER,two NUMBER(3),three NUMBER(3,2),four LONG,five DATE,six BINARY_FLOAT,seven BINARY_DOUBLE)",
+       "CREATE TABLE test_dbspecific (one TIMESTAMP,two TIMESTAMP(2),three TIMESTAMP WITH TIME ZONE,four TIMESTAMP(2) WITH TIME ZONE,six TIMESTAMP WITH LOCAL TIME ZONE,seven TIMESTAMP(2) WITH LOCAL TIME ZONE)",
+       "CREATE TABLE test_dbspecific (one INTERVAL YEAR TO MONTH,two INTERVAL YEAR(3) TO MONTH,seven RAW(200),eight LONG RAW,nine ROWID,ten UROWID)"
+    };
+
+    private static String[] sql = sqlPostgres; // this is the default
+    
+    private String[] dropSql;
+    private String[] dropSqlOracle = new String[] {"DROP TRIGGER test_dbspecific_repl_t", "DROP TABLE test_dbspecific" };
+    private String[] dropSqlPostgres = new String[] {"DROP TRIGGER test_dbspecific_repl_t ON test_dbspecific CASCADE", "DROP TABLE test_dbspecific CASCADE" };
     
     /**
      * Start the test. 
@@ -65,6 +83,11 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
        
        try {
           test.setUp();
+          test.testComplete();
+          test.tearDown();
+
+/*          
+          test.setUp();
           // test.informativeStuff();
           test.testCharAndBlobs();
           test.tearDown();
@@ -76,7 +99,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
           test.setUp();
           test.testOtherTypes();
           test.tearDown();
-
+*/
        }
        catch (Exception ex) {
           ex.printStackTrace();
@@ -111,30 +134,49 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       Preferences prefs = Preferences.userRoot();
       prefs.clear();
       info = new Info(prefs);
-      
+
       dbPool = setUpDbPool(info);
-      dbSpecific = setUpDbSpecific(info, null);
+      String dbSpecificName = System.getProperty("replication.dbSpecific.class");
+      // , "org.xmlBlaster.contrib.replication.impl.SpecificOracle";" +
+      dbSpecific = setUpDbSpecific(info, dbSpecificName);
       Connection conn = null;
       try {
          conn = dbPool.reserve();
+         String product = conn.getMetaData().getDatabaseProductName().toUpperCase();
+         if (product.contains("ORA")) {
+            log.info("THE DATABASE PRODUCT NAME IS '" + product + "' will be configured as oracle");
+            sql = sqlOracle;
+            this.dropSql = this.dropSqlOracle;
+         }
+         else if (product.contains("POSTGRES")) {
+            log.info("THE DATABASE PRODUCT NAME IS '" + product + "' will be configured as postgres");
+            sql = sqlPostgres;
+            this.dropSql = this.dropSqlPostgres;
+         }
+         else {
+            log.severe("THE DATABASE PRODUCT NAME IS '" + product + "'");
+            assertTrue("Database '" + product + "' is unknown", false);
+         }
+         
          log.info("setUp: going to cleanup now ...");
-         dbSpecific.cleanup(conn);
+         dbSpecific.cleanup(conn, false);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         dbSpecific.bootstrap(conn);
+         dbSpecific.bootstrap(conn, false);
       }
       catch (Exception ex) {
          if (conn != null)
             dbPool.release(conn);
       }
       
-      
       try {
-         dbPool.update("DROP TRIGGER test_dbspecific_trigger ON test_dbspecific CASCADE");
+         // dbPool.update("DROP TRIGGER test_dbspecific_trigger ON test_dbspecific CASCADE");
+         dbPool.update(this.dropSql[0]);
       } catch(Exception e) {
          // log.warning(e.toString()); silent warning since it should have been erased by shutDown 
       }
       try {
-         dbPool.update("DROP TABLE test_dbspecific CASCADE");
+         dbPool.update(this.dropSql[1]);
+         // dbPool.update("DROP TABLE test_dbspecific CASCADE");
       } catch(Exception e) {
          // log.warning(e.toString()); silent warning since it should have been erased by shutDown 
       }
@@ -147,11 +189,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       try {
          log.info("publish invoked in method '" + currentMethod + "'");
          log.info("message '" + message + "'");
-         
-         if (currentMethod.equals("testAddSimpleTable") ||
-               currentMethod.equals("testCharAndBlobs") ||
-               currentMethod.equals("testNumbers") ||
-               currentMethod.equals("testOtherTypes")) {
+
+         if (this.doCheck) {
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
             DbUpdateParser parser = new DbUpdateParser(info);
             DbUpdateInfo dbUpdateInfo = parser.readObject(message);
@@ -164,24 +203,16 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             log.info("parsed message: " + msg1);
             assertXMLEqual("output xml is not the same as input xml", message, msg1);
             
-            String functionAndTrigger = dbSpecific.createTableFunctionAndTrigger(dbUpdateInfo.getDescription());
+            String functionAndTrigger = dbSpecific.createTableFunction(dbUpdateInfo.getDescription());
+            functionAndTrigger += dbSpecific.createTableTrigger(dbUpdateInfo.getDescription());
             
             System.out.println("-- ---------------------------------------------------------------------------");
             System.out.println(functionAndTrigger);
             System.out.println("-- ---------------------------------------------------------------------------");
-            
-            /*
-            try {
-               dbPool.update(null, functionAndTrigger);
-            }
-            catch (Exception e) {
-               e.printStackTrace();
-               assertTrue("error when executing \n" + functionAndTrigger, false);
-            }
-            */
          }
          else {
-            assertTrue("should never come here", false);
+            // assertTrue("should never come here", false);
+            // Thread.dumpStack();
          }
       }
       catch (Exception ex) {
@@ -266,6 +297,55 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       }
    }
 
+   /**
+    * This method tests all the sql statements. It checks the creation statements
+    * for the different sql data types. 
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testComplete() throws Exception {
+      currentMethod = new String("testComplete");
+      log.info("Start " + currentMethod);
+
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      this.doCheck = true;
+      for (int i=0; i < sql.length; i++) {
+         try {
+            int ret = pool.update(sql[1]);
+            // don't do this since oracle 10.1.0 returns zero (don't know why)
+            // assertEquals("the number of created tables must be one", 1, ret);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("an exception should not occur " + ex.getMessage(), false);
+         }
+         try {
+            log.info("processing now '" + sql[i] + "'");
+            dbSpecific.readNewTable(null, null, "test_dbspecific", null);
+            Thread.sleep(1000L);
+            try {
+               dbPool.update(this.dropSql[0]);
+            }
+            catch (Exception e) {
+            }
+            try {
+               dbPool.update(this.dropSql[1]);
+            }
+            catch (Exception e) {
+            }
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("an exception should not occur " + ex.getMessage(), false);
+         }
+      }
+      this.doCheck = true;
+      log.info("SUCCESS");
+   }
+
+   
    /**
     * If the table does not exist we expect a null ResultSet
     * @throws Exception Any type is possible
