@@ -111,7 +111,7 @@ public class ReplicationAgent {
          setProp(map, readerInfo, "db.user", "postgres");
          setProp(map, readerInfo, "db.password", "");
          setProp(map, readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
-         setProp(map, readerInfo, "mom.topicName", "trans_stamp");
+         setProp(map, readerInfo, "mom.topicName", "trans_key");
          setProp(map, readerInfo, "alertScheduler.pollInterval", "2000");
          setProp(map, readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
          setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from repl_items");
@@ -136,7 +136,7 @@ public class ReplicationAgent {
          setProp(map, writerInfo, "db.password", "");
          setProp(map, writerInfo, "mom.loginName", "DbWriter/1");
          setProp(map, writerInfo, "replication.mapper.tables", "test1=test1_replica,test2=test2_replica,test3=test3_replica");
-         String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_stamp'/>");
+         String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
          setProp(map, writerInfo, "mom.subscribeKey", subscribeKey);
          setProp(map, writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
          setProp(map, writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
@@ -216,7 +216,7 @@ public class ReplicationAgent {
                      throw new Exception("ReplicationAgent.init: the db pool is null");
                   Connection conn = pool.reserve();
                   try {
-                     dbSpecific.bootstrap(conn);
+                     dbSpecific.bootstrap(conn, false);
                   }
                   catch (Exception ex) {
                      ex.printStackTrace();

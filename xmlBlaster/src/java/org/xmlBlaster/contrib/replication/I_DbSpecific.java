@@ -29,9 +29,10 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * We use the term 'system' to specify such elements which are used internally for the replication.
     * 
     * @param conn
+    * @param doWarn if false no warning is given on excrption.
     * @throws Exception
     */
-   void bootstrap(Connection conn) throws Exception;
+   void bootstrap(Connection conn, boolean doWarn) throws Exception;
    
    /**
     * This method is invoked for the cleanup while testing. In production this method is probably
@@ -41,9 +42,10 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * We use the term 'system' to specify such elements which are used internally for the replication.
     * 
     * @param conn
+    * @param doWarn if false no warning is given on excrption.
     * @throws Exception
     */
-   void cleanup(Connection conn) throws Exception;
+   void cleanup(Connection conn, boolean doWarn) throws Exception;
    
    /**
     * Reads the metadata and content of the specified table. This is needed for database implementations which can
@@ -73,13 +75,20 @@ public interface I_DbSpecific extends I_ContribPlugin {
    String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper);
 
    /**
-    * Creates a string containing the function which has to be added to the trigger of the table to be watched and 
-    * the associated trigger.
+    * Creates a string containing the function which has to be added to the trigger of the table to be watched.
     * .
     * @param infoDescription
     * @return
     */
-   String createTableFunctionAndTrigger(DbUpdateInfoDescription infoDescription);
+   String createTableFunction(DbUpdateInfoDescription infoDescription);
+
+   /**
+    * Creates a string containing the trigger of the table to be watched. 
+    * .
+    * @param infoDescription
+    * @return
+    */
+   String createTableTrigger(DbUpdateInfoDescription infoDescription);
 
    
    /**

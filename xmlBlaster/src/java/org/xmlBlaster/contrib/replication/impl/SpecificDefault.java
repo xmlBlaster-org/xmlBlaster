@@ -15,12 +15,15 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
@@ -37,7 +40,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    private String CREATE_COUNTER_KEY = "_createCounter";
    
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
-   private I_Info info;
+   protected I_Info info;
    /** used to publish CREATE changes */
    private I_ChangePublisher publisher;
    private I_DbPool dbPool;
@@ -59,7 +62,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @param propDefault The default of the property.
     * @throws Exception if an exception occurs when reading the bootstrap file.
     */
-   private void updateFromFile(Connection conn, String method, String propKey, String propDefault) throws Exception {
+   private void updateFromFile(Connection conn, String method, String propKey, String propDefault, boolean doWarn) throws Exception {
       Statement st = null;
       String bootstrapFileName = this.info.get(propKey, propDefault);
       final String FLUSH_SEPARATOR = "-- FLUSH";
@@ -81,7 +84,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
             StringBuffer buf = new StringBuffer();
             for (int j=0; j < cmds.length; j++)
                buf.append(cmds[j]).append("\n");
-            log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
+            if (doWarn)
+               log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
             // ex.printStackTrace();
          }
          finally {
@@ -96,15 +100,15 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#bootstrap(Connection)
     */
-   public void bootstrap(Connection conn) throws Exception {
-      updateFromFile(conn, "bootstrap", "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql");
+   public void bootstrap(Connection conn, boolean doWarn) throws Exception {
+      updateFromFile(conn, "bootstrap", "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql", doWarn);
    }
 
    /**
     * @see I_DbSpecific#cleanup(Connection)
     */
-   public void cleanup(Connection conn) throws Exception {
-      updateFromFile(conn, "cleanup", "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
+   public void cleanup(Connection conn, boolean doWarn) throws Exception {
+      updateFromFile(conn, "cleanup", "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql", doWarn);
    }
    
    /**
@@ -222,7 +226,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       boolean oldTransIsolationKnown = false;
       try {
          oldTransIsolation = conn.getTransactionIsolation();
-         oldTransIsolationKnown = true;
+         // TODO solve this problem !!!!!!!!! since in oracle it does not work. It must be verified that it works.
+         // oldTransIsolationKnown = true;
+         
          conn.setAutoCommit(false);
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
@@ -240,7 +246,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          String sql = "SELECT replicate FROM repl_tables WHERE tablename='" + table + "'";
          Statement st = conn.createStatement();
          ResultSet rs = st.executeQuery(sql);
-         String doReplicate = "f"; // if the entry does not even exsist, then it is not replicated
+         String doReplicate = "f"; // if the entry does not exist (yet), then it is not replicated
          if (rs.next()) {
             doReplicate = rs.getString(1);
          }
@@ -250,12 +256,22 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          this.newReplKey = incrementReplKey(conn);
          if (doReplicate.equalsIgnoreCase("t")) { // stands for 'true'
             // create the function and trigger here
-            String createString = this.createTableFunctionAndTrigger(this.dbUpdateInfo.getDescription());
+            String createString = this.createTableFunction(this.dbUpdateInfo.getDescription());
             if (createString == null || createString.length() < 1)
                throw new Exception("SpecificDefault.readNewTable: could not generate the sql command for the creation of the table '" + table + "'");
             // add the function to the DB here
             // add the trigger here
-            log.info("adding functions and triggers to '" + table + "':\n\n" + createString);
+            log.info("adding functions to '" + table + "':\n\n" + createString);
+            st = conn.createStatement();
+            st.executeUpdate(createString);
+            st.close();
+            
+            createString = this.createTableTrigger(this.dbUpdateInfo.getDescription());
+            if (createString == null || createString.length() < 1)
+               throw new Exception("SpecificDefault.readNewTable: could not generate the sql command for the creation of the table '" + table + "'");
+            // add the function to the DB here
+            // add the trigger here
+            log.info("adding triggers to '" + table + "':\n\n" + createString);
             st = conn.createStatement();
             st.executeUpdate(createString);
             st.close();
@@ -274,7 +290,12 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       finally {
          if (conn != null) {
             if (oldTransIsolationKnown) {
-               try { conn.setTransactionIsolation(oldTransIsolation); } catch(Exception e) { e.printStackTrace(); };
+               try { 
+                  conn.setTransactionIsolation(oldTransIsolation); 
+               } 
+               catch(Exception e) { 
+                  e.printStackTrace(); 
+               };
             }
             this.dbPool.release(conn);
             
@@ -391,12 +412,12 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
    
    /**
-    * This method creates a function and the associated trigger to detect INSERT DELETE and UPDATE 
+    * This method creates a function to be associated to a trigger to detect INSERT DELETE and UPDATE 
     * operations on a particular table.
     * @param infoDescription the info object containing the necessary information for the table.
     * @return a String containing the sql update. It can be executed. 
     */
-   public String createTableFunctionAndTrigger(DbUpdateInfoDescription infoDescription) {
+   public String createTableFunction(DbUpdateInfoDescription infoDescription) {
 
       String tableName = infoDescription.getIdentity();  // should be the table name
       String functionName =  tableName + "_repl_f";
@@ -437,7 +458,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("\n");
       buf.append("    END IF;\n");
-      buf.append("    INSERT INTO repl_items (trans_stamp, dbId, tablename, guid,\n");
+      buf.append("    INSERT INTO repl_items (trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");
       buf.append("                           content, oldContent, version) values \n");
       buf.append("                           (CURRENT_TIMESTAMP,current_database(),\n");
@@ -451,9 +472,23 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       buf.append("END;\n");
       buf.append("$").append(functionName).append("$ LANGUAGE 'plpgsql';\n");
       buf.append("\n");
+      return buf.toString();
+   }
+   
+   /**
+    * This method creates a trigger to detect INSERT DELETE and UPDATE 
+    * operations on a particular table.
+    * @param infoDescription the info object containing the necessary information for the table.
+    * @return a String containing the sql update. It can be executed. 
+    */
+   public String createTableTrigger(DbUpdateInfoDescription infoDescription) {
 
+      String tableName = infoDescription.getIdentity();  // should be the table name
+      String functionName =  tableName + "_repl_f";
+      String triggerName = tableName + "_repl_t";
+      
+      StringBuffer buf = new StringBuffer();
       // and now append the associated trigger ....
-
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("-- THE TRIGGER FOR THE replTest TABLE                                           \n");
       buf.append("-- ---------------------------------------------------------------------------- \n");
@@ -487,6 +522,53 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          }
       }
    }
+   
+   
+   /**
+    * Example code. 
+    * <p />
+    * <tt>java -Djava.util.logging.config.file=testlog.properties org.xmlBlaster.contrib.replication.ReplicationManager -db.password secret</tt>
+    * @param args Command line
+    */
+   public static void main(String[] args) {
+      try {
+         System.setProperty("java.util.logging.config.file", "testlog.properties");
+         LogManager.getLogManager().readConfiguration();
+
+         Preferences prefs = Preferences.userRoot();
+         prefs.clear();
+
+         // ---- Database settings -----
+         String tmp = null;
+         if (System.getProperty("jdbc.drivers", null) == null) {
+            System.setProperty("jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+         }
+         if (System.getProperty("db.url", null) == null) {
+            System.setProperty("db.url", "jdbc:postgresql:test//localhost/test");
+         }
+         if (System.getProperty("db.user", null) == null) {
+            System.setProperty("db.user", "postgres");
+         }
+         if (System.getProperty("db.password", null) == null) {
+            System.setProperty("db.password", "");
+         }
+         
+         SpecificDefault specificDefault = new SpecificDefault();
+         I_Info info = new PropertiesInfo(System.getProperties());
+         specificDefault.init(info);
+         I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+         Connection conn = pool.reserve();
+         specificDefault.cleanup(conn, true);
+         pool.release(conn);
+      }
+      catch (Throwable e) {
+         System.err.println("SEVERE: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
+   
+   
    
    
 }

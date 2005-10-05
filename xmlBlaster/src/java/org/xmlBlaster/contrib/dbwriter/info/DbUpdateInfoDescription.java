@@ -64,6 +64,56 @@ public class DbUpdateInfoDescription {
    
    private static Logger log = Logger.getLogger(DbUpdateInfoDescription.class.getName());
 
+   
+   /**
+    * Gets the name of the schema. Since this information is not contained in the object iself but in the
+    * Column information (since views could be a combination of more than one schema or catalog), this 
+    * method checks that the schema is the same for all columns. If it is different, or if it is not
+    * assigned, then null is returned.
+    * @return
+    */
+   public String getSchema() {
+      return extractColumnInfo(true); // false means catalog, true means schema
+   }
+   
+   /**
+    * Gets the name of the schema. Since this information is not contained in the object iself but in the
+    * Column information (since views could be a combination of more than one schema or catalog), this 
+    * method checks that the catalog is the same for all columns. If it is different, or if it is not
+    * assigned, then null is returned.
+    * @return
+    */
+   public String getCatalog() {
+      return extractColumnInfo(false); // false means catalog, true means schema
+   }
+   
+   /**
+    * Used by getSchema and getCatalog.
+    * @return
+    */
+   private final synchronized String extractColumnInfo(boolean isSchema) {
+      String ret = null;
+      String tmp = null;
+      if (this.columnDescriptionList != null && this.columnDescriptionList.size() > 0) {
+         for (int i=0; i < this.columnDescriptionList.size(); i++) {
+            if (isSchema)
+               tmp = ((DbUpdateInfoColDescription)this.columnDescriptionList.get(i)).getSchema();
+            else 
+               tmp = ((DbUpdateInfoColDescription)this.columnDescriptionList.get(i)).getCatalog();
+            if (i == 0)
+               ret = tmp;
+            else {
+               if (ret == null || tmp == null)
+                  return null;
+               if (!ret.equalsIgnoreCase(tmp))
+                  return null;
+            }
+         }
+         return ret;
+      }
+      return null;
+   }
+   
    public DbUpdateInfoDescription(I_Info info) {
       this.columnDescriptionList = new ArrayList();
       this.attributes = new HashMap();

@@ -137,7 +137,7 @@ $repl_is_altered$ LANGUAGE 'plpgsql';
 CREATE SEQUENCE repl_seq MINVALUE 1 MAXVALUE 1000000000 CYCLE;
 
 CREATE TABLE repl_items (repl_key INTEGER DEFAULT nextval('repl_seq'), 
-             trans_stamp TIMESTAMP, dbId VARCHAR(30), tablename VARCHAR(30), 
+             trans_key VARCHAR(30), dbId VARCHAR(30), tablename VARCHAR(30), 
 	     guid VARCHAR(30), db_action VARCHAR(15), db_catalog VARCHAR(30),
 	     db_schema VARCHAR(30), content TEXT, oldContent TEXT, 
 	     version VARCHAR(10), PRIMARY KEY (repl_key));
@@ -243,7 +243,7 @@ BEGIN
                IN (SELECT relname FROM pg_statio_user_tables WHERE relname IN 
 	       (SELECT tablename FROM repl_tables)))
     LOOP
-      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+      INSERT INTO repl_items (trans_key, dbId, tablename, guid, db_action, 
                              db_catalog, db_schema, content, oldContent, 
 			     version) values (CURRENT_TIMESTAMP, 
 			     current_database(), colVar.relname, colVar.oid, 
@@ -255,7 +255,7 @@ BEGIN
 	       IN (SELECT tablename FROM repl_tables) AND (relname NOT 
 	       IN (SELECT relname FROM repl_current_tables)))
       LOOP
-      INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+      INSERT INTO repl_items (trans_key, dbId, tablename, guid, db_action, 
                              db_catalog, db_schema, content, oldContent, 
 			     version) values (CURRENT_TIMESTAMP, 
 			     current_database(), colVar.relname, colVar.oid, 
@@ -279,7 +279,7 @@ BEGIN
     counter = 0;
     FOR colVar IN (SELECT relname FROM repl_current_tables) LOOP
        IF repl_is_altered(colVar.relname) = 't' THEN
-         INSERT INTO repl_items (trans_stamp, dbId, tablename, guid, db_action, 
+         INSERT INTO repl_items (trans_key, dbId, tablename, guid, db_action, 
                                 db_catalog, db_schema, content, oldContent, 
 				version) VALUES (CURRENT_TIMESTAMP, 
 				current_database(), colVar.relname, colVar.oid, 
