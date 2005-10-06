@@ -100,14 +100,14 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#bootstrap(Connection)
     */
-   public void bootstrap(Connection conn, boolean doWarn) throws Exception {
+   public final void bootstrap(Connection conn, boolean doWarn) throws Exception {
       updateFromFile(conn, "bootstrap", "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql", doWarn);
    }
 
    /**
     * @see I_DbSpecific#cleanup(Connection)
     */
-   public void cleanup(Connection conn, boolean doWarn) throws Exception {
+   public final void cleanup(Connection conn, boolean doWarn) throws Exception {
       updateFromFile(conn, "cleanup", "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql", doWarn);
    }
    
@@ -115,7 +115,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#init(I_Info)
     * 
     */
-   public void init(I_Info info) throws Exception {
+   public final void init(I_Info info) throws Exception {
       log.info("going to initialize the resources");
       this.info = info;
       boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
@@ -128,7 +128,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#shutdown()
     */
-   public void shutdown() throws Exception {
+   public final void shutdown() throws Exception {
       try {
          log.info("going to shutdown: cleaning up resources");
          boolean publisherOwner = this.info.get("mom.publisher.owner", "").equals("SpecificDefault");
@@ -164,7 +164,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * 
     * @throws Exception
     */
-   private String publishCreate(int counter) throws Exception {
+   private final String publishCreate(int counter) throws Exception {
       log.info("publishCreate invoked for counter '" + counter + "'");
       DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
       description.setAttribute(new ClientProperty(CREATE_COUNTER_KEY, "int", null, "" + counter));
@@ -200,7 +200,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#incrementReplKey(Connection)
     * 
     */
-   public int incrementReplKey(Connection conn) throws Exception {
+   public final int incrementReplKey(Connection conn) throws Exception {
       if (conn == null)
          throw new Exception("SpecificDefault.incrementReplKey: the DB connection is null");
       CallableStatement st = null;
@@ -220,7 +220,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#readNewTable(String, String, String, Map)
     */
-   public void readNewTable(String catalog, String schema, String table, Map attrs) throws Exception {
+   public final void readNewTable(String catalog, String schema, String table, Map attrs) throws Exception {
       Connection conn = this.dbPool.reserve();
       int oldTransIsolation = 0;
       boolean oldTransIsolationKnown = false;
@@ -306,7 +306,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_ResultCb#init(ResultSet)
     */
-   public void result(ResultSet rs) throws Exception {
+   public final void result(ResultSet rs) throws Exception {
       boolean hasPublishedAlready = false;
       try {
          // TODO clear the columns since not really used anymore ...
@@ -341,7 +341,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @param colInfoDescription
     * @return
     */
-   private StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
+   private final StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
       String type = colInfoDescription.getType();
       int charLength = colInfoDescription.getCharLength();
       int precision = colInfoDescription.getPrecision();
@@ -357,7 +357,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#getCreateTableStatement(DbUpdateInfoDescription, I_Mapper)
     */
-   public String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
+   public final String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
       DbUpdateInfoColDescription[] cols = infoDescription.getUpdateInfoColDescriptions();
       StringBuffer buf = new StringBuffer(1024);
       String tableName = infoDescription.getIdentity();
@@ -504,7 +504,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       return buf.toString();
    }   
   
-   public void forceTableChangeCheck() throws Exception {
+   public final void forceTableChangeCheck() throws Exception {
       Connection conn = null;
       CallableStatement st = null;
       try {
