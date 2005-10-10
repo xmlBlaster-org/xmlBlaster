@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #13815 removed Global and made java logging to Execute
+
  o #13805 Added applet ping method, extended example applet and docu
 
  o #13786 fixed bug on DbWatcher (TimestampChangeDetector) when number of digits changed it 
