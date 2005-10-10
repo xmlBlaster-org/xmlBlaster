@@ -6,22 +6,17 @@ Comment:   Starts a program
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.lang.*;
-import java.util.Vector;
-import java.io.*;
-
-import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.log.LogChannel;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.logging.Logger;
 
 /**
  * Starts a program and delivers the exit value and some out parameter.
  */
-public class Execute
-{
-   private static final String ME = "Execute";
-   private Global glob;
-   private LogChannel log;
+public class Execute {
+   private static Logger log = Logger.getLogger(Execute.class.getName());
    private Process process;
    private String[] commandArr;
    private String[] envArr;
@@ -41,9 +36,7 @@ public class Execute
    /**
     * Construct an instance which can execute a program with the given parameters.
     */
-   public Execute(Global glob, String[] commandArr, String[] envArr) {
-      this.glob = glob;
-      this.log = glob.getLog("core");
+   public Execute(String[] commandArr, String[] envArr) {
       this.commandArr = commandArr;
       this.envArr = envArr;
       if (this.commandArr == null || this.commandArr.length < 1) {
@@ -62,7 +55,7 @@ public class Execute
     * Start
     */
    public void run() {
-      if (log.TRACE) log.trace( ME, "Entering Method Execute.run()");
+      log.fine("Entering Method Execute.run()");
       errorText = null;
       try {
          Runtime runtime = Runtime.getRuntime();
@@ -93,12 +86,12 @@ public class Execute
             process.waitFor();
          }
          catch (InterruptedException e) {
-            log.warn(ME, "Process [" + commandArr[0] + "] was interrupted");
+            log.warning("Process [" + commandArr[0] + "] was interrupted");
          }
 
          this.exitValue = this.process.exitValue();
 
-         if (log.TRACE) log.trace(ME, "Process [" + commandArr[0] + "] finished its work, exit=" + this.exitValue + ", good bye");
+         log.fine("Process [" + commandArr[0] + "] finished its work, exit=" + this.exitValue + ", good bye");
 
          this.stdoutThread.stopIt();
          this.stderrThread.stopIt();
@@ -113,7 +106,7 @@ public class Execute
       }
       catch (Exception e) {
          errorText = "Process [" + commandArr[0] + "] could not be started: " + e.toString();
-         log.error(ME, errorText);
+         log.severe(errorText);
          //e.printStackTrace();
       }
       finally {
@@ -128,7 +121,7 @@ public class Execute
             this.process.destroy();
       }
       catch (Exception e) {
-         log.error(ME, "Process kill failed: " + e.toString());
+         log.severe("Process kill failed: " + e.toString());
       }
 
       if (stdoutThread != null) { stdoutThread.stopIt(); stdoutThread=null; } // necessary?
@@ -175,7 +168,7 @@ public class Execute
       }
 
       public void run() {
-         if(log.TRACE) log.trace(ME, "Start reading lines from process ...");
+         log.fine("Start reading lines from process ...");
          String str;
          try {
             isReady = true;
@@ -197,10 +190,10 @@ public class Execute
                   break;
             }
             br.close();
-            if(log.TRACE) log.trace(ME, "End reading lines from process.");
+            log.fine("End reading lines from process.");
          }
          catch (IOException e) {
-            log.error(ME, "Could not read process output: " + e.toString());
+            log.severe("Could not read process output: " + e.toString());
          }
       }
 
@@ -223,7 +216,7 @@ public class Execute
       String[] envArr = new String[0];
       String[] ar = { "-trace", "true" };
       Global glob = new Global(ar);
-      Execute execute = new Execute(glob, commandArr, envArr);
+      Execute execute = new Execute(commandArr, envArr);
       execute.run();
       System.out.println("Stdout of " + args[0] + " is:\n" + execute.getStdout());
       System.out.println("Stderr of " + args[0] + " is:\n" + execute.getStderr());
