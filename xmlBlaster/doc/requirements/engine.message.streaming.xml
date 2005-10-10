@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.message' type='NEW' prio='HIGH' status="OPEN">
+<requirement id='engine.message.streaming' type='NEW' prio='HIGH' status="OPEN">
    <topic>XmlBlaster makes use of streaming to handle large/big messages</topic>
    <description>
       <p>
