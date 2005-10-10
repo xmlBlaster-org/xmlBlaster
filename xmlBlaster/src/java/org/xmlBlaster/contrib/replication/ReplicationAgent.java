@@ -191,7 +191,18 @@ public class ReplicationAgent {
    }
       
     
+   /**
+    * Initializes the necessary stuff (encapsulated DbWatcher and DbWriter) and starts the DbWriter.
+    * Note that the DbWatcher is only started if used, i.e. if the readerInfo is not null.
+    * 
+    * @param readerInfo
+    * @param writerInfo
+    * @throws Exception
+    */
    public void init(I_Info readerInfo, I_Info writerInfo) throws Exception {
+      // check if the info objects are really different (they must never be the same instance !!!)
+      if (readerInfo != null && writerInfo != null && readerInfo == writerInfo)
+         throw new Exception("ReplicationAgent.init: the info objects are the same instance. This will lead to problems. Check your code and make sure they are separate instances");
       this.readerInfo = readerInfo;
       this.writerInfo = writerInfo;
       if (this.writerInfo != null) {
@@ -216,7 +227,9 @@ public class ReplicationAgent {
                      throw new Exception("ReplicationAgent.init: the db pool is null");
                   Connection conn = pool.reserve();
                   try {
-                     dbSpecific.bootstrap(conn, false);
+                     boolean doWarn = false;
+                     boolean force = false;
+                     dbSpecific.bootstrap(conn, doWarn, false);
                   }
                   catch (Exception ex) {
                      ex.printStackTrace();

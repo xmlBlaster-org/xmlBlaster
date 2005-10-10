@@ -44,10 +44,11 @@ DROP TABLE repl_items
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE repl_tables(tablename VARCHAR(30), replicate CHAR(1), 
-                         status VARCHAR(10), PRIMARY KEY(tablename))
+CREATE TABLE repl_tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
+                         tablename VARCHAR(30), replicate CHAR(1),
+			 status VARCHAR(10), repl_key INTEGER, 
+			 PRIMARY KEY(catalogname, schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
-
 
 
 -- ---------------------------------------------------------------------------- 
@@ -462,40 +463,33 @@ END repl_check_structure;
 -- dropped or altered.                                                          
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_check_tables(dbName VARCHAR, schemaName VARCHAR, 
+CREATE OR REPLACE FUNCTION repl_check_tables(dbName VARCHAR, schName VARCHAR, 
                                              tblName VARCHAR, op VARCHAR)
    RETURN VARCHAR AS
--- CURSOR curs IS SELECT table_name FROM all_tables WHERE table_name=tblName 
--- OR table_name=UPPER(tblName) OR table_name=LOWER(tblName);
    transId    VARCHAR(30);
-   res        VARCHAR(30);
+   res        VARCHAR(10);
    tmp        INTEGER;
    replKey    INTEGER;
 BEGIN
-   SELECT count(*) INTO tmp FROM all_tables WHERE table_name=tblName 
-                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName);
+   SELECT count(*) INTO tmp FROM all_tables WHERE (table_name=tblName                 
+                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName))
+		   AND (owner=schName OR owner=UPPER(schName) OR 
+		   owner=LOWER(schName));
    IF tmp = 0 THEN 
-      res := '';
+      res := 'FALSE';
    ELSE
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
       SELECT repl_seq.nextval INTO replKey FROM DUAL;
       INSERT INTO repl_items (repl_key, trans_key, dbId, tablename, guid,
                         db_action, db_catalog, db_schema, content, oldContent,
                         version) values (replKey, transId, dbName, tblName,
-                        NULL, op, NULL, schemaName, NULL, NULL,  '0.0');
-      res := 'OK';
+                        NULL, op, NULL, schName, NULL, NULL,  '0.0');
+      res := 'TRUE';
    END IF;        
-/*  This is an example of code which loops through a cursor
-
-FOR employee_rec in c1
-LOOP
-    total_val := total_val + employee_rec.monthly_income;
-END LOOP;
-*/
-
    RETURN res;
 END repl_check_tables;
 -- EOC (end of command: needed as a separator for our script parser)            
+
 
 -- ---------------------------------------------------------------------------- 
 -- repl_tables_trigger is invoked when a change occurs on repl_tables.          
@@ -508,7 +502,7 @@ FOR EACH ROW
    DECLARE
       op         VARCHAR(30);
       tableName  VARCHAR(30);
-      ret        VARCHAR(30);
+      ret        VARCHAR(10);
       -- these need to be replaced later on !!!!
       schemaName VARCHAR(30);
       dbName     VARCHAR(30);
@@ -520,9 +514,11 @@ BEGIN
    IF INSERTING THEN
       op := 'CREATE';
       tableName := :new.tablename;
+      schemaName := :new.schemaname;
    ELSIF DELETING THEN
       op := 'DROP';
       tableName := :old.tablename;
+      schemaName := :old.schemaname;
    ELSE
       op := 'REPLMOD';
       tableName := :new.tablename;
@@ -558,34 +554,30 @@ END repl_increment;
 -- returns TRUE if the table exists (has to be replicated) or FALSE otherwise.  
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_add_table(dbName VARCHAR, tblName VARCHAR,
-   schemaName VARCHAR, op VARCHAR)
-   RETURN BOOLEAN AS
+CREATE OR REPLACE FUNCTION repl_add_table(dbName VARCHAR, schName VARCHAR, 
+                                           tblName VARCHAR, op VARCHAR)
+   RETURN VARCHAR AS
    replKey INTEGER;
    transId VARCHAR2(30);
    tmp     NUMBER;
-   res     BOOLEAN;
-   tmp1    VARCHAR(20);
+   res     VARCHAR(10);
 BEGIN
-   SELECT count(*) INTO tmp FROM repl_tables WHERE tablename=tblName 
-                   OR tablename=UPPER(tblName) OR tablename=LOWER(tblName);
+   SELECT count(*) INTO tmp FROM repl_tables WHERE (tablename=tblName 
+                   OR tablename=UPPER(tblName) OR tablename=LOWER(tblName))
+		   AND (schemaname=schName OR schemaname=UPPER(schName) OR 
+		   schemaname=LOWER(schName));
    IF tmp = 0 THEN
-      RES := FALSE;
+      res := 'FALSE';
    ELSE
-      SELECT repl_seq.nextval INTO replKey FROM DUAL;
-
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-      
       SELECT repl_seq.nextval INTO replKey FROM DUAL;
-      
       INSERT INTO repl_items (repl_key, trans_key, dbId, tablename, guid,
                   db_action, db_catalog, db_schema, content, oldContent,
                   version) values (replKey, transId, dbName, tblName,
-                  NULL, op, NULL, schemaName, NULL, NULL,  '0.0');
-      
-      RES := TRUE;
+                  NULL, op, NULL, schName, NULL, NULL,  '0.0');
+      res := 'TRUE';
    END IF;
-   RETURN RES;
+   RETURN res;
 END repl_add_table;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -601,12 +593,12 @@ DECLARE
    dbName     VARCHAR(30);
    tableName  VARCHAR(30);
    schemaName VARCHAR(30);
-   dummy      BOOLEAN;
+   dummy      VARCHAR(10);
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, tableName, schemaName, 'CREATE');
+   dummy := repl_add_table(dbName, schemaName, tableName, 'CREATE');
 END repl_create_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -622,12 +614,12 @@ DECLARE
    dbName     VARCHAR(30);
    tableName  VARCHAR(30);
    schemaName VARCHAR(30);
-   dummy      BOOLEAN;
+   dummy      VARCHAR(10);
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, tableName, schemaName, 'DROP');
+   dummy := repl_add_table(dbName, schemaName, tableName, 'DROP');
 END repl_drop_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -643,12 +635,12 @@ DECLARE
    dbName     VARCHAR(30);
    tableName  VARCHAR(30);
    schemaName VARCHAR(30);
-   dummy      BOOLEAN;
+   dummy      VARCHAR(10);
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, tableName, schemaName, 'ALTER');
+   dummy := repl_add_table(dbName, schemaName, tableName, 'ALTER');
 END repl_alter_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 

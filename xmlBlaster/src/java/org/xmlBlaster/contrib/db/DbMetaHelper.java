@@ -26,6 +26,8 @@ public class DbMetaHelper {
    private final static int CASE_LOWER = 3;
 
    private int caseSense = CASE_UNKNOWN;
+
+   private int maxProcLength;
    
    /**
     * Initializes the object by reading the metadata of this database.
@@ -40,6 +42,9 @@ public class DbMetaHelper {
       try {
          conn = pool.reserve();
          DatabaseMetaData meta = conn.getMetaData();
+         
+         this.maxProcLength = meta.getMaxProcedureNameLength();
+         
          if (meta.storesLowerCaseIdentifiers())
             this.caseSense = CASE_LOWER;
          else if (meta.storesUpperCaseIdentifiers())
@@ -71,5 +76,35 @@ public class DbMetaHelper {
       }
    }
    
-   
+
+   /**
+    * If the name is too long it cuts first from the end of the schema, and then from the end of the
+    * table name. Otherwise it is ${PREFIX}${SEP}${SCHEMA}${SEP}${TABLENAME}
+    * @param schema
+    * @param tableName
+    * @return
+    */
+   public String createFunctionName(String prefix, String separator, String schema, String tableName) {
+      if (schema == null)
+         schema = "";
+      if (prefix == null)
+         prefix = "";
+      if (separator == null)
+         separator = "";
+      StringBuffer buf = new StringBuffer(this.maxProcLength);
+      buf.append(getIdentifier(prefix)).append(separator).append(getIdentifier(schema)).append(separator).append(getIdentifier(tableName));
+      if (buf.length() < this.maxProcLength)
+         return buf.toString();
+      int toCut = buf.length() - this.maxProcLength;
+      if (toCut >= schema.length()) {
+         toCut -= schema.length();
+         schema = "";
+      }
+      else {
+         schema = schema.substring(0, schema.length() - toCut);
+      }
+      if (toCut > 0)
+         tableName = tableName.substring(0, tableName.length() - toCut);
+      return createFunctionName(prefix, separator, schema, tableName);
+   }
 }

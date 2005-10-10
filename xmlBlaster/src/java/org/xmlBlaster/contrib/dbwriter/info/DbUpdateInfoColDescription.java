@@ -45,6 +45,11 @@ public class DbUpdateInfoColDescription {
    public final static String CHAR_OCTET_LENGTH_ATTR = "charLength"; // position(16)
    public final static String ORDINAL_POSITION_ATTR = "pos";         // position(17)
 
+   public final static String LABEL_ATTR = "label";
+   public final static String AUTO_INCREMENT_ATTR = "autoInc";
+   public final static String CASE_SENSITIVE_ATTR = "caseSens";
+   public final static String TYPE_NAME_ATTR = "typeName";
+   
 /*   
    System.out.println(rs.getString(1) + "1. PKTABLE_CAT String => primary key table catalog being imported (may be null)");
    System.out.println(rs.getString(2) + "2. PKTABLE_SCHEM String => primary key table schema being imported (may be null)");
@@ -75,7 +80,7 @@ public class DbUpdateInfoColDescription {
    private String catalog;
    private String type;
    private int precision; // DECIMAL_DIGITS position (9)
-   private String scale;  // <-- not used in replication 
+   private int scale;  // <-- not used in replication 
    private int nullable; // no default: is always written out
    private boolean signed = true;   // defaults to true <-- not used in replication
    private boolean readOnly; // defaults to false <-- not used in replication 
@@ -100,7 +105,12 @@ public class DbUpdateInfoColDescription {
    private String fkUpdRule;
    private String fkDelRule;
    private String fkDef;
-
+   // new additions 2005-10-10
+   private String label;
+   private boolean autoInc;
+   private boolean caseSens;
+   private String typeName;
+   
    private I_Info info;
    
    public DbUpdateInfoColDescription(I_Info info) {
@@ -137,12 +147,12 @@ public class DbUpdateInfoColDescription {
    }
 
 
-   public String getScale() {
+   public int getScale() {
       return this.scale;
    }
 
 
-   public void setScale(String scale) {
+   public void setScale(int scale) {
       this.scale = scale;
    }
 
@@ -323,7 +333,7 @@ public class DbUpdateInfoColDescription {
          buf.append(" ").append(TYPE_ATTR).append("='").append(this.type).append("'");
       if (this.precision != 0)
          buf.append(" ").append(PRECISION_ATTR).append("='").append(this.precision).append("'");
-      if (stringExists(this.scale))
+      if (this.scale != 0)
          buf.append(" ").append(SCALE_ATTR).append("='").append(this.scale).append("'");
       // always write this out since there is no default defined.
       buf.append(" ").append(NULLABLE_ATTR).append("='").append(this.nullable).append("'");
@@ -346,6 +356,15 @@ public class DbUpdateInfoColDescription {
       if (this.colDefault != null)
          buf.append(" ").append(COLUMN_DEF_ATTR).append("='").append(this.colDefault).append("'");
 
+      if (this.label != null)
+         buf.append(" ").append(LABEL_ATTR).append("='").append(this.label).append("'");
+      if (this.typeName != null)
+         buf.append(" ").append(TYPE_NAME_ATTR).append("='").append(this.typeName).append("'");
+      if (this.autoInc)
+         buf.append(" ").append(AUTO_INCREMENT_ATTR).append("='").append(this.autoInc).append("'");
+      if (this.caseSens)
+         buf.append(" ").append(CASE_SENSITIVE_ATTR).append("='").append(this.caseSens).append("'");
+      
       if (this.primaryKey) {
          buf.append(" ").append(PK_ATTR).append("='").append(this.primaryKey).append("'");
          if (this.pkName != null) {
@@ -455,6 +474,48 @@ public class DbUpdateInfoColDescription {
       this.pkName = pkName;
    }
  
+   
+   
+   public boolean isAutoInc() {
+      return autoInc;
+   }
+
+
+   public void setAutoInc(boolean autoInc) {
+      this.autoInc = autoInc;
+   }
+
+
+   public boolean isCaseSens() {
+      return caseSens;
+   }
+
+
+   public void setCaseSens(boolean caseSens) {
+      this.caseSens = caseSens;
+   }
+
+
+   public String getLabel() {
+      return label;
+   }
+
+
+   public void setLabel(String label) {
+      this.label = label;
+   }
+
+
+   public String getTypeName() {
+      return typeName;
+   }
+
+
+   public void setTypeName(String typeName) {
+      this.typeName = typeName;
+   }
+
+
    public static String getSqlTypeAsText(int sqlType) {
       if (sqlType == Types.ARRAY)
          return "ARRAY";

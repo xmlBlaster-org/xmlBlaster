@@ -6,14 +6,43 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.util.Execute;
+import org.xmlBlaster.util.I_ExecuteListener;
 
 public class SpecificOracle extends SpecificDefault {
 
+   class ExecuteListener implements I_ExecuteListener {
+
+      StringBuffer errors = new StringBuffer();
+      
+      public void stderr(String data) {
+         log.warning(data);
+      }
+
+      public void stdout(String data) {
+         log.info(data);
+         this.errors.append(data).append("\n");
+      }
+
+      String getErrors() {
+         return this.errors.toString();
+      }
+   }
+   
    private static Logger log = Logger.getLogger(SpecificOracle.class.getName());
    
    /**
@@ -42,7 +71,8 @@ public class SpecificOracle extends SpecificDefault {
             buf.append("       " + prefix + "Cont := tmp;\n");
          }
          else {
-            buf.append("       tmp := " + prefix + "Cont || repl_col2xml('" + colName + "',:" + prefix + "." + colName + ");\n");
+            buf.append("       tmpCont := ").append(":").append(prefix).append(".").append(colName).append(";\n"); 
+            buf.append("       tmp := " + prefix + "Cont || repl_col2xml('" + colName + "', tmpCont);\n");
             buf.append("       " + prefix + "Cont := tmp;\n");
          }
       }
@@ -52,18 +82,15 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }
    
-   /**
-    * This method creates a function to be invoked by a triggerto detect INSERT DELETE and UPDATE 
-    * operations on a particular table.
-    * @param infoDescription the info object containing the necessary information for the table.
-    * @return a String containing the sql update. It can be executed. 
-    */
-   public String createTableFunction(DbUpdateInfoDescription infoDescription) {
+   private String createTableTriggerAndFunction(DbUpdateInfoDescription infoDescription) {
 
       String tableName = infoDescription.getIdentity();  // should be the table name
-      String functionName =  tableName + "_repl_f";
-      String triggerName = tableName + "_repl_t";
+      String completeTableName = tableName;
       String schemaName = infoDescription.getSchema();
+      String triggerName = this.dbMetaHelper.createFunctionName("RPLT", "_", schemaName, tableName);
+      if (schemaName != null && schemaName.trim().length() > 0) {
+         completeTableName = schemaName + "." + tableName;
+      }
       String catalogName = infoDescription.getCatalog();
       String dbName = "NULL"; // still unsure on how to retrieve this information on a correct way.
       StringBuffer buf = new StringBuffer();
@@ -78,19 +105,26 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("-- you could just send the minimal stuff, i.e. only the stuff which has changed \n");
       buf.append("-- (for the new stuff) and for the old one you could always send an empty one.  \n");
       buf.append("-- ---------------------------------------------------------------------------- \n");
+      buf.append("-- AND THE TRIGGER FOR THE replTest TABLE                                       \n");
+      buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("\n");
-      buf.append("CREATE OR REPLACE FUNCTION ").append(functionName).append(" RETURN VARCHAR AS\n");
+      buf.append("CREATE OR REPLACE TRIGGER ").append(triggerName).append("\n");
+      buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
+      buf.append("ON ").append(completeTableName).append("\n");
+      buf.append("FOR EACH ROW\n");
+      
+      buf.append("DECLARE\n");
       buf.append("   blobCont BLOB; \n");
       buf.append("   oldCont CLOB; \n");
       buf.append("   newCont CLOB;\n");
       buf.append("   tmp     CLOB;\n");
+      buf.append("   tmpCont CLOB;\n");
       buf.append("   oid     VARCHAR(30);\n");
       buf.append("   replKey INTEGER;\n");
       buf.append("   ret     VARCHAR(10);\n");
       buf.append("   transId VARCHAR2(30);\n");
       buf.append("   op      VARCHAR(10);\n");
       buf.append("BEGIN\n");
-
       buf.append("    oldCont := NULL;\n");
       buf.append("    newCont := NULL;\n");
       buf.append("\n");
@@ -122,44 +156,155 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("                           (replKey, transId,").append(dbNameTmp).append(",\n");
       buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(", newCont, \n");
       buf.append("            oldCont, '0.0');\n");
-      buf.append("\n");
-      buf.append("    RETURN 'DUMMY';\n");
-      buf.append("END ").append(functionName).append(";\n");
+
+      buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
+   }   
+
+   public String createTableTrigger(DbUpdateInfoDescription infoDescription) {
+      return createTableTriggerAndFunction(infoDescription);
+   }
+
+   public String createTableFunction(DbUpdateInfoDescription infoDescription) {
+      return null;
+   }
+   
+   private final boolean cleanupType(String schema, String objName, String sql, String postfix) {
+      Connection conn = null;
+      try {
+         conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
+         List names = new ArrayList();
+         log.info(sql);
+         Statement st = conn.createStatement();
+         ResultSet rs = st.executeQuery(sql);
+         while (rs.next()) {
+            names.add(rs.getString(1));
+         }
+         st.close();
+         rs.close();
+         st = null;
+         rs = null;
+         for (int i=0; i < names.size(); i++) {
+            String name = (String)names.get(i);
+            if (name != null) {
+               sql = "DROP " + objName + " " + name + postfix;
+               log.info(sql);
+               st = conn.createStatement();
+               try {
+                  st.executeUpdate(sql);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+               }
+               finally {
+                  st.close();
+                  st = null;
+               }
+            }
+         }
+         return true;
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return false;
+      }
+      finally {
+         if (conn != null) {
+            try {
+               this.dbPool.release(conn);
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+            }
+         }
+         conn = null;
+      }
+   }
+   
+   public void cleanupSchema(String schema) {
+      String sql = "SELECT synonym_name FROM all_synonyms WHERE owner='" + schema + "'";
+      cleanupType(schema, "synonym", sql, "");
+      sql = "SELECT trigger_name FROM all_triggers WHERE owner='" + schema + "'";
+      cleanupType(schema, "trigger", sql, "");
+      // sql = "SELECT name FROM all_source WHERE owner='" + schema + "' AND LINE=1";
+      // cleanupType(schema, "function", sql, "");
+
+      sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PACKAGE' AND LINE=1";
+      cleanupType(schema, "package", sql, "");
+      
+      sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PROCEDURE' AND LINE=1";
+      cleanupType(schema, "procedure", sql, "");
+      
+      sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='FUNCTION' AND LINE=1";
+      cleanupType(schema, "function", sql, "");
+      
+      //sql = "SELECT procedure_name FROM all_procedures WHERE owner='" + schema + "'";
+      //cleanupType(schema, "function", sql, "");
+      //sql = "SELECT procedure_name FROM all_procedures WHERE owner='" + schema + "'";
+      //cleanupType(schema, "procedure", sql, "");
+      
+      
+      sql = "SELECT view_name FROM all_views WHERE owner='" + schema + "'";
+      cleanupType(schema, "view", sql, " CASCADE CONSTRAINTS");
+      sql = "SELECT table_name FROM all_tables WHERE owner='" + schema + "'";
+      cleanupType(schema, "table", sql, " CASCADE CONSTRAINTS");
+      sql = "SELECT sequence_name FROM all_sequences WHERE sequence_owner='" + schema + "'";
+      cleanupType(schema, "sequence", sql, "");
+   }
+   
+   /**
+    * Executes an Operating System command. 
+    * @param cmd
+    * @throws Exception
+    */
+   public void osExecute(String cmd) throws Exception {
+      Execute execute = new Execute(new String[] { cmd }, null);
+      ExecuteListener listener = new ExecuteListener();
+      execute.setExecuteListener(listener);
+      execute.run(); // blocks until finished
+      if (execute.getExitValue() != 0) {
+         throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
+      }
    }
    
    
    /**
-    * This method creates a trigger to detect INSERT DELETE and UPDATE 
-    * operations on a particular table.
-    * @param infoDescription the info object containing the necessary information for the table.
-    * @return a String containing the sql update. It can be executed. 
     */
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription) {
-      StringBuffer buf = new StringBuffer();
-      // and now append the associated trigger ....
-      String tableName = infoDescription.getIdentity();  // should be the table name
-      String functionName =  tableName + "_repl_f";
-      String triggerName = tableName + "_repl_t";
+   public static void main(String[] args) {
+      try {
+         System.setProperty("java.util.logging.config.file", "testlog.properties");
+         LogManager.getLogManager().readConfiguration();
 
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("-- THE TRIGGER FOR THE replTest TABLE                                           \n");
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("\n");
-      buf.append("CREATE OR REPLACE TRIGGER ").append(triggerName).append("\n");
-      buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
-      buf.append("ON ").append(tableName).append("\n");
-      buf.append("FOR EACH ROW\n");
-      
-      buf.append("DECLARE\n");
-      buf.append("   ret VARCHAR(10);\n");
-      buf.append("BEGIN\n");
-      buf.append("  ret := ").append(functionName).append("();\n");
-      buf.append("END ").append(triggerName).append(";\n");
-      buf.append("\n");
-      
-      return buf.toString();
-   }   
-  
+         // ---- Database settings -----
+         String tmp = null;
+         if (System.getProperty("jdbc.drivers", null) == null) {
+            System.setProperty("jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+         }
+         if (System.getProperty("db.url", null) == null) {
+            System.setProperty("db.url", "jdbc:oracle:thin:@localhost:1521:test");
+         }
+         if (System.getProperty("db.user", null) == null) {
+            System.setProperty("db.user", "xmlblaster");
+         }
+         if (System.getProperty("db.password", null) == null) {
+            System.setProperty("db.password", "secret");
+         }
+         
+         SpecificOracle oracle = new SpecificOracle();
+         I_Info info = new PropertiesInfo(System.getProperties());
+         oracle.init(info);
+         I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+         Connection conn = pool.reserve();
+         oracle.cleanupSchema("AIS");
+         pool.release(conn);
+      }
+      catch (Throwable e) {
+         System.err.println("SEVERE: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
+   
 }

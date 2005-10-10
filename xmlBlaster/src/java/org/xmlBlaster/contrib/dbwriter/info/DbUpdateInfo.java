@@ -10,11 +10,13 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
@@ -25,6 +27,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class DbUpdateInfo implements ReplicationConstants {
 
    public final static String SQL_TAG = "sql";
+   private static Logger log = Logger.getLogger(DbUpdateInfo.class.getName());
 
    private DbUpdateInfoDescription description;
    
@@ -37,6 +40,17 @@ public class DbUpdateInfo implements ReplicationConstants {
       this.rows = new ArrayList();
    }
 
+   /**
+    * Fills the object with the metadata. By Oracle it seems that the colName is not returned (returns null). In such a case the method returns false.
+    * 
+    * @param conn
+    * @param catalog
+    * @param schema
+    * @param table
+    * @param queryRs
+    * @param transformer
+    * @throws Exception
+    */
    public void fillMetadata(Connection conn, String catalog, String schema, String table, ResultSet queryRs, I_AttributeTransformer transformer) throws Exception {
       try {
          DatabaseMetaData meta = conn.getMetaData();
@@ -55,7 +69,6 @@ public class DbUpdateInfo implements ReplicationConstants {
                   schema = tmpSchema;
                String tmpTableName = rs.getString(3);
                String colName = rs.getString(4);
-
                DbUpdateInfoColDescription colDescription = this.description.getUpdateInfoColDescription(colName);
                if (colDescription == null) {
                   colDescription = new DbUpdateInfoColDescription(this.info);
@@ -82,7 +95,57 @@ public class DbUpdateInfo implements ReplicationConstants {
                rs.close();
             rs = null;
          }
-
+         // retrieve additional information about columns
+         Statement st = null;
+         try {
+            st = conn.createStatement();
+            String completeTableName = table;
+            if (schema != null)
+               completeTableName = schema + "." + table;
+            rs = st.executeQuery("SELECT * from " + completeTableName);
+            ResultSetMetaData rsMeta = rs.getMetaData();
+            int colCount = rsMeta.getColumnCount();
+            if (colCount != this.description.getNumOfColumns())
+               throw new Exception("DbUpdateInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
+            for (int i=1; i <= colCount; i++) {
+               String colName = rsMeta.getColumnName(i);
+               DbUpdateInfoColDescription colDesc = this.description.getColumnAtPosition(i);
+               if (colDesc.getColName() == null)
+                  colDesc.setColName(colName);
+               colDesc.setLabel(rsMeta.getColumnLabel(i));
+               colDesc.setAutoInc(rsMeta.isAutoIncrement(i));
+               colDesc.setCaseSens(rsMeta.isCaseSensitive(i));
+               colDesc.setTypeName(rsMeta.getColumnTypeName(i));
+               try { // there seems to be a bug in the oracle jdbc driver internally using long but giving
+                     // back integer
+                  colDesc.setPrecision(rsMeta.getPrecision(i));
+               }
+               catch (NumberFormatException e) {
+                  log.warning(e.getMessage());
+               }
+               colDesc.setScale(rsMeta.getScale(i));
+               colDesc.setSigned(rsMeta.isSigned(i));
+               colDesc.setReadOnly(rsMeta.isReadOnly(i));
+               colDesc.setNullable(rsMeta.isNullable(i));
+               // rsMeta.isSearchable(i);
+               // rsMeta.isWritable(i);
+               // rsMeta.isDefinitelyWritable(i);
+            }
+         }
+         finally {
+            try {
+               if (st != null)
+                  st.close();
+               st = null;
+            }
+            catch (SQLException ex) {
+               ex.printStackTrace();
+            }
+            if (rs != null)
+               rs.close();
+            rs = null;
+         }
+         
          // add PK and FK stuff here ...
          rs = meta.getPrimaryKeys(catalog, schema, table);
          try {
@@ -184,7 +247,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          if (meta.getPrecision(i) > 0)
             col.setPrecision(meta.getPrecision(i));
          if (meta.getScale(i) > 0)
-            col.setScale("" + meta.getScale(i));
+            col.setScale(meta.getScale(i));
          // always write this since it is not a boolean and it has no default ...
          col.setNullable(meta.isNullable(i));
          if (meta.isSigned(i)==false)

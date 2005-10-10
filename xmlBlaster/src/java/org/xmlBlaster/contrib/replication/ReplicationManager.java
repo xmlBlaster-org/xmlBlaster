@@ -194,7 +194,9 @@ public class ReplicationManager {
          conn = this.dbPool.reserve();
          conn.clearWarnings();
          conn.setAutoCommit(true);
-         this.dbSpecific.bootstrap(conn, true);
+         boolean force = false;
+         boolean doWarn = true;
+         this.dbSpecific.bootstrap(conn, doWarn, force);
          // TODO remove this after testing ...
          // this.dbSpecific.addTable(conn);
       }

@@ -30,9 +30,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * 
     * @param conn
     * @param doWarn if false no warning is given on excrption.
+    * @param force if true, then everything is cleaned up, if false, then tables and sequences are
+    * only rebuilt if not existing.
     * @throws Exception
     */
-   void bootstrap(Connection conn, boolean doWarn) throws Exception;
+   void bootstrap(Connection conn, boolean doWarn, boolean force) throws Exception;
    
    /**
     * This method is invoked for the cleanup while testing. In production this method is probably
@@ -107,7 +109,28 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @return the new sequence value for the repl_key sequence.
     * @throws Exception if an exception occurs.
     */
-   int incrementReplKey(Connection conn) throws Exception;
+   long incrementReplKey(Connection conn) throws Exception;
    
+   /**
+    * Adds a table to be watcher/replicated. It adds the entry to the repl_tables and makes sure that
+    * it is added with the correct case (depending upon how case sensitivity is handled by the implementation
+    * of the database).
+    * 
+    * @param catalog the name of the catalog to use. If null, an empty string is stored (since part of the PK)
+    * @param schema the name of the schema to use. If null, an empty string is stored (since part of the PK).
+    * @param tableName the name of the table to be added.
+    * @param doReplicate 'false' if it does not need to replicate, 'true' otherwise.
+    * @throws Exception if an exception occurs on the backend. For example if the table already has been
+    * added, it will throw an exception.
+    */
+   void addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate) throws Exception;
+   
+   /**
+    * Removes a table from the repl_tables. This method will make sure that the correct case sensitivity
+    * for the table name will be used.
+    * @param tableName
+    * @throws Exception
+    */
+   void removeTableToWatch(String catalog, String schema, String tableName) throws Exception;
    
 }

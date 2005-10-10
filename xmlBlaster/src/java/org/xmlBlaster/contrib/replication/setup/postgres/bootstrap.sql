@@ -56,9 +56,10 @@ DROP TABLE repl_items CASCADE;
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE repl_tables(tablename VARCHAR(30), replicate CHAR(1), 
-                         PRIMARY KEY(tablename));
-
+CREATE TABLE repl_tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
+                         tablename VARCHAR(30), replicate CHAR(1),
+			 status VARCHAR(10), repl_key INTEGER, 
+			 PRIMARY KEY(catalogname, schemaname, tablename));
 
 -- ---------------------------------------------------------------------------- 
 -- create the repl_current_tables as a placeholder for the current tables (this 

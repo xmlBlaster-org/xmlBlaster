@@ -14,7 +14,6 @@ import java.util.Map;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Timestamp;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
@@ -120,7 +119,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 11 but was " + numberOfColumns);
       
       int replKey = rs.getInt(1);
-      Timestamp transactionTimestamp = rs.getTimestamp(2);
+      String transKey = rs.getString(2);
       String dbId = rs.getString(3);
       String tableName = rs.getString(4);
       String guid = rs.getString(5);
@@ -144,7 +143,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          Map completeAttrs = new HashMap();
          completeAttrs.put(TABLE_NAME_ATTR, tableName);
          completeAttrs.put(REPL_KEY_ATTR, "" + replKey);
-         completeAttrs.put(TRANSACTION_ATTR, transactionTimestamp.toString());
+         completeAttrs.put(TRANSACTION_ATTR, transKey);
          completeAttrs.put(DB_ID_ATTR, dbId);
          completeAttrs.put(GUID_ATTR, guid);
          completeAttrs.put(CATALOG_ATTR, catalog);

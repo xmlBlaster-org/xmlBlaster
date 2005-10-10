@@ -23,7 +23,10 @@ public class PropertiesInfo implements I_Info {
    Map objects;
    
    /**
-    * Creates a simple implementation based on java's Preferences
+    * Creates a simple implementation based on java's Properties.
+    * This implementation uses the reference to the properties passed. If you want a snapshot of these properties, you 
+    * need to take a clone and pass the clone to the constructor.
+    * 
     * @param props The configuration store
     */
    public PropertiesInfo(Properties props) {

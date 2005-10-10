@@ -177,9 +177,8 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
             if (tmp != null)
                colDescription.setColDefault(tmp.trim());
             
-            tmp = attrs.getValue(DbUpdateInfoColDescription.SCALE_ATTR);
-            if (tmp != null)
-               colDescription.setScale(tmp.trim());
+            int intTmp = getIntAttr(attrs, DbUpdateInfoColDescription.SCALE_ATTR, 0);
+            colDescription.setScale(intTmp);
             
             tmp = attrs.getValue(DbUpdateInfoColDescription.NULLABLE_ATTR);
             if (tmp != null) {
@@ -203,8 +202,18 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
                   colDescription.setPkName(tmp.trim());
             }
             
-            tmp = attrs.getValue(DbUpdateInfoColDescription.PKTABLE_CAT_ATTR);
+            bool = getBoolAttr(attrs, DbUpdateInfoColDescription.AUTO_INCREMENT_ATTR, false);
+            colDescription.setAutoInc(bool);
+            bool = getBoolAttr(attrs, DbUpdateInfoColDescription.CASE_SENSITIVE_ATTR, false);
+            colDescription.setCaseSens(bool);
+            tmp = attrs.getValue(DbUpdateInfoColDescription.LABEL_ATTR);
+            if (tmp != null)
+               colDescription.setLabel(tmp.trim());
+            tmp = attrs.getValue(DbUpdateInfoColDescription.TYPE_NAME_ATTR);
+            if (tmp != null)
+               colDescription.setTypeName(tmp.trim());
 
+            tmp = attrs.getValue(DbUpdateInfoColDescription.PKTABLE_CAT_ATTR);
             if (tmp != null)
                colDescription.setFkCatalog(tmp.trim());
             tmp = attrs.getValue(DbUpdateInfoColDescription.PKTABLE_SCHEM_ATTR);

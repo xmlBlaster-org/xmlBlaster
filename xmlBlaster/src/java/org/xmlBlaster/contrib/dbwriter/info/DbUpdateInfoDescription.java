@@ -440,6 +440,34 @@ public class DbUpdateInfoDescription {
       return null;
    }
    
+   public int getNumOfColumns() {
+      return this.columnDescriptionList.size();
+   }
+   
+   /**
+    * Gets the column at position given by pos. Note that the first position is 1 (not 0).
+    * @param pos
+    * @return
+    * @throws IllegalArgumentException if the number is less than 1 or bigger than the size of the list or if for some reason the entry has not been found.
+    */
+   public DbUpdateInfoColDescription getColumnAtPosition(int pos) {
+      if (pos < 1 || pos > this.columnDescriptionList.size())
+         throw new IllegalArgumentException("getColumnAtPosition has wrong argument '" + pos + "' must be in the range [1.." + this.columnDescriptionList.size() + "] (means inclusive)");
+      DbUpdateInfoColDescription col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(pos-1); 
+      int p = col.getPos(); // fast find 
+      if (p == (pos-1))
+         return col;
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i < this.columnDescriptionList.size(); i++) {
+         col = (DbUpdateInfoColDescription)this.columnDescriptionList.get(i);
+         p = col.getPos();
+         buf.append(p).append(" ");
+         if (p == pos)
+            return col;
+      }
+      throw new IllegalArgumentException("getColumnAtPosition: The position '" + pos + "' has not been found among the ones processed which are '" + buf.toString() + "'");
+   }
+   
    public String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
@@ -465,4 +493,7 @@ public class DbUpdateInfoDescription {
    }
    
 }
+
+
+
 
