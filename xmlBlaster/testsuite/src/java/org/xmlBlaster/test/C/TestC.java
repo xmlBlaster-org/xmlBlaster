@@ -6,15 +6,15 @@ Comment:   Integrate C tests into junit reports
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.C;
 
+import java.io.File;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
-import org.xmlBlaster.test.Util;
 
-import java.io.*;
+//import java.io.*;
 
 import junit.framework.*;
 
@@ -131,7 +131,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -165,7 +165,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -199,7 +199,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_Stress('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -233,7 +233,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_Util('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -267,7 +267,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_Queue('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -301,7 +301,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_LeaveServer('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
@@ -335,7 +335,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 
       log.info(ME, "######## Start test_C_Socket('" + commandArr[0] + "')");
 
-      Execute e = new Execute(glob, commandArr, envArr);
+      Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
       e.run();
 
