@@ -20,28 +20,24 @@
 	     <b>Passing InputStream (as the JDBC Approach)</b><br/>
 	     <pre>
    InputStream in = ...; // coming from somewhere for example FileInputStream
-   int length = ...; // length of the complete stream
-   MsgUnit msg = new MsgUnit(key, qos, in, length);
-   PublishReturnQos publishReturnQos = conn.publish(msg);
+   MsgUnit msg = new MsgUnit(key, in, qos);
+   PublishReturnQos publishReturnQos = conn.publish(msg); // returns on eof
 	     </pre>
 	     The filling of the stream must be done somewhere else, for example it could be the file,
 	     it could come from a socket or it could be an own implementation in which case it must be
-	     filled in a separate thread. This approach needs to know the complete length of the stream
-	     in beforehand, alternatively, if a negative value is passed as the length, an <i>unknown</i>
-	     length could be assigned. <b>For such a case a solution has to be found on how to determine
-	     when the stream is finished. Is this possible with an eof ?</b>
+	     filled in a separate thread. 
 	   </li>
 	   <li>
 	     <b>Getting an OutputStream to which to write to (as the Servlet Approach)</b><br/>
 	     <pre>
    MsgUnit msg = new MsgUnit(key, qos);
-   OutputStream os = msg.getStream();
+   OutputStream os = msg.getOutputStream(conn);
    for (int i=0; ...) {
       os.write(data);
       os.flush();
    }
    os.close(); 
-   PublishReturnQos returnQos = conn.publish(msg);  // fake operation to retrieve the return qos.
+   PublishReturnQos returnQos = msg.getReturnQos(msg);  // fake operation to retrieve the return qos.
 	     </pre> 
 		This alternative offers you an output stream which you fill with what you want. You do not 
 		need to know in beforehand the size of the content to be sent. The end of the message is
@@ -58,7 +54,7 @@
       the message is published. To be able to reconstruct the information of the complete message on the destination side (which is the 
       update- or the get method), the following information must be sent along the chunk as a client property:
       <pre>
-   __CHUNK_SEQ_NUM     (only filled if the message is a multi-chunk message) (starts with 0 and increments)
+   __CHUNK_SEQ_NUM    (only filled if the message is a multi-chunk message) (starts with 0 and increments)
    __CHUNK_EOF         when it exists it is always set to 'true' and is only set on the last chunk. On single-chunk messages is never set.
    __CHUNK_EXCEPTION   contains the exception as a blob if an exception occured.
    __CHUNK_BELONGS_TO  a unique Id identifying the complete message. This must be assigned client side.
@@ -86,23 +82,23 @@
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_UpdateListener updateListener) 
       throws XmlBlasterException;
 	</pre>
-	Again as for the publisher we have to possibilities to read the message content from the stream.
+	Again as for the publisher we have two possibilities to read the message content from the stream.
 	<ul>
+	  <li><b>OutputStream</b><br/> This is passed by the user and the Client Library fills this 
+	    <pre>
+   UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException {
+       FileOutputStream os = new FileOutputStream(...);
+       msg.msgWrite(os); // does block
+       return ...;
+   }
+	    </pre>
+	  </li>
 	  <li><b>InputStream (Servlet Approach)</b><br/>The InputStream is passed by the Client Library.
 	    <pre>
    UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException {
        InputStream in = msg.getInputStream();
        in.read(...);
          ...
-       return ...;
-   }
-	    </pre>
-	  </li>
-	  <li><b>OutputStream</b><br/> This is passed by the user and the Client Library fills this 
-	    <pre>
-   UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException {
-       FileOutputStream os = new FileOutputStream(...);
-       InputStream in = msg.setOutputStream(os);
        return ...;
    }
 	    </pre>
@@ -117,9 +113,9 @@
    </example>
    <configuration where="server">
    </configuration>
-   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
-   <see type="API">org.xmlBlaster.client.key.PublishKey</see>
-   <see type="API">org.xmlBlaster.engine.xml2java.PublishQos</see>
+   <see type="API" name="PublishQos">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API" name="PublishKey">org.xmlBlaster.client.key.PublishKey</see>
+   <see type="API" name="PublishQos">org.xmlBlaster.engine.xml2java.PublishQos</see>
    <see type="REQ">engine.message.lifecycle</see>
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.callback</see>
