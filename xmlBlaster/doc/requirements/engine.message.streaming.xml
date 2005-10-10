@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.message' type='NEW' prio='HIGH' status="OPEN">
+   <topic>XmlBlaster makes use of streaming to handle large/big messages</topic>
+   <description>
+      <p>
+         For use cases where large messages are published, subscribed or getted, a lot memory is
+	 needed to handle them as complete units. For such cases, a different approach is needed.<br/>
+	 One solution is to implement streaming, that is to fill the content of a message with a
+	 Stream and let the client library handle the chunking of the message parts in a way
+	 which is transparent to the user.<br/>
+	 On the subscriber side, in the update method, the user again must be able to retrieve the content
+	 of the message via a Stream.
+      </p>
+      <p>
+        To publish a message there can be two approaches:
+	<ul>
+	   <li>
+	     <b>Passing InputStream (as the JDBC Approach)</b><br/>
+	     <pre>
+   InputStream in = ...; // coming from somewhere for example FileInputStream
+   int length = ...; // length of the complete stream
+   MsgUnit msg = new MsgUnit(key, qos, in, length);
+   PublishReturnQos publishReturnQos = conn.publish(msg);
+	     </pre>
+	     The filling of the stream must be done somewhere else, for example it could be the file,
+	     it could come from a socket or it could be an own implementation in which case it must be
+	     filled in a separate thread. This approach needs to know the complete length of the stream
+	     in beforehand, alternatively, if a negative value is passed as the length, an <i>unknown</i>
+	     length could be assigned. <b>For such a case a solution has to be found on how to determine
+	     when the stream is finished. Is this possible with an eof ?</b>
+	   </li>
+	   <li>
+	     <b>Getting an OutputStream to which to write to (as the Servlet Approach)</b><br/>
+	     <pre>
+   MsgUnit msg = new MsgUnit(key, qos);
+   OutputStream os = msg.getStream();
+   for (int i=0; ...) {
+      os.write(data);
+      os.flush();
+   }
+   os.close(); 
+   PublishReturnQos returnQos = conn.publish(msg);  // fake operation to retrieve the return qos.
+	     </pre> 
+		This alternative offers you an output stream which you fill with what you want. You do not 
+		need to know in beforehand the size of the content to be sent. The end of the message is
+		determined by the close operation. This approach needs an own implementation of the OutputStream.
+		A would be implicitly published when the internal buffer of the stream is full or when a flush- or
+		close operation is invoked on the stream.
+	   </li>
+	</ul>
+	For both approaches a configuration parameter for the size of the chunks is needed. This is an attribute in the publishQos
+	for example chunkSize. Later on other messages could be chunked too even if not using the stream approach. 
+      </p>
+      <p><b>Implementation Details</b><br/>
+      Whenever the current size of the internal buffer is exceeded, or if explicitly invoked by the client, a chunk constituing a part of
+      the message is published. To be able to reconstruct the information of the complete message on the destination side (which is the 
+      update- or the get method), the following information must be sent along the chunk as a client property:
+      <pre>
+   __CHUNK_SEQ_NUM     (only filled if the message is a multi-chunk message) (starts with 0 and increments)
+   __CHUNK_EOF         when it exists it is always set to 'true' and is only set on the last chunk. On single-chunk messages is never set.
+   __CHUNK_EXCEPTION   contains the exception as a blob if an exception occured.
+   __CHUNK_BELONGS_TO  a unique Id identifying the complete message. This must be assigned client side.
+   __CHUNK_NMAX        the complete number of chunks. This is initially not needed and would only be set if the complete size is known.
+      </pre>
+      <b>One open question is on the second alternative (Servlet approach) the publish is invoked implicitly, so the question is how the
+      ReturnQos is handled, and what is the meaning of the publish method ?.</b>
+      </p>
+
+      <p>
+        <b>On the Update side </b> <br/>
+	The old/current I_Callback Interface does not fit our purposes since it passes a byte[] object as an argument in the update Method.
+	Two things are needed:
+	<ul>
+	   <li>a Decorator class for MsgUnit called <b>UpdateMsgUnit</b></li>
+	   <li>a new Callback Interface <b>I_UpdateListener</b> having
+	      <pre>
+   UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException
+	      </pre>
+	   </li>
+	</ul>
+	In I_XmlBlasterAccess the following new methods are needed:
+	<pre>
+   ConnectReturnQos connect(ConnectQos qos, I_UpdateListener updateListener) throws XmlBlasterException;
+   SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_UpdateListener updateListener) 
+      throws XmlBlasterException;
+	</pre>
+	Again as for the publisher we have to possibilities to read the message content from the stream.
+	<ul>
+	  <li><b>InputStream (Servlet Approach)</b><br/>The InputStream is passed by the Client Library.
+	    <pre>
+   UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException {
+       InputStream in = msg.getInputStream();
+       in.read(...);
+         ...
+       return ...;
+   }
+	    </pre>
+	  </li>
+	  <li><b>OutputStream</b><br/> This is passed by the user and the Client Library fills this 
+	    <pre>
+   UpdateReturnQos I_UpdateListener.onUpdate(UpdateMsgUnit msg) throws XmlBlasterException {
+       FileOutputStream os = new FileOutputStream(...);
+       InputStream in = msg.setOutputStream(os);
+       return ...;
+   }
+	    </pre>
+	  </li>
+	</ul>
+      </p>
+      <p>
+       <b>On the Get Side </b><br/>
+      </p>
+   </description>
+   <example lang="Java" type="HTML">
+   </example>
+   <configuration where="server">
+   </configuration>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API">org.xmlBlaster.client.key.PublishKey</see>
+   <see type="API">org.xmlBlaster.engine.xml2java.PublishQos</see>
+   <see type="REQ">engine.message.lifecycle</see>
+   <see type="REQ">engine.queue</see>
+   <see type="REQ">engine.callback</see>
+   <see type="REQ">util.property</see>
+   <author>laghi@swissinfo.org</author>
+   <date>2005 10 10</date>
+   <revision>$Revision$</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
