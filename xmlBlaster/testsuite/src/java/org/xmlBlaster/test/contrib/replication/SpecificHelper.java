@@ -18,8 +18,8 @@ import java.util.Properties;
  */
 final class SpecificHelper {
     
-   public final static String ORACLE = "oracle";
-   public final static String POSTGRES = "postgres";
+   private final static String ORACLE = "oracle";
+   private final static String POSTGRES = "postgres";
    
     private String[] postgresTypesSql = new String[] {
        "CREATE TABLE test_dbspecific (name VARCHAR(20) PRIMARY KEY)",
@@ -44,10 +44,10 @@ final class SpecificHelper {
     private String[] dropSql = dropSqlOracle;
     
     private String dbType = ORACLE;
-    
     private Properties props;
-
-    public SpecificHelper(Properties props) {
+    private String cascade;
+    
+    public SpecificHelper(Properties props) throws Exception {
        this.props = (Properties)props.clone();
        String db = this.props.getProperty("db");
        if (db == null)
@@ -70,7 +70,7 @@ final class SpecificHelper {
           props.put(key, val);
     }
 
-    private String setOracleDefault(Properties props) {
+    private String setOracleDefault(Properties props) throws Exception {
        if (props == null)
           return "oracle";
        // export CLASSPATH=/home/michele/adhoc/ojdbc14_g.jar:${CLASSPATH}
@@ -82,6 +82,7 @@ final class SpecificHelper {
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/oracle/cleanup.sql");
        this.sql = this.oracleTypesSql;
        this.dropSql = this.dropSqlOracle;
+       this.cascade = "";
        return "oracle";
     }
     
@@ -97,6 +98,7 @@ final class SpecificHelper {
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
        this.sql = this.postgresTypesSql;
        this.dropSql = this.dropSqlOracle;
+       this.cascade = " CASCADE";
        return "postgres";
     }
    /**
@@ -152,6 +154,37 @@ final class SpecificHelper {
    
    public String[] getDropSql() {
       return this.dropSql;
+   }
+   
+   
+   public boolean isOracle() {
+      return this.dbType.equalsIgnoreCase(ORACLE);
+   }
+
+   public boolean isPostgres() {
+      return this.dbType.equalsIgnoreCase(POSTGRES);
+   }
+   
+   public String getOwnSchema(I_DbPool pool) throws Exception {
+      Connection conn = null;
+      String ret = null;
+      if (isOracle()) {
+         try {
+            conn = pool.reserve();
+            String userName = conn.getMetaData().getUserName();
+            System.out.println("USER NAME: '" + userName + "'");
+            return userName;
+         }
+         finally {
+            if (conn != null)
+               pool.release(conn);
+         }
+      }
+      return null;
+   }
+   
+   public String getCascade() {
+      return this.cascade;
    }
    
 }

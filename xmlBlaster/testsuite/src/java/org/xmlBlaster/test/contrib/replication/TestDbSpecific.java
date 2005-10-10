@@ -20,12 +20,35 @@ import org.xmlBlaster.contrib.dbwatcher.mom.I_MomCb;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
 import java.util.Map;
 
 /**
  * Test basic functionality which is specific for each database implementation. 
- * <p> 
+ * There is a predefined set of default properties which are specific to the database you use. For instance
+ * if you want to use the predefined settings for oracle use:
+ * <pre>
+ * java -Ddb=oracle .....
+ * or if you want to use postgres:
+ * java -Ddb=postgres
+ * </pre>
+ * <p>
+ * <h2>What does this test ?</h2><br/>
+ * <ul>
+ *   <li>This test runs without the need of an xmlBlaster server, everything is checked internally.</li>
+ *   <li>Creates a user table (which is not in the repl_tables, so it will not fire any trigger)</li>
+ *   <li>Explicitly reads the table (readNewTable). This shall fill the metadata of the table and publish the message</li>
+ *   <li>The message is catched by our publish Method. In it all asserts will be done
+ *      <ul>
+ *         <li>Number of columns must be at least one (to detect that metadata is retrieved)</li>
+ *        <li>Parsing of message is working correctly</li>
+ *      </ul>   
+ *   </li>
+ *   <li>tests the method getObjectName(String op, String req)</li>
+ *   <li>tests the method checkTableForCreation(String creationRequest)</li>
+ *   <li>tests the method checkSequenceForCreation(String creationRequest)</li>
+ * </ul> 
  * To run most of the tests you need to have a database (for example Postgres or Oracle).
  * </p>
  * <p>
@@ -49,7 +72,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     /**
      * Start the test. 
      * <pre>
-     * java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestDbSpecific
+     * java -Ddb=oracle junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestDbSpecific
      * </pre>
      * @param args Command line settings
      */
@@ -59,7 +82,19 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
        
        try {
           test.setUp();
-          test.testComplete();
+          test.testGetObjectName();
+          test.tearDown();
+
+          test.setUp();
+          test.testCheckTableForCreation();
+          test.tearDown();
+
+          test.setUp();
+          test.testCheckSequenceForCreation();
+          test.tearDown();
+
+          test.setUp();
+          test.testCreateTablesWithDifferentTypes();
           test.tearDown();
        }
        catch (Exception ex) {
@@ -106,7 +141,9 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          log.info("setUp: going to cleanup now ...");
          dbSpecific.cleanup(conn, false);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         dbSpecific.bootstrap(conn, false);
+         boolean doWarn = false;
+         boolean force = true;
+         dbSpecific.bootstrap(conn, doWarn, force);
       }
       catch (Exception ex) {
          if (conn != null)
@@ -137,27 +174,28 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
    public String publish(String changeKey, String message, Map attrMap) throws Exception {
       try {
          log.info("publish invoked in method '" + currentMethod + "'");
-         log.info("message '" + message + "'");
+         log.fine("message '" + message + "'");
 
          if (this.doCheck) {
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
             DbUpdateParser parser = new DbUpdateParser(info);
             DbUpdateInfo dbUpdateInfo = parser.readObject(message);
             String createStatement = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
-            System.out.println("=============================================");
-            System.out.println(createStatement);
-            System.out.println("=============================================");
+            log.fine("=============================================");
+            log.fine(createStatement);
+            log.fine("=============================================");
             String msg1 = dbUpdateInfo.toXml("");
-            log.info("original message: " + message);
-            log.info("parsed message: " + msg1);
-            assertXMLEqual("output xml is not the same as input xml", message, msg1);
-            
+            log.fine("original message: " + message);
+            log.fine("parsed message: " + msg1);
+            int numOfCols = dbUpdateInfo.getDescription().getUpdateInfoColDescriptions().length;
+            assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
+            assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", message, msg1);
             String functionAndTrigger = dbSpecific.createTableFunction(dbUpdateInfo.getDescription());
             functionAndTrigger += dbSpecific.createTableTrigger(dbUpdateInfo.getDescription());
             
-            System.out.println("-- ---------------------------------------------------------------------------");
-            System.out.println(functionAndTrigger);
-            System.out.println("-- ---------------------------------------------------------------------------");
+            log.fine("-- ---------------------------------------------------------------------------");
+            log.fine(functionAndTrigger);
+            log.fine("-- ---------------------------------------------------------------------------");
          }
          else {
             assertTrue("should never come here", false);
@@ -240,7 +278,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     * 
     * @throws Exception Any type is possible
     */
-   public final void testComplete() throws Exception {
+   public final void testCreateTablesWithDifferentTypes() throws Exception {
       currentMethod = new String("testComplete");
       log.info("Start " + currentMethod);
 
@@ -282,4 +320,176 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
+   
+   /**
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testGetObjectName() throws Exception {
+      currentMethod = new String("testGetObjectName");
+      log.info("Start " + currentMethod);
+      SpecificDefault specificDefault = (SpecificDefault)dbSpecific;
+      { 
+         String op = "CREATE TABLE";
+         String sql = "CREATE TABLE someName(aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "CREATE TABLE someName (aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "CREATE TABLE someName\n\n  (aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "CREATE TABLE someName    aaa";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "CREATE TABLE    someName() ";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "   CREATE TABLE someName(aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "\n\nCREATE TABLE someName(aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "  CREATE TABLE\n someName (aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { 
+         String op = "CREATE TABLE";
+         String sql = "  CREATE TABLE\n someName (aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         assertNotNull("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall not be null");
+         assertEquals("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "')", "someName", tableName);
+      }
+      { // this shall be null 
+         String op = "CREATE TABLE";
+         String sql = "  CREATE SEQUENCE someName(aaa)";
+         String tableName = specificDefault.getObjectName(op, sql);
+         if (tableName != null)
+            assertTrue("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall be null", false);
+      }
+      { // this shall be null 
+         String op = "CREATE TABLE";
+         String sql = null;
+         String tableName = specificDefault.getObjectName(op, sql);
+         if (tableName != null)
+            assertTrue("the operation of SpecificDefault.getObjectName('" + op + "',null) shall be null", false);
+      }
+      { // this shall be null 
+         String op = "CREATE TABLE";
+         String sql = "";
+         String tableName = specificDefault.getObjectName(op, sql);
+         if (tableName != null)
+            assertTrue("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall be null", false);
+      }
+      { // this shall be null 
+         String op = "CREATE TABLE";
+         String sql = "    ";
+         String tableName = specificDefault.getObjectName(op, sql);
+         if (tableName != null)
+            assertTrue("the operation of SpecificDefault.getObjectName('" + op + "','" + sql + "') shall be null", false);
+      }
+      log.info("SUCCESS");
+   }
+   
+
+   /**
+    * This method tests all the sql statements. It checks the creation statements
+    * for the different sql data types. 
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testCheckTableForCreation() throws Exception {
+      currentMethod = new String("testCheckTableForCreation");
+      log.info("Start " + currentMethod);
+      SpecificDefault specificDefault = (SpecificDefault)dbSpecific;
+      {
+         String sql = "CREATE TABLE repl_items values(sss)";
+         int ret = specificDefault.checkTableForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "')", 0, ret);
+      }
+      {
+         String sql = "CREATE TABLE repl_tables()";
+         int ret = specificDefault.checkTableForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "')", 0, ret);
+      }
+      {
+         String sql = "CREATE SEQUENCE repl_items values(sss) ";
+         int ret = specificDefault.checkTableForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "')", -1, ret);
+      }
+      {
+         String sql = "CREATE TABLE aaaxmsjd values(sss) ";
+         int ret = specificDefault.checkTableForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "')", 1, ret);
+      }
+   }
+
+   /**
+    * This method tests all the sql statements. It checks the creation statements
+    * for the different sql data types. 
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testCheckSequenceForCreation() throws Exception {
+      currentMethod = new String("testCheckSequenceForCreation");
+      log.info("Start " + currentMethod);
+      SpecificDefault specificDefault = (SpecificDefault)dbSpecific;
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      {
+         String sql = "CREATE SEQUENCE repl_seq  values(sss)";
+         int ret = specificDefault.checkSequenceForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkSequenceForCreation('" + sql + "')", 0, ret);
+      }
+      {
+         String sql = "CREATE SEQUENCE blabla  values(sss)";
+         int ret = specificDefault.checkSequenceForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "') shall be zero since it only checks for the existence or 'repl_seq' by invoking a function", 0, ret);
+      }
+      String dropSql = "DROP SEQUENCE repl_seq";
+      pool.update(dropSql); // erases the sequence
+      {
+         String sql = "CREATE SEQUENCE repl_seq  values(sss)";
+         int ret = specificDefault.checkSequenceForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkSequenceForCreation('" + sql + "')", 1, ret);
+      }
+      {
+         String sql = "CREATE TABLE repl_seq  values(sss)";
+         int ret = specificDefault.checkSequenceForCreation(sql);
+         assertEquals("check the operation of SpecificDefault.checkSequenceForCreation('" + sql + "')", -1, ret);
+      }
+      log.info("SUCCESS");
+   }
 }

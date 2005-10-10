@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
@@ -21,7 +22,7 @@ import org.xmlBlaster.contrib.replication.ReplicationAgent;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
 /**
- * Test basic functionality.
+ * Test basic functionality for the replication. This test needs an instance of xmlBlaster running.
  * <p>
  * To run most of the tests you need to have a database (for example Postgres).
  * </p>
@@ -38,16 +39,15 @@ public class TestReplication extends XMLTestCase {
 
    private I_Info readerInfo;
    private I_Info writerInfo;
-   
    private ReplicationAgent agent;
-   
-   // private DbWatcher dbWatcher;
-   // private DbWriter dbWriter;
+   private I_DbSpecific dbSpecific;
+   private SpecificHelper specificHelper;
+   private DbMetaHelper dbHelper;
    
    /**
     * Start the test.
     * <pre>
-    *  java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestReplication
+    *  java -Ddb=oracle junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestReplication
     * </pre>
     * @param args  Command line settings
     */
@@ -98,19 +98,15 @@ public class TestReplication extends XMLTestCase {
    }
 
    
+   /**
+    * This method is invoked directly by setUp.
+    * @param readerInfo The info object for the reader (the dbWatcher).
+    * @param writerInfo The info object for the writer (the DbWriter).
+    */
    private void setupProperties(I_Info readerInfo, I_Info writerInfo) {
-      // we hardcode the first ...
-      readerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
-                               "oracle.jdbc.driver.OracleDriver:" +
-                               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
-                               "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
-                               "org.postgresql.Driver");
-      setProp(readerInfo, "db.url", "jdbc:postgresql:test//localhost");
-      setProp(readerInfo, "db.user", "postgres");
-      setProp(readerInfo, "db.password", "");
       setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
-      setProp(readerInfo, "mom.topicName", "trans_stamp");
-      setProp(readerInfo, "alertScheduler.pollInterval", "2000");
+      setProp(readerInfo, "mom.topicName", "trans_key");
+      setProp(readerInfo, "alertScheduler.pollInterval", "15000");
       setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
       setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from repl_items");
       setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM repl_items ORDER BY repl_key");
@@ -122,18 +118,10 @@ public class TestReplication extends XMLTestCase {
       
       // and here for the dbWriter ...
       // ---- Database settings -----
-      writerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
-            "oracle.jdbc.driver.OracleDriver:" +
-            "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
-            "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
-            "org.postgresql.Driver");
-      setProp(writerInfo, "db.url", "jdbc:postgresql:test//localhost");
-      setProp(writerInfo, "db.user", "postgres");
-      setProp(writerInfo, "db.password", "");
       setProp(writerInfo, "mom.loginName", "DbWriter/1");
       setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica");
 
-      String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_stamp'/>");
+      String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
       setProp(writerInfo, "mom.subscribeKey", subscribeKey);
       setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
       setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
@@ -193,22 +181,24 @@ public class TestReplication extends XMLTestCase {
     */
    protected void setUp() throws Exception {
       super.setUp();
-      this.readerInfo = new PropertiesInfo(new Properties(System.getProperties()));
-      this.writerInfo = new PropertiesInfo(new Properties(System.getProperties()));
+      this.specificHelper = new SpecificHelper(System.getProperties());
+      this.readerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
+      this.writerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       setupProperties(this.readerInfo, this.writerInfo);
 
       // we use the writerInfo since this will not instantiate an publisher
-      I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(this.writerInfo);
+      this.dbSpecific = ReplicationConverter.getDbSpecific(this.writerInfo);
       I_DbPool pool = (I_DbPool)this.writerInfo.getObject("db.pool");
       Connection conn = null;
       try {
+         this.dbHelper = new DbMetaHelper(pool);
          conn = pool.reserve();
+         boolean doWarn = false; // we don't want warnings on SQL Exceptions here.
          log.info("setUp: going to cleanup now ...");
-         dbSpecific.cleanup(conn, false);
+         this.dbSpecific.cleanup(conn, doWarn);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         dbSpecific.bootstrap(conn, false);
-         dbSpecific.shutdown();
-         dbSpecific = null;
+         boolean force = true;
+         this.dbSpecific.bootstrap(conn, doWarn, force);
       }
       catch (Exception ex) {
          if (conn != null)
@@ -232,10 +222,10 @@ public class TestReplication extends XMLTestCase {
    }
 
    /**
+    * 
     * If the table does not exist we expect a null ResultSet
     * 
-    * @throws Exception
-    *            Any type is possible
+    * @throws Exception Any type is possible
     */
    public final void testCreateAndInsert() throws Exception {
       log.info("Start");
@@ -243,23 +233,22 @@ public class TestReplication extends XMLTestCase {
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
-      I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo);
-      assertNotNull("the dbSpecific shall not be null", dbSpecific);
+      boolean doWarn = false; // we don't want noisy warnings.
+      assertNotNull("the dbSpecific shall not be null. Probably problems in configuration of this test.", this.dbSpecific);
       try {
          conn  = pool.reserve();
-         dbSpecific.bootstrap(conn, false);
-         pool.release(conn);
-      
-         String tableName = "test_replication";
          // cleaning up
+         String tableName = "test_replication";
+         String tableName2 = tableName + "2";
+         
          try {
-            pool.update("DROP TABLE " + tableName + " CASCADE");
+            pool.update("DROP TABLE " + tableName + this.specificHelper.getCascade());
          }
          catch (Exception ex) {
             conn = pool.reserve();
          }
          try {
-            pool.update("DROP TABLE " + tableName + "2 CASCADE"); // This is the replica
+            pool.update("DROP TABLE " + tableName2 + this.specificHelper.getCascade()); // This is the replica
          }
          catch (Exception ex) {
             conn = pool.reserve();
@@ -267,29 +256,40 @@ public class TestReplication extends XMLTestCase {
 
          // verifying
          try {
-            ResultSet rs = conn.getMetaData().getTables(null, null, tableName + "2", null);
-            assertFalse("the table '" + tableName + "2' has not been cleaned up correctly", rs.next()); // should be empty
+            ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(tableName), null);
+            assertFalse("Testing if the tables have been cleaned up. The table '" + tableName + "' is still here", rs.next()); // should be empty
             rs.close();
          }
          catch (Exception ex) {
-            assertTrue("an exception shall not occur here", false);
+            ex.printStackTrace();
+            assertTrue("Testing that the tables have been cleaned up correctly. An exception shall not occur here", false);
          }
          
          try {
-            pool.update("INSERT INTO repl_tables VALUES ('" + tableName + "','t')");
+            ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(tableName2), null);
+            assertFalse("Testing if the tables have been cleaned up. The table '" + tableName2 + "' is still here", rs.next()); // should be empty
+            rs.close();
          }
          catch (Exception ex) {
-            assertTrue("an exception should not occur here", false);
+            ex.printStackTrace();
+            assertTrue("Testing that the tables have been cleaned up correctly. An exception shall not occur here", false);
          }
-         String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), age INT, PRIMARY KEY (name))";
+         
+         try {
+            boolean doReplicate = true;
+            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, doReplicate);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (repl_tables) succeeded: An exception should not occur here", false);
+         }
+         
+         String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), city VARCHAR(15), PRIMARY KEY (name))";
          pool.update(sql);
          
-         sql = "INSERT INTO " + tableName + " (name, age) VALUES ('michele', 80)";
+         sql = "INSERT INTO " + tableName + " (name, city) VALUES ('michele', 'caslano')";
          pool.update(sql);
 
-         // we artificially trigger the initial filling of the repl_items table (not necessary anymore since handled by alerter) 
-         // dbSpecific.forceTableChangeCheck();
-         
          /* The DbWatcher shall now detect a table creation and an insert (after maximum two seconds)
           * here the xmlBlaster must run to allow the DbWatcher publish the messages.
           * The DbWriter shall receive the messages it subscribed to and the replica shall be created and filled.
@@ -298,7 +298,7 @@ public class TestReplication extends XMLTestCase {
          Thread.sleep(3000L);
          // a new table must have been created ...
          conn = pool.reserve();
-         ResultSet rs = conn.getMetaData().getTables(null, null, tableName + "2", null);
+         ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(tableName2), null);
          boolean isThere = rs.next();
          log.info("the replicated table is " + (isThere ? "" : "not ") + "there");
 
@@ -307,7 +307,7 @@ public class TestReplication extends XMLTestCase {
          
          // and a new content must be there ...
          Statement st = conn.createStatement();
-         rs = st.executeQuery("SELECT * FROM " + tableName + "2");
+         rs = st.executeQuery("SELECT * FROM " + tableName2);
          isThere = rs.next();
          log.info("the entry in the replicated table is " + (isThere ? "" : "not ") + "there");
          

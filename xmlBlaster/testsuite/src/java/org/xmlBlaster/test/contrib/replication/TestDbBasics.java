@@ -49,11 +49,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    private I_DbPool pool;
    private I_DbSpecific dbSpecific;
    private DbMetaHelper dbHelper;
+   private SpecificHelper specificHelper;
    
    /**
     * Start the test.
     * <pre>
-    *  java -Ddb.password=secret junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestDbBasics
+    *  java -Ddb=oracle junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.replication.TestDbBasics
     * </pre>
     * @param args  Command line settings
     */
@@ -62,15 +63,23 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       TestDbBasics test = new TestDbBasics();
       try {
          test.setUp();
-         test.testOracleInternalFunctions();
+         test.testInternalFunctions();
          test.tearDown();
 
          test.setUp();
          test.testFunctions();
          test.tearDown();
+         
+         test.setUp();
+         test.testChangesToReplTables();
+         test.tearDown();
+         
+         test.setUp();
+         test.testCreateThenAddToReplTables();
+         test.tearDown();
 
          test.setUp();
-         test.testCreate();
+         test.testAddToReplTablesThenCreate();
          test.tearDown();
       } 
       catch (Exception ex) {
@@ -98,40 +107,13 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    }
 
    /**
-    * Helper method to fill the properties. If an entry is found in the system properties it is left as is.
-    * 
-    * @param info
-    * @param key
-    * @param val
-    */
-   private void setProp(I_Info info, String key, String val) {
-      String tmp = info.get(key, null);
-      if (tmp == null)
-         info.put(key, val);
-   }
-
-   
-   private void setupProperties(I_Info info) {
-      // we hardcode the first ...
-      info.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
-                               "oracle.jdbc.driver.OracleDriver:" +
-                               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
-                               "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
-                               "org.postgresql.Driver");
-      setProp(info, "db.url", "jdbc:postgresql:test//localhost");
-      setProp(info, "db.user", "postgres");
-      setProp(info, "db.password", "");
-      setProp(info, "replication.mapper.tables", "test_replication=test_replication2");
-   }
-
-   /**
     * Configure database access.
     * @see TestCase#setUp()
     */
    protected void setUp() throws Exception {
       super.setUp();
-      this.info = new PropertiesInfo(System.getProperties());
-      setupProperties(this.info);
+      this.specificHelper = new SpecificHelper(System.getProperties());
+      this.info = new PropertiesInfo(specificHelper.getProperties());
       this.pool = DbWatcher.getDbPool(this.info, "test");
       assertNotNull("pool must be instantiated", this.pool);
       this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
@@ -142,7 +124,9 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          log.info("setUp: going to cleanup now ...");
          this.dbSpecific.cleanup(conn, false);
          log.info("setUp: cleanup done, going to bootstrap now ...");
-         this.dbSpecific.bootstrap(conn, false);
+         boolean doWarn = false;
+         boolean force = true;
+         this.dbSpecific.bootstrap(conn, doWarn, force);
       }
       catch (Exception ex) {
          log.warning(ex.getMessage());
@@ -170,15 +154,21 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     * 
     * @throws Exception Any type is possible
     */
-   public final void testOracleInternalFunctions() throws Exception {
-      log.info("Start testOracleInternalFunctions");
-
+   public final void testInternalFunctions() throws Exception {
+      
+      log.info("Start testInternalFunctions");
+      if (!this.specificHelper.isOracle()) {
+         log.info("Stop testInternalFunctions (nothing to be done since not oracle)");
+         return;
+      }
+      
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
       
       try {
          conn  = pool.reserve();
+         conn.setAutoCommit(true);
          String sql = null;
          {
             sql = "{? = call repl_base64_helper(?, ?)}";
@@ -313,12 +303,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             sql = "{? = call repl_check_tables(?,?,?,?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
-
-               String test = "table1"; // it does not exist but serves the purpose here.
-               st.setString(2, test);
-               st.setString(3, "INSERT");
-               st.setString(4, "");
-               st.setString(5, "");
+               st.setString(2, "dbName");    // database name
+               st.setString(3, "schema");
+               st.setString(4, "table");
+               st.setString(5, "COMMAND");
                st.registerOutParameter(1, Types.VARCHAR);
                ResultSet rs = st.executeQuery();
                String ret = st.getString(1);
@@ -352,6 +340,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       
       try {
          conn  = pool.reserve();
+         conn.setAutoCommit(true);
          String sql = null;
          {
             sql = "{? = call repl_col2xml_cdata(?, ?)}"; // name text, content text)
@@ -523,13 +512,181 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
+   /**
+    * Used by testChangesToReplTables
+    * @param conn The jdbc connection to use
+    * @param catalog the catalog (can be null)
+    * @param schema the name of the schema (db specific). Can be null.
+    * @param tableName The table name to add. Can NOT be null.
+    * @param doReplicate the flag indicating it has to be replicated.
+    * @throws Exception
+    */
+   private void changesToReplTables(Connection conn, String catalog, String schema, String tableName, boolean doReplicate) throws Exception {
+      this.dbSpecific.addTableToWatch(catalog, schema, tableName, doReplicate);
+      Statement st = conn.createStatement();
+      ResultSet rs = st.executeQuery("SELECT * from repl_tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
+      assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
+      String name = rs.getString(3);
+      assertEquals("testing if the name of the added table is the same as the retrieved one '" + tableName + "'", this.dbHelper.getIdentifier(tableName), name);
+      String doReplTxt = rs.getString(4);
+      boolean doRepl = false;
+      if (doReplTxt.equalsIgnoreCase("t"))
+         doRepl = true;
+      assertEquals("testing if the 'replicate' flag for table '" + tableName + "' is the same as used when adding it", doReplicate, doRepl);
+      rs.close();
+      st.close();
+      // test removal now
+      this.dbSpecific.removeTableToWatch(catalog, schema, tableName);
+      st = conn.createStatement();
+      rs = st.executeQuery("SELECT * from repl_tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
+      assertFalse("testing if removal of entries from the 'repl_tables' for '" + tableName + "' works (tests if the entry is still there after removal)", rs.next());
+      rs.close();
+      st.close();
+   }
    
    /**
+    * This method tests adding and removing of entries to repl_tables. It checks if a table which has been added is correctly
+    * written in the repl_tables table (case sensitivity is checked replicate' flag is checked and null and empty catalog and
+    * schema are checked.
+    * 
+    * @throws Exception Any type is possible
+    */
+   public final void testChangesToReplTables() throws Exception {
+      log.info("Start testChangesToReplTables");
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String schema = this.specificHelper.getOwnSchema(pool);
+         changesToReplTables(conn, null, schema, "test_lowecase", true);
+         changesToReplTables(conn, "", schema, "test_lowecase", true);
+         changesToReplTables(conn, null, schema, "test_lowecase", false);
+         changesToReplTables(conn, null, schema, "TEST_UPPERCASE", true);
+         changesToReplTables(conn, null, schema, "testMixedCase", true);
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+
+   
+   /**
+    * Testing if the metadata contains the correct information on how to write table names (if upper-
+    * lower or mixedcase), A new table is created. A check is made to see if this generates an entry in
+    * the repl_items table (it should not). It is then added to the repl_tables table. Checks are
+    * made to detect if the CREATE operation as been detected (first create and then add to repl_tables),
+    * if it is correctly stored in the repl_items table. Then Business Function and Trigger is added to that
+    * table manually (this is normally done by the replication mechanism). Again it is checked if the
+    * operation has been detected by the PL/SQL code (trigger and function) added to the business table.
+    * 
     * If the table does not exist we expect a null ResultSet
     * @throws Exception Any type is possible
     */
-   public final void testCreate() throws Exception {
-      log.info("Start testCreate");
+   public final void testCreateThenAddToReplTables() throws Exception {
+      log.info("Start testCreateThenAddToReplTables");
+
+      Connection conn = this.pool.reserve();
+      conn.setAutoCommit(true);
+      // this.dbSpecific.bootstrap(conn);
+      try {
+         conn.setAutoCommit(true);
+         String tableName = "test_replication";
+         // clean up ...
+         String cascade = this.specificHelper.getCascade();
+         try { pool.update("DROP TABLE " + tableName + cascade); } catch (Exception ex) { }
+
+         String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), city VARCHAR(20), PRIMARY KEY (name))";
+         pool.update(sql);
+         String storedTableName = this.dbHelper.getIdentifier(tableName);
+         assertNotNull("Testing if the metadata contains the correct information about the way identifiers such table names are stored mixed/upper or lower case. If an exception occurs, this information could not be retrieved. Here testing '" + tableName + "'", storedTableName);
+         ResultSet rs = conn.getMetaData().getTables(null, null, storedTableName, null);
+         boolean tableExists = rs.next();
+         rs.close();
+         rs = null;
+         assertTrue("Testing if the creation of the table according to '" + sql + "' has been detected by the metadata. (with getTables). Here table '" + tableName + "' was not found", tableExists);
+         
+         
+         // check that nothing has been written in repl_items
+         Statement st = conn.createStatement();
+         rs = st.executeQuery("SELECT * from repl_items");
+         assertEquals("Testing if creation of a new table which is not in the repl_tables table generates an entry in repl_items (it should not)", false, rs.next());
+         rs.close();
+         st.close();
+         
+         // add the tables to be detected to the repl_tables table
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true);
+         
+         // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
+         this.dbSpecific.forceTableChangeCheck();
+
+         st = conn.createStatement();
+         rs = st.executeQuery("SELECT * from repl_items");
+         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in 'repl_items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
+         String name = rs.getString(4);
+         String action = rs.getString(6);
+         assertEquals("Testing if the name of the table has been correctly stored in repl_items", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the name of the action performec is correctly stored in repl_items for action CREATE", "CREATE", action);
+         assertFalse("Testing the number of entries in repl_items table. It is too big, there should be only one entry", rs.next());
+         st.close();
+         rs.close();
+         
+         // now we add the function and trigger which are associated to our business table ...
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null); // this will invoke the publish method
+         
+         // from now on on an operation on that table should be detected and should start fill the repl_items table
+         st = conn.createStatement();
+         st.executeUpdate("DELETE FROM repl_items");
+         st.close();
+         st = conn.createStatement();
+         st.executeUpdate("INSERT INTO " + tableName + " VALUES ('somebody', 'Paris')");
+         st.close();
+         // now it should be in repl_items ...
+         
+         st = conn.createStatement();
+         rs = st.executeQuery("SELECT * FROM repl_items");
+         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in repl_items. Probably the trigger or function on the business table was not working.", rs.next());
+         name = rs.getString(4);
+         action = rs.getString(6);
+         assertEquals("Testing if the name of the table in repl_items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the action for the operation INSERT was correct in repl_items.", "INSERT", action);
+         rs.close();
+         st.close();
+         // and now cleanup
+         st = conn.createStatement();
+         st.executeUpdate("DELETE FROM repl_items");
+         st.close();
+         
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      finally {
+         if (conn != null)
+            this.pool.release(conn);
+      }
+      log.info("SUCCESS");
+   }
+
+   /**
+    * Testing if the metadata contains the correct information on how to write table names (if upper-
+    * lower or mixedcase), A table which does not exist yet is added to the repl_tables. A check is made
+    * to see if the action generated an entry in repl_items (it should not). It is then
+    * created. Checks are made to detect if the CREATE operation as been detected (first create and 
+    * then add to repl_tables), if it is correctly stored in the repl_items table. Then Business Function 
+    * and Trigger is added to that table manually (this is normally done by the replication mechanism). 
+    * Again it is checked if the operation has been detected by the PL/SQL code (trigger and function) 
+    * added to the business table.
+    * 
+    * If the table does not exist we expect a null ResultSet
+    * @throws Exception Any type is possible
+    */
+   public final void testAddToReplTablesThenCreate() throws Exception {
+      log.info("Start testAddToReplTablesThenCreate");
 
       Connection conn = this.pool.reserve();
       // this.dbSpecific.bootstrap(conn);
@@ -537,56 +694,64 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn.setAutoCommit(true);
          String tableName = "test_replication";
          // clean up ...
-         String cascade = "";
+         String cascade = this.specificHelper.getCascade();
          // String cascade = " CASCADE";
+         // just to make sure it is really gone.
          try { pool.update("DROP TABLE " + tableName + cascade); } catch (Exception ex) { }
 
-         String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), age INT, PRIMARY KEY (name))";
+         // add the tables to be detected to the repl_tables table
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true);
+
+         // check that nothing has been written in repl_items
+         Statement st = conn.createStatement();
+         ResultSet rs = st.executeQuery("SELECT * from repl_items");
+         assertEquals("Testing if the addition of a (non created yet) table to repl_tables generates an entry in repl_items (it should not)", false, rs.next());
+         rs.close();
+         st.close();
+         
+         String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), city VARCHAR(20), PRIMARY KEY (name))";
          pool.update(sql);
          String storedTableName = this.dbHelper.getIdentifier(tableName);
-         assertNotNull("the storage case of '" + tableName + "' could not be determined", storedTableName);
-         ResultSet rs = conn.getMetaData().getTables(null, null, storedTableName, null);
+         assertNotNull("Testing if the metadata contains the correct information about the way identifiers such table names are stored mixed/upper or lower case. If an exception occurs, this information could not be retrieved. Here testing '" + tableName + "'", storedTableName);
+         rs = conn.getMetaData().getTables(null, null, storedTableName, null);
          boolean tableExists = rs.next();
          rs.close();
          rs = null;
-         assertTrue("The table '" + tableName + "' has not been created", tableExists);
-         
-         // add the tables to be detected to the repl_tables table
-         pool.update("INSERT INTO repl_tables VALUES ('" + tableName + "','t', 'CREATING')");
+         assertTrue("Testing if the creation of the table according to '" + sql + "' has been detected by the metadata. (with getTables). Here table '" + tableName + "' was not found", tableExists);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
 
-         Statement st = conn.createStatement();
+         st = conn.createStatement();
          rs = st.executeQuery("SELECT * from repl_items");
-         assertTrue("No entry found on the table 'repl_items': probably the function invoked by forceTableChangeDetect is wrong", rs.next());
+         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in 'repl_items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
          String name = rs.getString(4);
          String action = rs.getString(6);
-         assertEquals("The table name in repl_items for action CREATE is wrong", tableName, name);
-         assertEquals("The action in repl_items for action CREATE is wrong", "CREATE", action);
-         assertFalse("The number of entries in the repl_items table is too big, there should be only one entry", rs.next());
+         assertEquals("Testing if the name of the table has been correctly stored in repl_items", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the name of the action performec is correctly stored in repl_items for action CREATE", "CREATE", action);
+         assertFalse("Testing the number of entries in repl_items table. It is too big, there should be only one entry", rs.next());
          st.close();
          rs.close();
          
          // now we add the function and trigger which are associated to our business table ...
-         this.dbSpecific.readNewTable(null, null, tableName, null); // this will invoke the publish method
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null); // this will invoke the publish method
          
          // from now on on an operation on that table should be detected and should start fill the repl_items table
          st = conn.createStatement();
          st.executeUpdate("DELETE FROM repl_items");
          st.close();
          st = conn.createStatement();
-         st.executeUpdate("INSERT INTO " + tableName + " VALUES ('somebody', 11)");
+         st.executeUpdate("INSERT INTO " + tableName + " VALUES ('somebody', 'Paris')");
          st.close();
          // now it should be in repl_items ...
          
          st = conn.createStatement();
          rs = st.executeQuery("SELECT * FROM repl_items");
-         assertTrue("there should be a new INSERT entry in the repl_items table", rs.next());
+         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in repl_items. Probably the trigger or function on the business table was not working.", rs.next());
          name = rs.getString(4);
          action = rs.getString(6);
-         assertEquals("The table name in repl_items for action CREATE is wrong", tableName, name);
-         assertEquals("The action in repl_items for action CREATE is wrong", "INSERT", action);
+         assertEquals("Testing if the name of the table in repl_items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the action for the operation INSERT was correct in repl_items.", "INSERT", action);
          rs.close();
          st.close();
          // and now cleanup
