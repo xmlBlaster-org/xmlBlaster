@@ -21,6 +21,7 @@ import org.xmlBlaster.util.queue.StorageId;
  */
 public final class MsgQueueUpdateEntry extends ReferenceEntry
 {
+   private static final long serialVersionUID = 1L;
    private final static String ME = "MsgQueueUpdateEntry";
    private final String subscriptionId;
    /** Contains state|updateOneway, for example "OK|oneway" or "OK" */
@@ -55,7 +56,10 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       this.subscriptionId = subscriptionId;
       this.state = msgUnitWrapper.getMsgUnit().getQosData().getState();
       this.updateOneway = wantUpdateOneway;
-      this.flag = (this.updateOneway) ? this.state+"|oneway" : this.state;
+      String flagTmp = (this.updateOneway) ? this.state+"|oneway" : this.state;
+      if (msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue() == true)
+         flagTmp += "|forceDestroy";
+      this.flag = flagTmp;
       if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
@@ -80,6 +84,10 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       if (sizeInBytes != getSizeInBytes()) {
          log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
       }
+   }
+   
+   protected boolean isForceDestroy() {
+      return this.flag.indexOf("forceDestroy") != -1;
    }
 
    /**

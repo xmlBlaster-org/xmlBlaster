@@ -150,6 +150,10 @@ public class ReferenceEntry extends MsgQueueEntry
       */
    }
 
+   protected boolean isForceDestroy() {
+      return false;
+   }
+
    public final Global getGlobal() {
       return this.glob;
    }
@@ -206,11 +210,11 @@ public class ReferenceEntry extends MsgQueueEntry
                   preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
                }
                else {
-                  if (this instanceof MsgQueueHistoryEntry) {
-                     if (log.TRACE) log.trace(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+                  if (this instanceof MsgQueueHistoryEntry || isForceDestroy()) {
+                     if (log.TRACE) log.trace(ME+"-"+getLogId(), "No meat found, incr=" + incr);
                   }
                   else {
-                     log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
+                     log.error(ME+"-"+getLogId(), "No meat found, incr=" + incr);
                   }
                }
             }

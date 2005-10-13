@@ -47,6 +47,14 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
    }
 
    /**
+    * TODO: Save this state in persistency and recover it
+    * similar to MsgQueueUpdateEntry
+    */
+   protected boolean isForceDestroy() {
+      return false;
+   }
+
+   /**
     * Enforced by I_QueueEntry
     * @return Allways the same int as the history queue is strictly chronologic
     */
