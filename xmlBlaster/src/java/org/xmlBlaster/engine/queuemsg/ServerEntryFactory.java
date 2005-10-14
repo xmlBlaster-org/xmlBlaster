@@ -138,14 +138,14 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 2) {
+            if (obj.length < 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                   "Expected 2 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
             String keyOid = (String)obj[0];
             Long msgUnitWrapperUniqueId = (Long)obj[1];
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
-            return new MsgQueueHistoryEntry((org.xmlBlaster.engine.Global)this.glob,
+            return new MsgQueueHistoryEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
                                            keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes);
          }
@@ -157,7 +157,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 5) {
+            if (obj.length < 5) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 5 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
@@ -181,7 +181,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 3) {
+            if (obj.length < 3) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 3 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
@@ -202,7 +202,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 2) {
+            if (obj.length < 2) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 2 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
@@ -223,7 +223,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 1) {
+            if (obj.length < 1) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
@@ -241,7 +241,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 1) {
+            if (obj.length < 1) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
@@ -257,7 +257,7 @@ public class ServerEntryFactory implements I_EntryFactory
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
-            if (obj.length != 3) {
+            if (obj.length < 3) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                          "Expected 3 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
