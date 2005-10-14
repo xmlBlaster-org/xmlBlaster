@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.dispatch;
 
+import java.util.ArrayList;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -14,6 +16,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -117,23 +120,32 @@ public final class CbDispatchConnection extends DispatchConnection
     */
    public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
    {
-      MsgUnitRaw[] oneways = null;
-      MsgUnitRaw[] responders = null;
+      ArrayList oneways = null;
+      ArrayList responders = null;
+      
+      class Holder {
+         public MsgQueueUpdateEntry msgQueueUpdateEntry;
+         public MsgUnitRaw msgUnitRaw;
+         
+         public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw) {
+            this.msgQueueUpdateEntry = msgQueueUpdateEntry;
+            this.msgUnitRaw = msgUnitRaw;
+         }
+      }
 
       {
-         // Convert to UpdateEntry
-         MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr_.length];
-
-         // The update QoS is completed ...
-         int onewayCount = 0;
          for (int i=0; i<msgArr_.length; i++) {
             MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
 
-            if (address.oneway() || entry.updateOneway())
-               onewayCount++;
-
-            MsgUnit mu = entry.getMsgUnit();
-            MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
+            MsgUnitWrapper msgUnitWrapper = entry.getMsgUnitWrapper();
+            if (msgUnitWrapper == null) {
+               if (log.TRACE) log.trace(ME, "doSend("+entry.getLogId()+") ignoring callback message as no meat is available (assume expired)");
+               entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_EXPIRED)); //"<qos><state id='EXPIRED'/></qos>";
+               continue;
+            }
+            MsgUnit mu = msgUnitWrapper.getMsgUnit();
+            //MsgUnit mu = entry.getMsgUnit(); throws unwanted exception if meat==null (forceDestroy)
+            MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
             msgQosData.setTopicProperty(null);
             msgQosData.setState(entry.getState());
             msgQosData.setSubscriptionId(entry.getSubscriptionId());
@@ -145,7 +157,7 @@ public final class CbDispatchConnection extends DispatchConnection
 
             // Convert oid to original again for erased events fired by TopicHandler.java notifySubscribersAboutErase()
             if (mu.getKeyOid().equals(Constants.EVENT_OID_ERASEDTOPIC)) {
-               mu = new MsgUnit(mu, (MsgKeyData)entry.getMsgKeyData().clone(), null, msgQosData);
+               mu = new MsgUnit(mu, (MsgKeyData)mu.getKeyData().clone(), null, msgQosData);
                String oid = mu.getQosData().getClientProperty("__oid", (String)null);
                if (oid != null) {
                   mu.getKeyData().setOid(oid);
@@ -162,26 +174,14 @@ public final class CbDispatchConnection extends DispatchConnection
                mu = new MsgUnit(mu, null, null, msgQosData);
             }
             
-            msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
-         }
-
-         if (onewayCount == 0) // normal case
-            responders = msgUnitRawArr;
-         else if (onewayCount == msgArr_.length) // more seldom case
-            oneways = msgUnitRawArr;
-         else { // mix: very seldom case (worst performing)
-            responders = new MsgUnitRaw[msgArr_.length-onewayCount];
-            int iResponders = 0;
-            oneways = new MsgUnitRaw[onewayCount];
-            int iOneways = 0;
-            for (int i=0; i<msgArr_.length; i++) {
-               MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
-               if (address.oneway() || entry.updateOneway()) {
-                  oneways[iOneways++] = msgUnitRawArr[i];
-               }
-               else {
-                  responders[iResponders] = msgUnitRawArr[i];
-               }
+            MsgUnitRaw raw = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
+            if (address.oneway() || entry.updateOneway()) {
+               if (oneways == null) oneways = new ArrayList();
+               oneways.add(raw);
+            }
+            else {
+               if (responders == null) responders = new ArrayList();
+               responders.add(new Holder(entry, raw));
             }
          }
       }
@@ -190,36 +190,42 @@ public final class CbDispatchConnection extends DispatchConnection
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
          if (responders != null) {
-            for (int i=0; i<responders.length; i++) {
-               responders[i] = securityInterceptor.exportMessage(responders[i], MethodName.UPDATE);
+            for (int i=0; i<responders.size(); i++) {
+               ((Holder)responders.get(i)).msgUnitRaw = securityInterceptor.exportMessage(((Holder)responders.get(i)).msgUnitRaw, MethodName.UPDATE);
             }
+            if (log.TRACE) log.trace(ME, "Exported/encrypted " + responders.size() + " messages.");
          }
          if (oneways != null) {
-            for (int i=0; i<oneways.length; i++) {
-               oneways[i] = securityInterceptor.exportMessage(oneways[i], MethodName.UPDATE_ONEWAY);
+            for (int i=0; i<oneways.size(); i++) {
+               oneways.set(i, securityInterceptor.exportMessage((MsgUnitRaw)oneways.get(i), MethodName.UPDATE_ONEWAY));
             }
+            if (log.TRACE) log.trace(ME, "Exported/encrypted " + oneways.size() + " oneway messages.");
          }
-         if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr_.length + " messages.");
       }
       else {
          log.warn(ME+".accessDenied", "No session security context, sending " + msgArr_.length + " messages without encryption");
       }
 
       if (oneways != null) {
-         cbDriver.sendUpdateOneway(oneways);
-         connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.length);
-         if (log.TRACE) log.trace(ME, "Success, sent " + oneways.length + " oneway messages.");
+         cbDriver.sendUpdateOneway((MsgUnitRaw[])oneways.toArray(new MsgUnitRaw[oneways.size()]));
+         connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.size());
+         if (log.TRACE) log.trace(ME, "Success, sent " + oneways.size() + " oneway messages.");
       }
 
       if (responders != null) {
-         if (log.TRACE) log.trace(ME, "Before update " + responders.length + " acknowledged messages ...");
-         String[] rawReturnVal = cbDriver.sendUpdate(responders);
-         connectionsHandler.getDispatchStatistic().incrNumUpdate(responders.length);
-         if (log.TRACE) log.trace(ME, "Success, sent " + responders.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
+         if (log.TRACE) log.trace(ME, "Before update " + responders.size() + " acknowledged messages ...");
+         MsgUnitRaw[] raws = new MsgUnitRaw[responders.size()];
+         for (int i=0; i<responders.size(); i++) {
+            raws[i] = ((Holder)responders.get(i)).msgUnitRaw;
+         }
+         String[] rawReturnVal = cbDriver.sendUpdate(raws);
+         connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
+         if (log.TRACE) log.trace(ME, "Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
-         if (rawReturnVal != null) {
+         if (rawReturnVal != null && rawReturnVal.length == raws.length) {
             for (int i=0; i<rawReturnVal.length; i++) {
-               if (!msgArr_[i].wantReturnObj())
+               MsgQueueUpdateEntry entry = ((Holder)responders.get(i)).msgQueueUpdateEntry;
+               if (!entry.wantReturnObj())
                   continue;
 
                if (securityInterceptor != null) {
@@ -229,20 +235,22 @@ public final class CbDispatchConnection extends DispatchConnection
 
                // create object
                try {
-                  msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
+                  entry.setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
                   I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
-                  if (postSendListener != null) postSendListener.postSend(msgArr_[i]);
+                  if (postSendListener != null) postSendListener.postSend(entry);
                }
                catch (Throwable e) {
                   log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                   //e.printStackTrace();
                   UpdateReturnQosServer updateRetQos = new UpdateReturnQosServer(glob, "<qos/>");
                   updateRetQos.setException(e);
-                  msgArr_[i].setReturnObj(updateRetQos);
+                  entry.setReturnObj(updateRetQos);
                }
             }
             if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
          }
+         else 
+            log.error(ME, "Unexpected UpdateReturnQos '" + (rawReturnVal==null?"null":""+rawReturnVal.length)+ "', expected " + raws.length);
       }
    }
 

@@ -24,7 +24,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
    private static final long serialVersionUID = 1L;
    private final static String ME = "MsgQueueUpdateEntry";
    private final String subscriptionId;
-   /** Contains state|updateOneway, for example "OK|oneway" or "OK" */
+   /** Contains state|updateOneway|forceDestroy, for example "OK|oneway" or "OK" */
    private final String flag;
    private final String state;
    private final boolean updateOneway;

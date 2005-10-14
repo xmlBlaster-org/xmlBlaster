@@ -146,8 +146,8 @@ public class XmlKeyDom implements I_MergeDomNode
          //nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
          nodeIter = XmlNotPortable.getNodeSetFromXPath(xpathQuery, xmlKeyDoc);
          if (log.TRACE) log.trace(ME, "Node iter done");
-      } catch (Exception e) {
-         log.warn(ME + ".InvalidQuery", "Sorry, can't access, query syntax is wrong for '" + xpathQuery + "' : " + e.toString());
+      } catch (XmlBlasterException e) {
+         log.warn(ME + ".InvalidQuery", "Sorry, can't access, query syntax is wrong for '" + xpathQuery + "' : " + e.getMessage());
          throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
       }
       int n = 0;

@@ -509,11 +509,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             MsgUnit origMsgUnit = null;
             if (entry instanceof ReferenceEntry) {
                ReferenceEntry referenceEntry = (ReferenceEntry)entry;
-               if (referenceEntry.isDestroyed()) {
+               origMsgUnit = ((ReferenceEntry)entry).getMsgUnitOrNull();
+               if (origMsgUnit == null) {
                   if (log.TRACE) log.trace(ME, "Ignoring dead message for destroyed callback queue entry " + referenceEntry.getLogId());
                   continue;
                }
-               origMsgUnit = ((ReferenceEntry)entry).getMsgUnit();
             }
             else {
                log.error(ME, "PANIC: Internal error in deadMessage data type");
@@ -1385,7 +1385,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                subs = null;
             }
             else {
-               log.warn(ME, "UnSubscribe of " + xmlKey.getOid() + " failed");
+               log.warn(ME, "UnSubscribe of " + xmlKey.getOid() + " by session " + sessionInfo.getId() + " failed");
                if (log.DUMP) log.dump(ME, toXml());
             }
          }
@@ -1409,7 +1409,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                      subscriptionIdSet.add(sub.getSubscriptionId());
                   }
                   else
-                     log.warn(ME, "UnSubscribe of " + topicHandler.getId() + " failed");
+                     log.warn(ME, "UnSubscribe of " + topicHandler.getId() + " by session " + sessionInfo.getId() + " failed");
                }
             }
 

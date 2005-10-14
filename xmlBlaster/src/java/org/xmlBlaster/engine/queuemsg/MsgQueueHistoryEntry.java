@@ -22,6 +22,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
 {
    private static final long serialVersionUID = -2967395648378724198L;
    private final static String ME = "MsgQueueHistoryEntry";
+   private final boolean forceDestroy;
 
    /**
     * A new message object is fed by method publish(). 
@@ -29,6 +30,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     */
    public MsgQueueHistoryEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, msgUnitWrapper, (Timestamp)null, storageId, (SessionName)null);
+      this.forceDestroy = msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue();
       if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueHistoryEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
@@ -41,6 +43,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,
             entryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null,
             (String)null, (String)null, (byte[])null);
+      this.forceDestroy = true; // TODO: Make flag persistent, assuming true will prevent log.error() for 'no meat found'
       if (sizeInBytes != getSizeInBytes()) {
          log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
       }
@@ -49,9 +52,10 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
    /**
     * TODO: Save this state in persistency and recover it
     * similar to MsgQueueUpdateEntry
+    * Is needed to know if missing meat is an error
     */
    protected boolean isForceDestroy() {
-      return false;
+      return this.forceDestroy;
    }
 
    /**

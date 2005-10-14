@@ -161,12 +161,14 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       
       MsgQueueEntry[] entries = (MsgQueueEntry[])entryListChecked.toArray(new MsgQueueEntry[entryListChecked.size()]);
       
-      MsgUnit[] ret = new MsgUnit[entries.length];
+      ArrayList ret = new ArrayList(entries.length);
       for (int i=0; i < entries.length; i++) {
          // TODO: REQ engine.qos.update.queue states that the queue size is passed and not the curr msgArr.length
-         ReferenceEntry entry = (MsgQueueUpdateEntry)entries[i];
-         MsgUnit mu = entry.getMsgUnit();
-         MsgQosData msgQosData = (MsgQosData)entry.getMsgQosData().clone();
+         ReferenceEntry entry = (ReferenceEntry)entries[i];
+         MsgUnit mu = entry.getMsgUnitOrNull();
+         if (mu == null)
+            continue;
+         MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
          msgQosData.setTopicProperty(null);
          if (entry instanceof MsgQueueUpdateEntry) {
             MsgQueueUpdateEntry updateEntry = (MsgQueueUpdateEntry)entry;
@@ -179,11 +181,11 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
             msgQosData.clearRoutes();
          }
          
-         ret[i] = new MsgUnit(mu, null, null, msgQosData);
+         ret.add(new MsgUnit(mu, null, null, msgQosData));
          // ret[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
       }
       if (consumable) queue.removeRandom(entries);
-      return ret;
+      return (MsgUnit[])ret.toArray(new MsgUnit[ret.size()]);
    }
 
    public void changed(I_Queue queue, long numEntries, long numBytes) {

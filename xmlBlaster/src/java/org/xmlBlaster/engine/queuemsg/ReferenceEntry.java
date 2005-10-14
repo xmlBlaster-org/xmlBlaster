@@ -30,6 +30,7 @@ import java.lang.ref.WeakReference;
  */
 public class ReferenceEntry extends MsgQueueEntry
 {
+   private static final long serialVersionUID = 1L;
    private final String ME; // for logging
    protected final transient Global glob; // engine.Global
 
@@ -174,6 +175,11 @@ public class ReferenceEntry extends MsgQueueEntry
          this.weakMsgUnitWrapper = new WeakReference(referent);
       }
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
+      if (msgUnitWrapper == null) { 
+         if (!isForceDestroy()) {
+            log.error(ME+"-"+getLogId(), "No meat found but forceDestroy=false");
+         }
+      }
       return msgUnitWrapper;
    }
 
@@ -210,7 +216,7 @@ public class ReferenceEntry extends MsgQueueEntry
                   preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
                }
                else {
-                  if (this instanceof MsgQueueHistoryEntry || isForceDestroy()) {
+                  if (isForceDestroy()) {
                      if (log.TRACE) log.trace(ME+"-"+getLogId(), "No meat found, incr=" + incr);
                   }
                   else {
@@ -284,8 +290,21 @@ public class ReferenceEntry extends MsgQueueEntry
 
    /**
     * Gets the message unit but is for read only (dirty read) 
-    * @return
+    * @return null if expired->destroyed
     * @throws XmlBlasterException
+    */
+   public MsgUnit getMsgUnitOrNull() {
+      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      if (msgUnitWrapper == null) {
+         return null;
+      }
+      return msgUnitWrapper.getMsgUnit();
+   }
+
+   /**
+    * Gets the message unit but is for read only (dirty read) 
+    * @return
+    * @throws XmlBlasterException if not found (e.g. forceDestroy and expired)
     */
    public MsgUnit getMsgUnit() throws XmlBlasterException {
       MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
@@ -331,14 +350,14 @@ public class ReferenceEntry extends MsgQueueEntry
       }
    }
 
-   // TODO? make sender persistent?
+   /**
+    * TODO? make sender persistent?
+    * @return can be null
+    */
    public final SessionName getSender() {
-      try {
-         return getMsgQosData().getSender();
-      }
-      catch (XmlBlasterException e) {
-         return null;
-      }
+      MsgUnit msgUnit = getMsgUnitOrNull();
+      if (msgUnit == null) return null;
+      return msgUnit.getQosData().getSender();
    }
 
    /**
@@ -377,14 +396,9 @@ public class ReferenceEntry extends MsgQueueEntry
    }
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
-      try { 
-         MsgUnit msgUnit = getMsgUnit();
-         if (msgUnit != null)
-            out.write(msgUnit.toXml().getBytes());
-      }
-      catch (XmlBlasterException e) {
-         ;
-      }
+      MsgUnit msgUnit = getMsgUnitOrNull();
+      if (msgUnit != null) // TODO: Messages with no meat can't be loaded again by ServerEntryFactory 
+         out.write(msgUnit.toXml().getBytes());
    }
    
    /**

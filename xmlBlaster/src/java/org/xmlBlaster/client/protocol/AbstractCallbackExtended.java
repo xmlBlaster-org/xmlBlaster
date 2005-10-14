@@ -116,9 +116,12 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          throw e;
       }
       catch (Throwable e) {
-         log.warn(ME + ".update", "Error in client user code of update(): " + e.toString());
          e.printStackTrace();
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME+".update", "Error in client code", e);
+         log.warn(ME + ".update", "Error in client user code of update("+
+                      ((updateKey!=null)?updateKey.getOid():"")+
+                      ((updateQos!=null)?", "+updateQos.getRcvTime():"")+
+                      "): " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME+".update", "Error in client code, please check your clients update() implementation.", e);
       }
    }
 
