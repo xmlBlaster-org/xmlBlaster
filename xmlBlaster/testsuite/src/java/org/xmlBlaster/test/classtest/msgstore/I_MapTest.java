@@ -1,14 +1,10 @@
 package org.xmlBlaster.test.classtest.msgstore;
 
 import org.jutils.log.LogChannel;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
@@ -38,8 +34,6 @@ public class I_MapTest extends TestCase {
 
    private final boolean IS_DURABLE = true;
    private final boolean IS_TRANSIENT = false;
-
-   private int entryCounter = 0;
 
    private I_Map currMap;
    private int currImpl;
