@@ -476,6 +476,7 @@ LogFormat.Time=MEDIUM
 
 #------------------------------------------------------------------------------
 # JAXP parsers.
+# See http://www.xmlblaster.org/FAQ.html#xml-parser
 # Currently only crimson is actually possible to use for JDK 1.3 and JDK 1.4
 # (see xmlBlaster/lib/parser.jar#/META-INF/services setting)
 # For JDK 1.5 the default delivered parser is used, you can overwrite this here:
