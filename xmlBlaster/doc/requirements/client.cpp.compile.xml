@@ -300,6 +300,16 @@ build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 </pre>
    </configuration>
 
+   <todo type="HTML">
+      <p>Test with other compilers:</p>
+<pre>
+   Portland Group C++ Compiler for Linux
+   PathScale C++
+   Watcom C++ Compiler for Linux
+   Green Hills C++ Compiler for Linux
+</pre>
+   </todo>
+
    <see type="REQ">client.cpp</see>
    <see type="REQ">client.cpp.logging</see>
    <see type="REQ">client.cpp.tao</see>
