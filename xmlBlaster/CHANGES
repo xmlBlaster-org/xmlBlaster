@@ -4,6 +4,13 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current repository (svn)
 ====================================
 
+ o #13825 Bugfix for 'no meat found'
+   This could lead to a looping callback message and subscriber not receiving msgs anymore.
+   Removed misleading log.error in same context
+   Reported by Marshall Shapiro 2005-10-10
+
+ o #13824 Queue persistence entries are now recovered even if new data is available at the back
+
  o #13815 removed Global and made java logging to Execute
 
  o #13805 Added applet ping method, extended example applet and docu
