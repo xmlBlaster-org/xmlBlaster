@@ -54,7 +54,7 @@ accessing xmlBlaster you find in directory:
 
 If  you want to access xmlBlaster with other languages you have
 the  choice  of XmlRpc (simple), CORBA (high performing) or our
-native SOCKET protocol, for XmlRp read this guide:
+native SOCKET protocol, for XmlRpc read this guide:
 
   http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
 
