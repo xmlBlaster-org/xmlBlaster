@@ -18,7 +18,9 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster contrib.replication plugin tests");
       suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.replication.TestDbBasics.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.replication.TestSyncPart.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.replication.TestDbSpecific.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.replication.TestReplicationWriter.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.replication.TestReplication.class));
       return suite;
    }

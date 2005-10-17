@@ -28,6 +28,7 @@ import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Test basic functionality of the database. It does need a database conntected
@@ -50,6 +51,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    private I_DbSpecific dbSpecific;
    private DbMetaHelper dbHelper;
    private SpecificHelper specificHelper;
+   private String replPrefix = "repl_";
    
    /**
     * Start the test.
@@ -60,8 +62,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     */
    public static void main(String[] args) {
       // junit.swingui.TestRunner.run(TestDbBasics.class);
+      
       TestDbBasics test = new TestDbBasics();
       try {
+
+         test.testInfo();
+         
          test.setUp();
          test.testInternalFunctions();
          test.tearDown();
@@ -114,6 +120,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       super.setUp();
       this.specificHelper = new SpecificHelper(System.getProperties());
       this.info = new PropertiesInfo(specificHelper.getProperties());
+      this.replPrefix = this.info.get("replication.prefix", "repl_");
       this.pool = DbWatcher.getDbPool(this.info, "test");
       assertNotNull("pool must be instantiated", this.pool);
       this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
@@ -123,6 +130,13 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          this.dbHelper = new DbMetaHelper(this.pool);
          log.info("setUp: going to cleanup now ...");
          this.dbSpecific.cleanup(conn, false);
+         for (int i=1; i < 5; i++) { // make sure we have deleted all triggers
+            try {
+               this.pool.update("DROP TRIGGER " + this.replPrefix + i);
+            }
+            catch (Exception ex) {
+            }
+         }
          log.info("setUp: cleanup done, going to bootstrap now ...");
          boolean doWarn = false;
          boolean force = true;
@@ -171,7 +185,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn.setAutoCommit(true);
          String sql = null;
          {
-            sql = "{? = call repl_base64_helper(?, ?)}";
+            sql = "{? = call " + this.replPrefix + "base64_helper(?, ?)}";
             try {
                CallableStatement st = conn.prepareCall(sql);
                st.setInt(2, 2);
@@ -191,7 +205,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
 
          {
-            sql = "{? = call repl_base64_enc_raw(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_raw(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
                
@@ -221,7 +235,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
       
          {
-            sql = "{? = call repl_base64_enc_varchar2(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_varchar2(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
 
@@ -244,7 +258,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
 
          {
-            sql = "{? = call repl_base64_enc_blob(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_blob(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
                
@@ -277,7 +291,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
       
          {
-            sql = "{? = call repl_base64_enc_clob(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_clob(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
 
@@ -300,7 +314,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
 
          {
-            sql = "{? = call repl_check_tables(?,?,?,?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "check_tables(?,?,?,?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, "dbName");    // database name
@@ -343,7 +357,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn.setAutoCommit(true);
          String sql = null;
          {
-            sql = "{? = call repl_col2xml_cdata(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml_cdata(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "test");
             st.setString(3, "prova");
@@ -356,7 +370,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, "<col name=\"test\"><![CDATA[prova]]></col>", ret);
          }
          {
-            sql = "{? = call repl_col2xml_base64(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml_base64(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "test");
             st.setBytes(3, "prova".getBytes());
@@ -368,9 +382,9 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", ret);
          }
-         // now testing the repl_needs_prot for the three cases ...
+         // now testing the " + this.replPrefix + "needs_prot for the three cases ...
          { // needs no protection
-            sql = "{? = call repl_needs_prot(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "prova");
             st.registerOutParameter(1, Types.INTEGER);
@@ -382,7 +396,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, 0, ret);
          }
          { // needs BASE64
-            sql = "{? = call repl_needs_prot(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "<![[CDATAsome text]]>");
             st.registerOutParameter(1, Types.INTEGER);
@@ -394,7 +408,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, 2, ret);
          }
          { // needs CDATA
-            sql = "{? = call repl_needs_prot(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "this is a &lt;a");
             st.registerOutParameter(1, Types.INTEGER);
@@ -406,7 +420,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, 1, ret);
          }
          { // needs CDATA
-            sql = "{? = call repl_needs_prot(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "&lt;this is a");
             st.registerOutParameter(1, Types.INTEGER);
@@ -418,7 +432,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, 1, ret);
          }
          { // needs CDATA
-            sql = "{? = call repl_needs_prot(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "a&lt;this is a");
             st.registerOutParameter(1, Types.INTEGER);
@@ -430,9 +444,9 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, 1, ret);
          }
          
-         // now testing the repl_needs_prot for the three cases ...
+         // now testing the " + this.replPrefix + "needs_prot for the three cases ...
          { // needs no protection
-            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "colName");
             st.setString(3, "colValue");
@@ -445,7 +459,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, "<col name=\"colName\">colValue</col>", ret);
          }
          {
-            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "test");
             st.setString(3, "prova");
@@ -458,7 +472,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, "<col name=\"test\">prova</col>", ret);
          }
          { // needs BASE64
-            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "colName");
             st.setString(3, "<![CDATA[colValue]]>");
@@ -471,7 +485,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             assertEquals(sql, "<col name=\"colName\" encoding=\"base64\">PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", ret);
          }
          { // needs CDATA
-            sql = "{? = call repl_col2xml(?, ?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, "colName");
             st.setString(3, "c&lt;olValue");
@@ -488,7 +502,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             long oldVal = 0;
             for (int i=0; i < 2; i++) {
                // sql = "{? = call nextval('repl_seq')}";
-               sql = "{? = call repl_increment()}";
+               sql = "{? = call " + this.replPrefix + "increment()}";
                CallableStatement st = conn.prepareCall(sql);
                // st.registerOutParameter(1, Types.BIGINT);
                st.registerOutParameter(1, Types.INTEGER);
@@ -513,6 +527,45 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    }
 
    /**
+    * Test the replacement of variables in the info object.
+    */
+   public final void testInfo() {
+      log.info("Start testInfo");
+      Properties props = new Properties();
+      props.put("one", "value1");
+      props.put("two", "value2");
+      props.put("three", "${one}");
+      props.put("value1", "value43");
+      
+      PropertiesInfo propInfo = new PropertiesInfo(props);
+      String key = "one";
+      String val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "three";
+      val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "four";
+      val = propInfo.get(key, "default");
+      assertEquals("testing key '" + key + "'", "default", val);
+      
+      key = "four";
+      val = propInfo.get(key, "${one}");
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "${one}";
+      val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value43", val);
+      
+      key = "four";
+      val = propInfo.get(key, "${five}");
+      assertEquals("testing key '" + key + "'", "${five}", val);
+      
+      log.info("SUCCESS");
+   }
+
+   /**
     * Used by testChangesToReplTables
     * @param conn The jdbc connection to use
     * @param catalog the catalog (can be null)
@@ -522,9 +575,9 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     * @throws Exception
     */
    private void changesToReplTables(Connection conn, String catalog, String schema, String tableName, boolean doReplicate) throws Exception {
-      this.dbSpecific.addTableToWatch(catalog, schema, tableName, doReplicate);
+      this.dbSpecific.addTableToWatch(catalog, schema, tableName, doReplicate, null);
       Statement st = conn.createStatement();
-      ResultSet rs = st.executeQuery("SELECT * from repl_tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
+      ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
       String name = rs.getString(3);
       assertEquals("testing if the name of the added table is the same as the retrieved one '" + tableName + "'", this.dbHelper.getIdentifier(tableName), name);
@@ -538,8 +591,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       // test removal now
       this.dbSpecific.removeTableToWatch(catalog, schema, tableName);
       st = conn.createStatement();
-      rs = st.executeQuery("SELECT * from repl_tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
-      assertFalse("testing if removal of entries from the 'repl_tables' for '" + tableName + "' works (tests if the entry is still there after removal)", rs.next());
+      rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
+      assertFalse("testing if removal of entries from the '" + this.replPrefix + "tables' for '" + tableName + "' works (tests if the entry is still there after removal)", rs.next());
       rs.close();
       st.close();
    }
@@ -612,25 +665,25 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();
-         rs = st.executeQuery("SELECT * from repl_items");
-         assertEquals("Testing if creation of a new table which is not in the repl_tables table generates an entry in repl_items (it should not)", false, rs.next());
+         rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+         assertEquals("Testing if creation of a new table which is not in the " + this.replPrefix + "tables table generates an entry in " + this.replPrefix + "items (it should not)", false, rs.next());
          rs.close();
          st.close();
          
          // add the tables to be detected to the repl_tables table
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true);
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true, null);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
 
          st = conn.createStatement();
-         rs = st.executeQuery("SELECT * from repl_items");
-         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in 'repl_items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
+         rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in '" + this.replPrefix + "items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
          String name = rs.getString(4);
          String action = rs.getString(6);
-         assertEquals("Testing if the name of the table has been correctly stored in repl_items", this.dbHelper.getIdentifier(tableName), name);
-         assertEquals("Testing if the name of the action performec is correctly stored in repl_items for action CREATE", "CREATE", action);
-         assertFalse("Testing the number of entries in repl_items table. It is too big, there should be only one entry", rs.next());
+         assertEquals("Testing if the name of the table has been correctly stored in " + this.replPrefix + "items", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the name of the action performec is correctly stored in " + this.replPrefix + "items for action CREATE", "CREATE", action);
+         assertFalse("Testing the number of entries in " + this.replPrefix + "items table. It is too big, there should be only one entry", rs.next());
          st.close();
          rs.close();
          
@@ -639,25 +692,25 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          
          // from now on on an operation on that table should be detected and should start fill the repl_items table
          st = conn.createStatement();
-         st.executeUpdate("DELETE FROM repl_items");
+         st.executeUpdate("DELETE FROM " + this.replPrefix + "items");
          st.close();
          st = conn.createStatement();
          st.executeUpdate("INSERT INTO " + tableName + " VALUES ('somebody', 'Paris')");
          st.close();
-         // now it should be in repl_items ...
+         // now it should be in " + this.replPrefix + "items ...
          
          st = conn.createStatement();
-         rs = st.executeQuery("SELECT * FROM repl_items");
-         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in repl_items. Probably the trigger or function on the business table was not working.", rs.next());
+         rs = st.executeQuery("SELECT * FROM " + this.replPrefix + "items");
+         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in " + this.replPrefix + "items. Probably the trigger or function on the business table was not working.", rs.next());
          name = rs.getString(4);
          action = rs.getString(6);
-         assertEquals("Testing if the name of the table in repl_items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
-         assertEquals("Testing if the action for the operation INSERT was correct in repl_items.", "INSERT", action);
+         assertEquals("Testing if the name of the table in " + this.replPrefix + "items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the action for the operation INSERT was correct in " + this.replPrefix + "items.", "INSERT", action);
          rs.close();
          st.close();
          // and now cleanup
          st = conn.createStatement();
-         st.executeUpdate("DELETE FROM repl_items");
+         st.executeUpdate("DELETE FROM " + this.replPrefix + "items");
          st.close();
          
       } 
@@ -700,12 +753,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          try { pool.update("DROP TABLE " + tableName + cascade); } catch (Exception ex) { }
 
          // add the tables to be detected to the repl_tables table
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true);
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true, null);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();
-         ResultSet rs = st.executeQuery("SELECT * from repl_items");
-         assertEquals("Testing if the addition of a (non created yet) table to repl_tables generates an entry in repl_items (it should not)", false, rs.next());
+         ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+         assertEquals("Testing if the addition of a (non created yet) table to " + this.replPrefix + "tables generates an entry in " + this.replPrefix + "items (it should not)", false, rs.next());
          rs.close();
          st.close();
          
@@ -723,13 +776,13 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          this.dbSpecific.forceTableChangeCheck();
 
          st = conn.createStatement();
-         rs = st.executeQuery("SELECT * from repl_items");
-         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in 'repl_items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
+         rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+         assertTrue("Testing if the trigger/function associated to the business logic table '" + tableName + "' has been working. Here no entry was found in '" + this.replPrefix + "items' so it did not work property. Some DB (example postgres) detect this in forceTableChangeDetect (which was invoked here) and others (like Oracle) have a trigger on the SCHEMA", rs.next());
          String name = rs.getString(4);
          String action = rs.getString(6);
-         assertEquals("Testing if the name of the table has been correctly stored in repl_items", this.dbHelper.getIdentifier(tableName), name);
-         assertEquals("Testing if the name of the action performec is correctly stored in repl_items for action CREATE", "CREATE", action);
-         assertFalse("Testing the number of entries in repl_items table. It is too big, there should be only one entry", rs.next());
+         assertEquals("Testing if the name of the table has been correctly stored in " + this.replPrefix + "items", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the name of the action performec is correctly stored in " + this.replPrefix + "items for action CREATE", "CREATE", action);
+         assertFalse("Testing the number of entries in " + this.replPrefix + "items table. It is too big, there should be only one entry", rs.next());
          st.close();
          rs.close();
          
@@ -738,25 +791,25 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          
          // from now on on an operation on that table should be detected and should start fill the repl_items table
          st = conn.createStatement();
-         st.executeUpdate("DELETE FROM repl_items");
+         st.executeUpdate("DELETE FROM " + this.replPrefix + "items");
          st.close();
          st = conn.createStatement();
          st.executeUpdate("INSERT INTO " + tableName + " VALUES ('somebody', 'Paris')");
          st.close();
-         // now it should be in repl_items ...
+         // now it should be in " + this.replPrefix + "items ...
          
          st = conn.createStatement();
-         rs = st.executeQuery("SELECT * FROM repl_items");
-         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in repl_items. Probably the trigger or function on the business table was not working.", rs.next());
+         rs = st.executeQuery("SELECT * FROM " + this.replPrefix + "items");
+         assertTrue("Testing if the INSERT operation on business table '" + tableName + "' worked. No entry was detected in " + this.replPrefix + "items. Probably the trigger or function on the business table was not working.", rs.next());
          name = rs.getString(4);
          action = rs.getString(6);
-         assertEquals("Testing if the name of the table in repl_items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
-         assertEquals("Testing if the action for the operation INSERT was correct in repl_items.", "INSERT", action);
+         assertEquals("Testing if the name of the table in " + this.replPrefix + "items for action INSERT is wrong.", this.dbHelper.getIdentifier(tableName), name);
+         assertEquals("Testing if the action for the operation INSERT was correct in " + this.replPrefix + "items.", "INSERT", action);
          rs.close();
          st.close();
          // and now cleanup
          st = conn.createStatement();
-         st.executeUpdate("DELETE FROM repl_items");
+         st.executeUpdate("DELETE FROM " + this.replPrefix + "items");
          st.close();
          
       } 

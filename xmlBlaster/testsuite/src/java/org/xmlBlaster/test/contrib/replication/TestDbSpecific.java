@@ -43,6 +43,7 @@ import java.util.Map;
  *      <ul>
  *         <li>Number of columns must be at least one (to detect that metadata is retrieved)</li>
  *        <li>Parsing of message is working correctly</li>
+ *        <li>Creation of the table is successful</li>
  *      </ul>   
  *   </li>
  *   <li>tests the method getObjectName(String op, String req)</li>
@@ -68,6 +69,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     private boolean doCheck = true;
     
     private static SpecificHelper specificHelper; // this is static since the implementation of I_ChangePublisher is another instance
+    private String replPrefix = "repl_";
     
     /**
      * Start the test. 
@@ -131,6 +133,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       specificHelper = new SpecificHelper(System.getProperties());
       
       info = new PropertiesInfo(specificHelper.getProperties());
+      this.replPrefix = info.get("replication.prefix", "repl_");
       dbPool = setUpDbPool(info);
       String dbSpecificName = specificHelper.getProperties().getProperty("replication.dbSpecific.class");
       // , "org.xmlBlaster.contrib.replication.impl.SpecificOracle";" +
@@ -140,6 +143,18 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          conn = dbPool.reserve();
          log.info("setUp: going to cleanup now ...");
          dbSpecific.cleanup(conn, false);
+         try {
+            dbPool.update("DROP TABLE test_dbspecific");
+         }
+         catch (Exception e) {
+         }
+         for (int i=1; i < 5; i++) { // make sure we have deleted all triggers
+            try {
+               dbPool.update("DROP TRIGGER " + this.replPrefix + i);
+            }
+            catch (Exception ex) {
+            }
+         }
          log.info("setUp: cleanup done, going to bootstrap now ...");
          boolean doWarn = false;
          boolean force = true;
@@ -190,12 +205,29 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             int numOfCols = dbUpdateInfo.getDescription().getUpdateInfoColDescriptions().length;
             assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
             assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", message, msg1);
-            String functionAndTrigger = dbSpecific.createTableFunction(dbUpdateInfo.getDescription());
-            functionAndTrigger += dbSpecific.createTableTrigger(dbUpdateInfo.getDescription());
+            String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null);
             
             log.fine("-- ---------------------------------------------------------------------------");
             log.fine(functionAndTrigger);
             log.fine("-- ---------------------------------------------------------------------------");
+            
+            // check now the creation of the table
+            String sql = "DROP TABLE TEST_CREATION";
+            try {
+               dbPool.update(sql);
+            }
+            catch (Exception e) {
+            }
+
+            dbUpdateInfo.getDescription().setIdentity("TEST_CREATION");
+            sql = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
+            try {
+               dbPool.update(sql);
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+               assertTrue("Testing creation of table with statement '" + sql + "' failed", false);
+            }
          }
          else {
             assertTrue("should never come here", false);
