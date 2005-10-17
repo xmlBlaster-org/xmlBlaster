@@ -46,6 +46,7 @@ public class ReplicationAgent {
    
    private DbWatcher dbWatcher;
    private DbWriter dbWriter;
+   private static String replPrefix = "repl_";
    
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
@@ -102,6 +103,7 @@ public class ReplicationAgent {
    private static void setupProperties(Map map, I_Info readerInfo, I_Info writerInfo) {
       // we hardcode the first ...
       if (readerInfo != null) {
+         replPrefix = readerInfo.get("replication.prefix", "repl_");
          readerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
                "oracle.jdbc.driver.OracleDriver:" +
                "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
@@ -114,9 +116,9 @@ public class ReplicationAgent {
          setProp(map, readerInfo, "mom.topicName", "trans_key");
          setProp(map, readerInfo, "alertScheduler.pollInterval", "2000");
          setProp(map, readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
-         setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from repl_items");
-         setProp(map, readerInfo, "db.queryMeatStatement", "SELECT * FROM repl_items ORDER BY repl_key");
-         setProp(map, readerInfo, "changeDetector.postUpdateStatement", "DELETE from repl_items");
+         setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + replPrefix + "items");
+         setProp(map, readerInfo, "db.queryMeatStatement", "SELECT * FROM " + replPrefix + "items ORDER BY repl_key");
+         setProp(map, readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + replPrefix + "items");
          setProp(map, readerInfo, "converter.addMeta", "false");
          setProp(map, readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
          setProp(map, readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");

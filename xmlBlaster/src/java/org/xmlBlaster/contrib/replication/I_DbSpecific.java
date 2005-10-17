@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.dbwriter.I_ContribPlugin;
+import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 
 public interface I_DbSpecific extends I_ContribPlugin {
@@ -19,7 +20,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * This is used since this interface can be used on both master and slave. On the slave however it will
     * never need a publisher.
     */
-   final static String NEEDS_PUBLISHER_KEY = "_replication.specific.needsPublisher";
+   public final static String NEEDS_PUBLISHER_KEY = "_replication.specific.needsPublisher";
 
    /**
     * This method is invoked for the initial setup of the database. In production this method is probably
@@ -77,20 +78,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
    String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper);
 
    /**
-    * Creates a string containing the function which has to be added to the trigger of the table to be watched.
-    * .
-    * @param infoDescription
-    * @return
-    */
-   String createTableFunction(DbUpdateInfoDescription infoDescription);
-
-   /**
     * Creates a string containing the trigger of the table to be watched. 
     * .
     * @param infoDescription
+    * @param triggerName the name to give to the trigger associated with this table,
     * @return
     */
-   String createTableTrigger(DbUpdateInfoDescription infoDescription);
+   String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName);
 
    
    /**
@@ -120,10 +114,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param schema the name of the schema to use. If null, an empty string is stored (since part of the PK).
     * @param tableName the name of the table to be added.
     * @param doReplicate 'false' if it does not need to replicate, 'true' otherwise.
+    * @param triggerName is the name which will be given to the trigger to add to the table. Can be null. If null
+    * is passed, then a name is choosed by the application. It is good practice to provide with a unique name.
+    * 
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   void addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate) throws Exception;
+   void addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate, String triggerName) throws Exception;
    
    /**
     * Removes a table from the repl_tables. This method will make sure that the correct case sensitivity
@@ -132,5 +129,14 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    void removeTableToWatch(String catalog, String schema, String tableName) throws Exception;
+
+   /**
+    * This method should actually be protected since it is not used on the outside. It is part of this interface
+    * since the handling for the different databases can be different.
+    *  
+    * @param colInfoDescription The info object describing this column.
+    * @return A String Buffer containing the part of the CREATE statement which is specific to this column.
+    */
+   StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
    
 }

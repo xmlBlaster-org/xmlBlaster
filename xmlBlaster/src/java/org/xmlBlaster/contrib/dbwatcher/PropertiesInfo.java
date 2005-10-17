@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * 
@@ -22,6 +24,21 @@ public class PropertiesInfo implements I_Info {
    Properties props;
    Map objects;
    
+   class Replacer implements I_ReplaceVariable {
+      public String get(String key) {
+         if (key == null)
+            return null;
+         String repl = props.getProperty(key, null);
+         if (repl != null)
+            return repl.trim();
+         return null;
+      }
+   }
+   
+   private Replacer replacer;
+   private ReplaceVariable replaceVariable;
+   
+   
    /**
     * Creates a simple implementation based on java's Properties.
     * This implementation uses the reference to the properties passed. If you want a snapshot of these properties, you 
@@ -32,17 +49,23 @@ public class PropertiesInfo implements I_Info {
    public PropertiesInfo(Properties props) {
       this.props = props;
       this.objects = new HashMap();
+      this.replacer = new Replacer();
+      this.replaceVariable = new ReplaceVariable();
    }
    
    /**
    * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
    */
    public String get(String key, String def) {
+      if (def != null)
+         def = this.replaceVariable.replace(def, this.replacer);
       if (key == null)
          return def;
+      key = this.replaceVariable.replace(key, this.replacer);
       String ret = this.props.getProperty(key);
-      if (ret != null)
-         return ret;
+      if (ret != null) {
+         return this.replaceVariable.replace(ret, this.replacer);
+      }
       return def;
    }
 

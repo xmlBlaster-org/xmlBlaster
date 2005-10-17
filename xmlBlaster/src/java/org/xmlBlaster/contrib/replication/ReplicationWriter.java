@@ -18,13 +18,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
+import org.xmlBlaster.contrib.dbwriter.I_EventHandler;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
+import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public class ReplicationWriter implements I_Writer, ReplicationConstants {
@@ -38,6 +41,9 @@ private final static String ME = "ReplicationWriter";
    private I_DbSpecific dbSpecific;
    I_Mapper mapper;
    private boolean overwriteTables;
+   private DbMetaHelper dbMetaHelper;
+   private String importLocation;
+   private I_EventHandler callback;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -53,7 +59,7 @@ private final static String ME = "ReplicationWriter";
       // this avoids the publisher to be instantiated (since we are on the slave side)
       this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
       this.dbSpecific = ReplicationConverter.getDbSpecific(info); 
-      
+      this.dbMetaHelper = new DbMetaHelper(this.pool);
       String mapperClass = info.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");
       if (mapperClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
@@ -65,6 +71,10 @@ private final static String ME = "ReplicationWriter";
       else
          log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
       this.overwriteTables = this.info.getBoolean("replication.overwriteTables", false);
+      this.importLocation = this.info.get("replication.importLocation", "${java.io.tmpdir}");
+      boolean overwriteDumpFiles = true;
+      String lockExtention =  null;
+      this.callback = new FileWriterCallback(this.importLocation, lockExtention, overwriteDumpFiles);
    }
 
    public void shutdown() throws Exception {
@@ -96,7 +106,9 @@ private final static String ME = "ReplicationWriter";
       if (REPLICATION_CMD.equalsIgnoreCase(command) || 
           ALTER_ACTION.equalsIgnoreCase(command) ||
           CREATE_ACTION.equalsIgnoreCase(command) ||
-          DROP_ACTION.equalsIgnoreCase(command))
+          DROP_ACTION.equalsIgnoreCase(command) ||
+          STATEMENT_ACTION.equalsIgnoreCase(command) ||
+          DUMP_ACTION.equalsIgnoreCase(command))
          return true;
       return false;
    }
@@ -113,10 +125,14 @@ private final static String ME = "ReplicationWriter";
       String originalSchema = getStringAttribute(SCHEMA_ATTR, null, description);
       String originalTable = getStringAttribute(TABLE_NAME_ATTR, null, description);
       
-      String catalog = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
+      String catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null);
       String schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
       String table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null);
 
+      String completeTableName = table;
+      if (schema != null && schema.length() > 1)
+         completeTableName = schema + "." + table;
+      
       // log.info(ME + ".store invoked for cmd='" + command + "' and identity ='" + identity + "'");
       log.info("store invoked for \n" + dbInfo.toXml(""));
       if (isAllowedCommand(command)) {
@@ -162,7 +178,7 @@ private final static String ME = "ReplicationWriter";
                   }
                }
             }
-            else { // then it is a CREATE / DROP / ALTER command (does not have any rows associated)
+            else { // then it is a CREATE / DROP / ALTER or DUMP command (does not have any rows associated)
                if (action.equalsIgnoreCase(CREATE_ACTION)) {
                   
                   // check if the table already exists ...
@@ -172,12 +188,12 @@ private final static String ME = "ReplicationWriter";
 
                   if (tableExistsAlready) {
                      if (!this.overwriteTables) {
-                        throw new Exception("ReplicationStorer.store: the table '" + table + "' exists already and 'replication.overwriteTables' is set to 'false'");
+                        throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
                      }
                      else {
-                        log.warning("store: the table '" + table + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
+                        log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
                         Statement st = conn.createStatement();
-                        st.executeUpdate("DROP TABLE " + table);
+                        st.executeUpdate("DROP TABLE " + completeTableName);
                         st.close();
                      }
                   }
@@ -192,10 +208,36 @@ private final static String ME = "ReplicationWriter";
                   }
                }
                else if (action.equalsIgnoreCase(DROP_ACTION)) {
-                  log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                  String sql = "DROP TABLE " + completeTableName;
+                  Statement st = conn.createStatement();
+                  try {
+                     st.executeUpdate(sql);
+                  }
+                  finally {
+                     st.close();
+                  }
                }
                else if (action.equalsIgnoreCase(ALTER_ACTION)) {
                   log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+               }
+               else if (action.equalsIgnoreCase(DUMP_ACTION)) {
+                  log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                  // store entry on the file system at a location specified by the 'replication.importLocation' property
+                  // the name of the file is stored in DUMP_FILENAME (it will be used to store the file)
+               }
+               else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
+                  String sql = getStringAttribute(STATEMENT_ATTR, null, description);
+                  if (sql != null && sql.length() > 1) {
+                     Statement st = conn.createStatement();
+                     try {
+                        boolean ret = st.execute(sql);
+                        if (ret)
+                           log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml("") + "' was a query. This is not implemented yet");
+                     }
+                     finally {
+                        st.close();
+                     }
+                  }
                }
                else {
                   log.severe("store: description with unknown action '" + action + "' invoked '" + description.toXml(""));
@@ -249,8 +291,8 @@ private final static String ME = "ReplicationWriter";
       if (tableName == null)
          throw new Exception(ME + ".getTableDescription: the table name is null");
       log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");
-      // TODO to be changed later (upcase / lowcase fix later)
-      tableName = tableName.toLowerCase();
+      tableName = this.dbMetaHelper.getIdentifier(tableName);
+      schema = this.dbMetaHelper.getIdentifier(schema);
       
       DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName);
       if (description != null)
@@ -262,7 +304,7 @@ private final static String ME = "ReplicationWriter";
       description = new DbUpdateInfoDescription(this.info);
       description.setIdentity(tableName);
       try {
-         rs = meta.getColumns(null, null/*schema*/, tableName, null);
+         rs = meta.getColumns(null, schema, tableName, null);
          while (rs.next()) {
             String colName = rs.getString(4);
             int type = rs.getInt(5);
@@ -284,7 +326,7 @@ private final static String ME = "ReplicationWriter";
       }
       
       try {
-         rs = meta.getPrimaryKeys(null, null/*schema*/, tableName);
+         rs = meta.getPrimaryKeys(null, schema, tableName);
          List pk = new ArrayList();
          int count = 0;
          while (rs.next()) {
@@ -304,9 +346,20 @@ private final static String ME = "ReplicationWriter";
          if (rs != null)
             rs.close();
       }
-      // TODO change this later, now lowcase
-      this.tableMap.put(tableName.toLowerCase(), description);
+      tableName = this.dbMetaHelper.getIdentifier(tableName);
+      this.tableMap.put(tableName, description);
       return description;
+   }
+
+   /**
+    * This is invoked for dump files
+    */
+   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+      String filename = (String)attrMap.get("_filename");
+      if (filename == null)
+         filename = "(null)";
+      log.info("'" + topic + "' dumping file '" + filename + "' on '" + this.importLocation + "'");  
+      this.callback.update(topic, content, attrMap);
    }
 
    

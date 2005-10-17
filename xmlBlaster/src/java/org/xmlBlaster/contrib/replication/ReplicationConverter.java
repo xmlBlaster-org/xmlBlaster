@@ -156,10 +156,14 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs);
          }
          else if (action.equalsIgnoreCase(DROP_ACTION)) {
-            log.warning("DROP not implemented yet");
+            DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
+            description.setCommand(action);
+            description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(ALTER_ACTION)) {
-            log.warning("ALTER not implemented yet");
+            DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
+            description.setCommand(action);
+            description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(INSERT_ACTION)) {
             DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);

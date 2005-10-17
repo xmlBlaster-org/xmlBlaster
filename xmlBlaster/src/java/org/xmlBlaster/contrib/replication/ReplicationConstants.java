@@ -20,6 +20,8 @@ public interface ReplicationConstants {
    public final static String VERSION_ATTR = "version";
    public final static String ACTION_ATTR = "action";
    public final static String OLD_CONTENT_ATTR = "oldContent";
+   public final static String STATEMENT_ATTR = "statement";
+   public final static String DUMP_FILENAME = "dumpName";
    
    // commands
    public final static String REPLICATION_CMD = "REPLICATION";
@@ -29,5 +31,7 @@ public interface ReplicationConstants {
    public final static String DROP_ACTION = "DROP";
    public final static String CREATE_ACTION = "CREATE";
    public final static String ALTER_ACTION = "ALTER";
+   public final static String DUMP_ACTION = "DUMP";
+   public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement
    
 }

@@ -121,7 +121,9 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
-         this.eventHandler.update(updateKey.getOid(), new String(content), updateQos.getClientProperties());
+         String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
+         updateQos.getData().addClientProperty("_timestamp", timestamp);
+         this.eventHandler.update(updateKey.getOid(), content, updateQos.getClientProperties());
          return "OK";
       }
       catch (Exception ex) {

@@ -4,35 +4,35 @@
 -- the replication with xmlBlaster for Postgres                                 
 -- ---------------------------------------------------------------------------- 
 
-DROP TRIGGER repl_tables_trigger ON repl_tables CASCADE;
--- FLUSH DROP TRIGGER repl_tables_trigger ON repl_tables CASCADE                
-DROP FUNCTION repl_tables_func() CASCADE;
--- FLUSH FUNCTION repl_tables_func() CASCADE                                    
-DROP VIEW repl_cols_view CASCADE;
--- FLUSH (dropped repl_cols_view)                                               
-DROP TABLE repl_tables CASCADE;
--- FLUSH (dropped repl_tables)                                                  
-DROP TABLE repl_current_tables CASCADE;
--- FLUSH (dropped repl_current_tables)                                          
-DROP TABLE repl_cols_table CASCADE;
--- FLUSH (dropped repl_cols_table)                                              
-DROP SEQUENCE repl_seq;
--- FLUSH (dropped repl_seq)                                                     
-DROP TABLE repl_items CASCADE;
--- FLUSH (dropped repl_items)                                                   
-DROP FUNCTION repl_is_altered(name text) CASCADE;
--- FLUSH DROP FUNCTION repl_is_altered(name text) CASCADE                       
-DROP FUNCTION repl_col2xml(name text, content text) CASCADE;
--- FLUSH DROP FUNCTION repl_col2xml(name text, content text) CASCADE            
-DROP FUNCTION repl_col2xml_base64(name text, content bytea) CASCADE;
--- FLUSH DROP FUNCTION repl_col2xml_base64(name text, content bytea) CASCADE    
-DROP FUNCTION repl_col2xml_cdata(name text, content text) CASCADE;
--- FLUSH DROP FUNCTION repl_col2xml_cdata(name text, content text) CASCADE      
-DROP FUNCTION repl_check_structure(text) CASCADE;
--- FLUSH DROP FUNCTION repl_check_structure() CASCADE                           
-DROP FUNCTION repl_needs_prot(text) CASCADE;
--- FLUSH DROP FUNCTION repl_needs_prot() CASCADE                                
-DROP FUNCTION repl_increment() CASCADE;
--- FLUSH DROP FUNCTION repl_increment() CASCADE                                 
+DROP TRIGGER ${replPrefix}tables_trigger ON ${replPrefix}tables CASCADE;
+-- FLUSH DROP TRIGGER ${replPrefix}tables_trigger ON ${replPrefix}tables        
+DROP FUNCTION ${replPrefix}tables_func() CASCADE;
+-- FLUSH FUNCTION ${replPrefix}tables_func()                                    
+DROP VIEW ${replPrefix}cols_view CASCADE;
+-- FLUSH (dropped ${replPrefix}cols_view)                                       
+DROP TABLE ${replPrefix}tables CASCADE;
+-- FLUSH (dropped ${replPrefix}tables)                                          
+DROP TABLE ${replPrefix}current_tables CASCADE;
+-- FLUSH (dropped ${replPrefix}current_tables)                                  
+DROP TABLE ${replPrefix}cols_table CASCADE;
+-- FLUSH (dropped ${replPrefix}cols_table)                                      
+DROP SEQUENCE ${replPrefix}seq;
+-- FLUSH (dropped ${replPrefix}seq)                                             
+DROP TABLE ${replPrefix}items CASCADE;
+-- FLUSH (dropped ${replPrefix}items)                                           
+DROP FUNCTION ${replPrefix}is_altered(name text) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}is_altered(name text)                       
+DROP FUNCTION ${replPrefix}col2xml(name text, content text) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}col2xml(name text, content text)            
+DROP FUNCTION ${replPrefix}col2xml_base64(name text, content bytea) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}col2xml_base64(name text, content bytea)    
+DROP FUNCTION ${replPrefix}col2xml_cdata(name text, content text) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}col2xml_cdata(name text, content text)      
+DROP FUNCTION ${replPrefix}check_structure(text) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}check_structure() CASCADE                   
+DROP FUNCTION ${replPrefix}needs_prot(text) CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}needs_prot() CASCADE                        
+DROP FUNCTION ${replPrefix}increment() CASCADE;
+-- FLUSH DROP FUNCTION ${replPrefix}increment() CASCADE                         
 
 

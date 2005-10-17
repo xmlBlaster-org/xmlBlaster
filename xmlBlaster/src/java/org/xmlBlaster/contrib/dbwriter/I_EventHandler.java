@@ -9,14 +9,14 @@ package org.xmlBlaster.contrib.dbwriter;
 import java.util.Map;
 
 
-public interface I_EventHandler extends I_ContribPlugin {
+public interface I_EventHandler {
 
    /**
     * The received message, either from the MoM or from somewhat else. 
     * @param topic The topic name
     * @param content The message content
-    * @param attrMap A map with attribute, can be null 
+    * @param attrMap A map with attribute, can be null. The values of the pairs are ClientProperty objects. 
     */
-   void update(String topic, String content, Map attrMap) throws Exception;
+   void update(String topic, byte[] content, Map attrMap) throws Exception;
    
 }

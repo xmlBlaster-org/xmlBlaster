@@ -6,10 +6,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.util.Map;
+
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 
 public class DefaultWriter implements I_Writer {
+
+   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+      System.out.println("=========== NEW BINARY MESSAGE ============\n" + topic + "\n");
+   }
 
    public DefaultWriter() {
       

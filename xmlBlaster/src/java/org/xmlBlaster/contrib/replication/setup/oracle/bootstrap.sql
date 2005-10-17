@@ -18,24 +18,24 @@
 -- ---------------------------------------------------------------------------- 
 
 
-DROP TRIGGER repl_create_trigger_xmlblaster
--- FLUSH (dropped repl_create_trigger_xmlblaster)                               
-DROP TRIGGER repl_drop_trigger_xmlblaster
--- FLUSH (dropped repl_drop_trigger_xmlblaster)                                 
-DROP TRIGGER repl_alter_trigger_xmlblaster
--- FLUSH (dropped repl_alter_trigger_xmlblaster)                                
-DROP VIEW repl_cols_view
--- FLUSH (dropped repl_cols_view)                                               
-DROP TABLE repl_tables
--- FLUSH (dropped repl_tables)                                                  
-DROP TABLE repl_current_tables
--- FLUSH (dropped repl_current_tables)                                          
-DROP TABLE repl_cols_table
--- FLUSH (dropped repl_cols_table)                                              
-DROP SEQUENCE repl_seq
--- FLUSH (dropped repl_seq)                                                     
-DROP TABLE repl_items
--- FLUSH (dropped repl_items)                                                   
+DROP TRIGGER ${replPrefix}create_trigger_xmlblaster
+-- FLUSH (dropped ${replPrefix}create_trigger_xmlblaster)                       
+DROP TRIGGER ${replPrefix}drop_trigger_xmlblaster
+-- FLUSH (dropped ${replPrefix}drop_trigger_xmlblaster)                         
+DROP TRIGGER ${replPrefix}alter_trigger_xmlblaster
+-- FLUSH (dropped ${replPrefix}alter_trigger_xmlblaster)                        
+DROP VIEW ${replPrefix}cols_view
+-- FLUSH (dropped ${replPrefix}cols_view)                                       
+DROP TABLE ${replPrefix}tables
+-- FLUSH (dropped ${replPrefix}tables)                                          
+DROP TABLE ${replPrefix}current_tables
+-- FLUSH (dropped ${replPrefix}current_tables)                                  
+DROP TABLE ${replPrefix}cols_table
+-- FLUSH (dropped ${replPrefix}cols_table)                                      
+DROP SEQUENCE ${replPrefix}seq
+-- FLUSH (dropped ${replPrefix}seq)                                             
+DROP TABLE ${replPrefix}items
+-- FLUSH (dropped ${replPrefix}items)                                           
 
 -- ---------------------------------------------------------------------------- 
 -- This table contains the list of tables to watch.                             
@@ -44,20 +44,22 @@ DROP TABLE repl_items
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE repl_tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
+CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
                          tablename VARCHAR(30), replicate CHAR(1),
 			 status VARCHAR(10), repl_key INTEGER, 
-			 PRIMARY KEY(catalogname, schemaname, tablename))
+			 trigger_name VARCHAR(30), PRIMARY KEY(catalogname, 
+			 schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- create the repl_current_tables as a placeholder for the current tables (this 
--- is used to detect a CREATE TABLE and a DROP TABLE.                           
+-- create the ${replPrefix}current_tables as a placeholder for the current      
+-- tables (this is used to detect a CREATE TABLE and a DROP TABLE.              
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE repl_current_tables AS SELECT table_name AS relname FROM all_tables
-       WHERE table_name IN (SELECT tablename FROM repl_tables)
+CREATE TABLE ${replPrefix}current_tables AS SELECT table_name AS relname 
+       FROM all_tables WHERE table_name IN (SELECT tablename 
+       FROM ${replPrefix}tables)
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -68,10 +70,10 @@ CREATE TABLE repl_current_tables AS SELECT table_name AS relname FROM all_tables
 -- table. The necessary generic lowlevel functions are created.                 
 -- ---------------------------------------------------------------------------- 
 
-CREATE SEQUENCE repl_seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
+CREATE SEQUENCE ${replPrefix}seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
 -- EOC (end of command: needed as a separator for our script parser)            
 
-CREATE TABLE repl_items (repl_key INTEGER, 
+CREATE TABLE ${replPrefix}items (repl_key INTEGER, 
              trans_key VARCHAR(30), dbId VARCHAR(30), tablename VARCHAR(30), 
 	     guid VARCHAR(30), db_action VARCHAR(15), db_catalog VARCHAR(30),
 	     db_schema VARCHAR(30), content CLOB, oldContent CLOB, 
@@ -80,29 +82,30 @@ CREATE TABLE repl_items (repl_key INTEGER,
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_col2xml_cdata converts a column into a simple xml notation and wraps    
--- the content into a _cdata object.                                            
+-- ${replPrefix}col2xml_cdata converts a column into a simple xml notation and  
+-- wraps the content into a _cdata object.                                      
 --   name: the name of the column                                               
---   content the content of the column. If it is a blob use repl_col2xml_base64 
+--   content the content of the column. If it is a blob use                     
+-- ${replPrefix}col2xml_base64                                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_col2xml_cdata(name CLOB, content CLOB) 
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_cdata(name CLOB, content CLOB) 
 RETURN CLOB AS
 BEGIN
    RETURN '<col name="' || name || '"><![CDATA[' || content || ']]></col>';
-END repl_col2xml_cdata;
+END ${replPrefix}col2xml_cdata;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_needs_prot (prot stands for protection) detects wether a protection to  
--- BASE64 is needed or not in a text string.                                    
+-- ${replPrefix}needs_prot (prot stands for protection) detects wether a        
+-- protection to BASE64 is needed or not in a text string.                      
 -- returns an integer. If 1 it means CDATA protection will suffice, if 2 it     
 -- means it needs BASE64.                                                       
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_needs_prot(content CLOB) 
+CREATE OR REPLACE FUNCTION ${replPrefix}needs_prot(content CLOB) 
 RETURN INTEGER AS
    pos INTEGER;
 BEGIN
@@ -119,18 +122,18 @@ BEGIN
       RETURN 1;
    END IF;
    RETURN 0;
-END repl_needs_prot;
+END ${replPrefix}needs_prot;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_base64_helper is only needed in ORACLE previous to version 9 and is     
--- used by repl_base64_enc_raw and repl_base64_enc_char.                        
+-- ${replPrefix}base64_helper is only needed in ORACLE previous to version 9    
+-- and is used by ${replPrefix}base64_enc_raw and ${replPrefix}base64_enc_char. 
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_base64_helper(zeros SMALLINT, val INTEGER)
-   RETURN VARCHAR AS
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_helper(zeros SMALLINT, 
+                  val INTEGER) RETURN VARCHAR AS
      numBuild INTEGER;
      char1 SMALLINT;
      char2 SMALLINT;
@@ -235,19 +238,19 @@ BEGIN
 
    --Add these four characters to the string                                    
    RETURN CHR(char1) || CHR(char2) || CHR(char3) || CHR(char4);
-END repl_base64_helper;
+END ${replPrefix}base64_helper;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_base64_enc_raw converts a RAW msg to a base64 encoded string. This is   
--- needed for ORACLE versions previous to Oracle9.                              
+-- ${replPrefix}base64_enc_raw converts a RAW msg to a base64 encoded string.   
+-- This is needed for ORACLE versions previous to Oracle9.                      
 -- content will be encoded to base64.                                           
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_base64_enc_raw(msg RAW)
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW)
    RETURN CLOB AS
      numBuilder INTEGER;
      char1 SMALLINT;
@@ -281,22 +284,22 @@ BEGIN
       ELSE
       	source := '';
       END IF;
-      res := res || repl_base64_helper(zeros, numBuilder);
+      res := res || ${replPrefix}base64_helper(zeros, numBuilder);
    END LOOP;
    RETURN res;
-END repl_base64_enc_raw;
+END ${replPrefix}base64_enc_raw;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_base64_enc_varchar2 converts a VARCHAR2 msg to a base64 encoded string. 
--- This is needed for ORACLE versions previous to Oracle9.                      
+-- ${replPrefix}base64_enc_varchar2 converts a VARCHAR2 msg to a base64 encoded 
+-- string. This is needed for ORACLE versions previous to Oracle9.              
 -- content will be encoded to base64.                                           
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_base64_enc_varchar2(msg VARCHAR2)
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_varchar2(msg VARCHAR2)
    RETURN CLOB AS
      numBuilder INTEGER;
      char1 SMALLINT;
@@ -330,22 +333,22 @@ BEGIN
       ELSE
       	source := '';
       END IF;
-      res := res || repl_base64_helper(zeros, numBuilder);
+      res := res || ${replPrefix}base64_helper(zeros, numBuilder);
    END LOOP;
    RETURN res;
-END repl_base64_enc_varchar2;
+END ${replPrefix}base64_enc_varchar2;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_base64_enc_blob converts a BLOB msg to a base64 encoded string. This is 
--- needed for ORACLE versions previous to Oracle9.                              
+-- ${replPrefix}base64_enc_blob converts a BLOB msg to a base64 encoded string. 
+-- This is needed for ORACLE versions previous to Oracle9.                      
 -- content will be encoded to base64.                                           
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_base64_enc_blob(msg BLOB)
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_blob(msg BLOB)
    RETURN CLOB AS
      source    BLOB;
      len       INTEGER;
@@ -365,21 +368,21 @@ BEGIN
       offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := res || repl_base64_enc_raw(tmp);
+      res := res || ${replPrefix}base64_enc_raw(tmp);
    END LOOP;
    RETURN res;
-END repl_base64_enc_blob;
+END ${replPrefix}base64_enc_blob;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_base64_enc_clob converts a CLOB msg to a base64 encoded string. This is 
--- needed for ORACLE versions previous to Oracle9.                              
+-- ${replPrefix}base64_enc_clob converts a CLOB msg to a base64 encoded string. 
+-- This is needed for ORACLE versions previous to Oracle9.                      
 -- content will be encoded to base64.                                           
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_base64_enc_clob(msg CLOB)
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(msg CLOB)
    RETURN CLOB AS
      source CLOB;
      len    INTEGER;
@@ -395,76 +398,78 @@ BEGIN
       offset := offset + len;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := res || repl_base64_enc_varchar2(tmp);
+      res := res || ${replPrefix}base64_enc_varchar2(tmp);
    END LOOP;
    RETURN res;
-END repl_base64_enc_clob;
+END ${replPrefix}base64_enc_clob;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_col2xml_base64 converts a column into a simple xml notation where the   
--- content will be decoded to base64.                                           
+-- ${replPrefix}col2xml_base64 converts a column into a simple xml notation     
+-- where the content will be decoded to base64.                                 
 --   name: the name of the column                                               
 --   content the content of the column (must be bytea or compatible)            
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_col2xml_base64(name CLOB, content BLOB) 
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_base64(name CLOB, content BLOB) 
 RETURN CLOB AS
   tmp CLOB;
 
 BEGIN
   tmp := '<col name="' || name || '" encoding="base64">' ||  
-          repl_base64_enc_blob(content) || '</col>';
+          ${replPrefix}base64_enc_blob(content) || '</col>';
   RETURN  tmp;
-END repl_col2xml_base64;
+END ${replPrefix}col2xml_base64;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_col2xml converts a column into a simple xml notation. The output of     
--- these functions follows the notation of the dbWatcher. More about that on    
+-- ${replPrefix}col2xml converts a column into a simple xml notation. The       
+-- output of these functions follows the notation of the dbWatcher. More about  
+-- that on                                                                      
 -- http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html 
 --   name: the name of the column                                               
---   content the content of the column. If it is a blob use repl_col2xml_base64.
+--   content the content of the column. If it is a blob use                     
+-- ${replPrefix}col2xml_base64.                                                 
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_col2xml(name CLOB, content CLOB) 	
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml(name CLOB, content CLOB) 	
 RETURN CLOB AS
    pos INTEGER;
 BEGIN
-   pos := repl_needs_prot(content);
+   pos := ${replPrefix}needs_prot(content);
    IF pos = 0 THEN
       RETURN '<col name="' || name || '">' || content || '</col>';
    END IF;
    IF pos = 1 THEN 
-      RETURN repl_col2xml_cdata(name, content);
+      RETURN ${replPrefix}col2xml_cdata(name, content);
    END IF; 
    RETURN '<col name="' || name || '" encoding="base64">' ||  
-          repl_base64_enc_clob(content) || '</col>';
-END repl_col2xml;
+          ${replPrefix}base64_enc_clob(content) || '</col>';
+END ${replPrefix}col2xml;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_check_structure is used to check wether a table has been created,       
--- dropped or altered.                                                          
+-- ${replPrefix}check_structure is used to check wether a table has been        
+-- created, dropped or altered.                                                 
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_check_structure
+CREATE OR REPLACE FUNCTION ${replPrefix}check_structure
    RETURN CLOB AS
 BEGIN
    RETURN 'OK';
-END repl_check_structure;
+END ${replPrefix}check_structure;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 -- ---------------------------------------------------------------------------- 
--- repl_check_tables is used to check wether a table has been created,          
+-- ${replPrefix}check_tables is used to check wether a table has been created,  
 -- dropped or altered.                                                          
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_check_tables(dbName VARCHAR, schName VARCHAR, 
-                                             tblName VARCHAR, op VARCHAR)
+CREATE OR REPLACE FUNCTION ${replPrefix}check_tables(dbName VARCHAR, schName 
+                                          VARCHAR, tblName VARCHAR, op VARCHAR)
    RETURN VARCHAR AS
    transId    VARCHAR(30);
    res        VARCHAR(10);
@@ -479,25 +484,26 @@ BEGIN
       res := 'FALSE';
    ELSE
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-      SELECT repl_seq.nextval INTO replKey FROM DUAL;
-      INSERT INTO repl_items (repl_key, trans_key, dbId, tablename, guid,
-                        db_action, db_catalog, db_schema, content, oldContent,
-                        version) values (replKey, transId, dbName, tblName,
-                        NULL, op, NULL, schName, NULL, NULL,  '0.0');
+      SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+      INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
+                  guid, db_action, db_catalog, db_schema, content, oldContent,
+                  version) values (replKey, transId, dbName, tblName,
+                  NULL, op, NULL, schName, NULL, NULL,  '0.0');
       res := 'TRUE';
    END IF;        
    RETURN res;
-END repl_check_tables;
+END ${replPrefix}check_tables;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_tables_trigger is invoked when a change occurs on repl_tables.          
+-- ${replPrefix}tables_trigger is invoked when a change occurs on               
+-- ${replPrefix}tables.                                                         
 -- TODO: need to get DB_NAME and SCHEMA_NAME from system properties             
 -- ---------------------------------------------------------------------------- 
 
-CREATE TRIGGER repl_tables_trigger AFTER UPDATE OR DELETE OR INSERT
-ON repl_tables
+CREATE TRIGGER ${replPrefix}tables_trigger AFTER UPDATE OR DELETE OR INSERT
+ON ${replPrefix}tables
 FOR EACH ROW
    DECLARE
       op         VARCHAR(30);
@@ -523,30 +529,30 @@ BEGIN
       op := 'REPLMOD';
       tableName := :new.tablename;
    END IF;
-   ret := repl_check_tables(dbName, schemaName, tableName, op);
-END repl_tables_trigger;
+   ret := ${replPrefix}check_tables(dbName, schemaName, tableName, op);
+END ${replPrefix}tables_trigger;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_tables_func is invoked by the trigger on repl_tables.                   
+-- ${replPrefix}tables_func is invoked by the trigger on ${replPrefix}tables.   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_increment
+CREATE OR REPLACE FUNCTION ${replPrefix}increment
    RETURN INTEGER AS
    val INTEGER;
 BEGIN
-   SELECT repl_seq.nextval INTO val FROM DUAL;
+   SELECT ${replPrefix}seq.nextval INTO val FROM DUAL;
    RETURN val;
-END repl_increment;
+END ${replPrefix}increment;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_add_table is invoked by the triggers on schemas (can also be invoked    
--- outside the triggers by the DbWatcher via JDBC) to determine if a table has  
--- to be replicated. If the table exists it also adds it to the repl_items      
--- table.                                                                       
+-- ${replPrefix}add_table is invoked by the triggers on schemas (can also be    
+-- invoked outside the triggers by the DbWatcher via JDBC) to determine if a    
+-- table has to be replicated. If the table exists it also adds it to the       
+-- ${replPrefix}items table.                                                    
 -- dbName the name of the database                                              
 -- tblName the name of the table to be replicated.                              
 -- schemaName the name of the schema containing this table.                     
@@ -554,15 +560,15 @@ END repl_increment;
 -- returns TRUE if the table exists (has to be replicated) or FALSE otherwise.  
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION repl_add_table(dbName VARCHAR, schName VARCHAR, 
-                                           tblName VARCHAR, op VARCHAR)
+CREATE OR REPLACE FUNCTION ${replPrefix}add_table(dbName VARCHAR, schName 
+                               VARCHAR, tblName VARCHAR, op VARCHAR)
    RETURN VARCHAR AS
    replKey INTEGER;
    transId VARCHAR2(30);
    tmp     NUMBER;
    res     VARCHAR(10);
 BEGIN
-   SELECT count(*) INTO tmp FROM repl_tables WHERE (tablename=tblName 
+   SELECT count(*) INTO tmp FROM ${replPrefix}tables WHERE (tablename=tblName 
                    OR tablename=UPPER(tblName) OR tablename=LOWER(tblName))
 		   AND (schemaname=schName OR schemaname=UPPER(schName) OR 
 		   schemaname=LOWER(schName));
@@ -570,24 +576,24 @@ BEGIN
       res := 'FALSE';
    ELSE
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-      SELECT repl_seq.nextval INTO replKey FROM DUAL;
-      INSERT INTO repl_items (repl_key, trans_key, dbId, tablename, guid,
-                  db_action, db_catalog, db_schema, content, oldContent,
+      SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+      INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
+                  guid, db_action, db_catalog, db_schema, content, oldContent,
                   version) values (replKey, transId, dbName, tblName,
                   NULL, op, NULL, schName, NULL, NULL,  '0.0');
       res := 'TRUE';
    END IF;
    RETURN res;
-END repl_add_table;
+END ${replPrefix}add_table;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_create_trigger is invoked when a new table is created.                  
+-- ${replPrefix}create_trigger is invoked when a new table is created.          
 -- note that this must be invoked for each Schema.                              
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE TRIGGER repl_create_trigger_xmlblaster
+CREATE OR REPLACE TRIGGER ${replPrefix}create_trigger_xmlblaster
    AFTER CREATE ON XMLBLASTER.SCHEMA
 DECLARE
    dbName     VARCHAR(30);
@@ -598,17 +604,17 @@ BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, schemaName, tableName, 'CREATE');
-END repl_create_trigger_xmlblaster;
+   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'CREATE');
+END ${replPrefix}create_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_drop_trigger is invoked when a table is dropped.                        
+-- ${replPrefix}drop_trigger is invoked when a table is dropped.                
 -- note that this must be invoked for each Schema.                              
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE TRIGGER repl_drop_trigger_xmlblaster
+CREATE OR REPLACE TRIGGER ${replPrefix}drop_trigger_xmlblaster
    BEFORE DROP ON XMLBLASTER.SCHEMA
 DECLARE
    dbName     VARCHAR(30);
@@ -619,17 +625,17 @@ BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, schemaName, tableName, 'DROP');
-END repl_drop_trigger_xmlblaster;
+   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'DROP');
+END ${replPrefix}drop_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
--- repl_alter_trigger is invoked when a table is altered (modified).            
+-- ${replPrefix}alter_trigger is invoked when a table is altered (modified).    
 -- note that this must be invoked for each Schema.                              
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE TRIGGER repl_alter_trigger_xmlblaster
+CREATE OR REPLACE TRIGGER ${replPrefix}alter_trigger_xmlblaster
    AFTER ALTER ON XMLBLASTER.SCHEMA
 DECLARE
    dbName     VARCHAR(30);
@@ -640,8 +646,7 @@ BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := repl_add_table(dbName, schemaName, tableName, 'ALTER');
-END repl_alter_trigger_xmlblaster;
+   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'ALTER');
+END ${replPrefix}alter_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
-
 

@@ -34,14 +34,14 @@ import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationManager;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
    private String CREATE_COUNTER_KEY = "_createCounter";
-
-   private static Logger log = Logger
-         .getLogger(SpecificDefault.class.getName());
+   private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
 
    /** used to publish CREATE changes */
    private I_ChangePublisher publisher;
@@ -58,16 +58,57 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
    protected DbMetaHelper dbMetaHelper;
 
+   protected String replPrefix = "repl_";
+   
+   protected ReplaceVariable replaceVariable;
+
+   private Replacer replacer;
+   
+   class Replacer implements I_ReplaceVariable {
+
+      private I_Info info;
+      private String replPrefix;
+      
+      public Replacer(I_Info info, String replPrefix) {
+         this.info = info;
+         this.replPrefix = replPrefix;
+         if (this.replPrefix == null)
+            this.replPrefix = "";
+      }
+      
+      public String get(String key) {
+         if ("replPrefix".equalsIgnoreCase(key)) {
+            return this.replPrefix;
+         }
+         else {
+            if (key == null)
+               return null;
+            String repl = this.info.get(key, null);
+            if (repl != null)
+               return repl.trim();
+            return null;
+         }
+      }
+   }
+   
    /**
     * Not doing anything.
     */
    public SpecificDefault() {
    }
 
+   /**
+    * Replaces all tokens found in the content and returns the content with the values of the tokens.
+    * @param content
+    * @return
+    */
+   private final String replaceTokens(String content) {
+      return this.replaceVariable.replace(content, this.replacer);
+   }
    
    /**
     * Gets the specified object name and returns its value (name).
-    * For example 'CREATE TABLE one' would return 'one'. 
+    * For example 'CREATE TABLE one' would return 'one'. Needed on bootstrapping.
     * NOTE: only made public for testing purposes.
     * @param op
     * @param req
@@ -211,29 +252,32 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
             method, FLUSH_SEPARATOR, CMD_SEPARATOR);
       for (int i = 0; i < sqls.size(); i++) {
          String[] cmds = (String[]) sqls.get(i);
+         String cmd = "";
          try {
             conn.setAutoCommit(true);
             st = conn.createStatement();
 
             boolean doExecuteBatch = false;
             for (int j = 0; j < cmds.length; j++) {
+               cmd = replaceTokens(cmds[j]);
                if (!force) {
-                  if (checkTableForCreation(cmds[j]) == 0)
+                  if (checkTableForCreation(cmd) == 0)
                      continue;
-                  if (checkSequenceForCreation(cmds[j]) == 0)
+                  if (checkSequenceForCreation(cmd) == 0)
                      continue;
                }
-               if (cmds[j].trim().length() > 0) {
+               if (cmd.trim().length() > 0) {
                   doExecuteBatch = true;
-                  st.addBatch(cmds[j]);
+                  st.addBatch(cmd);
                }
             }
             if (doExecuteBatch)
                st.executeBatch();
-         } catch (SQLException ex) {
+         } 
+         catch (SQLException ex) {
             StringBuffer buf = new StringBuffer();
             for (int j = 0; j < cmds.length; j++)
-               buf.append(cmds[j]).append("\n");
+               buf.append(cmd).append("\n");
             if (doWarn)
                log.warning("operation:\n" + buf.toString() + "\n failed: "
                      + ex.getMessage());
@@ -272,7 +316,10 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void init(I_Info info) throws Exception {
       log.info("going to initialize the resources");
+      this.replaceVariable = new ReplaceVariable();
       this.info = info;
+      this.replPrefix = this.info.get("replication.prefix", "repl_");
+      this.replacer = new Replacer(this.info, this.replPrefix);
       boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher)
          this.publisher = DbWatcher.getChangePublisher(this.info,
@@ -358,7 +405,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
-    * Increments and retreives the repl_key sequence counter. The connection
+    * Increments and retreives the ${replPrefix}key sequence counter. The connection
     * must not be null.
     * 
     * Description of sequences for oracle:
@@ -377,8 +424,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
                "SpecificDefault.incrementReplKey: the DB connection is null");
       CallableStatement st = null;
       try {
-         // st = conn.prepareCall("{? = call nextval('repl_seq')}");
-         st = conn.prepareCall("{? = call repl_increment()}");
+         // st = conn.prepareCall("{? = call nextval('" + this.replPrefix + "seq')}");
+         st = conn.prepareCall("{? = call " + this.replPrefix + "increment()}");
          // st.registerOutParameter(1, Types.BIGINT);
          st.registerOutParameter(1, Types.INTEGER);
          st.executeQuery();
@@ -397,10 +444,6 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void readNewTable(String catalog, String schema, String table,
          Map attrs) throws Exception {
-      boolean isBroadcast = true; // TODO: pass this on the argument list
-                                    // ('true' means it is not a result of a
-                                    // specific request of an individual slave)
-
       Connection conn = this.dbPool.reserve();
       int oldTransIsolation = 0;
       boolean oldTransIsolationKnown = false; // needed to restore old value
@@ -429,35 +472,25 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          // global alignement, not
          // for local alignement.
 
-         String sql = "SELECT replicate FROM repl_tables WHERE tablename='"
+         String sql = "SELECT replicate,trigger_name FROM " + this.replPrefix + "tables WHERE tablename='"
                + table + "'";
          Statement st = conn.createStatement();
          ResultSet rs = st.executeQuery(sql);
          String doReplicateTxt = "f"; // if the entry does not exist (yet),
                                        // then it is not replicated
          boolean doReplicate = false;
+         String triggerName = null;
          if (rs.next()) {
             doReplicateTxt = rs.getString(1);
-            doReplicate = doReplicateTxt.equalsIgnoreCase("t"); // stands for
-                                                                  // 'true'
+            doReplicate = doReplicateTxt.equalsIgnoreCase("t"); // stands for true
+            triggerName = rs.getString(2);
          }
          rs.close();
          st.close();
-         boolean addTrigger = doReplicate && isBroadcast;
+         boolean addTrigger = doReplicate;
 
          if (addTrigger) { // create the function and trigger here
-            String createString = this.createTableFunction(this.dbUpdateInfo
-                  .getDescription());
-            if (createString != null && createString.length() > 1) {
-               log.info("adding function to '" + table + "':\n\n"
-                     + createString);
-               st = conn.createStatement();
-               st.executeUpdate(createString);
-               st.close();
-            }
-
-            createString = this.createTableTrigger(this.dbUpdateInfo
-                  .getDescription());
+            String createString = this.createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
             if (createString != null && createString.length() > 1) {
                log.info("adding triggers to '" + table + "':\n\n"
                      + createString);
@@ -474,7 +507,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          this.newReplKey = incrementReplKey(conn);
          // publish the structure of the table (need to be done here since we
          // must retreive repl key after having added the trigger)
-         publishCreate(0);
+         if (this.publisher != null)
+            publishCreate(0);
+         else { // normally this will only happen for testing purposes
+            log.warning("not publishing the 'CREATE' Operation since publisher is null.");
+         }
 
          sql = new String("SELECT * FROM " + table);
          this.dbPool.select(conn, sql, false, this);
@@ -544,8 +581,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @param colInfoDescription
     * @return
     */
-   private final StringBuffer getColumnStatement(
-         DbUpdateInfoColDescription colInfoDescription) {
+   public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
       String type = colInfoDescription.getType();
       int charLength = colInfoDescription.getCharLength();
       int precision = colInfoDescription.getPrecision();
@@ -611,11 +647,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
                || type == Types.STRUCT) {
             buf.append("       blobCont = " + prefix + "." + colName + ";\n");
             buf.append("       tmp = " + prefix
-                  + "Cont || repl_col2xml_base64('" + colName
+                  + "Cont || " + this.replPrefix + "col2xml_base64('" + colName
                   + "', blobCont);\n");
             buf.append("       " + prefix + "Cont = tmp;\n");
          } else {
-            buf.append("       tmp = " + prefix + "Cont || repl_col2xml('"
+            buf.append("       tmp = " + prefix + "Cont || " + this.replPrefix + "col2xml('"
                   + colName + "'," + prefix + "." + colName + ");\n");
             buf.append("       " + prefix + "Cont = tmp;\n");
          }
@@ -633,39 +669,24 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     *           table.
     * @return a String containing the sql update. It can be executed.
     */
-   public String createTableFunction(DbUpdateInfoDescription infoDescription) {
+   public String createTableFunction(DbUpdateInfoDescription infoDescription, String functionName) {
 
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
-      String functionName = tableName + "_repl_f";
-      String triggerName = tableName + "_repl_t";
-
       StringBuffer buf = new StringBuffer();
-      buf
-            .append("-- ---------------------------------------------------------------------------- \n");
-      buf
-            .append("-- This is the function which will be registered to the triggers.               \n");
-      buf
-            .append("-- It must not take any parameter.                                              \n");
-      buf
-            .append("-- This is the only method which is business data specific. It is depending on  \n");
-      buf
-            .append("-- the table to be replicated. This should be generated by a tool.              \n");
-      buf
-            .append("--                                                                              \n");
-      buf
-            .append("-- For each table you should just write out in a sequence the complete content  \n");
-      buf
-            .append("-- of the row to replicate. You could make more fancy stuff here, for example   \n");
-      buf
-            .append("-- you could just send the minimal stuff, i.e. only the stuff which has changed \n");
-      buf
-            .append("-- (for the new stuff) and for the old one you could always send an empty one.  \n");
-      buf
-            .append("-- ---------------------------------------------------------------------------- \n");
+      buf.append("-- ---------------------------------------------------------------------------- \n");
+      buf.append("-- This is the function which will be registered to the triggers.               \n");
+      buf.append("-- It must not take any parameter.                                              \n");
+      buf.append("-- This is the only method which is business data specific. It is depending on  \n");
+      buf.append("-- the table to be replicated. This should be generated by a tool.              \n");
+      buf.append("--                                                                              \n");
+      buf.append("-- For each table you should just write out in a sequence the complete content  \n");
+      buf.append("-- of the row to replicate. You could make more fancy stuff here, for example   \n");
+      buf.append("-- you could just send the minimal stuff, i.e. only the stuff which has changed \n");
+      buf.append("-- (for the new stuff) and for the old one you could always send an empty one.  \n");
+      buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("\n");
-      buf.append("CREATE OR REPLACE FUNCTION ").append(functionName).append(
-            "() RETURNS trigger AS $").append(functionName).append("$\n");
+      buf.append("CREATE OR REPLACE FUNCTION ").append(functionName).append("() RETURNS trigger AS $").append(functionName).append("$\n");
       buf.append("DECLARE blobCont BYTEA; \n");
       buf.append("        oldCont TEXT; \n");
       buf.append("   newCont TEXT;\n");
@@ -675,7 +696,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       buf.append("BEGIN\n");
       buf.append("    oldCont = NULL;\n");
       buf.append("    newCont = NULL;\n");
-      buf.append("    tmp = repl_check_structure();\n");
+      buf.append("    tmp = " + this.replPrefix + "check_structure();\n");
       buf.append("\n");
       buf.append("    IF (TG_OP != 'INSERT') THEN\n");
 
@@ -687,16 +708,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("\n");
       buf.append("    END IF;\n");
-      buf
-            .append("    INSERT INTO repl_items (trans_key, dbId, tablename, guid,\n");
-      buf
-            .append("                           db_action, db_catalog, db_schema, \n");
-      buf
-            .append("                           content, oldContent, version) values \n");
-      buf
-            .append("                           (CURRENT_TIMESTAMP,current_database(),\n");
-      buf
-            .append("            TG_RELNAME, oid, TG_OP, NULL, current_schema(), newCont, \n");
+      buf.append("    INSERT INTO " + this.replPrefix + "items (trans_key, dbId, tablename, guid,\n");
+      buf.append("                           db_action, db_catalog, db_schema, \n");
+      buf.append("                           content, oldContent, version) values \n");
+      buf.append("                           (CURRENT_TIMESTAMP,current_database(),\n");
+      buf.append("            TG_RELNAME, oid, TG_OP, NULL, current_schema(), newCont, \n");
       buf.append("            oldCont, '0.0');\n");
       buf.append("    tmp = inet_client_addr();\n");
       buf.append("\n");
@@ -718,31 +734,27 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     *           table.
     * @return a String containing the sql update. It can be executed.
     */
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription) {
+   public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
 
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
-      String functionName = tableName + "_repl_f";
-      String triggerName = tableName + "_repl_t";
+      String functionName = tableName + "_f";
 
       StringBuffer buf = new StringBuffer();
+      buf.append(createTableFunction(infoDescription, functionName));
+      
       // and now append the associated trigger ....
-      buf
-            .append("-- ---------------------------------------------------------------------------- \n");
-      buf
-            .append("-- THE TRIGGER FOR THE replTest TABLE                                           \n");
-      buf
-            .append("-- ---------------------------------------------------------------------------- \n");
+      buf.append("-- ---------------------------------------------------------------------------- \n");
+      buf.append("-- THE TRIGGER FOR THE replTest TABLE                                           \n");
+      buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("\n");
-      buf.append("-- DROP TRIGGER ").append(triggerName).append(" ON ").append(
-            tableName).append(" CASCADE;\n");
+      buf.append("-- DROP TRIGGER ").append(triggerName).append(" ON ").append(tableName).append(" CASCADE;\n");
       buf.append("CREATE TRIGGER ").append(triggerName).append("\n");
       buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
       buf.append("ON ").append(tableName).append("\n");
       buf.append("FOR EACH ROW\n");
       buf.append("EXECUTE PROCEDURE ").append(functionName).append("();\n");
       buf.append("\n");
-
       return buf.toString();
    }
 
@@ -750,7 +762,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       Connection conn = null;
       CallableStatement st = null;
       try {
-         String sql = "{? = call repl_check_structure()}";
+         String sql = "{? = call " + this.replPrefix + "check_structure()}";
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          st = conn.prepareCall(sql);
@@ -772,7 +784,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
    public void addTableToWatch(String catalog, String schema, String tableName,
-         boolean doReplicate) throws Exception {
+         boolean doReplicate, String triggerName) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -790,9 +802,12 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       try {
          conn = this.dbPool.reserve();
          long tmp = this.incrementReplKey(conn);
-         String sql = "INSERT INTO repl_tables VALUES ('" + catalog + "','"
+         if (triggerName == null)
+            triggerName = this.replPrefix + tmp;
+         triggerName = this.dbMetaHelper.getIdentifier(triggerName);
+         String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
                + schema + "','" + tableName + "','" + replTxt
-               + "', 'CREATING'," + tmp + ")";
+               + "', 'CREATING'," + tmp + ",'" + triggerName + "')";
          this.dbPool.update(sql);
       } finally {
       }
@@ -813,7 +828,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          schema = " ";
       tableName = this.dbMetaHelper.getIdentifier(tableName);
 
-      String sql = "DELETE FROM repl_tables WHERE tablename='" + tableName
+      String sql = "DELETE FROM " + this.replPrefix + "tables WHERE tablename='" + tableName
             + "' AND schemaname='" + schema + "' AND catalogname='" + catalog
             + "'";
       this.dbPool.update(sql);

@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 
 /**
  * 
@@ -135,12 +136,22 @@ public class DbWriter implements I_EventHandler {
       }
    }
 
-   public synchronized void update(String topic, String content, Map attrMap) throws Exception {
+   /**
+    * Determines wether the message is a database dump or not. If it is a database dump it stores the content to a file,
+    * otherwise it processes the message according to the normal processing flow.
+    */
+   public synchronized void update(String topic, byte[] content, Map attrMap) throws Exception {
       if (!this.isAlive) {
          throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
       }
-      DbUpdateInfo updateInfo = this.parser.parse(content);
-      this.writer.store(updateInfo);
+      String cmd = (String)attrMap.get(ReplicationConstants.DUMP_ACTION);
+      if (cmd != null) {
+         this.writer.update(topic, content, attrMap);
+      }
+      else {
+         DbUpdateInfo updateInfo = this.parser.parse(new String(content));
+         this.writer.store(updateInfo);
+      }
    }
    
    

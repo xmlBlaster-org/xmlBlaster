@@ -67,12 +67,18 @@ public class SpecificOracle extends SpecificDefault {
          int type = cols[i].getSqlType();
          if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY || type == Types.STRUCT) {
             buf.append("       blobCont := :" + prefix + "." + colName + ";\n");
-            buf.append("       tmp := " + prefix + "Cont || repl_col2xml_base64('" + colName + "', blobCont);\n");
+            buf.append("       tmp := " + prefix + "Cont || " + this.replPrefix + "col2xml_base64('" + colName + "', blobCont);\n");
             buf.append("       " + prefix + "Cont := tmp;\n");
          }
          else {
-            buf.append("       tmpCont := ").append(":").append(prefix).append(".").append(colName).append(";\n"); 
-            buf.append("       tmp := " + prefix + "Cont || repl_col2xml('" + colName + "', tmpCont);\n");
+            if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
+               buf.append("       tmpCont := TO_CHAR(").append(":").append(prefix).append(".").append(colName).append(");\n"); 
+            }
+            else {
+               buf.append("       tmpCont := ").append(":").append(prefix).append(".").append(colName).append(";\n"); 
+            }
+            
+            buf.append("       tmp := " + prefix + "Cont || " + this.replPrefix + "col2xml('" + colName + "', tmpCont);\n");
             buf.append("       " + prefix + "Cont := tmp;\n");
          }
       }
@@ -82,12 +88,11 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }
    
-   private String createTableTriggerAndFunction(DbUpdateInfoDescription infoDescription) {
 
+   public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
       String tableName = infoDescription.getIdentity();  // should be the table name
       String completeTableName = tableName;
       String schemaName = infoDescription.getSchema();
-      String triggerName = this.dbMetaHelper.createFunctionName("RPLT", "_", schemaName, tableName);
       if (schemaName != null && schemaName.trim().length() > 0) {
          completeTableName = schemaName + "." + tableName;
       }
@@ -130,11 +135,16 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("\n");
       buf.append("    IF INSERTING THEN\n");
       buf.append("      op := 'INSERT';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old"));
+      buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    ELSIF DELETING THEN\n");
       buf.append("      op := 'DELETE';\n");
+      buf.append(createVariableSqlPart(infoDescription, "old"));
+      buf.append("    ELSE\n");
+      buf.append("      op := 'UPDATE';\n");
+      buf.append(createVariableSqlPart(infoDescription, "old"));
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    END IF;\n");
+      
 
       String dbNameTmp = null;
       String tableNameTmp = "'" + tableName + "'";
@@ -148,9 +158,9 @@ public class SpecificOracle extends SpecificDefault {
       else
          schemaNameTmp = "'" + schemaName + "'";
       
-      buf.append("    SELECT repl_seq.nextval INTO replKey FROM DUAL;\n");
+      buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
       buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
-      buf.append("    INSERT INTO repl_items (repl_key, trans_key, dbId, tablename, guid,\n");
+      buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");
       buf.append("                           content, oldContent, version) values \n");
       buf.append("                           (replKey, transId,").append(dbNameTmp).append(",\n");
@@ -162,14 +172,6 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }   
 
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription) {
-      return createTableTriggerAndFunction(infoDescription);
-   }
-
-   public String createTableFunction(DbUpdateInfoDescription infoDescription) {
-      return null;
-   }
-   
    private final boolean cleanupType(String schema, String objName, String sql, String postfix) {
       Connection conn = null;
       try {
@@ -269,6 +271,91 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
    
+   /**
+    * Helper method used to construct the CREATE TABLE statement part belonging
+    * to a single COLUMN.
+    * 
+    * There is currently no way to distinguish the following:
+    * <ul>
+    *    <li>DECIMAL from SMALLINT and INTEGER (they are all threaded as INTEGER)</li>
+    *    <li>CHAR are all threated the same, so: CHAR(10) is the same as CHAR(10 BYTE) which is the same as CHAR(10 CHAR)</li>
+    *    <li></li>
+    *    
+    * </ul>
+    * 
+    * @param colInfoDescription
+    * @return
+    */
+   public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
+      StringBuffer buf = new StringBuffer(colInfoDescription.getColName());
+      buf.append(" ");
+      String type = colInfoDescription.getType();
+      int precision = colInfoDescription.getPrecision();
+      
+      int sqlType = colInfoDescription.getSqlType();
+      if (sqlType == Types.CHAR || sqlType == Types.VARCHAR) {
+         buf.append(type).append("(").append(precision).append(")");
+      }
+      else if (sqlType == Types.OTHER) {
+         if (type.equalsIgnoreCase("NCHAR")) { // two bytes per character
+            buf.append(type);
+            if (precision > 0)
+               buf.append("(").append(precision).append(")");
+         }
+         else {
+            buf.append(type);
+         }
+      }
+      else if (sqlType == Types.LONGVARCHAR || sqlType == Types.CLOB || sqlType == Types.BLOB) {
+         buf.append(type);
+      }
+      else if (sqlType == Types.DECIMAL) {
+         int scale = colInfoDescription.getScale();
+         buf.append(type);
+         if (precision > 0) {
+            buf.append("(").append(precision);
+            if (scale > 0)
+               buf.append(",").append(scale);
+            buf.append(")");
+         }
+      }
+      else if (sqlType == Types.FLOAT) {
+         buf.append(type).append("(").append(precision).append(")");
+      }
+      else if (sqlType == Types.DATE) {
+         buf.append(type);
+         
+      }
+      else if (sqlType == Types.VARBINARY) {
+         buf.append(type);
+         int width = colInfoDescription.getColSize();
+         if (width > 0)
+            buf.append("(").append(width).append(")");
+      }
+      else if (sqlType == Types.LONGVARBINARY) {
+         buf.append(type);
+      }
+      else {
+         buf.append(type);
+         /*
+         if (type.equalsIgnoreCase("BFILE")) { // for example BFILE (sqlType = -13)
+            buf.append(type);
+         }
+         else if (type.equalsIgnoreCase("BINARY_FLOAT")) { // binaryfloat (100)
+            buf.append(type);
+         }
+         else if (type.equalsIgnoreCase("BINARY_DOUBLE")) { // binaryfloat (100)
+            buf.append(type);
+         }
+         else {
+            buf.append(type);
+         }
+         */
+      }
+      
+      return buf;
+   }
+
    
    /**
     */
