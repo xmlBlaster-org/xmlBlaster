@@ -46,7 +46,7 @@ public class TestReplication extends XMLTestCase {
    private String tableName = "TEST_REPLICATION";
    private String tableName2 = "TEST_REPLICATION2";
    private String replPrefix = "repl_";
-   
+   private long sleepDelay;
    /**
     * Start the test.
     * <pre>
@@ -58,10 +58,11 @@ public class TestReplication extends XMLTestCase {
       // junit.swingui.TestRunner.run(TestReplication.class);
       TestReplication test = new TestReplication();
       try {
+         /*
          test.setUp();
          test.testCreateAndInsert();
          test.tearDown();
-
+         */
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
@@ -205,6 +206,14 @@ public class TestReplication extends XMLTestCase {
          conn = pool.reserve();
          boolean doWarn = false; // we don't want warnings on SQL Exceptions here.
          log.info("setUp: going to cleanup now ...");
+         this.sleepDelay = this.readerInfo.getLong("test.sleepDelay", -1L);
+         if (this.sleepDelay < 0L)
+            this.sleepDelay = this.writerInfo.getLong("test.sleepDelay", 1500L);
+         log.info("setUp: The sleep delay will be '" + this.sleepDelay + "' ms");
+
+         long tmp = this.readerInfo.getLong("alertScheduler.pollInterval", 10000000L);
+         if (this.sleepDelay <= (tmp-500L))
+            assertTrue("The sleep delay '" + this.sleepDelay + "' is too short since the polling interval for the dbWatcher is '" + tmp + "'", false);
          this.dbSpecific.cleanup(conn, doWarn);
          try {
             pool.update("DROP TABLE " + this.tableName);
@@ -260,12 +269,9 @@ public class TestReplication extends XMLTestCase {
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
-      boolean doWarn = false; // we don't want noisy warnings.
       assertNotNull("the dbSpecific shall not be null. Probably problems in configuration of this test.", this.dbSpecific);
       try {
          conn  = pool.reserve();
-         // cleaning up
-         
          try {
             pool.update("DROP TABLE " + this.tableName + this.specificHelper.getCascade());
          }
@@ -320,7 +326,7 @@ public class TestReplication extends XMLTestCase {
           * The DbWriter shall receive the messages it subscribed to and the replica shall be created and filled.
           */
 
-         Thread.sleep(3000L);
+         Thread.sleep(this.sleepDelay);
          // a new table must have been created ...
          conn = pool.reserve();
          ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(this.tableName2), null);
@@ -376,7 +382,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, PRIMARY KEY(name))";
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -406,7 +412,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 44)";
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -440,7 +446,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "UPDATE " + this.tableName + " SET age=33 WHERE name='first'";
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -474,7 +480,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "DELETE FROM " + this.tableName;
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -504,7 +510,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "ALTER TABLE " + this.tableName + " ADD (city VARCHAR(30))";
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -534,7 +540,7 @@ public class TestReplication extends XMLTestCase {
             try {
                sql = "DROP TABLE " + this.tableName;
                pool.update(sql);
-               Thread.sleep(1500L);
+               Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -543,6 +549,11 @@ public class TestReplication extends XMLTestCase {
                   assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
                }
                catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
                }
                st.close();
             }

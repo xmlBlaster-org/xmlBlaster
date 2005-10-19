@@ -287,7 +287,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
-               InputStream content = rs.getAsciiStream(9);
+               // InputStream content = rs.getAsciiStream(9);
                byte[] tmp = new byte[10000];
                InputStream oldContent = rs.getAsciiStream(10);
                oldContent.read(tmp);

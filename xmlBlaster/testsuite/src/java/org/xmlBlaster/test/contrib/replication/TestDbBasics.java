@@ -5,8 +5,9 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
-import java.io.ByteArrayInputStream;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -184,6 +185,92 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn  = pool.reserve();
          conn.setAutoCommit(true);
          String sql = null;
+
+         { // test the create blob functions
+            sql = "{? = call " + this.replPrefix + "create_blob()}";
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               st.registerOutParameter(1, Types.BLOB);
+               ResultSet rs = st.executeQuery();
+               Blob blob = st.getBlob(1);
+               log.info("The blob object if of the type '" + blob.getClass().getName() + "'");
+               assertNotNull("Testing the creation of a blob in a portable way", blob);
+               rs.close();
+               st.close();
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+         { // test the create clob functions
+            sql = "{? = call " + this.replPrefix + "create_clob()}";
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               st.registerOutParameter(1, Types.CLOB);
+               ResultSet rs = st.executeQuery();
+               Clob clob = st.getClob(1);
+               log.info("The clob object if of the type '" + clob.getClass().getName() + "'");
+               assertNotNull("Testing the creation of a clob in a portable way", clob);
+               rs.close();
+               st.close();
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+
+         { // test the test methods themselves first
+             sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}";
+             try {
+                CallableStatement st = conn.prepareCall(sql);
+                st.setString(2, "TEST");
+                String tmp = new String("Haloooooo");
+                st.setBytes(3, tmp.getBytes());
+                st.setString(4, "name");
+                st.setLong(5, 1L);
+                st.registerOutParameter(1, Types.CLOB);
+                ResultSet rs = st.executeQuery();
+                Clob clob = st.getClob(1);
+                long len = clob.length();
+                byte[] buf = new byte[(int)len];
+                clob.getAsciiStream().read(buf);
+                rs.close();
+                st.close();
+                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+                assertEquals("", "TEST", new String(buf));
+             }
+             catch (SQLException sqlEx) {
+                sqlEx.printStackTrace();
+                assertTrue("an exception should not occur when testing '" + sql + "'", false);
+             }
+          }
+         { // test the test methods themselves first
+             sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}";
+             try {
+                CallableStatement st = conn.prepareCall(sql);
+                st.setString(2, "TEST");
+                String tmp = new String("Haloooooo");
+                st.setString(3, tmp);
+                st.setString(4, "name");
+                st.setLong(5, 1L);
+                st.registerOutParameter(1, Types.CLOB);
+                ResultSet rs = st.executeQuery();
+                Clob clob = st.getClob(1);
+                long len = clob.length();
+                byte[] buf = new byte[(int)len];
+                clob.getAsciiStream().read(buf);
+                rs.close();
+                st.close();
+                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+                assertEquals("", "TEST", new String(buf));
+             }
+             catch (SQLException sqlEx) {
+                sqlEx.printStackTrace();
+                assertTrue("an exception should not occur when testing '" + sql + "'", false);
+             }
+         }
          {
             sql = "{? = call " + this.replPrefix + "base64_helper(?, ?)}";
             try {
@@ -203,7 +290,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
-
          {
             sql = "{? = call " + this.replPrefix + "base64_enc_raw(?)}"; // name text, content text)
             try {
@@ -215,14 +301,18 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                   in[i] = (byte)i;
                }
                st.setBytes(2, in);
-               st.registerOutParameter(1, Types.VARCHAR);
+               // st.registerOutParameter(1, Types.VARCHAR); // worked for oracle 10
+               st.registerOutParameter(1, Types.CLOB);
                ResultSet rs = st.executeQuery();
-               String ret = st.getString(1);
+               // String ret = st.getString(1);
+               Clob clob = st.getClob(1);
+               long len = clob.length();
+               byte[] buf = new byte[(int)len];
+               clob.getAsciiStream().read(buf);
                rs.close();
                st.close();
-               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-               
-               byte[] out = Base64.decodeBase64(ret.getBytes());
+               byte[] out = Base64.decodeBase64(buf);
+               log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
                assertEquals("wrong number of return values ", in.length, out.length);
                for (int i=0; i < in.length; i++) {
                   assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
@@ -233,7 +323,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
-      
          {
             sql = "{? = call " + this.replPrefix + "base64_enc_varchar2(?)}"; // name text, content text)
             try {
@@ -241,14 +330,17 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
 
                String test = "this is a simple base64 encoding test for clobs";
                st.setString(2, test);
-               st.registerOutParameter(1, Types.VARCHAR);
+               st.registerOutParameter(1, Types.CLOB);
                ResultSet rs = st.executeQuery();
-               String ret = st.getString(1);
+               // String ret = st.getString(1);
+               Clob clob = st.getClob(1);
+               long len = clob.length();
+               byte[] buf = new byte[(int)len];
+               clob.getAsciiStream().read(buf);
                rs.close();
                st.close();
-               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-               
-               String out = new String(Base64.decodeBase64(ret.getBytes()));
+               log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+               String out = new String(Base64.decodeBase64(buf));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
             }
             catch (SQLException sqlEx) {
@@ -256,29 +348,97 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
-
+         {
+        	 // base64_enc_blob(?)
+             sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}"; // name text, content text)
+             try {
+                CallableStatement st = conn.prepareCall(sql);
+                int nmax = 32000;
+                byte[] in = new byte[nmax];
+                for (int i=0; i < nmax; i++) {
+                   in[i] = (byte)i;
+                }
+                st.setString(2, "BASE64_ENC_BLOB");
+                st.setBytes(3, in);
+                st.setString(4, "unused");
+                st.setLong(5, 1L); // loop only once
+                st.registerOutParameter(1, Types.CLOB);
+                ResultSet rs = st.executeQuery();
+                Clob clob = st.getClob(1);
+                long len = clob.length();
+                byte[] buf = new byte[(int)len];
+                clob.getAsciiStream().read(buf);
+                rs.close();
+                st.close();
+                log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+                
+                byte[] out = Base64.decodeBase64(buf);
+                assertEquals("wrong number of return values ", in.length, out.length);
+                for (int i=0; i < in.length; i++) {
+                   assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
+                }
+             }
+             catch (SQLException sqlEx) {
+                sqlEx.printStackTrace();
+                assertTrue("an exception should not occur when testing '" + sql + "'", false);
+             }
+          }
+/*
          {
             sql = "{? = call " + this.replPrefix + "base64_enc_blob(?)}"; // name text, content text)
             try {
+               // conn.setAutoCommit(false); // needed since reusing lob objects
+               // first retreiving the LOB object
+               // String tmpSql = "{? = call " + this.replPrefix + "create_blob()}"; // name text, content text)
+               // CallableStatement tmpSt = conn.prepareCall(tmpSql);
+               // tmpSt.registerOutParameter(1, Types.BLOB);
+               // ResultSet tmpRs = tmpSt.executeQuery();
+               // Blob blob = tmpSt.getBlob(1);
                CallableStatement st = conn.prepareCall(sql);
-               
                int nmax = 32000;
                byte[] in = new byte[nmax];
                for (int i=0; i < nmax; i++) {
                   in[i] = (byte)i;
                }
+               // ByteArray works for ora10
+               // ByteArrayInputStream bais = new ByteArrayInputStream(in);
+               // st.setBinaryStream(2, bais, in.length);
+               BLOB blob = BLOB.createTemporary(conn, true, BLOB.MODE_READWRITE);
+               blob.open(BLOB.MODE_READWRITE);
+               // The following did not work for 8.1.6. To make it 
+               // work it needed the old driver and the next line code
+               // which in the new driver is deprecated. This has not
+               // been tested on 10 (TODO REMOVE THIS WHEN DONE)
+               // OutputStream os = blob.setBinaryStream(1);
                
-               // ByteArray
-               ByteArrayInputStream bais = new ByteArrayInputStream(in);
-               st.setBinaryStream(2, bais, in.length);
+               // this raises an AbstractMethodError with both old and new driver
+               // OutputStream os = ((java.sql.Blob)blob).setBinaryStream(1L);
+               
+               // This works with old driver on 8.1.6 (but oracle specific)
+               // OutputStream os = blob.getBinaryOutputStream();
+               // os.write(in);
+               // os.close();
+
+               // this raises an AbstractMethodError too in oracle with old and new driver
+               // ((java.sql.Blob)blob).setBytes(1, in);
+               ((java.sql.Blob)blob).setBytes(1, in, 0, in.length);
+               st.setBlob(2, blob);
+               
                st.registerOutParameter(1, Types.CLOB);
                ResultSet rs = st.executeQuery();
-               String ret = st.getString(1);
+               // String ret = st.getString(1);
+               Clob clob = st.getClob(1);
+               long len = clob.length();
+               byte[] buf = new byte[(int)len];
+               clob.getAsciiStream().read(buf);
+               // tmpRs.close();
+               // tmpSt.close();
                rs.close();
                st.close();
-               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
+               conn.setAutoCommit(true);
+               log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
                
-               byte[] out = Base64.decodeBase64(ret.getBytes());
+               byte[] out = Base64.decodeBase64(buf);
                assertEquals("wrong number of return values ", in.length, out.length);
                for (int i=0; i < in.length; i++) {
                   assertEquals("entry '" + i + "' is wrong: ", in[i], out[i]);
@@ -289,22 +449,28 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
-      
+ */     
          {
-            sql = "{? = call " + this.replPrefix + "base64_enc_clob(?)}"; // name text, content text)
+            // base64_enc_clob(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
 
                String test = "this is a simple base64 encoding test for clobs";
-               st.setString(2, test);
-               st.registerOutParameter(1, Types.VARCHAR);
+               st.setString(2, "BASE64_ENC_CLOB");
+               st.setString(3, test);
+               st.setString(4, "unused");
+               st.setLong(5, 1L); // loop only once
+               st.registerOutParameter(1, Types.CLOB);
                ResultSet rs = st.executeQuery();
-               String ret = st.getString(1);
+               Clob clob = st.getClob(1);
+               long len = clob.length();
+               byte[] buf = new byte[(int)len];
+               clob.getAsciiStream().read(buf);
                rs.close();
                st.close();
-               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-               
-               String out = new String(Base64.decodeBase64(ret.getBytes()));
+               log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+               String out = new String(Base64.decodeBase64(buf));
                assertEquals("invocation '" + sql + "' gave the wrong result ", test, out);
             }
             catch (SQLException sqlEx) {
@@ -324,6 +490,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                st.registerOutParameter(1, Types.VARCHAR);
                ResultSet rs = st.executeQuery();
                String ret = st.getString(1);
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
                rs.close();
                st.close();
             }
@@ -331,6 +498,64 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                sqlEx.printStackTrace();
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
+         }
+
+         // TEST HERE THE repl_add_table function behaviour
+         {
+            sql = "{? = call " + this.replPrefix + "add_table(?,?,?,?)}"; // name text, content text)
+            try {
+               try {
+                  this.pool.update("DELETE FROM " + "TEST_REPLICATION");
+               }
+               catch (Exception e) {
+               }
+               
+               CallableStatement st = conn.prepareCall(sql);
+               st.setString(2, null);
+               st.setString(3, this.specificHelper.getOwnSchema(this.pool));
+               st.setString(4, "TEST_REPLICATION");
+               st.setString(5, "CREATE");
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
+               rs.close();
+               st.close();
+               // assertEquals("Checking the invocation of '" + this.replPrefix + "add_table': and addition which must result in no operation", "FALSE", ret);
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+         // TEST HERE THE repl_add_table function behaviour
+         {
+            sql = "{? = call " + this.replPrefix + "add_table(?,?,?,?)}"; // name text, content text)
+            try {
+               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", false, null);
+               CallableStatement st = conn.prepareCall(sql);
+               st.setString(2, null);
+               st.setString(3, this.specificHelper.getOwnSchema(this.pool));
+               st.setString(4, "TEST_REPLICATION");
+               st.setString(5, "CREATE");
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
+               rs.close();
+               st.close();
+               assertEquals("Checking the invocation of '" + this.replPrefix + "add_table': and addition which must result in no operation", "TRUE", ret);
+               // and the entry should be in the repl_items table
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+         try {
+            this.pool.update("DELETE FROM " + this.replPrefix + "TEST_REPLICATION");
+         }
+         catch (Exception e) {
          }
       } 
       catch (Exception ex) {
@@ -357,145 +582,258 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn.setAutoCommit(true);
          String sql = null;
          {
-            sql = "{? = call " + this.replPrefix + "col2xml_cdata(?, ?)}"; // name text, content text)
+        	// col2xml_cdata(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "test");
+            st.setString(2, "COL2XML_CDATA");
             st.setString(3, "prova");
-            st.registerOutParameter(1, Types.VARCHAR);
-            ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
-            rs.close();
-            st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"test\"><![CDATA[prova]]></col>", ret);
-         }
-         {
-            sql = "{? = call " + this.replPrefix + "col2xml_base64(?, ?)}"; // name text, content text)
-            CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "test");
-            st.setBytes(3, "prova".getBytes());
+            st.setString(4, "test");
+            st.setLong(5, 1L); // loop only once
             st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", ret);
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"test\"><![CDATA[prova]]></col>", new String(buf));
+         }
+         {
+            // col2xml_base64(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}"; // name text, content text)
+            CallableStatement st = conn.prepareCall(sql);
+            st.setString(2, "COL2XML_BASE64");
+            st.setBytes(3, "prova".getBytes());
+            st.setString(4, "test");
+            st.setLong(5, 1L); // loop only once
+            st.registerOutParameter(1, Types.CLOB);
+            ResultSet rs = st.executeQuery();
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            rs.close();
+            st.close();
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", new String(buf));
          }
          // now testing the " + this.replPrefix + "needs_prot for the three cases ...
-         { // needs no protection
-            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
+         { // needs no protection needs_prot(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "prova");
-            st.registerOutParameter(1, Types.INTEGER);
+            st.setString(2, "NEEDS_PROT");
+            st.setString(3, "prova");
+            st.setString(4, "unused");
+            st.setLong(5, 1L);
+            // st.registerOutParameter(1, Types.INTEGER);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            int ret = st.getInt(1);
+            // int ret = st.getInt(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            String txt = new String(buf);
+            log.fine("The return value of the query '" + sql + "' is '" + txt + "'");
+            int ret = -1000;
+            try {
+               ret = Integer.parseInt(txt);
+            }
+            catch (Throwable e) {
+               assertTrue("Conversion exception should not occur on '" + sql + "' where ret is '" + txt + "'", false);
+            }
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 0, ret);
          }
-         { // needs BASE64
-            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
+         { // needs BASE64 needs_prot(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "<![[CDATAsome text]]>");
-            st.registerOutParameter(1, Types.INTEGER);
+            st.setString(2, "NEEDS_PROT");
+            st.setString(3, "<![[CDATAsome text]]>");
+            st.setString(4, "unused");
+            st.setLong(5, 1L);
+            // st.registerOutParameter(1, Types.INTEGER);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            int ret = st.getInt(1);
+            // int ret = st.getInt(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            String txt = new String(buf);
+            log.fine("The return value of the query '" + sql + "' is '" + txt + "'");
+            int ret = -1000;
+            try {
+               ret = Integer.parseInt(txt);
+            }
+            catch (Throwable e) {
+               assertTrue("Conversion exception should not occur on '" + sql + "' where ret is '" + txt + "'", false);
+            }
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 2, ret);
          }
-         { // needs CDATA
-            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
+         { // needs CDATA needs_prot(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "this is a &lt;a");
-            st.registerOutParameter(1, Types.INTEGER);
+            st.setString(2, "NEEDS_PROT");
+            st.setString(3, "this is a &lt;a");
+            st.setString(4, "unused");
+            st.setLong(5, 1L);
+            // st.registerOutParameter(1, Types.INTEGER);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            int ret = st.getInt(1);
+            // int ret = st.getInt(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            String txt = new String(buf);
+            log.fine("The return value of the query '" + sql + "' is '" + txt + "'");
+            int ret = -1000;
+            try {
+               ret = Integer.parseInt(txt);
+            }
+            catch (Throwable e) {
+               assertTrue("Conversion exception should not occur on '" + sql + "' where ret is '" + txt + "'", false);
+            }
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
-         { // needs CDATA
-            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
+         { // needs CDATA needs_prot(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "&lt;this is a");
-            st.registerOutParameter(1, Types.INTEGER);
+            st.setString(2, "NEEDS_PROT");
+            st.setString(3, "&lt;this is a");
+            st.setString(4, "unused");
+            st.setLong(5, 1L);
+            // st.registerOutParameter(1, Types.INTEGER);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            int ret = st.getInt(1);
+            // int ret = st.getInt(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            String txt = new String(buf);
+            log.fine("The return value of the query '" + sql + "' is '" + txt + "'");
+            int ret = -1000;
+            try {
+               ret = Integer.parseInt(txt);
+            }
+            catch (Throwable e) {
+               assertTrue("Conversion exception should not occur on '" + sql + "' where ret is '" + txt + "'", false);
+            }
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
-         { // needs CDATA
-            sql = "{? = call " + this.replPrefix + "needs_prot(?)}"; // name text, content text)
+         { // needs CDATA needs_prot(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "a&lt;this is a");
-            st.registerOutParameter(1, Types.INTEGER);
+            st.setString(2, "NEEDS_PROT");
+            st.setString(3, "a&lt;this is a");
+            st.setString(4, "unused");
+            st.setLong(5, 1L);
+            // st.registerOutParameter(1, Types.INTEGER);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            int ret = st.getInt(1);
+            // int ret = st.getInt(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            String txt = new String(buf);
+            log.fine("The return value of the query '" + sql + "' is '" + txt + "'");
+            int ret = -1000;
+            try {
+               ret = Integer.parseInt(txt);
+            }
+            catch (Throwable e) {
+               assertTrue("Conversion exception should not occur on '" + sql + "' where ret is '" + txt + "'", false);
+            }
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
             assertEquals(sql, 1, ret);
          }
          
          // now testing the " + this.replPrefix + "needs_prot for the three cases ...
          { // needs no protection
-            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
+            // col2xml(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "colName");
+            st.setString(2, "COL2XML");
             st.setString(3, "colValue");
-            st.registerOutParameter(1, Types.VARCHAR);
+            st.setString(4, "colName");
+            st.setLong(5, 1L);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"colName\">colValue</col>", ret);
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"colName\">colValue</col>", new String(buf));
          }
-         {
-            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
+         {  // col2xml(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "test");
+            st.setString(2, "COL2XML");
             st.setString(3, "prova");
-            st.registerOutParameter(1, Types.VARCHAR);
+            st.setString(4, "test");
+            st.setLong(5, 1L);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"test\">prova</col>", ret);
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"test\">prova</col>", new String(buf));
          }
-         { // needs BASE64
-            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
+         { // needs BASE64 col2xml(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "colName");
+            st.setString(2, "COL2XML");
             st.setString(3, "<![CDATA[colValue]]>");
-            st.registerOutParameter(1, Types.VARCHAR);
+            st.setString(4, "colName");
+            st.setLong(5, 1L);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"colName\" encoding=\"base64\">PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", ret);
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"colName\" encoding=\"base64\">PCFbQ0RBVEFbY29sVmFsdWVdXT4=</col>", new String(buf));
          }
-         { // needs CDATA
-            sql = "{? = call " + this.replPrefix + "col2xml(?, ?)}"; // name text, content text)
+         { // needs CDATA col2xml(?, ?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
-            st.setString(2, "colName");
+            st.setString(2, "COL2XML");
             st.setString(3, "c&lt;olValue");
-            st.registerOutParameter(1, Types.VARCHAR);
+            st.setString(4, "colName");
+            st.setLong(5, 1L);
+            st.registerOutParameter(1, Types.CLOB);
             ResultSet rs = st.executeQuery();
-            String ret = st.getString(1);
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
             rs.close();
             st.close();
-            log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
-            assertEquals(sql, "<col name=\"colName\"><![CDATA[c&lt;olValue]]></col>", ret);
+            log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+            assertEquals(sql, "<col name=\"colName\"><![CDATA[c&lt;olValue]]></col>", new String(buf));
          }
          // now test the counter ... (this invocation is used in SpecificDefault.incrementReplKey
          {
@@ -838,6 +1176,28 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
 
    public void shutdown() {
    }
-   
+
+   public final void testAdhoc() throws Exception {
+      log.info("Start testInternalFunctions");
+      if (!this.specificHelper.isOracle()) {
+         log.info("Stop testInternalFunctions (nothing to be done since not oracle)");
+         return;
+      }
+      
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+//         String sql = null;
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
    
 }

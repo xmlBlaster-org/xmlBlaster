@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -68,8 +69,10 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     private static String currentMethod; // since there are two instances running (I_ChangePublisher also)
     private boolean doCheck = true;
     
+    private DbMetaHelper dbHelper;
     private static SpecificHelper specificHelper; // this is static since the implementation of I_ChangePublisher is another instance
     private String replPrefix = "repl_";
+    private String tableName;
     
     /**
      * Start the test. 
@@ -131,7 +134,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       super.setUp();
       
       specificHelper = new SpecificHelper(System.getProperties());
-      
+
+      this.tableName = "TEST_DBSPECIFIC";
       info = new PropertiesInfo(specificHelper.getProperties());
       this.replPrefix = info.get("replication.prefix", "repl_");
       dbPool = setUpDbPool(info);
@@ -141,6 +145,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       Connection conn = null;
       try {
          conn = dbPool.reserve();
+         this.dbHelper = new DbMetaHelper(dbPool);
+         this.tableName = this.dbHelper.getIdentifier(this.tableName);
          log.info("setUp: going to cleanup now ...");
          dbSpecific.cleanup(conn, false);
          try {
@@ -163,19 +169,6 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       catch (Exception ex) {
          if (conn != null)
             dbPool.release(conn);
-      }
-      
-      try {
-         // dbPool.update("DROP TRIGGER test_dbspecific_trigger ON test_dbspecific CASCADE");
-         dbPool.update(specificHelper.getDropSql()[0]);
-      } catch(Exception e) {
-         // log.warning(e.toString()); silent warning since it should have been erased by shutDown 
-      }
-      try {
-         dbPool.update(specificHelper.getDropSql()[1]);
-         // dbPool.update("DROP TABLE test_dbspecific CASCADE");
-      } catch(Exception e) {
-         // log.warning(e.toString()); silent warning since it should have been erased by shutDown 
       }
    }
    
@@ -293,15 +286,6 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          dbSpecific.shutdown();
          dbSpecific = null;
       }
-       
-      if (dbPool != null) {
-         try {
-            dbPool.update(specificHelper.getDropSql()[1]);
-         } catch(Exception e) {
-            log.warning(e.toString()); 
-         }
-         dbPool.shutdown();
-      }
    }
 
    /**
@@ -311,45 +295,39 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     * @throws Exception Any type is possible
     */
    public final void testCreateTablesWithDifferentTypes() throws Exception {
-      currentMethod = new String("testComplete");
+      currentMethod = new String("testCreateTablesWithDifferentTypes");
       log.info("Start " + currentMethod);
 
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
-      Connection conn = null;
       this.doCheck = true;
-      for (int i=0; i < specificHelper.getSql().length; i++) {
+      String[] sqls = specificHelper.getSql(this.tableName);
+      for (int i=0; i < sqls.length; i++) {
          try {
-            int ret = pool.update(specificHelper.getSql()[i]);
+            try {
+               pool.update("DROP TABLE " + this.tableName + specificHelper.getCascade());
+            }
+            catch (Exception e) {
+            }
+            pool.update(sqls[i]);
             // don't do this since oracle 10.1.0 returns zero (don't know why)
             // assertEquals("the number of created tables must be one", 1, ret);
          }
          catch (Exception ex) {
             ex.printStackTrace();
-            assertTrue("an exception should not occur when testing nr." + i + " which is '" + specificHelper.getSql()[i] + "' : " + ex.getMessage(), false);
+            assertTrue("an exception should not occur when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
          }
          try {
-            log.info("processing now '" + specificHelper.getSql()[i] + "'");
-            dbSpecific.readNewTable(null, null, "test_dbspecific", null);
-            Thread.sleep(1000L);
-            try {
-               dbPool.update(specificHelper.getDropSql()[0]);
-            }
-            catch (Exception e) {
-            }
-            try {
-               dbPool.update(specificHelper.getDropSql()[1]);
-            }
-            catch (Exception e) {
-            }
+            log.info("processing now '" + specificHelper.getSql(this.tableName)[i] + "'");
+            dbSpecific.readNewTable(null, specificHelper.getOwnSchema(pool), this.tableName, null);
          }
          catch (Exception ex) {
             ex.printStackTrace();
-            assertTrue("an exception should not occur when dropping test tables : " + ex.getMessage(), false);
+            assertTrue("an exception should not occur when invoking readNewTable when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
          }
       }
       this.doCheck = true;
-      log.info("SUCCESS");
+      log.info("testCreateTablesWithDifferentTypes: SUCCESS");
    }
 
    

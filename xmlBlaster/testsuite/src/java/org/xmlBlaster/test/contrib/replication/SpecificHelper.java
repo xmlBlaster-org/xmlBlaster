@@ -9,6 +9,11 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
+import org.xmlBlaster.util.I_ReplaceVariable;
+import org.xmlBlaster.util.ReplaceVariable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -20,28 +25,47 @@ final class SpecificHelper {
     
    private final static String ORACLE = "oracle";
    private final static String POSTGRES = "postgres";
-   
-    private String[] postgresTypesSql = new String[] {
-       "CREATE TABLE test_dbspecific (name VARCHAR(20) PRIMARY KEY)",
-       "CREATE TABLE test_dbspecific (col1 CHAR, col2 CHAR(5), col3 VARCHAR, col4 VARCHAR(10), col5 int, col6 int2, col7 bytea, col8 boolean, PRIMARY KEY (col1, col2))",
-       "CREATE TABLE test_dbspecific (col1 REAL, col2 REAL[10], col3 FLOAT, col4 FLOAT[4], col5 double precision, col6 double precision[4], col7 date, col8 date[100], col9 timestamp, col10 timestamp[8], PRIMARY KEY (col1, col2))",
-       "CREATE TABLE test_dbspecific (col1 bpchar, col2 int[3][4][5], PRIMARY KEY (col1))"
+
+   private String[] postgresTypesSql = new String[] {
+       "CREATE TABLE ${tableName} (name VARCHAR(20) PRIMARY KEY)",
+       "CREATE TABLE ${tableName} (col1 CHAR, col2 CHAR(5), col3 VARCHAR, col4 VARCHAR(10), col5 int, col6 int2, col7 bytea, col8 boolean, PRIMARY KEY (col1, col2))",
+       "CREATE TABLE ${tableName} (col1 REAL, col2 REAL[10], col3 FLOAT, col4 FLOAT[4], col5 double precision, col6 double precision[4], col7 date, col8 date[100], col9 timestamp, col10 timestamp[8], PRIMARY KEY (col1, col2))",
+       "CREATE TABLE ${tableName} (col1 bpchar, col2 int[3][4][5], PRIMARY KEY (col1))"
     };
 
+    /* These work on Oracle 10g
     private String[] oracleTypesSql = new String[] {
-       "CREATE TABLE test_dbspecific (one CHARACTER(10),two CHARACTER VARYING(5),three CHAR VARYING(30),four NATIONAL CHARACTER(30),five NATIONAL CHAR(20),PRIMARY KEY (one, two))",       
-       "CREATE TABLE test_dbspecific (one LONG,two DECIMAL(10,3),three INTEGER,four SMALLINT,five FLOAT(3),PRIMARY KEY (three))",
-       "CREATE TABLE test_dbspecific (two VARCHAR2(10),three VARCHAR2(10 BYTE), four VARCHAR2(10 CHAR),eight VARCHAR(10 BYTE),PRIMARY KEY(two, three ,four))",
-       "CREATE TABLE test_dbspecific (one CHAR,two CHAR(10),three CHAR(10 BYTE),four CHAR(10 CHAR),five NCHAR,six NCHAR(10),seven CLOB,eight NCLOB,nine BLOB,ten BFILE)",
-       "CREATE TABLE test_dbspecific (one NUMBER,two NUMBER(3),three NUMBER(3,2),four LONG,five DATE,six BINARY_FLOAT,seven BINARY_DOUBLE)",
-       "CREATE TABLE test_dbspecific (one TIMESTAMP,two TIMESTAMP(2),three TIMESTAMP WITH TIME ZONE,four TIMESTAMP(2) WITH TIME ZONE,six TIMESTAMP WITH LOCAL TIME ZONE,seven TIMESTAMP(2) WITH LOCAL TIME ZONE)",
-       "CREATE TABLE test_dbspecific (one INTERVAL YEAR TO MONTH,two INTERVAL YEAR(3) TO MONTH,seven RAW(200),eight LONG RAW,nine ROWID,ten UROWID)"
-    };
+          "CREATE TABLE ${tableName} (one CHARACTER(10),two CHARACTER VARYING(5),three CHAR VARYING(30),four NATIONAL CHARACTER(30),five NATIONAL CHAR(20),PRIMARY KEY (one, two))",       
+          "CREATE TABLE ${tableName} (one LONG,two DECIMAL(10,3),three INTEGER,four SMALLINT,five FLOAT(3),PRIMARY KEY (three))",
+          "CREATE TABLE ${tableName} (two VARCHAR2(10),three VARCHAR2(10 BYTE), four VARCHAR2(10 CHAR),eight VARCHAR(10 BYTE),PRIMARY KEY(two, three ,four))",
+          "CREATE TABLE ${tableName} (one CHAR,two CHAR(10),three CHAR(10 BYTE),four CHAR(10 CHAR),five NCHAR,six NCHAR(10),seven CLOB,eight NCLOB,nine BLOB,ten BFILE)",
+          "CREATE TABLE ${tableName} (one NUMBER,two NUMBER(3),three NUMBER(3,2),four LONG,five DATE,six BINARY_FLOAT,seven BINARY_DOUBLE)",
+          "CREATE TABLE ${tableName} (one TIMESTAMP,two TIMESTAMP(2),three TIMESTAMP WITH TIME ZONE,four TIMESTAMP(2) WITH TIME ZONE,six TIMESTAMP WITH LOCAL TIME ZONE,seven TIMESTAMP(2) WITH LOCAL TIME ZONE)",
+          "CREATE TABLE ${tableName} (one INTERVAL YEAR TO MONTH,two INTERVAL YEAR(3) TO MONTH,seven RAW(200),eight LONG RAW,nine ROWID,ten UROWID)"
+       };
+       */
+    
+    /**
+     * For a detailed compatibility list for oracle look at:
+     * http://www.ss64.com/orasyntax/datatypes.html
+     * unknown to ora8.1.6: BINARY_FLOAT, BINARY_DOUBLE, CHAR(n BYTE), CHAR(n CHAR), TIMESTAMP, TIMESTAMP(n)..., ROWID, INTERVAL..
+     * UROWID should actually be supported but I get an exception when trying to read the column information out
+     * of a result set metadata:
+     * "ORA-03115: unsupported network datatype or representation"
+     * @see org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo#fillMetadata(Connection, String,String,String,ResultSet,I_AttributeTransformer)
+     */
+    private String[] oracleTypesSql = new String[] {
+          "CREATE TABLE ${tableName} (one CHARACTER(10),two CHARACTER VARYING(5),three CHAR VARYING(30),four NATIONAL CHARACTER(30),five NATIONAL CHAR(20),PRIMARY KEY (one, two))",       
+          "CREATE TABLE ${tableName} (one LONG,two DECIMAL(10,3),three INTEGER,four SMALLINT,five FLOAT(3),PRIMARY KEY (three))",
+          "CREATE TABLE ${tableName} (one CHAR,two CHAR(10),three CHAR(10),four CHAR(10),five NCHAR,six NCHAR(10),seven CLOB,eight NCLOB,nine BLOB,ten BFILE)",
+          "CREATE TABLE ${tableName} (one NUMBER,two NUMBER(3),three NUMBER(3,2),four LONG,five DATE)",
+          "CREATE TABLE ${tableName} (seven RAW(200),eight LONG RAW)"
+       };
 
     private String[] sql = oracleTypesSql;
-    private String[] dropSqlOracle = new String[] {"DROP TRIGGER test_dbspecific_repl_t", "DROP TABLE test_dbspecific" };
-    private String[] dropSqlPostgres = new String[] {"DROP TRIGGER test_dbspecific_repl_t ON test_dbspecific CASCADE", "DROP TABLE test_dbspecific CASCADE" };
-    private String[] dropSql = dropSqlOracle;
+    // private String[] dropSqlOracle = new String[] {"DROP TRIGGER ${tableName}_repl_t", "DROP TABLE ${tableName}" };
+    // private String[] dropSqlPostgres = new String[] {"DROP TRIGGER ${tableName}_repl_t ON ${tableName} CASCADE", "DROP TABLE ${tableName} CASCADE" };
+    // private String[] dropSql = dropSqlOracle;
     
     private String dbType = ORACLE;
     private Properties props;
@@ -81,8 +105,8 @@ final class SpecificHelper {
        setDefaultProperty(props, "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/oracle/bootstrap.sql");
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/oracle/cleanup.sql");
        this.sql = this.oracleTypesSql;
-       this.dropSql = this.dropSqlOracle;
-       this.cascade = "";
+       // this.dropSql = this.dropSqlOracle;
+       this.cascade = ""; // "CASCADE CONSTRAIN";
        return "oracle";
     }
     
@@ -97,7 +121,7 @@ final class SpecificHelper {
        setDefaultProperty(props, "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql");
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
        this.sql = this.postgresTypesSql;
-       this.dropSql = this.dropSqlOracle;
+       // this.dropSql = this.dropSqlPostgres;
        this.cascade = " CASCADE";
        return "postgres";
     }
@@ -147,15 +171,44 @@ final class SpecificHelper {
    public Properties getProperties() {
       return this.props;
    }
-   
-   public String[] getSql() {
-      return this.sql;
+
+   /**
+    * Replaces all tokens found in the txt with the associated values
+    * found in the map.
+    * 
+    * @param txt
+    * @param map
+    * @return
+    */
+   public String replace(String txt, Map map) {
+      class ReplVar implements I_ReplaceVariable {
+         private Map map;
+         public ReplVar(Map map) {
+            this.map = map;
+         }
+         public String get(String key) {
+            if (map == null)
+               return null;
+            String val = (String)this.map.get(key);
+            if (val != null)
+               return val;
+            return null;
+         }
+      }
+      ReplaceVariable replaceVariable = new ReplaceVariable();
+      ReplVar replVar = new ReplVar(map);
+      return replaceVariable.replace(txt, replVar);
    }
    
-   public String[] getDropSql() {
-      return this.dropSql;
+   public String[] getSql(String tableName) {
+      Map map = new HashMap();
+      map.put("tableName", tableName);
+      String[] ret = new String[this.sql.length];
+      for (int i=0; i < ret.length; i++) {
+         ret[i] = replace(this.sql[i], map);
+      }
+      return ret;
    }
-   
    
    public boolean isOracle() {
       return this.dbType.equalsIgnoreCase(ORACLE);
@@ -167,7 +220,6 @@ final class SpecificHelper {
    
    public String getOwnSchema(I_DbPool pool) throws Exception {
       Connection conn = null;
-      String ret = null;
       if (isOracle()) {
          try {
             conn = pool.reserve();
