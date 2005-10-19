@@ -37,7 +37,6 @@ private final static String ME = "ReplicationWriter";
    private Map tableMap;
    private I_DbPool pool;
    private I_Info info;
-   private long oldReplKey = 0;
    private I_DbSpecific dbSpecific;
    I_Mapper mapper;
    private boolean overwriteTables;
@@ -117,7 +116,6 @@ private final static String ME = "ReplicationWriter";
       
       DbUpdateInfoDescription description = dbInfo.getDescription();
       String command = description.getCommand();
-      String identity = description.getIdentity(); // this is the tableName
 
       String action = getStringAttribute(ACTION_ATTR, null, description);
       

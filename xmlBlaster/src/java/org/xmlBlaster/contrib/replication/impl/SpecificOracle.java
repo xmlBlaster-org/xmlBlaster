@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -53,33 +54,70 @@ public class SpecificOracle extends SpecificDefault {
    }
    
    /**
+    * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
+    * @param catalog
+    * @param schema
+    * @throws Exception
+    */
+   public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
+      if (schema == null || schema.length() < 1)
+         return;
+      
+      Map map = this.replacer.getAdditionalMapClone(); 
+      map.put("schemaName", schema);
+      Replacer tmpReplacer = new Replacer(this.info, map);
+      boolean doWarn = true;
+      boolean force = true; // overwrites existing ones
+      updateFromFile(conn, "createDropAlter", "replication.createDropAlterFile",
+            "org/xmlBlaster/contrib/replication/setup/oracle/createDropAlter.sql",
+            doWarn, force, tmpReplacer);
+   }
+   
+   /**
     * 
     * @param col 
     * @param prefix can be 'old' or 'new'
     * @return
     */
    protected String createVariableSqlPart(DbUpdateInfoDescription description, String prefix) {
+      String newOldPrefix = ":"; // ":" on ora10 ?
       DbUpdateInfoColDescription[] cols = description.getUpdateInfoColDescriptions();
-      StringBuffer buf = new StringBuffer("       ").append(prefix).append("Cont := '';\n");
-
+      String contName = prefix + "Cont"; // will be newCont or oldCont
+      
+      StringBuffer buf = new StringBuffer();
+      buf.append("       ").append(contName).append(" := EMPTY_CLOB;\n");
+      buf.append("       dbms_lob.createtemporary(").append(contName).append(", TRUE);\n");
+      buf.append("       dbms_lob.open(").append(contName).append(", dbms_lob.lob_readwrite);\n");
+      
       for (int i=0; i < cols.length; i++) {
          String colName = cols[i].getColName();
          int type = cols[i].getSqlType();
+         String varName = newOldPrefix + prefix + "." + colName;  // for example   ':new.colname'
+         
          if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY || type == Types.STRUCT) {
-            buf.append("       blobCont := :" + prefix + "." + colName + ";\n");
-            buf.append("       tmp := " + prefix + "Cont || " + this.replPrefix + "col2xml_base64('" + colName + "', blobCont);\n");
-            buf.append("       " + prefix + "Cont := tmp;\n");
+            buf.append("       blobCont := EMPTY_BLOB;\n");
+            buf.append("       dbms_lob.createtemporary(blobCont, TRUE);\n");
+            buf.append("       dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
+            if (type == Types.BLOB)
+               buf.append("       dbms_lob.append(blobCont,").append(varName).append(");\n");
+            else
+               buf.append("       dbms_lob.writeappend(blobCont,").append("length(").append(varName).append("),").append(varName).append(");\n");
+            buf.append("       dbms_lob.close(blobCont);\n");
+            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont));\n");
          }
          else {
+            buf.append("       tmpCont := EMPTY_CLOB;\n");
+            buf.append("       dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("       dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
-               buf.append("       tmpCont := TO_CHAR(").append(":").append(prefix).append(".").append(colName).append(");\n"); 
+               buf.append("       tmpNum := TO_CHAR(").append(varName).append(");\n");
             }
             else {
-               buf.append("       tmpCont := ").append(":").append(prefix).append(".").append(colName).append(";\n"); 
+               buf.append("       tmpNum := ").append(varName).append(";\n"); 
             }
-            
-            buf.append("       tmp := " + prefix + "Cont || " + this.replPrefix + "col2xml('" + colName + "', tmpCont);\n");
-            buf.append("       " + prefix + "Cont := tmp;\n");
+            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n"); 
+            buf.append("       dbms_lob.close(tmpCont);\n");
+            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("col2xml('").append(colName).append("', tmpCont));\n");
          }
       }
       // buf.append("       oid := ROWIDTOCHAR(:").append(prefix).append(".rowid);\n");
@@ -96,7 +134,7 @@ public class SpecificOracle extends SpecificDefault {
       if (schemaName != null && schemaName.trim().length() > 0) {
          completeTableName = schemaName + "." + tableName;
       }
-      String catalogName = infoDescription.getCatalog();
+
       String dbName = "NULL"; // still unsure on how to retrieve this information on a correct way.
       StringBuffer buf = new StringBuffer();
       buf.append("-- ---------------------------------------------------------------------------- \n");
@@ -122,25 +160,23 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   blobCont BLOB; \n");
       buf.append("   oldCont CLOB; \n");
       buf.append("   newCont CLOB;\n");
-      buf.append("   tmp     CLOB;\n");
       buf.append("   tmpCont CLOB;\n");
+      buf.append("   tmpNum  VARCHAR(100);\n");
       buf.append("   oid     VARCHAR(30);\n");
       buf.append("   replKey INTEGER;\n");
       buf.append("   ret     VARCHAR(10);\n");
       buf.append("   transId VARCHAR2(30);\n");
       buf.append("   op      VARCHAR(10);\n");
       buf.append("BEGIN\n");
-      buf.append("    oldCont := NULL;\n");
-      buf.append("    newCont := NULL;\n");
       buf.append("\n");
       buf.append("    IF INSERTING THEN\n");
-      buf.append("      op := 'INSERT';\n");
+      buf.append("       op := 'INSERT';\n");
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    ELSIF DELETING THEN\n");
-      buf.append("      op := 'DELETE';\n");
+      buf.append("       op := 'DELETE';\n");
       buf.append(createVariableSqlPart(infoDescription, "old"));
       buf.append("    ELSE\n");
-      buf.append("      op := 'UPDATE';\n");
+      buf.append("       op := 'UPDATE';\n");
       buf.append(createVariableSqlPart(infoDescription, "old"));
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    END IF;\n");
@@ -166,7 +202,6 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("                           (replKey, transId,").append(dbNameTmp).append(",\n");
       buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(", newCont, \n");
       buf.append("            oldCont, '0.0');\n");
-
       buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
@@ -365,7 +400,6 @@ public class SpecificOracle extends SpecificDefault {
          LogManager.getLogManager().readConfiguration();
 
          // ---- Database settings -----
-         String tmp = null;
          if (System.getProperty("jdbc.drivers", null) == null) {
             System.setProperty("jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
          }

@@ -47,7 +47,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
    private String dbUrl;
    private String dbUser;
    private String dbPasswd;
-   private long eraseUnusedPoolTimeout;
    /** If the pool is exhausted, we poll the given times */
    private int maxResourceExhaustRetries;
    /** If the pool is exhausted, we poll every given millis<br />
@@ -253,7 +252,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       catch (SQLException e) {
          String str = "SQLException in query '" + command + "' : " + e;
          log.warning(str + ": sqlSTATE=" + e.getSQLState() + " we destroy the connection in case it's stale");
-         String sqlState = e.getSQLState(); // DatabaseMetaData method getSQLStateType can be used to discover whether the driver returns the XOPEN type or the SQL 99 type
+         //String sqlState = e.getSQLState(); // DatabaseMetaData method getSQLStateType can be used to discover whether the driver returns the XOPEN type or the SQL 99 type
          // To be on the save side we always destroy the connection:
          erase(conn);
          conn = null;
@@ -320,7 +319,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#select(String, I_ResultCb)
     */
    public void select(String command, I_ResultCb cb) throws Exception {
-      Connection conn = select(null, command, true, cb);
+      select(null, command, true, cb);
    }
 
    /**

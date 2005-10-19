@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
@@ -54,17 +56,26 @@ public class PropertiesInfo implements I_Info {
    }
    
    /**
+    * 
+    * @param txt
+    * @return
+    */
+   protected final String replace(String txt) {
+      return this.replaceVariable.replace(txt, this.replacer);
+   }
+   
+   /**
    * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
    */
    public String get(String key, String def) {
       if (def != null)
-         def = this.replaceVariable.replace(def, this.replacer);
+         def = replace(def);
       if (key == null)
          return def;
-      key = this.replaceVariable.replace(key, this.replacer);
+      key = replace(key);
       String ret = this.props.getProperty(key);
       if (ret != null) {
-         return this.replaceVariable.replace(ret, this.replacer);
+         return replace(ret);
       }
       return def;
    }
@@ -150,4 +161,20 @@ public class PropertiesInfo implements I_Info {
    public Object putObject(String key, Object o) {
       return this.objects.put(key, o);
    }
+   
+   public static void main(String[] args) {
+      try {
+         PropertiesInfo info = new PropertiesInfo(System.getProperties());
+         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+         String line = null;
+         while ( (line=reader.readLine())!= null) {
+            System.out.println(info.replace(line));
+         }
+         reader.close();
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+   
 }

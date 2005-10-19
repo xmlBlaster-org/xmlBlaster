@@ -15,6 +15,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -29,7 +30,6 @@ import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -62,32 +62,34 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    
    protected ReplaceVariable replaceVariable;
 
-   private Replacer replacer;
+   protected Replacer replacer;
    
    class Replacer implements I_ReplaceVariable {
 
       private I_Info info;
-      private String replPrefix;
+      private Map additionalMap;
       
-      public Replacer(I_Info info, String replPrefix) {
+      public Replacer(I_Info info, Map additionalMap) {
          this.info = info;
-         this.replPrefix = replPrefix;
-         if (this.replPrefix == null)
-            this.replPrefix = "";
+         this.additionalMap = additionalMap;
+         if (this.additionalMap == null)
+            this.additionalMap = new HashMap();
       }
       
       public String get(String key) {
-         if ("replPrefix".equalsIgnoreCase(key)) {
-            return this.replPrefix;
-         }
-         else {
-            if (key == null)
-               return null;
-            String repl = this.info.get(key, null);
-            if (repl != null)
-               return repl.trim();
+         if (key == null)
             return null;
-         }
+         String repl = (String)this.additionalMap.get(key);
+         if (repl != null)
+            return repl.trim();
+         repl = this.info.get(key, null);
+         if (repl != null)
+            return repl.trim();
+         return null;
+      }
+      
+      public Map getAdditionalMapClone() {
+         return new HashMap(this.additionalMap);
       }
    }
    
@@ -102,8 +104,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @param content
     * @return
     */
-   private final String replaceTokens(String content) {
-      return this.replaceVariable.replace(content, this.replacer);
+   private final String replaceTokens(String content, Replacer repl) {
+      return this.replaceVariable.replace(content, repl);
    }
    
    /**
@@ -229,26 +231,23 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * Reads the content to be executed from a file.
     * 
-    * @param conn
-    *           The connection on which to operate. Must not be null.
-    * @param method
-    *           The method which uses this invocation (used for logging
+    * @param conn The connection on which to operate. Must not be null.
+    * @param method The method which uses this invocation (used for logging
     *           purposes).
-    * @param propKey
-    *           The name (or key) of the property to retrieve. The content of
+    * @param propKey The name (or key) of the property to retrieve. The content of
     *           this property is the bootstrap file name
-    * @param propDefault
-    *           The default of the property.
-    * @throws Exception
-    *            if an exception occurs when reading the bootstrap file.
+    * @param propDefault The default of the property.
+    * @param force if force is true it will add it no matter what (overwrites 
+    * existing stuff), otherwise it will check for existence.
+    * @throws Exception if an exception occurs when reading the bootstrap file.
     */
-   private void updateFromFile(Connection conn, String method, String propKey,
-         String propDefault, boolean doWarn, boolean force) throws Exception {
+   protected void updateFromFile(Connection conn, String method, String propKey,
+         String propDefault, boolean doWarn, boolean force, Replacer repl) throws Exception {
       Statement st = null;
-      String bootstrapFileName = this.info.get(propKey, propDefault);
+      String fileName = this.info.get(propKey, propDefault);
       final String FLUSH_SEPARATOR = "-- FLUSH";
       final String CMD_SEPARATOR = "-- EOC";
-      List sqls = ReplicationManager.getContentFromClasspath(bootstrapFileName,
+      List sqls = ReplicationManager.getContentFromClasspath(fileName,
             method, FLUSH_SEPARATOR, CMD_SEPARATOR);
       for (int i = 0; i < sqls.size(); i++) {
          String[] cmds = (String[]) sqls.get(i);
@@ -259,7 +258,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
             boolean doExecuteBatch = false;
             for (int j = 0; j < cmds.length; j++) {
-               cmd = replaceTokens(cmds[j]);
+               cmd = replaceTokens(cmds[j], repl);
                if (!force) {
                   if (checkTableForCreation(cmd) == 0)
                      continue;
@@ -278,10 +277,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
             StringBuffer buf = new StringBuffer();
             for (int j = 0; j < cmds.length; j++)
                buf.append(cmd).append("\n");
-            if (doWarn)
+            if (doWarn || log.isLoggable(Level.FINE)) {
                log.warning("operation:\n" + buf.toString() + "\n failed: "
                      + ex.getMessage());
-            // ex.printStackTrace();
+               ex.printStackTrace();
+            }
          } finally {
             if (st != null) {
                st.close();
@@ -298,7 +298,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          throws Exception {
       updateFromFile(conn, "bootstrap", "replication.bootstrapFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql",
-            doWarn, force);
+            doWarn, force, this.replacer);
    }
 
    /**
@@ -307,7 +307,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public final void cleanup(Connection conn, boolean doWarn) throws Exception {
       updateFromFile(conn, "cleanup", "replication.cleanupFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql",
-            doWarn, true);
+            doWarn, true, this.replacer);
    }
 
    /**
@@ -319,7 +319,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       this.replaceVariable = new ReplaceVariable();
       this.info = info;
       this.replPrefix = this.info.get("replication.prefix", "repl_");
-      this.replacer = new Replacer(this.info, this.replPrefix);
+      Map map = new HashMap();
+      map.put("replPrefix", this.replPrefix);
+      this.replacer = new Replacer(this.info, map);
       boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher)
          this.publisher = DbWatcher.getChangePublisher(this.info,
@@ -542,16 +544,12 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_ResultCb#init(ResultSet)
     */
    public final void result(ResultSet rs) throws Exception {
-      boolean hasPublishedAlready = false;
       try {
          // TODO clear the columns since not really used anymore ...
-         DbUpdateInfoDescription description = this.dbUpdateInfo
-               .getDescription();
-
          int msgCount = 1; // since 0 was the create, the first must be 1
          int internalCount = 0;
          while (rs != null && rs.next()) {
-            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, null);
+            this.dbUpdateInfo.fillOneRow(rs, null);
             internalCount++;
             if (internalCount == this.rowsPerMessage) {
                internalCount = 0;
@@ -583,8 +581,6 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
       String type = colInfoDescription.getType();
-      int charLength = colInfoDescription.getCharLength();
-      int precision = colInfoDescription.getPrecision();
       /*
        * if (charLength > 0) { type = type + "[" + charLength + "]"; }
        */
@@ -671,8 +667,6 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public String createTableFunction(DbUpdateInfoDescription infoDescription, String functionName) {
 
-      String tableName = infoDescription.getIdentity(); // should be the table
-                                                         // name
       StringBuffer buf = new StringBuffer();
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("-- This is the function which will be registered to the triggers.               \n");
@@ -802,6 +796,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       try {
          conn = this.dbPool.reserve();
          long tmp = this.incrementReplKey(conn);
+         // TODO check if the schema already exists and only do it if it does not exist
+         addSchemaToWatch(conn, catalog, schema);
+         
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
@@ -813,6 +810,16 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
    }
 
+   /**
+    * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
+    * @param catalog
+    * @param schema
+    * @throws Exception
+    */
+   public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
+      // do nothing as a default
+   }
+   
    /**
     * @see I_DbSpecific#removeTableToWatch(String)
     */
@@ -852,7 +859,6 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
          prefs.clear();
 
          // ---- Database settings -----
-         String tmp = null;
          if (System.getProperty("jdbc.drivers", null) == null) {
             System
                   .setProperty(

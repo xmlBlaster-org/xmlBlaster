@@ -10,6 +10,11 @@
 -- NOTES:                                                                       
 -- Avoid the usage of TRUNCATE in the tables to be replicated, since the        
 -- deletion seems not to detect such a change.                                  
+-- some suggestions on how to debug:                                            
+-- with sqplus you can invoke:                                                  
+-- show errors trigger|function name                                            
+-- and the line number indicated can be retrieved with (for example):           
+-- select text from all_source where name='REPL_BASE64_ENC_RAW' AND line=18     
 -- ---------------------------------------------------------------------------- 
 
 
@@ -89,10 +94,24 @@ CREATE TABLE ${replPrefix}items (repl_key INTEGER,
 -- ${replPrefix}col2xml_base64                                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_cdata(name CLOB, content CLOB) 
-RETURN CLOB AS
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_cdata(name VARCHAR, 
+                           content CLOB) RETURN CLOB AS
+  tmp CLOB;
+  ch  VARCHAR(40);
 BEGIN
-   RETURN '<col name="' || name || '"><![CDATA[' || content || ']]></col>';
+   tmp := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+   ch := '<col name="';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.writeappend(tmp, length(name), name);
+   ch := '"><![CDATA[';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.append(tmp, content);
+   ch := ']]></col>';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.close(tmp);
+   RETURN  tmp;
 END ${replPrefix}col2xml_cdata;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -107,21 +126,44 @@ END ${replPrefix}col2xml_cdata;
 
 CREATE OR REPLACE FUNCTION ${replPrefix}needs_prot(content CLOB) 
 RETURN INTEGER AS
-   pos INTEGER;
+   pos       INTEGER;
+   ret       INTEGER;
+   len       INTEGER;
+   offset    INTEGER;
+   tmp       VARCHAR(32766);
+   increment INTEGER;
 BEGIN
-   pos := INSTR(content, ']]>', 1, 1);
-   IF POS > 0 THEN
-      RETURN 2;
-   END IF;
-   pos := INSTR(content, '<', 1, 1);
-   IF POS > 0 THEN 
-      RETURN 1;
-   END IF;
-   pos := INSTR(content, '&', 1, 1);
-   IF POS > 0 THEN 
-      RETURN 1;
-   END IF;
-   RETURN 0;
+   ret := 0;
+   offset := 1;
+   increment := 32766;
+   len := dbms_lob.getlength(content);
+
+   WHILE offset < len LOOP
+      dbms_lob.read(content, increment, offset, tmp);
+      offset := offset + increment; 
+      if len > increment THEN 
+         offset := offset - 3; -- overlap to be sure not to cut a token
+      END IF;
+      pos := INSTR(tmp, ']]>', 1, 1);
+      IF POS > 0 THEN
+         IF ret < 2 THEN
+	    ret := 2;
+	 END IF;
+      END IF;
+      pos := INSTR(tmp, '<', 1, 1);
+      IF POS > 0 THEN 
+	 IF ret < 1 THEN
+	    ret := 1;
+	 END IF;
+      END IF;
+      pos := INSTR(tmp, '&', 1, 1);
+      IF POS > 0 THEN 
+         IF ret < 1 THEN 
+	    ret := 1;
+         END IF;
+      END IF;
+   END LOOP;
+   RETURN ret;
 END ${replPrefix}needs_prot;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -253,18 +295,24 @@ END ${replPrefix}base64_helper;
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW)
    RETURN CLOB AS
      numBuilder INTEGER;
-     char1 SMALLINT;
-     char2 SMALLINT;
-     char3 SMALLINT;
-     char4 SMALLINT;
-     res   CLOB;
-     i     INTEGER;
+     char1      SMALLINT;
+     char2      SMALLINT;
+     char3      SMALLINT;
+     char4      SMALLINT;
+     res        CLOB;
+     i          INTEGER;
+     len        INTEGER;
 -- divisible by 3 (to avoid '=' characters at end of chunks)                    
-     source RAW(32766); 
-     zeros SMALLINT;
-     ch    CHAR(10);
+     source     RAW(32766); 
+     zeros      SMALLINT;
+     ch         CHAR(10);
+     tmp        VARCHAR(10);
 BEGIN
    source := msg;
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
+
    WHILE utl_raw.length(source) > 0 LOOP
       i := 1;
       numBuilder := 0;
@@ -284,12 +332,140 @@ BEGIN
       ELSE
       	source := '';
       END IF;
-      res := res || ${replPrefix}base64_helper(zeros, numBuilder);
+      tmp := ${replPrefix}base64_helper(zeros, numBuilder);
+      len := LENGTH(tmp);
+      dbms_lob.writeappend(res, len, tmp);
    END LOOP;
+   dbms_lob.close(res);
    RETURN res;
 END ${replPrefix}base64_enc_raw;
 -- EOC (end of command: needed as a separator for our script parser)            
 
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}test_blob is only needed for testing since there are problems   
+-- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
+-- portable fashion.                                                            
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions. A Blob object is valid for the duration of the          
+-- transaction in which is was created.                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}test_blob(method VARCHAR2, 
+                           msg RAW, other VARCHAR2, nmax INTEGER) 
+   RETURN CLOB AS
+   i   INTEGER;
+   len INTEGER;
+   tmp BLOB;
+   res CLOB;
+BEGIN
+   tmp := EMPTY_BLOB;
+   len := utl_raw.length(msg);
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+   FOR i IN  1 .. nmax LOOP
+      dbms_lob.writeappend(tmp, len, msg);
+   END LOOP;
+   dbms_lob.close(tmp);
+   IF method = 'BASE64_ENC_BLOB' THEN
+      RETURN ${replPrefix}base64_enc_blob(tmp);
+   END IF;
+   IF method = 'COL2XML_BASE64' THEN
+      RETURN ${replPrefix}col2xml_base64(other, tmp);
+   END IF;
+   
+   -- on other just return 'TEST' as a blob
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
+   len := LENGTH('TEST');
+   dbms_lob.writeappend(res, len, 'TEST');
+   dbms_lob.close(res);
+   RETURN res;
+END ${replPrefix}test_blob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}test_clob is only needed for testing since there are problems   
+-- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
+-- portable fashion.                                                            
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions. A Blob object is valid for the duration of the          
+-- transaction in which is was created.                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2, 
+                           msg VARCHAR2, other VARCHAR2, nmax INTEGER) 
+   RETURN CLOB AS
+   i   INTEGER;
+   len INTEGER;
+   tmp CLOB;
+   res CLOB;
+   needsProt INTEGER;
+   answer VARCHAR(20);
+BEGIN
+   tmp := EMPTY_CLOB;
+   len := LENGTH(msg);
+   answer := 'TEST';
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+   FOR i IN  1 .. nmax LOOP
+      dbms_lob.writeappend(tmp, len, msg);
+   END LOOP;
+   dbms_lob.close(tmp);
+   IF method = 'BASE64_ENC_CLOB' THEN
+      RETURN ${replPrefix}base64_enc_clob(tmp);
+   END IF;
+   IF method = 'COL2XML_CDATA' THEN
+      RETURN ${replPrefix}col2xml_cdata(other, tmp);
+   END IF;
+   IF method = 'COL2XML' THEN
+      RETURN ${replPrefix}col2xml(other, tmp);
+   END IF;
+   IF method = 'NEEDS_PROT' THEN
+      needsProt := ${replPrefix}needs_prot(tmp);
+      answer := TO_CHAR(needsProt); -- overwrites 'TEST'
+   END IF;
+   -- on other just return 'TEST' as a blob
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
+   len := LENGTH(answer);
+   dbms_lob.writeappend(res, len, answer);
+   dbms_lob.close(res);
+   RETURN res;
+END ${replPrefix}test_clob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}create_blob creates a blob. This method is used for testing     
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions. A Blob object is valid for the duration of the          
+-- transaction in which is was created.                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}create_blob
+   RETURN BLOB AS
+BEGIN
+   RETURN EMPTY_BLOB;
+END ${replPrefix}create_blob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}create_clob creates a clob. This method is used for testing     
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions.                                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}create_clob
+   RETURN CLOB AS
+BEGIN
+   RETURN EMPTY_CLOB;
+END ${replPrefix}create_clob;
+-- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
@@ -312,8 +488,12 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_varchar2(msg VARCHAR2)
      source VARCHAR2(32766); 
      zeros SMALLINT;
      ch    CHAR(2);
+     tmp   VARCHAR(10);
 BEGIN
    source := msg;
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
    WHILE LENGTHB(source) > 0 LOOP
       i := 1;
       numBuilder := 0;
@@ -333,8 +513,10 @@ BEGIN
       ELSE
       	source := '';
       END IF;
-      res := res || ${replPrefix}base64_helper(zeros, numBuilder);
+      tmp := ${replPrefix}base64_helper(zeros, numBuilder);
+      dbms_lob.writeappend(res, length(tmp), tmp);
    END LOOP;
+   dbms_lob.close(res);
    RETURN res;
 END ${replPrefix}base64_enc_varchar2;
 -- EOC (end of command: needed as a separator for our script parser)            
@@ -350,17 +532,17 @@ END ${replPrefix}base64_enc_varchar2;
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_blob(msg BLOB)
    RETURN CLOB AS
-     source    BLOB;
      len       INTEGER;
      offset    INTEGER;
      tmp       RAW(32766);
      res       CLOB;
      increment INTEGER;
 BEGIN
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
    offset := 1;
-
    increment := 32766;
-   res := '';
    len := dbms_lob.getlength(msg);
 
    WHILE offset < len LOOP
@@ -368,8 +550,9 @@ BEGIN
       offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := res || ${replPrefix}base64_enc_raw(tmp);
+      dbms_lob.append(res, ${replPrefix}base64_enc_raw(tmp));
    END LOOP;
+   dbms_lob.close(res);
    RETURN res;
 END ${replPrefix}base64_enc_blob;
 -- EOC (end of command: needed as a separator for our script parser)            
@@ -384,22 +567,26 @@ END ${replPrefix}base64_enc_blob;
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(msg CLOB)
    RETURN CLOB AS
-     source CLOB;
      len    INTEGER;
      offset INTEGER;
      tmp    VARCHAR2(32766);
      res    CLOB;
+     increment INTEGER;
 BEGIN
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
    offset := 1;
-   res := '';
+   increment := 32766;
    len := dbms_lob.getlength(msg);
    WHILE offset < len LOOP
-      dbms_lob.read(msg, len, offset, tmp);
-      offset := offset + len;
+      dbms_lob.read(msg, increment, offset, tmp);
+      offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := res || ${replPrefix}base64_enc_varchar2(tmp);
+      dbms_lob.append(res, ${replPrefix}base64_enc_varchar2(tmp));
    END LOOP;
+   dbms_lob.close(res);
    RETURN res;
 END ${replPrefix}base64_enc_clob;
 -- EOC (end of command: needed as a separator for our script parser)            
@@ -412,14 +599,24 @@ END ${replPrefix}base64_enc_clob;
 --   content the content of the column (must be bytea or compatible)            
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_base64(name CLOB, content BLOB) 
-RETURN CLOB AS
-  tmp CLOB;
-
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_base64(name VARCHAR, 
+                           content BLOB) RETURN CLOB AS
+   tmp CLOB;
+   ch  VARCHAR(40);
 BEGIN
-  tmp := '<col name="' || name || '" encoding="base64">' ||  
-          ${replPrefix}base64_enc_blob(content) || '</col>';
-  RETURN  tmp;
+   tmp := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+   ch := '<col name="';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.writeappend(tmp, length(name), name);
+   ch := '" encoding="base64">';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.append(tmp, ${replPrefix}base64_enc_blob(content));
+   ch := '</col>';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.close(tmp);
+   RETURN  tmp;
 END ${replPrefix}col2xml_base64;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -434,19 +631,41 @@ END ${replPrefix}col2xml_base64;
 -- ${replPrefix}col2xml_base64.                                                 
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION ${replPrefix}col2xml(name CLOB, content CLOB) 	
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml(name VARCHAR, content CLOB)
 RETURN CLOB AS
    pos INTEGER;
+   tmp CLOB;
+   ch  VARCHAR(40);
 BEGIN
+   tmp := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
    pos := ${replPrefix}needs_prot(content);
    IF pos = 0 THEN
-      RETURN '<col name="' || name || '">' || content || '</col>';
+      ch := '<col name="';
+      dbms_lob.writeappend(tmp, length(ch), ch);
+      dbms_lob.writeappend(tmp, length(name), name);
+      ch := '">';
+      dbms_lob.writeappend(tmp, length(ch), ch);
+      dbms_lob.append(tmp, content);
+      ch := '</col>';
+      dbms_lob.writeappend(tmp, length(ch), ch);
+      dbms_lob.close(tmp);
+      RETURN tmp;
    END IF;
    IF pos = 1 THEN 
       RETURN ${replPrefix}col2xml_cdata(name, content);
    END IF; 
-   RETURN '<col name="' || name || '" encoding="base64">' ||  
-          ${replPrefix}base64_enc_clob(content) || '</col>';
+   ch := '<col name="';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.writeappend(tmp, length(name), name);
+   ch := '" encoding="base64">';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.append(tmp, ${replPrefix}base64_enc_clob(content));
+   ch := '</col>';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.close(tmp);
+   RETURN  tmp;
 END ${replPrefix}col2xml;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -457,7 +676,7 @@ END ${replPrefix}col2xml;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}check_structure
-   RETURN CLOB AS
+   RETURN VARCHAR AS
 BEGIN
    RETURN 'OK';
 END ${replPrefix}check_structure;
@@ -585,68 +804,5 @@ BEGIN
    END IF;
    RETURN res;
 END ${replPrefix}add_table;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}create_trigger is invoked when a new table is created.          
--- note that this must be invoked for each Schema.                              
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE TRIGGER ${replPrefix}create_trigger_xmlblaster
-   AFTER CREATE ON XMLBLASTER.SCHEMA
-DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
-BEGIN
-   dbName     := DATABASE_NAME;
-   tableName  := DICTIONARY_OBJ_NAME;
-   schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'CREATE');
-END ${replPrefix}create_trigger_xmlblaster;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}drop_trigger is invoked when a table is dropped.                
--- note that this must be invoked for each Schema.                              
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE TRIGGER ${replPrefix}drop_trigger_xmlblaster
-   BEFORE DROP ON XMLBLASTER.SCHEMA
-DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
-BEGIN
-   dbName     := DATABASE_NAME;
-   tableName  := DICTIONARY_OBJ_NAME;
-   schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'DROP');
-END ${replPrefix}drop_trigger_xmlblaster;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}alter_trigger is invoked when a table is altered (modified).    
--- note that this must be invoked for each Schema.                              
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE TRIGGER ${replPrefix}alter_trigger_xmlblaster
-   AFTER ALTER ON XMLBLASTER.SCHEMA
-DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
-BEGIN
-   dbName     := DATABASE_NAME;
-   tableName  := DICTIONARY_OBJ_NAME;
-   schemaName := DICTIONARY_OBJ_OWNER;
-   dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'ALTER');
-END ${replPrefix}alter_trigger_xmlblaster;
 -- EOC (end of command: needed as a separator for our script parser)            
 

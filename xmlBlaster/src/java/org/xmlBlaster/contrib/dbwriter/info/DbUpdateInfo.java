@@ -97,9 +97,12 @@ public class DbUpdateInfo implements ReplicationConstants {
          }
          // retrieve additional information about columns
          Statement st = null;
+         String completeTableName = null;
+         String colName = null;
+         DbUpdateInfoColDescription colDesc = null;
          try {
             st = conn.createStatement();
-            String completeTableName = table;
+            completeTableName = table;
             if (schema != null)
                completeTableName = schema + "." + table;
             rs = st.executeQuery("SELECT * from " + completeTableName);
@@ -108,8 +111,8 @@ public class DbUpdateInfo implements ReplicationConstants {
             if (colCount != this.description.getNumOfColumns())
                throw new Exception("DbUpdateInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
             for (int i=1; i <= colCount; i++) {
-               String colName = rsMeta.getColumnName(i);
-               DbUpdateInfoColDescription colDesc = this.description.getColumnAtPosition(i);
+               colName = rsMeta.getColumnName(i);
+               colDesc = this.description.getColumnAtPosition(i);
                if (colDesc.getColName() == null)
                   colDesc.setColName(colName);
                colDesc.setLabel(rsMeta.getColumnLabel(i));
@@ -130,7 +133,27 @@ public class DbUpdateInfo implements ReplicationConstants {
                // rsMeta.isSearchable(i);
                // rsMeta.isWritable(i);
                // rsMeta.isDefinitelyWritable(i);
+               colDesc = null; // to get correct info on exceptions
+               colName = null;
             }
+         }
+         catch (SQLException ex) {
+            // could still work but UROWID throws an exception here on ora8.1.6
+            // "ORA-03115: unsupported network datatype or representation"
+            // if (ex.getSQLState() != null && ex.getSQLState().indexOf("ORA-03115") > -1) { // does not work at least on ora8.1.6
+            if ( (ex.getMessage() != null && ex.getMessage().indexOf("ORA-03115") > -1) ||
+                  (ex.getSQLState() != null && ex.getSQLState().indexOf("ORA-03115") > -1)) {
+               if (completeTableName == null)
+                  completeTableName = "";
+               if (colName == null)
+                  colName = "";
+               String colDescTxt = "";
+               if (colDesc != null)
+                  colDescTxt = colDesc.toXml("");
+               log.warning("fillMetaData: could not build complete column information for " + completeTableName + "." + colName + ": " + colDescTxt + " " + ex.getMessage());
+            }
+            else
+               throw ex;
          }
          finally {
             try {
@@ -150,7 +173,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          rs = meta.getPrimaryKeys(catalog, schema, table);
          try {
             while (rs.next()) {
-               String colName = rs.getString(4);
+               colName = rs.getString(4);
                String pkName = rs.getString(6);
                DbUpdateInfoColDescription col = this.description.getUpdateInfoColDescription(colName);
                if (col != null) {
@@ -168,7 +191,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          rs = meta.getImportedKeys(catalog, schema, table);
          try {
             while (rs.next()) {
-               String colName = rs.getString(8);
+               colName = rs.getString(8);
                DbUpdateInfoColDescription col = description.getUpdateInfoColDescription(colName);
                if (col != null) {
                   col.setFkCatalog(rs.getString(1));
@@ -188,7 +211,7 @@ public class DbUpdateInfo implements ReplicationConstants {
             rs = null;
          }
 
-         String version = "0.0";
+         // String version = "0.0";
          // replKey, timestamp, action must be filled later (on INSERT if any) (dbId will be empty) catalog is still missing
          
          // these shall be filled from addAttributes ...
@@ -265,7 +288,7 @@ public class DbUpdateInfo implements ReplicationConstants {
             ResultSet pkRs = dbMeta.getPrimaryKeys(catalog, schema, tableName);
             while (pkRs.next()) {
                String colName = pkRs.getString(4);
-               String pkName = pkRs.getString(6);
+               //String pkName = pkRs.getString(6);
                DbUpdateInfoColDescription col = description.getUpdateInfoColDescription(colName);
                if (col != null)
                   col.setPrimaryKey(true);
@@ -301,7 +324,6 @@ public class DbUpdateInfo implements ReplicationConstants {
       }
       
       if (fillData) {
-         List rows = getRows();
          int count = 0;
          while (rs.next()) {
             DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
@@ -340,7 +362,6 @@ public class DbUpdateInfo implements ReplicationConstants {
    public DbUpdateInfoRow fillOneRow(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
-      List rows = getRows();
       int count = getRowCount();
       DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
       getRows().add(row);
@@ -364,7 +385,6 @@ public class DbUpdateInfo implements ReplicationConstants {
     * @throws SQLException
     */
    public DbUpdateInfoRow fillOneRow(ResultSet rs, String rawContent, I_AttributeTransformer transformer) throws Exception {
-      List rows = getRows();
       int count = getRowCount();
       DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
       getRows().add(row);

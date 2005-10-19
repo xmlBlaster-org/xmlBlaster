@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.OutputStream;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
@@ -126,8 +127,28 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       String action = rs.getString(6);
       String catalog = rs.getString(7);
       String schema = rs.getString(8);
-      String newContent = rs.getString(9); // could be null
-      String oldContent = rs.getString(10);
+      // String newContent = rs.getString(9); // could be null
+      String newContent = null;
+      Clob clob = rs.getClob(9);
+      if (clob != null) {
+         long length = clob.length();
+         if (length > Integer.MAX_VALUE)
+            throw new Exception("ReplicationConverter.addInfo: the content is too big ('" + length + "' bytes) to fit in one msg, can not process");
+         byte[] buf = new byte[(int)length];
+         clob.getAsciiStream().read(buf);
+         newContent = new String(buf);
+      }
+      // String oldContent = rs.getString(10);
+      String oldContent = null;
+      clob = rs.getClob(10);
+      if (clob != null) {
+         long length = clob.length();
+         if (length > Integer.MAX_VALUE)
+            throw new Exception("ReplicationConverter.addInfo: the old content is too big ('" + length + "' bytes) to fit in one msg, can not process");
+         byte[] buf = new byte[(int)length];
+         clob.getAsciiStream().read(buf);
+         oldContent = new String(buf);
+      }
       String version = rs.getString(11);
       
       if (this.dbUpdateInfo.getRowCount() == 0L) {

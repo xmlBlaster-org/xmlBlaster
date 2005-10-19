@@ -12,8 +12,11 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
+import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
+import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
 /**
  * 
@@ -89,4 +92,17 @@ public class DefaultMapper implements I_Mapper {
       this.tableMap.clear();
    }
 
+   public void main(String[] args) {
+      try {
+         I_Info info = new PropertiesInfo(System.getProperties());
+         I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(info);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+      
+      
+   }
+   
+   
 }

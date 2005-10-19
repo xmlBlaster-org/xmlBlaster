@@ -6,6 +6,12 @@
 
 PURGE RECYCLEBIN
 -- FLUSH (purged recyclebin)                                                    
+DROP TRIGGER ${replPrefix}crtg_${db.user}
+-- FLUSH (dropped ${replPrefix}crtg_${db.user})                                 
+DROP TRIGGER ${replPrefix}drtg_${db.user}
+-- FLUSH (dropped ${replPrefix}drtg_${db.user})                                 
+DROP TRIGGER ${replPrefix}altg_${db.user}
+-- FLUSH (dropped ${replPrefix}altg_${db.user})                                 
 DROP FUNCTION ${replPrefix}add_table
 -- FLUSH (dropped ${replPrefix}add_table)                                       
 DROP FUNCTION ${replPrefix}base64_enc_blob
@@ -20,12 +26,6 @@ DROP FUNCTION ${replPrefix}base64_helper
 -- FLUSH (dropped ${replPrefix}base64_helper)                                   
 DROP FUNCTION ${replPrefix}check_tables
 -- FLUSH (dropped ${replPrefix}check_tables)                                    
-DROP TRIGGER ${replPrefix}create_trigger_xmlblaster	
--- FLUSH (dropped ${replPrefix}create_trigger_xmlblaster)                       
-DROP TRIGGER ${replPrefix}drop_trigger_xmlblaster
--- FLUSH (dropped ${replPrefix}drop_trigger_xmlblaster)                         
-DROP TRIGGER ${replPrefix}alter_trigger_xmlblaster
--- FLUSH (dropped ${replPrefix}alter_trigger_xmlblaster)                        
 DROP TRIGGER ${replPrefix}tables_trigger
 -- FLUSH (dropped ${replPrefix}tables_trigger)                                  
 DROP TABLE ${replPrefix}tables
@@ -50,5 +50,7 @@ DROP FUNCTION ${replPrefix}increment
 -- FLUSH (dropped ${replPrefix}increment)                                       
 DROP FUNCTION ${replPrefix}check_tables
 -- FLUSH (dropped ${replPrefix}check_tables)                                    
-
-
+DROP FUNCTION ${replPrefix}create_clob
+-- FLUSH (dropped ${replPrefix}create_clob)                                     
+DROP FUNCTION ${replPrefix}create_blob
+-- FLUSH (dropped ${replPrefix}create_blob)                                     

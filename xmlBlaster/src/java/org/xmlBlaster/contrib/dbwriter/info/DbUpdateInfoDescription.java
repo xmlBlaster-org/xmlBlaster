@@ -8,6 +8,7 @@ package org.xmlBlaster.contrib.dbwriter.info;
 
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -248,6 +249,61 @@ public class DbUpdateInfoDescription {
       log.info("statement for delete: \"" + this.deleteStatementTxt + "\"");
    }
    
+   private final void insertIntoStatement(String colName, PreparedStatement st, int pos, ClientProperty prop, int sqlType) throws SQLException, IOException  {
+      if (sqlType == Types.INTEGER || sqlType == Types.DECIMAL) {
+         long val = prop.getLongValue();
+         log.fine("Handling insert column=" + colName + " as INTEGER (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         st.setLong(pos, val);
+      }
+      else if (sqlType == Types.SMALLINT) {
+         int val = prop.getIntValue();
+         log.fine("Handling insert column=" + colName + " as SMALLINT (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         st.setInt(pos, val);
+      }
+      else if (sqlType == Types.DOUBLE) {
+         double val = prop.getDoubleValue();
+         log.fine("Handling insert column=" + colName + " as DOUBLE (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         st.setDouble(pos, val);
+      }
+      else if (sqlType == Types.FLOAT) {
+         float val = prop.getFloatValue();
+         log.fine("Handling insert column=" + colName + " as FLOAT (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         st.setFloat(pos, val);
+      }
+      else if (sqlType == Types.VARBINARY) {
+         byte[] val = prop.getBlobValue();
+         log.fine("Handling insert column=" + colName + " as VARBINARY (type=" + sqlType + ", count=" + pos + ")");
+         st.setBytes(pos, val);
+      }
+      else if (sqlType == Types.VARCHAR) {
+         String val = prop.getStringValue();
+         log.fine("Handling insert column=" + colName + " as VARCHAR (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         st.setString(pos, val);
+      }
+      else if (sqlType == Types.BLOB) {
+         byte[] val = prop.getBlobValue();
+         log.fine("Handling insert column=" + colName + " as BLOB (type=" + sqlType + ", count=" + pos + ")");
+         ByteArrayInputStream bais = new ByteArrayInputStream(val);
+         st.setBinaryStream(pos, bais, val.length);
+      }
+      else if (sqlType == Types.CLOB) {
+         log.fine("Handling insert column=" + colName + " as CLOB (type=" + sqlType + ", count=" + pos + ")");
+         byte[] val = prop.getBlobValue();
+         ByteArrayInputStream bais = new ByteArrayInputStream(val);
+         st.setAsciiStream(pos, bais, val.length);
+      }
+      else if (isBinaryType(sqlType)) {
+         log.info("Handling insert column=" + colName + " as binary (type=" + sqlType + ", count=" + pos + ")");
+         ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
+         st.setBinaryStream(pos, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+      }
+      else {
+         log.info("Handling insert column=" + colName + " (type=" + sqlType + ", count=" + pos + ")");
+         st.setObject(pos, prop.getObjectValue(), sqlType);
+      }
+   }
+   
+   
    public int insert(Connection conn, DbUpdateInfoRow row) throws Exception {
       addPreparedStatements(conn);
       PreparedStatement st = null;
@@ -259,16 +315,7 @@ public class DbUpdateInfoDescription {
             ClientProperty prop = row.getColumn(colName);
             if (prop == null) 
                throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found in xml message:" + row.toXml(""));
-
-            if (isBinaryType(col.getSqlType())) {
-               log.info("Handling insert column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
-               ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-               st.setBinaryStream(i + 1, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
-            }
-            else {
-               log.info("Handling insert column=" + colName + " (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
-               st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
-            }
+            insertIntoStatement(colName, st, i+1, prop, col.getSqlType());
          }
          return st.executeUpdate();
       }
@@ -326,16 +373,7 @@ public class DbUpdateInfoDescription {
             ClientProperty prop = row.getColumn(colName);
             if (prop == null) 
                throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-
-            if (isBinaryType(col.getSqlType())) {
-               log.info("Handling update column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
-               ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-               st.setBinaryStream(i + 1, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
-            }
-            else {
-               log.info("Handling update column=" + colName + " (type=" + col.getSqlType() + ", count=" + (i+1) + ")");
-               st.setObject(i + 1, prop.getObjectValue(), col.getSqlType());
-            }
+            insertIntoStatement(colName, st, i+1, prop, col.getSqlType());
          }
          
          int count = this.columnDescriptionList.size() +1;
@@ -348,16 +386,7 @@ public class DbUpdateInfoDescription {
                   ClientProperty prop = row.getColumn(colName);
                   if (prop == null) 
                      throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-
-                  if (isBinaryType(col.getSqlType())) {
-                     log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
-                     ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-                     st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
-                  }
-                  else {
-                     log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
-                     st.setObject(count++, prop.getObjectValue(), col.getSqlType());
-                  }
+                  insertIntoStatement(colName, st, count++, prop, col.getSqlType());
                }
             }
          }
@@ -375,16 +404,7 @@ public class DbUpdateInfoDescription {
                   ClientProperty prop = oldRow.getColumn(colName);
                   if (prop == null) 
                      throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + oldRow.toXml(""));
-
-                  if (isBinaryType(col.getSqlType())) {
-                     log.info("Handling update PK column=" + colName + " as binary (type=" + col.getSqlType() + ", count=" + count + ")");
-                     ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-                     st.setBinaryStream(count++, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
-                  }
-                  else {
-                     log.info("Handling update PK column=" + colName + " (type=" + col.getSqlType() + ", count=" + count + ")");
-                     st.setObject(count++, prop.getObjectValue(), col.getSqlType());
-                  }
+                  insertIntoStatement(colName, st, count++, prop, col.getSqlType());
                }
             }
          }

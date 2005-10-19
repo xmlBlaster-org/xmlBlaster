@@ -123,6 +123,14 @@ public interface I_DbSpecific extends I_ContribPlugin {
    void addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate, String triggerName) throws Exception;
    
    /**
+    * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
+    * @param catalog
+    * @param schema
+    * @throws Exception
+    */
+   void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception;
+
+   /**
     * Removes a table from the repl_tables. This method will make sure that the correct case sensitivity
     * for the table name will be used.
     * @param tableName
