@@ -34,6 +34,17 @@ public interface I_Plugin
    public String getType();
    public String getVersion();
 
+   /**
+    * Cleans up the resource.
+    * @throws XmlBlasterException if an exception occurs. The exception is
+    * handled by the RunLevelManager depending on how the plugin has been
+    * configured with the action:
+    * <p/>
+    * &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'
+    *     onFail='resource.configuration.pluginFailed'>
+    * 
+    * If onFail is defined to something, the RunLevelManager will stop.
+    */
    public void shutdown() throws XmlBlasterException;
 
 }
