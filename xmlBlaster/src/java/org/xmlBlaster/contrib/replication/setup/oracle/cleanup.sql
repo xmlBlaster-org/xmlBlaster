@@ -50,7 +50,3 @@ DROP FUNCTION ${replPrefix}increment
 -- FLUSH (dropped ${replPrefix}increment)                                       
 DROP FUNCTION ${replPrefix}check_tables
 -- FLUSH (dropped ${replPrefix}check_tables)                                    
-DROP FUNCTION ${replPrefix}create_clob
--- FLUSH (dropped ${replPrefix}create_clob)                                     
-DROP FUNCTION ${replPrefix}create_blob
--- FLUSH (dropped ${replPrefix}create_blob)                                     
