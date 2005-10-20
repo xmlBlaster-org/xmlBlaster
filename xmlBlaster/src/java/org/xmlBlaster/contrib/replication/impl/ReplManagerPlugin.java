@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DbWatcherPlugin.java
+Name:      ReplManagerPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
@@ -9,11 +9,11 @@ trace[org.xmlBlaster.contrib.db.DbPool]=true
 trace[org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector]=true
 trace[org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler]=true
 trace[org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector]=true
-trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin]=true
+trace[org.xmlBlaster.contrib.dbwatcher.plugin.ReplManagerPlugin]=true
 trace[org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher]=true
 trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.contrib.dbwatcher.plugin;
+package org.xmlBlaster.contrib.replication.impl;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -21,17 +21,18 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
+
 import java.util.logging.Logger;
 
 /**
- * DbWatcherPlugin is a plugin wrapper if you want to run DbWatcher inside xmlBlaster. 
+ * ReplManagerPlugin is a plugin wrapper if you want to run DbWatcher inside xmlBlaster. 
  * <p />
  * DbWatcher checks a database for changes and publishes these to the MoM
  * <p />
  * This plugin needs to be registered in <tt>xmlBlasterPlugins.xml</tt>
  * to be available on xmlBlaster server startup.
  * <pre>
-&lt;plugin id='DbWatcherPlugin.TEST_TS' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+&lt;plugin id='ReplManagerPlugin.TEST_TS' className='org.xmlBlaster.contrib.dbwatcher.plugin.ReplManagerPlugin'>
    &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
    &lt;attribute id='db.url'>${db.url}&lt;/attribute>
    &lt;attribute id='db.user'>${db.user}&lt;/attribute>
@@ -61,28 +62,29 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class DbWatcherPlugin extends GlobalInfo {
-   private static Logger log = Logger.getLogger(DbWatcherPlugin.class.getName());
+public class ReplManagerPlugin extends GlobalInfo {
+   private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
+   private Global global;
    private DbWatcher dbWatcher;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
     */
-   public DbWatcherPlugin() {
-      super(new String[] {"mom.topicName", "mom.publishKey", "mom.alertSubscribeKey", "db.queryMeatStatement", "db.typeStatement"});
+   public ReplManagerPlugin() {
+      super(new String[] {});
    }
    
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      super.init(global_, pluginInfo);
+   public void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
+      super.init(global, pluginInfo);
       try {
          this.dbWatcher = new DbWatcher(this);
          this.dbWatcher.startAlertProducers();
       }
       catch (Throwable e) {
-         throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, "DbWatcherPlugin", "init failed", e); 
+         throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, "ReplManagerPlugin", "init failed", e); 
       }
       log.info("Loaded DbWatcher plugin '" + getType() + "'");
    }
@@ -100,4 +102,5 @@ public class DbWatcherPlugin extends GlobalInfo {
       }
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
+   
 }

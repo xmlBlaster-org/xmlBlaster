@@ -16,7 +16,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -31,7 +33,7 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
    protected List subscribeKeyList;
    protected List subscribeQosList;
    protected ConnectQos connectQos;
-   protected I_EventHandler eventHandler;
+   protected I_Update eventHandler;
    
    public MomEventEngine() {
       this.subscribeKeyList = new ArrayList();
@@ -41,14 +43,12 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
    public void init(I_Info info) throws Exception {
       if (this.con != null) return;
       
-      this.eventHandler = (I_EventHandler)info.getObject("org.xmlBlaster.contrib.dbwriter.DbWriter");
+      this.eventHandler = (I_Update)info.getObject("org.xmlBlaster.contrib.dbwriter.DbWriter");
       if (this.eventHandler == null)
          throw new Exception("init: the event handler is null (probably not correctly registered)");
       
-      boolean isRunningNative = true;
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
-         isRunningNative = false;
          this.glob = new Global();
       }
       else {

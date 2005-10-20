@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -18,7 +20,7 @@ import org.xmlBlaster.contrib.replication.ReplicationConstants;
  * 
  * @author Michele Laghi mailto:laghi@swissinfo.org
  */
-public class DbWriter implements I_EventHandler {
+public class DbWriter implements I_Update {
    
    private static Logger log = Logger.getLogger(DbWriter.class.getName());
    public final static String DB_POOL_KEY = "db.pool";
@@ -29,9 +31,7 @@ public class DbWriter implements I_EventHandler {
    private I_Writer writer;
    private I_DbPool dbPool;
    private boolean poolOwner;
-   private int changeCount;
    private boolean isAlive;
-   private int oldSequenceId = 0;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 

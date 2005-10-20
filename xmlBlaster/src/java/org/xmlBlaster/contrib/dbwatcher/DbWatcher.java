@@ -14,13 +14,13 @@ import java.util.logging.Level;
 import java.util.StringTokenizer;
 import java.sql.Connection;
 
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
 
 /**
  * This is the core processor class to handle database observation. 
@@ -254,7 +254,7 @@ public class DbWatcher implements I_ChangeListener {
       try {
          if (log.isLoggable(Level.FINE)) log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
          this.publisher.publish(changeEvent.getGroupColValue(),
-               changeEvent.getXml(), changeEvent.getAttributeMap());
+               changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
       }
       catch(Exception e) {
          e.printStackTrace();

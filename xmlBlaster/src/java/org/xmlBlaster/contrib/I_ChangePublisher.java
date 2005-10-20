@@ -3,11 +3,10 @@ Name:      I_ChangePublisher.java
 Project:   org.xmlBlasterProject:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.contrib.dbwatcher.mom;
+package org.xmlBlaster.contrib;
 
 import java.util.Map;
 
-import org.xmlBlaster.contrib.I_Info;
 
 /**
  * Interface to hide the publisher destination. 
@@ -17,8 +16,7 @@ import org.xmlBlaster.contrib.I_Info;
  * </p>
  * @author Marcel Ruff
  */
-public interface I_ChangePublisher extends java.util.EventListener
-{
+public interface I_ChangePublisher extends java.util.EventListener, I_ContribPlugin {
    /**
     * After creation this method is called.
     * The plugin must register itself into global scope with
@@ -37,7 +35,7 @@ public interface I_ChangePublisher extends java.util.EventListener
     * @return A unique identifier of the send message
     * @throws Exception On sending problems
     */
-   String publish(String changeKey, String message, Map attrMap) throws Exception;
+   String publish(String changeKey, byte[] message, Map attrMap) throws Exception;
 
    /**
     * Register for alerts when the data source has changed. 
@@ -47,11 +45,11 @@ public interface I_ChangePublisher extends java.util.EventListener
     * alert topic and listens if somebody publishes a message to it.
     * If such a message arrives we trigger a new database poll.
     * </p> 
-    * @param momCb The callback interface to receive the notification
+    * @param update The callback interface to receive the notification
     * @return true if a notification is available (is configured)
     * @throws Exception The MoM specific exception
     */
-   boolean registerAlertListener(I_MomCb momCb) throws Exception;
+   boolean registerAlertListener(I_Update update) throws Exception;
    
    /**
     * Cleanup resources. 

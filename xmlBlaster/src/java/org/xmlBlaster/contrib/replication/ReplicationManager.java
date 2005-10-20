@@ -20,10 +20,10 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.Info;
-import org.xmlBlaster.contrib.dbwriter.I_ContribPlugin;
 
 public class ReplicationManager {
 

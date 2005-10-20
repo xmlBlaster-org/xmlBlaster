@@ -9,7 +9,7 @@ package org.xmlBlaster.contrib.replication;
 import java.sql.Connection;
 import java.util.Map;
 
-import org.xmlBlaster.contrib.dbwriter.I_ContribPlugin;
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 

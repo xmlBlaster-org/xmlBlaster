@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
-import org.xmlBlaster.contrib.dbwriter.I_ContribPlugin;
+import org.xmlBlaster.contrib.I_ContribPlugin;
 
 public interface I_Mapper extends I_ContribPlugin {
 

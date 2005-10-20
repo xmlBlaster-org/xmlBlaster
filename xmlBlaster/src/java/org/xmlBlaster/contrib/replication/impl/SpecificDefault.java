@@ -20,13 +20,13 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
@@ -403,7 +403,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       if (this.publisher == null)
          throw new Exception(
                "SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
-      return this.publisher.publish("", this.dbUpdateInfo.toXml(""), map);
+      return this.publisher.publish("", this.dbUpdateInfo.toXml("").getBytes(), map);
    }
 
    /**

@@ -85,7 +85,8 @@ public class DbUpdateInfo implements ReplicationConstants {
                colDescription.setRadix(rs.getInt(10));
                colDescription.setNullable(rs.getInt(11));
                colDescription.setRemarks(rs.getString(12));
-               colDescription.setColDefault(rs.getString(13));
+               // TODO URL ENCODE THIS
+               // colDescription.setColDefault(rs.getString(13));
                colDescription.setCharLength(rs.getInt(16));
                colDescription.setPos(rs.getInt(17));
             }

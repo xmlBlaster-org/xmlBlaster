@@ -25,14 +25,15 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -116,8 +117,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer#startProducing
     */
    public void startProducing() throws Exception {
-      boolean alertsAreAvailable = registerAlertListener(new I_MomCb() {
-         public void update(String topic, String content, Map attrMap) {
+      registerAlertListener(new I_Update() {
+         public void update(String topic, byte[] content, Map attrMap) {
             try {
                 if (log.isLoggable(Level.FINE)) log.fine("Alert notification arrived '" + topic + "' with " + ((attrMap==null)?0:attrMap.size()) + " attributes");
                 changeDetector.checkAgain(attrMap);
@@ -137,7 +138,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       if (this.alertSubscriptionId != null) {
          UnSubscribeKey sk = new UnSubscribeKey(glob, this.alertSubscriptionId);
          UnSubscribeQos sq = new UnSubscribeQos(glob);
-         UnSubscribeReturnQos[] subRet = this.con.unSubscribe(sk, sq);
+         this.con.unSubscribe(sk, sq);
          this.alertSubscriptionId = null;
       }
    }
@@ -150,10 +151,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    public void init(I_Info info) throws Exception {
       if (this.con != null) return;
       
-      boolean isRunningNative = true;
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
-         isRunningNative = false;
          this.glob = new Global();
       }
       else {
@@ -240,15 +239,15 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * A DROP command erases the topic.  
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#publish(String, String, Map)
     */
-   public String publish(String changeKey, String out, Map attrMap) throws Exception {
-      if (out == null) out = "";
+   public String publish(String changeKey, byte[] out, Map attrMap) throws Exception {
+      if (out == null) out = "".getBytes();
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
       if (this.eraseOnDrop && "DROP".equals(command)) {
          String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
          EraseKey ek = new EraseKey(glob, oid);
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] eraseArr = con.erase(ek, eq);
+         con.erase(ek, eq);
          log.info("Topic '" + pk + "' is erased:" + out);
          return "0";
       }
@@ -256,7 +255,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
          EraseKey ek = new EraseKey(glob, oid);
          EraseQos eq = new EraseQos(glob);
-         EraseReturnQos[] eraseArr = con.erase(ek, eq);
+         con.erase(ek, eq);
          log.info("Topic '" + pk + "' is erased:" + out);
          return "0";
       }
@@ -276,20 +275,26 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    
    /**
     * Subscribes on the alert topic as configured with <tt>mom.alertSubscribeKey</tt>.  
-    * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#registerAlertListener(I_MomCb)
+    * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#registerAlertListener(I_Update)
     * @throws Exception Typically a XmlBlasterException
     */
-   public boolean registerAlertListener(final I_MomCb momCb) throws Exception {
-      if (momCb == null) throw new IllegalArgumentException("I_MomCb==null");
+   public boolean registerAlertListener(final I_Update momCb) throws Exception {
+      if (momCb == null) throw new IllegalArgumentException("I_Update==null");
       if (this.alertSubscribeKey == null)
          return false;
       try {
          log.info("Registering on '" + this.alertSubscribeKey + "' for alerts");
          SubscribeReturnQos subRet = this.con.subscribe(this.alertSubscribeKey, this.alertSubscribeQos, new I_Callback() {
-            public String update(String s, UpdateKey k, byte[] c, UpdateQos q) {
+            public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
                log.fine("Receiving alert message '" + k.getOid() + "'");
                Map attrMap = clientPropertiesToMap(q.getClientProperties());
-               momCb.update(k.getOid(), new String(c), attrMap);
+               try {
+                  momCb.update(k.getOid(), c, attrMap);
+               }
+               catch (Exception e) {
+                  log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
+                  throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, "alertListener", "", e);
+               }
                return "";
             }
           });
@@ -297,8 +302,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
           return true;
       }
       catch (XmlBlasterException e) {
-          log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
-          throw e;
+         log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
+         throw e;
       }
    }
    
@@ -310,8 +315,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @return A unique identifier of the subscription
     * @throws Exception Typically a XmlBlasterException
     */
-   public String subscribe(String topic, final I_MomCb momCb) throws Exception {
-      if (momCb == null) throw new IllegalArgumentException("I_MomCb==null");
+   public String subscribe(String topic, final I_Update momCb) throws Exception {
+      if (momCb == null) throw new IllegalArgumentException("I_Update==null");
       if (topic == null) throw new IllegalArgumentException("topic==null");
         try {
           SubscribeKey sk = topic.startsWith("XPATH:") ?
@@ -319,10 +324,17 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
                           new SubscribeKey(glob, topic);
           SubscribeQos sq = new SubscribeQos(glob);
           SubscribeReturnQos subRet = this.con.subscribe(sk, sq, new I_Callback() {
-            public String update(String s, UpdateKey k, byte[] c, UpdateQos q) {
+            public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
                if (log.isLoggable(Level.FINE)) log.fine("Receiving xmlBlaster message " + k.getOid());
                Map attrMap = clientPropertiesToMap(q.getClientProperties());
-               momCb.update(k.getOid(), new String(c), attrMap);
+               try {
+                  momCb.update(k.getOid(), c, attrMap);
+               }
+               catch (Exception e) {
+                  log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
+                  throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, "alertListener", "", e);
+               }
+               
                return "";
             }
           });

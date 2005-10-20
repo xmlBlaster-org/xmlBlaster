@@ -18,10 +18,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
-import org.xmlBlaster.contrib.dbwriter.I_EventHandler;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
@@ -42,7 +42,7 @@ private final static String ME = "ReplicationWriter";
    private boolean overwriteTables;
    private DbMetaHelper dbMetaHelper;
    private String importLocation;
-   private I_EventHandler callback;
+   private I_Update callback;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();

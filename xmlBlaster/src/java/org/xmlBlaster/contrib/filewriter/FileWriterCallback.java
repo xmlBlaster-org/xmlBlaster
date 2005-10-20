@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.contrib.dbwriter.I_EventHandler;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -20,7 +20,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class FileWriterCallback implements I_EventHandler {
+public class FileWriterCallback implements I_Update {
    private static Logger log = Logger.getLogger(FileWriterCallback.class.getName());
    private String dirName;
    private String lockExtention;
