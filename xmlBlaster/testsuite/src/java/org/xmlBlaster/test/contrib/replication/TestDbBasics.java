@@ -17,13 +17,13 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_MomCb;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
@@ -1128,12 +1128,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    public void init(I_Info info) throws Exception {
    }
 
-   public String publish(String changeKey, String message, Map attrMap) throws Exception {
-      log.info(message);
+   public String publish(String changeKey, byte[] message, Map attrMap) throws Exception {
+      log.info(new String(message));
       return null;
    }
 
-   public boolean registerAlertListener(I_MomCb momCb) throws Exception {
+   public boolean registerAlertListener(I_Update momCb) throws Exception {
       return false;
    }
 

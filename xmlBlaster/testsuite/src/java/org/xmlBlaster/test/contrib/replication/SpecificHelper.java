@@ -21,7 +21,7 @@ import java.util.Properties;
  *
  * @author Michele Laghi
  */
-final class SpecificHelper {
+public final class SpecificHelper {
     
    private final static String ORACLE = "oracle";
    private final static String POSTGRES = "postgres";

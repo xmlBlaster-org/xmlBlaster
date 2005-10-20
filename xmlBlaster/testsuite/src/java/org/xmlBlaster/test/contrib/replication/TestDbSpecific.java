@@ -10,14 +10,14 @@ import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_MomCb;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
@@ -179,15 +179,16 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     * This method gets invoked when a change is detected. It will check that the message is parsed correctly. 
     * It does not check that the create statement is mapped correctly to xml.
     */
-   public String publish(String changeKey, String message, Map attrMap) throws Exception {
+   public String publish(String changeKey, byte[] message, Map attrMap) throws Exception {
+      String msg = new String(message);
       try {
          log.info("publish invoked in method '" + currentMethod + "'");
-         log.fine("message '" + message + "'");
+         log.fine("message '" + msg + "'");
 
          if (this.doCheck) {
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
             DbUpdateParser parser = new DbUpdateParser(info);
-            DbUpdateInfo dbUpdateInfo = parser.readObject(message);
+            DbUpdateInfo dbUpdateInfo = parser.readObject(msg);
             String createStatement = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
             log.fine("=============================================");
             log.fine(createStatement);
@@ -197,7 +198,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             log.fine("parsed message: " + msg1);
             int numOfCols = dbUpdateInfo.getDescription().getUpdateInfoColDescriptions().length;
             assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
-            assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", message, msg1);
+            assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", msg, msg1);
             String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null);
             
             log.fine("-- ---------------------------------------------------------------------------");
@@ -234,7 +235,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       return null;
    }
 
-   public boolean registerAlertListener(I_MomCb momCb) throws Exception {
+   public boolean registerAlertListener(I_Update momCb) throws Exception {
       return false;
    }
 

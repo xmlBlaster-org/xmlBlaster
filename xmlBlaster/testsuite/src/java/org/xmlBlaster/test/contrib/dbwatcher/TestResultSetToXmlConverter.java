@@ -11,12 +11,12 @@ import java.util.prefs.Preferences;
 import junit.framework.TestCase;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
-import org.xmlBlaster.contrib.dbwatcher.mom.I_MomCb;
 import org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher;
 
 import java.util.logging.Logger;
@@ -45,9 +45,6 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
     private I_Info info;
     private I_DbPool dbPool;
     private Map updateMap = new HashMap(); // collects received update messages
-    private String dbUrl;
-    private String dbUser;
-    private String dbPassword;
     private DbWatcher processor;
 
     /**
@@ -159,11 +156,11 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
 
       DbWatcher pc = new DbWatcher(info);
       XmlBlasterPublisher mom = (XmlBlasterPublisher)pc.getMom();
-      mom.subscribe("XPATH://key", new I_MomCb() {
-         public void update(String topic, String content, Map attrMap) {
+      mom.subscribe("XPATH://key", new I_Update() {
+         public void update(String topic, byte[] content, Map attrMap) {
             log.info("Received '" + topic + "' from MoM: "  + content);
             try {
-               writeToFile(topic, content);
+               writeToFile(topic, new String(content));
             }
             catch (Exception e) {
                // Ignore   
