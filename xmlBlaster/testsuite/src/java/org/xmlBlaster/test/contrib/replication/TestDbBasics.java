@@ -5,7 +5,6 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
-import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -185,41 +184,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn  = pool.reserve();
          conn.setAutoCommit(true);
          String sql = null;
-
-         { // test the create blob functions
-            sql = "{? = call " + this.replPrefix + "create_blob()}";
-            try {
-               CallableStatement st = conn.prepareCall(sql);
-               st.registerOutParameter(1, Types.BLOB);
-               ResultSet rs = st.executeQuery();
-               Blob blob = st.getBlob(1);
-               log.info("The blob object if of the type '" + blob.getClass().getName() + "'");
-               assertNotNull("Testing the creation of a blob in a portable way", blob);
-               rs.close();
-               st.close();
-            }
-            catch (SQLException sqlEx) {
-               sqlEx.printStackTrace();
-               assertTrue("an exception should not occur when testing '" + sql + "'", false);
-            }
-         }
-         { // test the create clob functions
-            sql = "{? = call " + this.replPrefix + "create_clob()}";
-            try {
-               CallableStatement st = conn.prepareCall(sql);
-               st.registerOutParameter(1, Types.CLOB);
-               ResultSet rs = st.executeQuery();
-               Clob clob = st.getClob(1);
-               log.info("The clob object if of the type '" + clob.getClass().getName() + "'");
-               assertNotNull("Testing the creation of a clob in a portable way", clob);
-               rs.close();
-               st.close();
-            }
-            catch (SQLException sqlEx) {
-               sqlEx.printStackTrace();
-               assertTrue("an exception should not occur when testing '" + sql + "'", false);
-            }
-         }
 
          { // test the test methods themselves first
              sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}";
@@ -407,8 +371,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                blob.open(BLOB.MODE_READWRITE);
                // The following did not work for 8.1.6. To make it 
                // work it needed the old driver and the next line code
-               // which in the new driver is deprecated. This has not
-               // been tested on 10 (TODO REMOVE THIS WHEN DONE)
+               // which in the new driver is deprecated.
                // OutputStream os = blob.setBinaryStream(1);
                
                // this raises an AbstractMethodError with both old and new driver
