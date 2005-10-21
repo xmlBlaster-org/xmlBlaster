@@ -208,6 +208,19 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.peekCallbackMessagesToFile(numOfEntries, path);
    }
 
+   public long clearCallbackQueue() {
+      return this.sessionInfo.clearCallbackQueue();
+   }
+
+   public long removeFromCallbackQueue(long numOfEntries) throws Exception {
+      try {
+         return this.sessionInfo.removeFromCallbackQueue(numOfEntries);
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.getMessage());
+      }
+   }
+
    /** Enforced by ConnectQosDataMBean interface. */
    public final long getMaxSessions() {
       return this.sessionInfo.getConnectQos().getMaxSessions();

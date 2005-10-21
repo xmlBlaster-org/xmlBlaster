@@ -181,5 +181,19 @@ public interface I_AdminSession extends ConnectQosDataMBean {
    public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception;
    /** gets the entries in the callback queue according to what is specified in the qosData object */
    public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
-   
+
+   /**
+    * Removes all callback entries. 
+    * @return The number of entries erased
+    */
+   public long clearCallbackQueue();
+
+   /**
+    * Removes max num messages.
+    * This method does not block.
+    * @param numOfEntries Erase num entries or less if less entries are available, -1 erases everything
+    * @return Number of entries erased
+    * @throws Exception if the underlying implementation gets an exception.
+    */
+   public long removeFromCallbackQueue(long numOfEntries) throws Exception;
 }

@@ -898,6 +898,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
    }
 
+   public long clearCallbackQueue() {
+      return this.sessionQueue.clear();
+   }
+
+   public long removeFromCallbackQueue(long numOfEntries) throws XmlBlasterException {
+      return this.sessionQueue.remove(numOfEntries, -1);
+   }
+
    /**
     * keyData is currently unused but it is needed to be consistent with the 
     * admin get convention (i.e. either take no parameters or always take a key
