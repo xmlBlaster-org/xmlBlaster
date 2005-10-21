@@ -27,6 +27,8 @@ public final class ContextNode
    public final static String CLUSTER_MARKER_TAG = "node";
    /** Use to mark a client */
    public final static String SUBJECT_MARKER_TAG = "client";
+   /** Use to mark a contrib */
+   public final static String CONTRIB_MARKER_TAG = "contrib";
    /** Use to mark a login session */
    public final static String SESSION_MARKER_TAG = "session";
    /** Use for client side XmlBlasterAccess */

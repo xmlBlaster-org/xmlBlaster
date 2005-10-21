@@ -7,16 +7,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
-import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
-import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
 /**
  * 
@@ -67,6 +66,15 @@ public class DefaultMapper implements I_Mapper {
       return type;
    }
 
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add("replication.mapper.tables");
+      return set;
+   }
+
    public void init(I_Info info) throws Exception {
       log.info("init");
       String tableMapping = info.get("replication.mapper.tables", null);
@@ -92,17 +100,4 @@ public class DefaultMapper implements I_Mapper {
       this.tableMap.clear();
    }
 
-   public void main(String[] args) {
-      try {
-         I_Info info = new PropertiesInfo(System.getProperties());
-         I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(info);
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-      }
-      
-      
-   }
-   
-   
 }

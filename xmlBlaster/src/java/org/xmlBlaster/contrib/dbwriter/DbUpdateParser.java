@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.jutils.log.LogChannel;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.contrib.I_Info;
@@ -19,8 +21,6 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @author laghi@swissinfo.org
  */
 public class DbUpdateParser extends XmlParserBase implements I_Parser {
-   
-   private String ME = "DbUpdateParser";
    
    public final static String ATTR_TAG = "attr";
    
@@ -53,6 +53,13 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
    
    public void init(I_Info info) throws Exception {
       this.info = info;
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
    }
 
    public void shutdown() throws Exception {

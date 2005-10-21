@@ -15,6 +15,7 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib;
 
+import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -38,6 +39,40 @@ public class GlobalInfo implements I_Plugin, I_Info {
    protected PluginInfo pluginInfo;
    private Map objects = new HashMap();
    private Set propsOfOwnInterest;
+
+   /**
+    * Checks in the registry if such an object exitsts and if not it
+    * creates one for you and intializes it.
+    * @param info The info object to use.
+    * @param pluginClassName The complete name of the plugin to load.
+    * @param registryName The name to search in the registry for this
+    * instance. The registry will be in the info object passed. If you
+    * specify null, the lookup is skipped.
+    * @return 
+    * @throws Exception
+    */
+   public static Object loadPlugin(I_Info info, String pluginClassName, String registryName) throws Exception {
+      synchronized (info) {
+         I_ContribPlugin plugin = null;
+         if (pluginClassName == null || pluginClassName.length() < 1)
+            throw new Exception("loadPlugin: The name of the plugin has not been specified");
+         if (registryName != null)
+            plugin = (I_ContribPlugin)info.getObject(registryName);
+         if (plugin != null) {
+            log.fine(pluginClassName + " returned (was already initialized)");
+            return plugin;
+         }
+         ClassLoader cl = ReplicationConverter.class.getClassLoader();
+         plugin = (I_ContribPlugin)cl.loadClass(pluginClassName).newInstance();
+         plugin.init(info);
+         if (registryName != null)
+            info.putObject(registryName, plugin);
+         log.fine(pluginClassName + " created and initialized");
+         return plugin;
+      }
+   }
+   
+   
    
    /**
     * 

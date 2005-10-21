@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher.mom;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -142,7 +144,27 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          this.alertSubscriptionId = null;
       }
    }
-   
+
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add("mom.topicName");
+      set.add("mom.loginName");
+      set.add("mom.password");
+      set.add("mom.eraseOnDrop");
+      set.add("mom.eraseOnDelete");
+      set.add("mom.publishKey");
+      set.add("mom.publishQos");
+      set.add("mom.alertSubscribeKey");
+      set.add("mom.alertSubscribeQos");
+      set.add("mom.connectQos");
+      set.add("mom.maxSessions");
+      return set;
+   }
+
    /**
     * If a global is passed with <tt>info.getObject("org.xmlBlaster.engine.Global")</tt>
     * we take a clone and reuse it. 

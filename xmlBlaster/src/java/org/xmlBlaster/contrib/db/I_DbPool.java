@@ -7,6 +7,7 @@ package org.xmlBlaster.contrib.db;
 
 import java.sql.Connection;
 
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 
 
@@ -14,7 +15,7 @@ import org.xmlBlaster.contrib.I_Info;
  * Interface to a JDBC pool implementation.
  * @author Marcel Ruff 
  */
-public interface I_DbPool {
+public interface I_DbPool extends I_ContribPlugin {
    /**
     * Needs to be called after construction. 
     * @param info The configuration

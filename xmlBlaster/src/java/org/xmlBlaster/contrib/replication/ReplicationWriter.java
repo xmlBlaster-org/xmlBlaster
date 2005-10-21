@@ -10,10 +10,11 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +49,22 @@ private final static String ME = "ReplicationWriter";
       this.tableMap = new HashMap();
    }
    
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add(I_DbSpecific.NEEDS_PUBLISHER_KEY);
+      set.add("replication.mapper.class");
+      set.add("replication.overwriteTables");
+      set.add("replication.importLocation");
+      set.add(this.mapper.getUsedPropertyKeys());
+      set.add(this.pool.getUsedPropertyKeys());
+      set.add(this.dbSpecific.getUsedPropertyKeys());
+      return set;
+   }
+
+
    public void init(I_Info info) throws Exception {
       log.info("init invoked");
       this.info = info;
@@ -74,6 +91,10 @@ private final static String ME = "ReplicationWriter";
       boolean overwriteDumpFiles = true;
       String lockExtention =  null;
       this.callback = new FileWriterCallback(this.importLocation, lockExtention, overwriteDumpFiles);
+      this.info = info;
+      this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
+      if (this.pool == null)
+         throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
    }
 
    public void shutdown() throws Exception {
@@ -325,7 +346,7 @@ private final static String ME = "ReplicationWriter";
       
       try {
          rs = meta.getPrimaryKeys(null, schema, tableName);
-         List pk = new ArrayList();
+         //List pk = new ArrayList();
          int count = 0;
          while (rs.next()) {
             count++;

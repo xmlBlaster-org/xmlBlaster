@@ -6,15 +6,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
-import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Update;
 
 /**
  * I_ReplSlave
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public interface I_ReplSlave extends I_ContribPlugin, I_Update {
+public interface I_ReplSlave extends I_Update {
    
+   /**
+    * Starts the whole initial update
+    * @throws Exception
+    */
+   void run() throws Exception;
    /**
     * 3
     *

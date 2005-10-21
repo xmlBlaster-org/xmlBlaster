@@ -13,8 +13,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -308,6 +310,18 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       updateFromFile(conn, "cleanup", "replication.cleanupFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql",
             doWarn, true, this.replacer);
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add("replication.prefix");
+      set.add("maxRowsOnCreate");
+      set.add(this.dbPool.getUsedPropertyKeys());
+      set.add(this.publisher.getUsedPropertyKeys());
+      return set;
    }
 
    /**

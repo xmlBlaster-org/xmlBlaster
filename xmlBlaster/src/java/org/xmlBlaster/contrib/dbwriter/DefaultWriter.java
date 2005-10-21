@@ -6,7 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
@@ -23,6 +25,13 @@ public class DefaultWriter implements I_Writer {
    
    public void store(DbUpdateInfo info) throws Exception {
       System.out.println("=========== NEW MESSAGE ============\n" + info.toXml("") + "\n");
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
    }
 
    public void init(I_Info info) throws Exception {

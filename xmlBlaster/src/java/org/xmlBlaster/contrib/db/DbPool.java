@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 
@@ -69,6 +71,23 @@ public class DbPool implements I_DbPool, I_PoolManager {
       init(info);
    }
     
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add("db.url");
+      set.add("db.user");
+      set.add("db.password");
+      set.add("db.maxInstances");
+      set.add("db.busyToIdleTimeout");
+      set.add("db.idleToEraseTimeout");
+      set.add("db.maxResourceExhaustRetries");
+      set.add("db.resourceExhaustSleepGap");
+      return set;
+   }
+
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#init(I_Info)
     */

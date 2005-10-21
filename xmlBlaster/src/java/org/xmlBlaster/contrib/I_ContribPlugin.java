@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib;
 
+import java.util.Set;
+
 
 public interface I_ContribPlugin {
    
@@ -17,5 +19,10 @@ public interface I_ContribPlugin {
     */
    void shutdown() throws Exception;
    
+   /**
+    * Gets all property keys which may be used by this object.
+    * @return
+    */
+   Set getUsedPropertyKeys();
    
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
@@ -26,7 +27,7 @@ public class DbWriter implements I_Update {
    public final static String DB_POOL_KEY = "db.pool";
    public final static String CASE_SENSITIVE_KEY = "dbWriter.caseSensitive";
    private I_Info info;
-   private I_ContribPlugin eventEngine;
+   private I_ChangePublisher eventEngine;
    private I_Parser parser;
    private I_Writer writer;
    private I_DbPool dbPool;
@@ -99,8 +100,9 @@ public class DbWriter implements I_Update {
 
       this.isAlive = true;
       if (momClass.length() > 0) {
-         this.eventEngine = (I_ContribPlugin)cl.loadClass(momClass).newInstance();
+         this.eventEngine = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
          this.eventEngine.init(info);
+         this.eventEngine.registerAlertListener(this);
           if (log.isLoggable(Level.FINE)) log.fine(momClass + " created and initialized");
       }
       else
