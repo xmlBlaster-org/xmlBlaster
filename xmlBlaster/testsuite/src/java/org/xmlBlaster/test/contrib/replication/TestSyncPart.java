@@ -24,7 +24,9 @@ import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Tests the synchronous part of the replication, i.e. that an action as CREATE,
@@ -372,6 +374,13 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
    }
 
    public void init(I_Info info) throws Exception {

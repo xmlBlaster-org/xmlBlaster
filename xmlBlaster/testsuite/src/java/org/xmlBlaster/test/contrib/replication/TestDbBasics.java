@@ -27,8 +27,10 @@ import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Test basic functionality of the database. It does need a database conntected
@@ -1123,6 +1125,13 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             this.pool.release(conn);
       }
       log.info("SUCCESS");
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
    }
 
    public void init(I_Info info) throws Exception {

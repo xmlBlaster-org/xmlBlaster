@@ -23,7 +23,9 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Test basic functionality which is specific for each database implementation. 
@@ -172,6 +174,13 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       }
    }
    
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
+   }
+
    public void init(I_Info info) throws Exception {
    }
 
