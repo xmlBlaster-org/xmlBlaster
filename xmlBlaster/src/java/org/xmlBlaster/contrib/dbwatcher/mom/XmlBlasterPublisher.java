@@ -265,6 +265,20 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       if (out == null) out = "".getBytes();
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
+      // this is used to register the owner of this object (typically the DbWatcher)
+      if ("REGISTER".equals(command) || "UNREGISTER".equals(command)) {
+         String qos = null;
+         if (attrMap != null)
+            qos = (String)attrMap.get("_qos");
+         if (qos == null)
+            qos = "<qos/>";
+         String key = "<key oid='" + changeKey + "'/>";
+         MsgUnit msg = new MsgUnit(this.glob, key, out, qos);
+         PublishReturnQos prq = this.con.publish(msg);
+         String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
+         if (log.isLoggable(Level.FINE)) log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");
+         return id;
+      }
       if (this.eraseOnDrop && "DROP".equals(command)) {
          String oid = this.glob.getMsgKeyFactory().readObject(pk).getOid();
          EraseKey ek = new EraseKey(glob, oid);

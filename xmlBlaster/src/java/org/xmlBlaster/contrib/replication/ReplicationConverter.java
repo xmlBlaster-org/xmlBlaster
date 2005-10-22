@@ -88,6 +88,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          log.info("Loaded transformer pluing '" + transformerClassName + "'");
       }
       this.dbSpecific = getDbSpecific(info);
+      
    }
    
    /**

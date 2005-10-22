@@ -32,7 +32,7 @@ public interface I_ChangePublisher extends java.util.EventListener, I_ContribPlu
     * @param changeKey Can be used to create the topic name
     * @param message The message content to send
     * @param attrMap An optional map with attributes or null
-    * @return A unique identifier of the send message
+    * @return A unique identifier of the sent message
     * @throws Exception On sending problems
     */
    String publish(String changeKey, byte[] message, Map attrMap) throws Exception;

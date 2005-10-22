@@ -7,7 +7,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -40,6 +42,19 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
       this.subscribeQosList = new ArrayList();
    }
    
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      Set set = new HashSet();
+      set.add("mom.loginName");
+      set.add("mom.password");
+      set.add("mom.subscriptions");
+      set.add("mom.connectQos");
+      set.add("mom.maxSessions");
+      return set;
+   }
+
    public void init(I_Info info) throws Exception {
       if (this.con != null) return;
       
