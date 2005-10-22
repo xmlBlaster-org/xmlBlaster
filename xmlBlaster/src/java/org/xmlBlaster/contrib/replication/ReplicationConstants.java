@@ -8,6 +8,14 @@ package org.xmlBlaster.contrib.replication;
 
 public interface ReplicationConstants {
 
+   // special topics and session names
+   public final static String REPL_MANAGER_SESSION = "replManager/1";
+   public final static String REPL_MANAGER_TOPIC = "replManagerTopic";
+   public final static String REPL_MANAGER_REGISTER = "replManagerRegister";
+   public final static String REPL_MANAGER_UNREGISTER = "replManagerUnregister";
+   public final static String REPL_MANAGER_REPL_ID = "replManagerReplId";
+   
+   
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
    public final static String REPL_KEY_ATTR = "replKey";
