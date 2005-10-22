@@ -245,7 +245,7 @@
         <li><b>id</b> (mandatory) which is the name uniquely identifying this plugin configuration. The 
             structure used to identify the plugins can be free chosen, it is needed
             for referencing the plugin with refid. Note that this id must be unique, you can not assign the
-	    same id to more than one plugin.
+            same id to more than one plugin.
         </li>
         <li><b>className</b> (mandatory) the full name of the java class implementing the plugin.</li>
         <li><b>jar</b> (optional) the coloumn (:) separated list of jar files on which to search for the 
@@ -281,7 +281,7 @@
        </li>
        <li>the <b><i>onFail</i></b> attribute defines which exception to throw if the specified action fails,
            i.e. if an exception is thrown and the plugin could not be loaded. The value of this attribute is
-           the error code of the exeption to be thrown. If nothing (or empty) is specified, then the exeption
+           the error code of the exception to be thrown. If nothing (or empty) is specified, then the exception
            is catched, a warn or error is logged (error if runtime exception or xmlBlaster internal error)
            and the normal flow of the program is continued. If the error code is unknown a
            <i>resource.configuration</i> error is thrown and the runlevel flow is interrupted.
