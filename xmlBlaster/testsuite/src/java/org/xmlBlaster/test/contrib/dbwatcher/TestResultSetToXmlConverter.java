@@ -121,7 +121,8 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       info.put("db.user", dbUser);
       info.put("db.password", dbPassword);
         
-      DbPool dbPool = new DbPool(info);
+      DbPool dbPool = new DbPool();
+      dbPool.init(info);
       info.putObject("db.pool", dbPool);
       
       return dbPool;

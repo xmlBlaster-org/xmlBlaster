@@ -20,10 +20,10 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 
@@ -123,7 +123,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       this.specificHelper = new SpecificHelper(System.getProperties());
       this.info = new PropertiesInfo(specificHelper.getProperties());
       this.replPrefix = this.info.get("replication.prefix", "repl_");
-      this.pool = DbWatcher.getDbPool(this.info, "test");
+      this.pool = DbWatcher.getDbPool(this.info);
       assertNotNull("pool must be instantiated", this.pool);
       this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
       assertNotNull("the dbSpecific shall not be null", dbSpecific);
@@ -156,6 +156,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     */
    protected void tearDown() throws Exception {
       super.tearDown();
+      if (this.pool != null)
+         this.pool.shutdown();
    }
 
    

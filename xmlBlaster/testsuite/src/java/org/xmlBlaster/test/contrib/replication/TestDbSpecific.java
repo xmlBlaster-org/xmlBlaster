@@ -13,11 +13,11 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
@@ -257,7 +257,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     * @return The created pool
     */
    private DbPool setUpDbPool(I_Info info) {
-      DbPool dbPool = new DbPool(info);
+      DbPool dbPool = new DbPool();
+      dbPool.init(info);
       info.putObject("db.pool", dbPool);
       return dbPool;
    }
