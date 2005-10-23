@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib;
 
+import java.util.Set;
+
 /**
  * Hides configuration parameters and passes common objects. 
  * <p>
@@ -70,4 +72,19 @@ public interface I_Info {
     * @return The found object or null
     */
    Object getObject(String key);
+   
+   /**
+    * Gets the keys of the entries stored. Note that this does not return the
+    * key of the entries stored as objects. To retrieve these use getObjectKeys().
+    * @return
+    */
+   Set getKeys();
+   
+   /**
+    * Gets the keys of the objects registered. Note that this does not return the
+    * key of the normal entries. To retrieve these use getKeys().
+    * @return
+    */
+   Set getObjectKeys();
+   
 }

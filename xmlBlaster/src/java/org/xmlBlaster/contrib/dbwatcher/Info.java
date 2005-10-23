@@ -5,9 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher;
 
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.xmlBlaster.contrib.I_Info;
 
@@ -83,4 +86,31 @@ public class Info implements I_Info {
    public Object putObject(String key, Object o) {
       return this.objects.put(key, o);
    }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getKeys()
+    */
+   public Set getKeys() {
+      try {
+         String[] tmp = this.prefs.childrenNames();
+         Set set = new TreeSet();
+         for (int i=0; i < tmp.length; i++)
+            set.add(tmp[i]);
+         return set;
+      }
+      catch (BackingStoreException ex) {
+         ex.printStackTrace();
+         return new TreeSet();
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getObjectKeys()
+    */
+   public Set getObjectKeys() {
+      return this.objects.keySet();
+   }
+   
+   
+   
 }

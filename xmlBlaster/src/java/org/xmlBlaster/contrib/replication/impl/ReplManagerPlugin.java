@@ -21,9 +21,9 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -33,11 +33,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.qos.ClientProperty;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -113,15 +110,27 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @throws Exception
     */
    public void initiateReplication(String slaveSessionName, String replicationKey) throws Exception {
-      log.info("initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationKey + "'");
+      try {
+         log.info("initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationKey + "'");
 
-      I_Info individualInfo = (I_Info)this.replications.get(replicationKey);
-      if (individualInfo != null) {
-         I_ReplSlave slave = new ReplSlave(slaveSessionName, replicationKey, individualInfo);
-         slave.run();
+         I_Info individualInfo = (I_Info)this.replications.get(replicationKey);
+         if (individualInfo != null) {
+            individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
+            I_ReplSlave slave = new ReplSlave(slaveSessionName, replicationKey, individualInfo);
+            slave.run();
+         }
+         else {
+            String[] repl = this.getReplications();
+            StringBuffer buf = new StringBuffer();
+            for (int i=0; i < repl.length; i++)
+               buf.append(repl[i]).append(" ");
+            throw new Exception("initiateReplication failed for '" + slaveSessionName + "' with replication key '" + replicationKey + "' since not known. Known are '" + buf.toString() + "'");
+         }
       }
-      else 
-         throw new Exception("initiateReplication failed for '" + slaveSessionName + "' with replication key '" + replicationKey + "' since not known. Known are '" + this.getReplications() + "'");
+      catch (Exception ex) {
+         ex.printStackTrace();
+         throw ex;
+      }
    }
    
    /**
@@ -147,6 +156,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String sessionName = ReplicationConstants.REPL_MANAGER_SESSION;
          connectQos.setSessionName(new SessionName(this.global, sessionName));
          conn.connect(connectQos, this);
+         // this is the instance passed from the outside, not a clone, otherwise
+         // it will not find the plugin registry for the MIME plugin
+         putObject("org.xmlBlaster.engine.Global", global);
       }
       catch (Throwable e) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, "ReplManagerPlugin", "init failed", e); 
@@ -169,39 +181,13 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
 
-   /**
-    * Adds all the client properties found in the clientProperties map to the info 
-    * object. Note that all entries in the map must be ClientPropery object,
-    * this code will not check that.
-    * 
-    * @param info
-    * @param clientProperties
-    */
-   private void addClientProperties(I_Info info, Map clientProperties) {
-      if (info == null)
-         log.warning("adding client properties was not possible since info object was null");
-      if (clientProperties == null)
-         log.warning("adding client properties had nothing to do since clientProperty map was null");
-      synchronized (clientProperties) {
-         Iterator iter = clientProperties.keySet().iterator();
-         while (iter.hasNext()) {
-            String key = (String)iter.next();
-            ClientProperty prop = (ClientProperty)clientProperties.get(key);
-            if (prop != null) {
-               String val = prop.getStringValue();
-               info.put(key, val);
-            }
-         }
-      }
-   }
-   
    public synchronized void register(String senderSession, String replId, I_Info info) {
       I_Info oldInfo = (I_Info)this.replications.get(replId);
       info.put("_senderSession", senderSession);
       if (oldInfo != null) {
          String oldSenderSession = oldInfo.get("_senderSession", senderSession);
          if (oldSenderSession.equals(senderSession)) {
-            log.warning("register '" + replId + "' by senderSession='" + senderSession + "' will overwrite old registration done previously");
+            log.info("register '" + replId + "' by senderSession='" + senderSession + "' will overwrite old registration done previously");
             this.replications.put(replId, info);
          }
          else {
@@ -215,7 +201,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public synchronized void unregister(String senderSession, String replId) {
       I_Info oldInfo = (I_Info)this.replications.get(replId);
       if (oldInfo == null)
-         log.warning("unregister '" + replId + "' by senderSession='" + senderSession + "' is ignored since there is no such registration done");
+         log.info("unregister '" + replId + "' by senderSession='" + senderSession + "' is ignored since there is no such registration done");
       else {
          String oldSenderSession = oldInfo.get("_senderSession", senderSession);
          if (oldSenderSession.equals(senderSession)) {
@@ -235,21 +221,21 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       SessionName senderSession = updateQos.getSender();
-      if (content == null)
-         content = new byte[0];
-      String request = new String(content);
-      log.info("The master Replicator whith session '" + senderSession.getAbsoluteName() + "' is sending '" + request + "'");
-      String replId = updateQos.getClientProperty(ReplicationConstants.REPL_MANAGER_REPL_ID, (String)null);
+      String request = updateQos.getClientProperty("_command", "");
+      log.info("The master Replicator with session '" + senderSession.getAbsoluteName() + "' is sending '" + request + "'");
+      String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
       if (replId == null || replId.length() < 1)
-         log.severe(request + ": the client property '" + ReplicationConstants.REPL_MANAGER_REPL_ID + "' must be defined but is empty");
+         log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
       else {
          if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
-            PropertiesInfo info = new PropertiesInfo(new Properties());
-            addClientProperties(info, updateQos.getClientProperties());
+            I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
             register(senderSession.getAbsoluteName(), replId, info);
          }
          else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
             unregister(senderSession.getAbsoluteName(), replId);
+         }
+         else {
+            log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
          }
       }
       return "OK";

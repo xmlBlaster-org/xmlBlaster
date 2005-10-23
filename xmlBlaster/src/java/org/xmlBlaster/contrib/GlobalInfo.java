@@ -23,6 +23,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -34,6 +35,7 @@ import java.util.logging.Level;
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
 public class GlobalInfo implements I_Plugin, I_Info {
+   public final static String ORIGINAL_ENGINE_GLOBAL = "_originalEngineGlobal";
    private static Logger log = Logger.getLogger(GlobalInfo.class.getName());
    protected Global global;
    protected PluginInfo pluginInfo;
@@ -98,7 +100,15 @@ public class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
+      if (global_ instanceof org.xmlBlaster.engine.Global) {
+         this.global = global_.getClone(global_.getNativeConnectArgs());
+         this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
+         // add the original Global in case the extending classes need it
+         this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
+      }
+      else
+         this.global = global_;
+      // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
       boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
       if (jdk14loggingCapture) {
@@ -243,4 +253,30 @@ public class GlobalInfo implements I_Plugin, I_Info {
    public Object putObject(String key, Object o) {
       return this.objects.put(key, o);
    }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getKeys()
+    */
+   public Set getKeys() {
+      Iterator iter = this.global.getProperty().getProperties().keySet().iterator();
+      HashSet out = new HashSet();
+      String prefix = this.pluginInfo.getPrefix();
+
+      while (iter.hasNext()) {
+         String key = (String)iter.next();
+         if (key.startsWith(prefix))
+            key = key.substring(prefix.length());
+            out.add(key);
+      }
+      PropertiesInfo.addSet(out, this.pluginInfo.getParameters().keySet());
+      return out;
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getObjectKeys()
+    */
+   public Set getObjectKeys() {
+      return this.objects.keySet();
+   }
+   
 }

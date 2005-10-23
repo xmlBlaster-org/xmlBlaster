@@ -3,15 +3,16 @@ Name:      PropertiesInfo.java
 Project:   org.xmlBlasterProject:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.contrib.dbwatcher;
+package org.xmlBlaster.contrib;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.Set;
 
-import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
@@ -160,6 +161,31 @@ public class PropertiesInfo implements I_Info {
    */
    public Object putObject(String key, Object o) {
       return this.objects.put(key, o);
+   }
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getKeys()
+    */
+   public Set getKeys() {
+      return this.props.keySet();
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Info#getObjectKeys()
+    */
+   public Set getObjectKeys() {
+      return this.objects.keySet();
+   }
+   
+   public static void addSet(Set dest, Set source) {
+      if (dest == null || source == null)
+         return;
+      Iterator iter = source.iterator();
+      while (iter.hasNext()) {
+         String key = (String)iter.next();
+         dest.add(key);
+      }
+      
    }
    
    public static void main(String[] args) {

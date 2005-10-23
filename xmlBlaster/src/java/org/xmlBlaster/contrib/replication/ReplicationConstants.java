@@ -11,11 +11,10 @@ public interface ReplicationConstants {
    // special topics and session names
    public final static String REPL_MANAGER_SESSION = "replManager/1";
    public final static String REPL_MANAGER_TOPIC = "replManagerTopic";
-   public final static String REPL_MANAGER_REGISTER = "replManagerRegister";
-   public final static String REPL_MANAGER_UNREGISTER = "replManagerUnregister";
-   public final static String REPL_MANAGER_REPL_ID = "replManagerReplId";
-   
-   
+   public final static String REPL_MANAGER_REGISTER = "REGISTER";
+   public final static String REPL_MANAGER_UNREGISTER = "UNREGISTER";
+   public final static String REPL_PREFIX_KEY = "replication.prefix";
+
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
    public final static String REPL_KEY_ATTR = "replKey";
@@ -41,5 +40,6 @@ public interface ReplicationConstants {
    public final static String ALTER_ACTION = "ALTER";
    public final static String DUMP_ACTION = "DUMP";
    public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement
+   
    
 }

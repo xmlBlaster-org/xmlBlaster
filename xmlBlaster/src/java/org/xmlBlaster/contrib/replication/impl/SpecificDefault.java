@@ -22,13 +22,14 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwatcher.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
@@ -319,8 +320,8 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       Set set = new HashSet();
       set.add("replication.prefix");
       set.add("maxRowsOnCreate");
-      set.add(this.dbPool.getUsedPropertyKeys());
-      set.add(this.publisher.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.dbPool.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.publisher.getUsedPropertyKeys());
       return set;
    }
 
@@ -338,11 +339,26 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       this.replacer = new Replacer(this.info, map);
       boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher)
-         this.publisher = DbWatcher.getChangePublisher(this.info,
-               "SpecificDefault");
-      this.dbPool = DbWatcher.getDbPool(this.info, "SpecificDefault");
+         this.publisher = DbWatcher.getChangePublisher(this.info);
+      this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
       this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
+      
+      // registering this instance to the Replication Manager
+      if (this.publisher != null) {
+         // fill the info to be sent with the own info objects
+         HashMap msgMap = new HashMap();
+         new ClientPropertiesInfo(msgMap, this.info);
+         msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
+         msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
+         synchronized(this.info) {
+            boolean isRegistered = this.info.getBoolean("_specificDefaultRegistered", false);
+            if (!isRegistered) {
+               this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
+               this.info.put("_specificDefaultRegistered", "true");
+            }
+         }
+      }
    }
 
    /**
@@ -351,24 +367,27 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public final void shutdown() throws Exception {
       try {
          log.info("going to shutdown: cleaning up resources");
-         boolean publisherOwner = this.info.get("mom.publisher.owner", "")
-               .equals("SpecificDefault");
-         if (this.publisher != null && publisherOwner) {
+         // registering this instance to the Replication Manager
+         if (this.publisher != null) {
+            // fill the info to be sent with the own info objects
+            HashMap msgMap = new HashMap();
+            new ClientPropertiesInfo(msgMap, this.info);
+            msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
+            msgMap.put("_command", ReplicationConstants.REPL_MANAGER_UNREGISTER);
+            this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_UNREGISTER.getBytes(), msgMap);
+         }
+
+         if (this.publisher != null) {
             this.publisher.shutdown();
             this.publisher = null;
-            this.info.putObject("mom.publisher", null);
          }
       } catch (Throwable e) {
          e.printStackTrace();
          log.warning(e.toString());
       }
 
-      boolean poolOwner = this.info.get("db.pool.owner", "").equals(
-            "SpecificDefault");
-      if (poolOwner && this.dbPool != null) {
+      if (this.dbPool != null) {
          this.dbPool.shutdown();
-         this.dbPool = null;
-         this.info.putObject("db.pool", null);
       }
    }
 

@@ -9,6 +9,7 @@ package org.xmlBlaster.contrib.dbwriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -18,14 +19,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.contrib.I_ContribPlugin;
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
-public class MomEventEngine implements I_ContribPlugin, I_Callback {
+public class MomEventEngine implements I_ChangePublisher, I_Callback {
 
    private static Logger log = Logger.getLogger(MomEventEngine.class.getName());
    protected Global glob;
@@ -151,8 +152,9 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
       }
    }
 
+   
 
-   public void shutdown() throws Exception {
+   public void shutdown() {
       log.fine("Closing xmlBlaster connection");
       if (this.con != null) {
          this.con.disconnect(null);
@@ -161,4 +163,20 @@ public class MomEventEngine implements I_ContribPlugin, I_Callback {
       }
    }
 
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#publish(java.lang.String, byte[], java.util.Map)
+    */
+   public String publish(String changeKey, byte[] message, Map attrMap) throws Exception {
+      return null;
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#registerAlertListener(org.xmlBlaster.contrib.I_Update)
+    */
+   public boolean registerAlertListener(I_Update update) throws Exception {
+      return false;
+   }
+
+   
+   
 }

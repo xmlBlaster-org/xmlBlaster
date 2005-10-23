@@ -55,22 +55,14 @@ public class DbPool implements I_DbPool, I_PoolManager {
        Please note that the current request thread will block for maxResourceExhaustRetries*resourceExhaustSleepGap millis. */
    private long resourceExhaustSleepGap;
    private final Object meetingPoint = new Object();
-
+   private int initCount = 0;
+   
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
    public DbPool() {
       // void
    }
-   
-   /**
-    * Convenience construtor which calls <tt>init(info)</tt>. 
-    * @param info The configuration environment
-    */
-   public DbPool(I_Info info) {
-      init(info);
-   }
-    
    
    /**
     * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
@@ -91,7 +83,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#init(I_Info)
     */
-   public void init(I_Info info) {
+   public synchronized void init(I_Info info) {
+      if (this.initCount > 0)
+         return;
+
       this.info = info;
       this.dbUrl = this.info.get("db.url", "");
       this.dbUser = this.info.get("db.user", "");
@@ -104,10 +99,9 @@ public class DbPool implements I_DbPool, I_PoolManager {
       this.maxResourceExhaustRetries = this.info.getInt("db.maxResourceExhaustRetries", 5);
       // millis
       this.resourceExhaustSleepGap = this.info.getLong("db.resourceExhaustSleepGap", 1000);
-
       initDrivers();
-
       this.poolManager = new PoolManager("DbPool", this, maxInstances, busyToIdle, idleToErase);
+      this.initCount++;
    }
    
    /**
@@ -412,7 +406,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#shutdown
     */
-   public void shutdown() {
+   public synchronized void shutdown() {
+      this.initCount--;
+      if (this.initCount > 0)
+         return;
       destroy();
    }
 }

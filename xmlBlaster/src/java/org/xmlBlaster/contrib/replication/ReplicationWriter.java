@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
@@ -58,9 +59,9 @@ private final static String ME = "ReplicationWriter";
       set.add("replication.mapper.class");
       set.add("replication.overwriteTables");
       set.add("replication.importLocation");
-      set.add(this.mapper.getUsedPropertyKeys());
-      set.add(this.pool.getUsedPropertyKeys());
-      set.add(this.dbSpecific.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.mapper.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.pool.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.dbSpecific.getUsedPropertyKeys());
       return set;
    }
 
@@ -136,6 +137,9 @@ private final static String ME = "ReplicationWriter";
    public void store(DbUpdateInfo dbInfo) throws Exception {
       
       DbUpdateInfoDescription description = dbInfo.getDescription();
+      if (description == null) {
+         throw new Exception("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
+      }
       String command = description.getCommand();
 
       String action = getStringAttribute(ACTION_ATTR, null, description);

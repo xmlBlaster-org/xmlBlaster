@@ -146,5 +146,5 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @return A String Buffer containing the part of the CREATE statement which is specific to this column.
     */
    StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
-   
+ 
 }

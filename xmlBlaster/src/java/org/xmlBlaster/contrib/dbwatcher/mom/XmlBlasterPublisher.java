@@ -17,18 +17,21 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
@@ -37,6 +40,7 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.MsgUnit;
 
 
@@ -87,7 +91,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    protected ConnectQos connectQos;
    protected boolean eraseOnDrop;
    protected boolean eraseOnDelete;
-
+   private int initCount = 0; 
+   
    /**
     * Default constructor. 
     * You need to call  {@link #init(I_Info)} thereafter.
@@ -96,14 +101,6 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       // void
    }
 
-   /**
-    * Convenience constructor which calls {@link #init(I_Info)}.  
-    * @param info The configuration environment
-    */
-   public XmlBlasterPublisher(I_Info info) throws Exception {
-      init(info);
-   }
-   
    /**
     * If called we shall subcribe to xmlBlaster for alert messages
     * which notifies us that there may be new changes available, we call
@@ -170,16 +167,22 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * we take a clone and reuse it. 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#init(I_Info)
     */
-   public void init(I_Info info) throws Exception {
-      if (this.con != null) return;
+   public synchronized void init(I_Info info) throws Exception {
+      if (this.initCount > 0)
+         return;
       
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
          this.glob = new Global();
       }
       else {
-         this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
-         this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+         if (globOrig instanceof org.xmlBlaster.engine.Global) {
+            this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
+            this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+         }
+         else {
+            this.glob = globOrig;
+         }
       }
 
       this.topicNameTemplate = info.get("mom.topicName", "db.change.event.${groupColValue}");
@@ -238,7 +241,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       
       this.con = this.glob.getXmlBlasterAccess();
       this.con.connect(this.connectQos, this);
-      
+      this.initCount++;
       // Make myself available
       info.putObject("org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher", this);
       info.putObject("org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher", this);
@@ -247,7 +250,10 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    /**
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#shutdown
     */
-   public void shutdown() {
+   public synchronized void shutdown() {
+      this.initCount--;
+      if (this.initCount > 0)
+         return;
       log.fine("Closing xmlBlaster connection");
       if (this.con != null) {
          this.con.disconnect(null);
@@ -267,13 +273,25 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
       // this is used to register the owner of this object (typically the DbWatcher)
       if ("REGISTER".equals(command) || "UNREGISTER".equals(command)) {
-         String qos = null;
+         String destination = null;
+         PublishQos qos = null;
          if (attrMap != null)
-            qos = (String)attrMap.get("_qos");
-         if (qos == null)
-            qos = "<qos/>";
-         String key = "<key oid='" + changeKey + "'/>";
-         MsgUnit msg = new MsgUnit(this.glob, key, out, qos);
+            destination = (String)attrMap.get("_destination");
+         if (destination != null) {
+            Destination dest = new Destination(new SessionName(this.glob, destination));
+            dest.forceQueuing(true); // to ensure it works even if this comes before manager
+            qos = new PublishQos(this.glob, dest);
+         }
+         else
+            qos = new PublishQos(this.glob);
+         qos.setPersistent(true);
+         qos.setSubscribable(true);
+         ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
+         // to force to fill the client properties map !!
+         new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
+         qos.addClientProperty("_command", command); // since it was not a ClientProperty
+         PublishKey key = new PublishKey(this.glob, changeKey);
+         MsgUnit msg = new MsgUnit(key, out, qos);
          PublishReturnQos prq = this.con.publish(msg);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
          if (log.isLoggable(Level.FINE)) log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");

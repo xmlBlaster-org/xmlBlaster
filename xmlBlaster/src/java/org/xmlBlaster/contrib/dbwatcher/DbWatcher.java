@@ -86,7 +86,7 @@ public class DbWatcher implements I_ChangeListener {
       init(info);
    }
 
-   public static I_ChangePublisher getChangePublisher(I_Info info, String owner) throws Exception {
+   public static I_ChangePublisher getChangePublisher(I_Info info) throws Exception {
       synchronized (info) {
          I_ChangePublisher publisher = (I_ChangePublisher)info.getObject("mom.publisher");
          if (publisher == null) {
@@ -94,21 +94,20 @@ public class DbWatcher implements I_ChangeListener {
             String momClass = info.get("mom.class", "org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher").trim();
             if (momClass.length() > 0) {
                publisher = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
-               publisher.init(info);
                info.putObject("mom.publisher", publisher);
                if (log.isLoggable(Level.FINE)) 
                   log.fine(momClass + " created and initialized");
-               info.put("mom.publisher.owner", owner);
             }
             else
                log.severe("Couldn't initialize I_ChangePublisher, please configure 'mom.class'.");
          }
+         publisher.init(info);
          return publisher;
       }
    }
 
    
-   public static I_DbPool getDbPool(I_Info info, String owner) throws Exception {
+   public static I_DbPool getDbPool(I_Info info) throws Exception {
       synchronized (info) {
          I_DbPool dbPool = (I_DbPool)info.getObject("db.pool");
          if (dbPool == null) {
@@ -116,15 +115,14 @@ public class DbWatcher implements I_ChangeListener {
             String dbPoolClass = info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
             if (dbPoolClass.length() > 0) {
                 dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
-                dbPool.init(info);
                 if (log.isLoggable(Level.FINE)) 
                    log.fine(dbPoolClass + " created and initialized");
             }
             else
                throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
-            info.put("db.pool..owner", owner);
             info.putObject("db.pool", dbPool);
          }
+         dbPool.init(info);
          return dbPool;
       }
    }
@@ -147,9 +145,8 @@ public class DbWatcher implements I_ChangeListener {
       this.queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
-      if (this.queryMeatStatement != null) {
-         this.dbPool = getDbPool(this.info, "DbWatcher");
-      }
+      if (this.queryMeatStatement != null)
+         this.dbPool = getDbPool(this.info);
 
       // Now we load all plugins to do the job
       
@@ -165,7 +162,7 @@ public class DbWatcher implements I_ChangeListener {
       else
          log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
 
-      this.publisher = getChangePublisher(this.info, "DbWatcher");
+      this.publisher = getChangePublisher(this.info);
 
       if (changeDetectorClass.length() > 0) {
          this.changeDetector = (I_ChangeDetector)cl.loadClass(changeDetectorClass).newInstance();
@@ -439,22 +436,19 @@ public class DbWatcher implements I_ChangeListener {
       try { if (this.dataConverter != null) this.dataConverter.shutdown(); } catch(Throwable e) { e.printStackTrace(); log.warning(e.toString()); }
       
       try {
-         boolean publisherOwner = this.info.get("mom.publisher.owner", "").equals("DbWatcher");
-         if (this.publisher != null && publisherOwner) { 
+         if (this.publisher != null) { 
             this.publisher.shutdown();
             this.publisher = null;
-            this.info.putObject("mom.publisher", null);
          }
       } 
       catch(Throwable e) { 
          e.printStackTrace(); log.warning(e.toString()); 
       }
 
-      boolean poolOwner = this.info.get("db.pool.owner", "").equals("DbWatcher");
-      if (poolOwner && this.dbPool != null) {
+      if (this.dbPool != null) {
          this.dbPool.shutdown();
          this.dbPool = null;
-         this.info.putObject("db.pool", null);
+         // this.info.putObject("db.pool", null);
       }
    }
 }

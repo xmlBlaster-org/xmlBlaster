@@ -103,7 +103,7 @@ public class DbWriter implements I_Update {
          this.eventEngine = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
          this.eventEngine.init(info);
          this.eventEngine.registerAlertListener(this);
-          if (log.isLoggable(Level.FINE)) log.fine(momClass + " created and initialized");
+         if (log.isLoggable(Level.FINE)) log.fine(momClass + " created and initialized");
       }
       else
          log.severe("Couldn't initialize I_EventEngine, please configure 'mom.class'.");
@@ -128,7 +128,7 @@ public class DbWriter implements I_Update {
     */
    public synchronized void shutdown() throws Exception {
       this.isAlive = false;
-      shutdown(this.eventEngine);
+      // shutdown(this.eventEngine);
       shutdown(this.parser);
       shutdown(this.writer);
       if (this.poolOwner && this.dbPool != null) {
