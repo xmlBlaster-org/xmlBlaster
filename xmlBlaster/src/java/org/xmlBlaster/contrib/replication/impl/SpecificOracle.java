@@ -8,9 +8,11 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
@@ -424,6 +426,63 @@ public class SpecificOracle extends SpecificDefault {
       catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
          e.printStackTrace();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
+    */
+   public void initiateUpdate(String destination) throws Exception {
+      log.warning("will make an export of the DATABASE (NOT IMPLEMENTED YET");
+      
+      Connection conn = null;
+      String cmd = "ls *"; // TODO CHANGE THIS
+      int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
+      try {
+         conn = this.dbPool.reserve();
+         oldTransactionIsolation = conn.getTransactionIsolation();
+         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+         long minKey = this.incrementReplKey(conn);
+         
+         // the result must be sent as a high prio message to the real destination
+         this.osExecute(cmd);
+         
+         long maxKey = this.incrementReplKey(conn); 
+         conn.commit();
+         HashMap attrs = new HashMap();
+         attrs.put("_destination", destination);
+         attrs.put("_command", "INITIAL_DATA_RESPONSE");
+         attrs.put("_minReplKey", "" + minKey);
+         attrs.put("_maxReplKey", "" + maxKey);
+         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
+         
+      }
+      catch (Exception ex) {
+         if (conn != null) {
+            try {
+               conn.rollback();
+            }
+            catch (SQLException e) { }
+            try {
+               this.dbPool.erase(conn);
+            }
+            catch (Exception e) { }
+            conn = null;
+         }
+         ex.printStackTrace();
+      }
+      finally {
+         if (conn != null) {
+            if (oldTransactionIsolation != Connection.TRANSACTION_SERIALIZABLE)
+               try {
+                  conn.setTransactionIsolation(oldTransactionIsolation);
+               }
+               catch (SQLException e) { }
+               try {
+                  conn.close();
+               }
+               catch (SQLException e) { }
+         }
       }
    }
 

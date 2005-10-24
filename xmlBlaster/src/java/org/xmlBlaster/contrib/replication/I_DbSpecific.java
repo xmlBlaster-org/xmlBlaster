@@ -147,4 +147,6 @@ public interface I_DbSpecific extends I_ContribPlugin {
     */
    StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
  
+   void initiateUpdate(String destination) throws Exception;
+   
 }

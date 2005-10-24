@@ -31,11 +31,20 @@ public interface I_ReplSlave extends I_Update {
     */
    void requestInitialData() throws Exception;
    
+   
    /**
     * 6
-    *
+    * This is received by the DbWatcher jvm. If the maxReplKey != (minReplKey+1),
+    * then it means somebody has written into the database while operating,
+    * This could result in inconsistencies in cases transaction isolation can not
+    * be assured.
+    * 
+    * @param minReplKey the replication key taken before initiating the db side
+    * operation on the master.
+    * @param maxReplKey the replication key taken after initiating the db side
+    * operation on the master.
     */
-   void reactivateDestination() throws Exception;
+   void reactivateDestination(long minReplKey, long maxReplKey) throws Exception;
    
    
    boolean checkForDestroy(String replKey) throws Exception;

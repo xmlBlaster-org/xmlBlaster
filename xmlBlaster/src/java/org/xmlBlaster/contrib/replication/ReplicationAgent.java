@@ -138,14 +138,16 @@ public class ReplicationAgent {
          setProp(map, writerInfo, "db.password", "");
          setProp(map, writerInfo, "mom.loginName", "DbWriter/1");
          setProp(map, writerInfo, "replication.mapper.tables", "test1=test1_replica,test2=test2_replica,test3=test3_replica");
-         String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
-         setProp(map, writerInfo, "mom.subscribeKey", subscribeKey);
-         setProp(map, writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
+         // String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
+         // setProp(map, writerInfo, "mom.subscribeKey", subscribeKey);
+         // setProp(map, writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
          setProp(map, writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
          // these are pure xmlBlaster specific properties
          setProp(map, writerInfo, "dispatch/callback/retries", "-1");
          setProp(map, writerInfo, "dispatch/callback/delay", "10000");
-         setProp(map, writerInfo, "queue/callback/maxEntries", "10000");
+         setProp(map, writerInfo, "dispatch/connection/retries", "-1");
+         setProp(map, writerInfo, "dispatch/connection/delay", "10000");
+         // setProp(map, writerInfo, "queue/callback/maxEntries", "10000");
       }
    }
 
@@ -231,7 +233,7 @@ public class ReplicationAgent {
                   try {
                      boolean doWarn = false;
                      boolean force = false;
-                     dbSpecific.bootstrap(conn, doWarn, false);
+                     dbSpecific.bootstrap(conn, doWarn, force);
                   }
                   catch (Exception ex) {
                      ex.printStackTrace();

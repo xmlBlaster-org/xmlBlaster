@@ -163,7 +163,7 @@ public class ReplicationManager {
          this.info.putObject(DB_POOL_KEY, this.dbPool);
       }
       
-      String dbSpecificClass = this.info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificDefault").trim();
+      String dbSpecificClass = this.info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle").trim();
    
       if (dbSpecificClass.length() > 0) {
           this.dbSpecific = (I_DbSpecific)cl.loadClass(dbSpecificClass).newInstance();

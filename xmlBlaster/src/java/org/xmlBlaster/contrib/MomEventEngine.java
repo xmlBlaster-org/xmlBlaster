@@ -8,6 +8,7 @@ package org.xmlBlaster.contrib;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 public class MomEventEngine implements I_Callback, I_ChangePublisher {
 
@@ -64,7 +66,17 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
-         this.glob = new Global();
+         Iterator iter = info.getKeys().iterator();
+         ArrayList argsList = new ArrayList();
+         while (iter.hasNext()) {
+            String key = (String)iter.next();
+            String value = info.get(key, null);
+            if (value != null) {
+               argsList.add("-" + key);
+               argsList.add(value);
+            }
+         }
+         this.glob = new Global((String[])argsList.toArray(new String[argsList.size()]));
       }
       else {
          this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
@@ -116,15 +128,21 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
          int maxSessions = info.getInt("mom.maxSessions", 100);
          this.connectQos.setMaxSessions(maxSessions);
+         CallbackAddress cbAddr = new CallbackAddress(this.glob);
+         cbAddr.setRetries(-1);
+         this.connectQos.addCallbackAddress(cbAddr);
       }
-      
+      log.info("Connecting with qos '" + this.connectQos.toXml() + "'");
       this.con = this.glob.getXmlBlasterAccess();
       this.con.connect(this.connectQos, this);
 
       // TODO cleanup in an own method and avoid unsubscribe and disconnect on shutdown ...
       if (this.subscribeKeyList.size() < 1)
-         log.severe("init: no subscription has been registered, please check your configuration");
+         log.info("init: no subscription has been registered.");
+      else
+         log.info("init: " + this.subscribeKeyList.size() + " subscriptions have been registered.");
       for (int i=0; i < this.subscribeKeyList.size(); i++) {
+         log.fine("init: subscribing '" + i + "' with key '" + this.subscribeKeyList.get(i) + "' and qos '" + this.subscribeQosList.get(i) + "'");
          this.con.subscribe((String)this.subscribeKeyList.get(i), (String)this.subscribeQosList.get(i), this);
       }
       
@@ -171,7 +189,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       return this.con.publish(msg).toXml();
    }
 
-   public boolean registerAlertListener(I_Update update) throws Exception {
+   public boolean registerAlertListener(I_Update update, Map attrs) throws Exception {
       if (this.eventHandler != null)
          return false;
       this.eventHandler = update;

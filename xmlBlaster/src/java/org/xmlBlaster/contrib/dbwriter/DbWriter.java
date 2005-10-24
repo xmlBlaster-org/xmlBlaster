@@ -78,7 +78,7 @@ public class DbWriter implements I_Update {
       }
 
       // Now we load all plugins to do the job
-      String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.dbwriter.MomEventEngine").trim();
+      String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
       String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.DbUpdateParser").trim();
       String writerClass = this.info.get("dbWriter.writer.class", "org.xmlBlaster.contrib.dbwriter.Writer").trim();
    
@@ -102,7 +102,7 @@ public class DbWriter implements I_Update {
       if (momClass.length() > 0) {
          this.eventEngine = (I_ChangePublisher)cl.loadClass(momClass).newInstance();
          this.eventEngine.init(info);
-         this.eventEngine.registerAlertListener(this);
+         this.eventEngine.registerAlertListener(this, null);
          if (log.isLoggable(Level.FINE)) log.fine(momClass + " created and initialized");
       }
       else

@@ -14,6 +14,7 @@ public interface ReplicationConstants {
    public final static String REPL_MANAGER_REGISTER = "REGISTER";
    public final static String REPL_MANAGER_UNREGISTER = "UNREGISTER";
    public final static String REPL_PREFIX_KEY = "replication.prefix";
+   public final static String REPL_REQUEST_UPDATE = "REQUEST_UPDATE";
 
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";

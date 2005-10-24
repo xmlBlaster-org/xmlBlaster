@@ -61,9 +61,11 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
    private String statusTopic;
    private String dataTopic;
    private Global utilGlobal;
+   private String masterSessionId;
    boolean initialized; 
    private String pluginVersion = "1.0";
-
+   private long minReplKey;
+   private long maxReplKey;
    
    public ReplSlave(String slaveSessionId, String replName, I_Info info) throws Exception {
       this.slaveSessionId = slaveSessionId;
@@ -71,6 +73,9 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
       this.initialized = false;
       this.dataTopic = info.get("mom.topicName", "replication." + replName);
       this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
+      this.masterSessionId = info.get("_senderSession", null);
+      if (this.masterSessionId == null)
+         throw new Exception("ReplSlave '" + this.pluginName + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
       // this.utilGlobal = (Global)info.getObject("org.xmlBlaster.engine.Global");
 
       Global tmpGlobal = (Global)info.getObject("org.xmlBlaster.engine.Global");
@@ -101,6 +106,8 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
    
    public void run() throws Exception {
       prepareForRequest();
+      requestInitialData();
+      
    }
    
    /**
@@ -122,37 +129,8 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
    public void prepareForRequest() throws Exception {
       if (!this.initialized)
          throw new Exception("prepareForRequest: '" + this.pluginName + "' has not been initialized properly or is already shutdown, check your logs");
-      deativateCbClearAndDelegateSubscribe();
-   }
-   
-   private void sendStatusInformation(String status) throws Exception {
-      log.info("send status information '" + status + "'");
-      I_XmlBlasterAccess conn = this.utilGlobal.getXmlBlasterAccess();
-      PublishKey pubKey = new PublishKey(this.utilGlobal, this.statusTopic);
-      Destination destination = new Destination(new SessionName(this.utilGlobal, this.slaveSessionId));
-      PublishQos pubQos = new PublishQos(this.utilGlobal, destination);
-      pubQos.setPersistent(true);
-      MsgUnit msg = new MsgUnit(pubKey, status.getBytes(), pubQos);
-      conn.publish(msg);
-   }
-   
-   /**
-    * Perfoms a delegate subscribe on behalf of the real slave.
-    * @throws Exception
-    */
-   private void deativateCbClearAndDelegateSubscribe() throws Exception {
-      log.info("deativateCbClearAndDelegateSubscribe");
-      I_Authenticate auth = getEngineGlobal(this.utilGlobal).getAuthenticate();
-      if (auth == null)
-         throw new Exception(this.pluginName + " prepareForRequest: could not retreive the Authenticator object. Can not continue.");
-      SessionName sessionName = new SessionName(this.utilGlobal, this.slaveSessionId);
-      I_AdminSubject subject = auth.getSubjectInfoByName(sessionName);
-      if (subject == null)
-         throw new Exception(this.pluginName + " prepareForRequest: no subject (slave) found with the session name '" + this.slaveSessionId + "'");
-      I_AdminSession session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
-      if (session == null)
-         throw new Exception(this.pluginName + " prepareForRequest: no session '" + this.slaveSessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
-
+      log.info("prepareForRequest");
+      I_AdminSession session = getSession();
       long clearedMsg = session.clearCallbackQueue();
       log.info("clearing of callback queue before initiating: '" + clearedMsg + "' where removed since obsolete");
 
@@ -167,19 +145,68 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
       subQos.addAccessFilter(accessFilterQos);
       session.subscribe(this.dataTopic, subQos.toXml());
    }
-
+   
+   private void sendStatusInformation(String status) throws Exception {
+      log.info("send status information '" + status + "'");
+      I_XmlBlasterAccess conn = this.utilGlobal.getXmlBlasterAccess();
+      PublishKey pubKey = new PublishKey(this.utilGlobal, this.statusTopic);
+      Destination destination = new Destination(new SessionName(this.utilGlobal, this.slaveSessionId));
+      destination.forceQueuing(true);
+      PublishQos pubQos = new PublishQos(this.utilGlobal, destination);
+      pubQos.setPersistent(true);
+      MsgUnit msg = new MsgUnit(pubKey, status.getBytes(), pubQos);
+      conn.publish(msg);
+   }
+   
    /**
+    * Sends a PtP message to the responsible for the initial update (which is the
+    * DbWatcher or an object running in the DbWatcher jvm) telling a new initial
+    * update has to be initiating. 
+    * 
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#requestInitialData()
     */
    public void requestInitialData() throws Exception {
-      // TODO Auto-generated method stub
+      log.info(this.pluginName + " sends now an initial update request to the Master '" + this.masterSessionId + "'");
+      I_XmlBlasterAccess conn = this.utilGlobal.getXmlBlasterAccess();
+      // no oid for this ptp message 
+      PublishKey pubKey = new PublishKey(this.utilGlobal);
+      Destination destination = new Destination(new SessionName(this.utilGlobal, this.masterSessionId));
+      destination.forceQueuing(true);
+      PublishQos pubQos = new PublishQos(this.utilGlobal, destination);
+      pubQos.setPersistent(true);
+      MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_UPDATE.getBytes(), pubQos);
+      conn.publish(msg);
    }
 
-   /* (non-Javadoc)
+   
+   private I_AdminSession getSession() throws Exception {
+      I_Authenticate auth = getEngineGlobal(this.utilGlobal).getAuthenticate();
+      if (auth == null)
+         throw new Exception(this.pluginName + " prepareForRequest: could not retreive the Authenticator object. Can not continue.");
+      SessionName sessionName = new SessionName(this.utilGlobal, this.slaveSessionId);
+      I_AdminSubject subject = auth.getSubjectInfoByName(sessionName);
+      if (subject == null)
+         throw new Exception(this.pluginName + " prepareForRequest: no subject (slave) found with the session name '" + this.slaveSessionId + "'");
+      I_AdminSession session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
+      if (session == null)
+         throw new Exception(this.pluginName + " prepareForRequest: no session '" + this.slaveSessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
+      return session;
+   }
+   
+   /**
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#reactivateDestination()
     */
-   public void reactivateDestination() throws Exception {
-      // TODO Auto-generated method stub
+   public synchronized void reactivateDestination(long minReplKey, long maxReplKey) throws Exception {
+      log.info("Initial Operation completed with replication key interval [" + minReplKey + "," + maxReplKey + "]");
+      if (!this.initialized)
+         throw new Exception("prepareForRequest: '" + this.pluginName + "' has not been initialized properly or is already shutdown, check your logs");
+
+      this.minReplKey = minReplKey;
+      this.maxReplKey = maxReplKey;
+
+      I_AdminSession session = getSession(); 
+      session.setDispatcherActive(true);
+      
    }
 
    /* (non-Javadoc)
@@ -274,16 +301,40 @@ public class ReplSlave implements I_ReplSlave, I_AccessFilter, I_Callback, I_Plu
       }
    }
 
+   /**
+    * 
+    */
    public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
-      // TODO Auto-generated method stub
+      long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+      if (replKey < 0L) {
+         log.severe("the message unit '" + msgUnit.toXml() + "' has no '" + ReplicationConstants.REPL_KEY_ATTR + "' defined");
+      }
+      log.fine("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
+      // TODO destroy when finished
+      if (replKey > this.maxReplKey)
+         return true;
       return false;
    }
 
    // I_Callback
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      // TODO Auto-generated method stub
-      return null;
+      if (content == null)
+         content = new byte[0];
+      String command = updateQos.getClientProperty("_command", (String)null);
+      if ("INITIAL_DATA_RESPONSE".equals(command)) {
+         long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
+         long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
+         try {
+            reactivateDestination(minReplKey, maxReplKey);
+         }
+         catch (Exception ex) {
+            log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
+         }
+      }
+      else
+         log.warning("update was invoked for an unknown message '" + new String(content));
+      return "OK";
    }
    
 }

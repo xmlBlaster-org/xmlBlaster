@@ -25,6 +25,7 @@ import java.util.prefs.Preferences;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
@@ -36,18 +37,19 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.ReplicationManager;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class SpecificDefault implements I_DbSpecific, I_ResultCb {
+public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Update {
 
    private String CREATE_COUNTER_KEY = "_createCounter";
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
 
    /** used to publish CREATE changes */
-   private I_ChangePublisher publisher;
+   protected I_ChangePublisher publisher;
 
    private int rowsPerMessage = 10;
 
@@ -316,7 +318,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
     */
-   public Set getUsedPropertyKeys() {
+   public final Set getUsedPropertyKeys() {
       Set set = new HashSet();
       set.add("replication.prefix");
       set.add("maxRowsOnCreate");
@@ -346,6 +348,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       
       // registering this instance to the Replication Manager
       if (this.publisher != null) {
+         HashMap subscriptionMap = new HashMap();
+         subscriptionMap.put("ptp", "true");
+         this.publisher.registerAlertListener(this, subscriptionMap);
          // fill the info to be sent with the own info objects
          HashMap msgMap = new HashMap();
          new ClientPropertiesInfo(msgMap, this.info);
@@ -605,186 +610,6 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
    }
 
-   /**
-    * Helper method used to construct the CREATE TABLE statement part belonging
-    * to a single COLUMN.
-    * 
-    * @param colInfoDescription
-    * @return
-    */
-   public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
-      String type = colInfoDescription.getType();
-      /*
-       * if (charLength > 0) { type = type + "[" + charLength + "]"; }
-       */
-      StringBuffer buf = new StringBuffer(colInfoDescription.getColName())
-            .append(" ").append(type);
-      return buf;
-   }
-
-   /**
-    * @see I_DbSpecific#getCreateTableStatement(DbUpdateInfoDescription,
-    *      I_Mapper)
-    */
-   public String getCreateTableStatement(
-         DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
-      DbUpdateInfoColDescription[] cols = infoDescription
-            .getUpdateInfoColDescriptions();
-      StringBuffer buf = new StringBuffer(1024);
-      String tableName = infoDescription.getIdentity();
-      if (mapper != null)
-         tableName = mapper.getMappedTable(null, null, tableName, null);
-      buf.append("CREATE TABLE ").append(tableName).append(" (");
-      StringBuffer pkBuf = new StringBuffer();
-      boolean hasPkAlready = false;
-      for (int i = 0; i < cols.length; i++) {
-         if (i != 0)
-            buf.append(",");
-         buf.append(getColumnStatement(cols[i]));
-         if (cols[i].isPrimaryKey()) {
-            if (hasPkAlready)
-               pkBuf.append(",");
-            pkBuf.append(cols[i].getColName());
-            hasPkAlready = true;
-         }
-      }
-      if (hasPkAlready)
-         buf.append(", PRIMARY KEY (").append(pkBuf).append(")");
-      buf.append(")");
-      return buf.toString();
-   }
-
-   /**
-    * 
-    * @param col
-    * @param prefix
-    *           can be 'old' or 'new'
-    * @return
-    */
-   protected String createVariableSqlPart(DbUpdateInfoDescription description,
-         String prefix) {
-      DbUpdateInfoColDescription[] cols = description
-            .getUpdateInfoColDescriptions();
-      StringBuffer buf = new StringBuffer("       ").append(prefix).append(
-            "Cont = '';\n");
-
-      for (int i = 0; i < cols.length; i++) {
-         String colName = cols[i].getColName();
-         int type = cols[i].getSqlType();
-         if (type == Types.BINARY || type == Types.BLOB
-               || type == Types.JAVA_OBJECT || type == Types.VARBINARY
-               || type == Types.STRUCT) {
-            buf.append("       blobCont = " + prefix + "." + colName + ";\n");
-            buf.append("       tmp = " + prefix
-                  + "Cont || " + this.replPrefix + "col2xml_base64('" + colName
-                  + "', blobCont);\n");
-            buf.append("       " + prefix + "Cont = tmp;\n");
-         } else {
-            buf.append("       tmp = " + prefix + "Cont || " + this.replPrefix + "col2xml('"
-                  + colName + "'," + prefix + "." + colName + ");\n");
-            buf.append("       " + prefix + "Cont = tmp;\n");
-         }
-      }
-      buf.append("       oid = ").append(prefix).append(".oid;\n");
-      return buf.toString();
-   }
-
-   /**
-    * This method creates a function to be associated to a trigger to detect
-    * INSERT DELETE and UPDATE operations on a particular table.
-    * 
-    * @param infoDescription
-    *           the info object containing the necessary information for the
-    *           table.
-    * @return a String containing the sql update. It can be executed.
-    */
-   public String createTableFunction(DbUpdateInfoDescription infoDescription, String functionName) {
-
-      StringBuffer buf = new StringBuffer();
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("-- This is the function which will be registered to the triggers.               \n");
-      buf.append("-- It must not take any parameter.                                              \n");
-      buf.append("-- This is the only method which is business data specific. It is depending on  \n");
-      buf.append("-- the table to be replicated. This should be generated by a tool.              \n");
-      buf.append("--                                                                              \n");
-      buf.append("-- For each table you should just write out in a sequence the complete content  \n");
-      buf.append("-- of the row to replicate. You could make more fancy stuff here, for example   \n");
-      buf.append("-- you could just send the minimal stuff, i.e. only the stuff which has changed \n");
-      buf.append("-- (for the new stuff) and for the old one you could always send an empty one.  \n");
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("\n");
-      buf.append("CREATE OR REPLACE FUNCTION ").append(functionName).append("() RETURNS trigger AS $").append(functionName).append("$\n");
-      buf.append("DECLARE blobCont BYTEA; \n");
-      buf.append("        oldCont TEXT; \n");
-      buf.append("   newCont TEXT;\n");
-      buf.append("   comment TEXT;\n");
-      buf.append("   oid     TEXT;\n");
-      buf.append("   tmp     TEXT;\n");
-      buf.append("BEGIN\n");
-      buf.append("    oldCont = NULL;\n");
-      buf.append("    newCont = NULL;\n");
-      buf.append("    tmp = " + this.replPrefix + "check_structure();\n");
-      buf.append("\n");
-      buf.append("    IF (TG_OP != 'INSERT') THEN\n");
-
-      buf.append(createVariableSqlPart(infoDescription, "old"));
-      buf.append("    END IF;\n");
-      buf.append("\n");
-      buf.append("    IF (TG_OP != 'DELETE') THEN\n");
-
-      buf.append(createVariableSqlPart(infoDescription, "new"));
-      buf.append("\n");
-      buf.append("    END IF;\n");
-      buf.append("    INSERT INTO " + this.replPrefix + "items (trans_key, dbId, tablename, guid,\n");
-      buf.append("                           db_action, db_catalog, db_schema, \n");
-      buf.append("                           content, oldContent, version) values \n");
-      buf.append("                           (CURRENT_TIMESTAMP,current_database(),\n");
-      buf.append("            TG_RELNAME, oid, TG_OP, NULL, current_schema(), newCont, \n");
-      buf.append("            oldCont, '0.0');\n");
-      buf.append("    tmp = inet_client_addr();\n");
-      buf.append("\n");
-      buf.append("    IF (TG_OP = 'DELETE') THEN RETURN OLD;\n");
-      buf.append("    END IF;\n");
-      buf.append("    RETURN NEW;\n");
-      buf.append("END;\n");
-      buf.append("$").append(functionName).append("$ LANGUAGE 'plpgsql';\n");
-      buf.append("\n");
-      return buf.toString();
-   }
-
-   /**
-    * This method creates a trigger to detect INSERT DELETE and UPDATE
-    * operations on a particular table.
-    * 
-    * @param infoDescription
-    *           the info object containing the necessary information for the
-    *           table.
-    * @return a String containing the sql update. It can be executed.
-    */
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
-
-      String tableName = infoDescription.getIdentity(); // should be the table
-                                                         // name
-      String functionName = tableName + "_f";
-
-      StringBuffer buf = new StringBuffer();
-      buf.append(createTableFunction(infoDescription, functionName));
-      
-      // and now append the associated trigger ....
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("-- THE TRIGGER FOR THE replTest TABLE                                           \n");
-      buf.append("-- ---------------------------------------------------------------------------- \n");
-      buf.append("\n");
-      buf.append("-- DROP TRIGGER ").append(triggerName).append(" ON ").append(tableName).append(" CASCADE;\n");
-      buf.append("CREATE TRIGGER ").append(triggerName).append("\n");
-      buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
-      buf.append("ON ").append(tableName).append("\n");
-      buf.append("FOR EACH ROW\n");
-      buf.append("EXECUTE PROCEDURE ").append(functionName).append("();\n");
-      buf.append("\n");
-      return buf.toString();
-   }
-
    public final void forceTableChangeCheck() throws Exception {
       Connection conn = null;
       CallableStatement st = null;
@@ -810,7 +635,7 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
-   public void addTableToWatch(String catalog, String schema, String tableName,
+   public final void addTableToWatch(String catalog, String schema, String tableName,
          boolean doReplicate, String triggerName) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -844,19 +669,9 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
-    * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
-    * @param catalog
-    * @param schema
-    * @throws Exception
-    */
-   public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
-      // do nothing as a default
-   }
-   
-   /**
     * @see I_DbSpecific#removeTableToWatch(String)
     */
-   public void removeTableToWatch(String catalog, String schema,
+   public final void removeTableToWatch(String catalog, String schema,
          String tableName) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -872,6 +687,57 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
             + "' AND schemaname='" + schema + "' AND catalogname='" + catalog
             + "'";
       this.dbPool.update(sql);
+   }
+
+   /**
+    * @see I_DbSpecific#getCreateTableStatement(DbUpdateInfoDescription,
+    *      I_Mapper)
+    */
+   public final String getCreateTableStatement(
+         DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
+      DbUpdateInfoColDescription[] cols = infoDescription
+            .getUpdateInfoColDescriptions();
+      StringBuffer buf = new StringBuffer(1024);
+      String tableName = infoDescription.getIdentity();
+      if (mapper != null)
+         tableName = mapper.getMappedTable(null, null, tableName, null);
+      buf.append("CREATE TABLE ").append(tableName).append(" (");
+      StringBuffer pkBuf = new StringBuffer();
+      boolean hasPkAlready = false;
+      for (int i = 0; i < cols.length; i++) {
+         if (i != 0)
+            buf.append(",");
+         buf.append(getColumnStatement(cols[i]));
+         if (cols[i].isPrimaryKey()) {
+            if (hasPkAlready)
+               pkBuf.append(",");
+            pkBuf.append(cols[i].getColName());
+            hasPkAlready = true;
+         }
+      }
+      if (hasPkAlready)
+         buf.append(", PRIMARY KEY (").append(pkBuf).append(")");
+      buf.append(")");
+      return buf.toString();
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
+    */
+   public final void update(String topic, byte[] content, Map attrMap) throws Exception {
+      if (content == null)
+         content = new byte[0];
+      String msg = new String(content);
+      if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
+         ClientProperty prop = (ClientProperty)attrMap.get("_sender");
+         if (prop == null)
+            throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
+         String destination = prop.getStringValue();
+         initiateUpdate(destination);
+      }
+      else {
+         log.warning("update from '" + topic + "' with request '" + msg + "'");
+      }
    }
 
    /**
@@ -909,12 +775,11 @@ public class SpecificDefault implements I_DbSpecific, I_ResultCb {
             System.setProperty("db.password", "");
          }
 
-         SpecificDefault specificDefault = new SpecificDefault();
          I_Info info = new PropertiesInfo(System.getProperties());
-         specificDefault.init(info);
+         I_DbSpecific specific = ReplicationConverter.getDbSpecific(info);
          I_DbPool pool = (I_DbPool) info.getObject("db.pool");
          Connection conn = pool.reserve();
-         specificDefault.cleanup(conn, true);
+         specific.cleanup(conn, true);
          pool.release(conn);
       } catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());

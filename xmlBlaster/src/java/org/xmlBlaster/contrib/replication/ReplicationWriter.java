@@ -138,7 +138,8 @@ private final static String ME = "ReplicationWriter";
       
       DbUpdateInfoDescription description = dbInfo.getDescription();
       if (description == null) {
-         throw new Exception("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
+         log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
+         return;
       }
       String command = description.getCommand();
 

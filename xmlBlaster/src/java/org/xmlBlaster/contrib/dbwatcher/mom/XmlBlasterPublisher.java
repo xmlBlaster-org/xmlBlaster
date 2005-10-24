@@ -92,6 +92,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    protected boolean eraseOnDrop;
    protected boolean eraseOnDelete;
    private int initCount = 0; 
+   private I_Update defaultUpdate;
    
    /**
     * Default constructor. 
@@ -126,7 +127,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
                 log.warning("Ignoring alert notification message '" + topic + "': " + e.toString());
             }
          }
-      });
+      }, null);
    }
 
    /**
@@ -262,6 +263,12 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
    }
 
+   private void addStringPropToQos(String key, Map attrMap, PublishQos qos) {
+      String val = (String)attrMap.get(key);
+      if (val != null)
+         qos.addClientProperty(key, val);
+   }
+   
    /**
     * The send message is configured with <tt>mom.publishKey</tt> and <tt>mom.publishQos</tt>. 
     * A DROP command erases the topic.  
@@ -272,7 +279,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
       // this is used to register the owner of this object (typically the DbWatcher)
-      if ("REGISTER".equals(command) || "UNREGISTER".equals(command)) {
+      if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command)) {
          String destination = null;
          PublishQos qos = null;
          if (attrMap != null)
@@ -289,8 +296,15 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          // to force to fill the client properties map !!
          new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
-         qos.addClientProperty("_command", command); // since it was not a ClientProperty
-         PublishKey key = new PublishKey(this.glob, changeKey);
+         addStringPropToQos("_command", attrMap, qos);
+         addStringPropToQos("_minReplKey", attrMap, qos);
+         addStringPropToQos("_maxReplKey", attrMap, qos);
+         
+         PublishKey key = null;
+         if (changeKey != null && changeKey.length() > 0)
+            key = new PublishKey(this.glob, changeKey);
+         else 
+            key = new PublishKey(this.glob);
          MsgUnit msg = new MsgUnit(key, out, qos);
          PublishReturnQos prq = this.con.publish(msg);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
@@ -328,32 +342,51 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    }
    
    /**
-    * Subscribes on the alert topic as configured with <tt>mom.alertSubscribeKey</tt>.  
+    * Subscribes on the alert topic as configured with <tt>mom.alertSubscribeKey</tt>.
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#registerAlertListener(I_Update)
+    * @param attrs it currently accepts a null (old behaviour) or if it is not null, then
+    * the attribute ptp must be set (does not matter to what).
+    * 
     * @throws Exception Typically a XmlBlasterException
     */
-   public boolean registerAlertListener(final I_Update momCb) throws Exception {
+   public boolean registerAlertListener(final I_Update momCb, Map attrs) throws Exception {
       if (momCb == null) throw new IllegalArgumentException("I_Update==null");
-      if (this.alertSubscribeKey == null)
-         return false;
       try {
-         log.info("Registering on '" + this.alertSubscribeKey + "' for alerts");
-         SubscribeReturnQos subRet = this.con.subscribe(this.alertSubscribeKey, this.alertSubscribeQos, new I_Callback() {
-            public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
-               log.fine("Receiving alert message '" + k.getOid() + "'");
-               Map attrMap = clientPropertiesToMap(q.getClientProperties());
-               try {
-                  momCb.update(k.getOid(), c, attrMap);
+         if (attrs == null) { // 'old' behaviour
+            if (this.alertSubscribeKey == null)
+               return false;
+            log.info("Registering on '" + this.alertSubscribeKey + "' for alerts");
+            SubscribeReturnQos subRet = this.con.subscribe(this.alertSubscribeKey, this.alertSubscribeQos, new I_Callback() {
+               public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
+                  log.fine("Receiving alert message '" + k.getOid() + "'");
+                  Map attrMap = clientPropertiesToMap(q.getClientProperties());
+                  try {
+                     momCb.update(k.getOid(), c, attrMap);
+                  }
+                  catch (Exception e) {
+                     log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
+                     throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, "alertListener", "", e);
+                  }
+                  return "";
                }
-               catch (Exception e) {
-                  log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
-                  throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, "alertListener", "", e);
+             });
+             this.alertSubscriptionId = subRet.getSubscriptionId();
+             return true;
+         }
+         else { // could be for ptp or in future for additional subscriptions
+            Object ptp = attrs.get("ptp");
+            if (ptp != null) {
+               synchronized (this) {
+                  this.defaultUpdate = momCb;
+                  return true;
                }
-               return "";
             }
-          });
-          this.alertSubscriptionId = subRet.getSubscriptionId();
-          return true;
+            else {
+               Thread.dumpStack();
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, "XmlBlasterPublisher.registerAlertListener", "non-ptp are not implemented. Please assign to the attrs a 'ptp' attribute (no matter which value)");
+            }
+         }
+         
       }
       catch (XmlBlasterException e) {
          log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
@@ -411,8 +444,23 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see I_Callback#update
     */
    public String update(String s, UpdateKey k, byte[] c, UpdateQos q) {
-      log.warning("No update message expected, ignoring received " + k.toXml());
-      return "";
+      if (this.defaultUpdate == null) { 
+         log.warning("No update message expected, ignoring received " + k.toXml());
+         return "OK";
+      }
+      synchronized(this) {
+         try {
+            // TODO Add here the specific qos attributes to the map.
+            q.getData().addClientProperty("_sender", q.getSender().getAbsoluteName());
+            this.defaultUpdate.update(s, c, q.getClientProperties());
+            return "OK";
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            log.severe("Exception occured in the update method for key='" + s + "'");
+            return "NOK";
+         }
+      }
    }
    
    /**

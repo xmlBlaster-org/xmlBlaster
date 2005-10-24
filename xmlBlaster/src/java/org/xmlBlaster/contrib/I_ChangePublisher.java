@@ -46,10 +46,14 @@ public interface I_ChangePublisher extends java.util.EventListener, I_ContribPlu
     * If such a message arrives we trigger a new database poll.
     * </p> 
     * @param update The callback interface to receive the notification
+    * @param attrs extra parameters to pass for the registration. For example
+    * if one implementation wants to do a specific extra subscription it would
+    * pass the quality of service in the attributes.
+    * 
     * @return true if a notification is available (is configured)
     * @throws Exception The MoM specific exception
     */
-   boolean registerAlertListener(I_Update update) throws Exception;
+   boolean registerAlertListener(I_Update update, Map attrs) throws Exception;
    
    /**
     * Cleanup resources. 

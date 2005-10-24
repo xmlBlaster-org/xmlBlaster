@@ -62,7 +62,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     * @throws Exception
     */
    public static I_DbSpecific getDbSpecific(I_Info info) throws Exception {
-      String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificDefault");
+      String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle");
       I_DbSpecific dbSpecific = null;
       if (dbSpecificClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
