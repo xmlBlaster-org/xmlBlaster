@@ -391,7 +391,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       return null;
    }
 
-   public boolean registerAlertListener(I_Update momCb) throws Exception {
+   public boolean registerAlertListener(I_Update momCb, Map attrs) throws Exception {
       return false;
    }
 

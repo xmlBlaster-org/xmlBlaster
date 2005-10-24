@@ -117,7 +117,7 @@ public final class SpecificHelper {
        setDefaultProperty(props, "db.url", "");
        setDefaultProperty(props, "db.user", "");
        setDefaultProperty(props, "db.password", "");
-       setDefaultProperty(props, "replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificDefault");
+       setDefaultProperty(props, "replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificPostgres");
        setDefaultProperty(props, "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql");
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
        this.sql = this.postgresTypesSql;
