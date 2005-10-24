@@ -52,6 +52,10 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       log("DEBUG", new StringBuffer("constructor - ").append(getXmlBlasterServletUrl()).toString());
    }
 
+   public String getInstanceId() {
+      return ""+getInstanceCount();
+   }
+
    /**
     * Access the unique counter of this object instance. 
     */

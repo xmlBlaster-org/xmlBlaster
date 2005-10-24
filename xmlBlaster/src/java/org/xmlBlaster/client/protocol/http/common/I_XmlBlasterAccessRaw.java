@@ -36,6 +36,11 @@ public interface I_XmlBlasterAccessRaw
 
    
    /**
+    * Access the unique counter of this object instance for logging. 
+    */
+   public String getInstanceId();
+
+   /**
     * Send a xml script request to xmlBlaster. 
     * You need to call connect() first!
     * @return xml script returned
