@@ -30,7 +30,7 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
 
    public void init(){
       this.runAsApplet = true;
-      System.out.println("SystemInfoApplet: Applet.init() called");
+      print("Applet.init() called");
       try {
          setBackground(Color.white);
          setForeground(Color.black);
@@ -71,10 +71,11 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
    }
  
    private void print(String text) {
-      if (this.runAsApplet)
-         this.textArea.append("SystemInfoApplet: " + text + "\n");
+      String id = (this.xmlBlasterAccess==null) ? ": " : (" #"+this.xmlBlasterAccess.getInstanceId()+": ");
+      if (this.runAsApplet && this.textArea!=null)
+         this.textArea.append("SystemInfoApplet" + id + text + "\n");
       else    
-         System.out.println("SystemInfo: " + text + "\n");
+         System.out.println("SystemInfo" + id + text + "\n");
    }
 
    public void destroy(){
@@ -102,6 +103,9 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
       return "<qos/>";
    }
    
+   /**
+    * Start outside of browser: java http.applet.SystemInfoApplet
+    */
    public static void main(String[] args) {
       SystemInfoApplet appl = new SystemInfoApplet();
       Hashtable properties = new Hashtable();
