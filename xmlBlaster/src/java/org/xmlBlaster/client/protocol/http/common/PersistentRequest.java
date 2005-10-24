@@ -25,7 +25,7 @@ public class PersistentRequest extends Thread {
    * This is a convenience constructor if you don't want to create the connect QoS yourself.
    * </p>
    * @param xmlBlasterAccess My creator
-   * @param xmlBlasterServletUrl "http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet"
+   * @param xmlBlasterServletUrl "http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet&appletInstanceCount=1"
    * @param loginName
    * @param passwd
    */
@@ -76,7 +76,9 @@ public class PersistentRequest extends Thread {
     */
    public void run(){
       try{
-         this.xmlBlasterAccess.postRequest("dummyToCreateASessionId", null, null, null, !XmlBlasterAccessRawBase.ONEWAY);
+         // "dummyToCreateASessionId"
+         String ret = (String)this.xmlBlasterAccess.postRequest(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME, null, null, null, !XmlBlasterAccessRawBase.ONEWAY);
+         log("DEBUG", new StringBuffer().append("POST, send '").append(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME).append("' -> returned '").append(ret).append("'").toString());
 
          /*
           NOTE: We are sending the paramters encoded into the URL because i don't
@@ -96,8 +98,8 @@ public class PersistentRequest extends Thread {
          conn.setPostMethod();
          conn.setUseCaches(false);
          
-         //XmlBlasterAccessRawBase.writeRequest(conn, I_XmlBlasterAccessRaw.CONNECT_NAME, null, this.connectQos, null);
-         XmlBlasterAccessRawBase.writeRequest(conn, "connect", null, this.connectQos, null);
+         //"connect"
+         XmlBlasterAccessRawBase.writeRequest(conn, I_XmlBlasterAccessRaw.CONNECT_NAME, null, this.connectQos, null);
          
          // HTTP POST the connect() request ...
          //conn.setRequestProperty("Content-length", ""+request.length());

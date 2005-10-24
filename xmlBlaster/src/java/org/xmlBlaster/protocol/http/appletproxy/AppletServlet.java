@@ -74,6 +74,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    private Global initialGlobal;
    private Timeout timeout;
    public final static String ENCODING = "UTF-8";
+   public static long requestCounter;
 
    /**
     * This method is invoked only once when the servlet is started. 
@@ -124,7 +125,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          connectQos = new ConnectQos(glob);  // User servlets default authentication setting
          warnAuth = true;
       }
-      ME  = "AppletServlet-" + req.getRemoteAddr() + "-" + connectQos.getSessionName().getLoginName() + "-" + session.getId();
+      ME  += connectQos.getSessionName().getLoginName() + "-" + session.getId();
             
       if (warnAuth)
          log.warn(ME, "Login action, applet has not supplied connect QoS authentication information - we login with the servlets default authentication settings");
@@ -137,7 +138,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                                                xmlBlasterAccess, this.timeout);
       xmlBlasterAccess.connect(connectQos, pushHandler);
       pushHandler.startPing();
-      session.setAttribute("PushHandler", pushHandler);
+      String key = "PushHandler"+getParameter(req, "appletInstanceCount", "0");
+      session.setAttribute(key, pushHandler);
 
       // Don't fall out of doGet() to keep the HTTP connection open
       log.info(ME, "Waiting forever, permanent HTTP connection from " +
@@ -146,6 +148,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                      "', protocol='" + req.getProtocol() +
                      "', agent='" + req.getHeader("User-Agent") +
                      "', referer='" + req.getHeader("Referer") +
+                     "', storing PushHandler with key '" + key +
                      "'.");
 
       if (log.TRACE) log.trace(ME,
@@ -177,13 +180,6 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
    }
 
-
-
-
-
-
-
-
    /**
     * GET request from the browser, usually to do an initial login.
     * <p />
@@ -197,11 +193,10 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * successful login.
     * <p />
     */
-   public void doGetFake(HttpServletRequest req, HttpServletResponse res, String actionType, MsgHolder msgHolder) 
+   public void doGetFake(String ME, HttpServletRequest req, HttpServletResponse res, String actionType, MsgHolder msgHolder) 
       throws ServletException, IOException {
       res.setContentType("text/plain");
       String errorText="";
-      String ME  = this.getClass().getName() + "-" + req.getRemoteAddr();
       LogChannel log = this.initialGlobal.getLog("servlet");
       if (log.CALL) log.call(this.getClass().getName(), "Entering doGet() ... " + Memory.getStatistic());
 
@@ -213,19 +208,35 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          return;
       }
 
+      // for logging only:
+      HttpSession oldSession = req.getSession(false);
+      String oldSessionId = (oldSession == null) ? "no-session-id" : oldSession.getId();
+
       HttpSession session = req.getSession(true);
-      if (actionType.equals("connect")) { // TODO: !!! Reconnect to old session
-         boolean invalidate = getParameter(req, "xmlBlaster.invalidate", true);
+      if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME) ||
+          actionType.equals(I_XmlBlasterAccessRaw.CONNECT_NAME)) { // "connect" TODO: !!! Reconnect to old session
+         boolean invalidate = getParameter(req, "xmlBlaster/invalidate", false);
          if (invalidate == true) {
-            log.info(ME, "Entering servlet doGet(), forcing a new sessionId");
+            log.info(ME, "Entering servlet doGet("+I_XmlBlasterAccessRaw.CONNECT_NAME+"), forcing a new sessionId");
             session.invalidate();   // force a new sessionId
          }
          session = req.getSession(true);
       }
+      
       String sessionId = session.getId();
 
       ME += "-" + sessionId;
-      if (log.TRACE) log.trace(ME, "Entering servlet doGet() ...");
+      if (log.TRACE) log.trace(ME, "Entering servlet doGet(oldSessionId="+oldSessionId+") ...");
+
+      if (false) {
+         // HttpServletResponse.addCookie(javax.servlet.http.Cookie)
+         javax.servlet.http.Cookie[] cookies = req.getCookies();
+         if (cookies != null) {
+            for (int i=0; i<cookies.length; i++) {
+               log.info(ME, "Receiving cookie name=" + cookies[i].getName() + ", domain=" + cookies[i].getDomain() + ", path=" + cookies[i].getPath());
+            }
+         }
+      }
 
       if (sessionId == null) {
          String str = "Sorry, your sessionId is invalid";
@@ -244,8 +255,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) {
             //------------------ first request from applet --------------------------
-            log.info(ME, "doGet: dummyToCreateASessionId");
-            writeResponse(res, "dummyToCreateASessionId", "OK-"+System.currentTimeMillis());
+            if (log.TRACE) log.trace(ME, "doGet: dummyToCreateASessionId");
+            writeResponse(res, I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME, "OK-"+System.currentTimeMillis());
             return;
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.PONG_NAME)){
@@ -266,7 +277,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                return;
             }
          }
-         else if (actionType.equals(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) {
+         else if (actionType.equals(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) { // "disconnect"
             log.info(ME, "Logout arrived ...");
             try {
                PushHandler pc = getPushHandler(req);
@@ -431,23 +442,29 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * @param res Response of the servlet
     */
    public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-
+      String ME;
       // null if the message was not passed via the binary protocol
       MsgHolder binaryMsg = readBinaryProtocol(req, res);
-      
+
       String actionType = req.getHeader("ActionType");
       
       if (actionType == null) {
          actionType = getParameter(req, "ActionType", "NONE");
       }    
       
-      System.err.println("Received actionType=" + actionType);
+      synchronized(AppletServlet.class) {
+         requestCounter++;  // For logging only
+         String appletInstanceCount = getParameter(req, "appletInstanceCount", "0");
+         ME  = this.getClass().getName() + "-" + req.getRemoteAddr() + "-#" + appletInstanceCount + "req" + requestCounter + "-" + actionType;
+      }
+      
+      String appletInstanceCount = getParameter(req, "appletInstanceCount", "0");
 
       if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || 
           actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME) ||
           actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.PONG_NAME) ||
-         actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) { // "connect", "disconnect"
-         doGetFake(req, res, actionType, binaryMsg);
+          actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) { // "connect", "disconnect"
+         doGetFake(ME, req, res, actionType, binaryMsg);
          return;
       }
 
@@ -455,7 +472,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       HttpSession session = req.getSession(false);
       String sessionId = req.getRequestedSessionId();
       LogChannel log = this.initialGlobal.getLog("servlet");
-      String ME  = "AppletServlet-" + req.getRemoteAddr() + "-" + sessionId;
+      ME  += "-" + sessionId;
       if (log.TRACE) log.trace(ME, "Entering servlet doPost() ...");
 
       Global glob = null;
@@ -710,7 +727,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       if (session == null) {
          throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, "No servlet session available");
       }
-      PushHandler pushHandler = (PushHandler)session.getAttribute("PushHandler");
+      String key = "PushHandler"+getParameter(req, "appletInstanceCount", "0");
+      PushHandler pushHandler = (PushHandler)session.getAttribute(key);
       if (pushHandler == null) {
          throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, "The PushHandler is missing in the session scope");
       }

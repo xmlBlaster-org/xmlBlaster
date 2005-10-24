@@ -82,6 +82,10 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
       if (xmlBlasterServletUrl != null) properties.put("xmlBlaster/servletUrl", xmlBlasterServletUrl);
       if (applet.getParameter("xmlBlaster/logLevels") != null)
          properties.put("xmlBlaster/logLevels", applet.getParameter("xmlBlaster/logLevels"));
+
+      if (applet.getParameter("xmlBlaster/invalidate") != null) // never used yet, useful?
+         properties.put("xmlBlaster/invalidate", applet.getParameter("xmlBlaster/invalidate"));
+
       return properties;
    }
 

@@ -33,17 +33,30 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    protected I_Log logListener;
    protected String logLevels = "ERROR,WARN,INFO";
    private Hashtable cookie;
+   private static int staticInstanceCounter;
+   protected int instanceCount;
 
    /**
     * Provides access to xmlBlaster server. 
     * @see #parseAppletParameter
     */
    public XmlBlasterAccessRawBase(Hashtable properties) {
+      synchronized (XmlBlasterAccessRawBase.class) {
+         staticInstanceCounter++;
+         this.instanceCount = staticInstanceCounter;
+      }
       this.properties = properties;
       this.xmlBlasterServletUrl = (String)this.properties.get("xmlBlaster/servletUrl"); //param from html page
       if (this.properties.get("xmlBlaster/logLevels") != null)
          logLevels = (String)this.properties.get("xmlBlaster/logLevels");
-      log("DEBUG", new StringBuffer("constructor - ").append(this.xmlBlasterServletUrl).toString());
+      log("DEBUG", new StringBuffer("constructor - ").append(getXmlBlasterServletUrl()).toString());
+   }
+
+   /**
+    * Access the unique counter of this object instance. 
+    */
+   public int getInstanceCount() {
+      return this.instanceCount;
    }
 
    /**
@@ -87,15 +100,25 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       if (this.logListener != null) {
          this.logListener.log(location, level, text);
       }
-      if (logLevels.indexOf(level) != -1) System.out.println(new StringBuffer(location).append(" [").append(level).append("]: ").append(text).toString());
+      if (logLevels.indexOf(level) != -1) System.out.println(new StringBuffer(location).append(" #").append(this.instanceCount).append(" [").append(level).append("]: ").append(text).toString());
    }
 
    /** 
     * Access the URL of the xmlBlaster servlet. 
-    * @return Typically "http://localhost:8080/xmlBlaster/AppletServlet"
+    * @return Typically "http://localhost:8080/xmlBlaster/AppletServlet&appletInstanceCount=1"
     */
    public String getXmlBlasterServletUrl() {
-      return this.xmlBlasterServletUrl;
+      String url = this.xmlBlasterServletUrl;
+      if (url != null) {
+         StringBuffer tmp = new StringBuffer();
+         if (url.indexOf("?") >= 0) 
+            tmp.append(url).append("&appletInstanceCount=").append(this.instanceCount);
+         else
+            tmp.append(url).append("?appletInstanceCount=").append(this.instanceCount);
+         url = tmp.toString();
+      }
+      log("DEBUG", new StringBuffer("URL=").append(url).toString());
+      return url;
    }
 
    public void isConnected(boolean isConnected) {
@@ -127,7 +150,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          log("ERROR", "Can't login to xmlBlaster, timed out.");
          throw new Exception("Can't login to xmlBlaster, timed out.");
       }
-      log("INFO", "Successfully connected to xmlBlaster");
+      log("INFO", new StringBuffer("Successfully connected to xmlBlaster '").append(getXmlBlasterServletUrl()).append("'").toString());
       return this.persistentHttpConnection.getConnectReturnQos();
    }
 
@@ -144,14 +167,14 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          String passwd = (String)this.properties.get("xmlBlaster/passwd");
          if (loginName != null && passwd != null) {
             log("INFO", new StringBuffer("Using loginName = ").append(loginName).append(" as configured in your HTML page to connect to xmlBlaster").toString());
-            this.persistentHttpConnection = new PersistentRequest(this, this.xmlBlasterServletUrl, loginName, passwd);
+            this.persistentHttpConnection = new PersistentRequest(this, getXmlBlasterServletUrl(), loginName, passwd);
          }
          else
             qos = "<qos/>"; // Servlet does authentication (can be a security issue!)
       }
 
       if (qos != null) {
-         this.persistentHttpConnection = new PersistentRequest(this, this.xmlBlasterServletUrl, qos);
+         this.persistentHttpConnection = new PersistentRequest(this, getXmlBlasterServletUrl(), qos);
       }
 
       return startPersistentHttpConnection();
@@ -358,13 +381,13 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       return "";
    }
    */
-   
+
    Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
       String request = new StringBuffer("ActionType=").append(actionType).toString();
       try {
          boolean doPost = true;
-         String url = this.xmlBlasterServletUrl;
-      
+         String url = getXmlBlasterServletUrl();
+
          I_Connection conn = createConnection(url);      
          // conn.setUseCaches(false);
          writeCookie(conn);

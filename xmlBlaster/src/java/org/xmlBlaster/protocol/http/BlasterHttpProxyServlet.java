@@ -251,7 +251,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
 
          //------------------ first request from applet --------------------------
-         else if(actionType.equals("dummyToCreateASessionId")) {
+         else if(actionType.equals("dummyToCreateASessionId")) {  // I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME
             log.info(ME, "doGet: dummyToCreateASessionId");
             PrintWriter out = res.getWriter();
             out.println(header+"<body text='white' bgcolor='white'>Empty response for your ActionType='dummyToCreateASessionId' " +
