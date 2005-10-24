@@ -501,16 +501,15 @@ int main(int args, char ** argv)
 
        <tr>
        <td>21</td>
-       <td>Linux 2.6.11</td>
-       <td><a href="http://gcc.gnu.org/" target="others">g++</a> 4.0.0</td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.3</a></td>
+       <td>Linux 2.6.13</td>
+       <td><a href="http://gcc.gnu.org/" target="others">g++</a> 4.0.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.6</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
-       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.6</a></td>
-       <td>2004-12-01</td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.7</a></td>
+       <td>2005-10-24</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile.
-           Linking failed, probably my g++ installation is wrong?</td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile.</td>
        </tr>
 
 
