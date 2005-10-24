@@ -74,7 +74,7 @@
     </init-param>
     <init-param>
       <param-name>trace[servlet]</param-name>
-      <param-value>true</param-value>
+      <param-value>false</param-value>
       <description>sets the log level to trace</description>
     </init-param>
     <init-param>
@@ -84,7 +84,7 @@
     </init-param>
     <init-param>
       <param-name>call[servlet]</param-name>
-      <param-value>true</param-value>
+      <param-value>false</param-value>
       <description>trace some method invocations</description>
     </init-param>
     <init-param>
