@@ -374,7 +374,7 @@ try {
    addressProp.setDelay(4000L);      // retry connecting every 4 sec
    addressProp.setRetries(-1);       // -1 == forever
    addressProp.setPingInterval(0L);  // switched off
-   addressProp.setMaxEntries(1000);      // queue up to 1000 messages
+   addressProp.getClientQueueProperty().setMaxEntries(1000);      // queue up to 1000 messages
    con.registerConnectionListener(this);
 
    connectQos.setAddress(addressProp);
