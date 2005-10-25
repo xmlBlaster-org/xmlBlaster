@@ -28,7 +28,7 @@ import org.xmlBlaster.protocol.I_ProgressListener;
  *          |                |                          
  *    #########            ##########         ##########
  *   #         #          #          #       #          #
- *   #  ALIVE  #          # POLLING  #       #  DEAD    #
+ *   #  ALIVE  #          # POLLING  #       #   DEAD   #
  *   #         #          #          #       #          #
  *    #########            ##########         ##########
  *      |   |                |    |             |    |
@@ -128,7 +128,7 @@ abstract public class DispatchConnection implements I_Timeout
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME, e.getMessage());
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
-            handleTransition(true, e); // never returns - throws exception
+            handleTransition(true, e); // never returns (only if DEAD) - throws exception
          }
          else {
             connectionsHandler.toDead(this, e);
@@ -226,11 +226,13 @@ abstract public class DispatchConnection implements I_Timeout
          if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          for (int i=0; i<msgArr.length; i++)
             msgArr[i].incrRedeliverCounter();
+         if (isDead()) throw e;
+         handleTransition(true, e);
+         if (isDead()) throw e;
          if (retry(e)) {
-            handleTransition(true, e); // never returns - throws exception
+            log.error(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.getMessage());
          }
          else {
-            handleTransition(true, e);
             throw e; // forward server side exception to the client
          }
       }
