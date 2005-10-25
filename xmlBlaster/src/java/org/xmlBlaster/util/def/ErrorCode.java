@@ -75,7 +75,6 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode INTERNAL_ILLEGALSTATE = new ErrorCode("internal.illegalState",
          "The state of an object is not allowed.",
          new ResourceInfo[] {
-            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
          }
       );
 
