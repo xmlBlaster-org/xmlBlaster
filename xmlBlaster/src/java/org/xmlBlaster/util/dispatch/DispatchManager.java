@@ -865,6 +865,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       return this.dispatchConnectionsHandler.getDispatchStatistic();
    }
 
+   public boolean isShutdown() {
+      return this.isShutdown;
+   }
+
    /**
     * Stop all callback drivers of this client.
     * Possibly invoked twice (givingUpDelivery() calls it indirectly as well)

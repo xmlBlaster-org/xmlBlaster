@@ -390,6 +390,9 @@ abstract public class DispatchConnection implements I_Timeout
          if (isDead()) {   // ignore, not possible
             if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() +
                       " for " + myId + ": We ignore it: " + ((throwable == null) ? "No throwable" : throwable.toString()));
+            if (connectionsHandler.getDispatchManager().isShutdown()) {
+               return; // Can happen if DispatchWorker is currently delivering and the client has disconnected in the same time (thus DEAD)
+            }
             if (throwable == null) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString());
             }
