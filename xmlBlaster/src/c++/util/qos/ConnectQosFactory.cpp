@@ -180,16 +180,16 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
       if (!inQos_) return;
       inClientProperty_ = true;
       character_.erase();
-      string name;
+      string nameAttr;
       AttributeMap::const_iterator iter = attrs.find("name");
-      if (iter != attrs.end()) name = (*iter).second;
+      if (iter != attrs.end()) nameAttr = (*iter).second;
       string encoding;
       iter = attrs.find("encoding");
       if (iter != attrs.end()) encoding = (*iter).second;
       string type;
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
-      clientProperty_ = new ClientProperty(true, name, type, encoding);
+      clientProperty_ = new ClientProperty(true, nameAttr, type, encoding);
    }
 }
 

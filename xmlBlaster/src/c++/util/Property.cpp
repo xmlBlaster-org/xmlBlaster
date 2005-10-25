@@ -65,8 +65,8 @@ void Property::initializeDefaultProperties()
          // USERNAME=joe
          char *puser = getenv("USERNAME");
          if (puser) {
-            string value = puser;
-            setProperty("user.name", value, true);
+            string tmp = puser;
+            setProperty("user.name", tmp, true);
          }
          else {
             // HOMEPATH=\Documents and Settings\Marcel
@@ -128,7 +128,7 @@ Property::loadCommandLineProps(int args,
 {
 
    int    count = 1, ret=0, nmax = args;
-   string name, value;
+   string value;
    //if (!javaStyle) nmax--; // they come in separated pairs
    while (count < nmax) {
       string name = argv[count];

@@ -718,8 +718,8 @@ vector<PublishReturnQos> SocketDriver::publishArr(const vector<MessageUnit> &msg
          throw socketException; // Is converted to util::XmlBlasterException in catch_MACRO
       }
       vector<PublishReturnQos> ret;
-      for (size_t ii=0; ii<retC->len; ii++) {
-         ret.insert(ret.end(),  PublishReturnQos(global_, statusQosFactory_.readObject(retC->qosArr[ii])) );
+      for (size_t jj=0; jj<retC->len; jj++) {
+         ret.insert(ret.end(),  PublishReturnQos(global_, statusQosFactory_.readObject(retC->qosArr[jj])) );
       }
       freeQosArr(retC);
       return ret;

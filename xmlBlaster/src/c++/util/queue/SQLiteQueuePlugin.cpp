@@ -192,8 +192,8 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
 
    // Now we need to copy the C results into C++ classes ...
 
-   for (size_t i=0; i<entriesC->len; i++) {
-      ::QueueEntry &queueEntryC = entriesC->queueEntryArr[i];
+   for (size_t ii=0; ii<entriesC->len; ii++) {
+      ::QueueEntry &queueEntryC = entriesC->queueEntryArr[ii];
       string type, methodName;
       parseEmbeddedType(queueEntryC.embeddedType, type, methodName);
 
@@ -211,8 +211,8 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
 
       ::MsgUnitArr *msgUnitArrC = ::parseMsgUnitArr(queueEntryC.embeddedBlob.dataLen, queueEntryC.embeddedBlob.data);
 
-      for (size_t i=0; msgUnitArrC!=0 && i<msgUnitArrC->len; i++) { // TODO: Collect a PUBLISH_ARR !!! (currently we transform it to single publish()es)
-         ::MsgUnit &msgUnit = msgUnitArrC->msgUnitArr[i];
+      for (size_t j=0; msgUnitArrC!=0 && j<msgUnitArrC->len; j++) { // TODO: Collect a PUBLISH_ARR !!! (currently we transform it to single publish()es)
+         ::MsgUnit &msgUnit = msgUnitArrC->msgUnitArr[j];
          if (log_.dump()) {
             char *dumpP = ::messageUnitToXmlLimited(&msgUnit, 128);
             log_.dump(ME+".peekWithSamePriority()", string("Retrieved and parsed C message from queue:") + dumpP);

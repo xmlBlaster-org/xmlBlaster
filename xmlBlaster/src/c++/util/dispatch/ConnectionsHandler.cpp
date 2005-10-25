@@ -472,7 +472,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             status_ = ALIVE;
             if ( connectionProblemsListener_ ) doFlush = connectionProblemsListener_->reachedAlive(oldState, this);
  
-            Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
+            Lock lockPub(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
             if (sessionId != lastSessionId) {
                log_.trace(ME, string("When reconnecting the sessionId changed from '") + lastSessionId + "' to '" + sessionId + "'");
             }

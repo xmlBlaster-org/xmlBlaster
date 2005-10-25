@@ -400,7 +400,7 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
    }
    if (callback != 0) {
       if (log_.trace()) log_.trace(ME, "subscribe: inserting individual callback in callback map");
-      org::xmlBlaster::util::thread::Lock lock(updateMutex_);
+      org::xmlBlaster::util::thread::Lock lockUpdate(updateMutex_);
       SubscribeReturnQos retQos = connection_->subscribe(key, qos);
       std::string subId = retQos.getSubscriptionId();
       subscriptionCallbackMap_.insert(std::map<std::string, I_Callback*>::value_type(subId, callback));
