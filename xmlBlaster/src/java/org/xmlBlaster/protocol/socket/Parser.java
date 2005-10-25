@@ -142,15 +142,29 @@ public class Parser
 
    /**
     * The same parser object may be reused.
+    * Ctor to parse messages with parser.parse(iStream);
     */
    public Parser(Global glob) {
       this(glob, (byte)0, (String)null, (MethodName)null, (String)null, null);
    }
 
+   /**
+    * Ctor to parse messages with parser.parse(iStream);
+    */
    public Parser(Global glob, I_ProgressListener progressListener) {
       this(glob, (byte)0, (String)null, (MethodName)null, (String)null, progressListener);
    }
 
+   /**
+    * Create a raw message. 
+    * parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
+    * parser.addMessage(msgArr);
+    * byte[] rawMsg = parser.createRawMsg();
+    * @param glob
+    * @param type
+    * @param methodName
+    * @param sessionId
+    */
    public Parser(Global glob, byte type, MethodName methodName, String sessionId) {
       this(glob, type, (String)null, methodName, sessionId, null);
    }
