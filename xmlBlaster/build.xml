@@ -79,7 +79,7 @@ TODO
    <property file="build.properties" />
 
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="1.0.6"/>
+   <property name="version" value="1.0.7"/>
    <property name="year" value="1999-2005"/>
 
    <!-- property name="build.compiler" value="classic"/ -->
@@ -309,6 +309,7 @@ TODO
       <compilerarg value="-wd193" />
       <compilerarg value="-wd279" />
       <compilerarg value="-wd383" />          <!-- C++ suppress char * to string temporary warn -->
+      <compilerarg value="-wd1683" />         <!-- explicit conversion of a 64-bit integral type to a smaller integral type (potential portability problem) -->
       <!--compilerarg value="-Wcheck" />         < icc 8 diagnostic switch -->
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-D__interface=bar" /> <!-- Added temporary to workaround /usr/include/netinet/in.h delivered by SUSE 9.2 -->

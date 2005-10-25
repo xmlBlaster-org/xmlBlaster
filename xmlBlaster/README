@@ -24,9 +24,6 @@ and Perl clients are provided.
 To install and getting started with xmlBlaster read the INSTALL
 file.
 
-XmlBlaster uses the Sun XML parser for XML parsing, and XT from
-James Clark for XSL parsing.
-
 The  topic query language for xmlBlaster is XPath. For detailed
 information about XPath refer to the following URL:
   - XPath: http://www.w3.org/TR/xpath

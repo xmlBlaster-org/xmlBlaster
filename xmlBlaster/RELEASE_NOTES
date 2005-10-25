@@ -1,4 +1,4 @@
-This is xmlBlaster version 1.0.6 Xmas 2005-08-10
+This is xmlBlaster version 1.0.7 Xmas 2005-10-25
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -6,26 +6,26 @@ of  industries  like  satellite  control,  air  traffic control
 telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
-the client server communication protocols.
-It contains  some bug  fixes and  extensive JMX  monitoring and
-control support.
+the client server communication protocols. It contains some bug
+fixes and XML and applet extensions.
 
 It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK
-(1.2)1.3-1.5   and   g++   2.9x/3.x/4.0.0,  icc  8.x  and  9.x,
-MSVisualC++   from   2003,   MSVisualC++    2005  beta2,  SunCC
-compilers.  There  is  no  reason why other platforms/compilers
-should not work, just try it.
+(1.2)1.3-1.5 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++
+from 2003, MSVisualC++ 2005 beta2, SunCC compilers. There is no
+reason  why other platforms/compilers should not work, just try
+it.
 
-Persistence  is checked  against  Oracle 9i and 10g,  different 
-Postgres  versions,  MS-SQLServer 2000 and 2005,  Firebird  and
+Persistence  is  checked  against  Oracle 9i and 10g, different
+Postgres  versions,  MS-SQLServer  2000  and 2005, Firebird and
 hsqldb.
 
 It  is  leak  checked  in  RAM  and  on  persistence  store for
 Java,C,C++.
 
+This is the last release supporting JDK 1.3.
 
-The xmlBlaster maintainers
-http://www.xmlBlaster.org
+
+The xmlBlaster maintainers http://www.xmlBlaster.org
 
 
 See:
@@ -48,6 +48,15 @@ The  distribution  is  compiled with JDK 1.4 and runs fine on a
 JDK 1.3 runtime envrionment.
 Since  release 1.0.5 you need to remove the 'HtmlMonitorPlugin'
 section in xmlBlasterPlugins.xml to be able to run with JDK 1.3
+
+
+============
+JDBC service
+============
+Our  JDBC  service  plugin for xmlBlaster is only available for
+JDK 1.5 see
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+
 
 =============================
 IMPORTANT COMPATIBILITY NOTE:

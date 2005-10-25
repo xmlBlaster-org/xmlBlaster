@@ -1,8 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for current repository (svn)
-====================================
+Changes for 1.0.7 [2005-10-25] #13877 "Xmas release patch 7"
+============================================================
+
+ o #13871 C++ client lib: Fixed missing initialization of progressListener_
+
+ o #13870 and #13876 Suppress missleading exception when connection is DEAD but worker active
+
  o #13857 Extended Applet support (with real time callback) for more than one applet in same servlet-session.
 
  o #13845 Added JMX methods to clear or remove messages from callback queue
