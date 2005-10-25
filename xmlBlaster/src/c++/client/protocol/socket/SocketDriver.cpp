@@ -207,7 +207,8 @@ SocketDriver::SocketDriver(const SocketDriver& socketDriver)
      statusQosFactory_(socketDriver.global_), 
      msgKeyFactory_(socketDriver.global_), 
      msgQosFactory_(socketDriver.global_),
-     callbackClient_(0)
+     callbackClient_(0),
+     progressListener_(0)
 {
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
@@ -235,7 +236,8 @@ SocketDriver::SocketDriver(Global& global, const string instanceName)
      statusQosFactory_(global),
      msgKeyFactory_(global),
      msgQosFactory_(global),
-     callbackClient_(0)
+     callbackClient_(0),
+     progressListener_(0)
 {
    if (log_.call()) log_.call("SocketDriver", string("getInstance for ") + instanceName);
 
