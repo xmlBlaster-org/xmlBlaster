@@ -151,8 +151,8 @@ int main(int args, char ** argv)
       testSubXpath->testInitial();
       testSubXpath->tearDown();
       Thread::sleepSecs(1);
-      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
       delete testSubXpath;
+      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
