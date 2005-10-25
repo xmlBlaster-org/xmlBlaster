@@ -194,6 +194,8 @@ public class XmlNotPortable
       try {
          if (log.TRACE) log.trace(ME, "write - Using JDK 1.5 DOM implementation");
          // JDK 1.5 DOM Level 3 conforming:
+
+         /* Works only with lib/ant/xercesImpl.jar in the CLASSPATH
          org.w3c.dom.ls.DOMImplementationLS implls = (org.w3c.dom.ls.DOMImplementationLS)document.getImplementation();
          // The above downcast throws a java.lang.ClassCastException for JDK 1.4, but is fine for JDK 1.5
          org.w3c.dom.ls.LSSerializer domWriter = implls.createLSSerializer();
@@ -212,6 +214,39 @@ public class XmlNotPortable
          domWriter.write(document, output);
          //String tmp = domWriter.writeToString(document);
          //out.write(tmp.getBytes());
+         */
+
+         Class clazz_DOMImplementationLS = java.lang.Class.forName("org.w3c.dom.ls.DOMImplementationLS");
+
+         /* org.w3c.dom.ls.DOMImplementationLS */
+         Object implls = document.getImplementation();
+
+         Class[] paramCls = new Class[0];
+         Object[] params = new Object[0];
+         java.lang.reflect.Method method_createLSSerializer = clazz_DOMImplementationLS.getMethod("createLSSerializer", paramCls);
+         java.lang.reflect.Method method_createLSOutput = clazz_DOMImplementationLS.getMethod("createLSOutput", paramCls);
+
+         /* org.w3c.dom.ls.LSSerializer */
+         Object domWriter = method_createLSSerializer.invoke(implls, params);
+
+         /* org.w3c.dom.ls.LSOutput */
+         Class clazz_LSOutput = java.lang.Class.forName("org.w3c.dom.ls.LSOutput");
+         Object output = method_createLSOutput.invoke(implls, params);
+
+         paramCls = new Class[] { java.io.ByteArrayOutputStream.class };
+         params = new Object[] { out };
+         java.lang.reflect.Method method_setByteStream = clazz_LSOutput.getMethod("setByteStream", paramCls);
+         method_setByteStream.invoke(output, params);
+
+         paramCls = new Class[] { java.lang.String.class };
+         params = new Object[] { ENCODING };
+         java.lang.reflect.Method method_setEncoding = clazz_LSOutput.getMethod("setEncoding", paramCls);
+         method_setEncoding.invoke(output, params);
+
+         paramCls = new Class[] { org.w3c.dom.Document.class, clazz_LSOutput };
+         params = new Object[] { document, output };
+         java.lang.reflect.Method method_write = clazz_LSOutput.getMethod("write", paramCls);
+         method_write.invoke(domWriter, params);
       }
       catch(Exception e) {
          e.printStackTrace();
