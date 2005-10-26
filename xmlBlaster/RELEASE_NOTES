@@ -50,6 +50,21 @@ Since  release 1.0.5 you need to remove the 'HtmlMonitorPlugin'
 section in xmlBlasterPlugins.xml to be able to run with JDK 1.3
 
 
+==========
+XML Parser
+==========
+Please comment out the following lines in your old
+xmlBlaster.properties as shown
+#------------------------------------------------------------------------------
+#
+# JAXP parsers. Currently only crimson is actually possible to use.
+#
+#javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
+#javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
+#------------------------------------------------------------------------------
+Or use the new xmlBlaster/config/xmlBlaster.properties.template 
+
+
 ============
 JDBC service
 ============
