@@ -47,6 +47,7 @@ public class XmlNotPortable
     * 15 for all JDK >= 1.5
     */
    public static int JVM_VERSION = 14;
+   private static int version;
    /**
     * xmlBlaster uses generally UTF-8
     */
@@ -68,11 +69,30 @@ public class XmlNotPortable
    }
 
    /**
+    * Checks for forcing crimson even for JDK 15
+    * @return 13, 14 or 15
+    */
+   public static int getJvmXmlVersionToUse() {
+      if (version == 0) {
+         synchronized (XmlNotPortable.class) {
+            if (version == 0) {
+               version = JVM_VERSION;
+               if ("org.apache.crimson.jaxp.DocumentBuilderFactoryImpl".equals(Global.instance().getProperty().get("javax.xml.parsers.DocumentBuilderFactory",""))) {
+                  version = 14;
+               }
+               // System.out.println("JVM_VERSION used for XML is " +  version);
+            }
+         }
+      }
+      return version;
+   }
+
+   /**
     * Do XPath query on DOM
     */
    public static Enumeration getNodeSetFromXPath(String expression, org.w3c.dom.Document document) throws XmlBlasterException {
       try {
-         if (JVM_VERSION >= 15) {
+         if (getJvmXmlVersionToUse() >= 15) {
             //javax.xml.xpath.XPath xpath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
             //final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)xpath.evaluate(expression, document, javax.xml.xpath.XPathConstants.NODESET);
             if (method_newXPath == null) {
@@ -152,7 +172,7 @@ public class XmlNotPortable
    {
       java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
 
-      if (JVM_VERSION == 13) {
+      if (getJvmXmlVersionToUse() == 13) {
          if (document.getClass().getName().equals("org.apache.crimson.tree.XmlDocument")) {
             //if (document instanceof org.apache.crimson.tree.XmlDocument) {
             //   ((org.apache.crimson.tree.XmlDocument)document).write(out/*, encoding*/);
@@ -171,7 +191,7 @@ public class XmlNotPortable
          return out;
       }
       
-      if (JVM_VERSION == 14) {
+      if (getJvmXmlVersionToUse() == 14) {
          // see http://java.sun.com/xml/jaxp/dist/1.1/docs/tutorial/xslt/2_write.html
          try {
             if (log.TRACE) log.trace(ME, "write - Using JDK 1.4 DOM implementation");
@@ -331,8 +351,8 @@ public class XmlNotPortable
       if (log.CALL) log.call(ME, "mergeNode()");
       if (log.DUMP) log.dump(ME, "mergeNode=" + node.toString());
 
-      //if (JVM_VERSION == 13) {
-      if (JVM_VERSION == 13 || JVM_VERSION == 14) {
+      //if (getJvmXmlVersionToUse() == 13) {
+      if (getJvmXmlVersionToUse() == 13 || getJvmXmlVersionToUse() == 14) {
          //if (document instanceof org.apache.crimson.tree.XmlDocument) {
          if (document.getClass().getName().equals("org.apache.crimson.tree.XmlDocument")) {
             //((org.apache.crimson.tree.XmlDocument)document).changeNodeOwner(node); // not DOM portable
@@ -354,7 +374,7 @@ public class XmlNotPortable
       }
       /* -> This did not produce anything useful marcel 2005-08-22
             and makes no sense at it clones the DOM and is too slow
-      if (JVM_VERSION == 14) {
+      if (getJvmXmlVersionToUse() == 14) {
          try {
             if (log.TRACE) log.trace(ME, "mergeNode - Using JDK 1.4 DOM implementation");
             document.importNode(node, true);
@@ -396,7 +416,7 @@ public class XmlNotPortable
          node = document.getFirstChild();
       }
 
-      if (JVM_VERSION == 13 || JVM_VERSION == 14) {
+      if (getJvmXmlVersionToUse() == 13 || getJvmXmlVersionToUse() == 14) {
          // Not possible as crimson does not implement interface org.w3c.dom.traversal.TreeWalker!
          //org.apache.crimson.tree.TreeWalker tw = new org.apache.crimson.tree.TreeWalker(firstNode);
          //return tw;
