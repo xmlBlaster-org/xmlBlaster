@@ -57,7 +57,7 @@ Please comment out the following lines in your old
 xmlBlaster.properties as shown
 #------------------------------------------------------------------------------
 #
-# JAXP parsers. Currently only crimson is actually possible to use.
+# JAXP parsers.
 #
 #javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
 #javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
