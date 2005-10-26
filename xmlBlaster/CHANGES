@@ -1,8 +1,15 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for 1.0.7 [2005-10-25] #13880 "Xmas release patch 7"
+Current subversion
+==================
+
+
+
+Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
 ============================================================
+
+ o #13886 Added support for crimson XML parser if forced for JDK 1.5 (last JDK1.3 compatible change)
 
  o #13880 Ported org.w3c.dom.ls.DOMImplementationLS JDK 1.5 dependency to reflection
 
