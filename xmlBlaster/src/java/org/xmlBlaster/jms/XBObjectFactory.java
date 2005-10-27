@@ -71,10 +71,15 @@ public class XBObjectFactory implements ObjectFactory {
             return new XBConnectionFactory(qosLitteral, args, forQueues);
          }
 
-         if (className.equals(XBTopic.class.getName())) {
+         if (className.equals(XBDestination.class.getName())) {
             RefAddr topicRef = ref.get("topicName");
+            RefAddr queueRef = ref.get("queueName");
+            RefAddr forceQueuingRef = ref.get("forceQueuing");
             String topicName = (String)topicRef.getContent();
-            return new XBTopic(topicName);
+            String queueName = (String)queueRef.getContent();
+            String forceQueuingTxt = (String)forceQueuingRef.getContent();
+            boolean forceQueuing = (new Boolean(forceQueuingTxt)).booleanValue();
+            return new XBDestination(topicName, queueName, forceQueuing);
          }
       }
       return null;

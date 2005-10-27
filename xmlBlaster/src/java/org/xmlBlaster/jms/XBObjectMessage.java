@@ -15,10 +15,7 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
  * XBTextMessage
@@ -28,10 +25,8 @@ import org.xmlBlaster.util.qos.MsgQosData;
  */
 public class XBObjectMessage extends XBMessage implements ObjectMessage {
 
-   private final static String ME = "XBTextMessage";
-
-   XBObjectMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) {
-      super(session, key, content, qos, XBMessage.OBJECT);
+   XBObjectMessage(XBSession session, byte[] content) {
+      super(session, content, XBMessage.OBJECT);
    }
    
    public Serializable getObject() throws JMSException {

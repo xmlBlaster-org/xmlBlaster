@@ -28,10 +28,19 @@ public class XBConnectionMetaData implements ConnectionMetaData, Serializable, C
    private final static String ME = "XBConnectionMetaData";
    final static int MAJOR_VERSION = 1;
    final static int MINOR_VERSION = 1;
+
+   /** The receiver Timestamp which is a property specific to XmlBlaster */
+   public final static String JMSX_RCV_TIMESTAMP = "JMSXRcvTimestamp"; 
    
+   /** The maximum size for the data to be transmitted in one single message */
+   public final static String JMSX_MAX_CHUNK_SIZE = "JMSXMaxChunkSize"; 
+   
+   public final static String JMSX_PTP_DESTINATION = "JMSXPtPDest";
+   
+   /** These properties are specific to our implementation and must start with the prefix JMSX */
    private final static String[] propNames = new String[] {
-      "JMSXRcvTimestamp",
-      "JMSX",
+      JMSX_RCV_TIMESTAMP,
+      JMSX_MAX_CHUNK_SIZE,
       "JMSX"
    };   
    

@@ -25,6 +25,13 @@ public interface XBPropertyNames {
    public final static String JMS_REDELIVERED    = "JMSRedelivered";
    public final static String JMS_MESSAGE_ID     = "JMSMessageID";
    public final static String JMS_CORRELATION_ID = "JMSCorrelationID";
-   public final static String JMS_HEADER_PREFIX = "jms/";
+   // don't really remember how I was thinking here
+   public final static String JMS_HEADER_PREFIX  = "jms/";
+   
+   public final static String JMS_REPLY_TO       = "JMSReplyTo";  
+   public final static String JMS_DELIVERY_MODE  = "JMSDeliveryMode";
+   public final static String JMS_EXPIRATION     = "JMSExpiration";
+   public final static String JMS_PRIORITY       = "JMSPriority";
+   
    
 }

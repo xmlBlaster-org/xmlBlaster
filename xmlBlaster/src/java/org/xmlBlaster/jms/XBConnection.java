@@ -27,6 +27,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 
 /**
  * XBConnection holds the connections to xmlBlaster.Since this class serves as a 
@@ -81,6 +82,13 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       if (this.log.CALL) this.log.call(ME, "constructor");
    }
    
+   private ConnectQos cloneConnectQos(ConnectQos qos) throws XmlBlasterException {
+      Global global = qos.getData().getGlobal().getClone(null);
+      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(global);
+      ConnectQos connQos = new ConnectQos(global, factory.readObject(qos.toXml()));
+      return connQos;
+   }
+   
    private synchronized void initSession(String methodName, XBSession session, boolean transacted, int ackMode) 
       throws JMSException {
       this.stillVirgin = false;
@@ -90,7 +98,9 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       try {
          session.setStatusChangeListener(this);
          String sessionName = session.connect();
-         if (this.running) session.activateDispatcher(true);
+         if (this.running) {
+            session.activateDispatcher(true);
+         }
          this.sessionMap.put(sessionName, session);
       }
       catch (XmlBlasterException ex) {
@@ -107,27 +117,42 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     */
    public Session createSession(boolean transacted, int ackMode)
       throws JMSException {
-      XBSession session = new XBSession(this.connectQos, ackMode, transacted);
-      initSession("createSession", session, transacted, ackMode); 
-      return session;
+      try {
+         XBSession session = new XBSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+         initSession("createSession", session, transacted, ackMode); 
+         return session;
+      }
+      catch (XmlBlasterException ex) {
+         throw new JMSException(ex.getMessage());
+      }
    }
       
    public TopicSession createTopicSession(boolean transacted, int ackMode)
       throws JMSException {
       if (this.forQueues) 
          throw new IllegalStateException(ME + ".createTopicSession", "this is a QueueConnection: use TopicConnection to invoke this method");
-      XBTopicSession session = new XBTopicSession(this.connectQos, ackMode, transacted);
-      initSession("createTopicSession", session, transacted, ackMode); 
-      return session;
+      try {
+         XBTopicSession session = new XBTopicSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+         initSession("createTopicSession", session, transacted, ackMode); 
+         return session;
+      }
+      catch (XmlBlasterException ex) {
+         throw new JMSException(ex.getMessage());
+      }
    }
 
    public QueueSession createQueueSession(boolean transacted, int ackMode)
       throws JMSException {
       if (!this.forQueues) 
          throw new IllegalStateException(ME + ".createQueueSession", "this is a TopicConnection: use QueueConnection to invoke this method");
-      XBQueueSession session = new XBQueueSession(this.connectQos, ackMode, transacted);
-      initSession("createQueueSession", session, transacted, ackMode); 
-      return session;
+      try {
+         XBQueueSession session = new XBQueueSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+         initSession("createQueueSession", session, transacted, ackMode); 
+         return session;
+      }
+      catch (XmlBlasterException ex) {
+         throw new JMSException(ex.getMessage());
+      }
    }
 
    /**

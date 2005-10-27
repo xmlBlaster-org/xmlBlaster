@@ -87,14 +87,15 @@ public class XBSession extends Thread implements Session, I_Callback {
    private boolean started;
    
    /**
-    * This constructor creates a global which is a clone of the
+    * This constructor extracts the global from the ConnectQos. Note that 
+    * you need to clone the ConnectQos before passing it to this constructor.
     * global contained in the connectQos.
     * 
     * @param connectQos is the connectQos to be used for this session. It is an own instance and can not be null.
     */
    XBSession(ConnectQos connectQos, int ackMode, boolean transacted) {
       this.connectQos = connectQos;
-      this.global = this.connectQos.getData().getGlobal().getClone(null);
+      this.global = connectQos.getData().getGlobal();
       this.log = this.global.getLog("jms");
       if (this.log.CALL) this.log.call(ME, "constructor");
       this.ackMode = ackMode;
@@ -104,6 +105,30 @@ public class XBSession extends Thread implements Session, I_Callback {
       this.controlThread = Thread.currentThread();
       this.channel = new LinkedQueue();
       this.consumerMap = new HashMap();
+   }
+
+   /**
+    * This constructor is used if you want to pass a Global which has already
+    * done some work (connected) on the I_XmlBlasterAccess. Caution, you will not
+    * be able to connect and disconnect if you use this constructor.
+    * 
+    * @param global
+    * @param ackMode
+    * @param transacted
+    */
+   public XBSession(Global global, int ackMode, boolean transacted) {
+      this.global = global;
+      this.log = this.global.getLog("jms");
+      if (this.log.CALL) 
+         this.log.call(ME, "constructor");
+      this.ackMode = ackMode;
+      this.durableSubscriptionMap = new HashMap();
+      this.open = true;
+      this.transacted = transacted;
+      this.controlThread = Thread.currentThread();
+      this.channel = new LinkedQueue();
+      this.consumerMap = new HashMap();
+      this.syncMode = MODE_ASYNC;
    }
 
    /**
@@ -127,17 +152,19 @@ public class XBSession extends Thread implements Session, I_Callback {
 
    /**
     * Activates or deactivates the dispatcher associated to this session.
+    * It does it only if the Session is in ASYNC Mode.
     * @param doActivate
     */
    final synchronized void activateDispatcher(boolean doActivate) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "activateDispatcher '" + doActivate + "'");
-      this.connectionActivated = doActivate;
       // only activate if already in asyc mode, i.e. if there is at least 
       // one msgListener associated to this session
-      String oid = "__cmd:" + this.sessionName + "/?dispatcherActive=" + (doActivate && (this.syncMode == MODE_ASYNC)); 
+      boolean realDoActivate = (doActivate && (this.syncMode == MODE_ASYNC));
+      String oid = "__cmd:" + this.sessionName + "/?dispatcherActive=" + realDoActivate; 
       PublishQos qos = new PublishQos(this.global);
       PublishKey key = new PublishKey(this.global, oid);
       this.global.getXmlBlasterAccess().publish(new MsgUnit(key, (byte[])null, qos));
+      this.connectionActivated = realDoActivate;
    }
    
    /**
@@ -238,25 +265,25 @@ public class XBSession extends Thread implements Session, I_Callback {
    public BytesMessage createBytesMessage() throws JMSException {
       checkIfOpen("createBytesMessage");
       checkControlThread();
-      return new XBBytesMessage(this, null, null, null);
+      return new XBBytesMessage(this, null);
    }
 
    public MapMessage createMapMessage() throws JMSException {
       checkIfOpen("createMapMessage");
       checkControlThread();
-      return new XBMapMessage(this, null, null, null);
+      return new XBMapMessage(this, null);
    }
 
    public Message createMessage() throws JMSException {
       checkIfOpen("createMessage");
       checkControlThread();
-      return new XBMessage(this, null, null, null, XBMessage.DEFAULT_TYPE);
+      return new XBMessage(this, null, XBMessage.DEFAULT_TYPE);
    }
 
    public ObjectMessage createObjectMessage() throws JMSException {
       checkIfOpen("createObjectMessage");
       checkControlThread();
-      return new XBObjectMessage(this, null, null, null);
+      return new XBObjectMessage(this, null);
    }
 
    public ObjectMessage createObjectMessage(Serializable content) throws JMSException {
@@ -270,19 +297,20 @@ public class XBSession extends Thread implements Session, I_Callback {
    public StreamMessage createStreamMessage() throws JMSException {
       checkIfOpen("createStreamMessage");
       checkControlThread();
-      return new XBStreamMessage(this, null, null, null);
+      return new XBStreamMessage(this, null);
    }
 
    public TextMessage createTextMessage() throws JMSException {
       checkIfOpen("createTextMessage");
       checkControlThread();
-      return new XBTextMessage(this, null, null, null);      
+      return new XBStreamingMessage(this, null);
+      // return new XBTextMessage(this, null, null, null);      
    }
 
    public TextMessage createTextMessage(String text) throws JMSException {
       checkIfOpen("createTextMessage");
       checkControlThread();
-      return new XBTextMessage(this, null, text.getBytes(), null);      
+      return new XBTextMessage(this, text.getBytes());      
    }
 
    public MessageListener getMessageListener() throws JMSException {
@@ -336,7 +364,8 @@ public class XBSession extends Thread implements Session, I_Callback {
             msgEvent.getListener().onMessage(msg);
             // TODO notify the update thread waiting for ACK
             if (this.log.TRACE) this.log.trace(ME, "run: msg='" + msg.getJMSMessageID() + "' ack='" + this.ackMode + "'");
-            if (this.ackMode == Session.DUPS_OK_ACKNOWLEDGE) msg.acknowledge();
+            if (this.ackMode == Session.DUPS_OK_ACKNOWLEDGE) 
+               msg.acknowledge();
          }
          catch (InterruptedException ex) {
             this.log.error(ME, "run InterruptedException occured " + ex.getMessage());
@@ -423,7 +452,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    public Topic createTopic(String name) throws JMSException {
       checkIfOpen("createTopic");
       checkControlThread();
-      return new XBTopic(name);
+      return new XBDestination(name, null, false);
    }
 
    public void unsubscribe(String subName) throws JMSException {

@@ -7,25 +7,18 @@ package org.xmlBlaster.jms;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
-import javax.jms.Queue;
-import javax.jms.Topic;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -38,74 +31,60 @@ import org.xmlBlaster.util.qos.ClientProperty;
  */
 public class XBMessage implements Message { 
 
-   public final static int TEXT   = 0;
-   public final static int BYTES  = 1;
-   public final static int OBJECT = 2;
-   public final static int MAP    = 3;
-   public final static int STREAM = 4;
+   public final static int TEXT         = 0;
+   public final static int BYTES        = 1;
+   public final static int OBJECT       = 2;
+   public final static int MAP          = 3;
+   public final static int STREAM       = 4;
+   public final static int STREAMING    = 5;
    public final static int DEFAULT_TYPE = XBMessage.STREAM;
    
    private final static String ME = "XBMessage";
-   protected Global global;
    protected LogChannel log;
-   protected MsgQosData qos;
-   protected MsgKeyData key;
-   protected byte[] content;
-   protected int type;
+   protected Global  global;
+   protected byte[]  content;
+   protected int     type;
    protected boolean acknowledged;
    protected boolean readOnly;
    protected boolean writeOnly;
-   protected Hashtable extraHeader; 
-   private boolean propertyReadOnly;
-   protected XBSession session;
+   protected Map     props;
+   private boolean   propertyReadOnly;
+   protected XBSession   session;
+   protected Destination destination;
+
+   // thes are the properties which are not stored in the props map.
+   private boolean redelivered;
+   private int priority;
+   private String messageID;
+   private String correlationID;
+   private int deliveryMode;
+   private long expiration;
+   private Destination replyTo;
+   private long timestamp;
+   private String jmsType;
    
-   public XBMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
+
+   public XBMessage(XBSession session, byte[] content, int type) {
       this.session = session;
-      if (this.session == null) this.global = new Global();
-      else this.global = this.session.global;
+      if (this.session == null) 
+         this.global = new Global();
+      else 
+         this.global = this.session.global;
       this.log = this.global.getLog("jms");
-      this.qos = qos;
       this.content = content;
-      this.key = key;
-      this.extraHeader = new Hashtable();
-      importExtraHeader();
-      if (this.qos == null) this.qos = new MsgQosData(this.global, MethodName.PUBLISH);
-      if (this.key == null) this.key = new MsgKeyData(this.global);
+      this.props = new HashMap();
       this.type = type;
-      this.qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, this.type);
+      try {
+         setIntProperty(XBPropertyNames.JMS_MESSAGE_TYPE, this.type);
+      }
+      catch (JMSException ex) {
+         // should never happen anyway
+      }
       if (this.content == null) this.writeOnly = true;
       else {
          this.readOnly = true;
          this.propertyReadOnly = true;
       } 
-   }
-
-   /**
-    * Imports the extra header properties from the qos
-    */
-   private void importExtraHeader() {
-      if (this.qos != null) { 
-         String[] keys = (String[])this.qos.getClientProperties().keySet().toArray(new String[this.qos.getClientProperties().size()]);
-         for (int i=0; i < keys.length; i++) {
-            if (keys[i].startsWith(XBPropertyNames.JMS_HEADER_PREFIX)) {
-               this.extraHeader.put(keys[i].substring(XBPropertyNames.JMS_HEADER_PREFIX.length()), this.qos.getClientProperties().get(keys[i]));
-            }
-         }
-      }
-   }
-
-   /**
-    * Puts the extra header properties into the qos
-    */
-   private void exportExtraHeader() {
-      if (this.qos != null) { 
-         Enumeration enumer = this.extraHeader.keys();
-         while (enumer.hasMoreElements()) {
-            String key = (String)enumer.nextElement();
-            Object value = this.extraHeader.get(key);
-            this.qos.addClientProperty(XBPropertyNames.JMS_HEADER_PREFIX + key, ClientProperty.getPropertyType(value), (String)value);
-         }
-      }
    }
 
    boolean isAcknowledged() {
@@ -147,8 +126,7 @@ public class XBMessage implements Message {
    }
 
    public void clearProperties() throws JMSException {
-      this.qos = new MsgQosData(this.global, this.qos.getMethod());
-      this.extraHeader.clear();
+      this.props.clear();
       this.propertyReadOnly = false;
    }
 
@@ -156,14 +134,14 @@ public class XBMessage implements Message {
       Object obj = getObjectProperty(key);
       if (obj instanceof String) return Boolean.getBoolean((String)obj);
       if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
-      throw new JMSException(ME + ".getBooleanProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getBooleanProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public byte getByteProperty(String key) throws JMSException {
       Object obj = getObjectProperty(key);
       if (obj instanceof String) return Byte.parseByte((String)obj);
       if (obj instanceof Byte) return ((Byte)obj).byteValue();
-      throw new JMSException(ME + ".getByteProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getByteProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public double getDoubleProperty(String key) throws JMSException {
@@ -171,14 +149,14 @@ public class XBMessage implements Message {
       if (obj instanceof String) return Double.parseDouble((String)obj);
       if (obj instanceof Float) return ((Float)obj).doubleValue();
       if (obj instanceof Double) return ((Double)obj).doubleValue();
-      throw new JMSException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public float getFloatProperty(String key) throws JMSException {
       Object obj = getObjectProperty(key);
       if (obj instanceof String) return Float.parseFloat((String)obj);
       if (obj instanceof Float) return ((Float)obj).floatValue();
-      throw new JMSException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public int getIntProperty(String key) throws JMSException {
@@ -187,11 +165,11 @@ public class XBMessage implements Message {
       if (obj instanceof Byte) return ((Byte)obj).intValue();
       if (obj instanceof Short) return ((Short)obj).intValue();
       if (obj instanceof Integer) return ((Integer)obj).intValue();
-      throw new JMSException(ME + ".getIntegerProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getIntegerProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public String getJMSCorrelationID() throws JMSException {
-      return (String)this.qos.getClientProperties().get(XBPropertyNames.JMS_CORRELATION_ID);
+      return this.correlationID;
    }
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException {
@@ -199,46 +177,42 @@ public class XBMessage implements Message {
    }
 
    public int getJMSDeliveryMode() throws JMSException {
-      if (this.qos.isVolatile()) return DeliveryMode.NON_PERSISTENT;
-      return DeliveryMode.PERSISTENT;
+      return this.deliveryMode;
    }
 
    public Destination getJMSDestination() throws JMSException {
-      String txt = this.key.getOid();
-      if (this.qos.isPtp()) return new XBQueue(txt);
-      else return new XBTopic(txt);
+      return this.destination;
    }
 
    public long getJMSExpiration() throws JMSException {
-      return this.qos.getRemainingLife();
+      return this.expiration;
    }
 
    /**
     * xmlBlaster specific messageId is our unique timestamp
     */
    public String getJMSMessageID() throws JMSException {
-      return "ID:" + this.qos.getRcvTimestamp();
+      return this.messageID;
    }
 
    public int getJMSPriority() throws JMSException {
-      return this.qos.getPriority().getInt();
+      return this.priority;
    }
 
    public boolean getJMSRedelivered() throws JMSException {
-      return this.qos.getRedeliver() != 0;
+      return redelivered;
    }
-
+   
    public Destination getJMSReplyTo() throws JMSException {
-      return new XBQueue(this.qos.getSender().getAbsoluteName());
+      return this.replyTo;
    }
 
    public long getJMSTimestamp() throws JMSException {
-      return this.qos.getRcvTimestamp().getMillis();
+      return this.timestamp;
    }
 
    public String getJMSType() throws JMSException {
-      return (String)qos.getClientProperties().get(XBPropertyNames.JMS_TYPE);
-      // return this.key.getContentMime();
+      return this.jmsType;
    }
 
    public long getLongProperty(String key) throws JMSException {
@@ -248,15 +222,15 @@ public class XBMessage implements Message {
       if (obj instanceof Short) return ((Short)obj).longValue();
       if (obj instanceof Integer) return ((Integer)obj).longValue();
       if (obj instanceof Long) return ((Long)obj).longValue();
-      throw new JMSException(ME + ".getLongProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getLongProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public Object getObjectProperty(String key) throws JMSException {
-      return this.qos.getClientProperty(key).getObjectValue();
+      return ((ClientProperty)this.props.get(key)).getObjectValue();
    }
 
    public Enumeration getPropertyNames() throws JMSException {
-      return Collections.enumeration(this.qos.getClientProperties().entrySet());
+      return Collections.enumeration(this.props.keySet());
    }
 
    /**
@@ -267,46 +241,46 @@ public class XBMessage implements Message {
       if (obj instanceof String) return Short.parseShort((String)obj);
       if (obj instanceof Byte) return ((Byte)obj).shortValue();
       if (obj instanceof Short) return ((Short)obj).shortValue();
-      throw new JMSException(ME + ".getShortProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      throw new XBException(ME + ".getShortProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public String getStringProperty(String key) throws JMSException {
-      return this.qos.getClientProperties().get(key).toString();
+      return ((ClientProperty)this.props.get(key)).getStringValue();
    }
 
    public boolean propertyExists(String key) throws JMSException {
-      return this.qos.getClientProperties().containsKey(key);
+      return this.props.containsKey(key);
    }
 
    public void setBooleanProperty(String key, boolean value)
       throws JMSException {
       checkPropertiesReadOnly("setBooleanProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_BOOLEAN, null, "" + value));   
    }
 
    public void setByteProperty(String key, byte value) throws JMSException {
       checkPropertiesReadOnly("setByteProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_BYTE, null, "" + value));   
    }
 
    public void setDoubleProperty(String key, double value)
       throws JMSException {
       checkPropertiesReadOnly("setDoubleProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_DOUBLE, null, "" + value));   
    }
 
    public void setFloatProperty(String key, float value) throws JMSException {
       checkPropertiesReadOnly("setFloatProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_FLOAT, null, "" + value));   
    }
 
    public void setIntProperty(String key, int value) throws JMSException {
       checkPropertiesReadOnly("setIntProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_INT, null, "" + value));   
    }
 
-   public void setJMSCorrelationID(String correlationId) throws JMSException {
-      this.qos.addClientProperty(XBPropertyNames.JMS_CORRELATION_ID, correlationId);
+   public void setJMSCorrelationID(String correlationID) throws JMSException {
+      this.correlationID = correlationID;
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationId) throws JMSException {
@@ -317,60 +291,36 @@ public class XBMessage implements Message {
     * This method is invoked by the send method
     */
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException {
-      if (deliveryMode == DeliveryMode.PERSISTENT) { 
-         this.qos.setPersistent(true);
-      }
-      else if (deliveryMode == DeliveryMode.NON_PERSISTENT) { 
-         this.qos.setPersistent(false);
-      }
-      else 
-         throw new JMSException("setJMSDeliveryMode('" + deliveryMode +"'): delivery mode is invalid", ErrorCode.USER_CONFIGURATION.getErrorCode());
+      this.deliveryMode = deliveryMode;
    }
 
    /**
     * This method is invoked by the send method
     */
    public void setJMSDestination(Destination destination) throws JMSException {
-      if (destination instanceof Topic) {
-         String txt = ((Topic)destination).getTopicName();
-         this.key.setOid(txt);
-      }
-      else if (destination instanceof Queue) {
-         String txt = ((Queue)destination).getQueueName();
-         org.xmlBlaster.util.qos.address.Destination
-           dst = new org.xmlBlaster.util.qos.address.Destination(new SessionName(this.global, txt));
-         this.qos.addDestination(dst);
-      }
-      else {
-         throw new JMSException(ME + ".setJMSDestination: unallowed destination type (must be either topic or queue) but is '" + destination.getClass().getName(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());         
-      }
+      this.destination = destination;
    }
 
    /**
     * This method is invoked by the send method
     */
    public void setJMSExpiration(long lifeTime) throws JMSException {
-      this.qos.setLifeTime(lifeTime);
+      this.expiration = lifeTime;
    }
 
    /**
     * This is overwritten when invoking the getter
     * This method is invoked by the send method
     */
-   public void setJMSMessageID(String messageId) throws JMSException {
-      this.qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_ID, messageId);
+   public void setJMSMessageID(String messageID) throws JMSException {
+      this.messageID = messageID;
    }
 
    /**
     * This method is invoked by the send method
     */
    public void setJMSPriority(int priority) throws JMSException {
-      try {
-         this.qos.setPriority(PriorityEnum.toPriorityEnum(priority));
-      }
-      catch (IllegalArgumentException ex) {
-         throw new JMSException(ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());       
-      }
+      this.priority = priority;
    }
 
    /**
@@ -378,40 +328,27 @@ public class XBMessage implements Message {
     * This method is normally invoked by the provider
     */
    public void setJMSRedelivered(boolean redelivered) throws JMSException {
-      this.qos.addClientProperty(XBPropertyNames.JMS_REDELIVERED, redelivered);
+      this.redelivered = redelivered;
    }
 
    public void setJMSReplyTo(Destination sender) throws JMSException {
-      if (sender instanceof Topic) {
-         // TODO: should this be allowed ?
-         String txt = ((Topic)sender).getTopicName();
-         this.qos.setSender(new SessionName(this.global, txt));
-      }
-      else if (sender instanceof Queue) {
-         String txt = ((Queue)sender).getQueueName();
-         this.qos.setSender(new SessionName(this.global, txt));
-      }
-      else {
-         throw new JMSException(ME + ".setJMSReplyTo: unallowed destination type (must be either topic or queue) but is '" + sender.getClass().getName(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());         
-      }
+      this.replyTo = sender;
    }
 
    /**
     * This method is invoked by the send method
     */
    public void setJMSTimestamp(long timestamp) throws JMSException {
-      // not processed by xmlBlaster, only transported for jms purposes (we have an own set on server side)
-      this.qos.addClientProperty(XBPropertyNames.JMS_TIMESTAMP, timestamp);
+      this.timestamp = timestamp;
    }
 
    public void setJMSType(String jmsType) throws JMSException {
-      // this.key.setContentMime(jmsType);
-      this.qos.addClientProperty(XBPropertyNames.JMS_TYPE, jmsType);
+      this.jmsType = jmsType;
    }
 
    public void setLongProperty(String key, long value) throws JMSException {
       checkPropertiesReadOnly("setLongProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_LONG, null, "" + value));
    }
 
    public void setObjectProperty(String key, Object value)
@@ -429,18 +366,12 @@ public class XBMessage implements Message {
 
    public void setShortProperty(String key, short value) throws JMSException {
       checkPropertiesReadOnly("setShortProperty", key);
-      this.qos.addClientProperty(key, value);   
+      this.props.put(key, new ClientProperty(key, Constants.TYPE_SHORT, null, "" + value));   
    }
 
    public void setStringProperty(String key, String value) throws JMSException {
       checkPropertiesReadOnly("setStringProperty", key);
-      this.qos.addClientProperty(key, value);   
-   }
-
-   // own package protected helper methods
-   MsgUnit getMsgUnit() {
-      exportExtraHeader();
-      return new MsgUnit(this.key, this.content, this.qos);
+      this.props.put(key, new ClientProperty(key, null, null, value));   
    }
 
 }

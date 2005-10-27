@@ -8,9 +8,6 @@ package org.xmlBlaster.jms;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
-
 /**
  * XBTextMessage
  *
@@ -19,10 +16,8 @@ import org.xmlBlaster.util.qos.MsgQosData;
  */
 public class XBTextMessage extends XBMessage implements TextMessage {
 
-   private final static String ME = "XBTextMessage";
-
-   public XBTextMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) {
-      super(session, key, content, qos, XBMessage.TEXT);
+   public XBTextMessage(XBSession session, byte[] content) {
+      super(session, content, XBMessage.TEXT);
    }
    
    public String getText() throws JMSException {

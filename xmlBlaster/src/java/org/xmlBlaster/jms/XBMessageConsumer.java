@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.IOException;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
@@ -31,9 +32,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QuerySpecQos;
 
 /**
@@ -162,9 +161,13 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
          String getOid = "__cmd:" + this.session.sessionName + "/?cbQueueEntries";
          MsgUnit[] mu = this.global.getXmlBlasterAccess().get(new GetKey(this.global, getOid), getQos);
          if (mu == null || mu.length < 1 || mu[0] == null) return null;
-         return buildMessage((MsgKeyData)mu[0].getKeyData(), mu[0].getContent(), (MsgQosData)mu[0].getQosData());
+         String sender = mu[0].getQosData().getSender().getAbsoluteName();
+         return MessageHelper.convert(this.session, sender, mu[0]); 
       }
       catch (XmlBlasterException ex) {
+         throw new XBException(ex, ME + ".receive");
+      }
+      catch (IOException ex) {
          throw new XBException(ex, ME + ".receive");
       }
      finally {
@@ -191,39 +194,27 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
       this.session.setSyncMode(XBSession.MODE_ASYNC);
       synchronized (this.session) {
          try {
-            if (this.session.connectionActivated) 
+            if (!this.session.connectionActivated) 
                this.session.activateDispatcher(true);
          }
          catch (XmlBlasterException ex) {
             throw new XBException(ex, ME + ".setMessageListener");
          }
+         this.msgListener = msgListener;
       }
-      this.msgListener = msgListener;
    }
 
-   private Message buildMessage(MsgKeyData msgKeyData, byte[] content, MsgQosData msgQosData) 
-      throws JMSException {
-      int type = msgQosData.getClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.STREAM);
-      XBMessage msg;
-      switch (type) {
-         case XBMessage.TEXT  : msg = new XBTextMessage(this.session, msgKeyData, content, msgQosData); break;
-         case XBMessage.BYTES : msg = new XBBytesMessage(this.session, msgKeyData, content, msgQosData); break;
-         case XBMessage.OBJECT: msg = new XBObjectMessage(this.session, msgKeyData, content, msgQosData); break;
-         case XBMessage.MAP   : msg = new XBMapMessage(this.session, msgKeyData, content, msgQosData); break;
-         default: msg = new XBStreamMessage(this.session, msgKeyData, content, msgQosData);
-      }
-      return msg;
-   }
-   
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
       try {
          if (this.msgListener != null) {
-            Message msg = buildMessage(updateKey.getData(), content, updateQos.getData()); 
- 
+            Message msg = MessageHelper.convert(this.session, updateQos.getSender().getAbsoluteName(), updateKey.getData(), content, updateQos.getData()); 
             int ackMode = this.session.getAcknowledgeMode();
             if (this.log.TRACE) this.log.trace(ME, "update: acknowledge mode is: " + ackMode);
             if (msg != null) {
+               // TODO keep reference to this and on next event fill this
+               
+               
                XBMsgEvent msgEvent = new XBMsgEvent(this.msgListener, msg);
                this.session.channel.put(msgEvent);
 

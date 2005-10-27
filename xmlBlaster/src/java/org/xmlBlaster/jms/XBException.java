@@ -21,15 +21,17 @@ class XBException extends JMSException {
       super(id, txt);
    }
 
-   XBException(XmlBlasterException ex, String additionalTxt) {
-      this(getTxt(ex, additionalTxt), ex.getErrorCodeStr());
+   XBException(Exception ex, String additionalTxt) {
+      this(getTxt(ex, additionalTxt), ex instanceof XmlBlasterException ? ((XmlBlasterException)ex).getErrorCodeStr() : "");
    }
 
-   private static String getTxt(XmlBlasterException ex, String additionalTxt) {
+   private static String getTxt(Exception ex, String additionalTxt) {
       if (additionalTxt == null) additionalTxt = "";
       String txt = additionalTxt + " " + ex.getMessage();
-      String embedded = ex.getEmbeddedMessage();
-      if (embedded != null) txt += " " + embedded;
+      if (ex instanceof XmlBlasterException) {
+         String embedded = ((XmlBlasterException)ex).getEmbeddedMessage();
+         if (embedded != null) txt += " " + embedded;
+      }
       return txt;
    }
    

@@ -5,19 +5,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.IOException;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * XBMessageProducer
@@ -38,7 +37,7 @@ public class XBMessageProducer implements MessageProducer {
    protected XBSession session;
   
    
-   XBMessageProducer(XBSession session, Destination destination) {
+   public XBMessageProducer(XBSession session, Destination destination) {
       this.session = session;
       this.access = this.session.global.getXmlBlasterAccess();
       this.destination = destination;
@@ -125,28 +124,26 @@ public class XBMessageProducer implements MessageProducer {
       send(this.destination, message, deliveryMode, prio, timeToLive);
    }
 
-   public void send(Destination dest, Message message, int deliveryMode, int priority, long timeToLive)
+   public void send(Destination dest, Message msg, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
       this.session.checkControlThread();
-      if (message instanceof XBMessage) {
-         XBMessage msg = (XBMessage)message;
-         msg.setJMSDeliveryMode(deliveryMode);
-         msg.setJMSPriority(priority);
-         if (destination == null) 
-            throw new UnsupportedOperationException(ME + ".send of message needs a destination topic to be set");
-         msg.setJMSDestination(dest);
-         msg.setJMSExpiration(timeToLive);
-         try {
-            MsgUnit msgUnit = msg.getMsgUnit();
-            this.publishReturnQos = this.access.publish(msgUnit); 
-            // what to do whith the publish return qos ?
-         }
-         catch (XmlBlasterException ex) {
-            throw new XBException(ex, ME + ".send: ");         
-         }
+      
+      msg.setJMSDeliveryMode(deliveryMode);
+      msg.setJMSPriority(priority);
+      if (destination == null) 
+         throw new UnsupportedOperationException(ME + ".send of message needs a destination topic to be set");
+      msg.setJMSDestination(dest);
+      msg.setJMSExpiration(timeToLive);
+      try {
+         MsgUnit msgUnit = MessageHelper.convert(this.session.global, msg);
+         this.publishReturnQos = this.access.publish(msgUnit); 
+         // what to do whith the publish return qos ?
       }
-      else {
-         throw new MessageFormatException(ME + ".send of message from other provider is not supported.", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
+      catch (XmlBlasterException ex) {
+         throw new XBException(ex, ME + ".send: ");         
+      }
+      catch (IOException ex) {
+         throw new XBException(ex, ME + ".send: ");         
       }
    }
 

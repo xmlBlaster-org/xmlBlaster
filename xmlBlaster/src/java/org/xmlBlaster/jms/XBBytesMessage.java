@@ -18,8 +18,6 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 
 /**
  * XBBytesMessage
@@ -42,8 +40,8 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
     * @param content
     * @param qos
     */
-   XBBytesMessage(XBSession session, MsgKeyData key, byte[] content, MsgQosData qos) throws JMSException {
-      super(session, key, content, qos, XBMessage.BYTES);
+   XBBytesMessage(XBSession session, byte[] content) throws JMSException {
+      super(session, content, XBMessage.BYTES);
       if (this.content != null) {
          this.readOnly = true; 
          this.writeOnly = false;

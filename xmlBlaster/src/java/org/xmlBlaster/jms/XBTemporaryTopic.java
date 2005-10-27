@@ -14,7 +14,7 @@ import javax.jms.TemporaryTopic;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBTemporaryTopic extends XBTopic implements TemporaryTopic {
+public class XBTemporaryTopic extends XBDestination implements TemporaryTopic {
 
    XBTemporaryTopic() {
       super();
