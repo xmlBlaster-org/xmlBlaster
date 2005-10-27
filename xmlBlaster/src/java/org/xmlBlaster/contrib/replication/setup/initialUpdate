@@ -1,0 +1,86 @@
+#!/bin/sh
+CMD=$1
+FILE=$2
+SCHEMA=xmlblaster
+USER=xmlblaster
+PWD=secret
+LOG=${HOME}/tmp/${CMD}.log
+
+if test "`echo -e xxx`" = "xxx" 
+then
+   ECHO="echo -e"
+   BLACK_LTGREEN="\033[40;46m"
+   BLACK_RED="\033[30;41m"
+   BLACK_YELLOW="\033[40;43m"
+   ESC="\033[0m"
+else
+    ECHO=echo
+fi
+
+if [ "${FILE}" = "" ] ; then
+   ${ECHO} "usage $0 exp|imp filename"
+   ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
+   ${ECHO} "and exp is used for export and imp for import"
+   exit -1
+fi
+
+if [ "${CMD}" = "exp" ] ; then
+   CMDLINE="exp ${USER}/${PWD} owner=${SCHEMA} file=${FILE} log=${LOG}"
+else
+   if [ "${CMD}" = "imp" ] ; then
+      CMDLINE="imp ${USER}/${PWD} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
+   else
+      ${ECHO} "usage $0 exp|imp filename"
+      ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
+      ${ECHO} "and exp is used for export and imp for import (use either exp or imp)"
+      exit -1
+   fi
+fi
+
+
+if [ "${ORACLE_HOME}" = "" ] ; then
+   LINE1="${BLACK_RED} The variable ORACLE_HOME is not set. Please set it to the path of your DB ${ESC}"
+   ERR="true"
+else 
+   LINE1="${BLACK_LTGREEN} The variable ORACLE_HOME is set to ${ORACLE_HOME} ${ESC}"
+fi
+
+if [ "${ORACLE_SID}" = "" ] ; then
+   LINE2="${BLACK_RED} The variable ORACLE_SID is not set. Please set it to the path of your DB ${ESC}"
+   ERR="true"
+else
+   LINE2="${BLACK_LTGREEN} The variable ORACLE_SID is set to ${ORACLE_SID} ${ESC}"
+fi
+
+PATH=${ORACLE_HOME}/bin:${PATH}
+
+if [ "`which exp`" = "" ] ; then
+   LINE3="${BLACK_RED} Could not find the application 'exp' check it. It must be in the PATH ${ESC}\nCurrent PATH is\n' ${PATH}'"
+   ERR="true"
+else
+   LINE3=""
+fi
+
+${ECHO} ${LINE1}
+${ECHO} ${LINE2}
+${ECHO} ${LINE3}
+
+if [ "${ERR}" != "" ] ; then
+  exit -1
+fi
+
+
+${ECHO} "executing ${CMDLINE}"
+
+EXITCODE=`${CMDLINE}`
+
+if [ "${EXITCODE}" = "0" ] ; then 
+  ${ECHO} "${BLACK_LTGREEN} SUCCESS ${ESC}"
+  exit 0
+else 
+  ${ECHO} "${BLACK_RED} FAILURE (Check your logs) ${ESC}"
+  exit ${EXITCODE}
+fi
+
+
+
