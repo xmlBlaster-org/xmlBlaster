@@ -16,10 +16,7 @@ package org.xmlBlaster.util.def;
  * for some of the constants in this class
  * </p>
  */
-public class Constants
-{
-   private static final String ME = "Constants";
-
+public class Constants {
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
@@ -222,5 +219,26 @@ public class Constants
 
    public static final int TOXML_FLAG_DEFAULT = 0;
    public static final int TOXML_FLAG_NOSECURITY = 0x1;
+   
+   
+   /** Stuff used for Streaming */
+   
+   /** This is the key of a client property telling the number of 
+    * this chunk in the sequence. The value itself is a long.
+    */
+   public final static String CHUNK_SEQ_NUM = "__CHUNK_SEQ_NUM";
+   
+   /** If this exists it is always set to boolean 'true' */
+   public final static String CHUNK_EOF = "__CHUNK_EOF";
+   
+   /** If set, an exception occured in this chunk. It contains the 
+    * exception. It is used to perform clean up in case of exceptions.
+    */
+   public final static String CHUNK_EXCEPTION = "__CHUNK_EXCEPTION";
+   
+   /** This is the same for all chunks in a message. It shall be a 
+    * globally unique Identifier. */
+   public final static String STREAM_ID = "__STREAM_ID";
+   
 }
 

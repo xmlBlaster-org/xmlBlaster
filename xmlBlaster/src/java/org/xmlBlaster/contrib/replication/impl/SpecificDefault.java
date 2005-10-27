@@ -359,6 +359,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          synchronized(this.info) {
             boolean isRegistered = this.info.getBoolean("_specificDefaultRegistered", false);
             if (!isRegistered) {
+               String topic = this.info.get("mom.topicName", null);
+               if (topic == null)
+                  throw new Exception("SpecificDefault.init: registering the dbWatcher to the Replication Manager: no topic was defined but need one. Please add to your configuration 'mom.topicName'");
+               msgMap.put("_topic", topic);
                this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
                this.info.put("_specificDefaultRegistered", "true");
             }
@@ -733,7 +737,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          if (prop == null)
             throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
          String destination = prop.getStringValue();
-         initiateUpdate(destination);
+         prop = (ClientProperty)attrMap.get("_replTopic");
+         if (prop == null)
+            throw new Exception("update for '" + msg + "' failed since no '_replTopic' specified");
+         String replTopic = prop.getStringValue(); 
+         initiateUpdate(replTopic, destination);
       }
       else {
          log.warning("update from '" + topic + "' with request '" + msg + "'");

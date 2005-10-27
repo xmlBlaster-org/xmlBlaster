@@ -38,6 +38,7 @@ import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
+import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -296,6 +297,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          // to force to fill the client properties map !!
          new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
+         addStringPropToQos("_topic", attrMap, qos);
          addStringPropToQos("_command", attrMap, qos);
          addStringPropToQos("_minReplKey", attrMap, qos);
          addStringPropToQos("_maxReplKey", attrMap, qos);
@@ -478,4 +480,12 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       return attrMap;
    }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
+    */
+   public XBSession getJmsSession() {
+      return new XBSession(this.glob, XBSession.AUTO_ACKNOWLEDGE, false);
+   }
+   
 }

@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib;
 
 import java.util.Map;
+import org.xmlBlaster.jms.XBSession;
 
 
 /**
@@ -62,4 +63,7 @@ public interface I_ChangePublisher extends java.util.EventListener, I_ContribPlu
     * </p>  
     */
    void shutdown();
+   
+   XBSession getJmsSession(); 
+   
 }

@@ -17,6 +17,26 @@ import java.util.logging.Logger;
  */
 public class Execute {
    private static Logger log = Logger.getLogger(Execute.class.getName());
+   
+   // according to http://mindprod.com/jgloss/properties.html
+   
+   public final static String AIX = "AIX";
+   public final static String DIGITAL_UNIX = "Digital Unix";
+   public final static String FREE_BSD = "FreeBSD";
+   public final static String HP_UX = "HP UX";
+   public final static String IRIX = "Irix";
+   public final static String LINUX = "Linux";
+   public final static String MAC = "Mac OS";
+   public final static String MPE = "MPE/iX";
+   public final static String NETWARE = "Netware 4.11";
+   public final static String OS2 = "OS/2";
+   public final static String SOLARIS = "Solaris";
+   public final static String WIN_2000 = "Windows 2000";
+   public final static String WIN_95 = "Windows 95";
+   public final static String WIN_98 = "Windows 98";
+   public final static String WIN_NT = "Windows NT";
+   public final static String WIN_XP = "Windows XP";
+   
    private Process process;
    private String[] commandArr;
    private String[] envArr;
@@ -44,6 +64,15 @@ public class Execute {
       }
    }
 
+   public static boolean isWindows() {
+      String osName = System.getProperty("os.name");
+      if (osName == null)
+         return false;
+      if (osName.startsWith("Windows"))
+         return true;
+      return false;
+   }
+   
    /**
     * Not thread safe, don't set to null during operation
     */
@@ -152,8 +181,6 @@ public class Execute {
     */
    private class OutputThread extends Thread
    {
-      private final String ME = "OutputThread";
-      private Execute boss;
       private BufferedReader br;
       private StringBuffer result;
       private boolean isReady = false;
@@ -162,7 +189,6 @@ public class Execute {
       /**
        */
       OutputThread(Execute boss, BufferedReader br, StringBuffer result) {
-         this.boss = boss;
          this.br = br;
          this.result = result;
       }
@@ -214,8 +240,6 @@ public class Execute {
    {
       String[] commandArr = { args[0] };
       String[] envArr = new String[0];
-      String[] ar = { "-trace", "true" };
-      Global glob = new Global(ar);
       Execute execute = new Execute(commandArr, envArr);
       execute.run();
       System.out.println("Stdout of " + args[0] + " is:\n" + execute.getStdout());

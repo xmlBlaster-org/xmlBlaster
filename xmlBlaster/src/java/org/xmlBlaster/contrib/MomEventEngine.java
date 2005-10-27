@@ -20,6 +20,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -204,5 +205,14 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.glob = null;
       }
    }
+   
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
+    */
+   public XBSession getJmsSession() {
+      return new XBSession(this.glob, XBSession.AUTO_ACKNOWLEDGE, false);
+   }
+   
 
 }

@@ -1,11 +1,14 @@
 /*------------------------------------------------------------------------------
-Name:      SpecificDefault.java
-Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-------------------------------------------------------------------------------*/
-
+ Name:      SpecificDefault.java
+ Project:   xmlBlaster.org
+ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+ ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,21 +20,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
+import javax.jms.JMSException;
+import org.jutils.text.StringHelper;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.jms.XBDestination;
+import org.xmlBlaster.jms.XBMessageProducer;
+import org.xmlBlaster.jms.XBSession;
+import org.xmlBlaster.jms.XBStreamingMessage;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.def.PriorityEnum;
 
 public class SpecificOracle extends SpecificDefault {
 
    class ExecuteListener implements I_ExecuteListener {
 
       StringBuffer errors = new StringBuffer();
-      
+
       public void stderr(String data) {
          log.warning(data);
       }
@@ -45,99 +55,104 @@ public class SpecificOracle extends SpecificDefault {
          return this.errors.toString();
       }
    }
-   
+
    private static Logger log = Logger.getLogger(SpecificOracle.class.getName());
-   
+   private String intialCmd = "dbExport";
+   private String initialCmdPath = System.getProperty("user.home") + "/tmp";
+
    /**
     * Not doing anything.
     */
    public SpecificOracle() {
       super();
    }
-   
+
    /**
-    * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
+    * Adds a schema to be watched. By Oracle it would add triggers to the
+    * schema.
+    * 
     * @param catalog
     * @param schema
     * @throws Exception
     */
    public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
-      if (schema == null || schema.length() < 1)
-         return;
-      
-      Map map = this.replacer.getAdditionalMapClone(); 
+      if (schema == null || schema.length() < 1) return;
+      Map map = this.replacer.getAdditionalMapClone();
       map.put("schemaName", schema);
       Replacer tmpReplacer = new Replacer(this.info, map);
       boolean doWarn = true;
       boolean force = true; // overwrites existing ones
       updateFromFile(conn, "createDropAlter", "replication.createDropAlterFile",
-            "org/xmlBlaster/contrib/replication/setup/oracle/createDropAlter.sql",
-            doWarn, force, tmpReplacer);
+            "org/xmlBlaster/contrib/replication/setup/oracle/createDropAlter.sql", doWarn, force, tmpReplacer);
    }
-   
+
    /**
     * 
-    * @param col 
-    * @param prefix can be 'old' or 'new'
+    * @param col
+    * @param prefix
+    *           can be 'old' or 'new'
     * @return
     */
    protected String createVariableSqlPart(DbUpdateInfoDescription description, String prefix) {
       String newOldPrefix = ":"; // ":" on ora10 ?
       DbUpdateInfoColDescription[] cols = description.getUpdateInfoColDescriptions();
       String contName = prefix + "Cont"; // will be newCont or oldCont
-      
       StringBuffer buf = new StringBuffer();
       buf.append("       ").append(contName).append(" := EMPTY_CLOB;\n");
       buf.append("       dbms_lob.createtemporary(").append(contName).append(", TRUE);\n");
       buf.append("       dbms_lob.open(").append(contName).append(", dbms_lob.lob_readwrite);\n");
-      
-      for (int i=0; i < cols.length; i++) {
+      for (int i = 0; i < cols.length; i++) {
          String colName = cols[i].getColName();
          int type = cols[i].getSqlType();
-         String varName = newOldPrefix + prefix + "." + colName;  // for example   ':new.colname'
-         
-         if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY || type == Types.STRUCT) {
+         String varName = newOldPrefix + prefix + "." + colName; // for example
+                                                                  // ':new.colname'
+         if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
+               || type == Types.STRUCT) {
             buf.append("       blobCont := EMPTY_BLOB;\n");
             buf.append("       dbms_lob.createtemporary(blobCont, TRUE);\n");
             buf.append("       dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.BLOB)
                buf.append("       dbms_lob.append(blobCont,").append(varName).append(");\n");
-            else
-               buf.append("       dbms_lob.writeappend(blobCont,").append("length(").append(varName).append("),").append(varName).append(");\n");
+            else buf.append("       dbms_lob.writeappend(blobCont,").append("length(").append(varName).append("),")
+                  .append(varName).append(");\n");
             buf.append("       dbms_lob.close(blobCont);\n");
-            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont));\n");
+            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+                  "col2xml_base64('").append(colName).append("', blobCont));\n");
          }
          else {
             buf.append("       tmpCont := EMPTY_CLOB;\n");
             buf.append("       dbms_lob.createtemporary(tmpCont, TRUE);\n");
             buf.append("       dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
-            if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
+            if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
+                  || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
                buf.append("       tmpNum := TO_CHAR(").append(varName).append(");\n");
             }
             else {
-               buf.append("       tmpNum := ").append(varName).append(";\n"); 
+               buf.append("       tmpNum := ").append(varName).append(";\n");
             }
-            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n"); 
+            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
             buf.append("       dbms_lob.close(tmpCont);\n");
-            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("col2xml('").append(colName).append("', tmpCont));\n");
+            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+                  "col2xml('").append(colName).append("', tmpCont));\n");
          }
       }
-      // buf.append("       oid := ROWIDTOCHAR(:").append(prefix).append(".rowid);\n");
+      // buf.append(" oid :=
+      // ROWIDTOCHAR(:").append(prefix).append(".rowid);\n");
       // TODO this has to be changed later on
       buf.append("       oid := ''; -- TODO: this has to be changed later on \n");
       return buf.toString();
    }
-   
 
    public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
-      String tableName = infoDescription.getIdentity();  // should be the table name
+      String tableName = infoDescription.getIdentity(); // should be the table
+                                                         // name
       String completeTableName = tableName;
       String schemaName = infoDescription.getSchema();
       if (schemaName != null && schemaName.trim().length() > 0) {
          completeTableName = schemaName + "." + tableName;
       }
-
-      String dbName = "NULL"; // still unsure on how to retrieve this information on a correct way.
+      String dbName = "NULL"; // still unsure on how to retrieve this
+                              // information on a correct way.
       StringBuffer buf = new StringBuffer();
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("-- This is the function which will be registered to the triggers.               \n");
@@ -157,7 +172,6 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
       buf.append("ON ").append(completeTableName).append("\n");
       buf.append("FOR EACH ROW\n");
-      
       buf.append("DECLARE\n");
       buf.append("   blobCont BLOB; \n");
       buf.append("   oldCont CLOB; \n");
@@ -182,32 +196,28 @@ public class SpecificOracle extends SpecificDefault {
       buf.append(createVariableSqlPart(infoDescription, "old"));
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    END IF;\n");
-      
-
       String dbNameTmp = null;
       String tableNameTmp = "'" + tableName + "'";
       String schemaNameTmp = null;
       if (dbName == null)
          dbNameTmp = "NULL";
-      else
-         dbNameTmp = "'" + dbName + "'";
+      else dbNameTmp = "'" + dbName + "'";
       if (schemaName == null)
          schemaNameTmp = "NULL";
-      else
-         schemaNameTmp = "'" + schemaName + "'";
-      
+      else schemaNameTmp = "'" + schemaName + "'";
       buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
       buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
       buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");
       buf.append("                           content, oldContent, version) values \n");
       buf.append("                           (replKey, transId,").append(dbNameTmp).append(",\n");
-      buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(", newCont, \n");
+      buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(
+            ", newCont, \n");
       buf.append("            oldCont, '0.0');\n");
       buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
-   }   
+   }
 
    private final boolean cleanupType(String schema, String objName, String sql, String postfix) {
       Connection conn = null;
@@ -225,8 +235,8 @@ public class SpecificOracle extends SpecificDefault {
          rs.close();
          st = null;
          rs = null;
-         for (int i=0; i < names.size(); i++) {
-            String name = (String)names.get(i);
+         for (int i = 0; i < names.size(); i++) {
+            String name = (String) names.get(i);
             if (name != null) {
                sql = "DROP " + objName + " " + name + postfix;
                log.info(sql);
@@ -261,30 +271,27 @@ public class SpecificOracle extends SpecificDefault {
          conn = null;
       }
    }
-   
+
    public void cleanupSchema(String schema) {
       String sql = "SELECT synonym_name FROM all_synonyms WHERE owner='" + schema + "'";
       cleanupType(schema, "synonym", sql, "");
       sql = "SELECT trigger_name FROM all_triggers WHERE owner='" + schema + "'";
       cleanupType(schema, "trigger", sql, "");
-      // sql = "SELECT name FROM all_source WHERE owner='" + schema + "' AND LINE=1";
+      // sql = "SELECT name FROM all_source WHERE owner='" + schema + "' AND
+      // LINE=1";
       // cleanupType(schema, "function", sql, "");
-
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PACKAGE' AND LINE=1";
       cleanupType(schema, "package", sql, "");
-      
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PROCEDURE' AND LINE=1";
       cleanupType(schema, "procedure", sql, "");
-      
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='FUNCTION' AND LINE=1";
       cleanupType(schema, "function", sql, "");
-      
-      //sql = "SELECT procedure_name FROM all_procedures WHERE owner='" + schema + "'";
-      //cleanupType(schema, "function", sql, "");
-      //sql = "SELECT procedure_name FROM all_procedures WHERE owner='" + schema + "'";
-      //cleanupType(schema, "procedure", sql, "");
-      
-      
+      // sql = "SELECT procedure_name FROM all_procedures WHERE owner='" +
+      // schema + "'";
+      // cleanupType(schema, "function", sql, "");
+      // sql = "SELECT procedure_name FROM all_procedures WHERE owner='" +
+      // schema + "'";
+      // cleanupType(schema, "procedure", sql, "");
       sql = "SELECT view_name FROM all_views WHERE owner='" + schema + "'";
       cleanupType(schema, "view", sql, " CASCADE CONSTRAINTS");
       sql = "SELECT table_name FROM all_tables WHERE owner='" + schema + "'";
@@ -292,14 +299,17 @@ public class SpecificOracle extends SpecificDefault {
       sql = "SELECT sequence_name FROM all_sequences WHERE sequence_owner='" + schema + "'";
       cleanupType(schema, "sequence", sql, "");
    }
-   
+
    /**
-    * Executes an Operating System command. 
+    * Executes an Operating System command.
+    * 
     * @param cmd
     * @throws Exception
     */
    public void osExecute(String cmd) throws Exception {
-      Execute execute = new Execute(new String[] { cmd }, null);
+      if (Execute.isWindows()) cmd = "cmd " + cmd;
+      String[] args = StringHelper.toArray(cmd, " ");
+      Execute execute = new Execute(args, null);
       ExecuteListener listener = new ExecuteListener();
       execute.setExecuteListener(listener);
       execute.run(); // blocks until finished
@@ -307,17 +317,18 @@ public class SpecificOracle extends SpecificDefault {
          throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
       }
    }
-   
+
    /**
     * Helper method used to construct the CREATE TABLE statement part belonging
     * to a single COLUMN.
     * 
     * There is currently no way to distinguish the following:
     * <ul>
-    *    <li>DECIMAL from SMALLINT and INTEGER (they are all threaded as INTEGER)</li>
-    *    <li>CHAR are all threated the same, so: CHAR(10) is the same as CHAR(10 BYTE) which is the same as CHAR(10 CHAR)</li>
-    *    <li></li>
-    *    
+    * <li>DECIMAL from SMALLINT and INTEGER (they are all threaded as INTEGER)</li>
+    * <li>CHAR are all threated the same, so: CHAR(10) is the same as CHAR(10
+    * BYTE) which is the same as CHAR(10 CHAR)</li>
+    * <li></li>
+    * 
     * </ul>
     * 
     * @param colInfoDescription
@@ -328,7 +339,6 @@ public class SpecificOracle extends SpecificDefault {
       buf.append(" ");
       String type = colInfoDescription.getType();
       int precision = colInfoDescription.getPrecision();
-      
       int sqlType = colInfoDescription.getSqlType();
       if (sqlType == Types.CHAR || sqlType == Types.VARCHAR) {
          buf.append(type).append("(").append(precision).append(")");
@@ -336,8 +346,7 @@ public class SpecificOracle extends SpecificDefault {
       else if (sqlType == Types.OTHER) {
          if (type.equalsIgnoreCase("NCHAR")) { // two bytes per character
             buf.append(type);
-            if (precision > 0)
-               buf.append("(").append(precision).append(")");
+            if (precision > 0) buf.append("(").append(precision).append(")");
          }
          else {
             buf.append(type);
@@ -351,8 +360,7 @@ public class SpecificOracle extends SpecificDefault {
          buf.append(type);
          if (precision > 0) {
             buf.append("(").append(precision);
-            if (scale > 0)
-               buf.append(",").append(scale);
+            if (scale > 0) buf.append(",").append(scale);
             buf.append(")");
          }
       }
@@ -361,13 +369,11 @@ public class SpecificOracle extends SpecificDefault {
       }
       else if (sqlType == Types.DATE) {
          buf.append(type);
-         
       }
       else if (sqlType == Types.VARBINARY) {
          buf.append(type);
          int width = colInfoDescription.getColSize();
-         if (width > 0)
-            buf.append("(").append(width).append(")");
+         if (width > 0) buf.append("(").append(width).append(")");
       }
       else if (sqlType == Types.LONGVARBINARY) {
          buf.append(type);
@@ -375,35 +381,28 @@ public class SpecificOracle extends SpecificDefault {
       else {
          buf.append(type);
          /*
-         if (type.equalsIgnoreCase("BFILE")) { // for example BFILE (sqlType = -13)
-            buf.append(type);
-         }
-         else if (type.equalsIgnoreCase("BINARY_FLOAT")) { // binaryfloat (100)
-            buf.append(type);
-         }
-         else if (type.equalsIgnoreCase("BINARY_DOUBLE")) { // binaryfloat (100)
-            buf.append(type);
-         }
-         else {
-            buf.append(type);
-         }
-         */
+          * if (type.equalsIgnoreCase("BFILE")) { // for example BFILE (sqlType =
+          * -13) buf.append(type); } else if
+          * (type.equalsIgnoreCase("BINARY_FLOAT")) { // binaryfloat (100)
+          * buf.append(type); } else if (type.equalsIgnoreCase("BINARY_DOUBLE")) { //
+          * binaryfloat (100) buf.append(type); } else { buf.append(type); }
+          */
       }
-      
       return buf;
    }
 
-   
    /**
     */
    public static void main(String[] args) {
       try {
          System.setProperty("java.util.logging.config.file", "testlog.properties");
          LogManager.getLogManager().readConfiguration();
-
          // ---- Database settings -----
          if (System.getProperty("jdbc.drivers", null) == null) {
-            System.setProperty("jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+            System
+                  .setProperty(
+                        "jdbc.drivers",
+                        "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
          }
          if (System.getProperty("db.url", null) == null) {
             System.setProperty("db.url", "jdbc:oracle:thin:@localhost:1521:test");
@@ -414,11 +413,10 @@ public class SpecificOracle extends SpecificDefault {
          if (System.getProperty("db.password", null) == null) {
             System.setProperty("db.password", "secret");
          }
-         
          SpecificOracle oracle = new SpecificOracle();
          I_Info info = new PropertiesInfo(System.getProperties());
          oracle.init(info);
-         I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+         I_DbPool pool = (I_DbPool) info.getObject("db.pool");
          Connection conn = pool.reserve();
          oracle.cleanupSchema("AIS");
          pool.release(conn);
@@ -429,33 +427,71 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
 
-   /* (non-Javadoc)
+
+   /**
+    * Sends/publishes the initial file as a high priority message.
+    * @param filename
+    * @throws FileNotFoundException
+    * @throws IOException
+    */
+   private void sendInitialFile(String topic, String path, String shortFilename)throws FileNotFoundException, IOException, JMSException  {
+      // now read the file which has been generated
+      String filename = null;
+      if (path != null)
+         filename = path + "/" + shortFilename;
+      else
+         filename = shortFilename;
+      File file = new File(filename);
+      
+      FileInputStream fis = new FileInputStream(file);
+      // in this case they are just decorators around I_ChangePublisher
+      XBSession session = this.publisher.getJmsSession();
+      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
+      XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
+      
+      msg.setJMSPriority(PriorityEnum.HIGH_PRIORITY.getInt());
+      msg.setStringProperty("_filename", filename);
+      // TODO SET PRIORITY And filename
+      producer.send(msg);
+      if (file.exists()) { 
+         boolean ret = file.delete();
+         if (!ret)
+            log.warning("could not delete the file '" + filename + "'");
+      }
+      fis.close();
+   }
+   
+   /**
+    * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public void initiateUpdate(String destination) throws Exception {
+   public void initiateUpdate(String topic, String destination) throws Exception {
       log.warning("will make an export of the DATABASE (NOT IMPLEMENTED YET");
       
       Connection conn = null;
-      String cmd = "ls *"; // TODO CHANGE THIS
+      String filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
+      String completeFilename = this.initialCmdPath + "/" + filename;
+      String cmd = this.intialCmd + " " + completeFilename;
       int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       try {
          conn = this.dbPool.reserve();
          oldTransactionIsolation = conn.getTransactionIsolation();
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
          long minKey = this.incrementReplKey(conn);
-         
-         // the result must be sent as a high prio message to the real destination
+         // the result must be sent as a high prio message to the real
+         // destination
          this.osExecute(cmd);
-         
          long maxKey = this.incrementReplKey(conn); 
          conn.commit();
+
+         sendInitialFile(topic, this.initialCmdPath, filename);
+         
          HashMap attrs = new HashMap();
          attrs.put("_destination", destination);
          attrs.put("_command", "INITIAL_DATA_RESPONSE");
          attrs.put("_minReplKey", "" + minKey);
          attrs.put("_maxReplKey", "" + maxKey);
          this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
-         
       }
       catch (Exception ex) {
          if (conn != null) {
@@ -484,7 +520,4 @@ public class SpecificOracle extends SpecificDefault {
                catch (SQLException e) { }
          }
       }
-   }
-
-   
-}
+   }}

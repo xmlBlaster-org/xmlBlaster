@@ -11,8 +11,6 @@ import java.sql.Types;
 import java.util.logging.Logger;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.contrib.replication.I_DbSpecific;
-import org.xmlBlaster.contrib.replication.I_Mapper;
 
 public class SpecificPostgres extends SpecificDefault {
 
@@ -186,7 +184,7 @@ public class SpecificPostgres extends SpecificDefault {
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public void initiateUpdate(String destination) throws Exception {
+   public void initiateUpdate(String topic, String destination) throws Exception {
       log.info("initial update requested by '" + destination + "'");
       throw new Exception("NOT IMPLEMENTED YET: initial update requested by '" + destination + "'");
    }
