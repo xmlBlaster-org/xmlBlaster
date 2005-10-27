@@ -17,10 +17,8 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.jms.XBConnectionFactory;
-import org.xmlBlaster.jms.XBTopic;
-import org.xmlBlaster.util.Global;
+import org.xmlBlaster.jms.XBDestination;
 
 /**
  * SimpleTest
@@ -30,14 +28,10 @@ import org.xmlBlaster.util.Global;
  */
 public class SimpleJmsDemo implements MessageListener {
 
-   private Global global;
-   private LogChannel log;
    private String[] cmdLine;
 
    public SimpleJmsDemo(String[] cmdLine) {
       this.cmdLine = cmdLine;
-      this.global = new Global(this.cmdLine);
-      this.log = this.global.getLog("jms-test");
    }
    
    public void prepare() throws JMSException {
@@ -45,7 +39,7 @@ public class SimpleJmsDemo implements MessageListener {
          // create a factory (normally retreived by naming service)
          TopicConnectionFactory factory = new XBConnectionFactory(null, this.cmdLine, false);
          // should be retreived via jndi
-         Topic topic = new XBTopic("jms-test");
+         Topic topic = new XBDestination("jms-test", null, false);
       
          TopicConnection connection = factory.createTopicConnection();
          connection.start();
