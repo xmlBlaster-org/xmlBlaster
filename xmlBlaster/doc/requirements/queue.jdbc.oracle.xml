@@ -7,13 +7,15 @@
         communicating with an oracle database.
     </topic>
     <description>
-       <p>The generic plugin for jdbc based queues has been tested against Oracle 9.20 i and
-        10g (10.1.0.3.0) on Linux.</p>
+       <p>The generic plugin for jdbc based queues has been tested against Oracle 8.1.6, Oracle 9.20 i and
+        10g (10.1.0.3.0) on Linux and on HP-UX (11.0). 8.1.6 has been tested with the jdbc Driver of 10g with
+	jdk1.4 on Linux and HP-UX and with jdk1.5 on Linux.</p>
         <p>Oracle is available on <a href='http://www.oracle.com'>http://www.oracle.com</a> where you can find all
         necessary information and instructions on how to make Oracle run.
         </p>
         <p>Once you have a running oracle database you can configure xmlBlaster to make it run against it.
-        Before you need to download the jdbc driver (you need two files: the  classes12.zip  nls_charset12.zip files which
+        Before you need to download the jdbc driver (you need two files for jdk1.3 : the  classes12.zip  nls_charset12.zip
+	and for jdk1.4 and higher you need ojdbc14.jar files which
         you can download them from <a href='http://otn.oracle.com/software/tech/java/sqlj_jdbc/content.html'>
         http://otn.oracle.com/software/tech/java/sqlj_jdbc/content.html</a>. You must
         put these files in the CLASSPATH (for example you can put them into $XMLBLASTER_HOME/lib and add them to the
