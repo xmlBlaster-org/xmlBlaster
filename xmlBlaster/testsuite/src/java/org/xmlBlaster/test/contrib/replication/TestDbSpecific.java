@@ -22,6 +22,7 @@ import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
+import org.xmlBlaster.jms.XBSession;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -513,4 +514,14 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       }
       log.info("SUCCESS");
    }
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
+    */
+   public XBSession getJmsSession() {
+      return null;
+   }
+   
+   
+   
 }

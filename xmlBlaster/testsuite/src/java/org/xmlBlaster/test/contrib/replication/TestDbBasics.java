@@ -26,6 +26,7 @@ import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.jms.XBSession;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -1173,5 +1174,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       }
       log.info("SUCCESS");
    }
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
+    */
+   public XBSession getJmsSession() {
+      return null;
+   }
+   
    
 }

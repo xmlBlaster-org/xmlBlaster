@@ -20,7 +20,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.jms.XBConnectionFactory;
 import org.xmlBlaster.jms.XBPropertyNames;
-import org.xmlBlaster.jms.XBTopic;
+import org.xmlBlaster.jms.XBDestination;
 
 /**
  * Test JmsAdmin. 
@@ -33,7 +33,6 @@ import org.xmlBlaster.jms.XBTopic;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestJmsAdmin extends XMLTestCase {
-   private final static String ME = "TestJmsAdmin";
    private final static String CONNECTION_FACTORY = "connectionFactory";
    private final static String TOPIC = "jmsAdmin";
    protected Global glob;
@@ -100,7 +99,7 @@ public class TestJmsAdmin extends XMLTestCase {
          // System.setProperty("java.naming.factory.url.pkgs", "org.apache.naming.modules");
          InitialContext ctx = new InitialContext(this.env);
          ctx.bind(CONNECTION_FACTORY, new XBConnectionFactory(null, this.args, false));            
-         ctx.bind(TOPIC, new XBTopic(TOPIC));
+         ctx.bind(TOPIC, new XBDestination(TOPIC, null, false));
       }
       catch (NamingException ex) {
          ex.printStackTrace();

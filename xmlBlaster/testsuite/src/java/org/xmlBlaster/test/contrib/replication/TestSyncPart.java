@@ -23,6 +23,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
+import org.xmlBlaster.jms.XBSession;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -396,6 +397,13 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
    }
 
    public void shutdown() {
+   }
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
+    */
+   public XBSession getJmsSession() {
+      return null;
    }
    
    

@@ -14,8 +14,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.jms.XBTextMessage;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 
 import junit.framework.*;
 
@@ -35,14 +33,11 @@ public class TestMessages extends TestCase {
    protected LogChannel log;
    int counter = 0, nmax;
 
-   private String[] args;
-
    public TestMessages(String name) {
       super(name);
    }
 
    public void prepare(String[] args) {
-      this.args = args;
       this.glob = new Global(args);
       // this.glob.init(args);
       this.glob.getLog("test");
@@ -99,11 +94,9 @@ public class TestMessages extends TestCase {
     */
    public void testPropertyValueConversion() {
       try {
-         MsgKeyData key = null;
          byte[] content = null;
-         MsgQosData qos = null;
          int type = XBMessage.TEXT;
-         XBMessage msg = new XBMessage(null, key, content, qos, type);
+         XBMessage msg = new XBMessage(null, content, type);
 
          String[] keys = new String[] {"Boolean", "Byte", "Short", "Int", "Long", "Float", "Double", "String"};
          Object[] values = new Object[] { new Boolean(false), new Byte((byte)1), new Short((short)2), new Integer(3), new Long(4), new Float(5.01), new Double(6.02), new String("7 String")  };
@@ -169,11 +162,9 @@ public class TestMessages extends TestCase {
     */
    public void testReadOnlyProperties() {
       try {
-         MsgKeyData key = null;
          byte[] content = "testReadOnlyProperties".getBytes();
-         MsgQosData qos = null;
          int type = XBMessage.TEXT;
-         XBMessage msg = new XBMessage(null, key, content, qos, type);
+         XBMessage msg = new XBMessage(null, content, type);
 
          String[] keys = new String[] {"Boolean", "Byte", "Short", "Int", "Long", "Float", "Double", "String"};
 
@@ -286,10 +277,8 @@ public class TestMessages extends TestCase {
    public void testTextMessage() {
       try {
          { // 1. key, content and qos all null in constructor
-            MsgKeyData key = null;
-            MsgQosData qos = null;
             byte[] content = null;
-            XBTextMessage msg = new XBTextMessage(null, key, content, qos);
+            XBTextMessage msg = new XBTextMessage(null, content);
 
             String txt1 = "funny Things happen";
             msg.setText(txt1);
@@ -303,10 +292,7 @@ public class TestMessages extends TestCase {
          }
          
          { // 2. content not null in constructor
-            MsgKeyData key = null;
-            MsgQosData qos = null;
-            byte[] content = null;
-            XBTextMessage msg = new XBTextMessage(null, key, "oh I am a text msg".getBytes(), qos);
+            XBTextMessage msg = new XBTextMessage(null, "oh I am a text msg".getBytes());
 
             String txt1 = "funny Things happen";
             msg.setText(txt1);
