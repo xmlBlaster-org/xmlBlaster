@@ -224,7 +224,8 @@ TODO
       <!-- <compilerarg value="/RTC1" /> -->  <!-- Enable stack chek (former /GZ), set automatically by cpptasks -->
       <compilerarg value="/Gm" if="is-debug"/>
       <compilerarg value="/Zi" if="is-debug"/>
-      <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
+      <!-- compilerarg value="/Zc:wchar_t-"/ -->    <!-- To avoid xerces 2.7: error LNK2019: unresolved external symbol __imp_?transcode@XMLString@xercesc_2_7@@SAPADQB_W@Z -->
+      <!-- compilerarg value="/G6"/ -->             <!-- target Pentium Pro -->
       <!-- <compilerarg value="/MDd" />  -->        <!-- multi threading with debug and dll (/MT = multithreaded without DLL) will force MSVCRT[D].DLL to be included -->
       <compilerarg value="/W3"/>                    <!-- display many warnings -->
       <!-- <compilerarg value="/Od" unless="is-debug"/> --> <!-- maximize speed -->
@@ -2510,7 +2511,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}" if="windows" />
+            <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}${CPP_DEBUG_POSTFIX}" if="windows" />
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
