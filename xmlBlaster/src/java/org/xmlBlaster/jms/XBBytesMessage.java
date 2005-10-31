@@ -43,31 +43,36 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
    XBBytesMessage(XBSession session, byte[] content) throws JMSException {
       super(session, content, XBMessage.BYTES);
       if (this.content != null) {
-         this.readOnly = true; 
-         this.writeOnly = false;
+         // this.readOnly = true; 
+         // this.writeOnly = false;
          this.is = new DataInputStream(new ByteArrayInputStream(this.content));
       }
       else {
-         this.readOnly = false;
-         this.writeOnly = true;
+         // this.readOnly = false;
+         // this.writeOnly = true;
          this.baos = new ByteArrayOutputStream(); 
          this.os = new DataOutputStream(this.baos);   
       }
    }
 
    private void getterCheck(String methodName) throws MessageNotReadableException {
-      if (this.writeOnly || is == null) {
+      if (this.writeOnly) {
          throw new MessageNotReadableException(ME + " writeonly message: not allowed to read on operation '" + methodName + "'");
       }
    }
 
    private void setterCheck(String methodName) throws MessageNotWriteableException {
-      if (this.readOnly || os == null) {
+      if (this.readOnly) {
          throw new MessageNotWriteableException("could not invoke '" + methodName + "' since the message is in readonly mode"); 
       }
    }
 
    public long getBodyLength() throws JMSException {
+      if (this.content == null) {
+         if (this.os != null)
+            return this.os.size();
+         else return 0L;
+      }
       return this.content.length;
    }
 
@@ -185,10 +190,32 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
       return readBytes(value, value.length);
    }
 
+   /**
+    * TODO fix this with an own stream implementation since here a double copy of the
+    * entire array is done.
+    * 
+    * @param value
+    * @param length
+    * @throws JMSException
+    */
+   int readWrittenBytes(byte[] value, int length) throws JMSException {
+      if (this.baos == null)
+         throw new XBException("internal", "XBBytesMessage.readWrittenBytes: the output stream is null, can nor read written data");
+      byte[] tmpContent = this.baos.toByteArray();
+      if (tmpContent.length < length)
+         length = tmpContent.length;
+      for(int i=0; i < length; i++)
+         value[i] = tmpContent[i];
+      return length; 
+   }
+   
+   
    public int readBytes(byte[] value, int length) throws JMSException {
       getterCheck("readBytes");
       if (length < 0 || length > value.length)
          throw new IndexOutOfBoundsException(ME + ".readBytes: length='" + length + "' array length='" + value.length + "'");
+      if (this.is == null)
+         return readWrittenBytes(value, length);
       try {
          int size = 0;
          int offset = 0;

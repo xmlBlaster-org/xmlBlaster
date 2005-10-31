@@ -51,6 +51,26 @@ public class XBMessage implements Message {
    private boolean   propertyReadOnly;
    protected XBSession   session;
    protected Destination destination;
+   
+   private boolean oldReadOnly;
+   private boolean oldWriteOnly;
+   private boolean oldPropertyReadOnly;
+   
+   final void giveFullAccess() {
+      this.oldWriteOnly = this.writeOnly;
+      this.oldReadOnly = this.readOnly;
+      this.oldPropertyReadOnly = this.propertyReadOnly;
+      this.writeOnly = false;
+      this.readOnly = false;
+      this.propertyReadOnly = false;
+   }
+   
+   final void resetAccess() {
+      this.writeOnly = this.oldWriteOnly;
+      this.readOnly = this.oldReadOnly;
+      this.propertyReadOnly = this.oldPropertyReadOnly;
+   }
+   
 
    // thes are the properties which are not stored in the props map.
    private boolean redelivered;
@@ -80,11 +100,16 @@ public class XBMessage implements Message {
       catch (JMSException ex) {
          // should never happen anyway
       }
-      if (this.content == null) this.writeOnly = true;
+      if (this.content == null) {
+         this.writeOnly = true;
+      }
       else {
          this.readOnly = true;
          this.propertyReadOnly = true;
       } 
+      this.oldWriteOnly = this.writeOnly;
+      this.oldReadOnly = this.readOnly;
+      this.oldPropertyReadOnly = this.propertyReadOnly;
    }
 
    boolean isAcknowledged() {

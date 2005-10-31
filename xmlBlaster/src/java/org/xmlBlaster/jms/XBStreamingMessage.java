@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Enumeration;
 import javax.jms.BytesMessage;
@@ -51,28 +52,32 @@ public class XBStreamingMessage extends XBTextMessage {
       int bufSize = 0;
       if (propertyExists(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE))
          bufSize = getIntProperty(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE);
-      if (bufSize > this.maxBufSize)
+      if (bufSize > this.maxBufSize || bufSize == 0)
          bufSize = this.maxBufSize;
       byte[] buf = null; // new byte[bufSize];
       long count = 0;
       try {
          while (true) {
             int available = this.in.available();
-            if (available == 0) {
-               Thread.sleep(10L);
-               continue;
-            }
+            if (available >= bufSize)
+               available = bufSize;
+            else
+               available++; // we increment by one to see if it is an eof
+            
             buf = new byte[available];
             int length = this.in.read(buf);
             if (length != 0) {
-               XBBytesMessage chunk = new XBBytesMessage(this.session, null);
-               if (length < 0)
+               // must pass null since otherwise you get a non-writeable ex.
+               BytesMessage chunk = this.session.createBytesMessage();
+               
+               chunk.writeBytes(buf);
+               if (length < available)
                   chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
                chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
-               chunk.writeBytes(buf);
+               chunk.writeBytes(buf, 0, length);
                producer.send(dest, chunk);
                count++;
-               if (length < 0)
+               if (length < available)
                   return;
             }
          }            

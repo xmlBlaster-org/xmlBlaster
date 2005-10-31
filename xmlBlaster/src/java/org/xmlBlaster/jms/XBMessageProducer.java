@@ -127,17 +127,22 @@ public class XBMessageProducer implements MessageProducer {
    public void send(Destination dest, Message msg, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
       this.session.checkControlThread();
-      
+
       msg.setJMSDeliveryMode(deliveryMode);
       msg.setJMSPriority(priority);
-      if (destination == null) 
+      if (this.destination == null)
          throw new UnsupportedOperationException(ME + ".send of message needs a destination topic to be set");
       msg.setJMSDestination(dest);
       msg.setJMSExpiration(timeToLive);
       try {
-         MsgUnit msgUnit = MessageHelper.convert(this.session.global, msg);
-         this.publishReturnQos = this.access.publish(msgUnit); 
-         // what to do whith the publish return qos ?
+         if (msg instanceof XBStreamingMessage) {
+            ((XBStreamingMessage)msg).send(this.session, this, this.destination);
+         }
+         else {
+            MsgUnit msgUnit = MessageHelper.convert(this.session.global, msg);
+            this.publishReturnQos = this.access.publish(msgUnit); 
+            // what to do whith the publish return qos ?
+         }
       }
       catch (XmlBlasterException ex) {
          throw new XBException(ex, ME + ".send: ");         
