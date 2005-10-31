@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -76,6 +77,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    /** async delivery is activated only when this flag is 'true'. Used to temporarly inhibit dispatch of messages */
    private boolean dispatcherActive = true;
 
+   private SessionName sessionName;
+   
    /**
     * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
@@ -84,13 +87,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public DispatchManager(Global glob, I_MsgErrorHandler failureListener,
                           I_MsgSecurityInterceptor securityInterceptor,
                           I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener,
-                          AddressBase[] addrArr) throws XmlBlasterException {
+                          AddressBase[] addrArr, SessionName sessionName) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DispatchManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
 
       this.ME = "DispatchManager-" + msgQueue.getStorageId().getId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
+      this.sessionName = sessionName;
 
       if (log.TRACE) log.trace(ME, "Loading DispatchManager ...");
 
@@ -125,6 +129,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.dispatchConnectionsHandler.initialize(addrArr);
    }
 
+   public SessionName getSessionName() {
+      return this.sessionName;
+   }
+   
    public boolean isSyncMode() {
       return this.isSyncMode;
    }

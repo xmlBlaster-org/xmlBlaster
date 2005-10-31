@@ -281,7 +281,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
                this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
-                                       this.connectQos.getAddresses());
+                                       this.connectQos.getAddresses(), sn);
 
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
                
