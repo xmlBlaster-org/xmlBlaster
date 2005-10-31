@@ -131,6 +131,9 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.connectQos.setMaxSessions(maxSessions);
          CallbackAddress cbAddr = new CallbackAddress(this.glob);
          cbAddr.setRetries(-1);
+         String dispatcherPlugin = info.get("mom.dispatcherPlugin", null);
+         if (dispatcherPlugin != null)
+            cbAddr.setDispatchPlugin(dispatcherPlugin);
          this.connectQos.addCallbackAddress(cbAddr);
       }
       log.info("Connecting with qos '" + this.connectQos.toXml() + "'");

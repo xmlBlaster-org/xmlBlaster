@@ -6,19 +6,25 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
-import org.xmlBlaster.contrib.I_Update;
+import java.util.ArrayList;
+import org.xmlBlaster.contrib.I_Info;
 
 /**
  * I_ReplSlave
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public interface I_ReplSlave extends I_Update {
+public interface I_ReplSlave {
    
+   public final static int STATUS_UNUSED = 0;
+   public final static int STATUS_INITIAL = 1;
+   public final static int STATUS_TRANSITION = 2;
+   public final static int STATUS_NORMAL = 3;
+
    /**
     * Starts the whole initial update
     * @throws Exception
     */
-   void run() throws Exception;
+   void run(String managerInstanceName, String replicationKey, I_Info individualInfo) throws Exception;
    /**
     * 3
     *
@@ -46,7 +52,10 @@ public interface I_ReplSlave extends I_Update {
     */
    void reactivateDestination(long minReplKey, long maxReplKey) throws Exception;
    
+
+   ArrayList check(ArrayList pushEntries) throws Exception;
+
    
-   boolean checkForDestroy(String replKey) throws Exception;
+   void shutdown();
    
 }

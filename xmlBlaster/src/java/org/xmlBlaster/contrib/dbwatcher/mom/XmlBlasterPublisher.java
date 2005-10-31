@@ -264,10 +264,15 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
    }
 
-   private void addStringPropToQos(String key, Map attrMap, PublishQos qos) {
-      String val = (String)attrMap.get(key);
-      if (val != null)
-         qos.addClientProperty(key, val);
+   private void addStringPropToQos(Map attrMap, PublishQos qos) {
+      synchronized (attrMap) {
+         String[] keys = (String[])attrMap.keySet().toArray(new String[attrMap.size()]);
+         for (int i=0; i < keys.length; i++) {
+            Object val = attrMap.get(keys[i]);
+            if (val != null && val instanceof String)
+               qos.addClientProperty(keys[i], (String)val);
+         }
+      }
    }
    
    /**
@@ -297,11 +302,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          // to force to fill the client properties map !!
          new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
-         addStringPropToQos("_topic", attrMap, qos);
-         addStringPropToQos("_command", attrMap, qos);
-         addStringPropToQos("_minReplKey", attrMap, qos);
-         addStringPropToQos("_maxReplKey", attrMap, qos);
-         
+         addStringPropToQos(attrMap, qos);
+
          PublishKey key = null;
          if (changeKey != null && changeKey.length() > 0)
             key = new PublishKey(this.glob, changeKey);
@@ -453,7 +455,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       synchronized(this) {
          try {
             // TODO Add here the specific qos attributes to the map.
-            q.getData().addClientProperty("_sender", q.getSender().getAbsoluteName());
+            q.getData().addClientProperty("_sender", q.getSender().getRelativeName());
             this.defaultUpdate.update(s, c, q.getClientProperties());
             return "OK";
          }

@@ -16,6 +16,13 @@ public interface ReplManagerPluginMBean {
    String[] getReplications();
    
    /**
+    * Never returns null. It returns a list of keys identifying the slaves using the replication 
+    * manager.
+    * @return
+    */
+   String[] getSlaves();
+
+   /**
     * Intiates the replication for the given slave.
     * 
     * @param slaveSessionName

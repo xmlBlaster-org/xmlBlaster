@@ -5,60 +5,24 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import javax.jms.JMSException;
-import org.jutils.text.StringHelper;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.jms.XBDestination;
-import org.xmlBlaster.jms.XBMessageProducer;
-import org.xmlBlaster.jms.XBSession;
-import org.xmlBlaster.jms.XBStreamingMessage;
-import org.xmlBlaster.util.Execute;
-import org.xmlBlaster.util.I_ExecuteListener;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.def.PriorityEnum;
 
 public class SpecificOracle extends SpecificDefault {
 
-   class ExecuteListener implements I_ExecuteListener {
-
-      StringBuffer errors = new StringBuffer();
-
-      public void stderr(String data) {
-         log.warning(data);
-      }
-
-      public void stdout(String data) {
-         log.info(data);
-         this.errors.append(data).append("\n");
-      }
-
-      String getErrors() {
-         return this.errors.toString();
-      }
-   }
-
    private static Logger log = Logger.getLogger(SpecificOracle.class.getName());
-   private String intialCmd = "dbExport";
-   private String initialCmdPath = System.getProperty("user.home") + "/tmp";
 
    /**
     * Not doing anything.
@@ -301,24 +265,6 @@ public class SpecificOracle extends SpecificDefault {
    }
 
    /**
-    * Executes an Operating System command.
-    * 
-    * @param cmd
-    * @throws Exception
-    */
-   public void osExecute(String cmd) throws Exception {
-      if (Execute.isWindows()) cmd = "cmd " + cmd;
-      String[] args = StringHelper.toArray(cmd, " ");
-      Execute execute = new Execute(args, null);
-      ExecuteListener listener = new ExecuteListener();
-      execute.setExecuteListener(listener);
-      execute.run(); // blocks until finished
-      if (execute.getExitValue() != 0) {
-         throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
-      }
-   }
-
-   /**
     * Helper method used to construct the CREATE TABLE statement part belonging
     * to a single COLUMN.
     * 
@@ -428,96 +374,4 @@ public class SpecificOracle extends SpecificDefault {
    }
 
 
-   /**
-    * Sends/publishes the initial file as a high priority message.
-    * @param filename
-    * @throws FileNotFoundException
-    * @throws IOException
-    */
-   private void sendInitialFile(String topic, String path, String shortFilename)throws FileNotFoundException, IOException, JMSException  {
-      // now read the file which has been generated
-      String filename = null;
-      if (path != null)
-         filename = path + "/" + shortFilename;
-      else
-         filename = shortFilename;
-      File file = new File(filename);
-      
-      FileInputStream fis = new FileInputStream(file);
-      // in this case they are just decorators around I_ChangePublisher
-      XBSession session = this.publisher.getJmsSession();
-      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
-      XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
-      
-      msg.setJMSPriority(PriorityEnum.HIGH_PRIORITY.getInt());
-      msg.setStringProperty("_filename", filename);
-      // TODO SET PRIORITY And filename
-      producer.send(msg);
-      if (file.exists()) { 
-         boolean ret = file.delete();
-         if (!ret)
-            log.warning("could not delete the file '" + filename + "'");
-      }
-      fis.close();
-   }
-   
-   /**
-    * 
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
-    */
-   public void initiateUpdate(String topic, String destination) throws Exception {
-      log.warning("will make an export of the DATABASE (NOT IMPLEMENTED YET");
-      
-      Connection conn = null;
-      String filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
-      String completeFilename = this.initialCmdPath + "/" + filename;
-      String cmd = this.intialCmd + " " + completeFilename;
-      int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
-      try {
-         conn = this.dbPool.reserve();
-         oldTransactionIsolation = conn.getTransactionIsolation();
-         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-         long minKey = this.incrementReplKey(conn);
-         // the result must be sent as a high prio message to the real
-         // destination
-         this.osExecute(cmd);
-         long maxKey = this.incrementReplKey(conn); 
-         conn.commit();
-
-         sendInitialFile(topic, this.initialCmdPath, filename);
-         
-         HashMap attrs = new HashMap();
-         attrs.put("_destination", destination);
-         attrs.put("_command", "INITIAL_DATA_RESPONSE");
-         attrs.put("_minReplKey", "" + minKey);
-         attrs.put("_maxReplKey", "" + maxKey);
-         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
-      }
-      catch (Exception ex) {
-         if (conn != null) {
-            try {
-               conn.rollback();
-            }
-            catch (SQLException e) { }
-            try {
-               this.dbPool.erase(conn);
-            }
-            catch (Exception e) { }
-            conn = null;
-         }
-         ex.printStackTrace();
-      }
-      finally {
-         if (conn != null) {
-            if (oldTransactionIsolation != Connection.TRANSACTION_SERIALIZABLE)
-               try {
-                  conn.setTransactionIsolation(oldTransactionIsolation);
-               }
-               catch (SQLException e) { }
-               try {
-                  conn.close();
-               }
-               catch (SQLException e) { }
-         }
-      }
-   }}
+}

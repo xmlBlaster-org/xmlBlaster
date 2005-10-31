@@ -4,6 +4,7 @@ FILE=$2
 SCHEMA=xmlblaster
 USER=xmlblaster
 PWD=secret
+SID="test"
 LOG=${HOME}/tmp/${CMD}.log
 
 if test "`echo -e xxx`" = "xxx" 
@@ -25,10 +26,10 @@ if [ "${FILE}" = "" ] ; then
 fi
 
 if [ "${CMD}" = "exp" ] ; then
-   CMDLINE="exp ${USER}/${PWD} owner=${SCHEMA} file=${FILE} log=${LOG}"
+   CMDLINE="exp ${USER}/${PWD}@${SID} owner=${SCHEMA} file=${FILE} log=${LOG}"
 else
    if [ "${CMD}" = "imp" ] ; then
-      CMDLINE="imp ${USER}/${PWD} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
+      CMDLINE="imp ${USER}/${PWD}@${SID} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
    else
       ${ECHO} "usage $0 exp|imp filename"
       ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
@@ -72,7 +73,9 @@ fi
 
 ${ECHO} "executing ${CMDLINE}"
 
-EXITCODE=`${CMDLINE}`
+${CMDLINE}
+
+EXITCODE="`grep -ic unsuccessfully ${LOG}`"
 
 if [ "${EXITCODE}" = "0" ] ; then 
   ${ECHO} "${BLACK_LTGREEN} SUCCESS ${ESC}"

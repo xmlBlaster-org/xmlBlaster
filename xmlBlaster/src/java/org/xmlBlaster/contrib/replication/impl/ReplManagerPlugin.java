@@ -29,11 +29,16 @@ import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -76,7 +81,7 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback {
+public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_Plugin {
    
    public final static String SESSION_ID = "replManager/1";
    private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
@@ -85,6 +90,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private Object mbeanHandle;
    private String user = "replManager";
    private String password = "secret";
+   private Map replSlaveMap;
+   private boolean shutdown;
+   private boolean initialized;
+   
+   private static int debugInstanceNum;
+   private String instanceName;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -92,6 +103,16 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public ReplManagerPlugin() {
       super(new String[] {});
       this.replications = new TreeMap();
+      this.replSlaveMap = new TreeMap();
+   }
+   
+   /**
+    * Never returns null. It returns a list of keys identifying the slaves using the replication 
+    * manager.
+    * @return
+    */
+   public String[] getSlaves() {
+      return (String[])this.replSlaveMap.keySet().toArray(new String[this.replSlaveMap.size()]);
    }
    
    /**
@@ -100,6 +121,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public String[] getReplications() {
       return (String[])this.replications.keySet().toArray(new String[this.replications.size()]);
+   }
+   
+   public String getType() {
+      return "ReplManager";
+   }
+   
+   public String getVersion() {
+      return "1.0";
    }
    
    /**
@@ -116,8 +145,22 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          I_Info individualInfo = (I_Info)this.replications.get(replicationKey);
          if (individualInfo != null) {
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
-            I_ReplSlave slave = new ReplSlave(slaveSessionName, replicationKey, individualInfo);
-            slave.run();
+            I_ReplSlave slave = null;
+            synchronized (this.replSlaveMap) {
+               slave = (I_ReplSlave)this.replSlaveMap.get(slaveSessionName);
+            }
+            if (slave != null)
+               slave.run(this.instanceName, replicationKey, individualInfo);
+            else {
+               StringBuffer buf = new StringBuffer();
+               String[] slaves = getSlaves();
+               for (int i=0; i < slaves.length; i++) {
+                  if (i > 0)
+                     buf.append(",");
+                  buf.append(slaves);
+               }
+               throw new Exception("the replication slave '" + slaveSessionName + "' was not found among the list of slaves which is '" + buf.toString() + "'");
+            }
          }
          else {
             String[] repl = this.getReplications();
@@ -136,12 +179,18 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
+   public synchronized void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
+      if (this.initialized)
+         return;
       super.init(global, pluginInfo);
       try {
          // String momClass = get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
          // String registryName = "mom.publisher";
-         String instanceName = "replication";
+         synchronized (ReplManagerPlugin.class) {
+            debugInstanceNum++;
+            this.instanceName = "replication" + debugInstanceNum;
+         }
+         
          ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
                instanceName, this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
@@ -159,6 +208,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          // this is the instance passed from the outside, not a clone, otherwise
          // it will not find the plugin registry for the MIME plugin
          putObject("org.xmlBlaster.engine.Global", global);
+         getEngineGlobal(this.global).getPluginRegistry().register(getType() + "," + getVersion(), this);
+         this.initialized = true;
       }
       catch (Throwable e) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, "ReplManagerPlugin", "init failed", e); 
@@ -166,21 +217,41 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       log.info("Loaded ReplManagerPlugin '" + getType() + "'");
    }
 
+   private org.xmlBlaster.engine.Global getEngineGlobal(Global glob) {
+      return (org.xmlBlaster.engine.Global)glob.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
+   }
+   
+   
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
-   public void shutdown() throws XmlBlasterException {
+   public synchronized void shutdown() throws XmlBlasterException {
+      if (this.shutdown)
+         return;
       super.shutdown();
       try {
          this.global.unregisterMBean(this.mbeanHandle);
          this.global.getXmlBlasterAccess().disconnect(new DisconnectQos(this.global));
+         this.replications.clear();
+         this.replSlaveMap.clear();
+         getEngineGlobal(this.global).getPluginRegistry().unRegister(getType() + "," + getVersion());
       }
       catch (Throwable e) {
          log.warning("Ignoring shutdown problem: " + e.toString());
       }
+      this.shutdown = true;
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
 
+   /**
+    * Used to register a dbWatcher. This is a request coming directly from the
+    * DbWatcher which registeres himself to this plugin.
+    * @param senderSession The session requesting this registration. This is needed
+    * to reply to the right requestor.
+    * 
+    * @param replId
+    * @param info
+    */
    public synchronized void register(String senderSession, String replId, I_Info info) {
       I_Info oldInfo = (I_Info)this.replications.get(replId);
       info.put("_senderSession", senderSession);
@@ -222,23 +293,172 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       SessionName senderSession = updateQos.getSender();
       String request = updateQos.getClientProperty("_command", "");
-      log.info("The master Replicator with session '" + senderSession.getAbsoluteName() + "' is sending '" + request + "'");
-      String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
-      if (replId == null || replId.length() < 1)
-         log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+      log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
+
+      if ("INITIAL_DATA_RESPONSE".equals(request)) {
+         long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
+         long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
+         try {
+            String slaveName = updateQos.getClientProperty("_slaveName", (String)null);
+            if (slaveName == null)
+               log.severe("on initial data response the slave name was not specified. Can not perform operation");
+            else {
+               I_ReplSlave slave = null;
+               synchronized (this.replSlaveMap) {
+                  slave = (I_ReplSlave)this.replSlaveMap.get(slaveName);
+               }
+               if (slave == null)
+                  log.severe("on initial data response the slave name '" + slaveName + "' was not registered (could have already logged out)");
+               else
+                  slave.reactivateDestination(minReplKey, maxReplKey);
+            }
+         }
+         catch (Exception ex) {
+            log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
+         }
+      }
       else {
-         if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
-            I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
-            register(senderSession.getAbsoluteName(), replId, info);
-         }
-         else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
-            unregister(senderSession.getAbsoluteName(), replId);
-         }
+         String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+         if (replId == null || replId.length() < 1)
+            log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
          else {
-            log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
+            if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
+               I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
+               register(senderSession.getRelativeName(), replId, info);
+            }
+            else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
+               unregister(senderSession.getRelativeName(), replId);
+            }
+            else {
+               log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
+            }
          }
       }
       return "OK";
    }
 
+   
+   // enforced by I_MsgDispatchInterceptor 
+   
+   /**
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#addDispatchManager(org.xmlBlaster.util.dispatch.DispatchManager)
+    */
+   public void addDispatchManager(DispatchManager dispatchManager) {
+      try {
+         SessionName sessionName = dispatchManager.getSessionName();
+         if (sessionName == null) {
+            log.severe("The sessionName is null: "   + dispatchManager.toXml(""));
+            Thread.dumpStack();
+         }
+         else {
+            String relativeSessionName = sessionName.getRelativeName();
+            I_ReplSlave slave = new ReplSlave(relativeSessionName);
+            synchronized (this.replSlaveMap) {
+               this.replSlaveMap.put(relativeSessionName, slave);
+            }
+         }
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#doActivate(org.xmlBlaster.util.dispatch.DispatchManager)
+    */
+   public boolean doActivate(DispatchManager dispatchManager) {
+      return true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
+    */
+   public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException {
+      if (pushEntries == null)
+         return null;
+      I_ReplSlave slave = null;
+      synchronized (this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.get(dispatchManager.getSessionName().getRelativeName());
+      }
+      if (slave == null)
+         return pushEntries;
+      try {
+         return slave.check(pushEntries);
+      }
+      catch (Exception ex) {
+         if (ex instanceof XmlBlasterException)
+            throw (XmlBlasterException)ex;
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "exception occured when filtering replication messages", "", ex);
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#initialize(org.xmlBlaster.util.Global, java.lang.String)
+    */
+   public void initialize(Global glob, String typeVersion) throws XmlBlasterException {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /**
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#isShutdown()
+    */
+   public synchronized boolean isShutdown() {
+      return this.shutdown;
+   }
+
+   /**
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#shutdown(org.xmlBlaster.util.dispatch.DispatchManager)
+    */
+   public synchronized void shutdown(DispatchManager dispatchManager) throws XmlBlasterException {
+      I_ReplSlave slave = null;
+      synchronized (this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.remove(dispatchManager.getSessionName().getRelativeName());
+      }
+      if (slave != null) 
+         slave.shutdown();
+   }
+
+   /**
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#toXml(java.lang.String)
+    */
+   public String toXml(String extraOffset) {
+      return "";
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#usage()
+    */
+   public String usage() {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
+    */
+   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
+    */
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
+    */
+   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      // TODO Auto-generated method stub
+      
+   }
+   
+   
+   
+   
 }

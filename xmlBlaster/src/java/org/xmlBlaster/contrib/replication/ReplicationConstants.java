@@ -16,6 +16,8 @@ public interface ReplicationConstants {
    public final static String REPL_PREFIX_KEY = "replication.prefix";
    public final static String REPL_REQUEST_UPDATE = "REQUEST_UPDATE";
 
+   public final static String SLAVE_NAME = "_slaveName";
+   
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
    public final static String REPL_KEY_ATTR = "replKey";

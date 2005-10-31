@@ -8,14 +8,11 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
 import java.sql.Types;
-import java.util.logging.Logger;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 
 public class SpecificPostgres extends SpecificDefault {
 
-   private static Logger log = Logger.getLogger(SpecificPostgres.class.getName());
-   
    /**
     * Not doing anything.
     */
@@ -181,12 +178,4 @@ public class SpecificPostgres extends SpecificDefault {
       // do nothing as a default
    }
    
-   /**
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
-    */
-   public void initiateUpdate(String topic, String destination) throws Exception {
-      log.info("initial update requested by '" + destination + "'");
-      throw new Exception("NOT IMPLEMENTED YET: initial update requested by '" + destination + "'");
-   }
-
 }

@@ -6,6 +6,10 @@
 
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,7 +25,10 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
 
+import org.jutils.text.StringHelper;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
@@ -39,11 +46,37 @@ import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.ReplicationManager;
+import org.xmlBlaster.jms.XBDestination;
+import org.xmlBlaster.jms.XBMessageProducer;
+import org.xmlBlaster.jms.XBSession;
+import org.xmlBlaster.jms.XBStreamingMessage;
+import org.xmlBlaster.util.Execute;
+import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Update {
+
+   class ExecuteListener implements I_ExecuteListener {
+
+      StringBuffer errors = new StringBuffer();
+
+      public void stderr(String data) {
+         log.warning(data);
+      }
+
+      public void stdout(String data) {
+         log.info(data);
+         this.errors.append(data).append("\n");
+      }
+
+      String getErrors() {
+         return this.errors.toString();
+      }
+   }
 
    private String CREATE_COUNTER_KEY = "_createCounter";
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
@@ -65,6 +98,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
 
    protected String replPrefix = "repl_";
    
+   private String intialCmd;
+
+   private String initialCmdPath;
+ 
    protected ReplaceVariable replaceVariable;
 
    protected Replacer replacer;
@@ -368,6 +405,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
             }
          }
       }
+      
+      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
+      this.intialCmd = this.info.get("replication.initialCmd", null);
+      
    }
 
    /**
@@ -732,22 +773,142 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       if (content == null)
          content = new byte[0];
       String msg = new String(content);
+      // this comes from the requesting ReplSlave
       if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
          ClientProperty prop = (ClientProperty)attrMap.get("_sender");
          if (prop == null)
             throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
          String destination = prop.getStringValue();
-         prop = (ClientProperty)attrMap.get("_replTopic");
+
+         String replTopic = this.info.get("mom.topicName", null);
+         if (replTopic == null)
+            throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
+
+         prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
          if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_replTopic' specified");
-         String replTopic = prop.getStringValue(); 
-         initiateUpdate(replTopic, destination);
+            throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
+         String slaveName = prop.getStringValue();
+         initiateUpdate(replTopic, destination, slaveName);
       }
       else {
          log.warning("update from '" + topic + "' with request '" + msg + "'");
       }
    }
 
+   /**
+    * 
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
+    */
+   public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
+      
+      Connection conn = null;
+      String filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
+      String completeFilename = this.initialCmdPath + "/" + filename;
+      String cmd = this.intialCmd + " " + completeFilename;
+      int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
+      try {
+         conn = this.dbPool.reserve();
+         oldTransactionIsolation = conn.getTransactionIsolation();
+         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+         long minKey = this.incrementReplKey(conn);
+         // the result must be sent as a high prio message to the real
+         // destination
+         this.osExecute(cmd);
+         long maxKey = this.incrementReplKey(conn); 
+         conn.commit();
+
+         sendInitialFile(topic, this.initialCmdPath, filename);
+         
+         HashMap attrs = new HashMap();
+         attrs.put("_destination", destination);
+         attrs.put("_command", "INITIAL_DATA_RESPONSE");
+         attrs.put("_minReplKey", "" + minKey);
+         attrs.put("_maxReplKey", "" + maxKey);
+         attrs.put(ReplicationConstants.SLAVE_NAME, slaveName);
+         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
+      }
+      catch (Exception ex) {
+         if (conn != null) {
+            try {
+               conn.rollback();
+            }
+            catch (SQLException e) { }
+            try {
+               this.dbPool.erase(conn);
+            }
+            catch (Exception e) { }
+            conn = null;
+         }
+         ex.printStackTrace();
+      }
+      finally {
+         if (conn != null) {
+            if (oldTransactionIsolation != Connection.TRANSACTION_SERIALIZABLE)
+               try {
+                  conn.setTransactionIsolation(oldTransactionIsolation);
+               }
+               catch (SQLException e) { }
+               try {
+                  conn.close();
+               }
+               catch (SQLException e) { }
+         }
+      }
+   }
+   
+   /**
+    * Sends/publishes the initial file as a high priority message.
+    * @param filename
+    * @throws FileNotFoundException
+    * @throws IOException
+    */
+   private void sendInitialFile(String topic, String path, String shortFilename)throws FileNotFoundException, IOException, JMSException  {
+      // now read the file which has been generated
+      String filename = null;
+      if (path != null)
+         filename = path + "/" + shortFilename;
+      else
+         filename = shortFilename;
+      File file = new File(filename);
+      
+      FileInputStream fis = new FileInputStream(file);
+      // in this case they are just decorators around I_ChangePublisher
+      XBSession session = this.publisher.getJmsSession();
+      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
+      producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
+      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
+      msg.setStringProperty("_filename", filename);
+      msg.setInputStream(fis);
+      producer.send(msg);
+      if (file.exists()) { 
+         boolean ret = file.delete();
+         if (!ret)
+            log.warning("could not delete the file '" + filename + "'");
+      }
+      fis.close();
+   }
+   
+
+   /**
+    * Executes an Operating System command.
+    * 
+    * @param cmd
+    * @throws Exception
+    */
+   private void osExecute(String cmd) throws Exception {
+      if (Execute.isWindows()) cmd = "cmd " + cmd;
+      String[] args = StringHelper.toArray(cmd, " ");
+      Execute execute = new Execute(args, null);
+      ExecuteListener listener = new ExecuteListener();
+      execute.setExecuteListener(listener);
+      execute.run(); // blocks until finished
+      if (execute.getExitValue() != 0) {
+         throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
+      }
+   }
+
+   
    /**
     * Example code.
     * <p />
@@ -795,4 +956,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
    }
 
+   
+   
+   
 }
