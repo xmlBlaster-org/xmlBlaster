@@ -8,6 +8,8 @@ Current subversion
 
 Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
 ============================================================
+ 
+ o #13909 added contrib task in build.xml
 
  o #13886 Added support for crimson XML parser if forced for JDK 1.5 (last JDK1.3 compatible change)
 
