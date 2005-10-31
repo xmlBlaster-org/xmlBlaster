@@ -1,10 +1,12 @@
 package org.xmlBlaster.test.classtest.queue;
 
 import org.jutils.log.LogChannel;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -89,7 +91,6 @@ public class I_QueueTest extends TestCase {
    private String ME = "I_QueueTest";
    protected Global glob;
    protected LogChannel log;
-   private StopWatch stopWatch = new StopWatch();
 
    private I_Queue queue;
    private QueueSizeListener queueSizeListener = new QueueSizeListener();
@@ -326,7 +327,6 @@ public class I_QueueTest extends TestCase {
 
          entryList = queue.takeLowest(1, -1L, null, false);
          long singleSize = ((I_QueueEntry)entryList.get(0)).getSizeInBytes(); 
-         long totalSize = singleSize * entryList.size(); 
          assertEquals("TAKE #1 failed"+queue.toXml(""), 1, entryList.size());
          log.info(ME, "curr entries="+queue.getNumOfEntries());
          assertEquals("number of entries incremented on last invocation", -1, this.queueSizeListener.getLastIncrementEntries());
@@ -1035,8 +1035,6 @@ public class I_QueueTest extends TestCase {
             this.queue.addQueueSizeListener(this.queueSizeListener);
             this.queueSizeListener.clear();
 
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
-
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
                entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
@@ -1135,8 +1133,6 @@ public class I_QueueTest extends TestCase {
             this.log.trace(ME, "takeLowest test 4 (with entry null)");
             int imax = 20;
             long size = 0L;
-
-            DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
 
             DummyEntry[] entries = new DummyEntry[imax];
             for (int i=0; i < imax; i++) {
@@ -1464,9 +1460,6 @@ public class I_QueueTest extends TestCase {
             this.checkSizeAndEntries("sizesCheck test 1: ", list, queue);
 
             if (queue instanceof CacheQueueInterceptorPlugin) return;
-
-            ArrayList subList = queue.takeLowest(2, 100L, null, true);
-
             this.log.info(ME, "size of list before: " + list.size());
             list.remove(list.size()-1);
             list.remove(list.size()-1);
@@ -1502,6 +1495,49 @@ public class I_QueueTest extends TestCase {
       }
    }
 
+   
+   public void testPublishMsgBigEntry() {
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         queueType = this.queue.toString();
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/testSizes");
+         this.queue.initialize(queueId, prop);
+         queue.clear();
+         assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
+         publishMsgBigEntry(this.queue);
+      }
+      catch (XmlBlasterException ex) {
+         log.error(ME, "Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
+      }
+   }
+
+   
+   /**
+    * Test bigEngtries(I_Queue)
+    * It tests the insertion and removal of entries which contain a large blob (2.1MB)
+    */
+   private void publishMsgBigEntry(I_Queue queue) {
+      ME = "I_QueueTest.publishMsgBigEntry(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      try {
+         {
+            this.log.trace(ME, "start test");
+            int msgSize = 1000000;
+            
+            StorageId storageId = new StorageId("mystore", "test");
+            byte[] content = new byte[msgSize];
+            MsgUnit msgUnit = new MsgUnit(this.glob, "<key oid='aaa'/>", content, "<qos/>");
+            MsgQueuePublishEntry pubEntry = new MsgQueuePublishEntry(this.glob, msgUnit, storageId);
+            queue.put(pubEntry, false);
+            I_Entry entry = queue.peek();
+            queue.removeRandom(entry);
+         }
+      }
+      catch(XmlBlasterException e) {
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+   }
 
    /**
     * Test bigEngtries(I_Queue)
@@ -1514,7 +1550,7 @@ public class I_QueueTest extends TestCase {
          {
             this.log.trace(ME, "start test");
             int imax = 3; 
-            long msgSize = 202010;
+            long msgSize = 2020100L;
             DummyEntry[] entries = new DummyEntry[imax];
             ArrayList list = new ArrayList();
 
@@ -1525,6 +1561,8 @@ public class I_QueueTest extends TestCase {
 
             queue.put(entries, false);
             this.checkSizeAndEntries("sizesCheck test 1: ", list, queue);
+            ArrayList entriesArray = queue.peek(imax, -1L);
+            assertEquals("wrong number of big entries retrieved", imax, entriesArray.size());
             queue.removeRandom(entries);
             list.removeAll(list);
             this.checkSizeAndEntries("sizesCheck test 1 (after removing): ", list, queue);
@@ -1656,6 +1694,10 @@ public class I_QueueTest extends TestCase {
          I_QueueTest testSub = new I_QueueTest("I_QueueTest", i, glob);
 
          long startTime = System.currentTimeMillis();
+
+         testSub.setUp();
+         testSub.testPublishMsgBigEntry();
+         testSub.tearDown();
 
          testSub.setUp();
          testSub.testConfig();
