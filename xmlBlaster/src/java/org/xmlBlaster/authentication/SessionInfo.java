@@ -179,7 +179,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          if (log.TRACE) log.trace(ME, "Creating dispatch manager as ConnectQos contains callback addresses");
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
-                                this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
+                                this.connectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
       }
       else { // No callback configured
          if (log.TRACE) log.trace(ME, "Don't create dispatch manager as ConnectQos contains no callback addresses");
@@ -450,7 +450,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          log.info(ME, "Successfully reconfigured and created dispatch manager with given callback address");
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
-                              newConnectQos.getSessionCbQueueProperty().getCallbackAddresses());
+                              newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
       }
       else if (!wantsCallbacks && hasCallback()) {
          this.dispatchManager.shutdown();
