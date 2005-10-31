@@ -47,6 +47,50 @@ public class MessageHelper {
    public MessageHelper() {
    }
    
+   public static void copyProperties(Message sourceMsg, Message destMsg) throws JMSException {
+      if (sourceMsg == null)
+         throw new XBException("internal", "Convert: The passed 'sourceMsg' attribute is null.");
+      if (destMsg == null)
+         throw new XBException("internal", "Convert: The passed 'destMsg' attribute is null.");
+      if (sourceMsg instanceof XBMessage)
+         ((XBMessage)sourceMsg).giveFullAccess();
+      if (destMsg instanceof XBMessage)
+         ((XBMessage)destMsg).giveFullAccess();
+      try {
+         // first strip all qos properties which are specific
+         Destination dest = sourceMsg.getJMSDestination();
+         if (dest != null)
+            destMsg.setJMSDestination(dest);
+         String corrId = sourceMsg.getJMSCorrelationID();
+         if (corrId != null)
+            destMsg.setJMSCorrelationID(corrId);
+         int deliveryMode = sourceMsg.getJMSDeliveryMode();
+         destMsg.setJMSDeliveryMode(deliveryMode);
+         long expiration = sourceMsg.getJMSExpiration();
+         if (expiration > -1)
+            destMsg.setJMSExpiration(expiration);
+         int prio = sourceMsg.getJMSPriority();
+         if (prio > -1)
+            destMsg.setJMSPriority(prio);
+         String mimeType = sourceMsg.getJMSType(); // is this correct ?
+         if (mimeType != null)
+            destMsg.setJMSType(mimeType);
+
+         Enumeration eNum = sourceMsg.getPropertyNames();
+         while (eNum.hasMoreElements()) {
+            String propKey = (String)eNum.nextElement();
+            Object obj = sourceMsg.getObjectProperty(propKey);
+            destMsg.setObjectProperty(propKey, obj);
+         }
+      }
+      finally {
+         if (sourceMsg instanceof XBMessage)
+            ((XBMessage)sourceMsg).resetAccess();
+         if (destMsg instanceof XBMessage)
+            ((XBMessage)destMsg).resetAccess();
+      }
+   }
+   
    public static MsgUnit convert(Global global, Message msg) throws JMSException, XmlBlasterException, IOException {
       if (global == null)
          throw new XBException("internal", "Convert: The passed 'global' attribute is null.");

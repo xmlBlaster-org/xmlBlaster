@@ -325,20 +325,14 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
    }
 
    public void writeBytes(byte[] value) throws JMSException {
-      setterCheck("writeBytes");
-      if (value == null) throw new NullPointerException(ME + ".writeBytes");
-      try {
-         this.os.write(value);
-      }
-      catch (IOException ex) {
-         throw new JMSException(ME + ".writeBytes: " + ex.getMessage(), ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      writeBytes(value, 0, value.length);
    }
 
    public void writeBytes(byte[] value, int offset, int length)
       throws JMSException {
       setterCheck("writeBytes");
-      if (value == null) throw new NullPointerException(ME + ".writeBytes");
+      if (value == null) 
+         throw new NullPointerException(ME + ".writeBytes");
       try {
          this.os.write(value, offset, length);
       }
@@ -349,7 +343,8 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
 
    public void writeObject(Object value) throws JMSException {
       setterCheck("writeObject");
-      if (value == null) throw new NullPointerException(ME + ".writeObject");
+      if (value == null) 
+         throw new NullPointerException(ME + ".writeObject");
       try {
          ObjectOutputStream oo = new ObjectOutputStream(this.os);
          oo.writeObject(value);

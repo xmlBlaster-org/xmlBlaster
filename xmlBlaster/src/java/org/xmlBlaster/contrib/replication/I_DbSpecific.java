@@ -148,5 +148,17 @@ public interface I_DbSpecific extends I_ContribPlugin {
    StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
  
    void initiateUpdate(String topic, String destination, String slaveName) throws Exception;
+ 
+   /**
+    * This is the intial command which is invoked on the OS. It is basically used for the
+    * import and export of the DB. Could also be used for other operations on the OS.
+    * It is a helper method.
+    * 
+    * @param argument the argument to execute. It is normally the absolute file name to be
+    * exported/imported.
+    * 
+    * @throws Exception
+    */
+   void initialCommand(String argument) throws Exception;
    
 }

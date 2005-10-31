@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Enumeration;
 import javax.jms.BytesMessage;
@@ -54,32 +53,32 @@ public class XBStreamingMessage extends XBTextMessage {
          bufSize = getIntProperty(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE);
       if (bufSize > this.maxBufSize || bufSize == 0)
          bufSize = this.maxBufSize;
-      byte[] buf = null; // new byte[bufSize];
-      long count = 0;
+      byte[] buf = new byte[bufSize];
+      long count = 0L;
       try {
          while (true) {
-            int available = this.in.available();
-            if (available >= bufSize)
-               available = bufSize;
-            else
-               available++; // we increment by one to see if it is an eof
-            
-            buf = new byte[available];
-            int length = this.in.read(buf);
-            if (length != 0) {
-               // must pass null since otherwise you get a non-writeable ex.
-               BytesMessage chunk = this.session.createBytesMessage();
-               
-               chunk.writeBytes(buf);
-               if (length < available)
-                  chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
-               chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
-               chunk.writeBytes(buf, 0, length);
-               producer.send(dest, chunk);
-               count++;
-               if (length < available)
-                  return;
+            int offset = 0;
+            int remainingLength = bufSize;
+            int lengthRead = 0;
+            while ((lengthRead = in.read(buf, offset, remainingLength)) != -1) {
+               remainingLength -= lengthRead;
+               offset += lengthRead;
+               if (remainingLength == 0) 
+                  break;
             }
+            int length = offset;
+            // must pass null since otherwise you get a non-writeable ex.
+            BytesMessage chunk = this.session.createBytesMessage();
+            MessageHelper.copyProperties(this, chunk);
+            
+            chunk.writeBytes(buf, 0, length);
+            if (length < bufSize)
+               chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
+            chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
+            producer.send(dest, chunk);
+            count++;
+            if (length < bufSize)
+               return;
          }            
       }
       catch (Exception ex) {

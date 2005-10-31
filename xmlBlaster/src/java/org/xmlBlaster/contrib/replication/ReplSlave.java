@@ -24,6 +24,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.queue.I_Queue;
 
 
 /**
@@ -143,6 +144,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       SubscribeQos subQos = new SubscribeQos(this.global);
       subQos.setMultiSubscribe(false);
       subQos.setWantInitialUpdate(false);
+      subQos.setPersistent(true);
       session.subscribe(this.dataTopic, subQos.toXml());
       synchronized(this) {
          this.status = STATUS_INITIAL;
@@ -228,7 +230,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    /**
     * FIXME TODO HERE
     */
-   public synchronized ArrayList check(ArrayList pushEntries) throws Exception {
+   public synchronized ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception {
       if (this.status == STATUS_INITIAL)
          return new ArrayList();
       
@@ -241,14 +243,22 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
          if (replKey < 0L) {
-            log.severe("the message unit '" + msgUnit.toXml() + "' has no '" + ReplicationConstants.REPL_KEY_ATTR + "' defined. Let i through anyway. Check out what it is: " + msgUnit.toXml());
+            log.severe("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
             ret.add(entry);
             continue;
          }
          log.fine("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
-         if (replKey > this.maxReplKey) {
+         if (replKey >= this.minReplKey) {
             ret.add(entry);
-            this.status = STATUS_NORMAL;
+            if (replKey > this.maxReplKey) {
+               log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");
+               this.status = STATUS_NORMAL;
+            }
+         }
+         else {
+            log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "'");
+            queue.removeRandom(entry);
+            
          }
       }
       return ret;

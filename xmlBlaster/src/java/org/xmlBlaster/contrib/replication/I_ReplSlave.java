@@ -8,6 +8,7 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.util.queue.I_Queue;
 
 /**
  * I_ReplSlave
@@ -53,7 +54,7 @@ public interface I_ReplSlave {
    void reactivateDestination(long minReplKey, long maxReplKey) throws Exception;
    
 
-   ArrayList check(ArrayList pushEntries) throws Exception;
+   ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception;
 
    
    void shutdown();

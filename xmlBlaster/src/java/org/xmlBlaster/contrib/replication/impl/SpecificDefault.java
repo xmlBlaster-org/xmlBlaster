@@ -98,7 +98,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
 
    protected String replPrefix = "repl_";
    
-   private String intialCmd;
+   private String initialCmd;
 
    private String initialCmdPath;
  
@@ -407,7 +407,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
       
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
-      this.intialCmd = this.info.get("replication.initialCmd", null);
+      this.initialCmd = this.info.get("replication.initialCmd", null);
       
    }
 
@@ -804,7 +804,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       Connection conn = null;
       String filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
       String completeFilename = this.initialCmdPath + "/" + filename;
-      String cmd = this.intialCmd + " " + completeFilename;
       int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       try {
          conn = this.dbPool.reserve();
@@ -813,11 +812,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          long minKey = this.incrementReplKey(conn);
          // the result must be sent as a high prio message to the real
          // destination
-         this.osExecute(cmd);
+         initialCommand(completeFilename);
          long maxKey = this.incrementReplKey(conn); 
          conn.commit();
 
-         sendInitialFile(topic, this.initialCmdPath, filename);
+         sendInitialFile(topic, this.initialCmdPath, filename, minKey);
          
          HashMap attrs = new HashMap();
          attrs.put("_destination", destination);
@@ -862,7 +861,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String topic, String path, String shortFilename)throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String topic, String path, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
       // now read the file which has been generated
       String filename = null;
       if (path != null)
@@ -878,7 +877,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
       XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
-      msg.setStringProperty("_filename", filename);
+      msg.setStringProperty("_filename", shortFilename);
+      msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
+      msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
       msg.setInputStream(fis);
       producer.send(msg);
       if (file.exists()) { 
@@ -956,7 +957,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
    }
 
-   
-   
-   
+   public final void initialCommand(String completeFilename) throws Exception {
+      if (this.initialCmd == null)
+         log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
+      else {
+         String cmd = this.initialCmd + " " + completeFilename;
+         this.osExecute(cmd);
+      }
+   }
+
 }

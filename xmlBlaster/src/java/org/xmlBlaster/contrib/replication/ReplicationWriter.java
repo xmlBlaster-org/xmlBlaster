@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -379,12 +380,24 @@ private final static String ME = "ReplicationWriter";
     * This is invoked for dump files
     */
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      String filename = (String)attrMap.get("_filename");
-      if (filename == null)
-         filename = "(null)";
-      log.info("'" + topic + "' dumping file '" + filename + "' on '" + this.importLocation + "'");  
+      ClientProperty prop = (ClientProperty)attrMap.get("_filename");
+      String filename = null;
+      if (prop == null) {
+         log.warning("The property '_filename' has not been found. Will choose an own temporary one");
+         filename = "tmpFilename.dmp";
+      }
+      else 
+         filename = prop.getStringValue();
+      log.info("'" + topic + "' dumping file '" + filename + "' on '" + this.importLocation + "'");
+      // will now write to the file system
       this.callback.update(topic, content, attrMap);
+      // and now perform an import of the DB
+      String completeFilename = this.importLocation + "/" + filename;
+      this.dbSpecific.initialCommand(completeFilename);
+      File fileToDelete = new File(completeFilename);
+      boolean del = fileToDelete.delete();
+      if (!del)
+         log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
    }
-
    
 }

@@ -72,15 +72,12 @@ public class FileWriterCallback implements I_Update {
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
-      if (!file.canWrite())
-         throw new Exception("can not write on file '" + fileName + "' in directory '" + this.directory + "'");
       if (file.exists()) {
          if (file.isDirectory())
             throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it is a directory");
          if (!this.overwrite)
             throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it exists already and the 'overwrite' flag is set to 'false'");
       }
-
       try {
          File lock = null;
          String lockName = null;

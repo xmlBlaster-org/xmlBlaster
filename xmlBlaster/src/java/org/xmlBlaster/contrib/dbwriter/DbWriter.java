@@ -16,6 +16,7 @@ import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * 
@@ -146,8 +147,8 @@ public class DbWriter implements I_Update {
       if (!this.isAlive) {
          throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
       }
-      String cmd = (String)attrMap.get(ReplicationConstants.DUMP_ACTION);
-      if (cmd != null) {
+      ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
+      if (prop != null) {
          this.writer.update(topic, content, attrMap);
       }
       else {

@@ -37,6 +37,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.I_Queue;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -370,20 +371,34 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       return true;
    }
 
-   /* (non-Javadoc)
+
+   /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException {
-      if (pushEntries == null)
-         return null;
+      if (pushEntries != null) {
+         log.warning("got " + pushEntries.size() + " pushEntries. Will return them as is");
+         return pushEntries;
+      }
+
+      // take messages from queue (none blocking) ...
+      I_Queue cbQueue = dispatchManager.getQueue();
+      ArrayList entryList = cbQueue.peekSamePriority(-1, -1L);
+
+      // filter expired entries etc. ...
+      // you should always call this method after taking messages from queue
+      entryList = dispatchManager.prepareMsgsFromQueue(entryList);
+
       I_ReplSlave slave = null;
       synchronized (this.replSlaveMap) {
          slave = (I_ReplSlave)this.replSlaveMap.get(dispatchManager.getSessionName().getRelativeName());
       }
-      if (slave == null)
-         return pushEntries;
+      if (slave == null) {
+         log.warning("could not find a slave for replication client '" + dispatchManager.getSessionName().getRelativeName() + "'");
+         return entryList;
+      }
       try {
-         return slave.check(pushEntries);
+         return slave.check(entryList, cbQueue);
       }
       catch (Exception ex) {
          if (ex instanceof XmlBlasterException)
@@ -392,12 +407,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#initialize(org.xmlBlaster.util.Global, java.lang.String)
     */
    public void initialize(Global glob, String typeVersion) throws XmlBlasterException {
-      // TODO Auto-generated method stub
-      
    }
 
    /**
@@ -426,39 +439,29 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       return "";
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#usage()
     */
    public String usage() {
-      // TODO Auto-generated method stub
-      return null;
+      return "";
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
    public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      // TODO Auto-generated method stub
-      
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
     */
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
-      // TODO Auto-generated method stub
-      
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      // TODO Auto-generated method stub
-      
    }
-   
-   
-   
    
 }

@@ -77,16 +77,22 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
     * @param the XML based ASCII string
     */
    public synchronized DbUpdateInfo readObject(String xmlQos) throws XmlBlasterException {
-      if (xmlQos == null) {
-         xmlQos = "<" + DbUpdateInfo.SQL_TAG + "/>";
+      try {
+         if (xmlQos == null) {
+            xmlQos = "<" + DbUpdateInfo.SQL_TAG + "/>";
+         }
+
+         this.updateRecord = new DbUpdateInfo(this.info);
+
+         if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
+            init(xmlQos);      // use SAX parser to parse it (is slow)
+
+         return this.updateRecord;
       }
-
-      this.updateRecord = new DbUpdateInfo(this.info);
-
-      if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
-         init(xmlQos);      // use SAX parser to parse it (is slow)
-
-      return this.updateRecord;
+      catch (XmlBlasterException ex) {
+         log.error("DbUpdateInfo", " readObject: could not parse string '" + xmlQos + "'");
+         throw ex;
+      }
    }
 
    private final boolean getBoolAttr(Attributes attrs, String key, boolean def) {

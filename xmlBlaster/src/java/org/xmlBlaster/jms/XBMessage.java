@@ -378,15 +378,24 @@ public class XBMessage implements Message {
 
    public void setObjectProperty(String key, Object value)
       throws JMSException {
-      if (value instanceof String) setStringProperty(key, (String)value);
-      if (value instanceof Boolean) setBooleanProperty(key, ((Boolean)value).booleanValue());
-      if (value instanceof Byte) setByteProperty(key, ((Byte)value).byteValue());
-      if (value instanceof Short) setShortProperty(key, ((Short)value).shortValue());
-      if (value instanceof Integer) setIntProperty(key, ((Integer)value).intValue());
-      if (value instanceof Long) setLongProperty(key, ((Long)value).longValue());
-      if (value instanceof Float) setFloatProperty(key, ((Float)value).floatValue());
-      if (value instanceof Double) setDoubleProperty(key, ((Double)value).doubleValue());
-      throw new javax.jms.MessageFormatException(ME + ".setObjectProperty: prop '" + key + "' is of type '" + value.getClass().getName() + "' which is not allowed here", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());       
+      if (value instanceof String) 
+         setStringProperty(key, (String)value);
+      else if (value instanceof Boolean) 
+         setBooleanProperty(key, ((Boolean)value).booleanValue());
+      else if (value instanceof Byte) 
+         setByteProperty(key, ((Byte)value).byteValue());
+      else if (value instanceof Short) 
+         setShortProperty(key, ((Short)value).shortValue());
+      else if (value instanceof Integer) 
+         setIntProperty(key, ((Integer)value).intValue());
+      else if (value instanceof Long) 
+         setLongProperty(key, ((Long)value).longValue());
+      else if (value instanceof Float) 
+         setFloatProperty(key, ((Float)value).floatValue());
+      else if (value instanceof Double) 
+         setDoubleProperty(key, ((Double)value).doubleValue());
+      else
+         throw new javax.jms.MessageFormatException(ME + ".setObjectProperty: prop '" + key + "' is of type '" + value.getClass().getName() + "' which is not allowed here", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());       
    }
 
    public void setShortProperty(String key, short value) throws JMSException {
