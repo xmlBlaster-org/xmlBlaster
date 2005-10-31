@@ -1,4 +1,4 @@
-<?xml version="1.0"?>                                                                       
+<?xml version="1.0"?>
 
 <!-- ===========================================================================
 
@@ -399,6 +399,8 @@ TODO
       <echo message="   c-delete    --> like 'c-clean', but delete shared library and C test clients as well"/>
       <echo message=""/>
       <echo message="   activex     --> Creates a Windows ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
+      <echo message="   contrib     --> Builds all classes found in the org.xmlBlaster.contrib directory into xmlBlasterContrib.jar"/>
+      <echo message="   DbWatcher   --> Builds all classes necessary for the DbWatcher"/>
       <echo message=""/>
       <echo message="   runTests    --> compiles and starts xmlBlaster and runs all JUNIT tests"/>
       <echo message="   report      --> after 'runTests' you can generate a HTML report"/>
@@ -616,6 +618,16 @@ TODO
            includes="xmlBlasterJdk14Logging.properties,org/xmlBlaster/contrib/I_Info*,org/xmlBlaster/contrib/dbwatcher/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compiles the contrib/dbwatcher source directory                     -->
+   <!-- =================================================================== -->
+   <target name="contrib" depends="xmlBlaster" description="Compile complete xmlBlaster contrib directory">
+      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties"/>
+      <jar destfile="${build.dir}/xmlBlasterContrib.jar" basedir="${build.dest}"
+           includes="xmlBlasterJdk14Logging.properties,/xmlBlaster/contrib/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
+      <copy file="${build.dir}/xmlBlasterContrib.jar" tofile="${lib.dir}/xmlBlasterContrib.jar"/>
    </target>
 
    <!-- =================================================================== -->
@@ -1559,6 +1571,7 @@ TODO
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
       <property name="ADD_J2EE" value="false"/>
+      <property name="ADD_CONTRIB" value="false"/>
       <property name="ADD_JMXTOOLS" value="false"/> <!-- To use HTMLAdaptor, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor -->
       <property name="ADD_SNMP" value="false"/>
       <property name="ADD_TINYSQL" value="false"/>
@@ -1623,16 +1636,12 @@ TODO
             <echo message="ADD_XMLRPC=${ADD_XMLRPC}: No XMLRPC support added." />
          </default>
       </switch>
-      <switch value="${ADD_J2EE}">
+      <switch value="${ADD_CONTRIB}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/jaas.jar for JMS support" />
-            <unjar src="${lib.dir}/connector.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/ejb2.0.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jaas.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jaxp.jar" dest="${dist-classes.dir}" />
+            <echo message="Adding ${lib.dir}/xmlBlasterContrib.jar for CONTRIB support" />
+            <echo message="Make sure you have previously built the new contrib package." />
+            <unjar src="${lib.dir}/xmlBlasterContrib.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/javax.jms.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jndi-jdk1_3_1.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/jta-spec1_0_1.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
          </default>
@@ -1641,6 +1650,9 @@ TODO
          <case value="true">
             <echo message="Adding ${lib.dir}/jmxtools.jar for JMX HTMLAdaptor support" />
             <unjar src="${lib.dir}/jmxtools.jar" dest="${dist-classes.dir}" />
+	    <!-- added this since it does not work with JDK1.4 otherwise -->
+            <unjar src="${lib.dir}/jmxremote.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/jmxri.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
          </default>
@@ -3133,7 +3145,7 @@ TODO
     <target name="java-clean" depends="prepare" description="Remove generated Java files">
        <delete dir="${build.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar,xmlBlaster-ear.sar"/>
+          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar,xmlBlaster-ear.sar,xmlBlasterContrib.jar"/>
           <!-- fileset dir="${req.dir}" includes="*.class"/ -->
        </delete>
        <!-- files generated by java cup -->
