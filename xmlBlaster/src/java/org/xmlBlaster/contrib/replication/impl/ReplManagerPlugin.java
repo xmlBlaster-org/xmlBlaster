@@ -97,6 +97,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    
    private static int debugInstanceNum;
    private String instanceName;
+   private long maxSize = 999999L;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -383,11 +384,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
 
       // take messages from queue (none blocking) ...
       I_Queue cbQueue = dispatchManager.getQueue();
-      ArrayList entryList = cbQueue.peekSamePriority(-1, -1L);
+      // ArrayList entryList = cbQueue.peekSamePriority(-1, this.maxSize);
+      ArrayList entryList = cbQueue.peekSamePriority(2, this.maxSize);
+      log.info("handleNextMessages invoked with '" + entryList.size() + " entries");
 
       // filter expired entries etc. ...
       // you should always call this method after taking messages from queue
       entryList = dispatchManager.prepareMsgsFromQueue(entryList);
+      log.info("handleNextMessages after cleaning up with '" + entryList.size() + " entries");
 
       I_ReplSlave slave = null;
       synchronized (this.replSlaveMap) {

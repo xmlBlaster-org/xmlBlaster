@@ -230,25 +230,28 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    /**
     * FIXME TODO HERE
     */
-   public synchronized ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception {
+   public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
+      log.info("check invoked with status '" + getStatus() + "'");
       if (this.status == STATUS_INITIAL)
          return new ArrayList();
       
       if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
-         return pushEntries;
+         return entries;
       
       ArrayList ret = new ArrayList();
-      for (int i=0; i < pushEntries.size(); i++) {
-         ReferenceEntry entry = (ReferenceEntry)pushEntries.get(i);
+      for (int i=0; i < entries.size(); i++) {
+         ReferenceEntry entry = (ReferenceEntry)entries.get(i);
          MsgUnit msgUnit = entry.getMsgUnit();
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+         log.info("check: processing '" + replKey + "'");
          if (replKey < 0L) {
             log.severe("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
             ret.add(entry);
             continue;
          }
-         log.fine("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
+         log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
          if (replKey >= this.minReplKey) {
+            log.info("repl adding the entry");
             ret.add(entry);
             if (replKey > this.maxReplKey) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");

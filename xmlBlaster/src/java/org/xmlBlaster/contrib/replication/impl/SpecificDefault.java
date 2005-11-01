@@ -105,6 +105,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
    protected ReplaceVariable replaceVariable;
 
    protected Replacer replacer;
+
+   private boolean keepDumpFiles;
    
    class Replacer implements I_ReplaceVariable {
 
@@ -408,6 +410,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
       this.initialCmd = this.info.get("replication.initialCmd", null);
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       
    }
 
@@ -882,10 +885,12 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
       msg.setInputStream(fis);
       producer.send(msg);
-      if (file.exists()) { 
-         boolean ret = file.delete();
-         if (!ret)
-            log.warning("could not delete the file '" + filename + "'");
+      if (!this.keepDumpFiles) {
+         if (file.exists()) { 
+            boolean ret = file.delete();
+            if (!ret)
+               log.warning("could not delete the file '" + filename + "'");
+         }
       }
       fis.close();
    }

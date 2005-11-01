@@ -31,6 +31,7 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public class ReplicationWriter implements I_Writer, ReplicationConstants {
@@ -46,6 +47,7 @@ private final static String ME = "ReplicationWriter";
    private DbMetaHelper dbMetaHelper;
    private String importLocation;
    private I_Update callback;
+   private boolean keepDumpFiles;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -97,6 +99,8 @@ private final static String ME = "ReplicationWriter";
       this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      
    }
 
    public void shutdown() throws Exception {
@@ -392,12 +396,31 @@ private final static String ME = "ReplicationWriter";
       // will now write to the file system
       this.callback.update(topic, content, attrMap);
       // and now perform an import of the DB
-      String completeFilename = this.importLocation + "/" + filename;
-      this.dbSpecific.initialCommand(completeFilename);
-      File fileToDelete = new File(completeFilename);
-      boolean del = fileToDelete.delete();
-      if (!del)
-         log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
+      boolean isEof = true;
+      boolean isException = false;
+      prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+      if (prop != null) {
+         prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+         if (prop == null) {
+            isEof = false;
+         }
+         else {
+            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+            if (prop != null)
+               isException = true;
+         }
+      }
+      
+      if (isEof && !isException) {
+         String completeFilename = this.importLocation + "/" + filename;
+         this.dbSpecific.initialCommand(completeFilename);
+         if (!this.keepDumpFiles) {
+            File fileToDelete = new File(completeFilename);
+            boolean del = fileToDelete.delete();
+            if (!del)
+               log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
+         }
+      }
    }
    
 }

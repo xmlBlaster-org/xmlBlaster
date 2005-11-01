@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -69,27 +70,54 @@ public class FileWriterCallback implements I_Update {
             throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
       }
       log.fine("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes");
+
+      boolean isLastMsg = false;
+      String exMsg = null;
+      long chunkCount = 0L;
+      ClientProperty prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+      if (prop != null) {
+         chunkCount = prop.getLongValue();
+         prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+         if (prop != null) {
+            isLastMsg = prop.getBooleanValue();
+            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+            if (prop != null)
+               exMsg = prop.getStringValue();
+         }
+      }
+      
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
       if (file.exists()) {
          if (file.isDirectory())
             throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it is a directory");
-         if (!this.overwrite)
+         if (chunkCount == 0L && !this.overwrite)
             throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it exists already and the 'overwrite' flag is set to 'false'");
       }
       try {
          File lock = null;
          String lockName = null;
-         if (this.lockExtention != null) {
+         if (this.lockExtention != null && chunkCount == 0L) {
             lockName = fileName + this.lockExtention;
             lock = new File(this.directory, lockName);
             lock.createNewFile();
          }
-         FileOutputStream fos = new FileOutputStream(file);
-         fos.write(content);
-         fos.close();
-         if (lock != null) {
+
+         log.info("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes msgNr.='" + chunkCount + "' isLastMsg='" + isLastMsg + "'");
+         
+         if (exMsg == null) {
+            boolean doAppend = !(chunkCount == 0L);
+            FileOutputStream fos = new FileOutputStream(file, doAppend);
+            fos.write(content);
+            fos.close();
+         }
+         else {
+            log.severe("An exception occured '" + exMsg + "' will delete the file and interrupt initial update");
+            file.delete();
+         }
+         
+         if (lock != null && (isLastMsg || exMsg != null)) {
             boolean deleted = lock.delete();
             if (!deleted)
                throw new Exception("can not delete lock file '" + lockName + "' in directory '" + this.directory + "'");

@@ -124,11 +124,11 @@ public class Execute {
 
          this.stdoutThread.stopIt();
          this.stderrThread.stopIt();
-         this.process.destroy();
 
          stdoutThread.join();
          stderrThread.join();
 
+         this.process.destroy();
          this.process = null;
 
          return;
