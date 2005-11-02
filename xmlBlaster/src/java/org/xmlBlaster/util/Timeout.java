@@ -265,12 +265,11 @@ public class Timeout extends Thread
       throws XmlBlasterException
    {
       if (key == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_NULLPOINTER,
             ME + "addTimeoutListener",
             "The timeout handle is null, no timeout refresh done");
       }
-      Timestamp newKey = null;
       Object obj;
       synchronized (map) {
          obj = map.remove(key);
@@ -441,7 +440,7 @@ public class Timeout extends Thread
       {
          Timeout t = new Timeout();
          System.out.println("Timeout constructor done, sleeping 10 sec");
-         try { Thread.currentThread().sleep(10000); } catch (InterruptedException e) {}
+         try { Thread.sleep(10000); } catch (InterruptedException e) {}
       }
       //testWeakReference();
       //testStrongReference();
@@ -458,7 +457,7 @@ public class Timeout extends Thread
             }
          },
          2000L, null);
-      try { Thread.currentThread().sleep(4000L); } catch (InterruptedException e) {}
+      try { Thread.sleep(4000L); } catch (InterruptedException e) {}
       System.err.println("ERROR: Timeout not occurred.");
       System.exit(1);
    }
@@ -478,7 +477,7 @@ public class Timeout extends Thread
 
       System.gc();
       System.out.println("Called gc()"); // NOTE: Without "weakObj = null" and "System.gc()" the test fails
-      try { Thread.currentThread().sleep(8000L); } catch (InterruptedException e) {}
+      try { Thread.sleep(8000L); } catch (InterruptedException e) {}
       System.out.println("SUCCESS: No timeout happened");
       System.exit(0);
    }
