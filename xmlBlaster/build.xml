@@ -484,13 +484,11 @@ TODO
             <property name="DO_FILTERING" value="true" />
          </case>
          <case value="1.3">
-            <property name="JVM.target" value="1.1" />
-            <property name="JVM.source" value="1.3" />
-            <property name="DO_FILTERING" value="false" /> <!-- Does not work with JDK 1.3 (because of ant??) -->
+            <echo message="ERROR: JVM.target=${JVM.target}, JVM.source=${JVM.source} is not supported anymore, please use xmlBlaster 1.0.7"/>
          </case>
          <default>
-            <property name="JVM.target" value="1.1" />
-            <property name="JVM.source" value="1.3" />
+            <property name="JVM.target" value="1.4" />
+            <property name="JVM.source" value="1.4" />
             <property name="DO_FILTERING" value="true" />
          </default>
       </switch>
@@ -670,18 +668,6 @@ TODO
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties" filtering="true"/>
-
-      <switch value="${need.JDK.14}">
-         <case value="true"> <!-- compiles/runs with JDK >= 1.4 only -->
-            <echo message="Compiling socket protocol driver to JDK 1.4 or above only"/>
-            <echo message="${src.java.dir}/org/xmlBlaster/protocol/socket/SocketUrl.java.1.4 -> ${build.src}/xmlBlaster/org/xmlBlaster/protocol/socket/SocketUrl.java"/>
-            <copy file="${src.java.dir}/org/xmlBlaster/protocol/socket/SocketUrl.java.1.4"
-                  tofile="${build.src}/xmlBlaster/org/xmlBlaster/protocol/socket/SocketUrl.java" overwrite="true"/>
-         </case>
-         <default> <!-- Supports JDK 1.3 -->
-            <echo message="Compiling socket protocol driver to JDK 1.3 or above"/>
-         </default>
-      </switch>
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
