@@ -1040,7 +1040,7 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <see type="REQ">protocol</see>
    <see type="REQ">client.c.socket</see>
    <see type="REQ">client.cpp.socket</see>
-   <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
+   <see type="API">org.xmlBlaster.protocol.util.xbformat.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
