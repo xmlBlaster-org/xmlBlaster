@@ -17,6 +17,8 @@ package org.xmlBlaster.util.def;
  * </p>
  */
 public class Constants {
+   public static final String UTF8_ENCODING="UTF-8";
+   
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
