@@ -3,7 +3,7 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
-
+ o #13929 Refactor SOCKET protocol classes to reuse code for EMAIL protocol driver
 
 
 Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
