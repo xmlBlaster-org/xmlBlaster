@@ -509,9 +509,9 @@ public class Global implements Cloneable
                         lc.addLogDevice(dev);
                   }catch(XmlBlasterException ex) {
                      if (log != null)
-                        log.error(ME,"initLog(): Error in getting LogDeviceFactory for " + key);
+                        log.error(ME,"initLog(): Error in getting LogDeviceFactory '" + devices[i] + ",1.0' for " + key +  ": " + ex.getMessage());
                      else
-                        System.out.println(ME+".initLog(): Error in getting LogDeviceFactory for " + key);
+                        System.out.println(ME+".initLog(): Error in getting LogDeviceFactory for " + key + ": " + ex.getMessage());
                      continue;
                   }
                   //If we ever reach here, we have some logging device set up
@@ -1978,7 +1978,7 @@ public class Global implements Cloneable
     * @param shortKey the key (in its short form without prefix) of the property
     * @param defaultValue the default value of the property (weakest)
     * @param map the hardcoded properties (strongest)
-    * @param pluginConfig the pluginConfig used 
+    * @param pluginConfig the pluginConfig used, checks the properties from PluginInfo 
     * @return
     */
    public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig) 
@@ -2046,7 +2046,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * 
+    * Checks PluginInfo as well. 
     * @param shortKey
     * @param defaultValue
     * @param map
