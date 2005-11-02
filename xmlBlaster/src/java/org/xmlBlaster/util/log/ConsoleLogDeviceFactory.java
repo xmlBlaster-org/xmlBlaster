@@ -6,9 +6,7 @@ Comment:   A Pluggable LogableDevice factory that returns LogDeviceConsole logge
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.log;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.log.LogableDevice;
