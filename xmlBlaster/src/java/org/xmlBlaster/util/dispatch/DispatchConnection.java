@@ -16,7 +16,7 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.protocol.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 /**
  * Holding all necessary infos to establish a remote connection
@@ -136,6 +136,7 @@ abstract public class DispatchConnection implements I_Timeout
          }
       }
       catch (Throwable throwable) {
+         throwable.printStackTrace();
          XmlBlasterException e = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
                                   new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "", throwable);
          if (log.TRACE) log.trace(ME, e.toString());
