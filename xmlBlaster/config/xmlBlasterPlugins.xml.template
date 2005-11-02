@@ -95,6 +95,17 @@
    </plugin>
 -->
 
+   <!-- A EMAIL POP3 poller instance -->
+<!--
+   <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='2' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='5'/>   
+      <attribute id='mail.pop3.user'>xmlBlaster</attribute>
+      <attribute id='mail.pop3.password'>xmlBlaster</attribute>
+   </plugin>
+-->
+
    <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative.java -->
 <!--
    <plugin id='HelloWorldNative' className='javaclients.HelloWorldNative'>

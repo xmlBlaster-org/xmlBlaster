@@ -84,7 +84,7 @@ CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDrive
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 #CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
+CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster
 #------------------------------------------------------------------------------
 
 
@@ -108,14 +108,8 @@ ClientCbServerProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.soc
 ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
-#------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
-# Adjust if you want to use the EMAIL plugin.
-# See xmlBlaster/demo/javaclients/email/README
-EmailDriver.smtpHost=localhost
-EmailDriver.from=xmlblast@localhost
+# See xmlBlaster/demo/javaclients/email/README:
+ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX
 #------------------------------------------------------------------------------
 
 
