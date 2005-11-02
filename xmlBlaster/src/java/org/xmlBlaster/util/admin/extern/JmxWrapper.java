@@ -148,7 +148,7 @@ public class JmxWrapper
             Object obj = this.mbeanServer.getAttribute(name, "TotalPhysicalMemorySize"); 
             long total = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
             obj = this.mbeanServer.getAttribute(name, "CommittedVirtualMemorySize"); 
-            long committed = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+            //long committed = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
             obj = this.mbeanServer.getAttribute(name, "MaxFileDescriptorCount"); 
             long descriptors = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
 
