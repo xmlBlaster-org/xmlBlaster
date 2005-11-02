@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch;
 
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.protocol.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 /**
  * Collecting data on how many messages / bytes are successfully delivered. 
