@@ -6,28 +6,76 @@
 #AUTHOR: xmlBlaster@marcelruff.info
 #------------------------------------------------------------------------------
 
-Steps to setup email updates from xmlBlaster
+Syntax for POP3 mail polling: "pop3://user:password@host:port/INBOX"
+For example:
+
+     mail.pop3.url=pop3://blue:blue@localhost/INBOX
+
+
+(A) First test your mail server (MTA):
+======================================
+
+1. Start a command line poller for user 'blue':
+
+   java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Client -receivePolling 
+
+2. Send from command line an email:
+
+  java -Dmail.user=blue -Dmail.password=blue org.xmlBlaster.util.protocol.email.SmtpClient -from blue@localhost -to blue@localhost
+
+
+(B) Steps to setup email updates from xmlBlaster
+================================================
 
 1. Configure xmlBlaster.properties
 
-    EmailDriver.smtpHost=mail.provider.com
-    EmailDriver.from=joe@provider.com
+     
+   Mail sending (SMTP):
    
+     mail.user=xmlBlaster
+     mail.password=xmlBlaster
+   
+
    The line
       
-     CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
+     CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster
+     
+   must contain the email plugin.
+   Add other properties (like MTA hostname or port) at the end
+   see usage in SmtpClient.java
 
-   must contain the email plugin
+
+2. Configure xmlBlasterPlugins.xml
+   Add this to have a POP3 poller activated:
+ 
+   <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='2' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='5'/>   
+      <attribute id='mail.pop3.user'>xmlBlaster</attribute>
+      <attribute id='mail.pop3.password'>xmlBlaster</attribute>
+   </plugin>
 
 
-2. Start xmlBlaster:
+3. Start xmlBlaster:
 
    java -jar lib/xmlBlaster.jar
 
 
-3. Subscribe to a message and publish a message
+4. Subscribe to a message and publish a message
    The update is sent by email
 
    java javaclients.email.Demo -email.receiver joe@provider.com
 
 
+(C) Configure a client to reveive messages by email
+===================================================
+
+1. Add to xmlBlaster.properties (client side)
+
+   ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.user=demo,mail.pop3.password=demo
+
+2. Start a demo client
+
+   java javaclients.email.DemoCb -myCallbackEmailAddress demo@localhost -dispatch/callback/protocol EMAIL
+   

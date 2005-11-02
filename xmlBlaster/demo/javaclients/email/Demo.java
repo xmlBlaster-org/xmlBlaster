@@ -12,6 +12,8 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
  * This client connects to xmlBlaster and subscribes to a message. 
  * We then publish the message and receive it asynchronous in the update() method. 
  * Invoke: java Demo
+ * Configure on client side xmlBlaster.properties:
+ * CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost:110/INBOX
  */
 public class Demo
 {
@@ -36,7 +38,7 @@ public class Demo
          con.publish(new MsgUnit("<key oid='EmailDemo'/>", "Hi".getBytes(),
                                      "<qos/>"));
 
-         try { Thread.sleep(1000); } 
+         try { Thread.sleep(1000000); } 
          catch( InterruptedException i) {} // wait a second
 
          con.disconnect(null);
