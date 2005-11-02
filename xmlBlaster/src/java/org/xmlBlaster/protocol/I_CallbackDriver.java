@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 
