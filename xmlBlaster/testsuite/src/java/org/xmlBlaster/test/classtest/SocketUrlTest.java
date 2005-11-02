@@ -4,8 +4,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.protocol.socket.SocketUrl;
-import org.xmlBlaster.protocol.socket.ExecutorBase;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.Address;
 
 import java.io.*;
@@ -67,7 +66,7 @@ public class SocketUrlTest extends TestCase {
 
          {
             SocketUrl s = new SocketUrl(glob, "192.1.1.5");
-            SocketUrl other = new SocketUrl(glob, "192.1.1.5", ExecutorBase.DEFAULT_SERVER_PORT);
+            SocketUrl other = new SocketUrl(glob, "192.1.1.5", SocketUrl.DEFAULT_SERVER_PORT);
             assertTrue("", s.equals(other));
             log.info(ME, "SUCCESS testBasic(): equals=true");
          }
@@ -148,8 +147,8 @@ public class SocketUrlTest extends TestCase {
             String url = "";
             SocketUrl s = new SocketUrl(glob, url);
             assertEquals("", glob.getLocalIP(), s.getHostname());
-            assertEquals("", ExecutorBase.DEFAULT_SERVER_PORT, s.getPort());
-            assertEquals("", "socket://"+glob.getLocalIP()+":"+ExecutorBase.DEFAULT_SERVER_PORT, s.getUrl());
+            assertEquals("", SocketUrl.DEFAULT_SERVER_PORT, s.getPort());
+            assertEquals("", "socket://"+glob.getLocalIP()+":"+SocketUrl.DEFAULT_SERVER_PORT, s.getUrl());
             log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 
@@ -157,8 +156,8 @@ public class SocketUrlTest extends TestCase {
             String url = "127.1.1.1";
             SocketUrl s = new SocketUrl(glob, url);
             assertEquals("", url, s.getHostname());
-            assertEquals("", ExecutorBase.DEFAULT_SERVER_PORT, s.getPort());
-            assertEquals("", "socket://"+url+":"+ExecutorBase.DEFAULT_SERVER_PORT, s.getUrl());
+            assertEquals("", SocketUrl.DEFAULT_SERVER_PORT, s.getPort());
+            assertEquals("", "socket://"+url+":"+SocketUrl.DEFAULT_SERVER_PORT, s.getUrl());
             log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 

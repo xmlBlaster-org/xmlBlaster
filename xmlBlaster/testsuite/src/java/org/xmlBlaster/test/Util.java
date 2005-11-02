@@ -74,7 +74,7 @@ public class Util
          "-bootstrapPort",
          "" + Constants.XMLBLASTER_PORT,
          "-dispatch/connection/plugin/socket/port",
-         "" + org.xmlBlaster.protocol.socket.ExecutorBase.DEFAULT_SERVER_PORT,
+         "" + org.xmlBlaster.util.protocol.socket.SocketUrl.DEFAULT_SERVER_PORT,
          "-dispatch/connection/plugin/rmi/registryPort",
          "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
          "-dispatch/connection/plugin/xmlrpc/port",
