@@ -12,14 +12,15 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.protocol.socket.Parser;
-import org.xmlBlaster.protocol.socket.Executor;
-import org.xmlBlaster.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.xbformat.Parser;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
-import java.net.DatagramSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.io.IOException;
 
 
@@ -29,7 +30,7 @@ import java.io.IOException;
  * One instance of this for each client, as a separate thread blocking
  * on the socket input stream waiting for messages from xmlBlaster. 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
- * @see org.xmlBlaster.protocol.socket.Parser
+ * @see org.xmlBlaster.util.xbformat.Parser
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
@@ -43,6 +44,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    private SocketUrl socketUrl;
    private CallbackAddress callbackAddress;
    private PluginInfo pluginInfo;
+   /** The socket connection to/from one client */
+   protected Socket sock;
 
    /** Stop the thread */
    boolean running = false;
@@ -99,9 +102,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          
          this.sockCon.registerCbReceiver(this);
 
-         java.net.Socket sock = null;
          try {
-            sock = this.sockCon.getSocket();
+            this.sock = this.sockCon.getSocket();
          }
          catch (XmlBlasterException e) {
             log.trace(ME, "There is no client socket connection which i could use: " + e.getMessage());
@@ -110,11 +112,31 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
 
          try { // Executor
-            DatagramSocket sockUDP = null; // SOCKET_TCP: TODO for UDP
-            super.initialize(this.sockCon.getGlobal(), this.callbackAddress, sock, null, sockUDP);
+            super.initialize(this.sockCon.getGlobal(), this.callbackAddress, this.sock.getInputStream(), this.sock.getOutputStream());
          }
          catch (IOException e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Creation of SOCKET callback handler failed", e);
+         }
+
+         try {
+            // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
+            // But we always block on input read() to receive update() messages.
+            setSoTimeout(this.callbackAddress.getEnv("SoTimeout", 0L).getValue()); // switch off
+            this.sock.setSoTimeout((int)this.soTimeout);
+            if (log.TRACE) log.trace(ME, this.callbackAddress.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
+   
+            setSoLingerTimeout(this.callbackAddress.getEnv("SoLingerTimeout", soLingerTimeout).getValue());
+            if (log.TRACE) log.trace(ME, this.callbackAddress.getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
+            if (getSoLingerTimeout() >= 0L) {
+               // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
+               // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
+               this.sock.setSoLinger(true, (int)this.soLingerTimeout);
+            }
+            else
+               this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
+         }
+         catch (SocketException e) {
+            log.error(ME, "Failed to set socket attributes, we ignore it and continue: " + e.toString());
          }
 
          this.socketUrl = this.sockCon.getLocalSocketUrl();
@@ -134,6 +156,14 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          }
          t.start();
       }
+   }
+
+   /*
+    * TODO: Is this needed anymore?
+    * @return
+    */
+   protected boolean hasConnection() {
+      return (this.sock != null);
    }
 
    /**
@@ -186,7 +216,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
                t.start();
             }
             else {                  
-               receive(receiver, SOCKET_TCP);    // Parse the message and invoke actions in same thread
+               receive(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
             }
             if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
                if (log.TRACE) log.trace(ME, "Terminating socket callback thread because of disconnect response");

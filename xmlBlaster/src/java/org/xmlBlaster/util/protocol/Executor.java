@@ -4,31 +4,28 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream.
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.protocol.socket;
+package org.xmlBlaster.util.protocol;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.Parser;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.protocol.I_ProgressListener;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
-import java.net.Socket;
-import java.net.DatagramSocket;
-import java.net.DatagramPacket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.InterruptedIOException;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,23 +43,17 @@ import java.util.Collections;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public abstract class Executor implements ExecutorBase
+public abstract class Executor
 {
    private String ME = "SocketExecutor";
    protected Global glob;
    private LogChannel log;
-   /** The socket connection to/from one client */
-   protected Socket sock;
-   /** The socket connection to/from one client */
-   protected DatagramSocket sockUDP;
    /** Reading from socket */
    protected InputStream iStream;
    /** Writing to socket */
    protected OutputStream oStream;
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
-   /** The unique client sessionId */
-   protected String sessionId = null;
    /** The client login name */
    protected String loginName = "";
    /** How long to block on remote call waiting on response */
@@ -72,15 +63,11 @@ public abstract class Executor implements ExecutorBase
    /** How long to block the socket on close with remaining data */
    protected long soLingerTimeout = 0; // Constants.MINUTE_IN_MILLIS -> this can lead to blocking close(), so we choose '0'
    /** This is the client side */
-   protected I_CallbackExtended cbClient = null;
+   protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
-   protected I_XmlBlaster xmlBlasterImpl = null;
-   /** To avoid creating a new dummy on each request, we do it here */
-   private final String DUMMY_OBJECT = "";
+   protected I_XmlBlaster xmlBlasterImpl;
    private final Set latchSet = new HashSet();
    private AddressBase addressConfig;
-   /** Holds remote "host:port" for logging */
-   protected String remoteSocketStr;
    /** A listener may register to receive send/receive progress informations */
    protected I_ProgressListener progressListener;
 
@@ -91,6 +78,10 @@ public abstract class Executor implements ExecutorBase
     * The key is the String requestId, the value the listener thread I_ResponseListener
     */
    protected final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
+   /** Used for execute() */
+   public static final boolean ONEWAY = false;
+   /** Used for execute() */
+   public static final boolean WAIT_ON_RESPONSE = true;
 
    public Executor() {
    }
@@ -103,55 +94,35 @@ public abstract class Executor implements ExecutorBase
     * This executor has mixed client and server specific code for two reasons:<br />
     * - Possibly we can use the same socket between two xmlBlaster server (load balance)<br />
     * - Everything is together<br />
-    * @param sock The open socket to/from a specific client
-    * @param xmlBlasterImpl Handle for the server implementation, null on client side
+    * @param iStream The reading stream (for example a socket InputStream)
+    * @param oStream The writing stream (for example a socket OutputStream)
     */
-   protected void initialize(Global glob, AddressBase addressConfig, Socket sock, I_XmlBlaster xmlBlasterImpl, DatagramSocket sockUDP) throws IOException {
+   protected void initialize(Global glob, AddressBase addressConfig, InputStream iStream, OutputStream oStream) throws IOException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
       this.addressConfig = addressConfig;
-      this.sock = sock;
-      this.sockUDP = sockUDP;
-      this.xmlBlasterImpl = xmlBlasterImpl;
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          log.info(ME, "Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
-         this.iStream = new ZFlushInputStream(sock.getInputStream());
-         this.oStream =  new ZFlushOutputStream(sock.getOutputStream());
+         this.iStream = new ZFlushInputStream(iStream);
+         this.oStream =  new ZFlushOutputStream(oStream);
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
          log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + this.addressConfig.getMinSize() + " bytes");
-         this.iStream = new ZBlockInputStream(sock.getInputStream());
-         this.oStream = new ZBlockOutputStream(sock.getOutputStream(), (int)this.addressConfig.getMinSize());
+         this.iStream = new ZBlockInputStream(iStream);
+         this.oStream = new ZBlockOutputStream(oStream, (int)this.addressConfig.getMinSize());
       }
       else {
-         this.iStream = sock.getInputStream();
-         this.oStream = sock.getOutputStream();
+         this.iStream = iStream;
+         this.oStream = oStream;
       }
 
-      this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
       setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
       // the responseWaitTime is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
       //        and with "jacorb.client.pending_reply_timeout"
-
-      // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
-      // But we always block on input read() to receive update() messages.
-      setSoTimeout(addressConfig.getEnv("SoTimeout", 0L).getValue()); // switch off
-      this.sock.setSoTimeout((int)this.soTimeout);
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
-
-      setSoLingerTimeout(addressConfig.getEnv("SoLingerTimeout", soLingerTimeout).getValue());
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
-      if (getSoLingerTimeout() >= 0L) {
-         // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
-         // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
-         this.sock.setSoLinger(true, (int)this.soLingerTimeout);
-      }
-      else
-         this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
@@ -215,6 +186,10 @@ public abstract class Executor implements ExecutorBase
       this.cbClient = cbClient;
    }
 
+   public final void setXmlBlasterCore(I_XmlBlaster xmlBlaster) {
+      this.xmlBlasterImpl = xmlBlaster;
+   }
+
    public final I_CallbackExtended getCbClient() {
       return this.cbClient;
    }
@@ -229,15 +204,6 @@ public abstract class Executor implements ExecutorBase
 
    public void finalize() {
       if (log.TRACE) log.trace(ME, "Garbage Collected");
-   }
-
-   public Socket getSocket() throws XmlBlasterException
-   {
-      if (this.sock == null) {
-         if (log.TRACE) log.trace(ME, "No socket connection available.");
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "No plain socket connection available.");
-      }
-      return this.sock;
    }
 
    /**
@@ -448,7 +414,15 @@ public abstract class Executor implements ExecutorBase
 
       return true;
    }
-
+   
+   /*
+    * Overwrite on demand. 
+    * TODO: Is this needed anymore?
+    * @return
+    */
+   protected boolean hasConnection() {
+      return true;
+   }
 
    /**
     * Send a message and block until the response arrives.
@@ -472,7 +446,7 @@ public abstract class Executor implements ExecutorBase
       if (expectingResponse) {
          startSignal = new Latch(); // defaults to false
          synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
-         if (sock == null) return null;
+         if (!hasConnection()) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void responseEvent(String reqId, Object responseObj) {
                if (log.TRACE) log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
@@ -488,14 +462,14 @@ public abstract class Executor implements ExecutorBase
       byte[] rawMsg = parser.createRawMsg();
       if (log.DUMP) log.dump(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
       try {
-         sendMessage(rawMsg, udp);
+         sendMessage(rawMsg, parser.getRequestId(), parser.getMethodName(), udp);
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (Throwable e) {
          if (startSignal != null) {
             synchronized (latchSet) { latchSet.remove(startSignal); }
          }
-         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
+         String str = "Socket blocked for " + getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
          if (e instanceof XmlBlasterException) {
             if (log.TRACE) log.trace(ME, str + ": " + e.toString());
             throw (XmlBlasterException)e;
@@ -588,7 +562,7 @@ public abstract class Executor implements ExecutorBase
          returner.addMessage((MsgUnitRaw)response);
       else
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
-      sendMessage(returner.createRawMsg(), udp);
+      sendMessage(returner.createRawMsg(), receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
@@ -604,31 +578,24 @@ public abstract class Executor implements ExecutorBase
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
-      sendMessage(returner.createRawMsg(), udp);
+      sendMessage(returner.createRawMsg(), receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
 
    /**
     * Flush the data to the socket. 
+    * Overwrite this in your derived class to send UDP 
     */
-   void sendMessage(byte[] msg, boolean udp) throws IOException {
+   protected void sendMessage(byte[] msg, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
       I_ProgressListener listener = this.progressListener;
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);
       }
-      if (udp && this.sockUDP!=null) {
-         DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
-         //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
-         sockUDP.send(dp);
-         if (log.TRACE) log.trace(ME, "UDP datagram is send");
-      }
-      else {
-         synchronized (oStream) {
-            oStream.write(msg);
-            oStream.flush();
-            if (log.TRACE) log.trace(ME, "TCP data is send");
-         }
+      synchronized (oStream) {
+         oStream.write(msg);
+         oStream.flush();
+         if (log.TRACE) log.trace(ME, "TCP data is send");
       }
       if (listener != null) {
          listener.progressWrite("", msg.length, msg.length);

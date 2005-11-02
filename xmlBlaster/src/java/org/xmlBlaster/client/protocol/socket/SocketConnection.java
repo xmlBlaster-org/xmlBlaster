@@ -9,8 +9,6 @@ package org.xmlBlaster.client.protocol.socket;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -20,16 +18,16 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.protocol.socket.ExecutorBase;
+import org.xmlBlaster.util.xbformat.Parser;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
-import org.xmlBlaster.protocol.socket.Parser;
-import org.xmlBlaster.protocol.socket.SocketUrl;
 
 
 /**
@@ -47,7 +45,7 @@ import org.xmlBlaster.protocol.socket.SocketUrl;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
+public class SocketConnection implements I_XmlBlasterConnection
 {
    private String ME = "SocketConnection";
    private Global glob;
@@ -307,7 +305,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
          parser.addQos(connectQos);
-         return (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         return (String)getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -344,7 +342,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
-         getCbReceiver().execute(parser, WAIT_ON_RESPONSE/*ONEWAY*/, SOCKET_TCP);
+         getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          return true;
       }
@@ -437,7 +435,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
@@ -460,7 +458,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
       }
       catch (IOException e1) {
@@ -480,7 +478,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // return the QoS
       }
@@ -506,7 +504,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
@@ -531,7 +529,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
-         getCbReceiver().execute(parser, ONEWAY, this.useUdpForOneway);
+         getCbReceiver().execute(parser, Executor.ONEWAY, this.useUdpForOneway);
       }
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
@@ -557,7 +555,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
@@ -578,7 +576,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (MsgUnitRaw[])response;
       }
       catch (IOException e1) {
@@ -609,7 +607,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;
       }
       catch (IOException e1) {
@@ -664,7 +662,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       text += "SocketConnection 'SOCKET' options:\n";
       text += "   -dispatch/connection/plugin/socket/port\n";
       text += "                       Specify a port number where xmlBlaster SOCKET server listens.\n";
-      text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
+      text += "                       Default is port "+SocketUrl.DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
       text += "   -dispatch/connection/plugin/socket/hostname\n";
       text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";

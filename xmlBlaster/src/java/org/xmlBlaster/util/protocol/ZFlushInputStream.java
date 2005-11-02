@@ -1,4 +1,4 @@
-package org.xmlBlaster.protocol.socket;
+package org.xmlBlaster.util.protocol;
 
 import java.io.IOException;
 

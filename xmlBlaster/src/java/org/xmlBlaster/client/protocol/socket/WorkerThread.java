@@ -8,8 +8,8 @@ package org.xmlBlaster.client.protocol.socket;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.socket.Parser;
-import org.xmlBlaster.protocol.socket.ExecutorBase;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.xbformat.Parser;
 
 import java.io.IOException;
 
@@ -22,9 +22,6 @@ public class WorkerThread extends Thread
 {
    private final String ME;
    
-   /** The global handle */
-   private final Global glob;
-
    private final LogChannel log;
 
    /** Contains the received message */
@@ -38,7 +35,6 @@ public class WorkerThread extends Thread
     */
    public WorkerThread(Global glob, SocketCallbackImpl cbHandler, Parser receiver) {
       super("XmlBlaster."+cbHandler.getType()+".cbWorkerThread");
-      this.glob = glob;
       this.log = glob.getLog("socket");
       this.cbHandler = cbHandler;
       this.ME = "WorkerThread-" + cbHandler.getSocketConnection().getLoginName();
@@ -51,7 +47,7 @@ public class WorkerThread extends Thread
    public void run() {
       try {
          if (log.TRACE) log.trace(ME, "Starting worker thread, invoking client code with received message");
-         cbHandler.receive(this.parser, ExecutorBase.SOCKET_TCP);  // Parse the message and invoke callback to client code
+         cbHandler.receive(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
          if (log.TRACE) log.trace(ME, "Worker thread done");
       }
       catch (XmlBlasterException e) {

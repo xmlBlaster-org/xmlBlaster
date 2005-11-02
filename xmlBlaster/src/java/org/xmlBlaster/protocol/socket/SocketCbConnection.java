@@ -9,9 +9,6 @@ package org.xmlBlaster.protocol.socket;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.DatagramSocket;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -20,10 +17,11 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.protocol.socket.Executor;
+import org.xmlBlaster.util.xbformat.Parser;
 
-import org.xmlBlaster.protocol.socket.Parser;
 
 
 /**
@@ -44,10 +42,6 @@ public class SocketCbConnection extends Executor
    private SocketUrl socketUrl;
    /** The socket connection to one client */
    protected Socket sock;
-   /** Reading from socket */
-   protected InputStream iStream;
-   /** Writing to socket */
-   protected OutputStream oStream;
    /** The unique client cbSessionId */
    protected String cbSessionId;
    protected CallbackAddress clientAddress;
@@ -109,12 +103,8 @@ public class SocketCbConnection extends Executor
          //this.localHostname = this.sock.getLocalAddress().getHostAddress();
          log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() + "', callback address is " + getLocalAddress());
 
-         this.oStream = this.sock.getOutputStream();
-         this.iStream = this.sock.getInputStream();
-
          // initialize base class Executor
-         DatagramSocket sockUDP = null;
-         initialize(glob, this.clientAddress, this.sock, null, sockUDP);
+         initialize(glob, this.clientAddress, this.sock.getInputStream(), this.sock.getOutputStream());
       }
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server host is unknown, '-dispatch/callback/plugin/socket/hostname=<ip>': " + e.toString();
@@ -196,15 +186,15 @@ public class SocketCbConnection extends Executor
       return this.sock != null;
    }
 
-   /**
+   /*
     * Updating multiple messages in one sweep, callback to client. This method is 
     * invoked when the callback socket is different from  
     * <p />
     * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
     * @return null if oneway
     * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
+    *
+   private final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
       if (!isConnected())
@@ -218,12 +208,12 @@ public class SocketCbConnection extends Executor
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
          parser.addMessage(msgArr);
          if (expectingResponse) {
-            Object response = execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+            Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            execute(parser, ONEWAY, SOCKET_TCP); // TODO: SOCKET_UDP
+            execute(parser, Executor.ONEWAY, SocketUrl.SOCKET_TCP); // TODO: SOCKET_UDP
             return null;
          }
       }
@@ -244,6 +234,7 @@ public class SocketCbConnection extends Executor
                "SOCKET callback of " + msgArr.length + " messages failed", e1);
       }
    }
+*/
 
    /**
     * Check the clients cb server.
@@ -257,7 +248,7 @@ public class SocketCbConnection extends Executor
          String cbSessionId = "";
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId);
          parser.addMessage(qos);
-         Object response = execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
+         Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;
       }
       catch (Throwable e) {

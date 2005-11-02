@@ -17,6 +17,8 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.xbformat.Parser;
 
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
@@ -59,7 +61,7 @@ import java.io.InputStream;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:bpoka@axelero.hu">Balázs Póka</a> (SSL embedding, zlib compression)
  *
- * @see org.xmlBlaster.protocol.socket.Parser
+ * @see org.xmlBlaster.util.xbformat.Parser
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketDriver extends Thread implements I_Driver /* which extends I_Plugin */
@@ -78,7 +80,6 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    private ServerSocket listen = null;
    /** The URL which clients need to use to access this server, e.g. "server.mars.univers:6701" */
    private DatagramSocket socketUDP = null;
-   private String serverUrl = null;
    /** State of server */
    private Thread listenerUDP;
 
@@ -458,7 +459,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          handleClientSet.remove(h);
       }
       synchronized(handleClientMap) {
-         handleClientMap.remove(h.sessionId);
+         handleClientMap.remove(h.getSecretSessionId());
       }
    }
 

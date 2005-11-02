@@ -10,8 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.protocol.I_ProgressListener;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection; // The XmlRpcException to XmlBlasterException converter
 

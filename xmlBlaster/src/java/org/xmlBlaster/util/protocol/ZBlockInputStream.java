@@ -1,8 +1,9 @@
-package org.xmlBlaster.protocol.socket;
+package org.xmlBlaster.util.protocol;
 
 import java.io.IOException;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
+
 
 /**
 * @author Patrice Espié

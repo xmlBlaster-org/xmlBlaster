@@ -14,9 +14,14 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.Parser;
 import org.xmlBlaster.util.MsgUnitRaw;
 
+import java.net.DatagramPacket;
 import java.net.Socket;
 import java.net.DatagramSocket;
 import java.io.IOException;
@@ -42,20 +47,48 @@ public class HandleClient extends Executor implements Runnable
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
    private CallbackSocketDriver callback;
+   /** The socket connection to/from one client */
+   protected DatagramSocket sockUDP;
    private boolean running = true;
    private String cbKey = null; // Remember the key for the Global map
-
+   /** Holds remote "host:port" for logging */
+   protected String remoteSocketStr;
+   /** The socket connection to/from one client */
+   protected Socket sock;
+   /** The unique client sessionId */
+   public String secretSessionId = null;
 
    /**
     * Creates an instance which serves exactly one client.
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock, DatagramSocket sockUDP) throws IOException {
-      super.initialize(glob, driver.getAddressServer(), sock, driver.getXmlBlaster(), sockUDP);
+      super.initialize(glob, driver.getAddressServer(), sock.getInputStream(), sock.getOutputStream());
+      super.setXmlBlasterCore(driver.getXmlBlaster());
       this.log = glob.getLog("socket");
       this.driver = driver;
+      this.sock = sock;
+      this.sockUDP = sockUDP;
       this.authenticate = driver.getAuthenticate();
       this.ME = driver.getType()+"-HandleClient";
 
+      this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
+      
+      // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
+      // But we always block on input read() to receive update() messages.
+      setSoTimeout(driver.getAddressServer().getEnv("SoTimeout", 0L).getValue()); // switch off
+      this.sock.setSoTimeout((int)this.soTimeout);
+      if (log.TRACE) log.trace(ME, this.driver.getAddressServer().getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
+
+      setSoLingerTimeout(driver.getAddressServer().getEnv("SoLingerTimeout", soLingerTimeout).getValue());
+      if (log.TRACE) log.trace(ME, this.driver.getAddressServer().getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
+      if (getSoLingerTimeout() >= 0L) {
+         // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
+         // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
+         this.sock.setSoLinger(true, (int)this.soLingerTimeout);
+      }
+      else
+         this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
+      
       Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
@@ -70,6 +103,14 @@ public class HandleClient extends Executor implements Runnable
 
    synchronized public boolean isShutdown() {
       return (this.running == false);
+   }
+
+   /*
+    * TODO: Is this needed anymore?
+    * @return
+    */
+   protected boolean hasConnection() {
+      return (this.sock != null);
    }
 
    /**
@@ -87,11 +128,11 @@ public class HandleClient extends Executor implements Runnable
 
          driver.removeClient(this);
 
-         if (sessionId != null) {
-            String tmp = sessionId;
-            sessionId = null;
+         if (this.secretSessionId != null) {
+            String tmp = this.secretSessionId;
+            this.secretSessionId = null;
             try { // check first if session is in shutdown process already (avoid recursive disconnect()):
-               if (authenticate.sessionExists(sessionId))
+               if (authenticate.sessionExists(tmp))
                   authenticate.disconnect(driver.getAddressServer(), tmp, "<qos/>");
             }
             catch(Throwable e) {
@@ -144,14 +185,14 @@ public class HandleClient extends Executor implements Runnable
          if (expectingResponse) {
             Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
             parser.addMessage(msgArr);
-            Object response = execute(parser, WAIT_ON_RESPONSE, false);
+            Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
             Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
             parser.addMessage(msgArr);
-            execute(parser, ONEWAY, this.driver.useUdpForOneway());
+            execute(parser, Executor.ONEWAY, this.driver.useUdpForOneway());
             return null;
          }
       }
@@ -193,7 +234,7 @@ public class HandleClient extends Executor implements Runnable
          String cbSessionId = "";
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
          parser.addMessage(qos);
-         Object response = execute(parser, WAIT_ON_RESPONSE, false);
+         Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
          if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
@@ -223,7 +264,7 @@ public class HandleClient extends Executor implements Runnable
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                   cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
-                  SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostAddress(), super.sock.getPort());
+                  SocketUrl remoteUrl = new SocketUrl(glob, this.sock.getInetAddress().getHostAddress(), this.sock.getPort());
                   if (driver.getAddressServer() != null) {
                      driver.getAddressServer().setRemoteAddress(remoteUrl);
                   }
@@ -250,14 +291,14 @@ public class HandleClient extends Executor implements Runnable
                }
 
                ConnectReturnQosServer retQos = authenticate.connect(driver.getAddressServer(), conQos);
-               this.sessionId = retQos.getSecretSessionId();
+               this.secretSessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-               executeResponse(receiver, retQos.toXml(), SOCKET_TCP);
-               driver.addClient(sessionId, this);
+               executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+               driver.addClient(this.secretSessionId, this);
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
-               this.sessionId = null;
-               executeResponse(receiver, Constants.RET_OK, SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
+               this.secretSessionId = null;
+               executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
                authenticate.disconnect(driver.getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
@@ -288,6 +329,33 @@ public class HandleClient extends Executor implements Runnable
          e.printStackTrace();
          log.error(ME, "Lost connection to client: " + e.toString());
          shutdown();
+      }
+   }
+
+   /**
+    * Flush the data to the socket.
+    * Overwrites Executor.sendMessage() 
+    */
+   protected void sendMessage(byte[] msg, boolean udp) throws IOException {
+      I_ProgressListener listener = this.progressListener;
+      if (listener != null) {
+         listener.progressWrite("", 0, msg.length);
+      }
+      if (udp && this.sockUDP!=null) {
+         DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
+         //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
+         this.sockUDP.send(dp);
+         if (log.TRACE) log.trace(ME, "UDP datagram is send");
+      }
+      else {
+         synchronized (oStream) {
+            oStream.write(msg);
+            oStream.flush();
+            if (log.TRACE) log.trace(ME, "TCP data is send");
+         }
+      }
+      if (listener != null) {
+         listener.progressWrite("", msg.length, msg.length);
       }
    }
 
@@ -325,6 +393,13 @@ public class HandleClient extends Executor implements Runnable
          closeSocket();
          if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
       }
+   }
+
+   /**
+    * @return Returns the secretSessionId.
+    */
+   public String getSecretSessionId() {
+      return this.secretSessionId;
    }
 
 }
