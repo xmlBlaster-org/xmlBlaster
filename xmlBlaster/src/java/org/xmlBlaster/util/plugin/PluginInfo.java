@@ -154,9 +154,9 @@ public class PluginInfo implements I_PluginConfig {
       propertyKey = manager.createPluginPropertyKey(type, version);
       
       // Search for e.g. "ProtocolPlugin[IOR][1.0]" or "/xmlBlaster/node/heron/ProtocolPlugin[IOR][1.0]"
-      String defaultClass = (String)null;
+      String defaultClass = null;
       PropString prop = new PropString(defaultClass);
-      String usedPropertyKey = prop.setFromEnv(glob, contextNode, propertyKey);
+      /*String usedPropertyKey =*/prop.setFromEnv(glob, contextNode, propertyKey);
       
       if (log.TRACE) log.trace(ME, "Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
 
@@ -184,7 +184,7 @@ public class PluginInfo implements I_PluginConfig {
          StringTokenizer st = new StringTokenizer(rawString, ",");
          boolean first=true;
          while(st.hasMoreTokens()) {
-            String tok = (String)st.nextToken();
+            String tok = st.nextToken();
             if (first) { // The first is always the class name
                className = tok;
                first = false;
