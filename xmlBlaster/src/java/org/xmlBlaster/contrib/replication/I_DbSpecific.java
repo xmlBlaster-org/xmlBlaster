@@ -116,11 +116,12 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param doReplicate 'false' if it does not need to replicate, 'true' otherwise.
     * @param triggerName is the name which will be given to the trigger to add to the table. Can be null. If null
     * is passed, then a name is choosed by the application. It is good practice to provide with a unique name.
-    * 
+    * @return true if the table was added, false otherwise. If the table already was registered (added), then
+    * it will not add it anymore.
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   void addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate, String triggerName) throws Exception;
+   boolean addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate, String triggerName) throws Exception;
    
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
@@ -146,9 +147,17 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @return A String Buffer containing the part of the CREATE statement which is specific to this column.
     */
    StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
- 
+
+
+   /**
+    * Initiates an initial update. It is invoked by the InitialUpdater in asynchronous mode.
+    * @param topic
+    * @param destination
+    * @param slaveName
+    * @throws Exception
+    */
    void initiateUpdate(String topic, String destination, String slaveName) throws Exception;
- 
+
    /**
     * This is the intial command which is invoked on the OS. It is basically used for the
     * import and export of the DB. Could also be used for other operations on the OS.
@@ -159,6 +168,6 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * 
     * @throws Exception
     */
-   void initialCommand(String argument) throws Exception;
+   void initialCommand(String completeFilename) throws Exception;
    
 }

@@ -76,7 +76,9 @@ public final class SpecificHelper {
        String db = this.props.getProperty("db");
        if (db == null)
           db = ORACLE;
-       setDefaultProperty(props, "jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+       setDefaultProperty(this.props, "jdbc.drivers", "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+       setDefaultProperty(this.props, "mom.topicName", "repl_key");
+
        if (ORACLE.equalsIgnoreCase(db)) {
           this.dbType = setOracleDefault(this.props);
        }

@@ -6,10 +6,6 @@
 
 package org.xmlBlaster.contrib.replication.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -25,14 +21,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
 
-import org.jutils.text.StringHelper;
-import org.xmlBlaster.contrib.ClientPropertiesInfo;
-import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
@@ -43,46 +33,14 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
 import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
-import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.ReplicationManager;
-import org.xmlBlaster.jms.XBDestination;
-import org.xmlBlaster.jms.XBMessageProducer;
-import org.xmlBlaster.jms.XBSession;
-import org.xmlBlaster.jms.XBStreamingMessage;
-import org.xmlBlaster.util.Execute;
-import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.qos.ClientProperty;
 
-public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Update {
+public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
-   class ExecuteListener implements I_ExecuteListener {
-
-      StringBuffer errors = new StringBuffer();
-
-      public void stderr(String data) {
-         log.warning(data);
-      }
-
-      public void stdout(String data) {
-         log.info(data);
-         this.errors.append(data).append("\n");
-      }
-
-      String getErrors() {
-         return this.errors.toString();
-      }
-   }
-
-   private String CREATE_COUNTER_KEY = "_createCounter";
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
-
-   /** used to publish CREATE changes */
-   protected I_ChangePublisher publisher;
 
    private int rowsPerMessage = 10;
 
@@ -98,15 +56,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
 
    protected String replPrefix = "repl_";
    
-   private String initialCmd;
-
-   private String initialCmdPath;
- 
    protected ReplaceVariable replaceVariable;
 
    protected Replacer replacer;
 
-   private boolean keepDumpFiles;
+   private InitialUpdater initialUpdater;
    
    class Replacer implements I_ReplaceVariable {
 
@@ -362,7 +316,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       set.add("replication.prefix");
       set.add("maxRowsOnCreate");
       PropertiesInfo.addSet(set, this.dbPool.getUsedPropertyKeys());
-      PropertiesInfo.addSet(set, this.publisher.getUsedPropertyKeys());
+      PropertiesInfo.addSet(set, this.initialUpdater.getUsedPropertyKeys());
       return set;
    }
 
@@ -378,40 +332,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       Map map = new HashMap();
       map.put("replPrefix", this.replPrefix);
       this.replacer = new Replacer(this.info, map);
-      boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
-      if (needsPublisher)
-         this.publisher = DbWatcher.getChangePublisher(this.info);
+
+      this.initialUpdater = new InitialUpdater(this);
+      this.initialUpdater.init(info);
+
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
       this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
-      
-      // registering this instance to the Replication Manager
-      if (this.publisher != null) {
-         HashMap subscriptionMap = new HashMap();
-         subscriptionMap.put("ptp", "true");
-         this.publisher.registerAlertListener(this, subscriptionMap);
-         // fill the info to be sent with the own info objects
-         HashMap msgMap = new HashMap();
-         new ClientPropertiesInfo(msgMap, this.info);
-         msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-         msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
-         synchronized(this.info) {
-            boolean isRegistered = this.info.getBoolean("_specificDefaultRegistered", false);
-            if (!isRegistered) {
-               String topic = this.info.get("mom.topicName", null);
-               if (topic == null)
-                  throw new Exception("SpecificDefault.init: registering the dbWatcher to the Replication Manager: no topic was defined but need one. Please add to your configuration 'mom.topicName'");
-               msgMap.put("_topic", topic);
-               this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
-               this.info.put("_specificDefaultRegistered", "true");
-            }
-         }
-      }
-      
-      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
-      this.initialCmd = this.info.get("replication.initialCmd", null);
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      
    }
 
    /**
@@ -421,19 +348,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       try {
          log.info("going to shutdown: cleaning up resources");
          // registering this instance to the Replication Manager
-         if (this.publisher != null) {
-            // fill the info to be sent with the own info objects
-            HashMap msgMap = new HashMap();
-            new ClientPropertiesInfo(msgMap, this.info);
-            msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-            msgMap.put("_command", ReplicationConstants.REPL_MANAGER_UNREGISTER);
-            this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_UNREGISTER.getBytes(), msgMap);
-         }
-
-         if (this.publisher != null) {
-            this.publisher.shutdown();
-            this.publisher = null;
-         }
+         this.initialUpdater.shutdown();
       } catch (Throwable e) {
          e.printStackTrace();
          log.warning(e.toString());
@@ -442,54 +357,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       if (this.dbPool != null) {
          this.dbPool.shutdown();
       }
-   }
-
-   /**
-    * Publishes a 'CREATE TABLE' operation to the XmlBlaster. It is used on the
-    * DbWatcher side. Note that it is also used to publish the INSERT commands
-    * related to a CREATE TABLE operation, i.e. if on a CREATE TABLE operation
-    * it is found that the table is already populated when reading it, then
-    * these INSERT operations are published with this method.
-    * 
-    * @param counter
-    *           The counter indicating which message number it is. The create
-    *           opeation itself will have '0', the subsequent associated INSERT
-    *           operations will have an increasing number (it is the number of
-    *           the message not the number of the associated INSERT operation).
-    * 
-    * @return a uniqueId identifying this publish operation.
-    * 
-    * @throws Exception
-    */
-   private final String publishCreate(int counter) throws Exception {
-      log.info("publishCreate invoked for counter '" + counter + "'");
-      DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription();
-      description.setAttribute(new ClientProperty(CREATE_COUNTER_KEY, "int",
-            null, "" + counter));
-      description.setAttribute(new ClientProperty(
-            ReplicationConstants.EXTRA_REPL_KEY_ATTR, null, null, ""
-                  + this.newReplKey));
-      if (counter == 0) {
-         this.dbUpdateInfo.getDescription().setCommand(
-               ReplicationConstants.CREATE_ACTION);
-         description.setAttribute(new ClientProperty(
-               ReplicationConstants.ACTION_ATTR, null, null,
-               ReplicationConstants.CREATE_ACTION));
-      } else {
-         this.dbUpdateInfo.getDescription().setCommand(
-               ReplicationConstants.REPLICATION_CMD);
-         description.setAttribute(new ClientProperty(
-               ReplicationConstants.ACTION_ATTR, null, null,
-               ReplicationConstants.INSERT_ACTION));
-      }
-
-      Map map = new HashMap();
-      map.put("_command", "CREATE");
-      // and later put the part number inside
-      if (this.publisher == null)
-         throw new Exception(
-               "SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
-      return this.publisher.publish("", this.dbUpdateInfo.toXml("").getBytes(), map);
    }
 
    /**
@@ -595,12 +462,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          this.newReplKey = incrementReplKey(conn);
          // publish the structure of the table (need to be done here since we
          // must retreive repl key after having added the trigger)
-         if (this.publisher != null)
-            publishCreate(0);
-         else { // normally this will only happen for testing purposes
-            log.warning("not publishing the 'CREATE' Operation since publisher is null.");
-         }
-
+         this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
          sql = new String("SELECT * FROM " + table);
          this.dbPool.select(conn, sql, false, this);
          conn.commit();
@@ -642,7 +504,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
                // publish
                log.info("result: going to publish msg '" + msgCount
                      + "' and internal count '" + internalCount + "'");
-               publishCreate(msgCount++);
+               this.initialUpdater.publishCreate(msgCount++, this.dbUpdateInfo, this.newReplKey);
                this.dbUpdateInfo.getRows().clear(); // clear since re-using
                                                       // the same dbUpdateInfo
             }
@@ -650,7 +512,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          if (this.dbUpdateInfo.getRows().size() > 0) {
             log.info("result: going to publish last msg '" + msgCount
                   + "' and internal count '" + internalCount + "'");
-            publishCreate(msgCount);
+            this.initialUpdater.publishCreate(msgCount, this.dbUpdateInfo, this.newReplKey);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -680,10 +542,65 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
    }
 
+   
+   /**
+    * To use this method the arguments must already have been cleaned.
+    * @param catalog can not be null (use ' ' for null).
+    * @param schema can not be null (use ' ' for null)
+    * @param tablename can not be null
+    * @return true if the table is found among the registered tables, false if not.
+    * @throws SQLException
+    */
+   private final boolean isTableRegistered(Connection conn, String catalog, String schema, String tableName) throws SQLException {
+      Statement st = null;
+      ResultSet rs = null;
+      try {
+         // check wether the item already exists, if it exists return false
+         String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE catalogname='" + catalog + "' AND schemaname='" + schema + "' AND tablename='" + tableName + "'";
+         st = conn.createStatement();
+         rs = st.executeQuery(sql);
+         return rs.next();
+      }
+      finally {
+         if (rs == null) {
+            try { rs.close(); } catch (SQLException ex) {}
+         }
+         if (st == null) {
+            try { st.close(); } catch (SQLException ex) {}
+         }
+      }
+   }
+   
+   /**
+    * To use this method the arguments must already have been cleaned.
+    * @param schema can not be null (use ' ' for null)
+    * @return true if the table is found among the registered tables, false if not.
+    * @throws SQLException
+    */
+   private final boolean isSchemaRegistered(Connection conn, String schema) throws SQLException {
+      Statement st = null;
+      ResultSet rs = null;
+      try {
+         // check wether the item already exists, if it exists return false
+         String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE schemaname='" + schema + "'";
+         st = conn.createStatement();
+         rs = st.executeQuery(sql);
+         return rs.next();
+      }
+      finally {
+         if (rs == null) {
+            try { rs.close(); } catch (SQLException ex) {}
+         }
+         if (st == null) {
+            try { st.close(); } catch (SQLException ex) {}
+         }
+      }
+   }
+   
    /**
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
-   public final void addTableToWatch(String catalog, String schema, String tableName,
+   public final boolean addTableToWatch(String catalog, String schema, String tableName,
          boolean doReplicate, String triggerName) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -702,17 +619,22 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       try {
          conn = this.dbPool.reserve();
          long tmp = this.incrementReplKey(conn);
-         // TODO check if the schema already exists and only do it if it does not exist
-         addSchemaToWatch(conn, catalog, schema);
-         
+         if (!isSchemaRegistered(conn, schema))
+            addSchemaToWatch(conn, catalog, schema);
+         if (isTableRegistered(conn, catalog, schema, tableName))
+            return false;
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
          String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
                + schema + "','" + tableName + "','" + replTxt
                + "', 'CREATING'," + tmp + ",'" + triggerName + "')";
-         this.dbPool.update(sql);
-      } finally {
+         this.dbPool.update(conn, sql);
+         return true;
+      } 
+      finally {
+         if (conn != null)
+            this.dbPool.release(conn);
       }
    }
 
@@ -769,34 +691,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       return buf.toString();
    }
 
-   /**
-    * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
-    */
-   public final void update(String topic, byte[] content, Map attrMap) throws Exception {
-      if (content == null)
-         content = new byte[0];
-      String msg = new String(content);
-      // this comes from the requesting ReplSlave
-      if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_sender");
-         if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
-         String destination = prop.getStringValue();
-
-         String replTopic = this.info.get("mom.topicName", null);
-         if (replTopic == null)
-            throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
-
-         prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
-         if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
-         String slaveName = prop.getStringValue();
-         initiateUpdate(replTopic, destination, slaveName);
-      }
-      else {
-         log.warning("update from '" + topic + "' with request '" + msg + "'");
-      }
-   }
 
    /**
     * 
@@ -805,8 +699,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
    public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
       
       Connection conn = null;
-      String filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
-      String completeFilename = this.initialCmdPath + "/" + filename;
       int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       try {
          conn = this.dbPool.reserve();
@@ -815,19 +707,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
          long minKey = this.incrementReplKey(conn);
          // the result must be sent as a high prio message to the real
          // destination
-         initialCommand(completeFilename);
+         String filename = this.initialUpdater.initialCommand(null);
          long maxKey = this.incrementReplKey(conn); 
          conn.commit();
-
-         sendInitialFile(topic, this.initialCmdPath, filename, minKey);
-         
-         HashMap attrs = new HashMap();
-         attrs.put("_destination", destination);
-         attrs.put("_command", "INITIAL_DATA_RESPONSE");
-         attrs.put("_minReplKey", "" + minKey);
-         attrs.put("_maxReplKey", "" + maxKey);
-         attrs.put(ReplicationConstants.SLAVE_NAME, slaveName);
-         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
+         this.initialUpdater.sendInitialDataResponse(topic, filename, destination, slaveName, minKey, maxKey);
       }
       catch (Exception ex) {
          if (conn != null) {
@@ -858,63 +741,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
    }
    
-   /**
-    * Sends/publishes the initial file as a high priority message.
-    * @param filename
-    * @throws FileNotFoundException
-    * @throws IOException
-    */
-   private void sendInitialFile(String topic, String path, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
-      // now read the file which has been generated
-      String filename = null;
-      if (path != null)
-         filename = path + "/" + shortFilename;
-      else
-         filename = shortFilename;
-      File file = new File(filename);
-      
-      FileInputStream fis = new FileInputStream(file);
-      // in this case they are just decorators around I_ChangePublisher
-      XBSession session = this.publisher.getJmsSession();
-      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
-      producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
-      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
-      msg.setStringProperty("_filename", shortFilename);
-      msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
-      msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
-      msg.setInputStream(fis);
-      producer.send(msg);
-      if (!this.keepDumpFiles) {
-         if (file.exists()) { 
-            boolean ret = file.delete();
-            if (!ret)
-               log.warning("could not delete the file '" + filename + "'");
-         }
-      }
-      fis.close();
-   }
-   
 
-   /**
-    * Executes an Operating System command.
-    * 
-    * @param cmd
-    * @throws Exception
-    */
-   private void osExecute(String cmd) throws Exception {
-      if (Execute.isWindows()) cmd = "cmd " + cmd;
-      String[] args = StringHelper.toArray(cmd, " ");
-      Execute execute = new Execute(args, null);
-      ExecuteListener listener = new ExecuteListener();
-      execute.setExecuteListener(listener);
-      execute.run(); // blocks until finished
-      if (execute.getExitValue() != 0) {
-         throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
-      }
-   }
 
-   
+
    /**
     * Example code.
     * <p />
@@ -962,13 +791,12 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb, I_Upd
       }
    }
 
-   public final void initialCommand(String completeFilename) throws Exception {
-      if (this.initialCmd == null)
-         log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
-      else {
-         String cmd = this.initialCmd + " " + completeFilename;
-         this.osExecute(cmd);
-      }
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String)
+    */
+   public void initialCommand(String completeFilename) throws Exception {
+      this.initialUpdater.initialCommand(completeFilename);
    }
+   
 
 }

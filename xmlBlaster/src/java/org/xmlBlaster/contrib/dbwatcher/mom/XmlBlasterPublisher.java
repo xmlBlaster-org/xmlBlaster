@@ -170,8 +170,10 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#init(I_Info)
     */
    public synchronized void init(I_Info info) throws Exception {
-      if (this.initCount > 0)
+      if (this.initCount > 0) {
+         this.initCount++;
          return;
+      }
       
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {

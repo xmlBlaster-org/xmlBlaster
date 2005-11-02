@@ -70,7 +70,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     private static I_DbPool dbPool;
     private static I_DbSpecific dbSpecific;
     private static String currentMethod; // since there are two instances running (I_ChangePublisher also)
-    private boolean doCheck = true;
+    private static boolean doCheck;
+    private static boolean checked;
     
     private DbMetaHelper dbHelper;
     private static SpecificHelper specificHelper; // this is static since the implementation of I_ChangePublisher is another instance
@@ -195,7 +196,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          log.info("publish invoked in method '" + currentMethod + "'");
          log.fine("message '" + msg + "'");
 
-         if (this.doCheck) {
+         if (doCheck) {
+            checked = true;
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
             DbUpdateParser parser = new DbUpdateParser(info);
             DbUpdateInfo dbUpdateInfo = parser.readObject(msg);
@@ -232,10 +234,6 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
                ex.printStackTrace();
                assertTrue("Testing creation of table with statement '" + sql + "' failed", false);
             }
-         }
-         else {
-            assertTrue("should never come here", false);
-            // Thread.dumpStack();
          }
       }
       catch (Exception ex) {
@@ -312,33 +310,39 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
 
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
-      this.doCheck = true;
+      doCheck = true;
       String[] sqls = specificHelper.getSql(this.tableName);
-      for (int i=0; i < sqls.length; i++) {
-         try {
+      try {
+         for (int i=0; i < sqls.length; i++) {
             try {
-               pool.update("DROP TABLE " + this.tableName + specificHelper.getCascade());
+               try {
+                  pool.update("DROP TABLE " + this.tableName + specificHelper.getCascade());
+               }
+               catch (Exception e) {
+               }
+               pool.update(sqls[i]);
+               // don't do this since oracle 10.1.0 returns zero (don't know why)
+               // assertEquals("the number of created tables must be one", 1, ret);
             }
-            catch (Exception e) {
+            catch (Exception ex) {
+               ex.printStackTrace();
+               assertTrue("an exception should not occur when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
             }
-            pool.update(sqls[i]);
-            // don't do this since oracle 10.1.0 returns zero (don't know why)
-            // assertEquals("the number of created tables must be one", 1, ret);
-         }
-         catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue("an exception should not occur when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
-         }
-         try {
-            log.info("processing now '" + specificHelper.getSql(this.tableName)[i] + "'");
-            dbSpecific.readNewTable(null, specificHelper.getOwnSchema(pool), this.tableName, null);
-         }
-         catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue("an exception should not occur when invoking readNewTable when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
+            try {
+               log.info("processing now '" + specificHelper.getSql(this.tableName)[i] + "'");
+               checked = false;
+               dbSpecific.readNewTable(null, specificHelper.getOwnSchema(pool), this.tableName, null);
+               assertTrue("The 'publish' method has not been invoked or has been invoked with check false ('check='" + doCheck + "'", checked);
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+               assertTrue("an exception should not occur when invoking readNewTable when testing nr." + i + " which is '" + sqls[i] + "' : " + ex.getMessage(), false);
+            }
          }
       }
-      this.doCheck = true;
+      finally {
+         doCheck = false;
+      }
       log.info("testCreateTablesWithDifferentTypes: SUCCESS");
    }
 

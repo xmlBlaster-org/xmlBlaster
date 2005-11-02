@@ -99,9 +99,9 @@ public class TestReplication extends XMLTestCase {
     * @param key
     * @param val
     */
-   private void setProp(I_Info info, String key, String val) {
+   private void setProp(I_Info info, String key, String val, boolean force) {
       String tmp = info.get(key, null);
-      if (tmp == null)
+      if (tmp == null || force)
          info.put(key, val);
    }
 
@@ -113,31 +113,32 @@ public class TestReplication extends XMLTestCase {
     */
    private void setupProperties(I_Info readerInfo, I_Info writerInfo) {
       this.replPrefix = readerInfo.get("replication.prefix", "repl_");
-      setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
-      setProp(readerInfo, "mom.topicName", "trans_key");
-      setProp(readerInfo, "alertScheduler.pollInterval", "1000");
-      setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
-      setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + this.replPrefix + "items");
-      setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM " + this.replPrefix + "items ORDER BY repl_key");
-      setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items");
-      setProp(readerInfo, "converter.addMeta", "false");
-      setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
-      setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
-      setProp(readerInfo, "replication.doBootstrap", "true");
+      setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1", true);
+      setProp(readerInfo, "mom.topicName", "testRepl", true);
+      setProp(readerInfo, "changeDetector.groupColName", "repl_key", true);
+      setProp(readerInfo, "alertScheduler.pollInterval", "1000", false);
+      setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector", false);
+      setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + this.replPrefix + "items", false);
+      setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM " + this.replPrefix + "items ORDER BY repl_key", false);
+      setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items", false);
+      setProp(readerInfo, "converter.addMeta", "false", false);
+      setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter", false);
+      setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler", false);
+      setProp(readerInfo, "replication.doBootstrap", "true", false);
       
       // and here for the dbWriter ...
       // ---- Database settings -----
-      setProp(writerInfo, "mom.loginName", "DbWriter/1");
-      setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica");
+      setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
+      setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
-      String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
-      setProp(writerInfo, "mom.subscribeKey", subscribeKey);
-      setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
-      setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
+      String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='testRepl'/>");
+      setProp(writerInfo, "mom.subscribeKey", subscribeKey, true);
+      setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>", false);
+      setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter", false);
       // these are pure xmlBlaster specific properties
-      setProp(writerInfo, "dispatch/callback/retries", "-1");
-      setProp(writerInfo, "dispatch/callback/delay", "10000");
-      setProp(writerInfo, "queue/callback/maxEntries", "10000");
+      setProp(writerInfo, "dispatch/callback/retries", "-1", true);
+      setProp(writerInfo, "dispatch/callback/delay", "10000", true);
+      setProp(writerInfo, "queue/callback/maxEntries", "10000", true);
       
       /**
        * Complete set of properties ...

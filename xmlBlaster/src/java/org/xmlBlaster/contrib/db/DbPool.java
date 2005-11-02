@@ -84,8 +84,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
     * @see org.xmlBlaster.contrib.dbwatcher.db.I_DbPool#init(I_Info)
     */
    public synchronized void init(I_Info info) {
-      if (this.initCount > 0)
+      if (this.initCount > 0) {
+         this.initCount++;
          return;
+      }
 
       this.info = info;
       this.dbUrl = this.info.get("db.url", "");
