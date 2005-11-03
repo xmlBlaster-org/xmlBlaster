@@ -84,7 +84,7 @@ public class Parser
      to cast char[] into byte[]
    */
 
-   private static final String ME = "Parser";
+   private static final String ME = "xbformat.Parser";
    private final Global glob;
 
    private final LogChannel log;
@@ -520,13 +520,13 @@ public class Parser
          if (lenRead == -1)
             // if (sock.isClosed()) // since JDK 1.4
             // throw new IOException("Can't read message header (first 10 bytes) from socket, message is corrupted");
-            throw new IOException("Got EOF, lost socket connection");
+            throw new IOException(ME + ": Got EOF, lost socket connection");
 
          try {
             msgLength = Integer.parseInt((new String(first10, 0, NUM_FIELD_LEN)).trim());
          }
          catch (NumberFormatException e) {
-            throw new IOException("Format of message header is corrupted '" + new String(first10) + "', expected integral value");
+            throw new IOException(ME + ": Format of xbf-message header is corrupted '" + new String(first10) + "', expected integral value");
          }
 
          listener = this.progressListener;
@@ -538,7 +538,7 @@ public class Parser
          if (msgLength == NUM_FIELD_LEN)
             return null; // An empty message only contains the header 10 bytes
          else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
-            throw new IOException("Message format is corrupted, the given message length=" + msgLength + " is invalid");
+            throw new IOException(ME + ": Message format is corrupted, the given message length=" + msgLength + " is invalid");
 
 
          // Now we know the msgLength, lets extract the complete message ...
@@ -564,10 +564,10 @@ public class Parser
       }
 
       if (lenRead == -1)
-         throw new IOException("Can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
+         throw new IOException(ME + ": Can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
 
       if (remainLength != 0) // assert
-         throw new IOException("Internal error, can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
+         throw new IOException(ME + ": Internal error, can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
 
       listener = this.progressListener;
       if (listener != null) {
@@ -653,7 +653,7 @@ public class Parser
 
       if (buf.offset != buf.buf.length) {
          String str = "Format mismatch, read index=" + buf.offset + " expected message length=" + buf.buf.length + " we need to disconnect the client, can't recover.";
-         throw new IOException(str);
+         throw new IOException(ME + ": " + str);
       }
 
       if (log.TRACE) log.trace(ME, "Leaving parse(), message successfully parsed");
@@ -672,7 +672,7 @@ public class Parser
          len += tmp.length();
       }
       if (len > Integer.MAX_VALUE)
-         throw new IllegalArgumentException("Message size is limited to " + Integer.MAX_VALUE + " bytes");
+         throw new IllegalArgumentException(ME + ": Message size is limited to " + Integer.MAX_VALUE + " bytes");
       return len;
    }
 
@@ -805,7 +805,7 @@ public class Parser
       catch (NumberFormatException e) {
          e.printStackTrace();
          log.error(ME, "toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
-         throw new IOException("Format is corrupted '" + dump() + "', expected long integral value");
+         throw new IOException(ME + ": Format is corrupted '" + dump() + "', expected long integral value");
       }
    }
 
@@ -822,7 +822,7 @@ public class Parser
       catch (NumberFormatException e) {
          e.printStackTrace();
          log.error(ME, "toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
-         throw new IOException("Format is corrupted '" + dump() + "', expected integral value");
+         throw new IOException(ME + ": Format is corrupted '" + dump() + "', expected integral value");
       }
    }
 
