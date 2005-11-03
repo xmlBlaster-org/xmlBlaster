@@ -272,7 +272,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          for (int i=0; i < keys.length; i++) {
             Object val = attrMap.get(keys[i]);
             if (val != null && val instanceof String)
-               qos.addClientProperty(keys[i], (String)val);
+               qos.addClientProperty(keys[i], val);
          }
       }
    }

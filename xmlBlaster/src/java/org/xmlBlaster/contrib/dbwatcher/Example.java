@@ -29,8 +29,6 @@ import org.xmlBlaster.contrib.dbwatcher.Info;
  */
 public class Example {
    private static Logger log = Logger.getLogger(Example.class.getName());
-   private boolean interactive = true;
-
 
    /**
     * Example for polling the DB

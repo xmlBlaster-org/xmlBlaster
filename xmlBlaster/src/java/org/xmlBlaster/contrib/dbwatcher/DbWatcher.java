@@ -166,7 +166,7 @@ public class DbWatcher implements I_ChangeListener {
 
       if (changeDetectorClass.length() > 0) {
          this.changeDetector = (I_ChangeDetector)cl.loadClass(changeDetectorClass).newInstance();
-         this.changeDetector.init(info, (I_ChangeListener)this, this.dataConverter);
+         this.changeDetector.init(info, this, this.dataConverter);
          if (log.isLoggable(Level.FINE)) log.fine(changeDetectorClass + " created and initialized");
       }
       else

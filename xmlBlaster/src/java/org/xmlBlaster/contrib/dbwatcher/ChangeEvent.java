@@ -14,6 +14,7 @@ import java.util.HashMap;
  * @author Marcel Ruff
  */
 public final class ChangeEvent extends EventObject {
+   private static final long serialVersionUID = -2797657105273724009L;
    private String groupColName;
    private String groupColValue;
    private String xml;
