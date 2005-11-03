@@ -331,7 +331,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             try {
                log.info("processing now '" + specificHelper.getSql(this.tableName)[i] + "'");
                checked = false;
-               dbSpecific.readNewTable(null, specificHelper.getOwnSchema(pool), this.tableName, null);
+               dbSpecific.readNewTable(null, specificHelper.getOwnSchema(pool), this.tableName, null, true);
                assertTrue("The 'publish' method has not been invoked or has been invoked with check false ('check='" + doCheck + "'", checked);
             }
             catch (Exception ex) {

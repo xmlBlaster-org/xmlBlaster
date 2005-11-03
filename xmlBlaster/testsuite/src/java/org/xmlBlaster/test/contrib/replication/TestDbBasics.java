@@ -26,6 +26,7 @@ import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.jms.XBSession;
 
 import java.util.HashSet;
@@ -132,6 +133,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       try {
          this.dbHelper = new DbMetaHelper(this.pool);
          log.info("setUp: going to cleanup now ...");
+         conn.setAutoCommit(true);
          this.dbSpecific.cleanup(conn, false);
          for (int i=1; i < 5; i++) { // make sure we have deleted all triggers
             try {
@@ -157,6 +159,16 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     */
    protected void tearDown() throws Exception {
       super.tearDown();
+      
+      Connection conn = this.pool.reserve();
+      try {
+         this.dbSpecific.cleanup(conn, false);
+      }
+      catch (Exception ex) {
+         log.warning(ex.getMessage());
+         if (conn != null)
+            this.pool.release(conn);
+      }
       if (this.pool != null)
          this.pool.shutdown();
    }
@@ -895,7 +907,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       rs.close();
       st.close();
       // test removal now
-      this.dbSpecific.removeTableToWatch(catalog, schema, tableName);
+      TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
+      this.dbSpecific.removeTableToWatch(tableToWatch, false);
       st = conn.createStatement();
       rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertFalse("testing if removal of entries from the '" + this.replPrefix + "tables' for '" + tableName + "' works (tests if the entry is still there after removal)", rs.next());
@@ -994,7 +1007,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          rs.close();
          
          // now we add the function and trigger which are associated to our business table ...
-         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null); // this will invoke the publish method
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null, true); // this will invoke the publish method
          
          // from now on on an operation on that table should be detected and should start fill the repl_items table
          st = conn.createStatement();
@@ -1093,7 +1106,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          rs.close();
          
          // now we add the function and trigger which are associated to our business table ...
-         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null); // this will invoke the publish method
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(pool), tableName, null, true); // this will invoke the publish method
          
          // from now on on an operation on that table should be detected and should start fill the repl_items table
          st = conn.createStatement();

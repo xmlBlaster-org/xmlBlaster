@@ -200,7 +200,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             }
          }
 
-         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null);
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
          
          {
             try {
