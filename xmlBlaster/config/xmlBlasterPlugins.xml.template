@@ -95,8 +95,8 @@
    </plugin>
 -->
 
-	<!-- General EMAIL POP3 polling service,
-	     needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
+   <!-- General EMAIL POP3 polling service -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
 <!--
    <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
       <action do='LOAD' onStartupRunlevel='7' sequence='2' 
@@ -113,7 +113,7 @@
       <action do='LOAD' onStartupRunlevel='7' sequence='3' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-		<attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
+      <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
    </plugin>
 -->
 
