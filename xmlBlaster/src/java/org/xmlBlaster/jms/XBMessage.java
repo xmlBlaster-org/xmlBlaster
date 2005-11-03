@@ -251,7 +251,10 @@ public class XBMessage implements Message {
    }
 
    public Object getObjectProperty(String key) throws JMSException {
-      return ((ClientProperty)this.props.get(key)).getObjectValue();
+      ClientProperty prop = (ClientProperty)this.props.get(key);
+      if (prop == null)
+         return null;
+      return prop.getObjectValue();
    }
 
    public Enumeration getPropertyNames() throws JMSException {
