@@ -6,9 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
-import org.jutils.JUtilsException;
-import org.jutils.runtime.ThreadLister;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 
 import java.lang.reflect.Method;
@@ -24,7 +21,6 @@ import java.lang.reflect.Method;
 public class SignalCatcher implements Runnable
 {
    private String ME = "SignalCatcher";
-   private Global glob;
    private LogChannel log;
    private Thread thread;
    private I_SignalListener listener;
@@ -46,7 +42,6 @@ public class SignalCatcher implements Runnable
     * </pre>
     */
    public SignalCatcher(Global glob, I_SignalListener listener) {
-      this.glob = glob;
       this.log = glob.getLog("core");
       this.listener = listener;
       this.thread = new Thread(this, "XmlBlaster signal catcher thread for controlled shudown");
@@ -157,7 +152,6 @@ public class SignalCatcher implements Runnable
          }
          
          this.log = null;
-         this.glob = null;
          this.thread = null;
       }
       return removed;
