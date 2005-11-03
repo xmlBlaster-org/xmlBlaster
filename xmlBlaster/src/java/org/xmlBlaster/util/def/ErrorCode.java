@@ -226,6 +226,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_CONFIGURATION_CONNECT = new ErrorCode("resource.configuration.connect",
+         "Please check your connection configuration settings or the availability of a remote server.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "client.configuration", "client.configuration"),
+            new ResourceInfo(ResourceInfo.REQ, "The EMAIL protocol plugin", "protocol.email")
+         }
+      );
+
    public static final ErrorCode RESOURCE_CONFIGURATION_PLUGINFAILED = new ErrorCode("resource.configuration.pluginFailed",
          "A plugin required couldn't be loaded, please check your configuration.",
          new ResourceInfo[] {
