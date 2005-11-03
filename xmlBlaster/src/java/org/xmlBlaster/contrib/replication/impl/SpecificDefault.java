@@ -6,18 +6,24 @@
 
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -34,7 +40,7 @@ import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
-import org.xmlBlaster.contrib.replication.ReplicationManager;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
@@ -61,6 +67,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    protected Replacer replacer;
 
    private InitialUpdater initialUpdater;
+
+   private boolean bootstrapWarnings;
+   
+   private int initCount = 0;
    
    class Replacer implements I_ReplaceVariable {
 
@@ -97,6 +107,89 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public SpecificDefault() {
    }
 
+   /**
+    * 
+    * @param filename
+    * @param method
+    * @return List of String[]
+    * @throws Exception
+    */
+   public List getContentFromClasspath(String filename, String method, String flushSeparator, String cmdSeparator) throws Exception {
+      if (filename == null)
+         throw new Exception(method + ": no filename specified");
+      ArrayList list = new ArrayList();
+      ArrayList internalList = new ArrayList();
+      try {
+         Enumeration enm = this.getClass().getClassLoader().getResources(filename);
+         if(enm.hasMoreElements()) {
+            URL url = (URL)enm.nextElement();
+            log.fine(method + ": : loading file '" + url.getFile() + "'");
+            try {
+               StringBuffer buf = new StringBuffer();
+               BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+               String line = null;
+               while ( (line = reader.readLine()) != null) {
+                  if (line.trim().startsWith(cmdSeparator)) {
+                     String tmp =  buf.toString();
+                     if (tmp.length() > 0)
+                        internalList.add(tmp);
+                     buf = new StringBuffer();
+                  }
+                  else if (line.trim().startsWith(flushSeparator)) {
+                     if (buf.length() > 0)
+                        internalList.add(buf.toString());
+                     if (internalList.size() >0) {
+                        String[] tmp = (String[])internalList.toArray(new String[internalList.size()]);
+                        list.add(tmp);
+                        internalList.clear();
+                        buf = new StringBuffer();
+                     }
+                  }
+                  else {
+                     line = line.trim();
+                     if (line.length() > 0 && !line.startsWith("--"))
+                        buf.append(line).append("\n");
+                  }
+               }
+               String end = buf.toString().trim();
+               if (end.length() > 0)
+                  internalList.add(end);
+               if (internalList.size() >0) {
+                  String[] tmp = (String[])internalList.toArray(new String[internalList.size()]);
+                  list.add(tmp);
+                  internalList.clear();
+                  buf = null;
+               }
+               
+            }
+            catch(IOException ex) {
+               log.warning("init: could not read properties from '" + url.getFile() + "' : " + ex.getMessage());
+            }
+
+            while(enm.hasMoreElements()) {
+               url = (URL)enm.nextElement();
+               log.warning("init: an additional matching file has been found in the classpath at '"
+                  + url.getFile() + "' please check that the correct one has been loaded (see info above)"
+               );
+            }
+            return list;
+         }
+         else {
+            ClassLoader cl = this.getClass().getClassLoader();
+            StringBuffer buf = new StringBuffer();
+            if (cl instanceof URLClassLoader) {
+               URL[] urls = ((URLClassLoader)cl).getURLs();
+               for (int i=0; i < urls.length; i++) 
+                  buf.append(urls[i].toString()).append("\n");
+            }
+            throw new Exception("init: no file found with the name '" + filename + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
+         }
+      }
+      catch(IOException e) {
+         throw new Exception("init: an IOException occured when trying to load property file '" + filename + "'", e);
+      }
+   }
+   
    /**
     * Replaces all tokens found in the content and returns the content with the values of the tokens.
     * @param content
@@ -245,8 +338,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       String fileName = this.info.get(propKey, propDefault);
       final String FLUSH_SEPARATOR = "-- FLUSH";
       final String CMD_SEPARATOR = "-- EOC";
-      List sqls = ReplicationManager.getContentFromClasspath(fileName,
-            method, FLUSH_SEPARATOR, CMD_SEPARATOR);
+      List sqls = getContentFromClasspath(fileName, method, FLUSH_SEPARATOR, CMD_SEPARATOR);
       for (int i = 0; i < sqls.size(); i++) {
          String[] cmds = (String[]) sqls.get(i);
          String cmd = "";
@@ -272,15 +364,14 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
                st.executeBatch();
          } 
          catch (SQLException ex) {
-            StringBuffer buf = new StringBuffer();
-            for (int j = 0; j < cmds.length; j++)
-               buf.append(cmd).append("\n");
-            if (doWarn || log.isLoggable(Level.FINE)) {
-               log.warning("operation:\n" + buf.toString() + "\n failed: "
-                     + ex.getMessage());
-               ex.printStackTrace();
+            if (doWarn /*|| log.isLoggable(Level.FINE)*/) {
+               StringBuffer buf = new StringBuffer();
+               for (int j = 0; j < cmds.length; j++)
+                  buf.append(cmd).append("\n");
+               log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
             }
-         } finally {
+         } 
+         finally {
             if (st != null) {
                st.close();
                st = null;
@@ -303,6 +394,21 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#cleanup(Connection)
     */
    public final void cleanup(Connection conn, boolean doWarn) throws Exception {
+      /*
+       * This cleans up the triggers on the own schema by oracle. It is needed
+       * since if there is an 'unclean' zombie trigger, then no operation is 
+       * possible anymore on the schema and cleanup will fail.
+       */
+      removeTrigger(null, null, true);
+      String replTables = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
+      TableToWatchInfo[] tables = TableToWatchInfo.getAll(conn, replTables);
+      HashSet set = new HashSet(); // to remember removed schema triggers
+      for (int i=0; i < tables.length; i++) {
+         String schema = tables[i].getSchema();
+         boolean doRemove = !set.contains(schema);
+         set.add(schema);
+         this.removeTableToWatch(tables[i], doRemove);
+      }
       updateFromFile(conn, "cleanup", "replication.cleanupFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql",
             doWarn, true, this.replacer);
@@ -324,7 +430,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#init(I_Info)
     * 
     */
-   public final void init(I_Info info) throws Exception {
+   public synchronized void init(I_Info info) throws Exception {
+      if (this.initCount > 0) {
+         this.initCount++;
+         return;
+      }
       log.info("going to initialize the resources");
       this.replaceVariable = new ReplaceVariable();
       this.info = info;
@@ -339,12 +449,72 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
       this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
+      try { // just to check that the configuration  is OK (better soon than later)
+         TableToWatchInfo.getTablesToWatch(this.info);
+      }
+      catch (Exception ex) {
+         log.severe("The syntax of one of the 'tables' attributes in the configuration is wrong. " + ex.getMessage());
+         throw ex;
+      }
+      
+      // do a bootstrapping if needed !!!!!
+      boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
+      if (needsPublisher) {
+         this.bootstrapWarnings = this.info.getBoolean("replication.bootstrapWarnings", false);
+         doBootstrapIfNeeded();
+      }
+      this.initCount++;
    }
 
    /**
+    * Checks wheter a bootstrapping is needed. If it is needed it will do first
+    * a complete cleanup and therafter a bootstrap.
+    * The criteria to decide wether it is needed or not is if the table
+    * ${replPrefix}tables exists or not. It it does not exist, then it will do a
+    * bootstrap.
+    * 
+    * @return
+    * @throws Exception
+    */
+   private final void doBootstrapIfNeeded() throws Exception {
+      Connection conn = null;
+      try {
+         conn = this.dbPool.reserve();
+         boolean noForce = false;
+         bootstrap(conn, this.bootstrapWarnings, noForce);
+         
+         /*
+         ResultSet rs = conn.getMetaData().getTables(null, null, this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"), null);
+         if (!rs.next()) {
+            rs.close();
+            boolean noWarn = false;
+            boolean noForce = false;
+            boolean doWarn = true;
+            log.warning("A BOOTSTRAP IS NEEDED SINCE THE TABLE '" + this.replPrefix + "TABLES' has not been found");
+            cleanup(conn, noWarn);
+            bootstrap(conn, doWarn, noForce);
+            return true;
+         }
+         else 
+            rs.close();
+         return false;
+         */
+      }
+      finally {
+         if (conn == null) {
+            this.dbPool.release(conn);
+         }
+      }
+   }
+   
+   
+   /**
     * @see I_DbSpecific#shutdown()
     */
-   public final void shutdown() throws Exception {
+   public final synchronized void shutdown() throws Exception {
+      this.initCount--;
+      if (this.initCount > 0)
+         return;
       try {
          log.info("going to shutdown: cleaning up resources");
          // registering this instance to the Replication Manager
@@ -398,11 +568,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#readNewTable(String, String, String, Map)
     */
    public final void readNewTable(String catalog, String schema, String table,
-         Map attrs) throws Exception {
+         Map attrs, boolean sendInitialContents) throws Exception {
       Connection conn = this.dbPool.reserve();
       int oldTransIsolation = 0;
-      boolean oldTransIsolationKnown = false; // needed to restore old value
+      boolean oldTransIsolationKnown = false;
       try {
+         oldTransIsolation = conn.getTransactionIsolation();
+         oldTransIsolationKnown = true;
          conn.setAutoCommit(true);
          this.dbUpdateInfo = new DbUpdateInfo(this.info);
 
@@ -445,45 +617,48 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          boolean addTrigger = doReplicate;
 
          if (addTrigger) { // create the function and trigger here
-            String createString = this.createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
+            String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
             if (createString != null && createString.length() > 1) {
-               log.info("adding triggers to '" + table + "':\n\n"
-                     + createString);
+               log.info("adding triggers to '" + table + "':\n\n" + createString);
                st = conn.createStatement();
                st.executeUpdate(createString);
                st.close();
             }
          }
 
-         oldTransIsolation = conn.getTransactionIsolation();
-         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
          conn.setAutoCommit(false);
+         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
          // retrieve the Sequence number here ...
          this.newReplKey = incrementReplKey(conn);
          // publish the structure of the table (need to be done here since we
          // must retreive repl key after having added the trigger)
-         this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
-         sql = new String("SELECT * FROM " + table);
-         this.dbPool.select(conn, sql, false, this);
+         
+         if (sendInitialContents) {
+            this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
+            sql = new String("SELECT * FROM " + table);
+            this.dbPool.select(conn, sql, false, this);
+         }
          conn.commit();
-         conn.setTransactionIsolation(oldTransIsolation);
-      } catch (Exception ex) {
+      } 
+      catch (Exception ex) {
          if (conn != null) {
             conn.rollback();
+            this.dbPool.erase(conn);
+            conn = null;
          }
          throw ex;
-      } finally {
+      } 
+      finally {
          if (conn != null) {
             if (oldTransIsolationKnown) {
                try {
                   conn.setTransactionIsolation(oldTransIsolation);
-               } catch (Exception e) {
+               } 
+               catch (Exception e) {
                   e.printStackTrace();
                }
-               ;
             }
             this.dbPool.release(conn);
-
          }
       }
    }
@@ -493,7 +668,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void result(ResultSet rs) throws Exception {
       try {
-         // TODO clear the columns since not really used anymore ...
+         // TODO clear the columns since not refally used anymore ...
          int msgCount = 1; // since 0 was the create, the first must be 1
          int internalCount = 0;
          while (rs != null && rs.next()) {
@@ -641,8 +816,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    /**
     * @see I_DbSpecific#removeTableToWatch(String)
     */
-   public final void removeTableToWatch(String catalog, String schema,
-         String tableName) throws Exception {
+   public final void removeTableToWatch(TableToWatchInfo tableToWatch, boolean removeAlsoSchemaTrigger) throws Exception {
+      String catalog = tableToWatch.getCatalog();
+      String schema =  tableToWatch.getSchema();
+      String tableName = tableToWatch.getTable();
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -657,6 +834,15 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             + "' AND schemaname='" + schema + "' AND catalogname='" + catalog
             + "'";
       this.dbPool.update(sql);
+      if (removeAlsoSchemaTrigger) {
+         removeTrigger(this.replPrefix + "drtg_" + schema, null, true);
+         removeTrigger(this.replPrefix + "altg_" + schema, null, true);
+         removeTrigger(this.replPrefix + "crtg_" + schema, null, true);
+      }
+      if (tableToWatch.isReplicate()) {
+         String triggerName = tableToWatch.getTrigger();
+         removeTrigger(triggerName, tableName, false);
+      }
    }
 
    /**
@@ -691,6 +877,18 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       return buf.toString();
    }
 
+   
+   private final void addTriggersIfNeeded() throws Exception {
+      TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
+      for (int i=0; i < tablesToWatch.length; i++) {
+         String catalog = tablesToWatch[i].getCatalog();
+         String schema = tablesToWatch[i].getSchema();
+         String table = tablesToWatch[i].getTable();
+         boolean doReplicate = tablesToWatch[i].isReplicate();
+         String trigger =  tablesToWatch[i].getTrigger();
+         addTableToWatch(catalog, schema, table, doReplicate, trigger);
+      }
+   }
 
    /**
     * 
@@ -707,7 +905,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          long minKey = this.incrementReplKey(conn);
          // the result must be sent as a high prio message to the real
          // destination
+         addTriggersIfNeeded();
+
          String filename = this.initialUpdater.initialCommand(null);
+         
          long maxKey = this.incrementReplKey(conn); 
          conn.commit();
          this.initialUpdater.sendInitialDataResponse(topic, filename, destination, slaveName, minKey, maxKey);
@@ -763,14 +964,12 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
          // ---- Database settings -----
          if (System.getProperty("jdbc.drivers", null) == null) {
-            System
-                  .setProperty(
+            System.setProperty(
                         "jdbc.drivers",
                         "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
          }
          if (System.getProperty("db.url", null) == null) {
-            System
-                  .setProperty("db.url", "jdbc:postgresql:test//localhost/test");
+            System.setProperty("db.url", "jdbc:postgresql:test//localhost/test");
          }
          if (System.getProperty("db.user", null) == null) {
             System.setProperty("db.user", "postgres");

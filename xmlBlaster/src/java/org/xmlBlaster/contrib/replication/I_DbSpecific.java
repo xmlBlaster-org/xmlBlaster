@@ -58,6 +58,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param catalog
     * @param schema
     * @param table
+    * @param attrs
+    * @param sendInitialContents if true it will send all the contents of the added table, if false it
+    * will not send anything. So normally if you made a dump of the Database you don't want
+    * to send all the content of the tables again.
+    *  
     * @param attrs the attributes to pass to the description object when publishing. It basically contains the 
     * information about the metadata of an entry (the columns in repl_items without the old and new contents).
     * Note that the values of such map are normally Strings, while the DbUpdateInfo objects contain attributes where
@@ -65,7 +70,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * 
     * @throws Exception
     */
-   void readNewTable(String catalog, String schema, String table, Map attrs) throws Exception;
+   void readNewTable(String catalog, String schema, String table, Map attrs, boolean sendInitialContents) throws Exception;
    
    /**
     * Returns the statement necessary to create a new table.
@@ -134,10 +139,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
    /**
     * Removes a table from the repl_tables. This method will make sure that the correct case sensitivity
     * for the table name will be used.
-    * @param tableName
+    * @param tableToWatch
+    * @param removeAlsoSchemaTrigger if true it will also remove the associated schema trigger.
     * @throws Exception
     */
-   void removeTableToWatch(String catalog, String schema, String tableName) throws Exception;
+   void removeTableToWatch(TableToWatchInfo tableToWatch, boolean removeAlsoSchemaTrigger) throws Exception;
 
    /**
     * This method should actually be protected since it is not used on the outside. It is part of this interface
@@ -169,5 +175,15 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    void initialCommand(String completeFilename) throws Exception;
+   
+   /**
+    * removes the specified trigger from the specified table.
+    * @param triggerName
+    * @param tableName
+    * @param isSchemaTrigger true if the trigger to be removed is a schema trigger.
+    * @return true if the trigger has been removed, false otherwise.
+    * @throws Exception
+    */
+   boolean removeTrigger(String triggerName, String tableName, boolean isSchemaTrigger);
    
 }

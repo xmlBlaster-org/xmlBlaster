@@ -18,29 +18,30 @@
 -- ---------------------------------------------------------------------------- 
 
 
+DROP PROCEDURE ${replPrefix}debug
+-- FLUSH (dropped ${replPrefix}debug)                                           
+
+
 -- ---------------------------------------------------------------------------- 
 -- WE FIRST CREATE THE TABLE HOLDING A LIST OF ALL TABLES TO BE REPLICATED      
 -- ---------------------------------------------------------------------------- 
 
 
-DROP TRIGGER ${replPrefix}create_trigger_xmlblaster
--- FLUSH (dropped ${replPrefix}create_trigger_xmlblaster)                       
-DROP TRIGGER ${replPrefix}drop_trigger_xmlblaster
--- FLUSH (dropped ${replPrefix}drop_trigger_xmlblaster)                         
-DROP TRIGGER ${replPrefix}alter_trigger_xmlblaster
--- FLUSH (dropped ${replPrefix}alter_trigger_xmlblaster)                        
-DROP VIEW ${replPrefix}cols_view
--- FLUSH (dropped ${replPrefix}cols_view)                                       
-DROP TABLE ${replPrefix}tables
--- FLUSH (dropped ${replPrefix}tables)                                          
-DROP TABLE ${replPrefix}current_tables
--- FLUSH (dropped ${replPrefix}current_tables)                                  
-DROP TABLE ${replPrefix}cols_table
--- FLUSH (dropped ${replPrefix}cols_table)                                      
-DROP SEQUENCE ${replPrefix}seq
--- FLUSH (dropped ${replPrefix}seq)                                             
-DROP TABLE ${replPrefix}items
--- FLUSH (dropped ${replPrefix}items)                                           
+-- ---------------------------------------------------------------------------- 
+-- This is only used to be filled for debugging purposes                        
+-- ---------------------------------------------------------------------------- 
+CREATE TABLE ${replPrefix}debug_table(replKey INTEGER, line VARCHAR(255))
+-- EOC (end of command: needed as a separator for our script parser)            
+
+CREATE OR REPLACE PROCEDURE ${replPrefix}debug(lineTxt VARCHAR2) AS
+   replKey INTEGER;
+BEGIN
+      SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+      INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
+END;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
 
 -- ---------------------------------------------------------------------------- 
 -- This table contains the list of tables to watch.                             
@@ -168,7 +169,7 @@ END ${replPrefix}needs_prot;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
-
+		 
 -- ---------------------------------------------------------------------------- 
 -- ${replPrefix}base64_helper is only needed in ORACLE previous to version 9    
 -- and is used by ${replPrefix}base64_enc_raw and ${replPrefix}base64_enc_char. 
@@ -359,6 +360,8 @@ CREATE OR REPLACE FUNCTION ${replPrefix}test_blob(method VARCHAR2,
    tmp BLOB;
    res CLOB;
 BEGIN
+   ${replPrefix}debug('TEST BLOB INVOKED');
+
    tmp := EMPTY_BLOB;
    len := utl_raw.length(msg);
    dbms_lob.createtemporary(tmp, TRUE);
@@ -405,6 +408,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2,
    needsProt INTEGER;
    answer VARCHAR(20);
 BEGIN
+   ${replPrefix}debug('TEST CLOB INVOKED');
    tmp := EMPTY_CLOB;
    len := LENGTH(msg);
    answer := 'TEST';
@@ -666,10 +670,17 @@ CREATE OR REPLACE FUNCTION ${replPrefix}check_tables(dbName VARCHAR, schName
    tmp        INTEGER;
    replKey    INTEGER;
 BEGIN
-   SELECT count(*) INTO tmp FROM all_tables WHERE (table_name=tblName                 
-                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName))
-		   AND (owner=schName OR owner=UPPER(schName) OR 
-		   owner=LOWER(schName));
+   ${replPrefix}debug('CHECK_TABLES ' || schName || '.' || tblName);
+--   SELECT count(*) INTO tmp FROM all_tables WHERE (table_name=tblName                 
+--                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName))
+--		   AND (owner=schName OR owner=UPPER(schName) OR 
+--		   owner=LOWER(schName));
+
+   SELECT count(*) INTO tmp FROM sys.all_tables WHERE table_name=tblName AND owner=schName;
+
+   ${replPrefix}debug('CHECK_TABLES count=' || TO_CHAR(tmp));
+   tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
+             -- even if it exists (this hack makes the assumption the table exists)
    IF tmp = 0 THEN 
       res := 'FALSE';
    ELSE
@@ -703,6 +714,7 @@ FOR EACH ROW
       schemaName VARCHAR(30);
       dbName     VARCHAR(30);
 BEGIN
+   ${replPrefix}debug('TABLES TRIGGER ENTERING');
    schemaName := '';
    dbName := '';
 

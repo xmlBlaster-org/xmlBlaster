@@ -24,6 +24,8 @@ public class SpecificOracle extends SpecificDefault {
 
    private static Logger log = Logger.getLogger(SpecificOracle.class.getName());
 
+   private String ownSchema;
+   
    /**
     * Not doing anything.
     */
@@ -31,6 +33,11 @@ public class SpecificOracle extends SpecificDefault {
       super();
    }
 
+   public void init(I_Info info) throws Exception {
+      super.init(info);
+      this.ownSchema = this.info.get("db.user", null);
+   }
+   
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the
     * schema.
@@ -373,5 +380,40 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
 
+   /**
+    * If the triggerName is null, then the own schema triggers are deleted. If
+    * at least one of the triggers has been removed, it returns true.
+    */
+   public boolean removeTrigger(String triggerName, String tableName, boolean isSchemaTrigger) {
+      boolean ret = false;
+      if (triggerName == null) {
+         try {
+            this.dbPool.update("DROP TRIGGER " + this.replPrefix + "drtg_" + this.ownSchema);
+           ret = true;
+         }
+         catch (Exception ex) {
+         }
+         try {
+            this.dbPool.update("DROP TRIGGER " + this.replPrefix + "altg_" + this.ownSchema);
+           ret = true;
+         }
+         catch (Exception ex) {
+         }
+         try {
+            this.dbPool.update("DROP TRIGGER " + this.replPrefix + "crtg_" + this.ownSchema);
+           ret = true;
+         }
+         catch (Exception ex) {
+         }
+         return ret;
+      }
+      try {
+         this.dbPool.update("DROP TRIGGER " + triggerName);
+         return true;
+      }
+      catch (Exception ex) {
+         return false;
+      }
+   }
 
 }

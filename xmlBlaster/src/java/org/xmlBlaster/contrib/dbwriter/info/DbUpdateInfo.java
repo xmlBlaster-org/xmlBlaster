@@ -429,4 +429,9 @@ public class DbUpdateInfo implements ReplicationConstants {
       return sb.toString();
    }
    
+   
+   public static void main(String[] args) {
+      DbUpdateInfo info = new DbUpdateInfo(null);
+   }
+   
 }

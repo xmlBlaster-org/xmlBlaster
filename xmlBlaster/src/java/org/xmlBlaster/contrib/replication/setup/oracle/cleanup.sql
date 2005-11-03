@@ -4,14 +4,11 @@
 -- the replication with xmlBlaster for Postgres                                 
 -- ---------------------------------------------------------------------------- 
 
-PURGE RECYCLEBIN
--- FLUSH (purged recyclebin)                                                    
-DROP TRIGGER ${replPrefix}crtg_${db.user}
--- FLUSH (dropped ${replPrefix}crtg_${db.user})                                 
-DROP TRIGGER ${replPrefix}drtg_${db.user}
--- FLUSH (dropped ${replPrefix}drtg_${db.user})                                 
-DROP TRIGGER ${replPrefix}altg_${db.user}
--- FLUSH (dropped ${replPrefix}altg_${db.user})                                 
+DROP PROCEDURE ${replPrefix}debug
+-- FLUSH (dropped ${replPrefix}debug)                                           
+DROP TABLE ${replPrefix}debug_table
+-- FLUSH (dropped ${replPrefix}debug_table)                                     
+
 DROP FUNCTION ${replPrefix}add_table
 -- FLUSH (dropped ${replPrefix}add_table)                                       
 DROP FUNCTION ${replPrefix}base64_enc_blob
@@ -30,6 +27,8 @@ DROP TRIGGER ${replPrefix}tables_trigger
 -- FLUSH (dropped ${replPrefix}tables_trigger)                                  
 DROP TABLE ${replPrefix}tables
 -- FLUSH (dropped ${replPrefix}tables)                                          
+DROP TABLE ${replPrefix}current_tables
+-- FLUSH (dropped ${replPrefix}current_tables)                                  
 DROP SEQUENCE ${replPrefix}seq
 -- FLUSH (dropped ${replPrefix}seq)                                             
 DROP TABLE ${replPrefix}items
@@ -50,3 +49,10 @@ DROP FUNCTION ${replPrefix}increment
 -- FLUSH (dropped ${replPrefix}increment)                                       
 DROP FUNCTION ${replPrefix}check_tables
 -- FLUSH (dropped ${replPrefix}check_tables)                                    
+DROP FUNCTION ${replPrefix}test_blob
+-- FLUSH (dropped ${replPrefix}test_blob)                                       
+DROP FUNCTION ${replPrefix}test_clob
+-- FLUSH (dropped ${replPrefix}test_clob)                                       
+PURGE RECYCLEBIN
+-- FLUSH (purged recyclebin)                                                    
+

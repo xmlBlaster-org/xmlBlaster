@@ -37,7 +37,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private I_Info info;
    private I_AttributeTransformer transformer;
    private OutputStream out;
-   
+   private boolean sendInitialTableContent = true;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -63,15 +63,19 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     */
    public static I_DbSpecific getDbSpecific(I_Info info) throws Exception {
       String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle");
-      I_DbSpecific dbSpecific = null;
-      if (dbSpecificClass.length() > 0) {
-         ClassLoader cl = ReplicationConverter.class.getClassLoader();
-         dbSpecific = (I_DbSpecific)cl.loadClass(dbSpecificClass).newInstance();
-         dbSpecific.init(info);
-         if (log.isLoggable(Level.FINE)) log.fine(dbSpecificClass + " created and initialized");
-     }
-     else
-        log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
+      I_DbSpecific dbSpecific = (I_DbSpecific)info.getObject(dbSpecificClass + ".object");
+      if (dbSpecific == null) {
+         if (dbSpecificClass.length() > 0) {
+            ClassLoader cl = ReplicationConverter.class.getClassLoader();
+            dbSpecific = (I_DbSpecific)cl.loadClass(dbSpecificClass).newInstance();
+            if (log.isLoggable(Level.FINE)) 
+               log.fine(dbSpecificClass + " created and initialized");
+            info.putObject(dbSpecificClass + ".object" ,dbSpecific);
+        }
+        else
+           log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
+      }
+      dbSpecific.init(info);
       return dbSpecific;
    }
    
@@ -88,6 +92,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          log.info("Loaded transformer pluing '" + transformerClassName + "'");
       }
       this.dbSpecific = getDbSpecific(info);
+      this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       
    }
    
@@ -175,7 +180,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             log.info("addInfo: going to create a new table '" + tableName + "'");
-            this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs);
+            this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
          }
          else if (action.equalsIgnoreCase(DROP_ACTION)) {
             DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 

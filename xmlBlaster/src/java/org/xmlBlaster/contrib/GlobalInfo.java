@@ -34,7 +34,7 @@ import java.util.logging.Level;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class GlobalInfo implements I_Plugin, I_Info {
+public abstract class GlobalInfo implements I_Plugin, I_Info {
    public final static String ORIGINAL_ENGINE_GLOBAL = "_originalEngineGlobal";
    private static Logger log = Logger.getLogger(GlobalInfo.class.getName());
    protected Global global;
@@ -95,19 +95,24 @@ public class GlobalInfo implements I_Plugin, I_Info {
             this.propsOfOwnInterest.add(propKeysAsString[i]);
       }
    }
+
+   protected abstract void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException;
    
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
+   public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
+      this.global = global_.getClone(global_.getNativeConnectArgs());
+      this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
       if (global_ instanceof org.xmlBlaster.engine.Global) {
-         this.global = global_.getClone(global_.getNativeConnectArgs());
-         this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
+         //this.global = global_.getClone(global_.getNativeConnectArgs());
+         // this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
+         
          // add the original Global in case the extending classes need it
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
       }
-      else
-         this.global = global_;
+      // else
+      //    this.global = global_;
       // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
       boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
@@ -129,6 +134,7 @@ public class GlobalInfo implements I_Plugin, I_Info {
       
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
       putObject("org.xmlBlaster.engine.Global", this.global);
+      doInit(global_, pluginInfo);
    }
 
    /**
@@ -190,7 +196,8 @@ public class GlobalInfo implements I_Plugin, I_Info {
           this.global.getProperty().removeProperty(key);
        else {
           try {
-             this.global.getProperty().set(key, value);
+             String prefix = (this.pluginInfo == null) ? "" : pluginInfo.getPrefix();  // "plugin/" + getType() + "/"
+             this.global.getProperty().set(prefix + key, value);
           }
           catch (Exception e) {
              log.warning(e.toString());

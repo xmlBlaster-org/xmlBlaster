@@ -48,6 +48,12 @@ private final static String ME = "ReplicationWriter";
    private String importLocation;
    private I_Update callback;
    private boolean keepDumpFiles;
+
+   private boolean doDrop;
+   private boolean doCreate;
+   private boolean doAlter;
+   private boolean doStatement;
+   
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -78,7 +84,7 @@ private final static String ME = "ReplicationWriter";
 
       // this avoids the publisher to be instantiated (since we are on the slave side)
       this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
-      this.dbSpecific = ReplicationConverter.getDbSpecific(info); 
+      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info); 
       this.dbMetaHelper = new DbMetaHelper(this.pool);
       String mapperClass = info.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");
       if (mapperClass.length() > 0) {
@@ -100,7 +106,12 @@ private final static String ME = "ReplicationWriter";
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      
+
+      this.doDrop = info.getBoolean("replication.drops", true);
+      this.doCreate = info.getBoolean("replication.creates", true);
+      this.doAlter = info.getBoolean("replication.alters", true);
+      this.doStatement = info.getBoolean("replication.statements", true);
+
    }
 
    public void shutdown() throws Exception {
@@ -209,45 +220,56 @@ private final static String ME = "ReplicationWriter";
             }
             else { // then it is a CREATE / DROP / ALTER or DUMP command (does not have any rows associated)
                if (action.equalsIgnoreCase(CREATE_ACTION)) {
-                  
-                  // check if the table already exists ...
-                  ResultSet rs = conn.getMetaData().getTables(catalog, schema, table, null);
-                  boolean tableExistsAlready = rs.next();
-                  rs.close();
+                  if (this.doCreate) {
+                     // check if the table already exists ...
+                     ResultSet rs = conn.getMetaData().getTables(catalog, schema, table, null);
+                     boolean tableExistsAlready = rs.next();
+                     rs.close();
 
-                  if (tableExistsAlready) {
-                     if (!this.overwriteTables) {
-                        throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
+                     if (tableExistsAlready) {
+                        if (!this.overwriteTables) {
+                           throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
+                        }
+                        else {
+                           log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
+                           Statement st = conn.createStatement();
+                           st.executeUpdate("DROP TABLE " + completeTableName);
+                           st.close();
+                        }
                      }
-                     else {
-                        log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
-                        Statement st = conn.createStatement();
-                        st.executeUpdate("DROP TABLE " + completeTableName);
+                     
+                     String sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
+                     Statement st = conn.createStatement();
+                     try {
+                        st.executeUpdate(sql);
+                     }
+                     finally {
                         st.close();
                      }
                   }
-                  
-                  String sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
-                  Statement st = conn.createStatement();
-                  try {
-                     st.executeUpdate(sql);
-                  }
-                  finally {
-                     st.close();
-                  }
+                  else
+                     log.fine("CREATE is disabled for this writer");
                }
                else if (action.equalsIgnoreCase(DROP_ACTION)) {
-                  String sql = "DROP TABLE " + completeTableName;
-                  Statement st = conn.createStatement();
-                  try {
-                     st.executeUpdate(sql);
+                  if (this.doDrop) {
+                     String sql = "DROP TABLE " + completeTableName;
+                     Statement st = conn.createStatement();
+                     try {
+                        st.executeUpdate(sql);
+                     }
+                     finally {
+                        st.close();
+                     }
                   }
-                  finally {
-                     st.close();
-                  }
+                  else
+                     log.fine("DROP is disabled for this writer");
                }
                else if (action.equalsIgnoreCase(ALTER_ACTION)) {
-                  log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                  if (this.doAlter) {
+                     log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                  }
+                  else
+                     log.fine("ALTER is disabled for this writer");
                }
                else if (action.equalsIgnoreCase(DUMP_ACTION)) {
                   log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
@@ -255,18 +277,22 @@ private final static String ME = "ReplicationWriter";
                   // the name of the file is stored in DUMP_FILENAME (it will be used to store the file)
                }
                else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
-                  String sql = getStringAttribute(STATEMENT_ATTR, null, description);
-                  if (sql != null && sql.length() > 1) {
-                     Statement st = conn.createStatement();
-                     try {
-                        boolean ret = st.execute(sql);
-                        if (ret)
-                           log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml("") + "' was a query. This is not implemented yet");
-                     }
-                     finally {
-                        st.close();
+                  if (this.doStatement) {
+                     String sql = getStringAttribute(STATEMENT_ATTR, null, description);
+                     if (sql != null && sql.length() > 1) {
+                        Statement st = conn.createStatement();
+                        try {
+                           boolean ret = st.execute(sql);
+                           if (ret)
+                              log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml("") + "' was a query. This is not implemented yet");
+                        }
+                        finally {
+                           st.close();
+                        }
                      }
                   }
+                  else
+                     log.fine("STATEMENT is disabled for this writer");
                }
                else {
                   log.severe("store: description with unknown action '" + action + "' invoked '" + description.toXml(""));

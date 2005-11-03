@@ -39,7 +39,6 @@ public class DbWriter implements I_Update {
     * Default constructor, you need to call {@link #init} thereafter. 
     */
    public DbWriter() {
-      // void
    }
 
    /**
@@ -127,15 +126,21 @@ public class DbWriter implements I_Update {
     * Cleanup resources.
     * @throws Exception Can be of any type 
     */
-   public synchronized void shutdown() throws Exception {
-      this.isAlive = false;
-      // shutdown(this.eventEngine);
-      shutdown(this.parser);
-      shutdown(this.writer);
-      if (this.poolOwner && this.dbPool != null) {
-         this.dbPool.shutdown();
-         this.dbPool = null;
-         this.info.putObject("db.pool", null);
+   public synchronized void shutdown() {
+      try {
+         this.isAlive = false;
+         // shutdown(this.eventEngine);
+         shutdown(this.parser);
+         shutdown(this.writer);
+         if (this.poolOwner && this.dbPool != null) {
+            this.dbPool.shutdown();
+            this.dbPool = null;
+            this.info.putObject("db.pool", null);
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         log.severe("An exception occured when shutting down: " + ex.getMessage());
       }
    }
 

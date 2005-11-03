@@ -75,8 +75,7 @@ public class DbWatcherPlugin extends GlobalInfo {
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      super.init(global_, pluginInfo);
+   protected void doInit(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       try {
          this.dbWatcher = new DbWatcher(this);
          this.dbWatcher.startAlertProducers();

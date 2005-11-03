@@ -26,6 +26,7 @@ BEGIN
                         '.' || tableName);
    dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'CREATE');
 END ${replPrefix}crtg_${schemaName};
+
 -- EOC (end of command: needed as a separator for our script parser)            
 
 

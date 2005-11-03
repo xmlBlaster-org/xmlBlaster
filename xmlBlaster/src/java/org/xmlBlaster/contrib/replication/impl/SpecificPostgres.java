@@ -177,5 +177,19 @@ public class SpecificPostgres extends SpecificDefault {
    public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
       // do nothing as a default
    }
+
+   public boolean removeTrigger(String triggerName, String tableName, boolean isSchemaTrigger) {
+      if (isSchemaTrigger || triggerName == null) // we don't have schema triggers 
+         return false;
+      try {
+         this.dbPool.update("DROP TRIGGER " + triggerName + " ON " + tableName + " CASCADE");
+         return true;
+      }
+      catch (Exception ex) {
+         return false;
+      }
+   }
+
+   
    
 }

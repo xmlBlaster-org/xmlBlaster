@@ -35,7 +35,6 @@ import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_Queue;
 
@@ -51,29 +50,6 @@ import java.util.logging.Logger;
  * <p />
  * This plugin needs to be registered in <tt>xmlBlasterPlugins.xml</tt>
  * to be available on xmlBlaster server startup.
- * <pre>
-&lt;plugin id='ReplManagerPlugin.TEST_TS' className='org.xmlBlaster.contrib.dbwatcher.plugin.ReplManagerPlugin'>
-   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
-   &lt;attribute id='db.url'>${db.url}&lt;/attribute>
-   &lt;attribute id='db.user'>${db.user}&lt;/attribute>
-   &lt;attribute id='db.password'>${db.password}&lt;/attribute>
-   &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_TS WHERE TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY ICAO_ID&lt;/attribute>
-   &lt;attribute id='mom.topicName'>db.change.event.${groupColValue}&lt;/attribute>
-   &lt;attribute id='mom.loginName'>dbWatcher/3&lt;/attribute>
-   &lt;attribute id='mom.password'>secret&lt;/attribute>
-   &lt;attribute id='mom.alertSubscribeKey'>&lt;key oid=''/>&lt;/attribute>
-   &lt;attribute id='mom.alertSubscribeQos'>&lt;qos/>&lt;/attribute>
-   &lt;attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector&lt;/attribute>
-   &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
-   &lt;attribute id='changeDetector.groupColName'>ICAO_ID&lt;/attribute>
-   &lt;attribute id='changeDetector.detectStatement'>SELECT MAX(TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SSXFF')) FROM TEST_TS&lt;/attribute>
-   &lt;attribute id='converter.class'>org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter&lt;/attribute>
-   &lt;attribute id='converter.addMeta'>true&lt;/attribute>
-   &lt;attribute id='transformer.class'>&lt;/attribute>
-   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
-   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-&lt;/plugin>
- * </pre>
  *
  * <p>
  * This plugin uses <tt>java.util.logging</tt> and redirects the logging to xmlBlasters default
@@ -82,7 +58,7 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_Plugin {
+public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor {
    
    public final static String SESSION_ID = "replManager/1";
    private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
@@ -181,10 +157,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public synchronized void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
+   protected synchronized void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
       if (this.initialized)
          return;
-      super.init(global, pluginInfo);
       try {
          // String momClass = get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
          // String registryName = "mom.publisher";

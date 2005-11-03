@@ -7,8 +7,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter.info;
 
 import java.sql.Types;
+import java.util.Properties;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.def.Constants;
 
 public class DbUpdateInfoColDescription {
@@ -111,10 +113,7 @@ public class DbUpdateInfoColDescription {
    private boolean caseSens;
    private String typeName;
    
-   private I_Info info;
-   
    public DbUpdateInfoColDescription(I_Info info) {
-      this.info = info;
    }
 
    
@@ -581,7 +580,47 @@ public class DbUpdateInfoColDescription {
    }
 
    
+   public static DbUpdateInfoColDescription getComplete() {
+      DbUpdateInfoColDescription desc = new DbUpdateInfoColDescription(new PropertiesInfo(new Properties())); 
+      desc.setColName("someName");
+      desc.setTable("tableName");
+      desc.setSchema("schemaName");
+      desc.setCatalog("catalogName");
+      desc.setType("typeName");
+      desc.setPrecision(4);
+      desc.setScale(3);
+      desc.setPrimaryKey(true);
+      desc.setPkName("somePkName");
+      desc.setSqlType(2000);
+      desc.setColSize(10);
+      desc.setRadix(5);
+      desc.setRemarks("Some remarks");
+      desc.setColDefault("someDef");
+      desc.setCharLength(29);
+      desc.setPos(4);
+      desc.setFkCatalog("someForCat");
+      desc.setFkSchema("ForeignSchema");
+      desc.setFkTable("ForeignTable");
+      desc.setFkCol("FkColumn");
+      desc.setFkSeq("FkSequence");
+      desc.setFkUpdRule("forUpdateRule");
+      desc.setFkDelRule("forDelRule");
+      desc.setFkDef("FkDef");
+      desc.setLabel("SomeLabel");
+      desc.setAutoInc(true);
+      desc.setTypeName("VARCHAR");
+      desc.setCaseSens(true);
+      desc.setReadOnly(true);
+      desc.setNullable(4);
+      desc.setSigned(true);
+      return desc;
+   }
+   
+   
    public static void main(String[] args) {
+
+      System.out.println(DbUpdateInfoColDescription.getComplete().toXml(""));
+      System.out.println("\n\n\n");
       
       System.out.println("THE java.sql.Types integer codes");
       System.out.println("=====================================");
@@ -617,5 +656,8 @@ public class DbUpdateInfoColDescription {
       System.out.println("VARCHAR\t" + Types.VARCHAR);
       System.out.println("=====================================");
    }
+   
+   
+   
    
 }
