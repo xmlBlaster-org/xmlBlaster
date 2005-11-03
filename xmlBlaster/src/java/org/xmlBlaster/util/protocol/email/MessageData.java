@@ -8,6 +8,7 @@ package org.xmlBlaster.util.protocol.email;
 
 import java.util.ArrayList;
 
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
@@ -21,7 +22,7 @@ import org.xmlBlaster.util.def.MethodName;
  * @see com.dcx.eng.adapter.TestMessageData
  */
 public class MessageData {
-   protected String encoding = "UTF-8"; // "text/plain; charset=UTF-8"
+   protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
 
    protected String[] recipients;
 
