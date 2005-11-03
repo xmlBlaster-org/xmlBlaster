@@ -50,9 +50,10 @@ public class XmlBlasterJdk14LoggingHandler extends Handler {
     * JDK 1.4 logging output to our logging system.
     * </p>
     * @param glob The configuration
+    * @return The used configuration file (can be used for user notification)
     * @throws XmlBlasterException if redirection fails
     */
-   public static void initLogManager(Global glob) throws XmlBlasterException {
+   public static URL initLogManager(Global glob) throws XmlBlasterException {
       FileLocator fl = new FileLocator(glob);
       URL url = fl.findFileInXmlBlasterSearchPath("xmlBlaster/jdk14LogFile", "xmlBlasterJdk14Logging.properties");
       if (url == null) {
@@ -63,6 +64,7 @@ public class XmlBlasterJdk14LoggingHandler extends Handler {
          InputStream in = url.openStream();
          LogManager.getLogManager().readConfiguration(in);
          in.close();
+         return url;
       }
       catch (Exception e) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION,
