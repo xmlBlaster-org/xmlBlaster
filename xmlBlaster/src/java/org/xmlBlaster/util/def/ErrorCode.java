@@ -21,6 +21,7 @@ import java.util.Iterator;
  */
 public final class ErrorCode implements java.io.Serializable
 {
+   private static final long serialVersionUID = 6926365721931493917L;
    private final static TreeMap hash = new TreeMap(); // The key is the 'errorCode' String and the value is an 'ErrorCode' instance
    private final String errorCode;
    private final String description;
@@ -773,6 +774,7 @@ public final class ErrorCode implements java.io.Serializable
       catch (Exception e) {
          System.out.println("Writing file '" + file + "' failed: " + e.toString());
       }
+      verifySerialization();
    }
 
    private static void verifySerialization() {
