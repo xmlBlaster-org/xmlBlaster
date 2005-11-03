@@ -14,6 +14,7 @@ import java.util.Hashtable;
  */
 public final class MethodName implements java.io.Serializable
 {
+   private static final long serialVersionUID = -6644144030401574462L;
    private final static Hashtable hash = new Hashtable(); // The key is the 'methodName' String and the value is an 'MethodName' instance
    private final String methodName;
    private final int argType;
@@ -164,6 +165,7 @@ public final class MethodName implements java.io.Serializable
       return new SerializedForm(this.getMethodName());
    }
    private static class SerializedForm implements java.io.Serializable {
+      private static final long serialVersionUID = -4747332683196055305L;
       String methodName;
       SerializedForm(String methodName) { this.methodName = methodName; }
       Object readResolve() throws java.io.ObjectStreamException {
@@ -179,7 +181,7 @@ public final class MethodName implements java.io.Serializable
     */
    public static void main (String [] args) {
       try {
-         MethodName methodName = MethodName.toMethodName((String)null);
+         MethodName.toMethodName((String)null);
          System.out.println("null should not return");
       }
       catch (Throwable e) {
