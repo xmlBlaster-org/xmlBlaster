@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
+import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -24,6 +25,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Main class to invoke the xmlBlaster server.
@@ -154,30 +156,15 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             System.exit(0);
       }
 
-      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", false);
+      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
       if (jdk14loggingCapture) {
-         try {
-            // Use reflection to be JDK 1.3 runtime compatible:
-            Class clazz = java.lang.Class.forName("org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler");
-            Class[] paramCls = new Class[1];
-            paramCls[0] = org.xmlBlaster.util.Global.class;
-            Object[] params = new Object[1];
-            params[0] = this.glob;
-            java.lang.reflect.Method method = clazz.getMethod("initLogManager", paramCls);
-            method.invoke(clazz, params);
-         }
-         catch (Throwable e) {
-            log.warn(ME, "Capturing JDK 1.4 logging output failed (which is OK in a JDK 1.3 environment): " + e.toString());
-         }
-         /*
-         try {
-            // since JKD 1.4:
-            XmlBlasterJdk14LoggingHandler.initLogManager(this.glob);
+         try { // since JKD 1.4:
+            URL url = XmlBlasterJdk14LoggingHandler.initLogManager(this.glob);
+            log.info(ME, "Capturing JDK 1.4 logging with configuration '" + url.toString() + "'");
          }
          catch (XmlBlasterException e) {
             log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
          }
-         */
       }
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
