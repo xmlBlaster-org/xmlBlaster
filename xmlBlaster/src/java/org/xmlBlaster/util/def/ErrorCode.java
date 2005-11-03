@@ -747,6 +747,7 @@ public final class ErrorCode implements java.io.Serializable
     * A helper class for singleton serialization. 
     */
    private static class SerializedForm implements java.io.Serializable {
+      private static final long serialVersionUID = 1L;
       String errorCode;
       SerializedForm(String errorCode) { this.errorCode = errorCode; }
       Object readResolve() throws java.io.ObjectStreamException {
