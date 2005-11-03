@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.io.IOException;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
@@ -51,6 +50,12 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *   &lt;/plugin&gt;
  * </pre>
  * 
+ * <p>
+ * Switch on logging with
+ * <pre>-trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true</pre>
+ * and add to xmlBlasterJdk14Logging.properties:
+ * <pre>handlers = org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler
+ * .level= FINEST</pre>
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
@@ -149,6 +154,23 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          return this.listeners.remove(key);
       }
    }
+   
+   public String[] getListenerKeys() {
+      synchronized (this.listeners) {
+         return (String[])this.listeners.keySet().toArray(new String[this.listeners.size()]);
+      }
+   }
+
+   public String getListeners() {
+      String[] arr = getListenerKeys();
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i<arr.length; i++) {
+         buf.append(arr[i]);
+         if (i < arr.length - 1)
+            buf.append(", ");
+      }
+      return buf.toString();
+   }
 
    /**
     * Notify a listener about a new email. The registration remains The listener
@@ -163,10 +185,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       String key = messageData.getSessionId() + messageData.getRequestId();
       I_ResponseListener listenerSession = null;
       I_ResponseListener listenerRequest = null;
+      I_ResponseListener listenerClusterNodeId = null;
       synchronized (this.listeners) {
          listenerRequest = (I_ResponseListener) this.listeners.get(key);
          listenerSession = (I_ResponseListener) this.listeners.get(messageData
                .getSessionId());
+         listenerClusterNodeId = (I_ResponseListener) this.listeners.get(this.glob.getId());
       }
 
       // A request/reply handler is interested in specific messages only
@@ -178,6 +202,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       // A session is interested in all messages
       if (listenerSession != null) {
          listenerSession.responseEvent(messageData.getRequestId(), messageData);
+         return messageData.getSessionId();
+      }
+      
+      // A cluster node is interested in all messages (EmailDriver.java)
+      if (listenerClusterNodeId != null) {
+         listenerClusterNodeId.responseEvent(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
 
@@ -310,7 +340,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          boolean responseArrived = false;
          for (int i = 0; i < msgs.length; i++) {
             MessageData messageData = msgs[i];
-            notify(messageData);
+            String notifiedListener = notify(messageData);
+            if (notifiedListener == null)
+               log.warning("None of the registered listeners (" + getListeners() + ") wants this email: " + messageData.toXml());
          }
 
          if (!responseArrived) {
@@ -321,12 +353,16 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          if (this.firstException
                && !e.isErrorCode(ErrorCode.RESOURCE_CONFIGURATION_CONNECT))
             log.severe("[" + this.pop3Url + "] POP3 polling failed: "
-                  + e.toString());
+                  + e.getMessage());
          else { // RESOURCE_CONFIGURATION_CONNECT is logged already
-            log.finer("[" + this.pop3Url + "] POP3 polling failed: "
-                  + e.toString());
+            log.info("[" + this.pop3Url + "] POP3 polling failed: "
+                  + e.getMessage());
          }
          this.firstException = false;
+      }
+      catch (Throwable e) {
+         log.severe("[" + this.pop3Url + "] POP3 polling failed: "
+               + e.toString());
       }
 
       try {
@@ -373,8 +409,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
     */
    public String getUrlWithoutPassword() {
       URLName urln = new URLName(this.pop3Url);
-      return urln.getProtocol() + "://" + urln.getUsername() + "@"
-            + urln.getHost() + ":" + urln.getPort() + urln.getFile();
+      return urln.getProtocol() + "://"
+              + urln.getUsername() + "@" + urln.getHost()
+              + ((urln.getPort() > 0) ? (":" + urln.getPort()) : "")
+              + "/" + urln.getFile();
    }
 
    /**
@@ -410,10 +448,16 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
                   + " milliseconds again:" + e.toString());
             this.isConnected = false;
          }
-         throw new XmlBlasterException(this.glob,
+         if (e instanceof javax.mail.AuthenticationFailedException)
+            throw new XmlBlasterException(this.glob,
                ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
-                     .getName(), "The POP3 server '" + getUrlWithoutPassword()
+                     .getName(), "The POP3 server '" + this.pop3Url
                      + "' is not available", e);
+         else
+            throw new XmlBlasterException(this.glob,
+                  ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
+                        .getName(), "The POP3 server '" + getUrlWithoutPassword()
+                        + "' is not available", e);
       }
    }
 
@@ -441,6 +485,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
 
          MessageData[] datas = new MessageData[msgs.length];
          for (int i = 0; i < msgs.length; i++) {
+            log.fine("Readig message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
             if (clear)
                msg.setFlag(Flags.Flag.DELETED, true);

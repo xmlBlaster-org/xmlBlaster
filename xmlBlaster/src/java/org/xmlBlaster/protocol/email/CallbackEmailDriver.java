@@ -102,7 +102,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     */
    public void init(Global glob, CallbackAddress callbackAddress)
          throws XmlBlasterException {
-      super.init(glob, callbackAddress);
+      super.init(glob, callbackAddress, this.pluginInfo);
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
       setSecretSessionId(callbackAddress.getSecretSessionId());

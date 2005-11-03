@@ -235,6 +235,7 @@ public class MailUtil {
       try {
          String ct = p.getContentType();
          String fileName = p.getFileName();
+         if (fileName == null) fileName = "body.xml";
    
          /*
           * Using isMimeType to determine the content type avoids fetching the

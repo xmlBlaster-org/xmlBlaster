@@ -85,7 +85,7 @@ public class EmailCallbackImpl extends EmailExecutor implements I_CallbackServer
       }
       
       // Now we can do super.init() as it needs the pop3Driver in global
-      super.init(glob, callbackAddress);
+      super.init(glob, callbackAddress, this.pluginInfo);
       
       // Who are we?
       // We need to correct the mail addresses from EmailExecutor

@@ -326,7 +326,7 @@ public class MessageData {
    /**
     * Find the messageId of this message. 
     * 
-    * Subject: <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>UPDATE</methodName></messageId>
+    * Subject: <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     * 
     * @param messageData
     * @param tag
@@ -371,7 +371,7 @@ public class MessageData {
     * 
     * @param methodName Can be null
     * @return A well formatted XML
-    * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>UPDATE</methodName></messageId>
+    * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
    public String createMessageId(MethodName methodName) {
       return createMessageId(this.sessionId, this.requestId, methodName);

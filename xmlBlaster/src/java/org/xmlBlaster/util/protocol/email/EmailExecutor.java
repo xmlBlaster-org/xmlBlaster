@@ -11,7 +11,7 @@ import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.email.AttachmentHolder;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
@@ -42,21 +42,21 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
    private AddressBase addressBase;
 
-   private PluginInfo pluginInfo;
+   private I_PluginConfig pluginConfig;
 
    protected InternetAddress fromAddress;
 
    protected InternetAddress toAddress;
 
-   private SmtpClient smtpClient;
+   protected SmtpClient smtpClient;
 
    private String secretSessionId = "";
 
-   private Pop3Driver pop3Driver;
+   protected Pop3Driver pop3Driver;
 
-   private PipedOutputStream oStreamForResponse;
+   protected PipedOutputStream oStreamForResponse;
 
-   private PipedInputStream iStreamSend;
+   protected PipedInputStream iStreamSend;
 
    /**
     * This init() is called after the init(Global, PluginInfo)
@@ -64,11 +64,12 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * @param addressBase
     *           Contains the email TO: address
     */
-   public void init(Global glob, AddressBase addressBase)
+   public void init(Global glob, AddressBase addressBase, I_PluginConfig pluginConfig)
          throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("email");
       this.addressBase = addressBase;
+      this.pluginConfig = pluginConfig;
 
       this.secretSessionId = addressBase.getSecretSessionId();
       /*
@@ -78,19 +79,23 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
        */
 
       String to = addressBase.getRawAddress();
-      try {
-         this.toAddress = new InternetAddress(to);
-      } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'to' address '" + to + "'");
+      if (to != null && to.length() > 0) {
+         // The xmlBlaster address is given on client side
+         // but not on server side
+         try {
+            this.toAddress = new InternetAddress(to);
+         } catch (AddressException e) {
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
+                  ME, "Illegal 'to' address '" + to + "'");
+         }
       }
 
       this.smtpClient = SmtpClient.instance();
-      this.smtpClient.setSessionProperties(null, this.glob, this.pluginInfo);
+      this.smtpClient.setSessionProperties(null, this.glob, this.pluginConfig);
 
       // from="xmlBlaster@localhost"
       String from = this.glob.get("mail.smtp.from", this.smtpClient.getUser()
-            + "@localhost", null, this.pluginInfo);
+            + "@localhost", null, this.pluginConfig);
       try {
          this.fromAddress = new InternetAddress(from);
       } catch (AddressException e) {
@@ -254,7 +259,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                               + this.pop3Driver.getPop3Url()
                               + ", check if client and server have identical compression settings: "
                               + e.toString() + ": " + messageData.toXml());
-            shutdown();
+            //shutdown();
             return;
          }
 
@@ -270,7 +275,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          } catch (Throwable e) {
             log.warn(ME, "Can't process email data from "
                   + this.pop3Driver.getPop3Url() + ": " + e.toString());
-            shutdown();
+            //shutdown();
          }
       }
 
@@ -288,7 +293,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       super.oStream.close();
 
       String subject = this.glob.get("mail.subject",
-            "XmlBlaster Generated Email ", null, this.pluginInfo);
+            "XmlBlaster Generated Email ", null, this.pluginConfig);
       String messageId = MessageData.createMessageId(getSecretSessionId(),
             requestId, methodName);
 
@@ -300,6 +305,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       // The real message blob
       String attachmentName = "xmlBlasterMessage" + Parser.XBFORMAT_EXTENSION; // ".xbf";
 
+      if (this.toAddress == null)
+         throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
       this.smtpClient.sendEmail(this.fromAddress, this.toAddress, subject,
             attachmentName, this.iStreamSend, attachmentName2, messageId,
             Constants.UTF8_ENCODING);
