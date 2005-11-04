@@ -8,25 +8,21 @@ Version:   $Id$
 package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
-import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.jutils.io.FileUtil;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
-import java.util.Properties;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
@@ -73,10 +69,6 @@ public class CorbaDriver implements I_Driver
    /** The URL path over which the IOR can be accessed (via our http bootstrap server) */
    private final String urlPath = "/AuthenticationService.ior";
    private AddressServer addressServer;
-
-   private static boolean first=true;
-   private static String origORBClass;
-   private static String origORBSingletonClass;
 
    /** Get a human readable name of this driver */
    public String getName() {
