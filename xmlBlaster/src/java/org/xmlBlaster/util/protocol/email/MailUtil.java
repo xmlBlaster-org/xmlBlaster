@@ -263,7 +263,7 @@ public class MailUtil {
                } else if (o instanceof InputStream) {
                   InputStream is = (InputStream) o;
                   ByteArray ba = new ByteArray(p.getSize() > 0 ? p.getSize() : 1024, is);
-                  AttachmentHolder a = new AttachmentHolder(fileName, ct, ba.getByteArray());
+                  AttachmentHolder a = new AttachmentHolder(fileName, ct, ba.toByteArray());
                   attachments.add(a);
                } else {
                   AttachmentHolder a = new AttachmentHolder(fileName, ct, (o.toString()).getBytes(Constants.UTF8_ENCODING));
@@ -327,8 +327,14 @@ public class MailUtil {
                pr("========This is a binary input stream, level="+level+"======", level);
                InputStream is = (InputStream) o;
                int c;
-               while ((c = is.read()) != -1)
-                  System.out.write(c);
+               System.out.print('[');
+               while ((c = is.read()) != -1) {
+                  if (c == 0)
+                     System.out.print('*');
+                  else
+                     System.out.write(c);
+               }
+               System.out.print(']');
             } else {
                pr("================This is an unknown type, level="+level+"===========", level);
                pr(o.toString(), level);
