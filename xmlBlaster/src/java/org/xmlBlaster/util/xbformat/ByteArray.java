@@ -102,7 +102,9 @@ public class ByteArray extends OutputStream {
     }
 
     /**
-     * Get the inner byte array buffer, handle with care
+     * Get the inner byte array buffer, handle with care. 
+     * AWARE: The buf.length is usually longer than size() and
+     * you should not access past the size() end.
      */
     public byte[] getByteArray() {
         return buf;
