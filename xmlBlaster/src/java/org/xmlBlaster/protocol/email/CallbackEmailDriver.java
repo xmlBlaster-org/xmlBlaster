@@ -112,7 +112,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     * This sends the update to the client.
     */
    public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      return super.sendEmail(msgArr, MethodName.UPDATE, Executor.WAIT_ON_RESPONSE);
+      return (String[])super.sendEmail(msgArr, MethodName.UPDATE, Executor.WAIT_ON_RESPONSE);
    }
 
    /**

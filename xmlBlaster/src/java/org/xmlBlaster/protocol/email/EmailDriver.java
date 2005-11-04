@@ -11,13 +11,19 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.engine.qos.AddressServer;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
+import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.xbformat.Parser;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -197,6 +203,63 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       super.pop3Driver.registerForEmail(key, null, this);
       log.info("Initialized email listener with key '" + key + "' and email '" + super.fromAddress.toString() + "'");
    }
+
+   /*
+    * Notification by Pop3Driver when a (response) message arrives. Enforced by
+    * I_ResponseListener
+   public void responseEvent(String requestId, Object response) {
+      MessageData messageData = (MessageData) response;
+   }
+    */
+   
+   /**
+    * Handle connect/disconnect
+    */
+   public final boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
+      try {
+         log.info("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+
+         // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
+         if (super.receive(receiver, udp) == false) {
+            if (MethodName.CONNECT == receiver.getMethodName()) {
+               ConnectQosServer conQos = new ConnectQosServer(this.glob, receiver.getQos());
+               conQos.setAddressServer(getAddressServer());
+               //setLoginName(conQos.getUserId());
+               ConnectReturnQosServer retQos = this.authenticate.connect(getAddressServer(), conQos);
+               receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
+               executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+             }
+            else if (MethodName.DISCONNECT == receiver.getMethodName()) {
+               executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
+               // Note: the disconnect will call over the CbInfo our shutdown as well
+               // setting sessionId = null prevents that our shutdown calls disconnect() again.
+               this.authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+            }
+         }
+      }
+      catch (XmlBlasterException e) {
+         log.fine("Can't handle message, throwing exception back to client: " + e.toString());
+         try {
+            if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
+               executeException(receiver, e, false);
+            else
+               log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
+         }
+         catch (Throwable e2) {
+            log.severe("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+         }
+      }
+      catch (IOException e) {
+         log.warning("Lost connection to client: " + e.toString());
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         log.severe("Lost connection to client: " + e.toString());
+      }
+      return true;
+   }
+
+   
 
    /**
     * Deactivate xmlBlaster access (standby), no clients can connect.
