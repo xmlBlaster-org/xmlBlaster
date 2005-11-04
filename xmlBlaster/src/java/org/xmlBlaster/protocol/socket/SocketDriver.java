@@ -18,7 +18,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
@@ -61,7 +61,7 @@ import java.io.InputStream;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @author <a href="mailto:bpoka@axelero.hu">Balázs Póka</a> (SSL embedding, zlib compression)
  *
- * @see org.xmlBlaster.util.xbformat.Parser
+ * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketDriver extends Thread implements I_Driver /* which extends I_Plugin */
@@ -155,7 +155,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
 
             byte packetBuffer[] = new byte[MAX_PACKET_SIZE];
             DatagramPacket packet = new DatagramPacket(packetBuffer, packetBuffer.length);
-            Parser receiver = new Parser(glob, null);
+            MsgInfo receiver = null;
             listenerReadyUDP = true;
             while (runningUDP) {
                try {
@@ -183,7 +183,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
                }
                InputStream iStream = new ByteArrayInputStream(packet.getData(), 0, actualSize);
                try {
-                  receiver.parse(iStream);
+                  receiver = MsgInfo.parse(glob, null, iStream);
                }
                catch (Throwable e) {
                   log.error(ME, "Error parsing data from UDP packet: " + e);

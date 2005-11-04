@@ -21,7 +21,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  * All adjustable parameters are explained in {@link org.xmlBlaster.protocol.email.EmailDriver#usage()}
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  *
- * @see org.xmlBlaster.util.xbformat.Parser
+ * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  */
 public class EmailDriver extends EmailExecutor implements I_Driver /* which extends I_Plugin */
@@ -215,7 +215,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    /**
     * Handle connect/disconnect
     */
-   public final boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
+   public final boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       try {
          log.info("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 

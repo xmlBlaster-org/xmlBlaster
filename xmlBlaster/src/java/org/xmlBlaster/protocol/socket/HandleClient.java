@@ -18,7 +18,7 @@ import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.net.DatagramPacket;
@@ -183,14 +183,14 @@ public class HandleClient extends Executor implements Runnable
       }
       try {
          if (expectingResponse) {
-            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
             parser.addMessage(msgArr);
             Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
             parser.addMessage(msgArr);
             execute(parser, Executor.ONEWAY, this.driver.useUdpForOneway());
             return null;
@@ -232,7 +232,7 @@ public class HandleClient extends Executor implements Runnable
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
       try {
          String cbSessionId = "";
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
          parser.addMessage(qos);
          Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
          if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
@@ -243,7 +243,7 @@ public class HandleClient extends Executor implements Runnable
       }
    }
 
-   public void handleMessage(Parser receiver, boolean udp) {
+   public void handleMessage(MsgInfo receiver, boolean udp) {
       try {
 
          if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
@@ -364,13 +364,15 @@ public class HandleClient extends Executor implements Runnable
     */
    public void run() {
       if (log.CALL) log.call(ME, "Handling client request ...");
-      Parser receiver = new Parser(glob, progressListener);
       try {
          if (log.TRACE)
             log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
          while (running) {
+            MsgInfo msgInfo = null;
             try {
-               receiver.parse(iStream); // blocks until a message arrives
+               // blocks until a message arrives
+               msgInfo = MsgInfo.parse(glob, progressListener, iStream);
+               handleMessage(msgInfo, false);
             }
             catch (Throwable e) {
                if (e.toString().indexOf("closed") != -1) {
@@ -385,7 +387,6 @@ public class HandleClient extends Executor implements Runnable
                shutdown();
                break;
             }
-            handleMessage(receiver, false);
          }
       }
       finally {

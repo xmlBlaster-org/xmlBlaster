@@ -16,11 +16,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 
 
@@ -205,7 +204,7 @@ public class SocketCbConnection extends Executor
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
          parser.addMessage(msgArr);
          if (expectingResponse) {
             Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
@@ -246,7 +245,7 @@ public class SocketCbConnection extends Executor
 
       try {
          String cbSessionId = "";
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId);
          parser.addMessage(qos);
          Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;

@@ -21,7 +21,7 @@ import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import java.io.IOException;
@@ -170,7 +170,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          // sessionId is usually null on login, on reconnect != null
          return (String)super.sendEmail(connectQos, MethodName.CONNECT, Executor.WAIT_ON_RESPONSE);
 /*
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId);
          parser.addQos(connectQos);
          return (String)super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          */
@@ -207,7 +207,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos);
          super.execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          return true;
@@ -251,7 +251,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + sessionId + ")");
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response; // return the QoS
@@ -273,7 +273,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(): id=" + sessionId);
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
@@ -293,7 +293,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + sessionId);
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
@@ -319,7 +319,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                                        "The argument of method publishArr() are invalid");
       }
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
@@ -344,7 +344,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
          super.execute(parser, Executor.ONEWAY, SocketUrl.SOCKET_TCP);
       }
@@ -363,7 +363,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + sessionId);
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.ERASE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS TODO
@@ -384,7 +384,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (MsgUnitRaw[])response;
@@ -403,7 +403,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    {
       if (this.isInitialized) return "";
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;

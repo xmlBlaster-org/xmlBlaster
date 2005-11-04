@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 import java.io.IOException;
 
@@ -25,7 +25,7 @@ public class WorkerThread extends Thread
    private final LogChannel log;
 
    /** Contains the received message */
-   private final Parser parser;
+   private final MsgInfo parser;
 
    /** The manager class, my creator and my destiny */
    private final SocketCallbackImpl cbHandler;
@@ -33,7 +33,7 @@ public class WorkerThread extends Thread
    /**
     * Creates the thread. 
     */
-   public WorkerThread(Global glob, SocketCallbackImpl cbHandler, Parser receiver) {
+   public WorkerThread(Global glob, SocketCallbackImpl cbHandler, MsgInfo receiver) {
       super("XmlBlaster."+cbHandler.getType()+".cbWorkerThread");
       this.log = glob.getLog("socket");
       this.cbHandler = cbHandler;

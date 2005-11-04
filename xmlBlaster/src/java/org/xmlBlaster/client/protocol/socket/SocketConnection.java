@@ -23,7 +23,7 @@ import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
@@ -303,7 +303,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
          parser.addQos(connectQos);
          return (String)getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
       }
@@ -339,7 +339,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
@@ -433,7 +433,7 @@ public class SocketConnection implements I_XmlBlasterConnection
    {
       if (log.CALL) log.call(ME, "Entering subscribe(id=" + sessionId + ")");
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response; // return the QoS
@@ -456,7 +456,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (log.DUMP) log.dump(ME, "Entering unSubscribe(): id=" + sessionId + " key='" + xmlKey_literal + "' qos='" + qos_literal + "'");
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
@@ -476,7 +476,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
@@ -502,7 +502,7 @@ public class SocketConnection implements I_XmlBlasterConnection
                                        "The argument of method publishArr() are invalid");
       }
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
@@ -527,7 +527,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
          getCbReceiver().execute(parser, Executor.ONEWAY, this.useUdpForOneway);
       }
@@ -553,7 +553,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.ERASE, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS TODO
@@ -574,7 +574,7 @@ public class SocketConnection implements I_XmlBlasterConnection
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (MsgUnitRaw[])response;
@@ -605,7 +605,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       }
 
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
          Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;

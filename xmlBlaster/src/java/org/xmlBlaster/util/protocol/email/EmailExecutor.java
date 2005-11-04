@@ -18,10 +18,12 @@ import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.protocol.email.MessageData;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XbfParser;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -152,7 +154,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
          super.initialize(this.glob, addressBase, iStreamResponse, oStreamSend);
 
-         Parser parser = new Parser(this.glob, Parser.INVOKE_BYTE, methodName,
+         MsgInfo parser = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName,
                sessionId, super.getProgressListener());
          parser.addMessage(msgArr);
          requestId = parser.createRequestId(null);
@@ -189,7 +191,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       AttachmentHolder[] atts = messageData.getAttachments();
       byte[] content = null;
       for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(Parser.XBFORMAT_EXTENSION)) { // "*.xbf"
+         if (atts[j].getFileName().endsWith(XbfParser.XBFORMAT_EXTENSION)) { // "*.xbf"
             content = atts[j].getContent();
             break;
          }
@@ -230,7 +232,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                      oStreamSend);
             }
 
-            log.info(ME, "Parsing now: " + Parser.toLiteral(content));
+            log.info(ME, "Parsing now: " + MsgInfo.toLiteral(content));
             this.oStreamForResponse.write(content);
             this.oStreamForResponse.flush();
             return true;
@@ -255,10 +257,10 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       boolean responseArrived = extractMsgUnit(messageData);
 
       if (responseArrived) {
-         Parser receiver = new Parser(glob, progressListener);
+         MsgInfo receiver = null;
          try {
             // Reads message again from this.oStreamForResponse
-            receiver.parse(iStream);
+            receiver = MsgInfo.parse(glob, progressListener, iStream);
             this.oStreamForResponse = null;
          } catch (Throwable e) {
             log
@@ -294,7 +296,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    /**
     * Extends Executor.sendMessage
     */
-   protected void sendMessage(Parser msgInfo, String requestId,
+   protected void sendMessage(MsgInfo msgInfo, String requestId,
          MethodName methodName, boolean udp) throws XmlBlasterException,
          IOException {
       super.sendMessage(msgInfo, requestId, methodName, udp); // compresses it to
@@ -308,11 +310,11 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
       // Transport messageId in subject:
       subject += messageId;
-      // and for testing as attachment
-      String attachmentName2 = "messageId" + MessageData.MESSAGEID_EXTENSION; // ".mid"
+      // and for testing as attachment, for example "messageId.mid"
+      String attachmentName2 = "messageId" + MessageData.MESSAGEID_EXTENSION;
 
-      // The real message blob
-      String attachmentName = "xmlBlasterMessage" + Parser.XBFORMAT_EXTENSION; // ".xbf";
+      // The real message blob, for example "xmlBlasterMessage.xbf"
+      String attachmentName = "xmlBlasterMessage" + msgInfo.getMsgInfoParser().getExtension();
 
       if (this.toAddress == null)
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
@@ -323,7 +325,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       log.info(ME + ".sendUpdate", "Sending email from "
             + this.fromAddress.toString() + " to " + this.toAddress.toString()
             + " done");
-      log.info(ME, "Parser dump: " + Parser.toLiteral(msgInfo.createRawMsg()));
+      log.info(ME, "MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
    }
 
    /**

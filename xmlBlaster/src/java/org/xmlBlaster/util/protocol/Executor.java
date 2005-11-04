@@ -16,7 +16,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -257,7 +257,7 @@ public abstract class Executor
     * Handle common messages
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
-   public boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
+   public boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
@@ -433,7 +433,7 @@ public abstract class Executor
     * @param expectingResponse WAIT_ON_RESPONSE=true or ONEWAY=false
     * @return the response object of the request, of type String(QoS), MsgUnitRaw[] or XmlBlasterException
     */
-   public Object execute(Parser parser, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
+   public Object execute(MsgInfo parser, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(prefix);
       if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
@@ -459,8 +459,7 @@ public abstract class Executor
          startSignal = null;
 
       // Send the message / method invocation ...
-      byte[] rawMsg = parser.createRawMsg();
-      if (log.DUMP) log.dump(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
+      if (log.DUMP) log.dump(ME, "Sending now : >" + parser.toLiteral() + "<");
       try {
          sendMessage(parser, parser.getRequestId(), parser.getMethodName(), udp);
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
@@ -477,7 +476,7 @@ public abstract class Executor
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
-      if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
+      if (log.DUMP) log.dump(ME, "Successful sent message: >" + parser.toLiteral() + "<");
 
       if (!expectingResponse) {
          return null;
@@ -548,8 +547,8 @@ public abstract class Executor
    /**
     * Send a one way response message back to the other side
     */
-   protected final void executeResponse(Parser receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(glob, Parser.RESPONSE_BYTE, receiver.getRequestId(),
+   protected final void executeResponse(MsgInfo receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
+      MsgInfo returner = new MsgInfo(glob, MsgInfo.RESPONSE_BYTE, receiver.getRequestId(),
                            receiver.getMethodName(), receiver.getSecretSessionId(),
                            this.progressListener);
       if (response instanceof String)
@@ -564,15 +563,15 @@ public abstract class Executor
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
       sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
+      if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
    }
 
    /**
     * Send a one way exception back to the other side
     */
-   protected final void executeException(Parser receiver, XmlBlasterException e, boolean udp) throws XmlBlasterException, IOException {
+   protected final void executeException(MsgInfo receiver, XmlBlasterException e, boolean udp) throws XmlBlasterException, IOException {
       e.isServerSide(glob.isServerSide());
-      Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(),
+      MsgInfo returner = new MsgInfo(glob, MsgInfo.EXCEPTION_BYTE, receiver.getRequestId(),
                                    receiver.getMethodName(), receiver.getSecretSessionId(),
                                    this.progressListener);
       returner.setChecksum(false);
@@ -580,14 +579,14 @@ public abstract class Executor
       returner.addException(e);
       sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
+      if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
    }
 
    /**
     * Flush the data to the socket. 
     * Overwrite this in your derived class to send UDP 
     */
-   protected void sendMessage(Parser msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
+   protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
       byte[] msg = msgInfo.createRawMsg();
       I_ProgressListener listener = this.progressListener;
       if (listener != null) {

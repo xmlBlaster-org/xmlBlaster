@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.xbformat.Parser;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -30,7 +30,7 @@ import java.io.IOException;
  * One instance of this for each client, as a separate thread blocking
  * on the socket input stream waiting for messages from xmlBlaster. 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
- * @see org.xmlBlaster.util.xbformat.Parser
+ * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
@@ -201,11 +201,11 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
       while(running) {
 
-         Parser receiver = new Parser(glob);
          try {
-            receiver.parse(iStream); // This method blocks until a message arrives
+            // This method blocks until a message arrives
+            MsgInfo receiver = MsgInfo.parse(glob, progressListener, iStream);
 
-            if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<\n" + receiver.dump());
+            if (log.DUMP) log.dump(ME, "Receiving message >" + receiver.toLiteral() + "<\n" + receiver.dump());
 
             if (receiver.isInvoke() && multiThreaded) {
                // Parse the message and invoke callback to client code in a separate thread
