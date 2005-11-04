@@ -74,14 +74,14 @@ public class MsgInfo
     * Ctor to parse messages using I_MsgInfoParser implementations.
     */
    public MsgInfo(Global glob) {
-      this(glob, (byte)0, (String)null, (MethodName)null, (String)null, null);
+      this(glob, INVOKE_BYTE, (String)null, (MethodName)null, (String)null, null);
    }
 
    /**
     * Ctor to parse messages with msgInfo.parse(iStream);
     */
    public MsgInfo(Global glob, I_ProgressListener progressListener) {
-      this(glob, (byte)0, (String)null, (MethodName)null, (String)null, progressListener);
+      this(glob, INVOKE_BYTE, (String)null, (MethodName)null, (String)null, progressListener);
    }
 
    /**

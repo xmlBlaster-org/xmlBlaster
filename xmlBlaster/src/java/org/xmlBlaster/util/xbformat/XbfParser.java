@@ -16,12 +16,9 @@ import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-
-import java.util.Vector;
 
 /**
- * XbfParser class for raw socket messages.
+ * XbfParser class for raw socket/email messages.
  * <br />
  * This class creates and parses raw byte[] messages which can be used
  * to transfer over a socket connection.
@@ -103,8 +100,8 @@ public class XbfParser implements I_MsgInfoParser
 
    // create only once, for low level parsing
    //private ByteArray byteArray = new ByteArray(256);
-   private Buf buf = new Buf();
-   private byte[] first10 = new byte[NUM_FIELD_LEN];
+   private Buf buf;
+   private byte[] first10;
    private long lenUnzipped;
    private long checkSumResult;
 
@@ -112,12 +109,18 @@ public class XbfParser implements I_MsgInfoParser
    private I_ProgressListener progressListener;
 
    public XbfParser() {
+      //initialize();
    }
 
    public void init(Global glob, I_ProgressListener progressListener) {
       this.glob = glob;
       this.log = glob.getLog("xfb");
       this.progressListener = progressListener;
+   }
+   
+   private void initialize() {
+      this.buf = new Buf();
+      this.first10 = new byte[NUM_FIELD_LEN];
    }
 
    /**
@@ -222,6 +225,7 @@ public class XbfParser implements I_MsgInfoParser
       if (log.CALL) log.call(ME, "Entering parse()");
       MsgInfo msgInfo = new MsgInfo(this.glob);
       msgInfo.setMsgInfoParser(this);
+      initialize();
 
       Buf buf = readOneMsg(msgInfo, in); // blocks until one message is read
 
