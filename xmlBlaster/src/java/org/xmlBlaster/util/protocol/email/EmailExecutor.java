@@ -122,6 +122,19 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             expectingResponse);
    }
 
+   public Object sendEmail(String key, String qos, MethodName methodName,
+         boolean expectingResponse) throws XmlBlasterException {
+      MsgUnitRaw[] msgArr = { new MsgUnitRaw(key, null, qos) };
+      return sendEmail(msgArr, methodName,
+            expectingResponse);
+   }
+
+   public Object sendEmail(MsgUnitRaw msgUnit, MethodName methodName,
+         boolean expectingResponse) throws XmlBlasterException {
+      MsgUnitRaw[] msgArr = { msgUnit };
+      return sendEmail(msgArr, methodName, expectingResponse);
+   }
+
    /**
     * This sends the update to the client.
     * 

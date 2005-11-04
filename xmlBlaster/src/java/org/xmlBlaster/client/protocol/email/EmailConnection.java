@@ -207,17 +207,14 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       }
 
       try {
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
-         parser.addQos((qos==null)?"":qos);
-         super.execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
+         super.sendEmail(qos, MethodName.DISCONNECT, Executor.WAIT_ON_RESPONSE);
+         //MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
+         //parser.addQos((qos==null)?"":qos);
+         //super.execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          return true;
       }
       catch (XmlBlasterException e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e);
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e1);
       }
       finally {
        //  shutdown(); // the callback server
@@ -250,16 +247,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + sessionId + ")");
-      try {
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
-         parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
-         return (String)response; // return the QoS
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine(xmlKey_literal + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.SUBSCRIBE.toString(), e1);
-      }
+      return (String)super.sendEmail(xmlKey_literal, qos_literal, MethodName.SUBSCRIBE, Executor.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -271,17 +259,13 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                                  String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(): id=" + sessionId);
-
-      try {
+      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.UNSUBSCRIBE, Executor.WAIT_ON_RESPONSE);
+         /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.UNSUBSCRIBE.toString(), e1);
-      }
+         */
    }
 
    /**
@@ -291,18 +275,14 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + sessionId);
-
-      try {
+      return (String)super.sendEmail(msgUnit, MethodName.PUBLISH, Executor.WAIT_ON_RESPONSE);
+         /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
          Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // return the QoS
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PUBLISH.toString(), e1);
-      }
+         */
    }
 
    /**
@@ -318,6 +298,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
+      return (String[])super.sendEmail(msgUnitArr, MethodName.PUBLISH, Executor.WAIT_ON_RESPONSE);
+      /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
@@ -328,6 +310,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e1);
       }
+      */
    }
 
    /**
@@ -342,7 +325,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine("The argument of method publishOneway() are invalid");
          return;
       }
-
+      return null;
+      //return (String[])super.sendEmail(msgUnitArr, MethodName.MethodName.PUBLISH_ONEWAY, Executor.Executor.ONEWAY);
+      /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
@@ -352,6 +337,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine("Sending of oneway message failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PUBLISH_ONEWAY.toString(), e);
       }
+      */
    }
 
    /**
