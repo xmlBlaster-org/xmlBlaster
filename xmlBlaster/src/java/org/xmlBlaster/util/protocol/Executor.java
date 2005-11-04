@@ -257,7 +257,7 @@ public abstract class Executor
     * Handle common messages
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
-   public final boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
+   public boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
       if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
