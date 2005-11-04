@@ -325,7 +325,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine("The argument of method publishOneway() are invalid");
          return;
       }
-      return null;
+      return ;
       //return (String[])super.sendEmail(msgUnitArr, MethodName.MethodName.PUBLISH_ONEWAY, Executor.Executor.ONEWAY);
       /*
       try {
