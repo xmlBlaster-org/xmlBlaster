@@ -53,6 +53,7 @@ import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.jutils.log.LogableDevice;
 
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -73,6 +74,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
@@ -1595,26 +1597,29 @@ public class Global implements Cloneable
 
    /**
     * This notation is URLEncoder since JDK 1.4.
-    * To avoid deprecation warnings
-    * at many places and support JDK < 1.4 we provide it here
-    * and simply map it to the old encode(String)
+    * @param enc If null it defaults to "UTF-8"
     */
    public static String encode(String s, String enc) {
-      return java.net.URLEncoder.encode(s);
+      try {
+         return java.net.URLEncoder.encode(s, (enc==null) ? Constants.UTF8_ENCODING : enc);
+      } catch (UnsupportedEncodingException e) {
+         System.out.println("PANIC in encode(" + s + ", " + enc + "): " + e.toString());
+         e.printStackTrace();
+         return s;
+      }
    }
 
    /**
     * This notation is URLDecoder since JDK 1.4.
-    * To avoid deprecation warnings
-    * at many places and support JDK < 1.4 we provide it here
-    * and simply map it to the old encode(String)
+    * @param enc If null it defaults to "UTF-8"
     */
    public static String decode(String s, String enc) {
       try {
-         return java.net.URLDecoder.decode(s);
+         return java.net.URLDecoder.decode(s, (enc==null) ? Constants.UTF8_ENCODING : enc);
       }
       catch (Exception e) {
-         System.out.println("PANIC in decode(" + s + "): " + e.toString());
+         System.out.println("PANIC in decode(" + s + ", " + enc + "): " + e.toString());
+         e.printStackTrace();
          return s;
       }
    }
