@@ -294,10 +294,10 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    /**
     * Extends Executor.sendMessage
     */
-   protected void sendMessage(byte[] msg, String requestId,
+   protected void sendMessage(Parser msgInfo, String requestId,
          MethodName methodName, boolean udp) throws XmlBlasterException,
          IOException {
-      super.sendMessage(msg, requestId, methodName, udp); // compresses it to
+      super.sendMessage(msgInfo, requestId, methodName, udp); // compresses it to
       // our oStreamSend
       super.oStream.close();
 
@@ -323,7 +323,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       log.info(ME + ".sendUpdate", "Sending email from "
             + this.fromAddress.toString() + " to " + this.toAddress.toString()
             + " done");
-      log.info(ME, "Parser dump: " + Parser.toLiteral(msg));
+      log.info(ME, "Parser dump: " + Parser.toLiteral(msgInfo.createRawMsg()));
    }
 
    /**

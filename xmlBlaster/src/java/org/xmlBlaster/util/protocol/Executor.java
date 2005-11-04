@@ -462,7 +462,7 @@ public abstract class Executor
       byte[] rawMsg = parser.createRawMsg();
       if (log.DUMP) log.dump(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
       try {
-         sendMessage(rawMsg, parser.getRequestId(), parser.getMethodName(), udp);
+         sendMessage(parser, parser.getRequestId(), parser.getMethodName(), udp);
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (Throwable e) {
@@ -562,7 +562,7 @@ public abstract class Executor
          returner.addMessage((MsgUnitRaw)response);
       else
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
-      sendMessage(returner.createRawMsg(), receiver.getRequestId(), receiver.getMethodName(), udp);
+      sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
@@ -578,7 +578,7 @@ public abstract class Executor
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
-      sendMessage(returner.createRawMsg(), receiver.getRequestId(), receiver.getMethodName(), udp);
+      sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
@@ -587,7 +587,8 @@ public abstract class Executor
     * Flush the data to the socket. 
     * Overwrite this in your derived class to send UDP 
     */
-   protected void sendMessage(byte[] msg, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
+   protected void sendMessage(Parser msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
+      byte[] msg = msgInfo.createRawMsg();
       I_ProgressListener listener = this.progressListener;
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);

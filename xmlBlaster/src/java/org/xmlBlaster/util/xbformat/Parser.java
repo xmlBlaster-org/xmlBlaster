@@ -497,7 +497,7 @@ public class Parser
     *         NOTE: The first 10 bytes are not initialized.<br />
     *         null: An empty message which only contains the header 10 bytes
     */
-   public final Buf readOneMsg(InputStream in) throws IOException
+   private final Buf readOneMsg(InputStream in) throws IOException
    {
       if (log.TRACE) log.trace(ME, "Entering readOneMsg(), waiting on inputStream");
 
