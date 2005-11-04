@@ -109,8 +109,16 @@ public class DbUpdateInfo implements ReplicationConstants {
             rs = st.executeQuery("SELECT * from " + completeTableName);
             ResultSetMetaData rsMeta = rs.getMetaData();
             int colCount = rsMeta.getColumnCount();
-            if (colCount != this.description.getNumOfColumns())
-               throw new Exception("DbUpdateInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
+            if (colCount != this.description.getNumOfColumns()) {
+               if (this.description.getNumOfColumns() != 0)
+                  throw new Exception("DbUpdateInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
+               // why does this happen ? Is it on old oracle ?
+               for (int i=0; i < colCount; i++) {
+                  DbUpdateInfoColDescription colDescription = new DbUpdateInfoColDescription(this.info);
+                  colDescription.setPos(i+1);
+                  this.description.addColumnDescription(colDescription);
+               }
+            }
             for (int i=1; i <= colCount; i++) {
                colName = rsMeta.getColumnName(i);
                colDesc = this.description.getColumnAtPosition(i);

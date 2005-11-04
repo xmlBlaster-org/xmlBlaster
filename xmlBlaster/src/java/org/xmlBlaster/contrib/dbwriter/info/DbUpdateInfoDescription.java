@@ -193,8 +193,9 @@ public class DbUpdateInfoDescription {
    public void addAttributes(Map map) {
       DbUpdateInfoRow.addProps(map, this.attributes, this.attributeKeys);
    }
-   
-   private synchronized final void addPreparedStatements(Connection conn) throws SQLException {
+
+
+   public synchronized final void addPreparedStatements() throws SQLException {
       if (this.hasAddedStatements)
          return;
       String table = getIdentity();
@@ -305,7 +306,7 @@ public class DbUpdateInfoDescription {
    
    
    public int insert(Connection conn, DbUpdateInfoRow row) throws Exception {
-      addPreparedStatements(conn);
+      addPreparedStatements();
       PreparedStatement st = null;
       try {
          st = conn.prepareStatement(this.insertStatementTxt);
@@ -318,6 +319,10 @@ public class DbUpdateInfoDescription {
             insertIntoStatement(colName, st, i+1, prop, col.getSqlType());
          }
          return st.executeUpdate();
+      }
+      catch (SQLException ex) {
+         log.info("inserting '" + this.insertStatementTxt + "' went wrong");
+         throw ex;
       }
       finally {
          if (st != null)
@@ -338,7 +343,7 @@ public class DbUpdateInfoDescription {
    }
 
    public int delete(Connection conn, DbUpdateInfoRow row) throws Exception {
-      addPreparedStatements(conn);
+      addPreparedStatements();
       PreparedStatement st = null;
       try {
          st = conn.prepareStatement(this.deleteStatementTxt);
@@ -363,7 +368,7 @@ public class DbUpdateInfoDescription {
    
    
    public int update(Connection conn, DbUpdateInfoRow row) throws Exception {
-      addPreparedStatements(conn);
+      addPreparedStatements();
       PreparedStatement st = null;
       try {
          st = conn.prepareStatement(this.updateStatementTxt);
@@ -493,6 +498,13 @@ public class DbUpdateInfoDescription {
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
+      if (this.updateStatementTxt != null)
+         sb.append(offset).append("<!-- update: ").append(this.updateStatementTxt).append("-->");
+      if (this.insertStatementTxt != null)
+         sb.append(offset).append("<!-- insert: ").append(this.insertStatementTxt).append("-->");
+      if (this.deleteStatementTxt != null)
+         sb.append(offset).append("<!-- delete: ").append(this.deleteStatementTxt).append("-->");
+      
       sb.append(offset).append("<").append(DESC_TAG).append(">");
       sb.append(offset + "  ").append("<").append(COMMAND_TAG).append(">").append(this.command).append("</").append(COMMAND_TAG).append(">");
       sb.append(offset + "  ").append("<").append(IDENT_TAG).append(">").append(this.identity).append("</").append(IDENT_TAG).append(">");

@@ -573,9 +573,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       int oldTransIsolation = 0;
       boolean oldTransIsolationKnown = false;
       try {
+         conn.setAutoCommit(true);
          oldTransIsolation = conn.getTransactionIsolation();
          oldTransIsolationKnown = true;
-         conn.setAutoCommit(true);
          this.dbUpdateInfo = new DbUpdateInfo(this.info);
 
          if (catalog != null)
@@ -626,8 +626,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             }
          }
 
-         conn.setAutoCommit(false);
+         conn.commit(); // just to make oracle happy for the next set transaction
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+         conn.setAutoCommit(false);
          // retrieve the Sequence number here ...
          this.newReplKey = incrementReplKey(conn);
          // publish the structure of the table (need to be done here since we
@@ -652,6 +653,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          if (conn != null) {
             if (oldTransIsolationKnown) {
                try {
+                  conn.setAutoCommit(true);
                   conn.setTransactionIsolation(oldTransIsolation);
                } 
                catch (Exception e) {
