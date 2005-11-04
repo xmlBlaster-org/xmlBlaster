@@ -111,6 +111,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
       }
+      
+      log.info(ME, "Initialized email connector from=" + from + " to=" + to);
    }
    
    public Object sendEmail(String qos, MethodName methodName,
@@ -261,6 +263,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             // Reads message again from this.oStreamForResponse
             receiver = MsgInfo.parse(glob, progressListener, iStream);
             this.oStreamForResponse = null;
+            receiver.setBounceObject("mail.from", messageData.getFrom());
          } catch (Throwable e) {
             log
                   .warn(
@@ -315,14 +318,24 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String attachmentName = "xmlBlasterMessage" + msgInfo.getMsgInfoParser().getExtension();
 
-      if (this.toAddress == null)
+      InternetAddress toAddr = this.toAddress;
+      String to = (String)msgInfo.getBounceObject("mail.to");
+      if (to != null) {
+         try { // The EmailDriver has different destinations for each client
+            toAddr = new InternetAddress(to);
+         } catch (AddressException e) {
+            log.warn(ME, "Illegal 'to' address '" + to + "'");
+         }
+      }
+      if (toAddr == null)
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
-      this.smtpClient.sendEmail(this.fromAddress, this.toAddress, subject,
+      
+      this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
             attachmentName, this.iStreamSend, attachmentName2, messageId,
             Constants.UTF8_ENCODING);
 
       log.info(ME + ".sendUpdate", "Sending email from "
-            + this.fromAddress.toString() + " to " + this.toAddress.toString()
+            + this.fromAddress.toString() + " to " + toAddr.toString()
             + " done");
       log.info(ME, "MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
    }

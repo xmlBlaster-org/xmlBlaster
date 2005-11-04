@@ -283,6 +283,7 @@ public class SmtpClient extends Authenticator {
          // "text/plain"
 
          send(message);
+         log.info("Successful send email from=" + from.toString() + " to=" + to.toString());
       } catch (Exception e) {
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",

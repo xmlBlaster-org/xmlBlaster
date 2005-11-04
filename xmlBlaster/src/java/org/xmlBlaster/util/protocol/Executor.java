@@ -548,9 +548,7 @@ public abstract class Executor
     * Send a one way response message back to the other side
     */
    protected final void executeResponse(MsgInfo receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
-      MsgInfo returner = new MsgInfo(glob, MsgInfo.RESPONSE_BYTE, receiver.getRequestId(),
-                           receiver.getMethodName(), receiver.getSecretSessionId(),
-                           this.progressListener);
+      MsgInfo returner = receiver.createReturner(MsgInfo.RESPONSE_BYTE);
       if (response instanceof String)
          returner.addMessage((String)response);
       else if (response instanceof String[])
@@ -571,9 +569,7 @@ public abstract class Executor
     */
    protected final void executeException(MsgInfo receiver, XmlBlasterException e, boolean udp) throws XmlBlasterException, IOException {
       e.isServerSide(glob.isServerSide());
-      MsgInfo returner = new MsgInfo(glob, MsgInfo.EXCEPTION_BYTE, receiver.getRequestId(),
-                                   receiver.getMethodName(), receiver.getSecretSessionId(),
-                                   this.progressListener);
+      MsgInfo returner = receiver.createReturner(MsgInfo.EXCEPTION_BYTE);
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);

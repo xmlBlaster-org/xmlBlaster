@@ -218,7 +218,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    public final boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       try {
          log.info("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-
+         receiver.setBounceObject("mail.to", receiver.getBounceObject("mail.from"));
+         
          // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (super.receive(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {

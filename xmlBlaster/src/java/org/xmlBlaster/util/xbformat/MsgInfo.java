@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -68,6 +70,12 @@ public class MsgInfo
    private Vector msgVec;
    
    private I_MsgInfoParser msgInfoParser;
+   
+   /**
+    * Transports information from receiver to response instance 
+    * (Hack?)
+    */
+   private Map bounceObjects;
 
    /**
     * The same instance object may be reused.
@@ -115,6 +123,18 @@ public class MsgInfo
       setSecretSessionId(sessionId);
    }
 
+   /**
+    * Creates a new instance with the meta info from source. 
+    * @param type Please choose RESPONSE_BYTE or EXCEPTION_BYTE
+    * @return The type is set to RESPONSE_BYTE, the content is empty
+    */
+   public MsgInfo createReturner(byte type) {
+      MsgInfo returner = new MsgInfo(glob, type, getRequestId(),
+            getMethodName(), getSecretSessionId(),
+            getProgressListener());
+      returner.setBounceObjects(getBounceObjects());
+      return returner;
+   }
 
    /**
     * This method allows to reuse a MsgInfo instance.
@@ -850,5 +870,45 @@ public class MsgInfo
          e.printStackTrace();
          System.err.println(e.toString());
       }
+   }
+
+   /**
+    * @return Returns the bounceObjects, is null if none is available
+    */
+   public Map getBounceObjects() {
+      return this.bounceObjects;
+   }
+
+   /**
+    * @return Returns the value, is null if none is found
+    */
+   public Object getBounceObject(String key) {
+      if (this.bounceObjects == null || key == null) return null;
+      return this.bounceObjects.get(key);
+   }
+
+   /**
+    * Sets the given map. 
+    */
+   public void setBounceObjects(Map bounceObjects) {
+      this.bounceObjects = bounceObjects;
+   }
+
+   /**
+    * You can use this as a generic store to convej stuff in MsgInfo. 
+    * @param key The identifier of the object.
+    * @param value The bounceObjects to set, if null nothing happens.
+    */
+   public Object setBounceObject(String key, Object value) {
+      if (value == null) return null;
+      if (this.bounceObjects == null) this.bounceObjects = new HashMap();
+      return this.bounceObjects.put(key, value);
+   }
+
+   /**
+    * @return Returns the progressListener.
+    */
+   public I_ProgressListener getProgressListener() {
+      return this.progressListener;
    }
 }
