@@ -106,9 +106,17 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
             .getName());
       if (this.pop3Driver == null) {
+         log.warn(ME, "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
       }
+   }
+   
+   public Object sendEmail(String qos, MethodName methodName,
+         boolean expectingResponse) throws XmlBlasterException {
+      MsgUnitRaw[] msgArr = { new MsgUnitRaw(null, null, qos) };
+      return sendEmail(msgArr, methodName,
+            expectingResponse);
    }
 
    /**
@@ -119,7 +127,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * @param withResponse
     *           one of Executor.WAIT_ON_RESPONSE or Executor.ONEWAY
     */
-   public String[] sendEmail(MsgUnitRaw[] msgArr, MethodName methodName,
+   public Object sendEmail(MsgUnitRaw[] msgArr, MethodName methodName,
          boolean expectingResponse) throws XmlBlasterException {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob,
@@ -154,7 +162,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          }
 
          // super calls our sendMessage() which effectively sends the message
-         String[] response = (String[]) super.execute(parser,
+         Object response = super.execute(parser,
                expectingResponse, false);
          return response;
       } catch (Throwable e) {
@@ -222,6 +230,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                      oStreamSend);
             }
 
+            log.info(ME, "Parsing now: " + Parser.toLiteral(content));
             this.oStreamForResponse.write(content);
             this.oStreamForResponse.flush();
             return true;
@@ -314,6 +323,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       log.info(ME + ".sendUpdate", "Sending email from "
             + this.fromAddress.toString() + " to " + this.toAddress.toString()
             + " done");
+      log.info(ME, "Parser dump: " + Parser.toLiteral(msg));
    }
 
    /**
