@@ -49,6 +49,7 @@ import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.jutils.log.LogableDevice;
 
@@ -67,6 +68,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -278,6 +280,17 @@ public class Global implements Cloneable
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
+
+      boolean jdk14loggingCapture = getProperty().get("xmlBlaster/jdk14loggingCapture", true);
+      if (jdk14loggingCapture) {
+         try { // since JKD 1.4:
+            URL url = XmlBlasterJdk14LoggingHandler.initLogManager(this);
+            log.info(ME, "Capturing JDK 1.4 logging with configuration '" + url.toString() + "'");
+         }
+         catch (XmlBlasterException e) {
+            log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
+         }
+      }
    }
 
    public static int getCounter() { return counter; }

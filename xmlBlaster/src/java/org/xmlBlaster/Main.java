@@ -15,7 +15,6 @@ import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
-import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -25,7 +24,6 @@ import org.xmlBlaster.protocol.I_Driver;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Main class to invoke the xmlBlaster server.
@@ -154,17 +152,6 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             throw new IllegalArgumentException(glob.getErrorText());
          else
             System.exit(0);
-      }
-
-      boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
-      if (jdk14loggingCapture) {
-         try { // since JKD 1.4:
-            URL url = XmlBlasterJdk14LoggingHandler.initLogManager(this.glob);
-            log.info(ME, "Capturing JDK 1.4 logging with configuration '" + url.toString() + "'");
-         }
-         catch (XmlBlasterException e) {
-            log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
-         }
       }
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
@@ -500,13 +487,13 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
       log.plain(ME, "                              true: Allows user 'joe' to send wrong sender address in PublishQos");
       log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
-      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [false]");
-      log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background.");
-      log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning.");
-      log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702].");
-      log.plain(ME, "   -xmlBlaster.isEmbedded     If set to true no System.exit() is possible [false].");
+      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
+      log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background [true]");
+      log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning [true]");
+      log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702]");
+      log.plain(ME, "   -xmlBlaster.isEmbedded     If set to true no System.exit() is possible [false]");
       log.plain(ME, "   -wipeOutJdbcDB true        Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
-      log.plain(ME, "   -xmlBlaster/jmx/HtmlAdaptor       Set to true to enable JMX HTTP access on 'http://localhost:8082' [false].");
+      log.plain(ME, "   -xmlBlaster/jmx/HtmlAdaptor       Set to true to enable JMX HTTP access on 'http://localhost:8082' [false]");
       log.plain(ME, "   -xmlBlaster/jmx/XmlBlasterAdaptor Set to true to enable JMX xmlBlaster adaptor access for swing GUI 'org.xmlBlaster.jmxgui.Main' [false].");
       log.plain(ME, "   java -Dcom.sun.management.jmxremote ...  Switch on JMX support with jconsole (JDK >= 1.5).");
       log.plain(ME, "----------------------------------------------------------");
