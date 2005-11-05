@@ -14,6 +14,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -24,9 +25,11 @@ import java.util.Vector;
 
 
 /**
- * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MsgUnit of exactly one Client. 
+ * This is a container to hold references on all interesting data
+ * concerning a subscription of exactly one topic from exactly one client. 
  * <p />
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public final class SubscriptionInfo implements /*I_AdminSubscription,*/ SubscriptionInfoMBean /* implements Comparable see SORT_PROBLEM */
 {
@@ -596,4 +599,14 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       }
       return ret;
    }
+   /** JMX */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 }

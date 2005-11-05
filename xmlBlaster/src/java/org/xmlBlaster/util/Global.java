@@ -2278,4 +2278,30 @@ public class Global implements Cloneable
       }
       return str;
    }
+   
+   /**
+    * http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/util/admin/I_AdminPop3Driver.html#setPollingInterval(long)
+    * @param className
+    * @param methodName
+    * @return http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/util/admin/I_AdminPop3Driver.html#setPollingInterval(long)
+    */
+   public static String getJavadocUrl(String className, String methodName) {
+      String prefix = "http://www.xmlblaster.org/xmlBlaster/doc/api/";
+      className = StringHelper.replaceAll(className, ".", "/");
+      String url = prefix + className + ".html";
+      if (methodName != null)
+         url += "#" + methodName;
+      return url;
+   }
+
+   /**
+    * http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/util/admin/I_AdminPop3Driver.html#setPollingInterval(long)
+    * @param className
+    * @param methodName
+    * @return
+    */
+   public static String getJmxUsageLinkInfo(String className, String methodName) {
+      return "\n\nUsage Details:"
+            + "\n" + getJavadocUrl(className, methodName);
+   }
 }

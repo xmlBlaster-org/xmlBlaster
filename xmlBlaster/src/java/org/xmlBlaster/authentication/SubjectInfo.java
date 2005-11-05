@@ -55,9 +55,9 @@ import javax.management.MBeanNotificationInfo;
 
 
 /**
- * SubjectInfo stores all known data about a client.
+ * The SubjectInfo stores all known data about a client.
  * <p>
- * It also contains a message queue, where messages are stored
+ * It also contains a subject queue, where messages are stored
  * until they are delivered at the next login of this client.
  * </p>
  * <p>
@@ -111,9 +111,6 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    public final int DEAD = 1;
    private int state = UNDEF;
 
-   /** JMX calls */
-   private long sequenceNumber = 1; 
-
    private ReentrantLock lock = new ReentrantLock();
 
 
@@ -142,7 +139,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    public SubjectInfo(Global glob, Authenticate authenticate, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
           throws XmlBlasterException {
       synchronized (SubjectInfo.class) {
-         instanceId = instanceCounter;
+         this.instanceId = instanceCounter;
          instanceCounter++;
       }
       this.glob = glob;
@@ -150,7 +147,6 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       this.authenticate = authenticate;
       this.subjectInfoProtector = new SubjectInfoProtector(this);
 
-      String prae = glob.getLogPrefix();
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       if (this.subjectName.isSession()) {
          log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
@@ -161,7 +157,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       this.contextNode = new ContextNode(this.glob, ContextNode.SUBJECT_MARKER_TAG, 
                                        instanceName, this.glob.getContextNode());
 
-      this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
+      this.ME = "SubjectInfo-" + this.instanceId + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
 
       // JMX register "client/joe"
@@ -1123,6 +1119,17 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          throw new Exception(e.toString());
       }
    }
+
+   /** JMX */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 
    /**
     * JMX: Enforced by interface NotificationBroadcasterSupport

@@ -12,6 +12,7 @@ import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -2345,7 +2346,17 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          return "Class '" + clazzName + "' not found in '" + System.getProperty("java.class.path") + "'";
       }
    }
-
+   
+   /** JMX */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 
    /**
     * Redirect logging, configure in xmlBlaster.properties. 

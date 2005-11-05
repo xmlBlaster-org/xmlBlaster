@@ -24,7 +24,6 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 /**
@@ -85,7 +84,7 @@ public class XmlKeyDom implements I_MergeDomNode
          xmlKeyDoc = db.parse(input);
       } catch (Exception e) {
          log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
    }
 
@@ -198,7 +197,7 @@ public class XmlKeyDom implements I_MergeDomNode
    {
       if (node == null) {
          log.warn(ME+".NoParentNode", "no parent node found");
-         throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".NoParentNode", "no parent node found");
       }
 
       String nodeName = node.getNodeName();
@@ -213,7 +212,7 @@ public class XmlKeyDom implements I_MergeDomNode
       boolean foundKey = false;
       if (nodeName.equalsIgnoreCase("key")) {
          org.w3c.dom.Node parent = node.getParentNode();
-         if (parent == null) throw new XmlBlasterException(ME+".InvalidDom", "DOM tree is invalid");
+         if (parent == null) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".InvalidDom", "DOM tree is invalid");
          //if (parent.getNodeName().equals("xmlBlaster"))
          if (parent.getParentNode().getParentNode() == null)
             foundKey = true;

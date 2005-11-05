@@ -21,7 +21,7 @@ package org.xmlBlaster.util.admin;
  * @since 1.0.5
  * @see org.xmlBlaster.engine.msgstore.I_Map
  */
-public interface I_AdminMap {
+public interface I_AdminMap extends I_AdminPlugin {
    /**
     * Access the current queue configuration. 
     */
@@ -112,4 +112,9 @@ public interface I_AdminMap {
     * @return Status string
     */
    public String dumpEmbeddedObjectsToFile(String fileName) throws Exception;
+
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage();
 }

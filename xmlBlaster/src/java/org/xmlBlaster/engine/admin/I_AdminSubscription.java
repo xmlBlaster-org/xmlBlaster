@@ -6,6 +6,8 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.admin.I_AdminUsage;
+
 /**
  * Declares available methods of a SubscriptionInfo object for administration. 
  * <p />
@@ -14,7 +16,7 @@ package org.xmlBlaster.engine.admin;
  * @author xmlBlaster@marcelruff.info
  * @since 0.844
  */
-public interface I_AdminSubscription {
+public interface I_AdminSubscription extends I_AdminUsage {
    /**
     * Access the unique identifier of this subscription. 
     * @return For example "__subId:heron-12334550000"

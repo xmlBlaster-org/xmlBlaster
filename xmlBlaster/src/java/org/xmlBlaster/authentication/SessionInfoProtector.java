@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
@@ -237,4 +236,15 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final boolean isPersistent() {
       return this.sessionInfo.getConnectQos().getData().isPersistent();
    }
+   
+   /** JMX */
+   public java.lang.String usage() {
+      return this.sessionInfo.usage();
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return this.sessionInfo.getUsageUrl();
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 }

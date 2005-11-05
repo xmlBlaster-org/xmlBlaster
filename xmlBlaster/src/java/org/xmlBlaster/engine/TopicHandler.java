@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -29,6 +28,7 @@ import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -69,14 +69,14 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 
 
 /**
- * Handles all MsgUnit entries of same oid and its subscribers. 
+ * A topic handles all MsgUnit entries of same oid and its subscribers. 
  * <p>
  * This handler has the state UNCONFIGURED | UNREFERENCED | ALIVE | DEAD, see
  * the boolean state access methods for a description
  * </p>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">The engine.message.lifecylce requirement</a>
  * @see org.xmlBlaster.test.topic.TestTopicLifeCycle
- * @author xmlBlaster@marcelruff.info
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_ChangeCallback
 {
@@ -2478,4 +2478,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                    "Erasing of topic '" + getId() + "' due to administrative request failed");
       }
    }
+   /** JMX */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 }

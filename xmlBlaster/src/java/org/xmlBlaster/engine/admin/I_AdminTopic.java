@@ -7,6 +7,7 @@ Comment:   Interface to access information about a client instance
 package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.I_AdminUsage;
 
 /**
  * Declares available methods of a topic for administration. 
@@ -16,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @author xmlBlaster@marcelruff.info
  * @since 1.0.4
  */
-public interface I_AdminTopic {
+public interface I_AdminTopic extends I_AdminUsage {
    /**
     * The unique identifier of this topic. 
     * @return e.g. "/node/heron/topic/Hello"

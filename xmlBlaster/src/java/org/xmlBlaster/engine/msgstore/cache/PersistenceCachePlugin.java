@@ -29,8 +29,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
+ * Implements a random access message storage.
+ * <p/>
+ * The implementation uses internally a RAM and a JDBC map and handles the caching between those two.
  * @author laghi@swissinfo.org
- * @author xmlBlaster@marcelruff.info
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.html">The engine.persistence requirement</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  */
 public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblemListener, I_Map, PersistenceCachePluginMBean
@@ -751,11 +755,23 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * JMX help
     * @return a human readable usage help string
     */
-   public String usage() {
-      return "no usage";
+   public java.lang.String usage() {
+      return "Manipulating the storage directly will most certainly destroy your data."
+      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 
    /**
     * @return Internal state as an XML ASCII string

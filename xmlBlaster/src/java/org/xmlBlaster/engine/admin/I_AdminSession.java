@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.I_AdminUsage;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ConnectQosDataMBean;
@@ -20,7 +21,7 @@ import org.xmlBlaster.util.qos.ConnectQosDataMBean;
  * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
-public interface I_AdminSession extends ConnectQosDataMBean {
+public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    // TODO: Access ConnectQos and protocol informations
 
    /** Access the cluster wide unique identifier: /node/heron/client/<loginName>/<publicSessionId> */

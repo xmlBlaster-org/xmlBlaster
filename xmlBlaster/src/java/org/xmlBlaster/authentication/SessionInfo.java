@@ -59,14 +59,9 @@ import org.xmlBlaster.util.ReentrantLock;
 /**
  * SessionInfo stores all known session data about a client.
  * <p />
- * The driver supporting the desired Callback protocol (CORBA/EMAIL/HTTP)
- * is instantiated here.<br />
- * Note that only CORBA is supported in this version.<br />
- * To add a new driver protocol, you only need to implement the empty
- * CallbackEmailDriver.java or any other protocol.
- * <p />
- * It also contains a message queue, where messages are stored
- * until they are delivered at the next login of this client.
+ * One client (SubjectInfo) may have multiple login sessions.
+ * Each session has its callback queue to deliver subscribed
+ * messages to the client.
  * <p />
  * We distinguish two different unique ID for each login session:
  * <ol>
@@ -75,7 +70,8 @@ import org.xmlBlaster.util.ReentrantLock;
  *   <li>instanceId: This is a unique counter (with respect to one virtual machine JVM).
  *                   It allows 'public' addressing of a session</li>
  * </ol>
- * @author Marcel Ruff
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html">The engine.qos.login requirement</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 {
@@ -922,4 +918,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return this.queueQueryPlugin.query(this.sessionQueue, keyData, qosData);
    }
    
+   /** JMX */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 }

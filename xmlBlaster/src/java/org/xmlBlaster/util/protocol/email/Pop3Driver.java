@@ -635,10 +635,20 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     * @return a human readable usage help string
     */
    public java.lang.String usage() {
-      return "The pop3Url has the syntax 'pop3://user:password@host:port/INBOX'" +
-      "\nCalling shutdown destroys the service (you can't start it again)";
+      return "The pop3Url has the syntax 'pop3://user:password@host:port/INBOX'"
+      +"\nCalling shutdown destroys the service (you can't start it again)"
+      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
 
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 
    /**
     * java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX

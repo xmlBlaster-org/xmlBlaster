@@ -21,7 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @since 1.0.4
  * @see org.xmlBlaster.util.queue.I_Queue
  */
-public interface I_AdminQueue {
+public interface I_AdminQueue extends I_AdminPlugin {
    /**
     * Access the current queue configuration
     */
@@ -191,11 +191,6 @@ public interface I_AdminQueue {
    //public void addQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
    //public void removeQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
    //public boolean hasQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
-
-   /**
-    * @return a human readable usage help string
-    */
-   public java.lang.String usage();
 
    /**
     * Dump state to XML string. 

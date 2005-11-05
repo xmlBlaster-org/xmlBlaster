@@ -7,6 +7,7 @@ Comment:   Interface to access information about a client instance
 package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.I_AdminUsage;
 
 /**
  * Declares available methods of an xmlBlaster server instance for administration. 
@@ -16,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @author xmlBlaster@marcelruff.info
  * @since 0.79f
  */
-public interface I_AdminNode {
+public interface I_AdminNode extends I_AdminUsage {
    /**
     * Get the number of known cluster nodes. 
     * @return The number of xmlBlaster cluster nodes

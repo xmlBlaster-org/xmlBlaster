@@ -36,6 +36,9 @@ import java.util.Properties;
 import java.io.OutputStream;
 
 /**
+ * Implements a queue cache. 
+ * Internally it utilizes a RAM queue and a JDBC queue and manages the cache logic. 
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.cache.html">The queue.cache requirement</a>
  * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
@@ -1274,11 +1277,23 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
+    * JMX help
     * @return a human readable usage help string
     */
-   public String usage() {
-      return "no usage";
+   public java.lang.String usage() {
+      return "Manipulating the queue directly will most certainly destroy your data."
+      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 
    // JMX
    public final String toXml() {

@@ -6,7 +6,6 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -84,4 +83,15 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception {
       return this.subjectInfo.peekSubjectMessagesToFile(numOfEntries, path);
    }
+
+   /** JMX */
+   public java.lang.String usage() {
+      return this.subjectInfo.usage();
+   }
+   /** JMX */
+   public java.lang.String getUsageUrl() {
+      return this.subjectInfo.getUsageUrl();
+   }
+   /* JMX dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
 }
