@@ -45,7 +45,7 @@ import java.util.Collections;
  */
 public abstract class Executor
 {
-   private String ME = "SocketExecutor";
+   private String ME = Executor.class.getName();
    protected Global glob;
    private LogChannel log;
    /** Reading from socket */
@@ -224,7 +224,13 @@ public abstract class Executor
       if (requestId == null || l == null) {
          throw new IllegalArgumentException("addResponseListener() with requestId=null");
       }
-      responseListenerMap.put(requestId, l);
+      Object o = responseListenerMap.put(requestId, l);
+      if (o == null) {
+         if (log.TRACE) log.trace(ME, "Added addResponseListener requestId=" + requestId);
+      }
+      else {
+         log.warn(ME, "Added addResponseListener requestId=" + requestId + " but there was already one");
+      }
    }
 
 
@@ -237,7 +243,12 @@ public abstract class Executor
       }
       synchronized (responseListenerMap) {
          Object o = responseListenerMap.remove(requestId);
-         if (o == null) log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
+         if (o == null) {
+            log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
+         }
+         else {
+            if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") done");
+         }
       }
    }
 
@@ -374,7 +385,7 @@ public abstract class Executor
             return false;
          }
          else {
-            log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
+            log.warn(ME, "Ignoring received invocation message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it: " + receiver.toLiteral());
             if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + receiver.toLiteral() + "<");
          }
 
@@ -384,7 +395,7 @@ public abstract class Executor
       // Handling response or exception ...
       I_ResponseListener listener = getResponseListener(receiver.getRequestId());
       if (listener == null) {
-         log.warn(ME, "Ignoring received '" + receiver.getMethodName() + "' message id=" + receiver.getRequestId() + ", nobody is interested in it");
+         log.warn(ME, "Ignoring received '" + receiver.getMethodName() + "' response message, requestId=" + receiver.getRequestId() + ", nobody is interested in it");
          if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it: >" + receiver.toLiteral() + "<");
          return true;
       }
