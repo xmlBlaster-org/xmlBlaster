@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * XbfParser class for raw socket/email messages.
+ * XbfParser class for raw socket/email messages. 
  * <br />
  * This class creates and parses raw byte[] messages which can be used
  * to transfer over a socket connection.
@@ -256,7 +256,7 @@ public class XbfParser implements I_MsgInfoParser
 
       msgInfo.setRequestId(toString(buf));
       msgInfo.setMethodName(MethodName.toMethodName(toString(buf)));
-      msgInfo.setSessionId(toString(buf));
+      msgInfo.setSecretSessionId(toString(buf));
 
       lenUnzipped = toInt0(buf, -1);
       if (lenUnzipped != -1) {
@@ -552,8 +552,10 @@ public class XbfParser implements I_MsgInfoParser
       }
    }
 
-
-   /** java org.xmlBlaster.util.xbformat.XbfParser */
+   /**
+    * java org.xmlBlaster.util.xbformat.XbfParser
+    * See: java org.xmlBlaster.util.xbformat.MsgInfo
+    */
    /*
    public static void main( String[] args ) {
       try {

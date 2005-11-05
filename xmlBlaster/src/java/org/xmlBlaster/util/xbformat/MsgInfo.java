@@ -483,19 +483,19 @@ public class MsgInfo
       this.version = version;
    }
 
-   /**
+   /*
     * @return Returns the sessionId.
-    */
    public String getSessionId() {
       return this.sessionId;
    }
-
-   /**
-    * @param sessionId The sessionId to set.
     */
+
+   /*
+    * @param sessionId The sessionId to set.
    public void setSessionId(String sessionId) {
       this.sessionId = sessionId;
    }
+    */
 
    /**
     * @return Returns the checksum.
@@ -586,6 +586,47 @@ public class MsgInfo
     */
    public static MsgInfo parse(Global glob, I_ProgressListener progressListener, byte[] rawMsg) throws IOException {
       return parse(glob, progressListener, new ByteArrayInputStream(rawMsg));
+   }
+
+
+   /**
+    * @return Returns the bounceObjects, is null if none is available
+    */
+   public Map getBounceObjects() {
+      return this.bounceObjects;
+   }
+
+   /**
+    * @return Returns the value, is null if none is found
+    */
+   public Object getBounceObject(String key) {
+      if (this.bounceObjects == null || key == null) return null;
+      return this.bounceObjects.get(key);
+   }
+
+   /**
+    * Sets the given map. 
+    */
+   public void setBounceObjects(Map bounceObjects) {
+      this.bounceObjects = bounceObjects;
+   }
+
+   /**
+    * You can use this as a generic store to convej stuff in MsgInfo. 
+    * @param key The identifier of the object.
+    * @param value The bounceObjects to set, if null nothing happens.
+    */
+   public Object setBounceObject(String key, Object value) {
+      if (value == null) return null;
+      if (this.bounceObjects == null) this.bounceObjects = new HashMap();
+      return this.bounceObjects.put(key, value);
+   }
+
+   /**
+    * @return Returns the progressListener.
+    */
+   public I_ProgressListener getProgressListener() {
+      return this.progressListener;
    }
 
    /** java org.xmlBlaster.util.xbformat.MsgInfo */
@@ -870,45 +911,5 @@ public class MsgInfo
          e.printStackTrace();
          System.err.println(e.toString());
       }
-   }
-
-   /**
-    * @return Returns the bounceObjects, is null if none is available
-    */
-   public Map getBounceObjects() {
-      return this.bounceObjects;
-   }
-
-   /**
-    * @return Returns the value, is null if none is found
-    */
-   public Object getBounceObject(String key) {
-      if (this.bounceObjects == null || key == null) return null;
-      return this.bounceObjects.get(key);
-   }
-
-   /**
-    * Sets the given map. 
-    */
-   public void setBounceObjects(Map bounceObjects) {
-      this.bounceObjects = bounceObjects;
-   }
-
-   /**
-    * You can use this as a generic store to convej stuff in MsgInfo. 
-    * @param key The identifier of the object.
-    * @param value The bounceObjects to set, if null nothing happens.
-    */
-   public Object setBounceObject(String key, Object value) {
-      if (value == null) return null;
-      if (this.bounceObjects == null) this.bounceObjects = new HashMap();
-      return this.bounceObjects.put(key, value);
-   }
-
-   /**
-    * @return Returns the progressListener.
-    */
-   public I_ProgressListener getProgressListener() {
-      return this.progressListener;
    }
 }
