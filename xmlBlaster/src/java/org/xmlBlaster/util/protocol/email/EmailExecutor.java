@@ -111,7 +111,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
       }
       
-      log.info("Initialized email connector from=" + from + " to=" + to);
+      if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
    }
    
    public Object sendEmail(String qos, MethodName methodName,

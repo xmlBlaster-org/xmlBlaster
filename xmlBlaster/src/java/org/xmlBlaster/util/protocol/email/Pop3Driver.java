@@ -46,8 +46,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='2' 
  *   onFail='resource.configuration.pluginFailed'/&gt;
  *   &lt;action do='STOP' onShutdownRunlevel='7' sequence='5'/&gt;   
- *   &lt;attribute id='mail.pop3.user'&gt;xmlBlaster&lt;/attribute&gt;
- *   &lt;attribute id='mail.pop3.password'&gt;xmlBlaster&lt;/attribute&gt;
+ *   &lt;attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute>
+ *   &lt;attribute id='pop3PollingInterval'>500&lt;/attribute>
  *   &lt;/plugin&gt;
  * </pre>
  * 
@@ -57,11 +57,13 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * and add to xmlBlasterJdk14Logging.properties:
  * <pre>handlers = org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler
  * .level= FINEST</pre>
+ *
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {

@@ -34,11 +34,13 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
 
 /**
  * This class is capable to send emails.
+ * 
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class SmtpClient extends Authenticator {
@@ -51,8 +53,10 @@ public class SmtpClient extends Authenticator {
    private PasswordAuthentication authentication;
 
    public static final String UTF8 = "UTF-8";
-   
+
    private String user;
+   
+   private boolean isInitialized;
 
    /**
     * @return Returns the user.
@@ -73,8 +77,8 @@ public class SmtpClient extends Authenticator {
    }
 
    /**
-    * Usually a singleton, but you can create your own instances
-    * as the constructor is public
+    * Usually a singleton, but you can create your own instances as the
+    * constructor is public
     */
    public SmtpClient() {
    }
@@ -100,9 +104,7 @@ public class SmtpClient extends Authenticator {
     * props.put(&quot;mail.user&quot;, &quot;joe&quot;);
     * props.put(&quot;mail.password&quot;, &quot;joe&quot;);
     * props.put(&quot;mail.debug&quot;, &quot;true&quot;);
-    * props.put(&quot;mail.store.protocol&quot;, &quot;pop3&quot;);
     * props.put(&quot;mail.transport.protocol&quot;, &quot;smtp&quot;);
-    * props.put(&quot;mail.host&quot;, &quot;localhost&quot;);
     * props.put(&quot;mail.smtp.host&quot;, &quot;localhost&quot;);
     * props.put(&quot;mail.smtp.port&quot;, &quot;25&quot;);
     * </pre>
@@ -120,13 +122,19 @@ public class SmtpClient extends Authenticator {
     */
    public synchronized void setSessionProperties(Properties props, Global glob,
          I_PluginConfig pluginConfig) throws XmlBlasterException {
+      
+      if (this.isInitialized) {
+         if (log.isLoggable(Level.FINE))
+            log.fine("Ignoring multiple setSessionProperties() call");
+         return;
+      }
+
       if (props == null)
          props = new Properties();
-      
-      if (props.getProperty("mail.debug") == null)
-         props.put("mail.debug", glob.get("mail.debug", System
-               .getProperty("mail.debug", "false"), null, pluginConfig));
 
+      if (props.getProperty("mail.debug") == null)
+         props.put("mail.debug", glob.get("mail.debug", System.getProperty(
+               "mail.debug", "false"), null, pluginConfig));
 
       if (props.getProperty("mail.user") == null)
          props.put("mail.user", glob.get("mail.user", System
@@ -141,25 +149,28 @@ public class SmtpClient extends Authenticator {
       if (props.getProperty("mail.transport.protocol") == null)
          props.put("mail.transport.protocol", glob.get(
                "mail.transport.protocol", "smtp", null, pluginConfig));
+      String shema = props.getProperty("mail.transport.protocol");
+
       if (props.getProperty("mail.smtp.host") == null)
          props.put("mail.smtp.host", glob.get("mail.smtp.host", "127.0.0.1",
                null, pluginConfig));
+      String host = props.getProperty("mail.smtp.host");
+
       if (props.getProperty("mail.smtp.port") == null)
          props.put("mail.smtp.port", glob.get("mail.smtp.port", "25", null,
                pluginConfig));
-
-      if (props.getProperty("mail.store.protocol") == null)
-         props.put("mail.store.protocol", glob.get("mail.store.protocol",
-               "pop3", null, pluginConfig));
+      String port = props.getProperty("mail.smtp.port");
 
       // Pass "this" for POP3 authentication with Authenticator
       // For only sending mails we can pass null
       this.session = Session.getDefaultInstance(props, this);
-      this.authentication = new PasswordAuthentication(user, password);
+      this.authentication = new PasswordAuthentication(getUser(), password);
+      this.isInitialized = true;
 
-      // String from = user + '@' + host;
-      if (log.isLoggable(Level.FINE))
-         log.fine("Setting user='" + user + "' password='" + password + "'");
+      if (log.isLoggable(Level.FINER))
+         log.finer("Setting user='" + user + "' password='" + password + "'");
+      log.info("SMTP client to '" + shema + "://" + getUser() + "@" + host + ":"
+            + port + "' is ready");
    }
 
    /**
@@ -204,8 +215,7 @@ public class SmtpClient extends Authenticator {
    }
 
    public void sendEmail(String from, String to, String subject, String body,
-         String encoding) throws AddressException, MessagingException
-          {
+         String encoding) throws AddressException, MessagingException {
       sendEmail(new InternetAddress(from), new InternetAddress(to), subject,
             body, encoding);
    }
@@ -215,8 +225,9 @@ public class SmtpClient extends Authenticator {
     *           Is assumed to be of mime type "text/plain"
     * @param encoding
     *           (charset) for example "UTF-8", will set the mail header:
+    * 
     * <pre>
-    *         Content-Type: text/plain; charset=UTF-8
+    *          Content-Type: text/plain; charset=UTF-8
     * </pre>
     */
    public void sendEmail(InternetAddress from, InternetAddress to,
@@ -237,13 +248,15 @@ public class SmtpClient extends Authenticator {
    }
 
    /**
-    * @param attachmentName2 If not null this second attachment is added as "text/plain"
-    * @param encoding For example "UTF-8"
+    * @param attachmentName2
+    *           If not null this second attachment is added as "text/plain"
+    * @param encoding
+    *           For example "UTF-8"
     */
    public void sendEmail(InternetAddress from, InternetAddress to,
          String subject, String attachmentName, InputStream attachment,
-         String attachmentName2, String attachment2,
-         String encoding) throws XmlBlasterException {
+         String attachmentName2, String attachment2, String encoding)
+         throws XmlBlasterException {
       try {
          MimeMessage message = new MimeMessage(getSession());
          message.setFrom(from);
@@ -254,7 +267,7 @@ public class SmtpClient extends Authenticator {
 
          // MimeBodyPart mbp1 = new MimeBodyPart(attachment);
          MimeBodyPart mbp1 = new MimeBodyPart(); // "application/x-any"
-                                                   // "application/xmlBlaster-xbformat"
+         // "application/xmlBlaster-xbformat"
          DataSource ds = new ByteArrayDataSource(attachment,
                "application/xmlBlaster-xbformat");
          mbp1.setDataHandler(new DataHandler(ds));
@@ -264,10 +277,10 @@ public class SmtpClient extends Authenticator {
          // create the Multipart and add its parts to it
          Multipart mp = new MimeMultipart();
          mp.addBodyPart(mbp1);
-         
+
          if (attachmentName2 != null) {
             MimeBodyPart mbp2 = new MimeBodyPart(); // "text/plain"
-            mbp2.setText(attachment2, encoding); 
+            mbp2.setText(attachment2, encoding);
             mbp2.setFileName(attachmentName2);
             mp.addBodyPart(mbp2);
          }
@@ -283,7 +296,9 @@ public class SmtpClient extends Authenticator {
          // "text/plain"
 
          send(message);
-         if (log.isLoggable(Level.FINE)) log.fine("Successful send email from=" + from.toString() + " to=" + to.toString());
+         if (log.isLoggable(Level.FINE))
+            log.fine("Successful send email from=" + from.toString() + " to="
+                  + to.toString());
       } catch (Exception e) {
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
@@ -313,7 +328,7 @@ public class SmtpClient extends Authenticator {
                .getEncoding());
 
          message.setText(aMessageData.getContent(), aMessageData.getEncoding());
-         
+
       } catch (MessagingException e) {
          throw e;
       }
@@ -328,8 +343,9 @@ public class SmtpClient extends Authenticator {
    }
 
    /**
-    * java -Dmail.user=marcel -Dmail.password=marcel org.xmlBlaster.util.protocol.email.SmtpClient -from joe@localhost -to jack@localhost
-    * java -Dmail.smtp.port=6025 -Dmail.debug=true ...
+    * java -Dmail.user=marcel -Dmail.password=marcel
+    * org.xmlBlaster.util.protocol.email.SmtpClient -from joe@localhost -to
+    * jack@localhost java -Dmail.smtp.port=6025 -Dmail.debug=true ...
     * <p>
     * 
     * @see #setSessionProperties(Properties) for other properties
@@ -350,10 +366,11 @@ public class SmtpClient extends Authenticator {
          String from = glob.getProperty().get("from", "blue@localhost");
          String to = glob.getProperty().get("to", "blue@localhost");
 
-         MessageData msg = new MessageData(to, from,
-               "Hi from java", "Some body text");
+         MessageData msg = new MessageData(to, from, "Hi from java",
+               "Some body text");
          mail.sendEmail(msg);
-         System.out.println("Sent a message from '" + from + "' to '" + to + "'");
+         System.out.println("Sent a message from '" + from + "' to '" + to
+               + "'");
       } catch (Exception e) {
          System.out.println("Mail failed: " + e.toString());
       } finally {
