@@ -31,6 +31,7 @@ import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -66,10 +67,12 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
+public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Pop3DriverMBean {
    private static Logger log = Logger.getLogger(Pop3Driver.class.getName());
 
    private Global glob;
+
+   private ContextNode contextNode;
 
    private Session session;
 
@@ -81,7 +84,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
 
    private Timestamp timeoutHandle;
 
-   private long pop3PollingInterval;
+   private long pollingInterval;
    
    private Properties props;
 
@@ -91,6 +94,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
 
    // Avoid too many logging output lines
    private boolean isConnected;
+   
+   /** My JMX registration */
+   private Object mbeanHandle;
 
    public static final boolean CLEAR_MESSAGES = true;
 
@@ -255,7 +261,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       this.glob = glob;
       this.pluginInfo = pluginInfo;
 
-      this.pop3PollingInterval = glob.get("pop3PollingInterval", 5000L, null,
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(this.glob, ContextNode.SERVICE_MARKER_TAG, 
+                          "Pop3Driver", this.glob.getContextNode());
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+
+      this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
             this.pluginInfo);
 
       setSessionProperties(null, glob, pluginInfo);
@@ -265,8 +276,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       glob.addObjectEntry(Pop3Driver.class.getName(), this);
 
       this.timeout = new Timeout("POP3Driver-pollingTimer");
-      this.timeoutHandle = this.timeout.addTimeoutListener(this,
-            this.pop3PollingInterval, null);
+      try { activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
    }
 
    /**
@@ -337,7 +347,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          getStore();
       } catch (XmlBlasterException e) {
          log.warning(e.getMessage() + " We poll every "
-              + this.pop3PollingInterval + " milliseconds again.");
+              + this.pollingInterval + " milliseconds again.");
       }
    }
 
@@ -379,8 +389,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       }
 
       try {
-         this.timeoutHandle = timeout.addOrRefreshTimeoutListener(this,
-               this.pop3PollingInterval, userData, this.timeoutHandle);
+         this.timeoutHandle = this.timeout.addOrRefreshTimeoutListener(this,
+               this.pollingInterval, userData, this.timeoutHandle);
       } catch (XmlBlasterException e) {
          log.severe("Waiting on mail response failed: " + e.getMessage());
       }
@@ -450,14 +460,14 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          if (!this.isConnected) { // Avoid too many logging output
             log.info("Successfully contacted POP3 server '"
                   + getUrlWithoutPassword() + "', we poll every "
-                  + this.pop3PollingInterval + " milliseconds for emails.");
+                  + this.pollingInterval + " milliseconds for emails.");
             this.isConnected = true;
          }
          return store;
       } catch (MessagingException e) {
          if (this.isConnected) { // Avoid too many logging output
             log.warning("No POP3 server '" + this.pop3Url
-                  + "' found, we poll every " + this.pop3PollingInterval
+                  + "' found, we poll every " + this.pollingInterval
                   + " milliseconds again:" + e.toString());
             this.isConnected = false;
          }
@@ -485,6 +495,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
     * @return Never null
     */
    public MessageData[] readInbox(boolean clear) throws XmlBlasterException {
+      //if (isShutdown()) Does it recover automatically after a shutdown?
+      //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, Pop3Driver.class.getName(), "The plugin is shutdown");
       Store store = null;
       Folder inbox = null;
       try {
@@ -547,41 +559,86 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
    }
 
    /**
-    * @return Returns the pop3Url.
+    * @return Syntax is "pop3://user:password@host:port/INBOX"
     */
    public String getPop3Url() {
       return this.pop3Url;
    }
 
    /**
-    * @param pop3Url
-    *           The pop3Url to set.
+    * @param pop3Url Syntax is "pop3://user:password@host:port/INBOX"
     */
    public void setPop3Url(String pop3Url) {
       this.pop3Url = pop3Url;
    }
 
    /**
-    * @return Returns the pop3PollingInterval.
+    * @return Returns the pollingInterval.
     */
-   public long getPop3PollingInterval() {
-      return this.pop3PollingInterval;
+   public long getPollingInterval() {
+      return this.pollingInterval;
    }
 
    /**
-    * @param pop3PollingInterval
+    * @param pollingInterval
     *           The timeout in milliseconds.
     */
-   public void setPop3PollingInterval(long pop3PollingInterval) {
-      this.pop3PollingInterval = pop3PollingInterval;
+   public void setPollingInterval(long pollingInterval) {
+      this.pollingInterval = pollingInterval;
    }
 
+   /**
+    * Activate xmlBlaster access through this protocol.
+    * Triggers an immediate POP3 access and starts polling thereafter
+    */
+   public void activate() throws Exception {
+      log.fine("Entering activate()");
+      try {
+         this.timeoutHandle = this.timeout.addOrRefreshTimeoutListener(this,
+               0, null, this.timeoutHandle);
+      } catch (XmlBlasterException e) {
+         log.severe("Activating timeout listener failed: " + e.getMessage());
+         throw new Exception("Activating timeout listener failed: " + e.getMessage());
+      }
+   }
+
+   /**
+    * Deactivate xmlBlaster access (standby), no clients can connect.
+    */
+   public void deActivate() {
+      log.fine("Entering deActivate()");
+      this.timeout.removeTimeoutListener(this.timeoutHandle);
+      this.timeoutHandle = null;
+   }
+
+
+   /**
+    * Halt the plugin. 
+    */
    public synchronized void shutdown() {
       if (this.session != null) {
-         log.info("Shutting down POP3 mail client");
+         log.info("Shutting down POP3 mail client, removing listeners");
+         deActivate();
+         synchronized (this.listeners) {
+            this.listeners.clear();
+         }
+         this.glob.unregisterMBean(this.mbeanHandle);
          this.session = null;
       }
    }
+   
+   public boolean isShutdown() {
+      return this.session == null;
+   }
+
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage() {
+      return "The pop3Url has the syntax 'pop3://user:password@host:port/INBOX'" +
+      "\nCalling shutdown destroys the service (you can't start it again)";
+   }
+
 
    /**
     * java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX
