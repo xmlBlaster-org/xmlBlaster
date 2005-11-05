@@ -15,7 +15,6 @@ import org.jutils.runtime.Sleeper;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.I_PoolManager;
@@ -125,7 +124,7 @@ public class NamedConnectionPool
          synchronized(meetingPoint) {
             pool = getPool(dbUrl, dbUser, dbPasswd);
             if (pool == null) {
-               if (dbPasswd == null) throw new XmlBlasterException(ME+".MissingPasswd", "Please give a password for '" + dbUser + "' when creating a JDBC pool");
+               if (dbPasswd == null) throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".MissingPasswd", "Please give a password for '" + dbUser + "' when creating a JDBC pool");
                pool = new UnnamedConnectionPool(this, dbUrl, dbUser, dbPasswd, eraseUnusedPoolTimeout, maxInstances, busyToIdle, idleToErase);
                namedPools.put(getKey(dbUrl, dbUser, dbPasswd), pool);
             }
@@ -141,7 +140,7 @@ public class NamedConnectionPool
       }
       catch(Throwable e) {
          log.error(ME, "Unexpected exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
-         throw new XmlBlasterException(ME+".NoOpen", "Couldn't open database connection: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".NoOpen", "Couldn't open database connection: " + e.toString());
       }
    }
 
@@ -185,7 +184,7 @@ public class NamedConnectionPool
       }
       catch (Exception e) {
          log.error(ME, "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
-         throw new XmlBlasterException(ME+".DestroyError", "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME+".DestroyError", "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
       }
    }
 
@@ -337,7 +336,7 @@ public class NamedConnectionPool
          }
          catch(Exception e) {
             //log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
-            throw new XmlBlasterException(ME, "Couldn't open database connection dbUrl=" + dbUrl + " dbUser=" + dbUser + ": " + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "Couldn't open database connection dbUrl=" + dbUrl + " dbUser=" + dbUser + ": " + e.toString());
          }
       }
 
@@ -363,7 +362,7 @@ public class NamedConnectionPool
        * Use this method to get a JDBC connection.
        */
       Connection reserve() throws XmlBlasterException {
-         if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
+         if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
          if (log.TRACE) log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
          int ii=0;
          while (true) {
@@ -374,7 +373,7 @@ public class NamedConnectionPool
                         this.timeoutHandle = this.poolManager.getTransistionTimer().refreshTimeoutListener(this.timeoutHandle, this.eraseUnusedPoolTimeout);
                      }
                   }
-                  ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
+                  ResourceWrapper rw = poolManager.reserve(PoolManager.USE_OBJECT_REF);
                   Connection con = (Connection)rw.getResource();
                   return con;
                }
@@ -398,7 +397,7 @@ public class NamedConnectionPool
        * Use this method to release a JDBC connection.
        */
       void release(Connection con) throws XmlBlasterException {
-         if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
+         if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
          if (log.TRACE) log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          try {
             synchronized(meetingPoint) {
@@ -406,7 +405,7 @@ public class NamedConnectionPool
             }
          }
          catch (XmlBlasterException e) {
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
             log.error(ME, "Caught exception in release(): " + e.toString());
             throw e;
          }
@@ -416,7 +415,7 @@ public class NamedConnectionPool
        * Destroy a JDBC connection (from busy or idle to undef). 
        */
       void erase(Connection con) throws XmlBlasterException {
-         if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
+         if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
          if (log.TRACE) log.trace(ME, "Entering erase '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          synchronized(meetingPoint) {
             poolManager.erase(""+con);
@@ -436,7 +435,7 @@ public class NamedConnectionPool
                if (this.eraseUnusedPoolTimeout > 200L) {
                   synchronized(this.timeoutMonitor) {
                      this.timeoutHandle = this.poolManager.getTransistionTimer().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
-                     //[Aug 12, 2002 9:32:11 PM WARN  UnnamedConnectionPool] Can't destroy pool from 'jdbc:oracle:thin:@localhost:1521:DEKRA', 'mrf', he seems to be busy working on his database.
+                     //[UnnamedConnectionPool] Can't destroy pool from 'jdbc:oracle:thin:@localhost:1521:xmlb', 'joe', he seems to be busy working on his database.
                   }
                }
                return;
@@ -458,7 +457,6 @@ public class NamedConnectionPool
                poolManager = null;
             }
          }
-         NamedConnectionPool boss = null;
          dbUrl = null;
          dbUser = null;
       }
