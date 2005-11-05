@@ -35,6 +35,8 @@ public final class ContextNode
    public final static String CONNECTION_MARKER_TAG = "connection";
    /** Use to mark a queue */
    public final static String QUEUE_MARKER_TAG = "queue";
+   /** Use to mark a service */
+   public final static String SERVICE_MARKER_TAG = "service";
    /** Use to mark a message store map */
    public final static String MAP_MARKER_TAG = "map";
    /** Use to mark a topic */
