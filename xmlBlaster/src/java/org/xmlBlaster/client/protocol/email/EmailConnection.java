@@ -18,10 +18,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
-import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import java.io.IOException;
@@ -51,8 +49,6 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    private static Logger log = Logger.getLogger(EmailConnection.class.getName());
    private String ME = "EmailConnection";
    private Global glob;
-   /** The unique client sessionId */
-   protected String sessionId = "VOID";
    protected String loginName = "dummyLoginName";
    protected Address clientAddress;
    private PluginInfo pluginInfo;
@@ -143,7 +139,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
     */
    public void setConnectReturnQos(ConnectReturnQos connectReturnQos) {
-      this.sessionId = connectReturnQos.getSecretSessionId();
+      setSecretSessionId(connectReturnQos.getSecretSessionId());
       this.loginName = connectReturnQos.getSessionName().getLoginName();
       this.ME = "EmailConnection-"+loginName;
       this.isLoggedIn = true;
@@ -199,7 +195,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @param sessionId The client sessionId
     */       
    public boolean disconnect(String qos) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering logout/disconnect: id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering logout/disconnect: id=" + getSecretSessionId());
 
       if (!isLoggedIn()) {
          log.warning("You are not logged in, no logout possible.");
@@ -246,7 +242,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + sessionId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + getSecretSessionId() + ")");
       return (String)super.sendEmail(xmlKey_literal, qos_literal, MethodName.SUBSCRIBE, Executor.WAIT_ON_RESPONSE);
    }
 
@@ -258,7 +254,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public final String[] unSubscribe(String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(): id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(): id=" + getSecretSessionId());
       return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.UNSUBSCRIBE, Executor.WAIT_ON_RESPONSE);
          /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
@@ -274,7 +270,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + getSecretSessionId());
       return (String)super.sendEmail(msgUnit, MethodName.PUBLISH, Executor.WAIT_ON_RESPONSE);
          /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
@@ -291,7 +287,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr: id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr: id=" + getSecretSessionId());
 
       if (msgUnitArr == null) {
          if (log.isLoggable(Level.FINE)) log.fine("The argument of method publishArr() are invalid");
@@ -319,14 +315,13 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway: id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway: id=" + getSecretSessionId());
 
       if (msgUnitArr == null) {
          if (log.isLoggable(Level.FINE)) log.fine("The argument of method publishOneway() are invalid");
          return;
       }
-      return ;
-      //return (String[])super.sendEmail(msgUnitArr, MethodName.MethodName.PUBLISH_ONEWAY, Executor.Executor.ONEWAY);
+      super.sendEmail(msgUnitArr, MethodName.PUBLISH_ONEWAY, Executor.ONEWAY);
       /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
@@ -346,8 +341,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
    public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + sessionId);
-
+      if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + getSecretSessionId());
+      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.ERASE, Executor.WAIT_ON_RESPONSE);
+      /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
@@ -358,6 +354,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.ERASE.toString(), e1);
       }
+      */
    }
 
    /**
@@ -369,6 +366,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                                   String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+      return (MsgUnitRaw[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.GET, Executor.WAIT_ON_RESPONSE);
+      /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
@@ -379,6 +378,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine(e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.GET.toString(), e1);
       }
+      */
    }
 
    /**
@@ -387,7 +387,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public String ping(String qos) throws XmlBlasterException
    {
-      if (this.isInitialized) return "";
+      if (!this.isInitialized) return "";
+      return (String)super.sendEmail(qos, MethodName.PING, Executor.WAIT_ON_RESPONSE);
+      /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
@@ -398,6 +400,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PING.toString(), e1);
       }
+      */
    }
 
    /**
