@@ -26,10 +26,12 @@ public class Demo
 
          ConnectQos qos = new ConnectQos(glob, "joe", "secret");
 
-         String receiver = glob.getProperty().get("email.receiver", "xmlblaster@xmlblaster.org");
-         CallbackAddress cbAddr =new CallbackAddress(glob, "EMAIL");
-         cbAddr.setRawAddress(receiver);
-         qos.addCallbackAddress(cbAddr);
+         String receiver = glob.getProperty().get("mail.from", (String)null);
+         if (receiver != null) {
+            CallbackAddress cbAddr =new CallbackAddress(glob, "EMAIL");
+            cbAddr.setRawAddress(receiver);
+            qos.addCallbackAddress(cbAddr);
+         }
          
          con.connect(qos, null);  // Login to xmlBlaster without callback instantiation
 
@@ -51,8 +53,9 @@ public class Demo
    /**
     * Invoke:
     * <pre>
-    *    java javaclients.email.Demo -email.receiver xmlBlaster@marcelruff.info
+    *    java javaclients.email.Demo -mail.from demo@localhost
     * </pre>
+    * 'mail.from' is the callback address.
     */
    public static void main(String args[]) {
       Global glob = new Global(); // initializes args, properties etc.
