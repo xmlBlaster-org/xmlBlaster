@@ -139,6 +139,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       synchronized (this.listeners) {
          this.listeners.put(key, listener);
       }
+      log.info("Added listener with key=" + key);
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -188,9 +189,13 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       I_ResponseListener listenerClusterNodeId = null;
       synchronized (this.listeners) {
          listenerRequest = (I_ResponseListener) this.listeners.get(key);
-         listenerSession = (I_ResponseListener) this.listeners.get(messageData
-               .getSessionId());
-         listenerClusterNodeId = (I_ResponseListener) this.listeners.get(this.glob.getId());
+         if (listenerRequest  == null) {
+            listenerSession = (I_ResponseListener) this.listeners.get(messageData
+                  .getSessionId());
+            if (listenerSession  == null) {
+               listenerClusterNodeId = (I_ResponseListener) this.listeners.get(this.glob.getId());
+            }
+         }
       }
 
       // A request/reply handler is interested in specific messages only
@@ -210,7 +215,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
          listenerClusterNodeId.responseEvent(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
-
+      log.warning("No listener found for key=" + key);
       return null;
    }
 
@@ -251,7 +256,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
       glob.addObjectEntry(Pop3Driver.class.getName(), this);
 
-      this.timeout = new Timeout("CallbackEmail-POP3PollingTimer");
+      this.timeout = new Timeout("POP3Driver-pollingTimer");
       this.timeoutHandle = this.timeout.addTimeoutListener(this,
             this.pop3PollingInterval, null);
    }
