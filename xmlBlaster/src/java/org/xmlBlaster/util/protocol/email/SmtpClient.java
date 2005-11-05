@@ -39,7 +39,7 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
- * @author Marcel Ruff (mrf)
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class SmtpClient extends Authenticator {
    private static SmtpClient theMailClient;
@@ -283,7 +283,7 @@ public class SmtpClient extends Authenticator {
          // "text/plain"
 
          send(message);
-         log.info("Successful send email from=" + from.toString() + " to=" + to.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Successful send email from=" + from.toString() + " to=" + to.toString());
       } catch (Exception e) {
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
@@ -322,7 +322,7 @@ public class SmtpClient extends Authenticator {
 
    public synchronized void shutdown() {
       if (this.session != null) {
-         log.info("Shutting down mail client");
+         log.info("Shutting down SMTP mail client");
          this.session = null;
       }
    }

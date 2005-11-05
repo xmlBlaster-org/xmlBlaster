@@ -14,12 +14,23 @@ import org.xmlBlaster.util.def.MethodName;
 /**
  * Value object holding the most commonly used email fields.
  * <p>
- * Is only useful for simple mails. Currently attachments etc. are not
- * supported, just code any extension you need yourself.
+ * Add/access/delete attachments is not simultaneous possible (not thread save)
  * </p>
- * 
- * @author Marcel Ruff (mrf)
- * @see com.dcx.eng.adapter.TestMessageData
+ * Example:
+ * <pre>
+From:    demo@localhost
+To:      xmlBlaster@localhost
+Subject: Hello World
+attachement {
+   fileName: messageId.mid
+   content:  <messageId><sessionId>abcd</sessionId><requestId>5</requestId></messageId>
+}
+attachement {
+   fileName: xmlBlaster.xbf
+   content:  [the binary xmlBlaster format similar to that used with SOCKET]
+}
+ * </pre>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class MessageData {
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
@@ -41,10 +52,14 @@ public class MessageData {
    /** Contains requestId * */
    protected String requestId;
 
+   /** The root tag &lt;messageId> */
+   public static final String MESSAGEID_TAG = "messageId";
+
    public static final String REQUESTID_TAG = "requestId";
 
    public static final String SESSIONID_TAG = "sessionId";
 
+   /** Holding the relevant email meta info like a request identifier */
    public static final String MESSAGEID_EXTENSION = ".mid";
 
    /**
@@ -83,6 +98,7 @@ public class MessageData {
    }
 
    public void addAttachment(AttachmentHolder attachmentHolder) {
+      if (this.attachments == null) this.attachments = new ArrayList();
       this.attachments.add(attachmentHolder);
    }
 
@@ -90,9 +106,79 @@ public class MessageData {
       this.attachments = attachmentHolders;
    }
 
+   /**
+    * Access all attachements. 
+    * @return Never null
+    */
    public AttachmentHolder[] getAttachments() {
+      if (this.attachments == null) return new AttachmentHolder[0];
       return (AttachmentHolder[]) this.attachments
             .toArray(new AttachmentHolder[this.attachments.size()]);
+   }
+   
+   /**
+    * Lookup attachment. 
+    * @param extension For example XbfParser.XBFORMAT_EXTENSION=".xbf"
+    * @return null if no such attachment was found
+    */
+   public byte[] getContentByExtension(String extension) {
+      AttachmentHolder[] atts = getAttachments();
+      for (int j = 0; j < atts.length; j++) {
+         if (atts[j].getFileName().endsWith(extension)) {
+            return atts[j].getContent();
+         }
+      }
+      return null;
+   }
+   
+   /**
+    * Lookup attachment. 
+    * If extension is not found try to find extensionBackup.
+    * @param extension For example XbfParser.XBFORMAT_EXTENSION=".xbf"
+    * @param extensionBackup For example ".xml"
+    * @return null if no such attachment was found
+    */
+   public byte[] getContentByExtension(String extension, String extensionBackup) {
+      AttachmentHolder[] atts = getAttachments();
+      for (int j = 0; j < atts.length; j++) {
+         if (atts[j].getFileName().endsWith(extension)) {
+            return atts[j].getContent();
+         }
+      }
+      for (int j = 0; j < atts.length; j++) {
+         if (atts[j].getFileName().endsWith(extensionBackup)) {
+            return atts[j].getContent();
+         }
+      }
+      return null;
+   }
+   
+   /**
+    * Comma separated value list of all attachment file names for logging. 
+    * @return For example "a.xbf, b.xml, m.mid"
+    */
+   public String getFileNameList() {
+      StringBuffer buf = new StringBuffer();
+      AttachmentHolder[] atts = getAttachments();
+      for (int j = 0; j < atts.length; j++) {
+         if (j > 0) buf.append(",");
+         buf.append(atts[j].getFileName());
+      }
+      return buf.toString();
+   }
+   
+   /**
+    * Comma separated value list of all recipient email addresses for logging. 
+    * @return For example "joe@locahost,a.xbf, b.xml, m.mid"
+    */
+   public String getRecipientsList() {
+      if (this.recipients == null) return "";
+      StringBuffer buf = new StringBuffer();
+      for (int j = 0; j < this.recipients.length; j++) {
+         if (j > 0) buf.append(",");
+         buf.append(this.recipients[j]);
+      }
+      return buf.toString();
    }
 
    /**
@@ -276,7 +362,7 @@ public class MessageData {
    }
 
    /**
-    * For manual tests. java com.dcx.eng.adapter.MessageData
+    * For manual tests. java org.xmlBlaster.util.protocol.email.MessageData
     */
    public static void main(String[] args) {
       String[] receivers = { "Receiver1", "Receiver2" };
@@ -306,6 +392,8 @@ public class MessageData {
    }
 
    /**
+    * The emails session id.
+    * Can (but must not) be identical to the SessionInfo-secretSessionId
     * @return Returns the sessionId, never null
     */
    public String getSessionId() {
@@ -326,19 +414,18 @@ public class MessageData {
    /**
     * Find the messageId of this message. 
     * 
-    * Subject: <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
+    * This is usually in the subject or in an attachment
+    * with extension ".mid" 
     * 
-    * @param messageData
-    * @param tag
-    *           "requestId" or "sessionId" or "methodName"
     * @return null if none is found
+    * or for example <messageId><sessionId>somesecret</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
-   public String extractMessageId(String tag) {
+   public String getMessageId() {
       String str = getSubject();
-      final String startToken = "<" + tag + ">";
-      if (str.indexOf(tag) == -1) {
+      final String startToken = "<" + MESSAGEID_TAG + ">";
+      if (str.indexOf(startToken) == -1) {
          str = null;
-         // The messageId is not in the subject,
+         // The <messageId> is not in the subject,
          // search in an attachment with extension ".mid"
          // or in an attachment without extension
          AttachmentHolder[] atts = getAttachments();
@@ -352,6 +439,21 @@ public class MessageData {
             }
          }
       }
+      return str;
+   }
+   
+   /**
+    * Find the given tag in the messageId of this message. 
+    * 
+    * Subject: <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
+    * 
+    * @param tag
+    *           "requestId" or "sessionId" or "methodName"
+    * @return null if none is found
+    */
+   public String extractMessageId(String tag) {
+      String str = getMessageId();
+      final String startToken = "<" + tag + ">";
 
       if (str != null) {
          final String endToken = "</" + tag + ">";
@@ -387,6 +489,10 @@ public class MessageData {
                + "</sessionId><requestId>" + requestId
                + "</requestId><methodName>" + methodName.toString()
                + "</methodName></messageId>";
+   }
+   
+   public String toString() {
+      return "from: " + this.from + " to: " + getRecipientsList() + " subject:" + this.subject + " attachments:" + getFileNameList();
    }
 
 }

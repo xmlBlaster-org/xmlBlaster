@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
@@ -61,7 +62,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
- * @author Marcel Ruff (mrf)
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
    private static Logger log = Logger.getLogger(Pop3Driver.class.getName());
@@ -139,7 +140,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
       synchronized (this.listeners) {
          this.listeners.put(key, listener);
       }
-      log.info("Added listener with key=" + key);
+      if (log.isLoggable(Level.FINER)) log.finer("Added listener with key=" + key);
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -200,22 +201,27 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
 
       // A request/reply handler is interested in specific messages only
       if (listenerRequest != null) {
+         if (log.isLoggable(Level.FINER)) log.finer("Request specific listener found for key=" + key + ", email is " + messageData.toString());
          listenerRequest.responseEvent(messageData.getRequestId(), messageData);
          return key;
       }
 
       // A session is interested in all messages
       if (listenerSession != null) {
+         if (log.isLoggable(Level.FINER)) log.finer("SessRequest specific listener found for key=" + messageData
+               .getSessionId() + ", email is " + messageData.toString());
          listenerSession.responseEvent(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
       
       // A cluster node is interested in all messages (EmailDriver.java)
       if (listenerClusterNodeId != null) {
+         if (log.isLoggable(Level.FINER)) log.finer("Node specific listener found for key=" + this.glob.getId()
+                  + ", email is " + messageData.toString());
          listenerClusterNodeId.responseEvent(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
-      log.warning("No listener found for key=" + key);
+      log.warning("No listener found for key=" + key + ", email is " + messageData.toString());
       return null;
    }
 
@@ -360,7 +366,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
             log.severe("[" + this.pop3Url + "] POP3 polling failed: "
                   + e.getMessage());
          else { // RESOURCE_CONFIGURATION_CONNECT is logged already
-            log.info("[" + this.pop3Url + "] POP3 polling failed: "
+            if (log.isLoggable(Level.FINE)) log.fine("[" + this.pop3Url + "] POP3 polling failed: "
                   + e.getMessage());
          }
          this.firstException = false;
@@ -570,7 +576,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout {
 
    public synchronized void shutdown() {
       if (this.session != null) {
-         log.info("Shutting down mail client");
+         log.info("Shutting down POP3 mail client");
          this.session = null;
       }
    }

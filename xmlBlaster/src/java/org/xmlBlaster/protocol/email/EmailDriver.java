@@ -217,7 +217,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     */
    public final boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       try {
-         log.info("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+         if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
          receiver.setBounceObject("mail.to", receiver.getBounceObject("mail.from"));
          
          // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
@@ -227,6 +227,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
                conQos.setAddressServer(getAddressServer());
                //setLoginName(conQos.getUserId());
                ConnectReturnQosServer retQos = this.authenticate.connect(getAddressServer(), conQos);
+               //As we are a singleton there is no need to remember the secretSessionId of this client
+               //super.setSecretSessionId(retQos.getSecretSessionId());
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
              }
@@ -266,7 +268,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     * Deactivate xmlBlaster access (standby), no clients can connect.
     */
    public synchronized void deActivate() throws XmlBlasterException {
-      log.info("Entering deActivate()");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering deActivate()");
       super.pop3Driver.deregisterForEmail(this.glob.getId(), null);
    }
 

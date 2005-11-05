@@ -5,7 +5,6 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -13,7 +12,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.Executor;
-import org.xmlBlaster.util.protocol.email.AttachmentHolder;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.protocol.email.MessageData;
@@ -26,6 +24,8 @@ import org.xmlBlaster.util.def.Constants;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -34,12 +34,12 @@ import javax.mail.internet.InternetAddress;
  * Base class to handle request/reply for emails.
  * <p>
  * 
- * @author xmlBlaster@marcelruff.info
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class EmailExecutor extends Executor implements I_ResponseListener {
    private String ME = "EmailExecutor";
 
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(EmailExecutor.class.getName());
 
    private AddressBase addressBase;
 
@@ -68,7 +68,6 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    public void init(Global glob, AddressBase addressBase, I_PluginConfig pluginConfig)
          throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("email");
       this.addressBase = addressBase;
       this.pluginConfig = pluginConfig;
 
@@ -107,12 +106,12 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
             .getName());
       if (this.pop3Driver == null) {
-         log.warn(ME, "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
+         log.warning("Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
       }
       
-      log.info(ME, "Initialized email connector from=" + from + " to=" + to);
+      log.info("Initialized email connector from=" + from + " to=" + to);
    }
    
    public Object sendEmail(String qos, MethodName methodName,
@@ -149,8 +148,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          throw new XmlBlasterException(glob,
                ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendEmail("
                      + methodName.toString() + ") argument");
-      if (log.TRACE)
-         log.trace(ME, methodName.toString() + "(" + msgArr.length + ") to "
+      if (log.isLoggable(Level.FINE)) log.fine(methodName.toString() + "(" + msgArr.length + ") to "
                + getSecretSessionId());
 
       String sessionId = getSecretSessionId();
@@ -202,27 +200,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * @return true if message is processed
     */
    private boolean extractMsgUnit(MessageData messageData) {
-      AttachmentHolder[] atts = messageData.getAttachments();
-      byte[] content = null;
-      for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(XbfParser.XBFORMAT_EXTENSION)) { // "*.xbf"
-            content = atts[j].getContent();
-            break;
-         }
-      }
-      if (content == null) {
-         for (int j = 0; j < atts.length; j++) {
-            log.info(ME, "Processing response mail file name '"
-                  + atts[j].getFileName() + "'");
-            if (atts[j].getFileName().endsWith(".xml")) {
-               content = atts[j].getContent();
-               break;
-            } else {
-               log.warn(ME, "Ignoring unknown attachment file name '"
-                     + atts[j].getFileName() + "'");
-            }
-         }
-      }
+      byte[] content = messageData.getContentByExtension(
+               XbfParser.XBFORMAT_EXTENSION, ".xml"); // "*.xbf"
 
       if (content != null) { // Process the messageUnit
          try {
@@ -233,28 +212,23 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                PipedInputStream iStreamResponse = new PipedInputStream();
                this.oStreamForResponse = new PipedOutputStream(iStreamResponse);
 
-               PipedOutputStream oStreamSend = new PipedOutputStream(); // not
-               // need
-               // here,
-               // but
-               // to
-               // avoid
-               // NPE
+               // Not needed here, but to avoid NPE
+               PipedOutputStream oStreamSend = new PipedOutputStream();
                this.iStreamSend = new PipedInputStream(oStreamSend);
 
                super.initialize(this.glob, addressBase, iStreamResponse,
                      oStreamSend);
             }
 
-            log.info(ME, "Parsing now: " + MsgInfo.toLiteral(content));
+            if (log.isLoggable(Level.FINER)) log.finer("Parsing now: " + MsgInfo.toLiteral(content));
             this.oStreamForResponse.write(content);
             this.oStreamForResponse.flush();
             return true;
          } catch (Exception e) {
-            log.error(ME, "Handling POP3 response failed: " + e.toString());
+            log.severe("Handling POP3 response failed: " + e.toString());
          }
       } else {
-         log.error(ME, "Handling POP3 response failed, no MsgUnit found: "
+         log.severe("Handling POP3 response failed, no MsgUnit found in attachtments '" + messageData.getFileNameList() + "': "
                + messageData.toXml());
       }
       return false;
@@ -274,14 +248,13 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          MsgInfo receiver = null;
          try {
             // Reads message again from this.oStreamForResponse
+            // This uncompresses the message if needed
             receiver = MsgInfo.parse(glob, progressListener, iStream);
             this.oStreamForResponse = null;
             receiver.setBounceObject("mail.from", messageData.getFrom());
+            receiver.setBounceObject("messageId", messageData.getMessageId());
          } catch (Throwable e) {
-            log
-                  .warn(
-                        ME,
-                        "Error parsing email data from "
+            log.warning("Error parsing email data from "
                               + this.pop3Driver.getPop3Url()
                               + ", check if client and server have identical compression settings: "
                               + e.toString() + ": " + messageData.toXml());
@@ -293,19 +266,19 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             // This wakes up the blocking thread of sendEmail() and returns the
             // returnQos or the received invocation
             if (receive(receiver, false) == false) {
-               log.warn(ME, "Error parsing email data from "
+               log.warning("Error parsing email data from "
                      + this.pop3Driver.getPop3Url()
                      + ", CONNECT etc is not yet implemented");
             }
             return;
          } catch (Throwable e) {
-            log.warn(ME, "Can't process email data from "
+            log.warning("Can't process email data from "
                   + this.pop3Driver.getPop3Url() + ": " + e.toString());
             //shutdown();
          }
       }
 
-      log.warn(ME, "No mails via POP3 found");
+      log.warning("No mails via POP3 found");
    }
 
    /**
@@ -320,7 +293,9 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
       String subject = this.glob.get("mail.subject",
             "XmlBlaster Generated Email ", null, this.pluginConfig);
-      String messageId = MessageData.createMessageId(getSecretSessionId(),
+      String messageId = (String)msgInfo.getBounceObject("messageId");
+      if (messageId == null)
+         messageId = MessageData.createMessageId(getSecretSessionId(),
             requestId, methodName);
 
       // Transport messageId in subject:
@@ -337,7 +312,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          try { // The EmailDriver has different destinations for each client
             toAddr = new InternetAddress(to);
          } catch (AddressException e) {
-            log.warn(ME, "Illegal 'to' address '" + to + "'");
+            log.warning("Illegal 'to' address '" + to + "'");
          }
       }
       if (toAddr == null)
@@ -347,10 +322,11 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             attachmentName, this.iStreamSend, attachmentName2, messageId,
             Constants.UTF8_ENCODING);
 
-      log.info(ME + ".sendUpdate", "Sending email from "
-            + this.fromAddress.toString() + " to " + toAddr.toString()
+      if (log.isLoggable(Level.FINE)) log.fine("Sending email from="
+            + this.fromAddress.toString() + " to=" + toAddr.toString()
+            + " messageId=" + messageId
             + " done");
-      log.info(ME, "MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+      if (log.isLoggable(Level.FINEST)) log.finest("MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
    }
 
    /**
@@ -360,7 +336,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     *               Is never from the client (oneway).
     */
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      log.warn(ME, "Email sendUpdateOneway is not supported, request ignored");
+      log.warning("Email sendUpdateOneway is not supported, request ignored");
    }
 
    /**
@@ -374,7 +350,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     *               If client not reachable
     */
    public String ping(String qos) throws XmlBlasterException {
-      log.info(ME, "Email ping is not supported, request ignored");
+      log.warning("Email ping is not supported, request ignored");
       return "";
    }
 
@@ -396,7 +372,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * <p />
     */
    public void shutdown() {
-      log.warn(ME, "shutdown implementation is missing");
+      log.warning("shutdown implementation is missing");
    }
 
    /**
