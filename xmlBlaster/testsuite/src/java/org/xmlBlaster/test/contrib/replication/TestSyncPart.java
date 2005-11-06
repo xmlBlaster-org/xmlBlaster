@@ -7,8 +7,13 @@ package org.xmlBlaster.test.contrib.replication;
 
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -61,6 +66,14 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       // junit.swingui.TestRunner.run(TestSyncParts.class);
       TestSyncPart test = new TestSyncPart();
       try {
+         test.setUp();
+         test.testDateFormat();
+         test.tearDown();
+
+         test.setUp();
+         test.testTimestampFormat();
+         test.tearDown();
+         
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
@@ -148,10 +161,12 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
 
    
    /**
+    * 
     */
    public final void testPerformAllOperationsOnTable() {
       
       log.info("Start testPerformAllOperationsOnTable");
+      long ref = 0;
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -169,6 +184,8 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
                long replKey = rs.getLong(1);
+               ref = replKey;
+               
                String transKey = rs.getString(2);
                // String dbId = rs.getString(3);
                String tableName = rs.getString(4);
@@ -185,7 +202,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                // String oldContentTxt = new String(tmp);
                // String version = rs.getString(11);
                assertEquals("Testing the content of the action", "CREATE", dbAction);
-               assertEquals("Testing the content of the replKey", 2, replKey); // 1 is the addition to the repl_tables
+               //assertEquals("Testing the content of the replKey", 2, replKey); // 1 is the addition to the repl_tables
                assertNotNull("Testing that the transaction is not null", transKey);
                assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
                this.pool.update("DELETE from " + this.replPrefix + "items");
@@ -220,7 +237,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                content.read(tmp);
                String contentTxt = new String(tmp);
                assertEquals("Testing the content of the action", "INSERT", dbAction);
-               assertEquals("Testing the content of the replKey", 4, replKey);
+               assertEquals("Testing the content of the replKey", 2+ref, replKey);
                assertNotNull("Testing that the transaction is not null", transKey);
                assertNotNull("Testing that the content is not null", contentTxt);
                assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
@@ -258,7 +275,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                oldContent.read(tmp);
                String oldContentTxt = new String(tmp);
                assertEquals("Testing the content of the action", "UPDATE", dbAction);
-               assertEquals("Testing the content of the replKey", 5, replKey);
+               assertEquals("Testing the content of the replKey", 3+ref, replKey);
                assertNotNull("Testing that the transaction is not null", transKey);
                assertNotNull("Testing that the content is not null", contentTxt);
                assertNotNull("Testing that the old content is not null", oldContentTxt);
@@ -296,7 +313,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                oldContent.read(tmp);
                String oldContentTxt = new String(tmp);
                assertEquals("Testing the content of the action", "DELETE", dbAction);
-               assertEquals("Testing the content of the replKey", 6, replKey);
+               assertEquals("Testing the content of the replKey", 4+ref, replKey);
                assertNotNull("Testing that the transaction is not null", transKey);
                assertNotNull("Testing that the old content is not null", oldContentTxt);
                assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
@@ -327,7 +344,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
                assertEquals("Testing the content of the action", "ALTER", dbAction);
-               assertEquals("Testing the content of the replKey", 7, replKey);
+               assertEquals("Testing the content of the replKey", 5+ref, replKey);
                assertNotNull("Testing that the transaction is not null", transKey);
                assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
                this.pool.update("DELETE from " + this.replPrefix + "items");
@@ -355,7 +372,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
                assertEquals("Testing the content of the action", "DROP", dbAction);
-               assertEquals("Testing the content of the replKey", 8, replKey);
+               assertEquals("Testing the content of the replKey", 6+ref, replKey);
                assertNotNull("Testing that the transaction is not null", transKey);
                assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
                this.pool.update("DELETE from " + this.replPrefix + "items");
@@ -377,6 +394,220 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
+
+   
+   
+   /**
+    * 
+    */
+   public final void testDateFormat() {
+      log.info("Start testDifferentFormats");
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         sql = "CREATE TABLE " + this.tableName + " (first DATE, PRIMARY KEY(first))";
+         pool.update(sql);
+
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
+         try {
+            this.pool.update("DELETE from " + this.replPrefix + "items");
+            // long time = System.currentTimeMillis();
+            // Date date = new Date(time);
+            // String txt = "YYYY-MM-DD HH24:MI:SS"
+            String txt = "2005-11-05 23:04:31.345";
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            long time = format.parse(txt).getTime();
+            Date date = new Date(time);
+            System.out.println("Date: '" + time + "' is '" + date.toString() + "' and again as millis: '" + date.getTime());
+            PreparedStatement st1 = conn.prepareStatement("INSERT INTO " + this.tableName + " VALUES (?)");
+            st1.setDate(1, date);
+            st1.executeUpdate();
+            st1.close();
+            st1 = null;
+
+            st1 = conn.prepareStatement("SELECT * FROM " + tableName);
+            ResultSet rs = st1.executeQuery();
+            rs.next();
+            Date date1 = rs.getDate(1);
+            System.out.println("Date after taking it out from DB: '" + date1.getTime() + "'");
+            System.out.println("Date diff: " + (date1.getTime() - date.getTime()));
+            rs.close();
+            st1.close();
+           
+            Thread.sleep(500L);
+            Statement st2 = conn.createStatement();
+            rs = st2.executeQuery("SELECT * from " + this.replPrefix + "items ORDER BY repl_key");
+            assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+            InputStream content = rs.getAsciiStream(9);
+            byte[] tmp = new byte[10000];
+            content.read(tmp);
+            String val = new String(tmp);
+            System.out.println("!!!!!! Result of a date is '" + val + "'");
+            this.pool.update("DROP TABLE " + this.tableName);
+            this.pool.update("DELETE from " + this.replPrefix + "items");
+         }
+         catch (Exception e) {
+            e.printStackTrace();
+            assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+         }
+         finally {
+            if (conn != null)
+               this.pool.release(conn);
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+   /**
+    * 
+    */
+   public final void testTimestampFormat() {
+      log.info("Start testDifferentFormats");
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         sql = "CREATE TABLE " + this.tableName + " (first TIMESTAMP, PRIMARY KEY(first))";
+         pool.update(sql);
+
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
+         try {
+            this.pool.update("DELETE from " + this.replPrefix + "items");
+            // long time = System.currentTimeMillis();
+            // Date date = new Date(time);
+            // String txt = "YYYY-MM-DD HH24:MI:SS"
+            String txt = "2005-11-05 23:04:31";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            txt = "2005-11-05 23:04:31.1";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            txt = "2005-11-05 23:04:31.1000";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            txt = "2005-11-05 23:04:31.1000000";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            txt = "2005-11-05 23:04:31.100000000";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            txt = "2005-11-05 23:04:31.999999999";
+            try {
+               Timestamp ts = Timestamp.valueOf(txt);
+               long millis = ts.getTime();
+               long nanos = ts.getNanos();
+               System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
+               
+            }
+            catch (IllegalArgumentException e) {
+               assertTrue("An exception should not occur when parsing '" + txt + "'", false);
+            }
+            
+            
+            
+            
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            long time = format.parse(txt).getTime();
+            Timestamp date = new Timestamp(time);
+            date.setNanos(999);
+            System.out.println("Date: '" + time + "' is '" + date.toString() + "' and again as millis: '" + date.getTime());
+            PreparedStatement st1 = conn.prepareStatement("INSERT INTO " + this.tableName + " VALUES (?)");
+            st1.setTimestamp(1, date);
+            st1.executeUpdate();
+            st1.close();
+            st1 = null;
+            // Timestamp. timestamp = new Timestamp();
+            st1 = conn.prepareStatement("SELECT * FROM " + tableName);
+            ResultSet rs = st1.executeQuery();
+            rs.next();
+            Timestamp date1 = rs.getTimestamp(1);
+            System.out.println("Date after taking it out from DB: '" + date1.getTime() + "'");
+            System.out.println("Date diff: " + (date1.getTime() - date.getTime()));
+            rs.close();
+            st1.close();
+           
+            Thread.sleep(500L);
+            Statement st2 = conn.createStatement();
+            rs = st2.executeQuery("SELECT * from " + this.replPrefix + "items ORDER BY repl_key");
+            assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+            InputStream content = rs.getAsciiStream(9);
+            byte[] tmp = new byte[10000];
+            content.read(tmp);
+            String val = new String(tmp);
+            System.out.println("!!!!!! Result of a date is '" + val + "'");
+            this.pool.update("DROP TABLE " + this.tableName);
+            this.pool.update("DELETE from " + this.replPrefix + "items");
+         }
+         catch (Exception e) {
+            e.printStackTrace();
+            assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+         }
+         finally {
+            if (conn != null)
+               this.pool.release(conn);
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+
+   
+   
+   
+   
    /**
     * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
     */

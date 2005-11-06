@@ -10,10 +10,10 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -141,9 +141,9 @@ public class TestRecordParsing extends XMLTestCase {
 
       
       DbUpdateParser parser = new DbUpdateParser(this.info);
-      DbUpdateInfo record = parser.readObject(xml);
+      SqlInfo record = parser.readObject(xml);
 
-      DbUpdateInfoDescription description = record.getDescription();
+      SqlDescription description = record.getDescription();
       assertNotNull("the description shall not be null", description);
       assertNotNull("the identity shall not be null", description.getIdentity());
       assertNotNull("the command shall not be null", description.getCommand());
@@ -152,7 +152,7 @@ public class TestRecordParsing extends XMLTestCase {
       assertEquals("the command content is wrong", "INSERT", description.getCommand());
 
       // test the column descriptions 
-      DbUpdateInfoColDescription[] colDescriptions = description.getUpdateInfoColDescriptions();
+      SqlColumn[] colDescriptions = description.getColumns();
       assertEquals("the number of column descriptions is wrong", 4, colDescriptions.length);
       String[] names = new String[] { "DATUM", "CPU", "COL1", "ICAO_ID"};
       for (int i=0; i < colDescriptions.length; i++) {
@@ -164,7 +164,7 @@ public class TestRecordParsing extends XMLTestCase {
       assertEquals("the number of rows is wrong", 3, rows.size());
       int[] attr = new int[] { 2, 0, 1 };
       for (int i=0; i < 3; i++) {
-         DbUpdateInfoRow row = (DbUpdateInfoRow)rows.get(i);
+         SqlRow row = (SqlRow)rows.get(i);
          assertEquals("wrong number of columns for row '" + i+ "'", 4, row.getColumnNames().length);
          assertEquals("wrong number of attributes for row '" + i+ "'", attr[i], row.getAttributeNames().length);
       }

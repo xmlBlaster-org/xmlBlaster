@@ -52,7 +52,7 @@ public final class SpecificHelper {
      * UROWID should actually be supported but I get an exception when trying to read the column information out
      * of a result set metadata:
      * "ORA-03115: unsupported network datatype or representation"
-     * @see org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo#fillMetadata(Connection, String,String,String,ResultSet,I_AttributeTransformer)
+     * @see org.xmlBlaster.contrib.dbwriter.info.SqlInfo#fillMetadata(Connection, String,String,String,ResultSet,I_AttributeTransformer)
      */
     private String[] oracleTypesSql = new String[] {
           "CREATE TABLE ${tableName} (one CHARACTER(10),two CHARACTER VARYING(5),three CHAR VARYING(30),four NATIONAL CHARACTER(30),five NATIONAL CHAR(20),PRIMARY KEY (one, two))",       

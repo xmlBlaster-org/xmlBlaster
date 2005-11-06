@@ -19,7 +19,7 @@ import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.jms.XBSession;
@@ -200,7 +200,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             checked = true;
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
             DbUpdateParser parser = new DbUpdateParser(info);
-            DbUpdateInfo dbUpdateInfo = parser.readObject(msg);
+            SqlInfo dbUpdateInfo = parser.readObject(msg);
             String createStatement = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
             log.fine("=============================================");
             log.fine(createStatement);
@@ -208,7 +208,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             String msg1 = dbUpdateInfo.toXml("");
             log.fine("original message: " + message);
             log.fine("parsed message: " + msg1);
-            int numOfCols = dbUpdateInfo.getDescription().getUpdateInfoColDescriptions().length;
+            int numOfCols = dbUpdateInfo.getDescription().getColumns().length;
             assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
             assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", msg, msg1);
             String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null);

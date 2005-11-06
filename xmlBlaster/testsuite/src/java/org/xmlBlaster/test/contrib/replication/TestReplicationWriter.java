@@ -7,9 +7,12 @@ package org.xmlBlaster.test.contrib.replication;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -21,10 +24,15 @@ import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.ReplicationWriter;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * Tests the functionality of the ReplicationWriter. 
@@ -38,7 +46,7 @@ import org.xmlBlaster.contrib.replication.ReplicationWriter;
  * <h2>What does this test ?</h2><br/>
  * <ul>
  *   <li>This test runs without the need of an xmlBlaster server, everything is checked internally.</li>
- *   <li>From an xml statement it creates a DbUpdateInfo object which is then executed on the database.
+ *   <li>From an xml statement it creates a SqlInfo object which is then executed on the database.
  *       This way the 'store' operation of this class is tested.
  *   </li>
  * </ul>
@@ -65,8 +73,16 @@ public class TestReplicationWriter extends XMLTestCase {
     public static void main(String[] args) {
         // junit.swingui.TestRunner.run(TestReplicationWriter.class);
        TestReplicationWriter test = new TestReplicationWriter();
-       
+       String path = System.getProperty("java.class.path");
+       if (path == null)
+          path = "";
+       System.out.println("THE PATH IS: " + path);
        try {
+          
+          test.setUp();
+          test.testReadAllTables();
+          test.tearDown();
+/*          
           test.setUp();
           test.testCreateSeq1();
           test.tearDown();
@@ -86,17 +102,17 @@ public class TestReplicationWriter extends XMLTestCase {
           test.setUp();
           test.testCreateSeq5();
           test.tearDown();
-          
+*/          
           /*
           test.setUp();
           test.testCreateSeq6();
           test.tearDown();
           */
-          
+/*          
           test.setUp();
           test.testCreateSeq7();
           test.tearDown();
-          
+*/          
        }
        catch (Exception ex) {
           ex.printStackTrace();
@@ -196,7 +212,7 @@ public class TestReplicationWriter extends XMLTestCase {
          // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
          DbUpdateParser parser = new DbUpdateParser(info);
 
-         DbUpdateInfo dbUpdateInfo = parser.readObject(message);
+         SqlInfo dbUpdateInfo = parser.readObject(message);
          String sql = this.dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
          try {
             this.replicationWriter.store(dbUpdateInfo);
@@ -449,6 +465,286 @@ public class TestReplicationWriter extends XMLTestCase {
                        "   </desc>\n" +
                        " </sql>\n";
       createSeq("testCreateSeq7", message, this.tableName);
+   }
+
+   
+   private String displayInfo(Object obj) {
+      try {
+         String clazzName = obj.getClass().getName();
+         Class clazz = java.lang.Class.forName(clazzName);
+         StringBuffer results = new StringBuffer();
+         org.xmlBlaster.util.classloader.ClassLoaderUtils.displayClassInfo(clazz, results);
+         return results.toString();
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return "";
+      }
+   }
+   
+   public void processOneTable(Connection conn, String schemaName, String tableName) throws Exception {
+      ResultSet rs = null;
+      Statement st = null;
+      try {
+         String name = null;
+         if (schemaName != null)
+            name = schemaName + "." + tableName;
+         else
+            name = tableName;
+         try {
+            String sql = "SELECT * from " + name;
+            conn.setAutoCommit(true);
+            st = conn.createStatement();
+            rs = st.executeQuery(sql);
+         }
+         catch (SQLException ex) {
+            log.info("The Table '" + name + "' could not be processed since not found on the DB");
+            if (rs != null)
+               rs.close();
+            if (st != null)
+               st.close();
+            return;
+         }
+         SqlInfo obj = new SqlInfo(this.info);
+         obj.fillMetadata(conn, null, schemaName, tableName, rs, null);
+
+         int maxCount = 20;
+         int count = 0;
+         while (rs.next() && count < maxCount) {
+            obj.fillOneRowWithObjects(rs, null);
+            count++;
+         }
+
+         rs.close();
+         st.close();
+         // obj.getDescription().addPreparedStatements();
+
+         count = obj.getRowCount();
+         if (count == 0) {
+            log.info("Could not test '" + name + "' since empty");
+         }
+         else {
+            List rows = obj.getRows();
+            SqlDescription desc = obj.getDescription();
+
+            conn.setAutoCommit(false);
+            try {
+               for (int i=0; i < rows.size(); i++) {
+                  SqlRow row = (SqlRow)rows.get(i);
+                  ClientProperty oldRowProp = new ClientProperty(ReplicationConstants.OLD_CONTENT_ATTR, null, null, row.toXml("", false));
+                  row.setAttribute(oldRowProp);
+                  try {
+                     int ret = desc.update(conn, row);
+                     if (ret != 1)
+                        throw new Exception("the number of updated entries is wrong '" + ret + "' but should be 1");
+                  }
+                  catch(Exception ex) {
+                     log.info("exception when updating '" + row.toXml("") + " where description is '" + desc.toXml("") + "'");
+                     throw ex;
+                  }
+                  try {
+                     int ret = desc.delete(conn, row);
+                     if (ret != 1)
+                        throw new Exception("the number of deleted entries is wrong '" + ret + "' but should be 1");
+                  }
+                  catch(Exception ex) {
+                     log.info("exception when deleting '" + row.toXml("") + " where description is '" + desc.toXml("") + "'");
+                     throw ex;
+                  }
+                  try {
+                     int ret = desc.insert(conn, row);
+                     if (ret != 1)
+                        throw new Exception("the number of inserted entries is wrong '" + ret + "' but should be 1");
+                  }
+                  catch(Exception ex) {
+                     log.info("exception when inserting '" + row.toXml("") + " where description is '" + desc.toXml("") + "'");
+                     throw ex;
+                  }
+               }
+               conn.commit();
+            }
+            catch (Exception ex) {
+               if (conn != null)
+                  conn.rollback();
+            }
+            finally {
+               if (conn != null)
+                  conn.setAutoCommit(true);
+            }
+         }
+         
+         // System.out.println("\n\n");
+         // System.out.println(obj.getDescription().toXml(""));
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+   
+   public void testReadAllTables() {
+
+      PropertiesInfo info = new PropertiesInfo(new Properties());
+
+      info.put("table.ais.test001", "true,ndb001tr,1");
+      info.put("table.ais.test002", "true,ndb002tr,2");
+      info.put("table.ais.test003", "false,ndb003tr,2");
+      info.put("table.AIS.AD_ICAO_LOCATIONS", "true,REPL_NDB_001");
+      info.put("table.AIS.AERODROME_RUNWAYS", "true,REPL_NDB_002");
+      info.put("table.AIS.SIDS", "true,REPL_NDB_003");
+      info.put("table.AIS.STARS", "true,REPL_NDB_004");
+      info.put("table.AIS.NAVAIDS", "true,REPL_NDB_005");
+      info.put("table.AIS.WAYPOINTS", "true,REPL_NDB_006");
+      info.put("table.AIS.FIR_ICAO_LOCATIONS", "true,REPL_NDB_007");
+      info.put("table.AIS.FIR_NEIGHBOURS", "true,REPL_NDB_008");
+      info.put("table.AIS.FIR_ADDITIONAL_INFOS", "true,REPL_NDB_009");
+      info.put("table.AIS.FAI_POINTS", "true,REPL_NDB_010");
+      info.put("table.AIS.RESTRICTIVE_AIRSPACES", "true,REPL_NDB_011");
+      info.put("table.AIS.RAREA_POINTS", "true,REPL_NDB_012");
+      info.put("table.AIS.RAREA_FIRS", "true,REPL_NDB_013");
+      info.put("table.AIS.RAREA_AWYWPS", "true,REPL_NDB_014");
+      info.put("table.AIS.AIRWAYS", "true,REPL_NDB_015");
+      info.put("table.AIS.AIRWAY_WAYPOINTS", "true,REPL_NDB_016");
+      info.put("table.AIS.NOF_ICAO_LOCATIONS", "true,REPL_NDB_017");
+      info.put("table.AIS.NOF_SERIES", "true,REPL_NDB_018");
+      info.put("table.AIS.NOF_NATS", "true,REPL_NDB_019");
+      info.put("table.AIS.NOF_FIRS", "true,REPL_NDB_020");
+      info.put("table.AIS.SELECTION_CRITERIAS", "true,REPL_NDB_021");
+      info.put("table.AIS.DECODE23S", "true,REPL_NDB_022");
+      info.put("table.AIS.DECODE45S", "true,REPL_NDB_023");
+      info.put("table.AIS.ICAO_NATIONAL_LETTERS", "true,REPL_NDB_024");
+      info.put("table.AIS.AGENCIES", "true,REPL_NDB_025");
+      info.put("table.AIS.AIRCRAFTS", "true,REPL_NDB_026");
+      info.put("table.AIS.AIS_POOLS", "true,REPL_NDB_027");
+      info.put("table.AIS.QUERY_USERS", "true,REPL_NDB_028");
+      info.put("table.AIS.USER_PIPES", "true,REPL_NDB_029");
+      info.put("table.AIS.DEVICE_DESCRIPTIONS", "true,REPL_NDB_030");
+      info.put("table.AIS.DEVICE_FORMS", "true,REPL_NDB_031");
+      info.put("table.AIS.PROCESSREGIONS", "true,REPL_NDB_032");
+      info.put("table.AIS.AD_RESPS", "true,REPL_NDB_033");
+      info.put("table.AIS.CALL_SIGNS", "true,REPL_NDB_034");
+      info.put("table.AIS.AFOD_ADDRESSES", "true,REPL_NDB_035");
+      info.put("table.AIS.FIR_FPL_ADDRS", "true,REPL_NDB_036");
+      info.put("table.AIS.HOSTS", "true,REPL_NDB_037");
+      info.put("table.AIS.TERMINAL_USERS", "true,REPL_NDB_038");
+      info.put("table.AIS.PARAMETERS", "true,REPL_NDB_039");
+      info.put("table.AIS.OPERATORS", "true,REPL_NDB_040");
+      info.put("table.AIS.OP_PRIVILEGES", "true,REPL_NDB_041");
+      info.put("table.AIS.NOTAM", "true,REPL_NDB_042");
+      info.put("table.AIS.NCB_AIRWAYS", "true,REPL_NDB_043");
+      info.put("table.AIS.NCB_AWYWPS", "true,REPL_NDB_044");
+      info.put("table.AIS.NCB_COORS", "true,REPL_NDB_045");
+      info.put("table.AIS.NCB_RAREAS", "true,REPL_NDB_046");
+      info.put("table.AIS.NCB_RETR_KEYS", "true,REPL_NDB_047");
+      info.put("table.AIS.NCB_TEXT_LINES", "true,REPL_NDB_048");
+      info.put("table.AIS.NCB_RUNWAYS", "true,REPL_NDB_049");
+      info.put("table.AIS.NOTAM_CONTROL_BLOCKS", "true,REPL_NDB_050");
+      info.put("table.AIS.FPL", "true,REPL_NDB_051");
+      info.put("table.AIS.FCBS", "true,REPL_NDB_052");
+      info.put("table.AIS.FCB_AWYWPS", "true,REPL_NDB_054");
+      info.put("table.AIS.SNOWTAM_CONTROL_BLOCKS", "true,REPL_NDB_056");
+      info.put("table.AIS.SNOWTAM_RUNWAYS", "true,REPL_NDB_057");
+      info.put("table.AIS.AF_LOCATION_STATUSES", "true,REPL_NDB_058");
+      info.put("table.AIS.LR_MCBS", "true,REPL_NDB_059");
+      info.put("table.AIS.LR_NCBS", "true,REPL_NDB_060");
+      info.put("table.AIS.LR_SCBS", "true,REPL_NDB_061");
+      info.put("table.AIS.LR_FCBS", "true,REPL_NDB_062");
+      info.put("table.AIS.LR_RETRS", "true,REPL_NDB_063");
+      info.put("table.AIS.LR_MCB_TEXTS", "true,REPL_NDB_064");
+      info.put("table.AIS.LR_NCB_TEXTS", "true,REPL_NDB_065");
+      info.put("table.AIS.LR_SCB_TEXTS", "true,REPL_NDB_066");
+      info.put("table.AIS.LR_FCB_TEXTS", "true,REPL_NDB_067");
+      info.put("table.AIS.LR_PIBS", "true,REPL_NDB_068");
+      info.put("table.AIS.R_AD_ICAO_LOCATIONS", "true,REPL_NDB100");
+      info.put("table.AIS.R_AD_RESPS", "true,REPL_NDB101");
+      info.put("table.AIS.R_AERODROME_RUNWAYS", "true,REPL_NDB102");
+      info.put("table.AIS.R_AF_LOCATION_STATUSES", "true,REPL_NDB103");
+      info.put("table.AIS.R_AGENCIES", "true,REPL_NDB104");
+      info.put("table.AIS.R_AIRCRAFTS", "true,REPL_NDB105");
+      info.put("table.AIS.R_AIRWAYS", "true,REPL_NDB106");
+      info.put("table.AIS.R_AIRWAY_WAYPOINTS", "true,REPL_NDB107");
+      info.put("table.AIS.R_AIS_POOLS", "true,REPL_NDB108");
+      info.put("table.AIS.R_DECODE23S", "true,REPL_NDB109");
+      info.put("table.AIS.R_DECODE45S", "true,REPL_NDB110");
+      info.put("table.AIS.R_DEVICE_DESCRIPTIONS", "true,REPL_NDB111");
+      info.put("table.AIS.R_DEVICE_FORMS", "true,REPL_NDB112");
+      info.put("table.AIS.R_FAI_POINTS", "true,REPL_NDB113");
+      info.put("table.AIS.R_FCBS", "true,REPL_NDB114");
+      info.put("table.AIS.R_FCB_ADDRESSS", "true,REPL_NDB115");
+      info.put("table.AIS.R_FCB_AWYWPS", "true,REPL_NDB116");
+      info.put("table.AIS.R_FCB_ROUTES", "true,REPL_NDB117");
+      info.put("table.AIS.R_FCB_TEXT_LINES", "true,REPL_NDB118");
+      info.put("table.AIS.R_FIR_ADDITIONAL_INFOS", "true,REPL_NDB119");
+      info.put("table.AIS.R_FIR_FPL_ADDRS", "true,REPL_NDB120");
+      info.put("table.AIS.R_FIR_ICAO_LOCATIONS", "true,REPL_NDB121");
+      info.put("table.AIS.R_FIR_NEIGHBOURS", "true,REPL_NDB122");
+      info.put("table.AIS.R_ICAO_NATIONAL_LETTERS", "true,REPL_NDB123");
+      info.put("table.AIS.R_MAP_NOTAM_SYMBOLS", "true,REPL_NDB124");
+      info.put("table.AIS.R_MAP_Q_CODE23S", "true,REPL_NDB125");
+      info.put("table.AIS.R_NAVAIDS", "true,REPL_NDB126");
+      info.put("table.AIS.R_NCB_AIRWAYS", "true,REPL_NDB127");
+      info.put("table.AIS.R_NCB_AWYWPS", "true,REPL_NDB128");
+      info.put("table.AIS.R_NCB_COORS", "true,REPL_NDB129");
+      info.put("table.AIS.R_NCB_RAREAS", "true,REPL_NDB130");
+      info.put("table.AIS.R_NCB_RETR_KEYS", "true,REPL_NDB131");
+      info.put("table.AIS.R_NCB_TEXT_LINES", "true,REPL_NDB132");
+      info.put("table.AIS.R_NCB_RUNWAYS", "true,REPL_NDB_150");
+
+      info.put("table.AIS.R_NOF_FIRS", "true,REPL_NDB133");
+      info.put("table.AIS.R_NOF_ICAO_LOCATIONS", "true,REPL_NDB134");
+      info.put("table.AIS.R_NOF_NATS", "true,REPL_NDB135");
+      info.put("table.AIS.R_NOF_SERIES", "true,REPL_NDB136");
+      info.put("table.AIS.R_NOTAM_CONTROL_BLOCKS", "true,REPL_NDB137");
+      info.put("table.AIS.R_PROCESSREGIONS", "true,REPL_NDB138");
+      info.put("table.AIS.R_QUERY_USERS", "true,REPL_NDB139");
+      info.put("table.AIS.R_RAREA_FIRS", "true,REPL_NDB140");
+      info.put("table.AIS.R_RAREA_POINTS", "true,REPL_NDB141");
+      info.put("table.AIS.R_RESTRICTIVE_AIRSPACES", "true,REPL_NDB142");
+      info.put("table.AIS.R_SELECTION_CRITERIAS", "true,REPL_NDB143");
+      info.put("table.AIS.R_SIDS", "true,REPL_NDB144");
+      info.put("table.AIS.R_SNOWTAM_CONTROL_BLOCKS", "true,REPL_NDB145");
+      info.put("table.AIS.R_SNOWTAM_RUNWAYS", "true,REPL_NDB146");
+      info.put("table.AIS.R_STARS", "true,REPL_NDB147");
+      info.put("table.AIS.R_USER_PIPES", "true,REPL_NDB148");
+      info.put("table.AIS.R_WAYPOINTS", "true,REPL_NDB149");
+
+      Connection conn = null;
+      try {
+         conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
+         /*
+         ResultSet rs = conn.getMetaData().getTables(null, schema, null, null);
+         ArrayList list = new ArrayList();
+         while (rs.next()) {
+           list.add(rs.getString(3)); // add the name
+         }
+         rs.close();
+         */
+         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(info); 
+         for (int i=0; i < tables.length; i++) {
+            try {
+               String name = tables[i].getTable();
+               String schema = tables[i].getSchema();
+               processOneTable(conn, schema, name);
+               // System.out.println("\n\n");
+               // System.out.println(obj.getDescription().toXml(""));
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+      finally {
+         try {
+            if (conn != null)
+               this.dbPool.release(conn);
+         }
+         catch (Exception ex) {
+         }
+      }
+      
    }
    
 }
