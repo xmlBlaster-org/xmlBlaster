@@ -1,17 +1,28 @@
 /*------------------------------------------------------------------------------
-Name:      DbUpdateInfo.java
+Name:      SqlInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.contrib.dbwriter.info;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,18 +35,18 @@ import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class DbUpdateInfo implements ReplicationConstants {
+public class SqlInfo implements ReplicationConstants {
 
    public final static String SQL_TAG = "sql";
-   private static Logger log = Logger.getLogger(DbUpdateInfo.class.getName());
+   private static Logger log = Logger.getLogger(SqlInfo.class.getName());
 
-   private DbUpdateInfoDescription description;
+   private SqlDescription description;
    
    private List rows;
    
    private I_Info info;
    
-   public DbUpdateInfo(I_Info info) {
+   public SqlInfo(I_Info info) {
       this.info = info;
       this.rows = new ArrayList();
    }
@@ -58,7 +69,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          try {
             rs = meta.getColumns(catalog, schema, table, null);
             if (this.description == null)
-               this.description = new DbUpdateInfoDescription(this.info);
+               this.description = new SqlDescription(this.info);
             this.description.setIdentity(table);
             while (rs.next()) {
                String tmpCat = rs.getString(1);
@@ -69,10 +80,10 @@ public class DbUpdateInfo implements ReplicationConstants {
                   schema = tmpSchema;
                String tmpTableName = rs.getString(3);
                String colName = rs.getString(4);
-               DbUpdateInfoColDescription colDescription = this.description.getUpdateInfoColDescription(colName);
+               SqlColumn colDescription = this.description.getColumn(colName);
                if (colDescription == null) {
-                  colDescription = new DbUpdateInfoColDescription(this.info);
-                  this.description.addColumnDescription(colDescription);
+                  colDescription = new SqlColumn(this.info);
+                  this.description.addColumn(colDescription);
                }
                colDescription.setCatalog(tmpCat);
                colDescription.setSchema(tmpSchema);
@@ -100,7 +111,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          Statement st = null;
          String completeTableName = null;
          String colName = null;
-         DbUpdateInfoColDescription colDesc = null;
+         SqlColumn colDesc = null;
          try {
             st = conn.createStatement();
             completeTableName = table;
@@ -111,12 +122,12 @@ public class DbUpdateInfo implements ReplicationConstants {
             int colCount = rsMeta.getColumnCount();
             if (colCount != this.description.getNumOfColumns()) {
                if (this.description.getNumOfColumns() != 0)
-                  throw new Exception("DbUpdateInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
+                  throw new Exception("SqlInfo.fillMetaData: wrong number of colums in the SELECT Statement. is '" + colCount + "' but should be '" + this.description.getNumOfColumns() + "'");
                // why does this happen ? Is it on old oracle ?
                for (int i=0; i < colCount; i++) {
-                  DbUpdateInfoColDescription colDescription = new DbUpdateInfoColDescription(this.info);
+                  SqlColumn colDescription = new SqlColumn(this.info);
                   colDescription.setPos(i+1);
-                  this.description.addColumnDescription(colDescription);
+                  this.description.addColumn(colDescription);
                }
             }
             for (int i=1; i <= colCount; i++) {
@@ -184,7 +195,7 @@ public class DbUpdateInfo implements ReplicationConstants {
             while (rs.next()) {
                colName = rs.getString(4);
                String pkName = rs.getString(6);
-               DbUpdateInfoColDescription col = this.description.getUpdateInfoColDescription(colName);
+               SqlColumn col = this.description.getColumn(colName);
                if (col != null) {
                   col.setPrimaryKey(true);
                   col.setPkName(pkName);
@@ -201,7 +212,7 @@ public class DbUpdateInfo implements ReplicationConstants {
          try {
             while (rs.next()) {
                colName = rs.getString(8);
-               DbUpdateInfoColDescription col = description.getUpdateInfoColDescription(colName);
+               SqlColumn col = description.getColumn(colName);
                if (col != null) {
                   col.setFkCatalog(rs.getString(1));
                   col.setFkSchema(rs.getString(2));
@@ -254,8 +265,8 @@ public class DbUpdateInfo implements ReplicationConstants {
     * @throws SQLException
     * @deprecated
     */
-   public void fillFromTableSelect(ResultSet rs, boolean fillData, I_AttributeTransformer transformer) throws Exception {
-      DbUpdateInfoDescription description = new DbUpdateInfoDescription(this.info);
+   public void fillFromTableSelectDELETED(ResultSet rs, boolean fillData, I_AttributeTransformer transformer) throws Exception {
+      SqlDescription description = new SqlDescription(this.info);
       setDescription(description);
       
       ResultSetMetaData meta = rs.getMetaData();
@@ -264,8 +275,8 @@ public class DbUpdateInfo implements ReplicationConstants {
       String schema = null;
       String catalog = null;
       for (int i=1; i <= numberOfColumns; i++) {
-         DbUpdateInfoColDescription col = new DbUpdateInfoColDescription(this.info);
-         description.addColumnDescription(col);
+         SqlColumn col = new SqlColumn(this.info);
+         description.addColumn(col);
          tableName = meta.getTableName(i);
          if (tableName != null && tableName.length() > 0)
             col.setTable(meta.getTableName(i));
@@ -298,14 +309,14 @@ public class DbUpdateInfo implements ReplicationConstants {
             while (pkRs.next()) {
                String colName = pkRs.getString(4);
                //String pkName = pkRs.getString(6);
-               DbUpdateInfoColDescription col = description.getUpdateInfoColDescription(colName);
+               SqlColumn col = description.getColumn(colName);
                if (col != null)
                   col.setPrimaryKey(true);
             }
             ResultSet fkRs = dbMeta.getImportedKeys(catalog, schema, tableName);
             while (fkRs.next()) {
                String colName = fkRs.getString(8);
-               DbUpdateInfoColDescription col = description.getUpdateInfoColDescription(colName);
+               SqlColumn col = description.getColumn(colName);
                if (col != null) {
                   col.setFkCatalog(fkRs.getString(1));
                   col.setFkSchema(fkRs.getString(2));
@@ -335,7 +346,7 @@ public class DbUpdateInfo implements ReplicationConstants {
       if (fillData) {
          int count = 0;
          while (rs.next()) {
-            DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
+            SqlRow row = new SqlRow(this.info, count);
             count++;
             getRows().add(row);
             for (int i=1; i<=numberOfColumns; i++) {
@@ -368,15 +379,161 @@ public class DbUpdateInfo implements ReplicationConstants {
     * @param conn
     * @throws SQLException
     */
-   public DbUpdateInfoRow fillOneRow(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
+   public SqlRow fillOneRowWithStringEntries(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
       int count = getRowCount();
-      DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
+      SqlRow row = new SqlRow(this.info, count);
       getRows().add(row);
       for (int i=1; i<=numberOfColumns; i++) {
          String value = rs.getString(i);
          ClientProperty prop = new ClientProperty(meta.getColumnName(i), null, null, value);
+         row.setColumn(prop);
+      }
+      if (transformer != null) {
+         Map attr = transformer.transform(rs, count);
+         if (attr != null)
+            row.addAttributes(attr);
+      }
+      return row;
+   }
+
+   /**
+    * 
+    * @param name
+    * @param val
+    * @return
+    */
+   public static ClientProperty buildClientProperty(ResultSetMetaData meta, ResultSet rs, int pos) throws Exception {
+      String name = meta.getColumnName(pos);
+      Object val = rs.getObject(pos);
+
+      if (val == null)
+         return new ClientProperty(name, null, null, (String)null);
+      if (val instanceof String)
+         return new ClientProperty(name, null, null, (String)val);
+      
+      if (val instanceof Boolean)
+         return new ClientProperty(name, null, null, "" + ((Boolean)val).booleanValue());
+
+      if (val instanceof Short)
+         return new ClientProperty(name, null, null, "" + ((Short)val).shortValue());
+
+      if (val instanceof Integer)
+         return new ClientProperty(name, null, null, "" + ((Integer)val).intValue());
+
+      if (val instanceof Long)
+         return new ClientProperty(name, null, null, "" + ((Long)val).longValue());
+
+      if (val instanceof Float)
+         return new ClientProperty(name, null, null, "" + ((Float)val).floatValue());
+         
+      if (val instanceof Double)
+         return new ClientProperty(name, null, null, "" + ((Double)val).doubleValue());
+
+      if (val instanceof byte[]) {
+         ClientProperty prop = new ClientProperty(name, null, null);
+         prop.setValue((byte[])val);
+      }
+      if (val instanceof Clob) { // only for relatively small clobs (< 10MB)
+         try {
+            Clob clob = (Clob)val;
+            InputStream in = clob.getAsciiStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // StringBuffer strBuf = new StringBuffer();
+            byte[] buf = new byte[100000];
+            int read = 0;
+            int count=0;
+            while (  (read=in.read(buf)) != -1) {
+               baos.write(buf, 0, read);
+               count++;
+               if (count > 100)
+                  throw new IllegalArgumentException("The clob '" + name + "' is too big, already exceeding 10 MB. Will stop processing it");
+            }
+            in.close();
+            ClientProperty prop  = new ClientProperty(name, null, null);
+            prop.setValue(new String(baos.toByteArray()));
+            return prop;
+         }
+         catch (Exception ex) {
+            throw new Exception("An exception occured when processing '" + name + "'", ex);
+         }
+      }
+      if (val instanceof Blob) { // only for relatively small clobs (< 10MB)
+         try {
+            Blob blob = (Blob)val;
+            InputStream in = blob.getBinaryStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // StringBuffer strBuf = new StringBuffer();
+            byte[] buf = new byte[100000];
+            int read = 0;
+            int count=0;
+            while (  (read=in.read(buf)) != -1) {
+               baos.write(buf, 0, read);
+               count++;
+               if (count > 100)
+                  throw new IllegalArgumentException("The blob '" + name + "' is too big, already exceeding 10 MB. Will stop processing it");
+            }
+            in.close();
+            ClientProperty prop  = new ClientProperty(name, null, null);
+            prop.setValue(new String(baos.toByteArray()));
+         }
+         catch (Exception ex) {
+            throw new Exception("An exception occured when processing '" + name + "'", ex);
+         }
+      }
+      if (val instanceof Timestamp) {
+         Timestamp ts = (Timestamp)val;
+         return new ClientProperty(name, null, null, ts.toString());
+      }
+      if (val instanceof BigDecimal) {
+         BigDecimal dec = (BigDecimal)val;
+         try {
+            return new ClientProperty(name, null, null, "" + dec.longValueExact());
+         }
+         catch (Exception ex) {
+            return new ClientProperty(name, null, null, "" + dec.doubleValue());
+         }
+      }
+      if (val instanceof BigInteger) {
+         BigInteger dec = (BigInteger)val;
+         return new ClientProperty(name, null, null, "" + dec.longValue());
+      }
+      if (val instanceof Date) {
+         // Date date = (Date)val;
+         Timestamp ts = rs.getTimestamp(pos);
+         // DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+         // String dateTxt = format.format(date);
+         String dateTxt = ts.toString();
+         return new ClientProperty(name, null, null, dateTxt);
+      }
+      if (val instanceof Time) {
+         Time time = (Time)val;
+         return new ClientProperty(name, null, null, "" + time.getTime());
+      }
+      else {
+         throw new Exception("The object '" + name + "' of type '" + val.getClass().getName() + "' can not be processed since this type is not implemented");
+      }
+   }
+   
+   /**
+    * Result set must come from a select spaning over a single table.
+    * This class is supposed to replace fillOneRowWithStringEntries as
+    * soon as it has been extensively tested !!
+    * TODO FIXME !!!
+    * 
+    * @param rs
+    * @param conn
+    * @throws SQLException
+    */
+   public SqlRow fillOneRowWithObjects(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
+      ResultSetMetaData meta = rs.getMetaData();
+      int numberOfColumns = meta.getColumnCount();
+      int count = getRowCount();
+      SqlRow row = new SqlRow(this.info, count);
+      getRows().add(row);
+      for (int i=1; i<=numberOfColumns; i++) {
+         ClientProperty prop = buildClientProperty(meta, rs, i);
          row.setColumn(prop);
       }
       if (transformer != null) {
@@ -393,9 +550,9 @@ public class DbUpdateInfo implements ReplicationConstants {
     * @param conn
     * @throws SQLException
     */
-   public DbUpdateInfoRow fillOneRow(ResultSet rs, String rawContent, I_AttributeTransformer transformer) throws Exception {
+   public SqlRow fillOneRow(ResultSet rs, String rawContent, I_AttributeTransformer transformer) throws Exception {
       int count = getRowCount();
-      DbUpdateInfoRow row = new DbUpdateInfoRow(this.info, count);
+      SqlRow row = new SqlRow(this.info, count);
       getRows().add(row);
       row.setColsRawContent(rawContent);
       if (transformer != null) {
@@ -406,11 +563,11 @@ public class DbUpdateInfo implements ReplicationConstants {
       return row;
    }
    
-   public DbUpdateInfoDescription getDescription() {
+   public SqlDescription getDescription() {
       return this.description;
    }
 
-   public void setDescription(DbUpdateInfoDescription description) {
+   public void setDescription(SqlDescription description) {
       this.description = description;
    }
 
@@ -430,7 +587,7 @@ public class DbUpdateInfo implements ReplicationConstants {
 
       Iterator iter = this.rows.iterator();
       while (iter.hasNext()) {
-         DbUpdateInfoRow recordRow = (DbUpdateInfoRow)iter.next();
+         SqlRow recordRow = (SqlRow)iter.next();
          sb.append(recordRow.toXml(extraOffset + "  "));
       }
       sb.append(offset).append("</").append(SQL_TAG).append(">");
@@ -439,7 +596,7 @@ public class DbUpdateInfo implements ReplicationConstants {
    
    
    public static void main(String[] args) {
-      DbUpdateInfo info = new DbUpdateInfo(null);
+      new SqlInfo(null);
    }
    
 }

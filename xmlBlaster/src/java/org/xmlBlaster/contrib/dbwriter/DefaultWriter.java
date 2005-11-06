@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public class DefaultWriter implements I_Writer {
 
@@ -23,7 +23,7 @@ public class DefaultWriter implements I_Writer {
       
    }
    
-   public void store(DbUpdateInfo info) throws Exception {
+   public void store(SqlInfo info) throws Exception {
       System.out.println("=========== NEW MESSAGE ============\n" + info.toXml("") + "\n");
    }
 

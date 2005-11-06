@@ -34,9 +34,9 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
@@ -50,7 +50,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
    private int rowsPerMessage = 10;
 
-   private DbUpdateInfo dbUpdateInfo;
+   private SqlInfo dbUpdateInfo;
 
    private long newReplKey;
 
@@ -576,7 +576,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          conn.setAutoCommit(true);
          oldTransIsolation = conn.getTransactionIsolation();
          oldTransIsolationKnown = true;
-         this.dbUpdateInfo = new DbUpdateInfo(this.info);
+         this.dbUpdateInfo = new SqlInfo(this.info);
 
          if (catalog != null)
             catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -586,7 +586,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
          this.dbUpdateInfo.fillMetadata(conn, catalog, schema, table, null,
                null);
-         DbUpdateInfoDescription description = this.dbUpdateInfo
+         SqlDescription description = this.dbUpdateInfo
                .getDescription();
          description.addAttributes(attrs);
          this.newReplKey = 0;
@@ -670,11 +670,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void result(ResultSet rs) throws Exception {
       try {
-         // TODO clear the columns since not refally used anymore ...
+         // TODO clear the columns since not really used anymore ...
          int msgCount = 1; // since 0 was the create, the first must be 1
          int internalCount = 0;
          while (rs != null && rs.next()) {
-            this.dbUpdateInfo.fillOneRow(rs, null);
+            this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
             internalCount++;
             if (internalCount == this.rowsPerMessage) {
                internalCount = 0;
@@ -848,13 +848,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
-    * @see I_DbSpecific#getCreateTableStatement(DbUpdateInfoDescription,
+    * @see I_DbSpecific#getCreateTableStatement(SqlDescription,
     *      I_Mapper)
     */
    public final String getCreateTableStatement(
-         DbUpdateInfoDescription infoDescription, I_Mapper mapper) {
-      DbUpdateInfoColDescription[] cols = infoDescription
-            .getUpdateInfoColDescriptions();
+         SqlDescription infoDescription, I_Mapper mapper) {
+      SqlColumn[] cols = infoDescription
+            .getColumns();
       StringBuffer buf = new StringBuffer(1024);
       String tableName = infoDescription.getIdentity();
       if (mapper != null)

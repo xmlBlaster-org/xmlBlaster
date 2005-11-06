@@ -19,9 +19,9 @@ import java.sql.ResultSetMetaData;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -33,7 +33,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private static Logger log = Logger.getLogger(ReplicationConverter.class.getName());
    
    private I_DbSpecific dbSpecific;
-   private DbUpdateInfo dbUpdateInfo;
+   private SqlInfo dbUpdateInfo;
    private I_Info info;
    private I_AttributeTransformer transformer;
    private OutputStream out;
@@ -183,26 +183,26 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
          }
          else if (action.equalsIgnoreCase(DROP_ACTION)) {
-            DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
+            SqlDescription description = this.dbUpdateInfo.getDescription(); 
             description.setCommand(action);
             description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(ALTER_ACTION)) {
-            DbUpdateInfoDescription description = this.dbUpdateInfo.getDescription(); 
+            SqlDescription description = this.dbUpdateInfo.getDescription(); 
             description.setCommand(action);
             description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(INSERT_ACTION)) {
-            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
             completeAttrs.put(OLD_CONTENT_ATTR, oldContent);
-            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-            DbUpdateInfoRow row = this.dbUpdateInfo.fillOneRow(rs, oldContent, this.transformer);
+            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, oldContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
 
@@ -223,8 +223,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
 
    public void setOutputStream(OutputStream out, String command, String ident) throws Exception {
       this.out = out;
-      this.dbUpdateInfo = new DbUpdateInfo(this.info);
-      DbUpdateInfoDescription description = new DbUpdateInfoDescription(this.info);
+      this.dbUpdateInfo = new SqlInfo(this.info);
+      SqlDescription description = new SqlDescription(this.info);
       description.setCommand(REPLICATION_CMD);
       if (ident != null)
          description.setIdentity(ident);

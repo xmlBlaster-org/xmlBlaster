@@ -14,7 +14,7 @@ import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.db.I_DbPool;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -157,7 +157,7 @@ public class DbWriter implements I_Update {
          this.writer.update(topic, content, attrMap);
       }
       else {
-         DbUpdateInfo updateInfo = this.parser.parse(new String(content));
+         SqlInfo updateInfo = this.parser.parse(new String(content));
          this.writer.store(updateInfo);
       }
    }

@@ -26,8 +26,8 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.jms.XBDestination;
@@ -182,9 +182,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
     * 
     * @throws Exception
     */
-   public final String publishCreate(int counter, DbUpdateInfo updateInfo, long newReplKey) throws Exception {
+   public final String publishCreate(int counter, SqlInfo updateInfo, long newReplKey) throws Exception {
       log.info("publishCreate invoked for counter '" + counter + "'");
-      DbUpdateInfoDescription description = updateInfo.getDescription();
+      SqlDescription description = updateInfo.getDescription();
       
       description.setAttribute(new ClientProperty(CREATE_COUNTER_KEY, "int",
             null, "" + counter));

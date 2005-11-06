@@ -8,10 +8,10 @@ package org.xmlBlaster.contrib.dbwriter;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Update;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public interface I_Writer extends I_ContribPlugin, I_Update {
 
-   void store(DbUpdateInfo info) throws Exception;
+   void store(SqlInfo info) throws Exception;
    
 }

@@ -18,7 +18,7 @@ import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class DbUpdateInfoRow {
+public class SqlRow {
 
    public final static String ROW_TAG = "row";
    public final static String COL_TAG = "col";
@@ -44,7 +44,7 @@ public class DbUpdateInfoRow {
    /** If this is set, then no columns must be filled and this is used to print it out as xml */
    private String colsRawContent;
    
-   public DbUpdateInfoRow(I_Info info, int position) {
+   public SqlRow(I_Info info, int position) {
       this.attributes = new HashMap();
       this.columns = new HashMap();
       this.attributeKeys = new ArrayList();
@@ -91,7 +91,7 @@ public class DbUpdateInfoRow {
             storeProp((ClientProperty)val, destinationMap, destinationList);
          }
          else {
-            throw new IllegalArgumentException("DbUpdateInfoDescription.addAttributes can only be done on String or ClientProperty, but '" + key + "' has a value of type '" + val.getClass().getName() + "'");
+            throw new IllegalArgumentException("SqlDescription.addAttributes can only be done on String or ClientProperty, but '" + key + "' has a value of type '" + val.getClass().getName() + "'");
          }
       }
    }
@@ -151,7 +151,7 @@ public class DbUpdateInfoRow {
     */
    public void setAttribute(String key, String value) {
       ClientProperty prop = new ClientProperty(key, null, null, value);
-      DbUpdateInfoRow.storeProp(prop, this.attributes, this.attributeKeys);
+      SqlRow.storeProp(prop, this.attributes, this.attributeKeys);
    }
    
    /**
@@ -184,18 +184,23 @@ public class DbUpdateInfoRow {
     */
    public void setColumn(ClientProperty value) {
       if (this.colsRawContent != null)
-         throw new IllegalStateException("DbUpdateInfoRow.setColumn can not be invoked since the raw value '" + this.colsRawContent + "' has already been set");
+         throw new IllegalStateException("SqlRow.setColumn can not be invoked since the raw value '" + this.colsRawContent + "' has already been set");
          storeProp(value, this.columns, this.columnKeys);
    }
    
-   
    public String toXml(String extraOffset) {
+      return toXml(extraOffset, true);
+   }
+   
+   public String toXml(String extraOffset, boolean withRowTag) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<").append(ROW_TAG);
-      sb.append(" ").append(NUM_ATTR).append("='").append(this.position).append("'>");
+      if (withRowTag) {
+         sb.append(offset).append("<").append(ROW_TAG);
+         sb.append(" ").append(NUM_ATTR).append("='").append(this.position).append("'>");
+      }
 
       if (this.colsRawContent != null) {
         sb.append("  ").append(this.colsRawContent); 
@@ -214,7 +219,8 @@ public class DbUpdateInfoRow {
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
          sb.append(prop.toXml(extraOffset + "  ", DbUpdateParser.ATTR_TAG));
       }
-      sb.append(offset).append("</").append(ROW_TAG).append(">");
+      if (withRowTag)
+         sb.append(offset).append("</").append(ROW_TAG).append(">");
       return sb.toString();
    }
 
@@ -240,7 +246,7 @@ public class DbUpdateInfoRow {
     */
    public void setColsRawContent(String colsRawContent) {
       if (this.columns.size() > 0)
-         throw new IllegalStateException("DbUpdateInfoRow.setColsRawContent can not be invoked since there are already '" + this.columns.size() + "' columns defined");
+         throw new IllegalStateException("SqlRow.setColsRawContent can not be invoked since there are already '" + this.columns.size() + "' columns defined");
       this.colsRawContent = colsRawContent;
    }
    

@@ -26,10 +26,10 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoRow;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -124,7 +124,7 @@ private final static String ME = "ReplicationWriter";
     * @param row
     * @return
     */
-   private String getStringAttribute(String key, DbUpdateInfoRow row, DbUpdateInfoDescription description) {
+   private String getStringAttribute(String key, SqlRow row, SqlDescription description) {
       ClientProperty prop = null;
       if (row != null)
          prop = row.getAttribute(key);
@@ -150,9 +150,9 @@ private final static String ME = "ReplicationWriter";
       return false;
    }
    
-   public void store(DbUpdateInfo dbInfo) throws Exception {
+   public void store(SqlInfo dbInfo) throws Exception {
       
-      DbUpdateInfoDescription description = dbInfo.getDescription();
+      SqlDescription description = dbInfo.getDescription();
       if (description == null) {
          log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
          return;
@@ -188,7 +188,7 @@ private final static String ME = "ReplicationWriter";
 
             if (command.equalsIgnoreCase(REPLICATION_CMD)) {
                for (int i=0; i < rows.size(); i++) {
-                  DbUpdateInfoRow row = (DbUpdateInfoRow)rows.get(i);
+                  SqlRow row = (SqlRow)rows.get(i);
                   // TODO consistency check
                   action = getStringAttribute(ACTION_ATTR, row, description);
 
@@ -203,7 +203,7 @@ private final static String ME = "ReplicationWriter";
                   if (action == null)
                      throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
                   log.fine("store: " + row.toXml(""));
-                  DbUpdateInfoDescription desc = getTableDescription(schema, table, conn);
+                  SqlDescription desc = getTableDescription(schema, table, conn);
                   if (action.equalsIgnoreCase(INSERT_ACTION)) {
                      desc.insert(conn, row);
                   }
@@ -342,36 +342,36 @@ private final static String ME = "ReplicationWriter";
     * @param tableName
     * @param conn
     */
-   private synchronized DbUpdateInfoDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
+   private synchronized SqlDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
       if (tableName == null)
          throw new Exception(ME + ".getTableDescription: the table name is null");
       log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");
       tableName = this.dbMetaHelper.getIdentifier(tableName);
       schema = this.dbMetaHelper.getIdentifier(schema);
       
-      DbUpdateInfoDescription description = (DbUpdateInfoDescription)this.tableMap.get(tableName);
+      SqlDescription description = (SqlDescription)this.tableMap.get(tableName);
       if (description != null)
          return description;
       DatabaseMetaData meta = conn.getMetaData();
       ResultSet rs = null;
       log.info("Retrieving table meta information from database: schema='" + schema + "' tableName='" + tableName + "'");
 
-      description = new DbUpdateInfoDescription(this.info);
+      description = new SqlDescription(this.info);
       description.setIdentity(tableName);
       try {
          rs = meta.getColumns(null, schema, tableName, null);
          while (rs.next()) {
             String colName = rs.getString(4);
             int type = rs.getInt(5);
-            DbUpdateInfoColDescription colDescription = new DbUpdateInfoColDescription(this.info);
+            SqlColumn colDescription = new SqlColumn(this.info);
             colDescription.setSchema(schema);
             colDescription.setTable(tableName);
             colDescription.setSqlType(type);
             colDescription.setColName(colName);
-            description.addColumnDescription(colDescription);
+            description.addColumn(colDescription);
             log.info("Table Meta info: name='" + tableName + "' colName='" + colName + "' type='" + type + "'");
          }
-         if (description.getUpdateInfoColDescriptions().length == 0) {
+         if (description.getColumns().length == 0) {
             log.severe("No table meta information for database schema='" + schema + "' tableName='" + tableName + "' found");
          }
       }
@@ -387,7 +387,7 @@ private final static String ME = "ReplicationWriter";
          while (rs.next()) {
             count++;
             String colName = rs.getString(4);
-            DbUpdateInfoColDescription colDescription = description.getUpdateInfoColDescription(colName);
+            SqlColumn colDescription = description.getColumn(colName);
             if (colDescription == null)
                throw new Exception(ME + ".getTableDescription: the column name '" + colName + "' was among the PK but not in the table meta description");
             colDescription.setPrimaryKey(true);

@@ -8,8 +8,8 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
 import java.sql.Types;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 
 public class SpecificPostgres extends SpecificDefault {
 
@@ -27,7 +27,7 @@ public class SpecificPostgres extends SpecificDefault {
     * @param colInfoDescription
     * @return
     */
-   public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
+   public StringBuffer getColumnStatement(SqlColumn colInfoDescription) {
       String type = colInfoDescription.getType();
       /*
        * if (charLength > 0) { type = type + "[" + charLength + "]"; }
@@ -44,10 +44,10 @@ public class SpecificPostgres extends SpecificDefault {
     *           can be 'old' or 'new'
     * @return
     */
-   protected String createVariableSqlPart(DbUpdateInfoDescription description,
+   protected String createVariableSqlPart(SqlDescription description,
          String prefix) {
-      DbUpdateInfoColDescription[] cols = description
-            .getUpdateInfoColDescriptions();
+      SqlColumn[] cols = description
+            .getColumns();
       StringBuffer buf = new StringBuffer("       ").append(prefix).append(
             "Cont = '';\n");
 
@@ -81,7 +81,7 @@ public class SpecificPostgres extends SpecificDefault {
     *           table.
     * @return a String containing the sql update. It can be executed.
     */
-   public String createTableFunction(DbUpdateInfoDescription infoDescription, String functionName) {
+   public String createTableFunction(SqlDescription infoDescription, String functionName) {
 
       StringBuffer buf = new StringBuffer();
       buf.append("-- ---------------------------------------------------------------------------- \n");
@@ -144,7 +144,7 @@ public class SpecificPostgres extends SpecificDefault {
     *           table.
     * @return a String containing the sql update. It can be executed.
     */
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
+   public String createTableTrigger(SqlDescription infoDescription, String triggerName) {
 
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name

@@ -10,8 +10,8 @@ import java.sql.Connection;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 
 public interface I_DbSpecific extends I_ContribPlugin {
 
@@ -65,8 +65,8 @@ public interface I_DbSpecific extends I_ContribPlugin {
     *  
     * @param attrs the attributes to pass to the description object when publishing. It basically contains the 
     * information about the metadata of an entry (the columns in repl_items without the old and new contents).
-    * Note that the values of such map are normally Strings, while the DbUpdateInfo objects contain attributes where
-    * the value is a ClientProperty. That conversion is handled by the DbUpdateInfoDescription object. 
+    * Note that the values of such map are normally Strings, while the SqlInfo objects contain attributes where
+    * the value is a ClientProperty. That conversion is handled by the SqlDescription object. 
     * 
     * @throws Exception
     */
@@ -80,7 +80,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * 
     * @return
     */
-   String getCreateTableStatement(DbUpdateInfoDescription infoDescription, I_Mapper mapper);
+   String getCreateTableStatement(SqlDescription infoDescription, I_Mapper mapper);
 
    /**
     * Creates a string containing the trigger of the table to be watched. 
@@ -89,7 +89,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param triggerName the name to give to the trigger associated with this table,
     * @return
     */
-   String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName);
+   String createTableTrigger(SqlDescription infoDescription, String triggerName);
 
    
    /**
@@ -152,7 +152,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param colInfoDescription The info object describing this column.
     * @return A String Buffer containing the part of the CREATE statement which is specific to this column.
     */
-   StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription);
+   StringBuffer getColumnStatement(SqlColumn colInfoDescription);
 
 
    /**

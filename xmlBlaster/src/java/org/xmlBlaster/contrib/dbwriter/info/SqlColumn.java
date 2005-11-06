@@ -13,7 +13,7 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.def.Constants;
 
-public class DbUpdateInfoColDescription {
+public class SqlColumn {
 
    public final static String COLNAME_TAG = "colname";   
    public final static String SCHEMA_ATTR = "schema";
@@ -113,7 +113,7 @@ public class DbUpdateInfoColDescription {
    private boolean caseSens;
    private String typeName;
    
-   public DbUpdateInfoColDescription(I_Info info) {
+   public SqlColumn(I_Info info) {
    }
 
    
@@ -580,8 +580,8 @@ public class DbUpdateInfoColDescription {
    }
 
    
-   public static DbUpdateInfoColDescription getComplete() {
-      DbUpdateInfoColDescription desc = new DbUpdateInfoColDescription(new PropertiesInfo(new Properties())); 
+   public static SqlColumn getComplete() {
+      SqlColumn desc = new SqlColumn(new PropertiesInfo(new Properties())); 
       desc.setColName("someName");
       desc.setTable("tableName");
       desc.setSchema("schemaName");
@@ -619,7 +619,7 @@ public class DbUpdateInfoColDescription {
    
    public static void main(String[] args) {
 
-      System.out.println(DbUpdateInfoColDescription.getComplete().toXml(""));
+      System.out.println(SqlColumn.getComplete().toXml(""));
       System.out.println("\n\n\n");
       
       System.out.println("THE java.sql.Types integer codes");

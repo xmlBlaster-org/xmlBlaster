@@ -17,8 +17,8 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoColDescription;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfoDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 
 public class SpecificOracle extends SpecificDefault {
 
@@ -64,9 +64,9 @@ public class SpecificOracle extends SpecificDefault {
     *           can be 'old' or 'new'
     * @return
     */
-   protected String createVariableSqlPart(DbUpdateInfoDescription description, String prefix) {
+   protected String createVariableSqlPart(SqlDescription description, String prefix) {
       String newOldPrefix = ":"; // ":" on ora10 ?
-      DbUpdateInfoColDescription[] cols = description.getUpdateInfoColDescriptions();
+      SqlColumn[] cols = description.getColumns();
       String contName = prefix + "Cont"; // will be newCont or oldCont
       StringBuffer buf = new StringBuffer();
       buf.append("       ").append(contName).append(" := EMPTY_CLOB;\n");
@@ -74,6 +74,7 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("       dbms_lob.open(").append(contName).append(", dbms_lob.lob_readwrite);\n");
       for (int i = 0; i < cols.length; i++) {
          String colName = cols[i].getColName();
+         String typeName = cols[i].getTypeName();
          int type = cols[i].getSqlType();
          String varName = newOldPrefix + prefix + "." + colName; // for example
                                                                   // ':new.colname'
@@ -89,6 +90,20 @@ public class SpecificOracle extends SpecificDefault {
             buf.append("       dbms_lob.close(blobCont);\n");
             buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
                   "col2xml_base64('").append(colName).append("', blobCont));\n");
+         }
+         else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
+            buf.append("       tmpCont := EMPTY_CLOB;\n");
+            buf.append("       dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("       dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            // on new oracle data coming from old versions could be sqlType=TIMESTAMP but type='DATE'
+            if (typeName.equals("DATE") || type == Types.DATE) 
+               buf.append("       tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
+            else // then timestamp
+               buf.append("       tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
+            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("       dbms_lob.close(tmpCont);\n");
+            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+                  "col2xml('").append(colName).append("', tmpCont));\n");
          }
          else {
             buf.append("       tmpCont := EMPTY_CLOB;\n");
@@ -114,7 +129,7 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }
 
-   public String createTableTrigger(DbUpdateInfoDescription infoDescription, String triggerName) {
+   public String createTableTrigger(SqlDescription infoDescription, String triggerName) {
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
       String completeTableName = tableName;
@@ -287,7 +302,7 @@ public class SpecificOracle extends SpecificDefault {
     * @param colInfoDescription
     * @return
     */
-   public StringBuffer getColumnStatement(DbUpdateInfoColDescription colInfoDescription) {
+   public StringBuffer getColumnStatement(SqlColumn colInfoDescription) {
       StringBuffer buf = new StringBuffer(colInfoDescription.getColName());
       buf.append(" ");
       String type = colInfoDescription.getType();

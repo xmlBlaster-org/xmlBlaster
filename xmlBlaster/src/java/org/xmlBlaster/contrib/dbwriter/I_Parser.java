@@ -7,11 +7,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
-import org.xmlBlaster.contrib.dbwriter.info.DbUpdateInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public interface I_Parser extends I_ContribPlugin {
 
-   DbUpdateInfo parse(String data) throws Exception;
+   SqlInfo parse(String data) throws Exception;
    
    
 }
