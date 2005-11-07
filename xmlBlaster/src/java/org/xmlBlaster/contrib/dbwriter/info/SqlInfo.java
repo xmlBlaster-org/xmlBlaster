@@ -21,8 +21,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -489,7 +487,7 @@ public class SqlInfo implements ReplicationConstants {
       if (val instanceof BigDecimal) {
          BigDecimal dec = (BigDecimal)val;
          try {
-            return new ClientProperty(name, null, null, "" + dec.longValueExact());
+            return new ClientProperty(name, null, null, "" + dec.longValue());
          }
          catch (Exception ex) {
             return new ClientProperty(name, null, null, "" + dec.doubleValue());
