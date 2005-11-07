@@ -59,7 +59,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private long maxReplKey;
    private int status;
    private Object mbeanHandle;
-
+   private String sqlResponse;
+   
    public String getTopic() {
       return this.dataTopic;
    }
@@ -81,11 +82,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
    
-   public ReplSlave(String slaveSessionId) throws XmlBlasterException {
+   public ReplSlave(Global global, String slaveSessionId) throws XmlBlasterException {
+      this.global = global;
       this.slaveSessionId = slaveSessionId;
       this.status = STATUS_UNUSED;
    }
 
+   
+   private void registerJMX() {
+      
+   }
 
    private synchronized void init(String managerInstanceName, String replName, I_Info info) throws Exception {
       if (this.initialized)
@@ -97,7 +103,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       if (this.masterSessionId == null)
          throw new Exception("ReplSlave '" + this.name + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
 
-      this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
+      // this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
       // String instanceName = "replication" + ContextNode.SEP + slaveSessionId;
       String instanceName = managerInstanceName + ContextNode.SEP + this.slaveSessionId;
       ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
@@ -265,6 +271,21 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          }
       }
       return ret;
+   }
+   
+   /**
+    * @return Returns the sqlResponse.
+    */
+   public String getSqlResponse() {
+      return this.sqlResponse;
+   }
+
+   
+   /**
+    * @param sqlResponse The sqlResponse to set.
+    */
+   public void setSqlResponse(String sqlResponse) {
+      this.sqlResponse = sqlResponse;
    }
    
 }

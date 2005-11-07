@@ -1309,7 +1309,16 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       topicHandler.addSubscriber(subs, calleeIsXPathMatchCheck);
    }
 
-
+   /**
+    * This method returns the unprotected Authenticate object. 
+    * @param secretSessionId the secret Session Id of the invoker.
+    * TODO in future an authorization operation shall be performed here
+    * @return
+    */
+   public Authenticate getAuthenticate(String secretSessionId) {
+      return this.authenticate;
+   }
+   
    /**
     * Incoming unsubscribe request from a client.
     * <p />

@@ -31,6 +31,7 @@ public interface ReplicationConstants {
    public final static String ACTION_ATTR = "action";
    public final static String OLD_CONTENT_ATTR = "oldContent";
    public final static String STATEMENT_ATTR = "statement";
+   public final static String MAX_ENTRIES_ATTR = "maxEntries";
    public final static String DUMP_FILENAME = "dumpName";
    
    // commands

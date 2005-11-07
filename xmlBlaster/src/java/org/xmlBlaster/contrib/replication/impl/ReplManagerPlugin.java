@@ -15,31 +15,45 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
+import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_Queue;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -58,7 +72,7 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  */
-public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor {
+public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener {
    
    public final static String SESSION_ID = "replManager/1";
    private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
@@ -74,6 +88,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private static int debugInstanceNum;
    private String instanceName;
    private long maxSize = 999999L;
+   private String sqlTopic;
+   private long maxResponseEntries; 
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -182,10 +198,24 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String sessionName = ReplicationConstants.REPL_MANAGER_SESSION;
          connectQos.setSessionName(new SessionName(this.global, sessionName));
          conn.connect(connectQos, this);
+         
          // this is the instance passed from the outside, not a clone, otherwise
          // it will not find the plugin registry for the MIME plugin
          putObject("org.xmlBlaster.engine.Global", global);
          getEngineGlobal(this.global).getPluginRegistry().register(getType() + "," + getVersion(), this);
+
+         this.sqlTopic = this.get("replication.sqlTopic", null);
+         if (this.sqlTopic != null) {
+            SubscribeKey subKey = new SubscribeKey(this.global, this.sqlTopic);
+            SubscribeQos subQos = new SubscribeQos(this.global);
+            subQos.setPersistent(true);
+            subQos.setMultiSubscribe(false);
+            conn.subscribe(subKey, subQos);
+         }
+         this.maxResponseEntries = this.getLong("replication.sqlMaxEntries", 10L);
+
+         getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).addClientListener(this);
+         
          this.initialized = true;
       }
       catch (Throwable e) {
@@ -208,9 +238,16 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       super.shutdown();
       try {
          this.global.unregisterMBean(this.mbeanHandle);
-         this.global.getXmlBlasterAccess().disconnect(new DisconnectQos(this.global));
+         getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).removeClientListener(this);
+         I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+         if (this.sqlTopic != null) {
+            UnSubscribeKey key = new UnSubscribeKey(this.global, this.sqlTopic);
+            conn.unSubscribe(key, new UnSubscribeQos(this.global));
+         }
+         conn.disconnect(new DisconnectQos(this.global));
          this.replications.clear();
          this.replSlaveMap.clear();
+         
          getEngineGlobal(this.global).getPluginRegistry().unRegister(getType() + "," + getVersion());
       }
       catch (Throwable e) {
@@ -272,7 +309,30 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       String request = updateQos.getClientProperty("_command", "");
       log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
 
-      if ("INITIAL_DATA_RESPONSE".equals(request)) {
+      if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
+         String sender = updateQos.getSender().getRelativeName();
+         
+         I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(sender);
+         if (slave == null) {
+            StringBuffer buf = new StringBuffer();
+            String[] slaves = getSlaves();
+            for (int i=0; i < slaves.length; i++) {
+               if (i > 0)
+                  buf.append(",");
+               buf.append(slaves);
+            }
+            log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + buf.toString());
+         }
+         else {
+            log.info("Update data from SQL request came from user '" + sender + "'");
+            slave.setSqlResponse(new String(content));
+         }
+         
+               
+               
+               
+      }
+      else if ("INITIAL_DATA_RESPONSE".equals(request)) {
          long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
          long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
          try {
@@ -313,6 +373,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
       return "OK";
    }
+   
 
    
    // enforced by I_MsgDispatchInterceptor 
@@ -329,7 +390,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          }
          else {
             String relativeSessionName = sessionName.getRelativeName();
-            I_ReplSlave slave = new ReplSlave(relativeSessionName);
+            I_ReplSlave slave = new ReplSlave(this.global, relativeSessionName);
             synchronized (this.replSlaveMap) {
                this.replSlaveMap.put(relativeSessionName, slave);
             }
@@ -441,6 +502,121 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
     */
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.impl.ReplManagerPluginMBean#broadcastSql(java.lang.String, java.lang.String)
+    */
+   public void broadcastSql(String repl, String sql, boolean highPrio) throws Exception {
+      if (repl == null)
+         throw new Exception("executeSql: the replication id is null. Can not perform it.");
+      if (sql == null)
+         throw new Exception("executeSql: the sql statement to perform on  '" + repl + "' is null. Can not perform it.");
+      
+      I_Info dbWatcherInfo = (I_Info)this.replications.get(repl);
+      if (dbWatcherInfo == null) {
+         StringBuffer buf = new StringBuffer();
+         String[] repls = getReplications();
+         for (int i=0; i < repls.length; i++)
+            buf.append(repls[i]).append(" ");
+         throw new Exception("executeSql: the replication with Id='" + repl + "' was not found (has not been registered). Allowed ones are : " + buf.toString());
+      }
+      
+      String oid = dbWatcherInfo.get("mom.topicName", null);
+      if (oid == null) {
+         StringBuffer buf = new StringBuffer();
+         Iterator iter = dbWatcherInfo.getKeys().iterator();
+         while (iter.hasNext())
+            buf.append(iter.next()).append(" ");
+         throw new Exception("executeSql: the replication with Id='" + repl + "' did not contain a property 'mom.topicName' which is needed. Found properties where: " + buf.toString());
+      }
+      
+      PropertiesInfo tmpInfo = new PropertiesInfo(new Properties());
+      SqlInfo sqlInfo = new SqlInfo(tmpInfo);
+      sqlInfo.getDescription().setAttribute(ReplicationConstants.ACTION_ATTR, ReplicationConstants.STATEMENT_ACTION);
+      sqlInfo.getDescription().setAttribute(ReplicationConstants.STATEMENT_ATTR, sql);
+      
+      PublishKey key = new PublishKey(this.global, oid);
+      PublishQos qos = new PublishQos(this.global);
+      qos.setPersistent(true);
+      if (highPrio)
+         qos.setPriority(PriorityEnum.HIGH_PRIORITY);
+      if (this.maxResponseEntries > -1L) {
+         qos.addClientProperty(ReplicationConstants.MAX_ENTRIES_ATTR, this.maxResponseEntries);
+         log.info("Be aware that the number of entries in the result set will be limited to '" + this.maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
+      }
+      // reset all responses ....
+      synchronized (this.replSlaveMap) {
+         String[] slaves = getSlaves();
+         for (int i=0; i < slaves.length; i++) {
+            I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(slaves[i]);
+            slave.setSqlResponse("");
+         }
+      }
+      MsgUnit msgUnit = new MsgUnit(key, sqlInfo.toXml("").getBytes(), qos);
+      this.global.getXmlBlasterAccess().publish(msgUnit);
+      
+   }
+
+   // For I_ClientListener ...
+
+   /**
+    * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
+    */
+   public void sessionAdded(ClientEvent e) throws XmlBlasterException {
+      String dispatchPluginName = e.getConnectQos().getData().getCurrentCallbackAddress().getDispatchPlugin();
+      if (dispatchPluginName != null) {
+         String ownName = getType() + "," + getVersion();
+         if (ownName.equals(dispatchPluginName)) {
+            String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+            synchronized (this.replSlaveMap) {
+               if (this.replSlaveMap.containsKey(sessionName))
+                  log.warning("The slave '" + sessionName + "' is already registered.");
+               else {
+                  I_ReplSlave slave = new ReplSlave(this.global, sessionName);
+                  this.replSlaveMap.put(sessionName, slave);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.authentication.I_ClientListener#sessionPreRemoved(org.xmlBlaster.authentication.ClientEvent)
+    */
+   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
+      String dispatchPluginName = e.getConnectQos().getData().getCurrentCallbackAddress().getDispatchPlugin();
+      if (dispatchPluginName != null) {
+         String ownName = getType() + "," + getVersion();
+         if (ownName.equals(dispatchPluginName)) {
+            String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+            synchronized (this.replSlaveMap) {
+               if (!this.replSlaveMap.containsKey(sessionName))
+                  log.warning("The slave '" + sessionName + "' is not registered.");
+               else {
+                  this.replSlaveMap.remove(sessionName);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.authentication.I_ClientListener#sessionRemoved(org.xmlBlaster.authentication.ClientEvent)
+    */
+   public void sessionRemoved(ClientEvent e) throws XmlBlasterException {
+   }
+
+   /**
+    * @see org.xmlBlaster.authentication.I_ClientListener#subjectAdded(org.xmlBlaster.authentication.ClientEvent)
+    */
+   public void subjectAdded(ClientEvent e) throws XmlBlasterException {
+   }
+
+   /**
+    * @see org.xmlBlaster.authentication.I_ClientListener#subjectRemoved(org.xmlBlaster.authentication.ClientEvent)
+    */
+   public void subjectRemoved(ClientEvent e) throws XmlBlasterException {
    }
    
 }

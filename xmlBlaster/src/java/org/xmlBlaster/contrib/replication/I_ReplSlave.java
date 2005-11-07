@@ -58,5 +58,10 @@ public interface I_ReplSlave {
 
    
    void shutdown();
+
+   /**
+    * @param sqlResponse The sqlResponse to set.
+    */
+   void setSqlResponse(String sqlResponse);
    
 }

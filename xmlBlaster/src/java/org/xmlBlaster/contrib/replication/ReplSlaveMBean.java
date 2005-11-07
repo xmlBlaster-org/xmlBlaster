@@ -11,4 +11,6 @@ public interface ReplSlaveMBean {
    long getMinReplKey();
    long getMaxReplKey();
    String getStatus();
+   String getSqlResponse();
+
 }

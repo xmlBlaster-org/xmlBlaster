@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
@@ -53,7 +54,7 @@ private final static String ME = "ReplicationWriter";
    private boolean doCreate;
    private boolean doAlter;
    private boolean doStatement;
-   
+   private String sqlTopic;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -112,6 +113,9 @@ private final static String ME = "ReplicationWriter";
       this.doAlter = info.getBoolean("replication.alters", true);
       this.doStatement = info.getBoolean("replication.statements", true);
 
+      if (this.doStatement)
+         this.sqlTopic = this.info.get("replication.sqlTopic", null);
+      
    }
 
    public void shutdown() throws Exception {
@@ -283,8 +287,27 @@ private final static String ME = "ReplicationWriter";
                         Statement st = conn.createStatement();
                         try {
                            boolean ret = st.execute(sql);
-                           if (ret)
-                              log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml("") + "' was a query. This is not implemented yet");
+                           if (ret) {
+                              ResultSet rs = st.getResultSet();
+                              SqlInfo sqlInfo = new SqlInfo(this.info);
+                              
+                              String maxEntriesTxt = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
+                              long maxEntries = -1L;
+                              if (maxEntriesTxt != null)
+                                 maxEntries = Long.parseLong(maxEntriesTxt.trim());
+                              long count = 0L;
+                              while (rs.next() && (count < maxEntries || maxEntries < 0L)) {
+                                 sqlInfo.fillOneRowWithObjects(rs, null);
+                              }
+                              if (this.sqlTopic != null) {
+                                 I_ChangePublisher momEngine = (I_ChangePublisher)this.info.getObject("org.xmlBlaster.contrib.dbwriter.mom.MomEventEngine");
+                                 if (momEngine == null)
+                                    throw new Exception("ReplicationWriter: the momEngine used can not handle publishes");
+                                 momEngine.publish(this.sqlTopic, sqlInfo.toXml("").getBytes(), null);
+                              }
+                              else
+                                 log.info("statement '" + sql + "' resulted in response '" + sqlInfo.toXml(""));
+                           }
                         }
                         finally {
                            st.close();
