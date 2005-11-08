@@ -95,28 +95,40 @@
    </plugin>
 -->
 
+   <!-- General EMAIL SMTP client service -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
+<!--
+   <plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='7' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+      <attribute id='mail.user'>xmlBlaster</attribute>
+      <attribute id='mail.password'>xmlBlaster</attribute>
+   </plugin>
+-->
+
    <!-- General EMAIL POP3 polling service -->
    <!-- needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
 <!--
    <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
-      <action do='LOAD' onStartupRunlevel='7' sequence='2' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='9' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='7' sequence='5'/>   
+      <action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
       <attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX</attribute>
-      <attribute id='pop3PollingInterval'>1000</attribute>
+      <attribute id='activate'>false</attribute>
+      <attribute id='pop3PollingInterval'>500</attribute>
    </plugin>
 -->
 
-   <!-- EMAIL protocol driver (please activate 'pop3' service at an earlier runlevel) -->
+   <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
 <!--
    <plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
-      <action do='LOAD' onStartupRunlevel='7' sequence='3' 
+      <action do='LOAD' onStartupRunlevel='7' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
       <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
    </plugin>
 -->
-
 
    <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative.java -->
 <!--
