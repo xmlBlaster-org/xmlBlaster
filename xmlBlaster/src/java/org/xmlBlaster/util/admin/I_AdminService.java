@@ -23,4 +23,10 @@ public interface I_AdminService extends I_AdminPlugin {
     * A call to activate() fires the service up again
     */
    public void deActivate();
+   
+   /**
+    * Access the current state
+    * @return true if active
+    */
+   public boolean isActive();
 }
