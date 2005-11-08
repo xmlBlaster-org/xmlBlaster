@@ -104,6 +104,8 @@ public class XbfParser implements I_MsgInfoParser
    private byte[] first10;
    private long lenUnzipped;
    private long checkSumResult;
+   
+   private int maxMsgLength = Integer.MAX_VALUE; // TODO: Set by environment or calulate by LowMemoryDetector.java physical memory (expects JDK 1.5)
 
    /** If not null somebody wants to be notified about the current bytes send over socket */
    private I_ProgressListener progressListener;
@@ -179,11 +181,19 @@ public class XbfParser implements I_MsgInfoParser
          else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
             throw new IOException(ME + ": Message format is corrupted, the given message length=" + msgLength + " is invalid");
 
+         if (msgLength > maxMsgLength) {
+            throw new IOException(ME + ": Message format is corrupted, the given message length=" + msgLength + " would produce an OutOfMemory");
+         }
 
          // Now we know the msgLength, lets extract the complete message ...
          if (buf.buf == null || buf.buf.length != msgLength) {
             buf.buf = null;
-            buf.buf = new byte[msgLength];
+            try {
+               buf.buf = new byte[msgLength];
+            }
+            catch (OutOfMemoryError e) {
+               throw new IOException(ME + ": Message format is corrupted, the given message length=" + msgLength + " produces:" + e.toString());
+            }
             buf.offset = 0;
          }
          buf.offset = NUM_FIELD_LEN;
