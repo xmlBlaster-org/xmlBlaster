@@ -97,10 +97,15 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    
    /** My JMX registration */
    private Object mbeanHandle;
+   
+   private Map holdbackMap = new HashMap();
+   private long holdbackExpireTimeout;
 
    public static final boolean CLEAR_MESSAGES = true;
 
    public static final boolean LEAVE_MESSAGES = false;
+   
+   public static final String POP3_FOLDER = "inbox";
 
    public static final String UTF8 = "UTF-8";
 
@@ -229,6 +234,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          listenerClusterNodeId.responseEvent(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
+      
+      if (this.holdbackExpireTimeout > 0) {
+         Timestamp timestamp = new Timestamp();
+         this.holdbackMap.put(new Long(timestamp.getTimestamp()), messageData);
+      }
+      
       log.warning("No listener found for key=" + key + ", email is " + messageData.toString());
       return null;
    }
@@ -269,6 +280,13 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
             this.pluginInfo);
 
+      boolean activate = glob.get("activate", true, null,
+            this.pluginInfo);
+
+      // Default is off
+      this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 0, null,
+            this.pluginInfo);
+      
       setSessionProperties(null, glob, pluginInfo);
 
       // Make this singleton available for others
@@ -276,7 +294,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       glob.addObjectEntry(Pop3Driver.class.getName(), this);
 
       this.timeout = new Timeout("POP3Driver-pollingTimer");
-      try { activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      if (activate) { 
+         try { activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      }
    }
 
    /**
@@ -350,12 +370,37 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
               + this.pollingInterval + " milliseconds again.");
       }
    }
+   
+   private Long[] getHoldbackTimestamps() {
+      return (Long[])this.holdbackMap.keySet().toArray(new Long[this.holdbackMap.size()]);
+   }
 
    /**
     * Polling for response messages.
     */
    public void timeout(Object userData) {
       log.fine("Timeout: Reading POP3 messages from " + getPop3Url());
+      
+      // First try to deliver hold back messages
+      // This happens if on startup we access POP3 messages but nobody has registered yet
+      if (this.holdbackExpireTimeout > 0 && this.holdbackMap.size() > 0) {
+         Long[] keys = getHoldbackTimestamps();
+         Timestamp now = new Timestamp(); // nano seconds
+         long expireNanos = this.holdbackExpireTimeout * Timestamp.MILLION;
+         for (int i=0; i<keys.length; i++) {
+            long tt = keys[i].longValue();
+            if ((tt + expireNanos) > now.getTimestamp()) {
+               this.holdbackMap.remove(keys[i]);
+            }
+            else {
+               String listenerKey = notify((MessageData)this.holdbackMap.get(keys[i]));
+               if (listenerKey != null) {
+                  this.holdbackMap.remove(keys[i]);
+               }
+            }
+         }
+      }
+
       try {
          MessageData[] msgs = readInbox(Pop3Driver.CLEAR_MESSAGES);
          this.firstException = true;
@@ -502,7 +547,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       try {
          store = getStore();
          Folder root = store.getDefaultFolder();
-         inbox = root.getFolder("inbox");
+         inbox = root.getFolder(POP3_FOLDER);
          inbox.open(Folder.READ_WRITE);
          Message[] msgs = inbox.getMessages();
          if (msgs == null)
@@ -600,6 +645,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          log.severe("Activating timeout listener failed: " + e.getMessage());
          throw new Exception("Activating timeout listener failed: " + e.getMessage());
       }
+   }
+   
+   public boolean isActive() {
+      return this.timeoutHandle != null;
    }
 
    /**

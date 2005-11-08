@@ -8,7 +8,7 @@ package org.xmlBlaster.client.activex;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.protocol.http.j2me.Base64; // org.apache.commons.codec.binary.Base64;
+import org.xmlBlaster.util.Base64;
 
 /**
  * Event object used to transport a callback message back to ActiveX (C#, VisualBasic). 

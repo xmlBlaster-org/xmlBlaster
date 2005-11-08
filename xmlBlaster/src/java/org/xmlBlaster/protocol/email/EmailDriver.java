@@ -197,11 +197,14 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     * Activate xmlBlaster access through this protocol.
     */
    public synchronized void activate() throws XmlBlasterException {
-      log.info("Entering activate()");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering activate()");
       // Register under my cluster node id 'heron'
       String key = this.glob.getId();
       super.pop3Driver.registerForEmail(key, null, this);
-      log.info("Initialized email listener with key '" + key + "' and email '" + super.fromAddress.toString() + "'");
+      // Usually the pop3Driver is set to <attribute id='activate'>false</attribute> on
+      // startup to not loose any messages until we have registered
+      try { super.pop3Driver.activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      log.info("Initialized email listener with key '" + key + "' and email address '" + super.fromAddress.toString() + "'");
    }
 
    /*

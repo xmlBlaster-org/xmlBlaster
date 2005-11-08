@@ -105,6 +105,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
       super.init(glob, callbackAddress, this.pluginInfo);
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
+      try { super.pop3Driver.activate(); } catch (Exception e) { e.printStackTrace(); }
       setSecretSessionId(callbackAddress.getSecretSessionId());
    }
 

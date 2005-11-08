@@ -29,8 +29,11 @@ import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * This class is capable to send emails.
@@ -43,10 +46,16 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class SmtpClient extends Authenticator {
+public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBean {
    private static SmtpClient theMailClient;
 
    private static Logger log = Logger.getLogger(SmtpClient.class.getName());
+
+   private Global glob;
+   
+   private ContextNode contextNode;
+   
+   private PluginInfo pluginInfo;
 
    private Session session;
 
@@ -55,8 +64,14 @@ public class SmtpClient extends Authenticator {
    public static final String UTF8 = "UTF-8";
 
    private String user;
+   private String password;
+   private String host;
+   private int port;
    
    private boolean isInitialized;
+
+   /** My JMX registration */
+   private Object mbeanHandle;
 
    /**
     * @return Returns the user.
@@ -81,6 +96,55 @@ public class SmtpClient extends Authenticator {
     * constructor is public
     */
    public SmtpClient() {
+      if (theMailClient == null) theMailClient = this;
+   }
+
+   /**
+    * Access the xmlBlaster internal name of the protocol driver.
+    * @return The configured type in xmlBlasterPlugins.xml, defaults to "smtp"
+    */
+   public String getProtocolId() {
+      return (this.pluginInfo == null) ? "smtp" : this.pluginInfo.getType();
+   }
+
+   /**
+    * Enforced by I_Plugin
+    * 
+    * @return The configured type in xmlBlaster.properties, defaults to "smtp"
+    */
+   public String getType() {
+      return getProtocolId();
+   }
+
+   /**
+    * The command line key prefix
+    * @return Defaults to "plugin/smtp"
+    */
+   public String getEnvPrefix() {
+      return "plugin/" + getType().toLowerCase();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). The
+    * SmtpClient singleton is registered in the Global object store.
+    * 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
+         throws XmlBlasterException {
+      this.glob = glob;
+      this.pluginInfo = pluginInfo;
+
+      setSessionProperties(null, glob, pluginInfo);
+
+      // Make this singleton available for others
+      // key="org.xmlBlaster.util.protocol.email.SmtpClient"
+      this.glob.addObjectEntry(SmtpClient.class.getName(), this);
    }
 
    /**
@@ -128,6 +192,7 @@ public class SmtpClient extends Authenticator {
             log.fine("Ignoring multiple setSessionProperties() call");
          return;
       }
+      this.glob = glob;
 
       if (props == null)
          props = new Properties();
@@ -144,7 +209,7 @@ public class SmtpClient extends Authenticator {
       if (props.getProperty("mail.password") == null)
          props.put("mail.password", glob.get("mail.password", user, null,
                pluginConfig));
-      String password = props.getProperty("mail.password").trim();
+      this.password = props.getProperty("mail.password").trim();
 
       if (props.getProperty("mail.transport.protocol") == null)
          props.put("mail.transport.protocol", glob.get(
@@ -154,18 +219,26 @@ public class SmtpClient extends Authenticator {
       if (props.getProperty("mail.smtp.host") == null)
          props.put("mail.smtp.host", glob.get("mail.smtp.host", "127.0.0.1",
                null, pluginConfig));
-      String host = props.getProperty("mail.smtp.host");
+      this.host = props.getProperty("mail.smtp.host");
 
       if (props.getProperty("mail.smtp.port") == null)
          props.put("mail.smtp.port", glob.get("mail.smtp.port", "25", null,
                pluginConfig));
-      String port = props.getProperty("mail.smtp.port");
+      String p = props.getProperty("mail.smtp.port");
+      this.port = new Integer(p).intValue();
 
-      // Pass "this" for POP3 authentication with Authenticator
+      // Pass "this" for SMTP authentication with Authenticator
       // For only sending mails we can pass null
       this.session = Session.getDefaultInstance(props, this);
       this.authentication = new PasswordAuthentication(getUser(), password);
       this.isInitialized = true;
+      
+      if (this.mbeanHandle == null) {
+	      // For JMX instanceName may not contain ","
+	      this.contextNode = new ContextNode(glob, ContextNode.SERVICE_MARKER_TAG, 
+	                          "SmtpClient", glob.getContextNode());
+	      this.mbeanHandle = glob.registerMBean(this.contextNode, this);
+      }
 
       if (log.isLoggable(Level.FINER))
          log.finer("Setting user='" + user + "' password='" + password + "'");
@@ -338,6 +411,8 @@ public class SmtpClient extends Authenticator {
    public synchronized void shutdown() {
       if (this.session != null) {
          log.info("Shutting down SMTP mail client");
+         this.glob.unregisterMBean(this.mbeanHandle);
+         this.mbeanHandle = null;
          this.session = null;
       }
    }
@@ -378,4 +453,49 @@ public class SmtpClient extends Authenticator {
             mail.shutdown();
       }
    }
+
+public String getHost() {
+	return host;
+}
+
+public void setHost(String host) {
+	this.host = host;
+}
+
+public String getPassword() {
+	return password;
+}
+
+public void setPassword(String password) {
+	this.password = password;
+}
+
+public int getPort() {
+	return port;
+}
+
+public void setPort(int port) {
+	this.port = port;
+}
+
+public void setUser(String user) {
+	this.user = user;
+}
+/**
+ * @return a human readable usage help string
+ */
+public java.lang.String usage() {
+   return "Provides access to a remote SMTP mail transfer agent (MTA)"
+   +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+}
+
+/**
+ * @return A link for JMX usage
+ */
+public java.lang.String getUsageUrl() {
+   return Global.getJavadocUrl(this.getClass().getName(), null);
+}
+
+/* dummy to have a copy/paste functionality in jconsole */
+public void setUsageUrl(java.lang.String url) {}
 }

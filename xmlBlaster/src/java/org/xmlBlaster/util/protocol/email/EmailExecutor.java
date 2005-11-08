@@ -199,11 +199,12 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * @param messageData
     * @return true if message is processed
     */
-   private boolean extractMsgUnit(MessageData messageData) {
-      byte[] content = messageData.getContentByExtension(
+   private boolean extractMsgUnit(MessageData messageData) throws XmlBlasterException {
+      byte[] encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
                XbfParser.XBFORMAT_EXTENSION, ".xml"); // "*.xbf"
-
-      if (content != null) { // Process the messageUnit
+      if (encodedMsgUnit != null) { // Process the messageUnit
+         if (encodedMsgUnit.length < XbfParser.NUM_FIELD_LEN) // min 10 bytes, otherwise we block forever when reading the stream
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The messageUnit in the email is too short: " + MsgInfo.toLiteral(encodedMsgUnit));
          try {
             if (this.oStreamForResponse == null) {
                // Happens if it is not a response but an initial request
@@ -220,8 +221,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                      oStreamSend);
             }
 
-            if (log.isLoggable(Level.FINER)) log.finer("Parsing now: " + MsgInfo.toLiteral(content));
-            this.oStreamForResponse.write(content);
+            if (log.isLoggable(Level.FINER)) log.finer("Parsing now: " + MsgInfo.toLiteral(encodedMsgUnit));
+            this.oStreamForResponse.write(encodedMsgUnit);
             this.oStreamForResponse.flush();
             return true;
          } catch (Exception e) {
@@ -235,14 +236,23 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    }
 
    /**
-    * Notification by Pop3Driver when a (response) message arrives. Enforced by
+    * Notification by Pop3Driver when a (response) email message arrives. Enforced by
     * I_ResponseListener
     */
    public void responseEvent(String requestId, Object response) {
       MessageData messageData = (MessageData) response;
 
-      // Fills message into this.oStreamForResponse
-      boolean responseArrived = extractMsgUnit(messageData);
+      boolean responseArrived;
+      try {
+         // Fills message into this.oStreamForResponse
+         responseArrived = extractMsgUnit(messageData);
+      } catch (Throwable e) {
+         log.warning("Error parsing email data from "
+               + this.pop3Driver.getPop3Url()
+               + ", please check the format: "
+               + e.toString());
+         return;
+      }
 
       if (responseArrived) {
          MsgInfo receiver = null;
@@ -274,7 +284,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          } catch (Throwable e) {
             log.warning("Can't process email data from "
                   + this.pop3Driver.getPop3Url() + ": " + e.toString());
-            //shutdown();
+            return;
          }
       }
 

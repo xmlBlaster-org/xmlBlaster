@@ -7,6 +7,8 @@
 package org.xmlBlaster.util.protocol.email;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
@@ -33,6 +35,8 @@ attachement {
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class MessageData {
+   private static Logger log = Logger.getLogger(MessageData.class.getName());
+
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
 
    protected String[] recipients;
@@ -138,7 +142,7 @@ public class MessageData {
     * @param extensionBackup For example ".xml"
     * @return null if no such attachment was found
     */
-   public byte[] getContentByExtension(String extension, String extensionBackup) {
+   public byte[] getEncodedMsgUnitByExtension(String extension, String extensionBackup) {
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
          if (atts[j].getFileName().endsWith(extension)) {
@@ -463,7 +467,7 @@ public class MessageData {
             return str.substring(start + startToken.length(), end);
          }
       }
-      System.out.println("MessageData ERROR: No <" + tag + "> found for "
+      if (log.isLoggable(Level.FINE)) log.fine("No <" + tag + "> found for "
             + toXml());
       return null;
    }
