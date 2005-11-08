@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import javax.microedition.midlet.MIDlet;
 import org.xmlBlaster.client.protocol.http.common.*;
+import org.xmlBlaster.util.Base64;
 
 /**
  * A java client implementation to access xmlBlaster using a persistent http connection
