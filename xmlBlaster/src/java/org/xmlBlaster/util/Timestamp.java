@@ -54,6 +54,7 @@ package org.xmlBlaster.util;
  */
 public class Timestamp implements Comparable, java.io.Serializable
 {
+   private static final long serialVersionUID = 1L;
    public static final int MILLION = 1000000;
    public static final int BILLION = 1000000000;
    //private static Object SYNCER = new Object();
@@ -77,60 +78,33 @@ public class Timestamp implements Comparable, java.io.Serializable
    public Timestamp() {
       synchronized (Timestamp.class) {
          long timeMillis = System.currentTimeMillis();
-         if (this.lastMillis < timeMillis) {
-            this.nanoCounter = 0; // rewind counter
-            this.lastMillis = timeMillis;
+         if (lastMillis < timeMillis) {
+            nanoCounter = 0; // rewind counter
+            lastMillis = timeMillis;
             this.timestamp = timeMillis*MILLION;
             return;
          }
-         else if (this.lastMillis == timeMillis) {
-            this.nanoCounter++;
-            if (this.nanoCounter >= MILLION)
+         else if (lastMillis == timeMillis) {
+            nanoCounter++;
+            if (nanoCounter >= MILLION)
                throw new RuntimeException("org.xmlBlaster.util.Timestamp nanoCounter overflow - internal error");
-            this.timestamp = timeMillis*MILLION + this.nanoCounter;
+            this.timestamp = timeMillis*MILLION + nanoCounter;
             return;
          }
          else { // Time goes backwards - this should not happen
             // NOTE from ruff 2002/12: This happens on my DELL notebook once and again (jumps to past time with 2-3 msec).
             // CAUTION: If a sysadmin changes time of the server hardware for say 1 hour backwards
             // The server should run without day time saving with e.g. GMT
-            this.nanoCounter++;
-            if (this.nanoCounter >= MILLION) {
-               throw new RuntimeException("org.xmlBlaster.util.Timestamp nanoCounter overflow - the system time seems to go back into past, giving up after " + MILLION + " times: System.currentTimeMillis() is not ascending old=" + this.lastMillis + " new=" + timeMillis);
+            nanoCounter++;
+            if (nanoCounter >= MILLION) {
+               throw new RuntimeException("org.xmlBlaster.util.Timestamp nanoCounter overflow - the system time seems to go back into past, giving up after " + MILLION + " times: System.currentTimeMillis() is not ascending old=" + lastMillis + " new=" + timeMillis);
             }
-            this.timestamp = this.lastMillis*MILLION + this.nanoCounter;
+            this.timestamp = lastMillis*MILLION + nanoCounter;
             System.err.println("WARNING: org.xmlBlaster.util.Timestamp System.currentTimeMillis() is not ascending old=" +
-                   this.lastMillis + " new=" + timeMillis + " created timestamp=" + this.timestamp);
+                   lastMillis + " new=" + timeMillis + " created timestamp=" + this.timestamp);
             return;
          }
       }
-      /*
-      synchronized (SYNCER) {
-         while (true) {
-            long timeMillis = System.currentTimeMillis();
-            if (this.lastMillis > timeMillis) {
-               // NOTE from ruff 2002/12: This happens on my DELL notebook once and again (jumps to past time with 2-3 msec).
-               // Having this while loop works around the problem for the time being
-               // CAUTION: If a sysadmin changes time of the server hardware for say 1 hour backwards
-               // xmlBlaster my hang here for this hour (day time saving)
-               // The server should run without day time saving with e.g. GMT
-               System.err.println("PANIC: org.xmlBlaster.util.Timestamp System.currentTimeMillis() is not ascending old=" + this.lastMillis + " new=" + timeMillis);
-               try { Thread.currentThread().sleep(1L); } catch( InterruptedException i) {}
-               continue;
-            }
-            else if (this.lastMillis < timeMillis) {
-               this.nanoCounter = 0; // rewind counter
-               this.lastMillis = timeMillis;
-            }
-            else
-               this.nanoCounter++;
-            if (this.nanoCounter >= MILLION)
-               throw new RuntimeException("Timestamp nanoCounter overflow - internal error");
-            this.timestamp = timeMillis*MILLION + this.nanoCounter;
-            break;
-         }
-      }
-      */
    }
 
    /**
@@ -425,9 +399,8 @@ public class Timestamp implements Comparable, java.io.Serializable
       int count = 10000;
       long start = System.currentTimeMillis();
       Timestamp ts = new Timestamp();
-      String val=null;
       for (int ii=0; ii<count; ii++) {
-         val = ts.toString();
+         ts.toString();
       }
       long elapsed = System.currentTimeMillis() - start;
       System.out.println("toString(): " + count + " toString " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/toString()");
@@ -438,10 +411,9 @@ public class Timestamp implements Comparable, java.io.Serializable
       int count = 10000;
       Timestamp ts1 = new Timestamp();
       String val = ts1.toString();
-      Timestamp ts = null;
       long start = System.currentTimeMillis();
       for (int ii=0; ii<count; ii++) {
-         ts = ts.valueOf(val);
+         Timestamp.valueOf(val);
       }
       long elapsed = System.currentTimeMillis() - start;
       System.out.println("valueOf(): " + count + " valueOf " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/valueOf()");
@@ -452,9 +424,8 @@ public class Timestamp implements Comparable, java.io.Serializable
       int count = 10000;
       long start = System.currentTimeMillis();
       Timestamp ts = new Timestamp();
-      String val=null;
       for (int ii=0; ii<count; ii++) {
-         val = ts.toXml(null, literal);
+         ts.toXml(null, literal);
       }
       long elapsed = System.currentTimeMillis() - start;
       System.out.println("toXml(" + literal + "): " + count + " toXml " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/toXml()");
