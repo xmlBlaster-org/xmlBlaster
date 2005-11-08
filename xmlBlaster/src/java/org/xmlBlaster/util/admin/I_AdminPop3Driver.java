@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      I_AdminQueue.java
+Name:      I_AdminPop3Driver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface to access information about a client instance
