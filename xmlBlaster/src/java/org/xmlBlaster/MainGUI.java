@@ -11,26 +11,37 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.key.UpdateKey;
 
-import java.util.Vector;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Label;
+import java.awt.Panel;
+import java.awt.TextArea;
+import java.awt.TextField;
+import java.awt.Toolkit;
 import java.awt.event.*;
+import java.util.Vector;
+
 import org.jacorb.poa.gui.beans.FillLevelBar;
 
 
@@ -52,6 +63,7 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
  */
 public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
+   private static final long serialVersionUID = 1L;
    private Global glob;
    private LogChannel log;
 
@@ -167,7 +179,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    public void log(int level, String source, String str)
    {
-      str = log.bitToLogLevel(level) + " [" + source + "] " + str;
+      str = LogChannel.bitToLogLevel(level) + " [" + source + "] " + str;
       if (logOutput == null) {
          System.err.println(str + "\n");
          return;
@@ -198,13 +210,13 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       elapsedTime += current - startupTime;
 
       double sleepSeconds = sleepTime / 1000.0;
-      double elapsedSeconds = elapsedTime / 1000.0;
+      //double elapsedSeconds = elapsedTime / 1000.0;
 
       {
          publishedMessages = RequestBroker.publishedMessages;
          int currentPublishedAvg = (int)((publishedMessages - lastPublishedMessages)/sleepSeconds);
          if ((publishedMessages - lastPublishedMessages) == 1) currentPublishedAvg = 1;
-         int totalPublishedAvg = (int)(publishedMessages/elapsedSeconds);
+         //int totalPublishedAvg = (int)(publishedMessages/elapsedSeconds);
          publishedMessagesBar.setCurrentValue(currentPublishedAvg);
          if (currentPublishedAvg > peakPublishedMessages) {
             peakPublishedMessages = currentPublishedAvg;
@@ -219,7 +231,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          sentMessages = SessionInfo.sentMessages;
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
          if ((sentMessages - lastSentMessages) == 1) currentSentAvg = 1;
-         int totalSentAvg = (int)(sentMessages/elapsedSeconds);
+         //int totalSentAvg = (int)(sentMessages/elapsedSeconds);
          sentMessagesBar.setCurrentValue(currentSentAvg);
          if (currentSentAvg > peakSentMessages) {
             peakSentMessages = currentSentAvg;
@@ -234,7 +246,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          getMessages = RequestBroker.getMessages;
          int currentGetAvg = (int)((getMessages - lastGetMessages)/sleepSeconds);
          if ((getMessages - lastGetMessages) == 1) currentGetAvg = 1;
-         int totalGetAvg = (int)(getMessages/elapsedSeconds);
+         //int totalGetAvg = (int)(getMessages/elapsedSeconds);
          // System.out.println("totally getMessages=" + getMessages + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
          getMessagesBar.setCurrentValue(currentGetAvg);
          if (currentGetAvg > peakGetMessages) {
@@ -429,7 +441,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             log.addLogLevel(logLevel);
          else
             log.removeLogLevel(logLevel);
-         System.out.println(ME + ": New log level is: " + log.bitToLogLevel(log.getLogLevel()));
+         System.out.println(ME + ": New log level is: " + LogChannel.bitToLogLevel(log.getLogLevel()));
       }
    }
 
@@ -763,7 +775,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    private class QueryHistory
    {
-     private String ME = "QueryHistory";
+     //private String ME = "QueryHistory";
      private Vector stack = new Vector();
      private int currentIndex = 0;
 
