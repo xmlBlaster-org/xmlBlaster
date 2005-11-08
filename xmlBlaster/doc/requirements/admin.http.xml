@@ -225,7 +225,7 @@ in your browser.
          Therefore it is handled by the <tt>HtmlMonitorPlugin</tt> native plugin.
          The HTML file is searched
          at the hard disk location <tt>C:\Documents And Settings\joe\html\XX.html</tt>.<br />
-         You can provide a list of pathes separated by a comman ','.
+         You can provide a list of pathes separated by a comma ','.
          </td>
        </tr>
        <tr>
@@ -238,7 +238,7 @@ in your browser.
          Here, with <tt>http://localhost:3412/status.html</tt>,
          a browser request comes in and the <tt>/status.html</tt> page
          is retrieved over the CLASSPATH from <tt>xmlBlaster.jar</tt>.<br />
-         You can provide a list of pathes separated by a comman ','.
+         You can provide a list of pathes separated by a comma ','.
          </td>
        </tr>
     </table>
