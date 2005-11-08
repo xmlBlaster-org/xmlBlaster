@@ -22,7 +22,7 @@
 // USA
 
 
-package org.xmlBlaster.client.protocol.http.j2me;
+package org.xmlBlaster.util;
 import java.io.*;
 
 public class Base64 {

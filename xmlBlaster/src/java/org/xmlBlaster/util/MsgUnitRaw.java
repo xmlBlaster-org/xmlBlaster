@@ -7,7 +7,6 @@ package org.xmlBlaster.util;
 
 import java.io.OutputStream;
 import java.io.IOException;
-import org.xmlBlaster.client.protocol.http.j2me.Base64; // org.apache.commons.codec.binary.Base64;
 
 /**
  * Encapsulates the xmlKey, content and qos. 
