@@ -2,6 +2,7 @@
 -- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
 --                                                                              
 -- Some Comments:                                                               
+--                                  
 --  The effect of triggers has been checked. An open issue is how to determine  
 --  wether an action has been caused by a direct operation of the user (primary 
 --  action) or if it is a reaction to that as an operation performed by a       
