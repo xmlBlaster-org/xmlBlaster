@@ -10,7 +10,6 @@ package org.xmlBlaster.engine.mime.demo;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.SubjectInfo;
@@ -115,7 +114,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     */
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       if (msgUnit == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in intercept() call - msgUnit is null");
       }
 

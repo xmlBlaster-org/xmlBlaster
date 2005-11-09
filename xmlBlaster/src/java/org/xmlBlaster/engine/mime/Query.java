@@ -6,7 +6,6 @@ Comment:   Holding a query string and a prepared query object.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 
 /**
@@ -16,14 +15,10 @@ import org.xmlBlaster.util.Global;
  * @see org.xmlBlaster.engine.mime.regex.GnuRegexFilter
  */
 public final class Query {
-
-   private static final String ME = "Query";
-   private final Global glob;
    private final String query;
    private Object preparedQuery = null;
 
    public Query(Global glob, String query) {
-      this.glob = glob;
       this.query = (query == null) ? "" : query;
    }
 

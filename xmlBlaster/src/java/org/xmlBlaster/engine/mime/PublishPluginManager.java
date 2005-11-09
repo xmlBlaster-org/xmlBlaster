@@ -113,7 +113,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
          return null;
 
       if (mime == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException("You must pass a valid contentMime type");
       }
       if (mimeExtended == null || mimeExtended.length() < 1) mimeExtended = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
@@ -143,7 +143,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
          if (mimes == null || extended == null || mimes.length != extended.length) {
             String text = "Your plugin '" + plugin.getName() + "' must pass a valid mime type with a corresponding mimeExtended type, plugin ignored.";
             log.error(ME, text);
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
             throw new IllegalArgumentException(text);
          }
          for (int ii=0; ii<mimes.length; ii++) {
