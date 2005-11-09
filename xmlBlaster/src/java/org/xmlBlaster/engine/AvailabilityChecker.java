@@ -121,7 +121,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
             if (e.isCommunication()) return e; // Is already how we want it
          }
 
-         this.log.warn(ME, "DEBUG ONLY: The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + 
+         this.log.warn(ME, "The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + 
             "(): " + origEx.toString());
 
          return new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME,

@@ -19,10 +19,6 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.cluster.NodeId;
 
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Iterator;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -144,14 +140,6 @@ public final class NodeInfo
     */
    public boolean contains(Address other) {
       return getConnectQosData().contains(other);
-   }
-
-   /**
-    * Access the currently used callback address for this node
-    * @return Never null, returns a default if none specified
-    */
-   private CallbackAddress getCbAddress() {
-      return getConnectQosData().getCurrentCallbackAddress();
    }
 
    /**

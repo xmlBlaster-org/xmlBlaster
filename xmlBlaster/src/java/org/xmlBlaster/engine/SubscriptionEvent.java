@@ -14,10 +14,10 @@ package org.xmlBlaster.engine;
  * <p />
  * It carries the SubscriptionInfo reference inside.
  *
- * @version $Id$
  * @author Marcel Ruff
  */
 public class SubscriptionEvent extends java.util.EventObject {
+   private static final long serialVersionUID = 1L;
 
    /**
     * Constructs a SubscriptionEvent object.

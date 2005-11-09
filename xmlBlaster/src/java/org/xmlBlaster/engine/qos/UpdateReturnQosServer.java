@@ -26,7 +26,6 @@ import org.xmlBlaster.util.qos.StatusQosData;
  */
 public final class UpdateReturnQosServer
 {
-   private String ME = "UpdateReturnQosServer";
    private final StatusQosData statusQosData;
 
    /**

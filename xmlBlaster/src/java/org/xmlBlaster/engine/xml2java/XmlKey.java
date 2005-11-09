@@ -424,9 +424,4 @@ public final class XmlKey
       //queryMgr = null;
       xmlKeyDoc = null;
    }
-
-   /** For testing: java org.xmlBlaster.engine.xml2java.XmlKey */
-   public static void main(String[] args) {
-      Global glob = new Global(args);
-   }
 }

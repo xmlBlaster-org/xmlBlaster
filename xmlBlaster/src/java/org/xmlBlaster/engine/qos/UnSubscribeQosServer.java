@@ -27,15 +27,12 @@ import org.xmlBlaster.util.qos.QueryQosData;
  */
 public final class UnSubscribeQosServer
 {
-   private String ME = "UnSubscribeQosServer";
-   private final Global glob;
    private final QueryQosData queryQosData;
 
    /**
     * Constructor which accepts a raw data struct. 
     */
    public UnSubscribeQosServer(Global glob, QueryQosData queryQosData) {
-      this.glob = glob;
       this.queryQosData = queryQosData;
    }
 
@@ -44,7 +41,6 @@ public final class UnSubscribeQosServer
     * @param the XML based ASCII string
     */
    public UnSubscribeQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.glob = glob;
       this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
    }
 

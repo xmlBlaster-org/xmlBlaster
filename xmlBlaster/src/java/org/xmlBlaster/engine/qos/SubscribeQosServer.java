@@ -30,8 +30,6 @@ import org.xmlBlaster.util.qos.QuerySpecQos;
  */
 public final class SubscribeQosServer
 {
-   private String ME = "SubscribeQosServer";
-   private final Global glob;
    private final QueryQosData queryQosData;
    private boolean doInhibitInitialUpdates = false;
 
@@ -39,7 +37,6 @@ public final class SubscribeQosServer
     * Constructor which accepts a raw data struct. 
     */
    public SubscribeQosServer(Global glob, QueryQosData queryQosData) {
-      this.glob = glob;
       this.queryQosData = queryQosData;
    }
 
@@ -48,7 +45,6 @@ public final class SubscribeQosServer
     * @param the XML based ASCII string
     */
    public SubscribeQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.glob = glob;
       this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
    }
 

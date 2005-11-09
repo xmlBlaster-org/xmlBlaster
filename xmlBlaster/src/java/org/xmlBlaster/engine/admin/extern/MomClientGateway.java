@@ -15,7 +15,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -67,7 +66,7 @@ public final class MomClientGateway implements I_ExternGateway
     * @param command The key oid, for example "__cmd:/node/heron/?numClients"
     */
    public MsgUnit[] getCommand(SessionInfo sessionInfo, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
-      String cmdType = "get";
+      //String cmdType = "get";
 
       if (log.CALL) log.call(ME, "Invoking getCommand(" + keyData.getOid() + ")");
       /*
@@ -108,7 +107,6 @@ public final class MomClientGateway implements I_ExternGateway
     */
    public String setCommand(SessionInfo sessionInfo, KeyData xmlKey, MsgUnit msgUnit,
                     PublishQosServer publishQos, boolean isClusterUpdate) throws XmlBlasterException {
-      String cmdType = "set";
       String command = xmlKey.getOid();
       if (command == null) {
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Ignoring your empty command.");
@@ -138,13 +136,6 @@ public final class MomClientGateway implements I_ExternGateway
          buf.append(" info='").append(info).append("'");
       buf.append("/><key oid='").append(xmlKey.getOid()).append("'/></qos>");
       return buf.toString();
-   }
-
-   private final String getErrorText(String error) {
-      String text = "ERROR-XmlBlaster momClient server: " + error;
-      text += " Try a oid='__cmd:...'";
-      log.info(ME, error);
-      return text;
    }
 
    public String getName() {

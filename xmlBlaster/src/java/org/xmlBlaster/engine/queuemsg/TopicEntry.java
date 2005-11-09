@@ -41,6 +41,7 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
  */
 public final class TopicEntry implements I_MapEntry
 {
+   private static final long serialVersionUID = 1L;
    private transient final String ME;
    private transient final Global glob;
    private transient final long uniqueId;

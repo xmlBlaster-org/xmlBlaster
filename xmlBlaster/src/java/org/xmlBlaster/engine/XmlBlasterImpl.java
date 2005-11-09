@@ -6,11 +6,6 @@ Comment:   Native Interface to xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -21,10 +16,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -56,9 +49,6 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final AvailabilityChecker availabilityChecker;
    private final Global glob;
    private final LogChannel log;
-
-   private static final byte[] EMPTY_BYTES = "".getBytes();
-
 
    /**
     * One instance of this represents one xmlBlaster server.

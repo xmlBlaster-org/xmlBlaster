@@ -25,7 +25,6 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 
 /**
@@ -76,7 +75,6 @@ public class DeadMessageDumper implements I_Plugin {
 
    private I_XmlBlasterAccess connection;
    private String directoryName;
-   private SubscribeReturnQos subscribeReturnQos;
 
    private String loginName;
    private String password = "secret";
@@ -168,7 +166,7 @@ public class DeadMessageDumper implements I_Plugin {
          SubscribeKey sk = new SubscribeKey(this.global, Constants.OID_DEAD_LETTER);
          SubscribeQos sq = new SubscribeQos(this.global);
          sq.setWantInitialUpdate(false);
-         this.subscribeReturnQos = this.connection.subscribe(sk, sq);
+         this.connection.subscribe(sk, sq);
 
          log.info(ME, "Subscribed to topic '" + Constants.OID_DEAD_LETTER + "'");
       }

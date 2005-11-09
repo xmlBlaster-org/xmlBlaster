@@ -55,10 +55,6 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
    private final String ME = "GnuRegexFilter";
    private Global glob;
    private LogChannel log;
-   /** Limits max message size to 1 MB as a default */
-   private long DEFAULT_MAX_LEN = 1000000;
-   /** For testsuite TestAccess.java only to force an XmlBlasterException */
-   private int THROW_EXCEPTION_FOR_LEN = -1;
 
    /**
     * This is called after instantiation of the plugin 

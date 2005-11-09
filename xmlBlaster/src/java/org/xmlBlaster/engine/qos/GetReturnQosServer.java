@@ -22,12 +22,9 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public class GetReturnQosServer
 {
-   private String ME = "GetReturnQosServer";
-   private final Global glob;
    private final MsgQosData msgQosData;
 
    public GetReturnQosServer(Global glob, MsgQosData msgQosData, String state) {
-      this.glob = (glob==null) ? Global.instance() : glob;
       this.msgQosData = (msgQosData == null) ? new MsgQosData(glob, MethodName.GET) : msgQosData;
       this.msgQosData.setState((state == null) ? Constants.STATE_OK : state);
    }

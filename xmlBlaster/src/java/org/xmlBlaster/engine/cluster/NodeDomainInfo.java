@@ -61,7 +61,6 @@ public final class NodeDomainInfo implements Comparable
    /** The version of the plugin */
    public static final String DEFAULT_version = "1.0";
    private String version;
-   private String query = "";
 
    private boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
 
@@ -71,7 +70,6 @@ public final class NodeDomainInfo implements Comparable
    private transient AccessFilterQos tmpFilter = null;
    protected ArrayList filterList = null;                   // To collect the <filter> when sax parsing
    protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
-   private transient boolean inFilter = false;
 
    private transient QueryKeyData tmpKey = null;
    protected ArrayList keyList = null;                      // To collect the <key> when sax parsing
@@ -296,7 +294,6 @@ public final class NodeDomainInfo implements Comparable
       }
 
       if (inMaster == 1 && name.equalsIgnoreCase("filter")) {
-         inFilter = true;
          tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
@@ -357,7 +354,6 @@ public final class NodeDomainInfo implements Comparable
       }
 
       if (inMaster == 1 && name.equalsIgnoreCase("filter")) {
-         inFilter = false;
          if (tmpFilter != null)
             tmpFilter.endElement(uri, localName, name, character);
          return;

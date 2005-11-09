@@ -26,8 +26,6 @@ import org.xmlBlaster.util.qos.storage.CbQueueProperty;
  */
 public final class ConnectQosServer
 {
-   private String ME = "ConnectQosServer";
-   private final Global glob;
    private final ConnectQosData connectQosData;
    private boolean bypassCredentialCheck = false;
    private long persistenceUniqueId;
@@ -35,14 +33,12 @@ public final class ConnectQosServer
    private AddressServer addressServer;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
-      this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = connectQosData;
       // better keep it for forwarding etc.
       //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
    public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
    }
 

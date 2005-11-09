@@ -9,7 +9,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 
-
 /**
  * This class encapsulates the qos of a disconnect() invocation. 
  * <p />
@@ -18,7 +17,6 @@ import org.xmlBlaster.util.qos.DisconnectQosData;
  */
 public final class DisconnectQosServer
 {
-   private String ME = "DisconnectQosServer";
    private final Global glob;
    private final DisconnectQosData disconnectQosData;
 

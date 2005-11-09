@@ -8,8 +8,6 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.def.PriorityEnum;
 
 
@@ -23,8 +21,6 @@ import org.xmlBlaster.util.def.PriorityEnum;
  */
 public final class UpdateQosServer
 {
-   private final static String ME = "UpdateQosServer";
-   private final Global glob;
    private final MsgQosData msgQosData;
 
    /**
@@ -32,7 +28,6 @@ public final class UpdateQosServer
     * @param e.g. Constants.STATE_OK
     */
    public UpdateQosServer(Global glob, MsgQosData msgQosData, String state, String subscriptionId) {
-      this.glob = glob;
       this.msgQosData = msgQosData;
       setData(this.msgQosData, state, subscriptionId);
    }

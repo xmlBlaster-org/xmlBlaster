@@ -16,7 +16,7 @@ import org.xmlBlaster.util.queue.StorageId;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class SessionEntry implements I_MapEntry {
-
+   private static final long serialVersionUID = 1L;
    private String qos;
    private transient boolean swapped = false;
    private boolean stored;

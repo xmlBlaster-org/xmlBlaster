@@ -28,9 +28,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
 {
    final private static String ME = "BigXmlKeyDOM";
 
-   private final Authenticate authenticate;
    private final LogChannel log;
-
 
    /**
     * A singleton for each xmlBlaster server.
@@ -38,8 +36,6 @@ public class BigXmlKeyDOM extends XmlKeyDom
    BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       super(requestBroker);
-
-      this.authenticate = authenticate;
       this.log = requestBroker.getLog();
    }
 
@@ -61,7 +57,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
    {
       if (log.TRACE) log.trace(ME, "Erase event occured ...");
       if (!topicHandler.isUnconfigured()) {
-         org.w3c.dom.Node node = removeKeyNode(topicHandler.getRootNode());
+         /*org.w3c.dom.Node node =*/removeKeyNode(topicHandler.getRootNode());
       }
    }
 

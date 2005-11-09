@@ -8,16 +8,11 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.authentication.SessionInfo;
-
-import java.util.Vector;
-import java.util.Map;
-import java.util.Iterator;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -118,11 +113,6 @@ public class NodeParser extends SaxHandlerBase
       this.clusterManager = clusterManager;
       this.sessionInfo = sessionInfo;
       init(xml);  // use SAX parser to parse it (is slow)
-   }
-
-   private final String getId() {
-      if (id == null) glob.getLog("cluster").warn(ME, "cluster node id is null");
-      return id;
    }
 
    /**

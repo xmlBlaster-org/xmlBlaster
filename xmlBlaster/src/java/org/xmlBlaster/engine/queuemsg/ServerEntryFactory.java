@@ -341,7 +341,7 @@ public class ServerEntryFactory implements I_EntryFactory
                int numTransform = 1000;
                org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
-                  byte[] blob = factory.toBlob(msgUnitWrapper);
+                  /*byte[] blob =*/ factory.toBlob(msgUnitWrapper);
                }
                double elapsed = stopWatchToBlob.elapsed();
                log.info(ME, "num toBlob=" + numTransform + " elapsed=" + elapsed + stopWatchToBlob.nice());

@@ -32,7 +32,6 @@ import java.util.ArrayList;
  */
 public final class PublishQosServer
 {
-   private String ME = "PublishQosServer";
    private final Global glob;
    private final MsgQosData msgQosData;
    private boolean isClusterUpdate = false;

@@ -204,7 +204,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          } catch (IOException e) {
            //e.printStackTrace();
            if (log.TRACE) log.trace(ME, "Initializing of remote console on port=" + port + " failed:" + e.toString());
-           throw new XmlBlasterException(ME, "Initializing of remote telnet console on port=" + port + " failed:" + e.toString());
+           throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Initializing of remote telnet console on port=" + port + " failed:" + e.toString());
          }
       }
    }

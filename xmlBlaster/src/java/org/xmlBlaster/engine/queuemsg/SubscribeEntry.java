@@ -16,7 +16,7 @@ import org.xmlBlaster.util.queue.StorageId;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class SubscribeEntry implements I_MapEntry {
-
+   private static final long serialVersionUID = 1L;
    private final String key;
    private final String qos;
    private final String sessionName;

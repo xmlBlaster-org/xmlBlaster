@@ -8,8 +8,6 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.qos.HistoryQos;
 
 /**
  * Handling of erase() quality of services in the server core.
@@ -29,15 +27,12 @@ import org.xmlBlaster.util.qos.HistoryQos;
  */
 public final class EraseQosServer
 {
-   private String ME = "EraseQosServer";
-   private final Global glob;
    private final QueryQosData queryQosData;
 
    /**
     * Constructor which accepts a raw data struct. 
     */
    public EraseQosServer(Global glob, QueryQosData queryQosData) {
-      this.glob = glob;
       this.queryQosData = queryQosData;
    }
 
@@ -46,7 +41,6 @@ public final class EraseQosServer
     * @param the XML based ASCII string
     */
    public EraseQosServer(Global glob, String xmlQos) throws XmlBlasterException {
-      this.glob = glob;
       this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
    }
 

@@ -19,7 +19,6 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.cluster.ClusterManager;
-import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -41,7 +40,6 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    private String ME = "DomainToMaster";
    private Global glob;
    private LogChannel log;
-   private ClusterManager clusterManager;
 
    /**
     * This is called after instantiation of the plugin 
@@ -50,7 +48,6 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    public void initialize(Global glob, ClusterManager clusterManager) {
       this.glob = glob;
       this.log = glob.getLog("cluster");
-      this.clusterManager = clusterManager;
       this.ME = this.ME + "-" + this.glob.getId();
       log.info(ME, "The simple domain based master mapper plugin is initialized");
    }
@@ -181,7 +178,6 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       */
 
       // Now check if we are master
-      ClusterNode clusterNode = null;
       XmlKey xmlKey = null;
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
          if (ii==0) {

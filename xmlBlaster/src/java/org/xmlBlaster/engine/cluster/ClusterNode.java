@@ -14,7 +14,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -326,7 +325,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      available = true;
+      this.available = true;
       if (connection.getQueue().getNumOfEntries() > 0) {
          log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + connection.getQueue().getNumOfEntries() + " tailback messages ...");
       }
@@ -342,7 +341,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      available = false;
+      this.available = false;
       log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
    }
 
@@ -353,7 +352,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      available = false;
+      this.available = false;
       log.error(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
    }
 
@@ -425,5 +424,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       sb.append(offset).append("</clusternode>");
 
       return sb.toString();
+   }
+
+   public boolean isAvailable() {
+      return available;
    }
 }

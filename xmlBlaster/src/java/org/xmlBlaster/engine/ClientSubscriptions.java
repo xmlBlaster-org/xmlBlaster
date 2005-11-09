@@ -33,7 +33,6 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    private final String ME;
 
    private final Global glob;
-   private final RequestBroker requestBroker;
    private final LogChannel log;
 
    /**
@@ -78,7 +77,6 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    ClientSubscriptions(Global glob, RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       this.glob = glob;
-      this.requestBroker = requestBroker;
       this.ME = "ClientSubscriptions" + this.glob.getLogPrefixDashed();
       this.log = requestBroker.getGlobal().getLog("core");
       requestBroker.addSubscriptionListener(this);

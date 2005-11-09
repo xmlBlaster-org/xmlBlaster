@@ -8,7 +8,6 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -24,8 +23,6 @@ import org.xmlBlaster.engine.Global;
  * Only one entry is allowed.
  */
 public class LoadBalancerPluginManager extends PluginManagerBase {
-
-   private static final String ME = "LoadBalancerPluginManager";
    /**
     * The default plugin "org.xmlBlaster.engine.cluster.simpledomain.RoundRobin"
     * is loaded if not otherwise specified
@@ -34,13 +31,11 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "LoadBalancerPlugin";
 
    private final Global glob;
-   private final LogChannel log;
    private final ClusterManager clusterManager;
 
    public LoadBalancerPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog("cluster");
       this.clusterManager = clusterManager;
    }
 

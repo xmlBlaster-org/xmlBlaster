@@ -21,7 +21,6 @@ import java.util.Properties;
  */
 public class AddressServer extends AddressBase
 {
-   private static final String ME = "AddressServer";
    private Object remoteAddress;
 
    /**

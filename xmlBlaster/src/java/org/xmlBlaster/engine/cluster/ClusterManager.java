@@ -10,7 +10,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
@@ -21,8 +20,6 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
@@ -42,14 +39,11 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.Vector;
 import java.util.Iterator;
 import java.util.Comparator;
 
@@ -159,7 +153,7 @@ public final class ClusterManager implements I_RunlevelListener
                   continue;
                }
                if (log.TRACE) log.trace(ME, "Parsing environment -" + env[ii] + " for node '" + nodeIdName + "' ...");
-               NodeParser nodeParser = new NodeParser(this.glob, this, xml, sessionInfo); // fills the info to ClusterManager
+               /*NodeParser nodeParser =*/ new NodeParser(this.glob, this, xml, sessionInfo); // fills the info to ClusterManager
                log.info(ME, "Environment for node '" + nodeIdName + "' parsed.");
             }
          }
@@ -186,7 +180,7 @@ public final class ClusterManager implements I_RunlevelListener
       if (this.postInitialized)
          return true;
       for (int i=0; i<2000; i++) {
-         try { Thread.currentThread().sleep(10L); } catch( InterruptedException ie) {}
+         try { Thread.sleep(10L); } catch( InterruptedException ie) {}
          if (this.postInitialized)
             return true;
       }
@@ -258,7 +252,7 @@ public final class ClusterManager implements I_RunlevelListener
       }
       else {
          log.error(ME, "ClusterNode is not properly initialized, no protocol pluging - no local xmlBlaster (node=" + getId() + ") address available");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
    }
 
@@ -381,7 +375,7 @@ public final class ClusterManager implements I_RunlevelListener
          RouteInfo[] ris = publishQos.getRouteNodes();
          if (ris == null || ris.length < 1) {
             log.error(ME, "The route info for '" + msgUnit.getLogId() + "' is missing");
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
          }
          else {
             ris[ris.length-1].setDirtyRead(true);
@@ -510,7 +504,7 @@ public final class ClusterManager implements I_RunlevelListener
     */
    public final void addClusterNode(ClusterNode clusterNode) {
       if (clusterNode == null || clusterNode.getNodeId() == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          log.error(ME, "Illegal argument in addClusterNode()");
          throw new IllegalArgumentException("Illegal argument in addClusterNode()");
       }

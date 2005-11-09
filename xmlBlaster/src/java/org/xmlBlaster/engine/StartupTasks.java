@@ -18,7 +18,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -79,8 +78,9 @@ public class StartupTasks implements I_Plugin {
 
    private String loginName = "_StartupTasks";
    private String password = "secret";
-   /** forceBase64==false: ASCII dump for content if possible (XML embedable) */
-   private boolean forceBase64 = false;
+   
+   // forceBase64==false: ASCII dump for content if possible (XML embedable)
+   //private boolean forceBase64 = false;
 
    /**
     * Initializes the plugin
