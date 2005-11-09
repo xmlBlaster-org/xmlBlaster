@@ -170,22 +170,33 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param requestBroker
     * @param uniqueKey The unique XmlKey-oid from the subscribe() call
     */
-   public TopicHandler(RequestBroker requestBroker, String uniqueKey) throws XmlBlasterException
-   {
+   public TopicHandler(RequestBroker requestBroker, String uniqueKey) throws XmlBlasterException {
+      this(requestBroker, null, uniqueKey);
+   }
+
+   /**
+    * Use this constructor if a yet unknown object is fed by method publish().
+    * <p />
+    * You should call publish() thereafter
+    * @param requestBroker
+    * @param publisherSessionInfo Is null if called from other constructor (subscription based)
+    * @param a MsgUnitWrapper containing the CORBA MsgUnit data container
+    */
+   public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String uniqueKey) throws XmlBlasterException {
       this.glob = requestBroker.getGlobal();
       if (uniqueKey == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
+      this.uniqueKey = uniqueKey;
       this.log = this.glob.getLog("core");
-      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
-      this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
+      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
+      this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
 
       // JMX does not allow commas ','
-      String instanceName = this.glob.validateJmxValue(uniqueKey);
+      String instanceName = this.glob.validateJmxValue(this.uniqueKey);
       this.contextNode = new ContextNode(this.glob, ContextNode.TOPIC_MARKER_TAG, instanceName, this.glob.getContextNode());
 
       this.requestBroker = requestBroker;
-      this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
       // this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
 
@@ -199,43 +210,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       // JMX register "topic/hello"
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
-      if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
-      // mimeType and content remains unknown until first data is fed
-   }
-
-   /**
-    * Use this constructor if a yet unknown object is fed by method publish().
-    * <p />
-    * You should call publish() thereafter
-    * @param requestBroker
-    * @param a MsgUnitWrapper containing the CORBA MsgUnit data container
-    */
-   public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String keyOid) throws XmlBlasterException {
-      this.glob = requestBroker.getGlobal();
-      if (keyOid == null)
-         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters, keyOid=null");
-
-      this.log = this.glob.getLog("core");
-      this.requestBroker = requestBroker;
-      this.uniqueKey = keyOid;
-      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
-      this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
-      this.contextNode = new ContextNode(this.glob, ContextNode.TOPIC_MARKER_TAG, keyOid, this.glob.getContextNode());
-      this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
-      
-      //Happens automatically on first publish
-      //administrativeInitialize((MsgKeyData)msgUnit.getKeyData(), (MsgQosData)msgUnit.getQosData());
-
-      toUnconfigured();
-      TopicHandler t = requestBroker.addTopicHandler(this);
-      if (t != null) {
-         log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
-         Thread.dumpStack();
+      if (publisherSessionInfo == null) {
+         if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
       }
-      if (log.CALL) log.trace(ME, "Creating new TopicHandler.");
-
-      // JMX register "topic/hello"
-      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+      else {
+         if (log.CALL) log.trace(ME, "Creating new TopicHandler because of publish.");
+      }
+      // mimeType and content remains unknown until first data is fed
    }
 
    /**
@@ -544,9 +525,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             } // synchronized
          }
 
-         if (isUnconfigured() || isDead() || isSoftErased()) {
+         if (isUnconfigured() || isSoftErased()) {
             synchronized (this) {
-               if (isUnconfigured() || isDead() || isSoftErased()) {
+               if (isUnconfigured() || isSoftErased()) {
                  administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
                }
             }
@@ -1195,7 +1176,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
 
    /**
-    * checks if it is allowed to send the entry to the callback queue
+    * Checks if it is allowed to send the entry to the callback queue. 
     * @param publisherSessionInfo
     * @param sub
     * @return true if it is configured, there is a callback, and the topic is referenced 
