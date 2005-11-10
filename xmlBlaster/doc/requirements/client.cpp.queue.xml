@@ -256,8 +256,11 @@ TestQueue
       </p>
    </todo>
 
+   <!-- http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1util_1_1queue_1_1I__Queue.html -->
+   <!-- http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/I__Queue_8h.html -->
+   <!-- http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/Queue.h_8cpp-source.html -->
    <see type="CODE" lang="CPP">util/queue/I_Queue.h</see>
-   <see type="INTERNET" label="TestQueue.c">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c++/TestQueue.cpp.html</see>
+   <see type="INTERNET" label="TestQueue.cpp">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c++/TestQueue.cpp.html</see>
    <see type="INTERNET">http://www.sqlite.org/</see>
    <see type="INTERNET" label="SQLite compile">http://www.sqlite.org/cvstrac/wiki?p=HowToCompile</see>
    <see type="REQ">client.cpp.failsafe</see>
