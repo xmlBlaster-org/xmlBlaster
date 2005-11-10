@@ -590,7 +590,7 @@ doxygen Doxyfile
 
    <see type="API" lang="CPP">HelloWorld2</see>
    <see type="API" lang="CPP">org::xmlBlaster::client::XmlBlasterAccess</see>
-   <see type="OTHER">http://www.xmlBlaster.org/xmlBlaster/doc/doxygen/cpp/html/namespaces.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/doc/doxygen/cpp/html/namespaces.html</see>
    <see type="REQ" label="C++ compilation hints">client.cpp.compile</see>
    <see type="REQ">client.c.socket</see>
    <see type="REQ">protocol.socket</see>
