@@ -66,6 +66,20 @@
      object of the corresponding method invocation. For example a <i>publish</i> will have 
      a child corresponding to the PublishReturnQos.toXml() method.
      </p>
+
+     <h2>Variable replacement</h2>
+     <p>
+     Variables with <code>${...}</code> are searched in the environment (Global scope) and
+     are replaced by their values if found. A maximum nesting depth of 20 is supported
+     (${} values which contain further ${}).
+     </p>
+     <p>To switch this feature on you need to add following flags to the beginning of your script</p>
+     <pre>
+&lt;!-- replace e.g. ${ICAO} with command line setting '-ICAO EDDI' -->
+&lt;replaceQosTokens/>
+&lt;replaceKeyTokens/>
+&lt;replaceContentTokens/>
+    </pre>
    </description>
 
    <example lang="any" type="HTML">
@@ -359,6 +373,7 @@ java javaclients.script.XmlScript \
    </configuration>
 
    <see type="API">org.xmlBlaster.client.script.XmlScriptInterpreter</see>
+   <see type="API" label="The test client XmlScriptClient">org.xmlBlaster.client.script.XmlScriptClient</see>
    <see type="REQ">engine.qos.clientProperty</see>
    <see type="REQ">interface</see>
 
