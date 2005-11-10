@@ -9,19 +9,19 @@
 Syntax for POP3 mail polling: "pop3://user:password@host:port/INBOX"
 For example:
 
-     mail.pop3.url=pop3://blue:blue@localhost/INBOX
+     mail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost/INBOX
 
 
 (A) First test your mail server (MTA):
 ======================================
 
-1. Start a command line poller for user 'blue':
+1. Start a command line poller for user 'xmlBlaster':
 
-   java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Client -receivePolling 
+   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Client -receivePolling 
 
 2. Send from command line an email:
 
-  java -Dmail.user=blue -Dmail.password=blue org.xmlBlaster.util.protocol.email.SmtpClient -from blue@localhost -to blue@localhost
+  java -Dmail.user=xmlBlaster -Dmail.password=xmlBlaster org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
 
 
 (B) Steps to setup email updates from xmlBlaster
@@ -65,7 +65,7 @@ For example:
 4. Subscribe to a message and publish a message
    The update is sent by email
 
-   java javaclients.email.Demo -email.receiver joe@provider.com
+   java HelloWorld3 -protocol EMAIL
 
 
 (C) Configure a client to reveive messages by email
@@ -78,4 +78,33 @@ For example:
 2. Start a demo client
 
    java javaclients.email.DemoCb -myCallbackEmailAddress demo@localhost -dispatch/callback/protocol EMAIL
+
+(D) Configure zlib compression 'compress/type=zlib'
+===================================================
+
+Note: The variant 'compress/type=zlib:stream' is not supported
+
+1. Server side
+   xmlBlaster.properties:
+     CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster,compress/type=zlib
+   xmlBlasterPlugins.xml
+     <plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='10' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
+      <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
+      <attribute id='compress/type'>zlib</attribute>
+     </plugin>
+
+2. Client side
+   xmlBlaster.properties
+     ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000,compress/type=zlib
+     ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib
+
    
+Switch on debugging in xmlBlaster.properties:
+
+ trace[org.xmlBlaster.util.protocol.email.EmailExecutor] true
+ trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+ #call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+
