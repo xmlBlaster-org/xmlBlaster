@@ -7,6 +7,7 @@ Comment:   Holding callback address string and protocol string
 package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
 
 
@@ -26,7 +27,7 @@ import org.xmlBlaster.util.def.Constants;
  */
 public class CallbackAddress extends AddressBase
 {
-   private static final String ME = "CallbackAddress";
+   private SessionName sessionName;
 
    /**
     */
@@ -184,6 +185,14 @@ public class CallbackAddress extends AddressBase
          e.printStackTrace();
          System.out.println("TestFailed"+e.toString());
       }
+   }
+
+   public SessionName getSessionName() {
+      return this.sessionName;
+   }
+
+   public void setSessionName(SessionName sessionName) {
+      this.sessionName = sessionName;
    }
 }
 

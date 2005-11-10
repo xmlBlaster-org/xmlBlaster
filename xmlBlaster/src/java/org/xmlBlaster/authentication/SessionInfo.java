@@ -171,11 +171,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
       this.sessionQueue.addQueueSizeListener(this);
 
-      if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+      CallbackAddress[] cba = this.connectQos.getSessionCbQueueProperty().getCallbackAddresses();
+      if (cba.length > 0) {
          if (log.TRACE) log.trace(ME, "Creating dispatch manager as ConnectQos contains callback addresses");
+         for (int i=0; i<cba.length; i++)
+            cba[i].setSessionName(this.sessionName);
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
-                                this.connectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
+                                cba, this.sessionName);
       }
       else { // No callback configured
          if (log.TRACE) log.trace(ME, "Don't create dispatch manager as ConnectQos contains no callback addresses");
