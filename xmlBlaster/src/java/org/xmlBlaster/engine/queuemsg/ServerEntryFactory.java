@@ -171,6 +171,7 @@ public class ServerEntryFactory implements I_EntryFactory
             MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
             MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
                                       referenceCounter.intValue(), historyReferenceCounter.intValue(), sizeInBytes);
+            msgUnitWrapper.startExpiryTimer();
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -191,6 +192,7 @@ public class ServerEntryFactory implements I_EntryFactory
             msgUnit.setGlobal(glob);
             MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, storageId,
                              referenceCounter.intValue(), historyReferenceCounter.intValue(), sizeInBytes);
+            msgUnitWrapper.startExpiryTimer();
             return msgUnitWrapper;
          }
          catch (Exception ex) {
@@ -327,7 +329,7 @@ public class ServerEntryFactory implements I_EntryFactory
                MsgUnit msgUnit = new MsgUnit(publishKey.getData(), "HO".getBytes(), publishQosServer.getData());
                StorageId storageId = new StorageId("mystore", "someid");
                MsgUnitWrapper msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, null, storageId, 0, 0, persistType[jj], -1);
-
+               msgUnitWrapper.startExpiryTimer();
                I_EntryFactory factory = glob.getEntryFactory();
 
                int priority = msgUnitWrapper.getPriority();

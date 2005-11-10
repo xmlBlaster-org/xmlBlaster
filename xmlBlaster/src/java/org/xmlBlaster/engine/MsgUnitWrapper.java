@@ -68,13 +68,12 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private transient Timeout destroyTimer;
    private transient Timestamp timerKey = null;
 
-   private final static int UNDEF = -1;
    private final static int ALIVE = 0;
    private final static int PRE_EXPIRED = 4;
    private final static int EXPIRED = 1;
    private final static int DESTROYED = 2;
    private final static int PRE_DESTROYED = 3;
-   private transient int state = UNDEF;
+   private transient int state = ALIVE;
 
    private MsgUnit msgUnit;
    private final long immutableSizeInBytes;
@@ -179,7 +178,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
       if (log.TRACE) log.trace(ME+getLogId(), "Created new MsgUnitWrapper instance '" + this + "' " + ((this.ownerCache==null) ? " from persistence store" : ""));
 
-      toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert
          log.error(ME + getLogId(), "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
@@ -494,20 +492,37 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    /**
     */
-   public boolean isAlive() {
+   private boolean isAlive() {
       return this.state == ALIVE;
    }
+   
+   /**
+    * The state may still be alive. 
+    * @return true is the configured life span is elapsed
+    */
+   public boolean hasRemainingLife() {
+      long lifeTime = getMsgQosData().getLifeTime();
+      if (lifeTime > -1) {
+         long timeout = getMsgQosData().getRemainingLife();
+         if (timeout <= 0L) {
+            return false;
+         }
+      }
+      return true;
+   }
 
-   private void toAlive() {
+   public void startExpiryTimer() {
       synchronized (this) {
-         if (isAlive()) {
+         if (this.state != ALIVE) {
+            log.error(ME + getLogId(), "Unexpected startExpiryTimer in state " + getStateStr());
             return;
          }
-         this.state = ALIVE;
          if (this.timerKey != null) {
-            this.destroyTimer.removeTimeoutListener(this.timerKey);
-            this.timerKey = null;
             log.error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
+            return;
+            //this.destroyTimer.removeTimeoutListener(this.timerKey);
+            //this.timerKey = null;
+            //log.error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
          }
 
          long lifeTime = getMsgQosData().getLifeTime();

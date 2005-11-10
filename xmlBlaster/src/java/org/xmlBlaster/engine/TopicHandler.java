@@ -576,7 +576,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                this.msgUnitWrapperUnderConstruction.put(new Long(msgUnitWrapper.getUniqueId()), msgUnitWrapper);
             }
        
-            if (addToHistoryQueue && msgUnitWrapper.isAlive()) { // no volatile messages
+            if (addToHistoryQueue && msgUnitWrapper.hasRemainingLife()) { // no sense to remember
                if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
                   MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
                   if (entry != null) {
@@ -644,6 +644,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
             invokeCallbackAndHandleFailure(publisherSessionInfo, msgUnitWrapper);
          }
+         msgUnitWrapper.startExpiryTimer();
       }
       finally {
          if (msgUnitWrapper != null) {
@@ -1181,7 +1182,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param sub
     * @return true if it is configured, there is a callback, and the topic is referenced 
     */
-   public boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
+   private boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
       if (!sub.getSessionInfo().hasCallback()) {
          log.warn(ME, "A client which subscribes " + sub.toXml() + " should have a callback server: "
                        + sub.getSessionInfo().toXml(""));
@@ -1304,7 +1305,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * Never throws an exception.
     * Returning -1 tells the invoker not to continue with these invocations (performance)
     */
-   public final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
+   private final int invokeCallback(SessionInfo publisherSessionInfo, SubscriptionInfo sub,
       MsgUnitWrapper msgUnitWrapper, boolean doErrorHandling) {
       if (!checkIfAllowedToSend(publisherSessionInfo, sub)) return -1;
 
@@ -1511,7 +1512,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (entry != null) {
             MsgUnitWrapper wr = entry.getMsgUnitWrapper();
             if (wr != null) {
-               if (wr.isAlive()) {
+               if (wr.hasRemainingLife()) {
                   aliveMsgUnitWrapperList.add(wr);
                }
                else {

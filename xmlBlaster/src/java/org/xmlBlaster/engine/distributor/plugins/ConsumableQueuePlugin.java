@@ -280,7 +280,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
             SubscriptionInfo sub = subInfoArr[ii];
             
             if (!this.topicHandler.subscriberMayReceiveIt(sub, msgUnitWrapper)) continue;
-            if (!this.topicHandler.checkIfAllowedToSend(null, sub)) continue;
+            //Has no effect:
+            //if (!this.topicHandler.checkIfAllowedToSend(null, sub)) continue;
 
             // this is specific for this plugin
             if (sub.getSessionInfo().getDispatchManager() == null) continue;
