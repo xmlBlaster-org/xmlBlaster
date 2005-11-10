@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>XMLRPC Library for ActionScript 2.0 </title>
+<link rel="STYLESHEET" href="style.css" type='text/css' />
+</head>
+<body>
+
+<!-- header -->
+<h2>
+XMLRPC client for ActionScript 2.0</A>
+<br>
+<span class="tiny">
+    <a href="http://xmlrpcflash.sf.net">http://xmlrpcflash.sf.net</a> | <a href="mailto:xmlrpc@dopelogik.com">xmlrpc@dopelogik.com</a>
+</span>
+</h2>
+<hr/>
+<!-- /header -->
+
+
+<h2>Connection Class</h2>
+
+extends XML object
+
+<h3>Public Properties</h3>
+
+
+<span class="class-title"><span class="property">Server</span></span>:<span class="type">String</span>
+<div class="class-desc">
+   Specifies the url of the XMLRPC service.
+<br/><br/>  
+<div class="code">var rpc1 = XMLRPC.Connection();
+rpc1 = XMLRPC.Server='http://www.myserver.com/xmlrpc';
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="property">Quiet</span></span>:<span class="type">Boolean</span>
+<div class="class-desc">
+   When set to <i>true</i>, Connection will trace little to no debug info.
+<br/><br/>  
+<div class="code">var rpc1 = XMLRPC.Connection();
+rpc1 = XMLRPC.Quiet=true;
+</div>
+</div>
+
+
+<h3>Public Methods</h3>
+
+
+<span class="class-title">constructor <span class="method">Connection</span></span>([server:<span class="type">String</span>])
+<div class="class-desc">
+   The main class used for XMLRPC communication. As of now, it is the only class that needs to be accessed by the end-coder. It manages the XML creation, sending, and parsing. 
+<br/><br/>  
+<div class="code">var rpc1 = XMLRPC.Connection();
+var rpc2 = XMLRPC.Connection('http://www.myserver.com');
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="method">AddParameter</span></span>(param_value:<span class="type">Object</span> [,param_type:<span class="type">String</span>]):<span class="type">Boolean</span>
+<div class="class-desc">
+   Used to add arguments to your method call. <i>param_value</i> can be type of data specified in the XMLRPC standard. <i>param_type</i> specified what type of data us being passed in. Data type constants are in XMLRPC.types.
+<br/><br/>  
+<div class="code">rpc1.AddParameter(['a','b','c'] ,XMLRPC.types.ARRAY);
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="method">Call</span></span>(method:<span class="type">String</span>):<span class="type">Boolean</span> <span class="deprecated">deprecated</span>
+<div class="class-desc">
+   Used to call remote method. Any arguments/parameters added via <span class="method">AddParameter</span> will be included in the call. This method is deprecated because remote methods can now be called directly on the <span class="method">Connection</span> instance.
+<br/><br/>  
+<div class="code">//old way
+rpc1.Call('getMenu');
+
+//new way
+rpc1.getMenu();
+</div>
+</div>
+
+
+<br/><br/>
+<span class="class-title"><span class="method">ClearParameters</span></span>():<span class="type">Void</span>
+<div class="class-desc">
+   Clears method call arguments/parameters. This is a wrapper for Method.ClearParameters.
+<br/><br/>  
+<div class="code">rpc1.ClearParameters();
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="method">IsLoaded</span></span>():<span class="type">Boolean</span>
+<div class="class-desc">
+   Returns true if remote XML response has been loaded. Else, returns false.
+<br/><br/>  
+<div class="code">rpc1.IsLoaded();
+</div>
+</div>
+
+
+<br/><br/>
+<span class="class-title"><span class="method">toString</span></span>():<span class="type">String</span>
+<div class="class-desc">
+   Returns <span class="type">String</span> representation of <span class="method">Connection</span> object.
+<br/><br/>  
+<div class="code">rpc1.ClearParameters();
+</div>
+</div>
+
+<br/><br/>
+
+<h3>Public Events</h3>
+
+<span class="class-title"><span class="method">OnLoad</span></span>:<span class="type">Void</span>
+<div class="class-desc">
+   User-defined function to be triggered when the XMLRPC response is loaded. The <span class="method">OnLoad</span> function is passed the result of the unmarshalled response, not the actual XML response.
+<br/><br/>  
+<div class="code">function myOnLoad(response:Object){
+    trace("Server returned " + response);
+}
+rpc1.OnLoad=myOnLoad;
+</div>
+</div>
+
+
+<h3>Example</h3>
+<div class="class-desc">
+<div class="code" style="width:560px">var m = new XMLRPC.Connection('http://www.myspellchecker.com/xmlrpc');
+m.AddParameter('vacum',XMLRPC.types.STRING);
+m.OnLoad = function(response:Object){
+    trace('Server returned: ' + response);
+}
+m.spellCheck(); //call remote method directly on connection instance
+</div>
+</div>
+
+<br/>
+<hr/>
+<a href="index.html">Back to Main Page</a>
+
+</BODY>
+</HTML>

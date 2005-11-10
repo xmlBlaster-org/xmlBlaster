@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>XMLRPC Library for ActionScript 2.0 </title>
+<link rel="STYLESHEET" href="style.css" type='text/css' />
+</head>
+<body>
+
+<!-- header -->
+<h2>
+XMLRPC client for ActionScript 2.0</A>
+<br>
+<span class="tiny">
+    <a href="http://xmlrpcflash.sf.net">http://xmlrpcflash.sf.net</a> | <a href="mailto:xmlrpc@dopelogik.com">xmlrpc@dopelogik.com</a>
+</span>
+</h2>
+<hr/>
+<!-- /header -->
+
+<br/>
+This library defines classes which implement the client side of the XMLRPC standard. The great thing about this library is that it's very powerful but implmentation is very simple.
+
+<br/><br/>
+For more information about the XMLRPC standard, visit <a href="http://www.xmlrpc.com/">http://www.xmlrpc.com</a>
+
+
+<br/><br/>
+<h3>Classes</h3>
+<span class="class-title">class <span class="Class">Connection</span></span>([server:<span class="type">String</span>])
+<div class="class-desc">
+   The main class used for XMLRPC communication. As of now, it is the only class that needs to be accessed by the end-coder. It manages the XML creation, sending, and parsing. 
+<br/><br/>  
+<div class="code">var rpc1 = XMLRPC.Connection();
+var rpc2 = XMLRPC.Connection('http://www.myserver.com');
+</div>
+<br/>
+<a href="Connection.html">More Information</a>
+</div>
+
+<br/><br/>
+<span class="class-title">class <span class="Class">Method</span>()</span>
+<div class="class-desc">
+    Class used to create an XML-based method call. It is wrapped by <span class="Class">Connection</span>
+    and is only used to create the vaild XML. <span class="Class">Connection</span> is responsible for sending this XML to the XMLRPC server.
+<br/><br/>  
+<div class="code">var m = XMLRPC.Method();</div>
+<br/>
+<a href="Method.html">More Information</a>
+</div>
+
+<br/><br/>
+<span class="class-title">class <span class="Class">Parser</span>()</span>
+<div class="class-desc">
+    Class used to unmarshall a valid XMLRPC response to a Flash data object. It is wrapped by <span class="Class">Connection</span>
+    and is only used to parse vaild XML.
+<br/><br/>  
+<div class="code">var p = XMLRPC.Parser();</div>
+<br/>
+<a href="Parser.html">More Information</a>
+</div>
+
+<br/><br/>
+<h3>Constants</h3>
+
+<div class="code">XMLRPC.globals.SIMPLE_TYPES
+XMLRPC.types.STRING   
+XMLRPC.types.CDATA    
+XMLRPC.types.i4       
+XMLRPC.types.INT      
+XMLRPC.types.BOOLEAN  
+XMLRPC.types.DOUBLE   
+XMLRPC.types.DATETIME 
+XMLRPC.types.BASE64   
+XMLRPC.types.STRUCT   
+XMLRPC.types.ARRAY    
+</div>
+
+<br/>
+<hr/>
+<i>Last Updated Dec, 3 2004</i>
+
+</BODY>
+</HTML>

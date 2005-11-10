@@ -1,0 +1,51 @@
+    * {
+        font-family: Verdana, Helvetica;
+    }
+    
+    body {
+        font-size: 90%;
+    }
+    
+    .class-desc {
+        margin-left: 20px;
+    }
+    
+    .Class, .method, .property {
+        color: green;
+    }
+    
+    .class-title {
+        font-size: 110%;
+        font-weight: bold;
+    }
+    .code {
+        background: #eeffee;
+        border: 1px solid #ddeedd;
+        padding: 10px;
+        width: 500px;
+        overflow: visible;
+        white-space:pre;
+        font-family: Courier New;
+        font-size: 90%;
+    }
+    
+    .deprecated {
+        color: red;
+    }
+    
+    .type {
+        color: blue;
+    }
+    
+    .tiny, .tiny * {
+        font-size:9px;
+        text-decoration: none;
+    }
+        h1,h2,h3,h4 {
+        color: #000000;
+    }
+    
+    hr {
+        border: 1px dotted #bbbbbb;
+    }
+    

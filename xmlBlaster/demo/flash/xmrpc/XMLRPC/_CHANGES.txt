@@ -1,0 +1,55 @@
+Changes by cyrille@giquello.com
+	09 nov 2005
+	see XMLRPC.Connection.Call() problem with __resolve and Co.
+	see XMLRPC.Method.CleanUp() a little problem with CleanUp()
+
+Version 0.841 (Jan 10 2005)
+    * Fixed endless loop bug. If OnLoad or OnFailed were undefined then
+      they would trigger __resolve which would then call the '_call' method
+      which would result in OnLoad or OnFailed being called again which then 
+      trigger __resolve, etc.
+
+Version 0.84 (Dec 02 2004)
+    * Things just got a whole lot better. Instead of having
+      to use Connection.Call('myMethod'), you can now use:
+      Connection.myMethod();
+      That is sweet.
+    
+    * AddParameter signature Changed **IMPORTANT**
+    
+    * Added XMLRPC.Types constants
+    
+    * Documentation!
+    
+Version 0.83 (Dec 01 2004)
+    * Broke out parsing to a new Class
+    
+    * Normalized variable names
+    
+    * Removed RTrace, replaced with simple DTrace
+    
+
+Version 0.82 (Nov 19 2004)
+    * Refactored the sending and loading of XML
+    
+    * Connection and Method now subclass XML rather
+      keeping a private XML Object attribute.
+      
+    * The task of triggering the XML sending
+      and loading has been taken from Method and given
+      to Connection. I think that makes more sense.
+      
+    * Method is now just used for the creation of
+      valid XMLRPC XML.
+      
+    * Fixed possible memory leak
+
+
+Version 0.8 Alpha (April 21 2004)
+    * Fixed bug affecting 'struct' parameter types
+    
+    * Added debugging improvements
+    
+
+Version 0.7 Alpha (Feb 13, 2004)
+    * First release

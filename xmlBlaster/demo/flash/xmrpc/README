@@ -1,0 +1,85 @@
+//
+//	MM FLASH DEMO
+//
+// Last Modified : 09 nov 2005
+// Creation : 09 nov 2005
+// Authors : Cyrille Giquello <cyrille@giquello.com>
+//
+
+Here is a little demo to user Macromedia Flash Player to access xmlBlaster.
+
+1. Requirement for running that demo :
+
+	- the folder's demo must be accessible with a web browser
+	- the url must pointing at the same IP or DomainName than XmlBlaster server.
+	- A running xmlBlaster server with the xml-rpc plugin activated
+
+1.a MM Flash Player security constraint
+
+	Flash Player use a sandbox mechanism to protect the user's computer.
+	So a Flash applet can only make network access on the same IP or Domain Name than its url.
+
+	There are some mechanism that allow to change that policy,
+	but in the state of my knowledgs, I could not explain them ;o{
+	note : perhaps around a file named crossdomain.xml
+
+1.b XML-RPC protocol
+
+	to enable XML-RPC at xmlBlaster server side check the file
+		XMLBLASTER_HOME/xmlBlaster.properties
+	for the line
+		CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
+	and in
+		XMLBLASTER_HOME/xmlBlasterPlugins.xml
+	for the block
+	   <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
+	   <plugin id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+	      <action do='LOAD' onStartupRunlevel='3' sequence='4'/> 
+	      <action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
+	   </plugin>
+
+	For the client side, I've used the library
+		xmlrpcflash : XMLRPC for ActionScript 2.0 from http://xmlrpcflash.sf.net
+	More details in demo's folder XMLRPC
+
+1.c Deployement of the Applet
+
+	To make the Flash Applet accessible on a webserver on the same IP or Domain Name than the xmlBlaster server,
+	you can follow instruction found at XMLBLASTER_HOME/demo/http/README.
+
+	That process was to complex for my little brain,
+	so I've just lauched a little webserver (ZazouMiniWebServer) on the computer where xmlBlaster was running.
+	Then put the Applet in the document root, and call it with Firefox.
+
+2. Details of the demo
+
+	xmlBlaster-perf.swf
+		The Flash Applet to run in a web browser.
+		I've choose to compile the swf in Flash 7 format.
+	xmlBlaster-perf.fla
+		The source code of the applet.
+		It was developped with MM Flash Pro 8.
+	Base64.as
+		A ActionScript library for Encode/Decode in Base64 format.
+		Found at http://blog.jasonnussbaum.com/?p=108
+	XMLRPC
+		The folder of the xmlrpcflash library
+		Found at http://sourceforge.net/projects/xmlrpcflash
+
+	I've made some changes (corrections) in xmlrpcflash. They are indexed in the _README.txt file.
+
+3. Futur plan
+
+3.a completing the demo
+
+	- add more doc about possible deployement of the Flash Applet, like in file xmlBlaster/demo/http/README
+	- add a xmlBlaster.update test
+	- add some processing of received data, for the moment only success/error are checked, and of course the sessionID is decoded to.
+
+3.b What about callback and realtime update ???
+
+	Pooling for new message is ugly. It should be nice and economic to be wake up on new messages.
+	I've some ideas to explore :
+
+	Perhaps trying to implement the xmlBlaster SOCKET protocol ... with the XMLSocket AS2 object
+	to get a persistent a bi-directionnal communication channel.

@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>XMLRPC Library for ActionScript 2.0 </title>
+<link rel="STYLESHEET" href="style.css" type='text/css' />
+</head>
+<body>
+
+<!-- header -->
+<h2>
+XMLRPC client for ActionScript 2.0</A>
+<br>
+<span class="tiny">
+    <a href="http://xmlrpcflash.sf.net">http://xmlrpcflash.sf.net</a> | <a href="mailto:xmlrpc@dopelogik.com">xmlrpc@dopelogik.com</a>
+</span>
+</h2>
+<hr/>
+<!-- /header -->
+
+
+<h2>Method Class</h2> 
+
+Extends XML object. The end-coder does not need to worry about directly accessing Method.
+
+<h3>Public Properties</h3>
+
+<span class="class-title"><span class="property">Quiet</span></span>:<span class="type">Boolean</span>
+<div class="class-desc">
+   When set to <i>true</i>, Connection will trace little to no debug info.
+<br/><br/>  
+<div class="code">var rpc1 = XMLRPC.Connection();
+rpc1 = XMLRPC.Quiet=true;
+</div>
+</div>
+
+
+<h3>Public Methods</h3>
+
+<span class="class-title"><span class="method">Render</span></span>():<span class="type">Boolean</span>
+<div class="class-desc">
+   Renders method call and parameters into valid XMLRPC.
+<br/><br/>  
+<div class="code">m = new XMLRPC.Method();
+m.Render();
+</div>
+</div>
+
+
+<br/><br/>
+<span class="class-title"><span class="method">setMethod</span></span>(method_name:<span class="type">String</span>):<span class="type">Void</span>
+<div class="class-desc">
+   Sets the name of the remote method to be called.
+<br/><br/>  
+<div class="code">m.setMethod('getFoo');
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="method">AddParameter</span></span>(param_value:<span class="type">Object</span> [,param_type:<span class="type">String</span>]):<span class="type">Boolean</span>
+<div class="class-desc">
+   Used to add arguments to your method call. <i>param_value</i> can be type of data specified in the XMLRPC standard. <i>param_type</i> specified what type of data us being passed in. Data type constants are in XMLRPC.types.
+<br/><br/>  
+<div class="code">m.AddParameter(['a','b','c'] ,XMLRPC.types.ARRAY);
+</div>
+</div>
+
+<br/><br/>
+<span class="class-title"><span class="method">ClearParameters</span></span>():<span class="type">Void</span>
+<div class="class-desc">
+   Clears method call arguments/parameters. This is a wrapper for Method.ClearParameters.
+<br/><br/>  
+<div class="code">rpc1.ClearParameters();
+</div>
+</div>
+
+<br/><br/>
+
+<h3>Public Events</h3>
+
+<i>None</i>
+
+<h3>Example</h3>
+<div class="class-desc">
+<div class="code">var m = new XMLRPC.Method();
+m.AddParameter('vacum',XMLRPC.types.STRING);
+m.setMethod('spellCheck');
+m.Render();
+
+trace(m.toString()); //returns RPC Method Call in XML
+</div>
+</div>
+
+
+
+<br/>
+
+<hr/>
+
+<a href="index.html">Back to Main Page</a>
+
+</BODY>
+</HTML>
