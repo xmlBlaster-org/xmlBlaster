@@ -3,18 +3,21 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14007 Partly fix for expiry of volatile message timing out during publish processing
+   This bug could led to NPE
+ 
  o #13949 -xmlBlaster/jdk14loggingCapture defaults now to true
    Like this als java.util.logging will be automatically redirected to our jutils logging
    This is for the server and the client library
 
  o #13929 Refactor SOCKET protocol classes to reuse code for EMAIL protocol driver
 
+ o #13909 added contrib task in build.xml
+
 
 Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
 ============================================================
  
- o #13909 added contrib task in build.xml
-
  o #13886 Added support for crimson XML parser if forced for JDK 1.5 (last JDK1.3 compatible change)
 
  o #13880 Ported org.w3c.dom.ls.DOMImplementationLS JDK 1.5 dependency to reflection
@@ -717,11 +720,11 @@ Changes for 1.RC1 [2004-10-28] #12758
    The compression is based on jzlib and supports 2 ways of compression
    namely 'stream based' and 'message content' based.
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#compress
-   Thanks to Balázs Póka bpoka@axelero.hu
+   Thanks to Balï¿½zs Pï¿½ka bpoka@axelero.hu
 
  o SOCKET SSL support for Java server and clients added, the usage is simple, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL
-   Thanks to Balázs Póka bpoka@axelero.hu
+   Thanks to Balï¿½zs Pï¿½ka bpoka@axelero.hu
    
  o SOCKET incompatible change:
    The disconnect returns a server side ACK now (from SOCKET protocol layer).
