@@ -245,10 +245,18 @@ public class MsgInfo
 
    /**
     * For example MethodName.PUBLISH
-    * @return unchecked
+    * @return Can be null
     */
    public final MethodName getMethodName() {
       return this.methodName;
+   }
+
+   /**
+    * Access the method name as a string
+    * @return Never null, for example "update"
+    */
+   public final String getMethodNameStr() {
+      return (this.methodName == null) ? "" : this.methodName.toString();
    }
 
    /** The authentication sessionId */

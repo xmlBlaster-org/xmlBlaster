@@ -60,7 +60,7 @@ public interface I_MsgInfoParser {
 
    /**
     * Get a specific extension for this format. 
-    * @return For example XBFORMAT_EXTENSION = ".xbf";
+    * @return For example XBFORMAT_EXTENSION = ".xbf" or XBFORMAT_ZLIB_EXTENSION = ".xbfz"
     */
-   String getExtension();
+   String getExtension(boolean isCompressed);
 }

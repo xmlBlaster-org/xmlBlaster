@@ -97,6 +97,7 @@ public class XbfParser implements I_MsgInfoParser
    private static final byte NULL_BYTE = (byte)0;
    
    public static final String XBFORMAT_EXTENSION = ".xbf";
+   public static final String XBFORMAT_ZLIB_EXTENSION = ".xbfz";
 
    // create only once, for low level parsing
    //private ByteArray byteArray = new ByteArray(256);
@@ -126,10 +127,12 @@ public class XbfParser implements I_MsgInfoParser
    }
 
    /**
+    * @param isCompressed true/false
     * @return XBFORMAT_EXTENSION = ".xbf";
+    *         XBFORMAT_ZLIB_EXTENSION = ".xbfz";
     */
-   public final String getExtension() {
-      return XBFORMAT_EXTENSION; 
+   public final String getExtension(boolean isCompressed) {
+      return (isCompressed) ? XBFORMAT_ZLIB_EXTENSION : XBFORMAT_EXTENSION; 
    }
 
    /**
