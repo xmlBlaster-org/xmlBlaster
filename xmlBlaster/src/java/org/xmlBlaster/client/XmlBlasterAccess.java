@@ -426,6 +426,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException {
       if (callbackAddress == null)
          callbackAddress = new CallbackAddress(glob);
+      callbackAddress.setSessionName(this.getSessionName());
       if (log.TRACE) log.trace(ME, "Using 'client.cbProtocol=" + callbackAddress.getType() + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
       I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(callbackAddress.getType(), callbackAddress.getVersion());
       server.initialize(this.glob, loginName, callbackAddress, this);

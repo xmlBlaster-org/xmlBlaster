@@ -8,6 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.client.protocol.email;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -50,7 +51,6 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    private String ME = "EmailConnection";
    private Global glob;
    protected String loginName = "dummyLoginName";
-   protected Address clientAddress;
    private PluginInfo pluginInfo;
    private boolean isLoggedIn;
    private boolean isInitialized;
@@ -98,8 +98,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
             super.pop3Driver = new Pop3Driver();
             super.pop3Driver.init(glob, this.pluginInfo);
          }
-         
+
          super.init(glob, address, this.pluginInfo);
+         super.setEmailSessionId(""+new Timestamp().getTimestamp()); // Initially until the secret session id is known
          
          // Who are we?
          // We need to correct the mail addresses from EmailExecutor
@@ -139,7 +140,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
     */
    public void setConnectReturnQos(ConnectReturnQos connectReturnQos) {
-      setSecretSessionId(connectReturnQos.getSecretSessionId());
+      super.setSecretSessionId(connectReturnQos.getSecretSessionId());
+      super.setEmailSessionId(connectReturnQos.getSecretSessionId());
+      //super.setEmailSessionId(connectReturnQos.getSessionName().getRelativeName());
       this.loginName = connectReturnQos.getSessionName().getLoginName();
       this.ME = "EmailConnection-"+loginName;
       this.isLoggedIn = true;
@@ -160,7 +163,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          Thread.dumpStack();
       }
 
-      connectLowlevel(this.clientAddress);
+      connectLowlevel(null);
 
       try {
          // sessionId is usually null on login, on reconnect != null
@@ -389,18 +392,6 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    {
       if (!this.isInitialized) return "";
       return (String)super.sendEmail(qos, MethodName.PING, Executor.WAIT_ON_RESPONSE);
-      /*
-      try {
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
-         parser.addQos(""); // ("<qos><state id='OK'/></qos>");
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
-         return (String)response;
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PING.toString(), e1);
-      }
-      */
    }
 
    /**

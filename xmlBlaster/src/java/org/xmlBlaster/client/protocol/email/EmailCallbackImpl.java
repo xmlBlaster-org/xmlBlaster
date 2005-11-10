@@ -84,9 +84,6 @@ public class EmailCallbackImpl extends EmailExecutor implements
       this.log = this.glob.getLog("email");
       this.ME = "EmailCallbackImpl-" + loginName;
       this.callbackAddress = callbackAddress;
-      if (this.pluginInfo != null)
-         this.callbackAddress.setPluginInfoParameters(this.pluginInfo
-               .getParameters());
       setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class
                               // Executor:callback
@@ -100,7 +97,8 @@ public class EmailCallbackImpl extends EmailExecutor implements
 
       // Now we can do super.init() as it needs the pop3Driver in global
       super.init(glob, callbackAddress, this.pluginInfo);
-
+      super.setEmailSessionId(callbackAddress.getSessionName());
+      
       // Who are we?
       // We need to correct the mail addresses from EmailExecutor
       // as it assumes server side operation
@@ -129,8 +127,9 @@ public class EmailCallbackImpl extends EmailExecutor implements
                ME, "Illegal 'from' address '" + to + "'");
       }
 
-      this.pop3Driver.registerForEmail(callbackAddress.getSecretSessionId(),
-            null, this);
+      this.pop3Driver.registerForEmail(super.getEmailSessionId(),
+            "", this);
+      try { super.pop3Driver.activate(); } catch (Exception e) { e.printStackTrace(); }
 
       log.info(ME, "Initialized email callback, from '"
             + super.fromAddress.toString() + "' to="
@@ -158,6 +157,8 @@ public class EmailCallbackImpl extends EmailExecutor implements
     * Shutdown callback only.
     */
    public synchronized void shutdown() {
+      if (this.pop3Driver != null && super.getEmailSessionId().length() > 0)
+         this.pop3Driver.deregisterForEmail(super.getEmailSessionId(),"");
       setCbClient(null); // reset callback client in super class
                            // Executor:callback
    }
