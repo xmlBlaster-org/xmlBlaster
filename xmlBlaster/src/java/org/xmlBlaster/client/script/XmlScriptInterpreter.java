@@ -3,18 +3,21 @@ Name:      XmlScriptInterpreter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
 package org.xmlBlaster.client.script;
 
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.StopParseException;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-
-import org.jutils.log.LogChannel;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -26,21 +29,6 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.io.File;
 
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
-import org.xmlBlaster.util.qos.DisconnectQosData;
-import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 
 /**
  * Parse email body. 
@@ -87,9 +75,9 @@ import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
 
 
 /**
- * XmlScriptInterpreter
+ * Abstract class to parse and construct a XML represantation of xmlBlaster invocations for scripting. 
  * <p>
- * Example for usage:
+ * Example for command line scripting usage:
  * </p>
  * <p>
  * <tt>
@@ -99,21 +87,19 @@ import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  */
-public class XmlScriptInterpreter extends SaxHandlerBase {
+public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    private final String ME = "XmlScriptInterpreter";
    private final LogChannel log;
-   private I_XmlBlasterAccess access;
+   protected final Global glob;
    
    /** a set of names of allowed commands */   
    private HashSet commandsToFire = new HashSet();
    
-   private StringBuffer qos = new StringBuffer();
-   private StringBuffer key = new StringBuffer();
-   private StringBuffer content = new StringBuffer();
-   private StringBuffer cdata = new StringBuffer();
-
-   private boolean isConnected;
+   protected StringBuffer qos = new StringBuffer();
+   protected StringBuffer key = new StringBuffer();
+   protected StringBuffer content = new StringBuffer();
+   protected StringBuffer cdata = new StringBuffer();
 
    /** Replace e.g. ${ICAO} with command line setting '-ICAO EDDI' */
    private boolean replaceQosTokens;
@@ -126,76 +112,56 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    private int inQos, inKey, inContent, inCDATA;
    private String link;
 
-   private I_MsgUnitCb msgUnitCb;
-   
    /** the attachments (some contents can be in the attachments) */
    private HashMap attachments;
    
    /** used to accumulate all messages to be sent with publishArr */
-   private ArrayList messageList;
+   protected ArrayList messageList;
    
    /** buffer used as a place holder for the responses of the xmlBlaster invocations */
-   private StringBuffer response;
-   private final Global glob;
-   private I_Callback callback;
-   private OutputStream out;
-   private String currentCommand;
-   private ConnectQosSaxFactory connectQosFactory;
-   private DisconnectQosSaxFactory disconnectQosFactory;
+   protected StringBuffer response;
+   protected OutputStream out;
+   
+   public final static String ROOT_TAG = "xmlBlaster";
+   public final String KEY_TAG = "key";
+   public final String CONTENT_TAG = "content";
+   public final String QOS_TAG = "qos";
 
    /**
     * This constructor is the most generic one (more degrees of freedom)
     * @param glob the global to use
-    * @param access the I_XmlBlasterAccess to use (can be different from the default 
-    *        given by the global.
-    * @param callback The I_Callback implementation to be used (you can provide your own desidered behaviour)
     * @param attachments the attachments where to search when a content is stored in the attachment (with the 'link' attribute)
     * @param out the OutputStream where to send the responses of the invocations done to xmlBlaster
     */
-   public XmlScriptInterpreter(Global glob, I_XmlBlasterAccess access, I_Callback callback, HashMap attachments, OutputStream out) {
+   public XmlScriptInterpreter(Global glob, HashMap attachments, OutputStream out) {
       super();
       setUseLexicalHandler(true);
       this.glob = glob;
       this.log = glob.getLog("script");
-      this.commandsToFire.add("get");
-      this.commandsToFire.add("connect");
-      this.commandsToFire.add("subscribe");
-      this.commandsToFire.add("unSubscribe");
-      this.commandsToFire.add("publish");
-      this.commandsToFire.add("publishArr");
-      this.commandsToFire.add("erase");
-      this.commandsToFire.add("disconnect");
+      this.commandsToFire.add(MethodName.GET.toString());
+      this.commandsToFire.add(MethodName.CONNECT.toString());
+      this.commandsToFire.add(MethodName.PING.toString());
+      this.commandsToFire.add(MethodName.SUBSCRIBE.toString());
+      this.commandsToFire.add(MethodName.UNSUBSCRIBE.toString());
+      this.commandsToFire.add(MethodName.PUBLISH.toString());
+      this.commandsToFire.add(MethodName.PUBLISH_ARR.toString());
+      this.commandsToFire.add(MethodName.PUBLISH_ONEWAY.toString());
+      this.commandsToFire.add(MethodName.UPDATE.toString());
+      this.commandsToFire.add(MethodName.UPDATE_ONEWAY.toString());
+      this.commandsToFire.add(MethodName.ERASE.toString());
+      this.commandsToFire.add(MethodName.DISCONNECT.toString());
 
-      this.access = access;
-      this.callback = callback;
       this.attachments = attachments;
       this.out = out;
-      this.connectQosFactory = new ConnectQosSaxFactory(this.glob);
-      this.disconnectQosFactory = new DisconnectQosSaxFactory(this.glob);
-
-      if (this.access != null) {
-         this.isConnected = this.access.isConnected();
-      }
    }
 
    /**
     * This is a convenience constructor which takes the default I_Callback implementation provided
     * (StreamCallback).
-    *  
-    * @param glob the global to use
-    * @param access the I_XmlBlasterAccess to use (can be different from the default 
-    *        given by the global.
-    * @param cbStream the OutputStream where to send the information coming in
-    *        asynchroneously via the update method (could be different from the
-    *        synchroneous output stream).
-    * @param responseStream the synchroneous OutputStream
-    * @param attachments the attachments where to find attached contents
-    * 
-    * @see StreamCallback
     */
-   public XmlScriptInterpreter(Global glob, I_XmlBlasterAccess access, OutputStream cbStream, OutputStream responseStream, HashMap attachments) {
-      this(glob, access, new StreamCallback(glob, cbStream, "  "), attachments, responseStream);
-   }
+   //public XmlScriptInterpreter(Global glob, OutputStream cbStream, OutputStream responseStream, HashMap attachments) {
+   //   this(glob, attachments, responseStream);
+   //}
 
    /**
     * Convenience constructor which takes a minimal amount of parameters. The 
@@ -206,17 +172,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     *        it.
     * @param out. The OutputStream used for all outputs (sync and async).
     */
-   public XmlScriptInterpreter(Global glob, OutputStream out) {
-      this(glob, glob.getXmlBlasterAccess(), out, out, null);
-   }
-
-   /**
-    * You can register a callback which can manipulate the MsgUnit just
-    * before it is sent. 
-    */
-   public void registerMsgUnitCb(I_MsgUnitCb msgUnitCb) {
-      this.msgUnitCb = msgUnitCb;
-   }
+   //public XmlScriptInterpreter(Global glob, OutputStream out) {
+   //   this(glob, out, out, null);
+   //}
 
    /**
     * converts the tag sctart to a string
@@ -282,9 +240,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * @param qName
     */
    private void incrementInElementCounters(String qName) {
-      if ("qos".equals(qName) && this.inQos > 0) this.inQos++;
-      else if ("key".equals(qName) && this.inKey > 0) this.inKey++;
-      else if ("content".equals(qName) && this.inContent > 0) this.inContent++;
+      if (QOS_TAG.equals(qName) && this.inQos > 0) this.inQos++;
+      else if (KEY_TAG.equals(qName) && this.inKey > 0) this.inKey++;
+      else if (CONTENT_TAG.equals(qName) && this.inContent > 0) this.inContent++;
    }
 
    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
@@ -308,7 +266,6 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       if (this.commandsToFire.contains(qName)) {
          this.character = new StringBuffer();
          this.character.append(this.writeElementStart(qName, atts));
-         this.currentCommand = qName;
          if ("publishArr".equals(qName)) this.messageList = new ArrayList();
          return;
       }
@@ -318,7 +275,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      if ("key".equals(qName)) {
+      if (KEY_TAG.equals(qName)) {
          this.inKey++;
          this.key = new StringBuffer();
          this.key.append(this.writeElementStart(qName, atts));
@@ -330,7 +287,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      if ("qos".equals(qName)) {
+      if (QOS_TAG.equals(qName)) {
          this.inQos++;
          this.qos = new StringBuffer();
          this.qos.append(this.writeElementStart(qName, atts));
@@ -342,14 +299,14 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      if ("content".equals(qName)) {
+      if (CONTENT_TAG.equals(qName)) {
          this.inContent++;
          this.link = null;
          this.content = new StringBuffer();
-         String sizeStr = atts.getValue("size"); // long
+         //String sizeStr = atts.getValue("size"); // long
          String type = atts.getValue("type");
          String encoding = atts.getValue("encoding");
-         this.contentData = new EncodableData("content", null, type, encoding);
+         this.contentData = new EncodableData(CONTENT_TAG, null, type, encoding);
          String tmp = atts.getValue("link");
          if (tmp != null && tmp.length() > 0) this.link = tmp;
          // this.content.append(this.writeElementStart(qName, atts));
@@ -389,11 +346,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
                }
             }
          }
-         int ret = Global.waitOnKeyboardHit(inputMessage);
+         /*int ret = */Global.waitOnKeyboardHit(inputMessage);
          return;
       }
 
-      if ("xmlBlaster".equals(qName)) {
+      if (ROOT_TAG.equals(qName)) { // "xmlBlaster"
          String id = atts.getValue("id");
          this.response = new StringBuffer("<xmlBlasterResponse");
          if (id != null) this.response.append(" id='").append(id).append("'");         
@@ -435,7 +392,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
       return text;
    }
-   
+
+   abstract public void fireMethod(MethodName methodName) throws XmlBlasterException;
+
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
     * @param qName
@@ -456,160 +415,26 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          this.content.setLength(0);
          this.content.append(replaceVariable(tmp));
       }
-      if ("connect".equals(qName) || !this.isConnected) {
-         boolean implicitConnect = !"connect".equals(qName);
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
-         // if (this.qos.length() < 1) this.qos.append("<qos />");
-         String ret = null;
-         if (implicitConnect || this.qos.length() < 1) {
-            ConnectQos connectQos = new ConnectQos(this.glob);
-            ret = this.access.connect(connectQos, this.callback).toXml();
-         }
-         else {
-            ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
-            // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
-            ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
-            if (tmp != null) ret = tmp.toXml("  ");
-            else ret = "";
-         }
-         this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
-         this.response.append("\n<connect>");
-         this.response.append(ret);
-         this.response.append("\n</connect>\n");
-         flushResponse();
-         this.isConnected = true;
-         if (!implicitConnect) {
-            return;
-         }
+      
+      try {
+         fireMethod(MethodName.toMethodName(qName));
       }
-      if ("disconnect".equals(qName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
-         boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
-         this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
-         this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
-         flushResponse();
-         return;
-      }
-      if ("publish".equals(qName)) {
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         MsgUnit msgUnit = buildMsgUnit();
-         if (this.msgUnitCb != null) {
-            this.msgUnitCb.intercept(msgUnit);
-         }
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
-         PublishReturnQos ret = this.access.publish(msgUnit);
-         this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
-         this.response.append("\n<publish>");
-         // this.response.append("  <messageId>");
-         if (ret != null) this.response.append(ret.toXml("  "));
-         // this.response.append("  </messageId>\n");
-         this.response.append("\n</publish>\n");
-         flushResponse();
-         return;
-      }
-      if ("publishArr".equals(qName)) {
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         int size = this.messageList.size();
-         MsgUnit[] msgs = new MsgUnit[size];
-         for (int i=0; i < size; i++) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
-            msgs[i] = (MsgUnit)this.messageList.get(i);
-         }
-         PublishReturnQos[] ret = this.access.publishArr(msgs);
-         this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
-         this.response.append("\n<publishArr>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               this.response.append("\n  <message>");
-               this.response.append(ret[i].toXml("    "));
-               this.response.append("\n  </message>\n");
-            }
-         }
-         this.response.append("\n</publishArr>\n");
-         flushResponse();
-         return;
-      }
-      if ("subscribe".equals(qName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement subscribe: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
-         this.response.append("\n<subscribe>");
-         // this.response.append("  <subscribeId>");
-         if (ret != null) this.response.append(ret.toXml("    "));
-         // this.response.append("  </subscribeId>\n");
-         this.response.append("\n</subscribe>\n");
-         flushResponse();
-         return;
-      }
-      if ("unSubscribe".equals(qName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement unSubscribe: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         
-         UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
-         this.response.append("\n<unSubscribe>");
-         if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
-         this.response.append("\n</unSubscribe>\n");
-
-         flushResponse();
-         return;
-      }
-      if ("erase".equals(qName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement erase: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
-         this.response.append("\n<erase>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               // this.response.append("  <messageId>");
-               this.response.append(ret[i].toXml("  "));
-               // this.response.append("  </messageId>\n");
-            }
-         }
-         this.response.append("\n</erase>\n");
-         flushResponse();
-         return;
-      }
-      if ("get".equals(qName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement get: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
-         this.response.append("\n<get>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               this.response.append("\n  <message>");
-               this.response.append(ret[i].toXml("    "));
-               this.response.append("\n  </message>");
-            }
-         }
-         this.response.append("\n</get>\n");
-         flushResponse();
-         return;
+      catch (IllegalArgumentException e) {
+         // Is no method like "publish"
       }
 
-      if ("qos".equals(qName)) {
+      if (QOS_TAG.equals(qName)) {
          this.inQos--;
       }
-      if ("key".equals(qName)) {
+      if (KEY_TAG.equals(qName)) {
          this.inKey--;
       }
-      if ("content".equals(qName)) {
+      if (CONTENT_TAG.equals(qName)) {
          this.inContent--;
       }
    }
 
-   private void flushResponse() throws XmlBlasterException {
+   protected void flushResponse() throws XmlBlasterException {
       try {
          if (this.out != null) {
             synchronized(this.out) {
@@ -626,14 +451,16 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
    }
 
-   private MsgUnit buildMsgUnit() throws XmlBlasterException {
+   protected MsgUnit buildMsgUnit() throws XmlBlasterException {
       byte[] currentContent = null;
       if (this.link == null)
-         currentContent = this.contentData.getBlobValue(); 
+         currentContent = (this.contentData == null) ? new byte[0] : this.contentData.getBlobValue(); 
       else {
          if (this.attachments != null && this.attachments.containsKey(this.link)) {
             Object obj = this.attachments.get(this.link);
             if (obj instanceof String) {
+               if (this.contentData == null)
+                  this.contentData = new EncodableData(CONTENT_TAG, null, Constants.TYPE_STRING, Constants.ENCODING_NONE);
                this.contentData.setValueRaw((String)obj);
                currentContent = this.contentData.getBlobValue();
             }
@@ -669,21 +496,21 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          checkNestedTags();
          if (this.inQos > 0) {
             appendEndOfElement(this.qos, qName);
-            if ("qos".equals(qName) && this.inQos > 0) this.inQos--;
+            if (QOS_TAG.equals(qName) && this.inQos > 0) this.inQos--;
             return;
          }
          if (this.inKey > 0) {
             appendEndOfElement(this.key, qName);
-            if ("key".equals(qName) && this.inKey > 0) this.inKey--;
+            if (KEY_TAG.equals(qName) && this.inKey > 0) this.inKey--;
             return;
          }
-         if ("content".equals(qName)) {
+         if (CONTENT_TAG.equals(qName)) {
             if (this.inContent > 0) this.inContent--;
             if (this.inContent > 0) appendEndOfElement(this.content, qName); // because nested content tags should be there (only the outher not)
             this.contentData.setValueRaw(this.content.toString());
             return;
          }
-         if ("xmlBlaster".equals(qName)) {
+         if (ROOT_TAG.equals(qName)) { // "xmlBlaster"
             this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
             flushResponse();
          }  
@@ -698,7 +525,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          // comes here since the end tag is not part of the content
          if (this.inContent > 0) appendEndOfElement(this.content, qName);
 
-         if (commandsToFire.contains(qName)) {
+         if (this.commandsToFire.contains(qName)) {
             appendEndOfElement(this.character, qName);
             fireCommand(qName);
             return;
@@ -736,16 +563,20 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
       }
    }
 
-   public static String wrapForScripting(MsgUnit msgUnit, String comment) {
+   public String wrapForScripting(MsgUnit msgUnit, String comment) {
+      return wrapForScripting(ROOT_TAG, msgUnit, comment);
+   }
+
+   public static String wrapForScripting(String rootTag, MsgUnit msgUnit, String comment) {
       String xml = msgUnit.toXml("", Integer.MAX_VALUE);
       StringBuffer sb = new StringBuffer(xml.length()+1024);
       sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-      sb.append("\n<xmlBlaster>");
+      sb.append("\n<").append(rootTag).append(">");
       if (comment != null) sb.append("\n<!-- " + comment + " -->");
       sb.append("\n <").append(msgUnit.getMethodName().toString()).append(">");
       sb.append(xml);
       sb.append("\n </").append(msgUnit.getMethodName().toString()).append(">");
-      sb.append("\n</xmlBlaster>");
+      sb.append("\n</").append(rootTag).append(">");
       return sb.toString();
    }
 
@@ -767,22 +598,6 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    }
    
    public static void main(String[] args) {
-      String request = "<xmlBlaster>\n" +
-                       "  <connect>" +
-                       "    <securityPlugin type='aaa' version='bbb'>\n" +
-                       "      <user>michele</user>\n" +
-                       "      <passwd><![CDATA[secret    ]]></passwd>\n" +
-                       "    </securityPlugin>\n" +
-                       "  </connect>\n" +
-                       "  <publish>\n" +
-                       "    <key>xxxx</key>\n" +
-                       "    <content xlink='sss'/>\n" +
-                       "    <qos></qos>\n" +
-                       "  </publish>\n" +
-                       "  <subscribe/>\n" +
-                       "  <disconnect/>\n" +
-                       "</xmlBlaster>";
-
       try {
          Global glob = new Global();
          String[] tmp = new String[args.length-2];
@@ -790,7 +605,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          
          glob.init(tmp);
          FileOutputStream out = new FileOutputStream(args[1]);
-         XmlScriptInterpreter interpreter = new XmlScriptInterpreter(glob, out);
+         XmlScriptInterpreter interpreter = new XmlScriptClient(glob, out);
          FileReader in = new FileReader(args[0]);
          interpreter.parse(in);
       }
@@ -798,5 +613,4 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          ex.printStackTrace();
       }
    }
-
 }

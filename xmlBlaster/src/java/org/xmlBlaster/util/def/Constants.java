@@ -30,7 +30,7 @@ public class Constants {
    public final static String ENCODING_BASE64 = "base64";
    public final static String ENCODING_NONE = null;
 
-   //public final static String TYPE_STRING = "String"; // is default
+   public final static String TYPE_STRING = "String"; // is default, same as ""
    public final static String TYPE_BLOB = "byte[]";
    /* See JMS types */
    public final static String TYPE_BOOLEAN = "boolean";

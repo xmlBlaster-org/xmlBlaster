@@ -17,6 +17,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.qos.*;
+import org.xmlBlaster.client.script.XmlScriptClient;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -146,7 +147,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       this.attachments = new HashMap();
       String contentRef = "QmxhQmxhQmxh"; // this is used in testPublishArr
       this.attachments.put("attachment1", contentRef);
-      this.interpreter = new XmlScriptInterpreter(global, this.accessor, out, out, this.attachments); 
+      this.interpreter = new XmlScriptClient(global, this.accessor, out, out, this.attachments); 
       XMLUnit.setIgnoreWhitespace(true);
    }
 

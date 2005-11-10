@@ -2170,7 +2170,8 @@ public class Global implements Cloneable
 
          if (entry instanceof MsgQueuePublishEntry) {
             MsgQueuePublishEntry pub = (MsgQueuePublishEntry)entry;
-            xml = XmlScriptInterpreter.wrapForScripting(pub.getMsgUnit(),
+            xml = XmlScriptInterpreter.wrapForScripting(XmlScriptInterpreter.ROOT_TAG,
+               pub.getMsgUnit(),
                "Try to publish again: java javaclients.script.XmlScript -prepareForPublish true -requestFile 'thisFileName'");
             tmpList.add(fn);
          }

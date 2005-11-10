@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.Properties;
 import java.io.PrintWriter;
-import java.io.InputStream;
-import java.io.IOException;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -34,18 +32,12 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
-import org.jutils.init.Property;
-import org.jutils.init.Property.FileInfo;
-import org.jutils.JUtilsException;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.SecurityException;
 import javax.resource.spi.IllegalStateException;
-
-import javax.resource.spi.security.PasswordCredential;
 
 /**
  * Factory for a specific XmlBlaster instance. 
@@ -57,6 +49,7 @@ import javax.resource.spi.security.PasswordCredential;
  */
 
 public class BlasterManagedConnectionFactory implements ManagedConnectionFactory {
+   private static final long serialVersionUID = 1L;
    // Id from my global instance.
    public String myName ="Blaster";
    private Global glob;

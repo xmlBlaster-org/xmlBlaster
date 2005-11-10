@@ -27,7 +27,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.script.XmlScriptInterpreter;
+import org.xmlBlaster.client.script.XmlScriptClient;
 
 /**
  * This plugin is loaded on xmlBlaster startup and executes the script file <tt>xmlBlasterStartup.xml</tt>. 
@@ -184,8 +184,8 @@ public class StartupTasks implements I_Plugin {
             needsClosing = true;
          }
 
-         XmlScriptInterpreter interpreter = new XmlScriptInterpreter(this.global, this.connection,
-                                                                     outStream, outStream, null);
+         XmlScriptClient interpreter =
+            new XmlScriptClient(this.global, this.connection, outStream, outStream, null);
 
          InputStream in = this.scriptFileUrl.openStream();
          try {

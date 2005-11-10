@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class EncodableData implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = 1320428639197394397L;
    protected String ME = "EncodableData";
    private final String name;
    private String type;
@@ -38,8 +39,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
    /**
     * @param name  The unique property key
-    * @param type The data type of the value
-    * @param encoding null or Constants.ENCODING_BASE64="base64"
+    * @param type The data type of the value, Constants.TYPE_INT etc.
+    * @param encoding Constants.ENCODING_NONE=null or Constants.ENCODING_BASE64="base64"
     */
    public EncodableData(String tagName, String name, String type, String encoding) {
       this.tagName = tagName;
@@ -50,8 +51,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
 
    /**
     * @param name  The unique property key
-    * @param type The data type of the value
-    * @param encoding null or Constants.ENCODING_BASE64="base64"
+    * @param type The data type of the value, Constants.TYPE_INT etc.
+    * @param encoding Constants.ENCODING_NONE=null or Constants.ENCODING_BASE64="base64"
     */
    public EncodableData(String tagName, String name, String type, String encoding, String value) {
       this.name = name;

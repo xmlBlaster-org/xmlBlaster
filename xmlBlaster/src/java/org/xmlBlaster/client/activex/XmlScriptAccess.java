@@ -8,15 +8,10 @@ package org.xmlBlaster.client.activex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Properties;
-import java.util.List;
-import java.util.LinkedList;
 import java.beans.SimpleBeanInfo;
-import java.beans.EventSetDescriptor;
-import java.beans.IntrospectionException;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch; // http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
 
@@ -24,6 +19,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.client.script.XmlScriptClient;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.SynchronousCache;
@@ -288,7 +284,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          this.reader = new StringReader(xmlRequest);
          this.outStream = new ByteArrayOutputStream();
          // TODO: Dispatch events:
-         this.interpreter = new XmlScriptInterpreter(this.glob, this.glob.getXmlBlasterAccess(),
+         this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(),
                                                      this, null, this.outStream);
          this.interpreter.parse(this.reader);
          return this.outStream.toString();
@@ -520,7 +516,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          System.out.println("***** Publishing ...");
          PublishReturnQos ret = access.publishStr("<key oid='test'/>", "Bla", "<qos/>");
          System.out.println("***** Published message ret=" + ret.getState());
-         Thread.currentThread().sleep(2000);
+         Thread.sleep(2000);
          response = access.sendRequest("<xmlBlaster>disconnect/></xmlBlaster>");
       }
       catch (Throwable e) {

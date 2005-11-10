@@ -27,6 +27,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.script.XmlScriptClient;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -626,8 +627,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             // http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
             java.io.Reader reader = new java.io.StringReader(xmlRequest);
             java.io.OutputStream outStream = new java.io.ByteArrayOutputStream();
-            org.xmlBlaster.client.script.XmlScriptInterpreter interpreter = 
-                new org.xmlBlaster.client.script.XmlScriptInterpreter(glob, xmlBlaster, pushHandler, null, outStream);
+            XmlScriptClient interpreter = 
+                new XmlScriptClient(glob, xmlBlaster, pushHandler, null, outStream);
             interpreter.parse(reader);
             returnObject = outStream.toString();
          }

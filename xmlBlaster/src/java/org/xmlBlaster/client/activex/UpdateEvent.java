@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.activex;
 
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Base64;
@@ -15,6 +14,7 @@ import org.xmlBlaster.util.Base64;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class UpdateEvent extends java.util.EventObject {
+   private static final long serialVersionUID = 1386617497220678458L;
    String cbSessionId;
    UpdateKey key;
    byte[] content;

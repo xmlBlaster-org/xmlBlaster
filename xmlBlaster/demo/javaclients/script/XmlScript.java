@@ -15,7 +15,8 @@ import java.io.Reader;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.script.XmlScriptInterpreter;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.script.XmlScriptClient;
 import org.xmlBlaster.client.script.I_MsgUnitCb;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -43,7 +44,7 @@ public class XmlScript {
    private static String ME = "XmlScript";
    private final Global glob;
    private final LogChannel log;
-   private XmlScriptInterpreter interpreter;
+   private XmlScriptClient interpreter;
    private Reader reader;
    private OutputStream outStream;
    private OutputStream updStream;
@@ -67,7 +68,7 @@ public class XmlScript {
          else {
             this.updStream = new FileOutputStream(updFile);
          }
-         this.interpreter = new XmlScriptInterpreter(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
+         this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
 
          if (this.prepareForPublish) {
             this.interpreter.registerMsgUnitCb(new I_MsgUnitCb() {
@@ -79,9 +80,12 @@ public class XmlScript {
          }
          this.interpreter.parse(this.reader);
       }
-      catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
-         // e.printStackTrace();
+      catch (XmlBlasterException e) {
+         log.error(ME, "Scripting failed: " + e.getMessage());
+      }
+      catch (Throwable e) {
+         log.error(ME, "Scripting to xmlBlaster failed: " + e.toString());
+         e.printStackTrace();
       }
    }
 
