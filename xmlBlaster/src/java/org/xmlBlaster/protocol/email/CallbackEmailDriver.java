@@ -106,7 +106,8 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
       try { super.pop3Driver.activate(); } catch (Exception e) { e.printStackTrace(); }
-      setSecretSessionId(callbackAddress.getSecretSessionId());
+      super.setSecretSessionId(callbackAddress.getSecretSessionId());
+      super.setEmailSessionId(callbackAddress.getSessionName());
    }
 
    /**
@@ -146,7 +147,8 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     * <p />
     */
    public void shutdown() {
-      log.warn(ME, "shutdown implementation is missing");
+      super.shutdown();
+      log.trace(ME, "shutdown() does currently nothing");
    }
 
    /**
