@@ -85,6 +85,37 @@
 </description>
    
     <configuration where="server">
+    <p>The fastest way for a test environment is to use the James MTA http://james.apache.org
+    Here are the steps for a running test environment (runs fine on Windows or on Unix/Linux):
+    </p>
+<pre>
+tar xzvf /opt/download/james-2.2.0.tar.gz
+cd james-2.2.0/bin
+# Change to be 'root' to have access to ports 25 (SMTP) and 110 (POP3)
+./run.sh
+
+##### Configure some users:
+telnet localhost 4555
+
+# Login as 'root' with password 'root'
+
+# Add users demo and xmlBlaster:
+adduser xmlBlaster xmlBlaster
+ User xmlBlaster added
+
+adduser demo demo
+ User demo added
+
+listusers
+ Existing accounts 2
+ user: demo
+ user: xmlBlaster
+
+quit
+</pre>
+  <p>Now our MTA is ready for testing.</p>
+
+
       <table border="1">
          <tr>
             <th>Property</th>
