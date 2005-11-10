@@ -98,6 +98,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    /** My JMX registration */
    private Object mbeanHandle;
    
+   // Not tested and currently switched off
    private Map holdbackMap = new HashMap();
    private long holdbackExpireTimeout;
 
@@ -142,18 +143,18 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     */
    public void registerForEmail(String secretSessionId, String requestId,
          I_ResponseListener listener) {
-      if (secretSessionId == null && requestId == null)
-         throw new IllegalArgumentException(
-               "registerForEmail with null arguments");
       if (secretSessionId == null)
          secretSessionId = "";
       if (requestId == null)
          requestId = "";
+      if (secretSessionId.length() == 0 && requestId.length() == 0)
+         throw new IllegalArgumentException(
+               "registerForEmail with null arguments");
       String key = secretSessionId + requestId;
       synchronized (this.listeners) {
          this.listeners.put(key, listener);
       }
-      if (log.isLoggable(Level.FINER)) log.finer("Added listener with key=" + key);
+      if (log.isLoggable(Level.FINE)) log.fine("Added listener with key=" + key);
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -240,7 +241,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          this.holdbackMap.put(new Long(timestamp.getTimestamp()), messageData);
       }
       
-      log.warning("No listener found for key=" + key + ", email is " + messageData.toString());
+      log.warning("None of our registered listeners '" + getListeners() + "' matches for key=" + key + ", email is " + messageData.toString());
       return null;
    }
 
@@ -379,7 +380,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     * Polling for response messages.
     */
    public void timeout(Object userData) {
-      log.fine("Timeout: Reading POP3 messages from " + getPop3Url());
+      if (log.isLoggable(Level.FINER)) log.finer("Timeout: Reading POP3 messages from " + getPop3Url());
       
       // First try to deliver hold back messages
       // This happens if on startup we access POP3 messages but nobody has registered yet
@@ -409,12 +410,13 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          for (int i = 0; i < msgs.length; i++) {
             MessageData messageData = msgs[i];
             String notifiedListener = notify(messageData);
-            if (notifiedListener == null)
-               log.warning("None of the registered listeners (" + getListeners() + ") wants this email: " + messageData.toXml());
+            if (notifiedListener == null) {
+               if (log.isLoggable(Level.FINE)) log.fine("None of the registered listeners (" + getListeners() + ") wants this email: " + messageData.toXml());
+            }
          }
 
          if (!responseArrived) {
-            log.fine("No mails via POP3 found");
+            if (log.isLoggable(Level.FINER)) log.finer("No mails via POP3 found");
          }
 
       } catch (XmlBlasterException e) {

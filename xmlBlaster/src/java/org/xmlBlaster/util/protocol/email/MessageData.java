@@ -139,13 +139,14 @@ public class MessageData {
     * Lookup attachment. 
     * If extension is not found try to find extensionBackup.
     * @param extension For example XbfParser.XBFORMAT_EXTENSION=".xbf"
+    * @param extensionZ For example XbfParser.XBFORMAT_ZLIB_EXTENSION=".xbfz"
     * @param extensionBackup For example ".xml"
     * @return null if no such attachment was found
     */
-   public byte[] getEncodedMsgUnitByExtension(String extension, String extensionBackup) {
+   public byte[] getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(extension)) {
+         if (atts[j].getFileName().endsWith(extension) || atts[j].getFileName().endsWith(extensionZ)) {
             return atts[j].getContent();
          }
       }

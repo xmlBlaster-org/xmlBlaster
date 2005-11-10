@@ -34,4 +34,10 @@ public interface I_AdminPop3Driver extends I_AdminService {
     * @param pop3Url Syntax is "pop3://user:password@host:port/INBOX"
     */
    public void setPop3Url(String pop3Url);
+   
+   /**
+    * Access a list of registered java listeners. 
+    * @return Keys of interested party for incoming POP3 mails
+    */
+   public String getListeners();
 }

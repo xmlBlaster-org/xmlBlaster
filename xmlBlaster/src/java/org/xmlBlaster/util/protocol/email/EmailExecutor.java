@@ -7,6 +7,7 @@ package org.xmlBlaster.util.protocol.email;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -52,6 +53,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    protected SmtpClient smtpClient;
 
    private String secretSessionId = "";
+   
+   private String emailSessionId = "";
 
    protected Pop3Driver pop3Driver;
 
@@ -70,6 +73,14 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       this.glob = glob;
       this.addressBase = addressBase;
       this.pluginConfig = pluginConfig;
+      
+      // Add
+      //   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster,compress/type=zlib:stream
+      //   ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib:stream
+      //   ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000,compress/type=zlib:stream
+      // settings to the clients Address configuration
+      if (pluginConfig != null)
+         this.addressBase.setPluginInfoParameters(pluginConfig.getParameters());
 
       this.secretSessionId = addressBase.getSecretSessionId();
       /*
@@ -148,10 +159,10 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          throw new XmlBlasterException(glob,
                ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendEmail("
                      + methodName.toString() + ") argument");
-      if (log.isLoggable(Level.FINE)) log.fine(methodName.toString() + "(" + msgArr.length + ") to "
-               + getSecretSessionId());
+      if (log.isLoggable(Level.FINE))
+         log.fine(methodName.toString() + "(" + msgArr.length + ") with emailSessionId="
+               + getEmailSessionId());
 
-      String sessionId = getSecretSessionId();
       String requestId = null;
       try {
          // We use the Executor.java for the request/reply and compression
@@ -167,12 +178,12 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          super.initialize(this.glob, addressBase, iStreamResponse, oStreamSend);
 
          MsgInfo parser = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName,
-               sessionId, super.getProgressListener());
+               getSecretSessionId(), super.getProgressListener());
          parser.addMessage(msgArr);
          requestId = parser.createRequestId(null);
 
          if (expectingResponse) { // register at the POP3 poller
-            this.pop3Driver.registerForEmail(sessionId, requestId, this);
+            this.pop3Driver.registerForEmail(getEmailSessionId(), requestId, this);
          }
 
          // super calls our sendMessage() which effectively sends the message
@@ -188,7 +199,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
                      + addressBase.getRawAddress(), e);
       } finally {
          if (expectingResponse)
-            this.pop3Driver.deregisterForEmail(sessionId, requestId);
+            this.pop3Driver.deregisterForEmail(getEmailSessionId(), requestId);
       }
    }
 
@@ -201,7 +212,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     */
    private boolean extractMsgUnit(MessageData messageData) throws XmlBlasterException {
       byte[] encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
-               XbfParser.XBFORMAT_EXTENSION, ".xml"); // "*.xbf"
+               /*TODO: msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib()) */
+               XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
       if (encodedMsgUnit != null) { // Process the messageUnit
          if (encodedMsgUnit.length < XbfParser.NUM_FIELD_LEN) // min 10 bytes, otherwise we block forever when reading the stream
             throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The messageUnit in the email is too short: " + MsgInfo.toLiteral(encodedMsgUnit));
@@ -305,7 +317,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             "XmlBlaster Generated Email ", null, this.pluginConfig);
       String messageId = (String)msgInfo.getBounceObject("messageId");
       if (messageId == null)
-         messageId = MessageData.createMessageId(getSecretSessionId(),
+         messageId = MessageData.createMessageId(getEmailSessionId(),
             requestId, methodName);
 
       // Transport messageId in subject:
@@ -314,7 +326,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       String attachmentName2 = "messageId" + MessageData.MESSAGEID_EXTENSION;
 
       // The real message blob, for example "xmlBlasterMessage.xbf"
-      String attachmentName = "xmlBlasterMessage" + msgInfo.getMsgInfoParser().getExtension();
+      String attachmentName = "xmlBlasterMessage" + 
+         msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib());
 
       InternetAddress toAddr = this.toAddress;
       String to = (String)msgInfo.getBounceObject("mail.to");
@@ -407,4 +420,35 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       this.secretSessionId = secretSessionId;
    }
 
+   /**
+    * The sessionId used to register at Pop3Driver and send in subject: of email
+    * @return Usually the clients relative login sessionName "client/joe/3", never null
+    */
+   public String getEmailSessionId() {
+      return (this.emailSessionId == null) ? "" : this.emailSessionId;
+   }
+
+   public void setEmailSessionId(String emailSessionId) {
+      this.emailSessionId = emailSessionId;
+   }
+
+   /**
+    * Email protocol contract with server side CallbackEmailDriver.java and client side EmailCallbackImpl.java
+    * We use <messageId><sessionId>joe/2</sessionId>...
+    * to find our response again. If no positive sessionId
+    * is given, the server generates e.g. -7 for us which we don't know
+    * In this case we use <messageId><sessionId>joe</sessionId>... only
+    */
+   protected void setEmailSessionId(SessionName sessionName) {
+      if (sessionName == null) {
+         log.severe("setEmailSessionId() is called with null sessionName");
+         return;
+      }
+      if (sessionName.isPubSessionIdUser()) 
+         setEmailSessionId(sessionName.getRelativeName());
+      else {
+         log.warning("The current email callback implementation can handle max one connection per client name (like 'joe') if you don't supply a positive sessionId");
+         setEmailSessionId(sessionName.getLoginName());
+      }
+   }
 }

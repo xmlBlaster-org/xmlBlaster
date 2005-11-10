@@ -70,6 +70,8 @@ public abstract class Executor
    private AddressBase addressConfig;
    /** A listener may register to receive send/receive progress informations */
    protected I_ProgressListener progressListener;
+   protected boolean compressZlib;
+   protected boolean compressZlibStream;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -103,16 +105,20 @@ public abstract class Executor
       this.addressConfig = addressConfig;
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
+         this.compressZlibStream = true;
          log.info(ME, "Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
          this.iStream = new ZFlushInputStream(iStream);
          this.oStream =  new ZFlushOutputStream(oStream);
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
+         this.compressZlib = true;
          log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + this.addressConfig.getMinSize() + " bytes");
          this.iStream = new ZBlockInputStream(iStream);
          this.oStream = new ZBlockOutputStream(oStream, (int)this.addressConfig.getMinSize());
       }
       else {
+         this.compressZlibStream = false;
+         this.compressZlib = false;
          this.iStream = iStream;
          this.oStream = oStream;
       }
@@ -479,7 +485,8 @@ public abstract class Executor
          if (startSignal != null) {
             synchronized (latchSet) { latchSet.remove(startSignal); }
          }
-         String str = "Socket blocked for " + getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
+         String tmp = (parser==null) ? "" : parser.getMethodNameStr();
+         String str = "Socket blocked for " + getSoTimeout() + " millis, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
          if (e instanceof XmlBlasterException) {
             if (log.TRACE) log.trace(ME, str + ": " + e.toString());
             throw (XmlBlasterException)e;
@@ -607,6 +614,14 @@ public abstract class Executor
       if (listener != null) {
          listener.progressWrite("", msg.length, msg.length);
       }
+   }
+
+   public boolean isCompressZlib() {
+      return compressZlib;
+   }
+
+   public boolean isCompressZlibStream() {
+      return compressZlibStream;
    }
 
    //abstract boolean shutdown();
