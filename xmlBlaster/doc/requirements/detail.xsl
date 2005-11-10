@@ -259,7 +259,7 @@ Author:    xmlBlaster@marcelruff.info
                <a>
                   <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
                   <xsl:attribute name="target">others</xsl:attribute>
-                  <xsl:if test="@label=''">
+                  <xsl:if test="not(@label)">
                      <xsl:value-of select="."/>
                   </xsl:if>
                   <xsl:if test="@label!=''">
