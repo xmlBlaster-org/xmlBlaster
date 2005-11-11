@@ -31,6 +31,7 @@ public class MsgInfoParserFactory {
 
    public I_MsgInfoParser getMsgInfoParser(Global glob, I_ProgressListener progressListener) {
       I_MsgInfoParser msgInfoParser = new XbfParser();
+      //I_MsgInfoParser msgInfoParser = new XmlScriptParser();
       msgInfoParser.init(glob, progressListener);
       return msgInfoParser;
    }
