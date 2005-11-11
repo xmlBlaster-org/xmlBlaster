@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14020 Extended XmlScripting with exception handling
+
  o #14007 Partly fix for expiry of volatile message timing out during publish processing
    This bug could led to NPE
  
