@@ -1,0 +1,27 @@
+<!--
+   java javaclients.script.XmlScript -requestFile exception.xml
+   Makes a invalid connect (with too short login name)
+   and receives a server side thrown exception
+-->
+
+
+<xmlBlaster>
+
+   <connect>
+     <qos>
+       <securityService type="htpasswd" version="1.0"><![CDATA[
+         <user>a</user>
+         <passwd>a</passwd>
+       ]]></securityService>
+       <session name='a/1' />
+       <queue relating='connection'><address pingInterval='1000' retries='-1' delay='2000' /></queue>
+       <queue relating='callback' maxEntries='5' maxEntriesCache='2'><callback pingInterval='1000' retries='-1' delay='1000' /></queue>
+     </qos>
+  </connect>
+
+  <!-- not reached -->
+  <subscribe><key oid="__sys__Login"></key><qos><persistent>false</persistent></qos></subscribe>
+  <wait delay="1000" />
+  <disconnect />
+</xmlBlaster>
+

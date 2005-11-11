@@ -2,8 +2,6 @@
 Name:      XmlScript.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Demo code for a client using xmlBlaster
-Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.script;
 
