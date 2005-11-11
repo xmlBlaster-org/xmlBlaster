@@ -18,6 +18,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
@@ -120,150 +121,169 @@ public class XmlScriptClient extends XmlScriptInterpreter {
       this.msgUnitCb = msgUnitCb;
    }
    
-   public void fireMethod(MethodName methodName) throws XmlBlasterException {
-      if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
-         boolean implicitConnect = !MethodName.CONNECT.equals(methodName);
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
-         // if (this.qos.length() < 1) this.qos.append("<qos />");
-         String ret = null;
-         if (implicitConnect || this.qos.length() < 1) {
-            ConnectQos connectQos = new ConnectQos(this.glob);
-            ret = this.access.connect(connectQos, this.callback).toXml();
-         }
-         else {
-            ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
-            // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
-            ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
-            if (tmp != null) ret = tmp.toXml("  ");
-            else ret = "";
-         }
-         this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
-         this.response.append("\n<connect>");
-         this.response.append(ret);
-         this.response.append("\n</connect>\n");
-         flushResponse();
-         this.isConnected = true;
-         if (!implicitConnect) {
-            return;
-         }
-      }
-      if (MethodName.DISCONNECT.equals(methodName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
-         boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
-         this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
-         this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
-         flushResponse();
-         return;
-      }
-      if (MethodName.PUBLISH.equals(methodName)) {
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         MsgUnit msgUnit = buildMsgUnit();
-         if (this.msgUnitCb != null) {
-            this.msgUnitCb.intercept(msgUnit);
-         }
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
-         PublishReturnQos ret = this.access.publish(msgUnit);
-         this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
-         this.response.append("\n<publish>");
-         // this.response.append("  <messageId>");
-         if (ret != null) this.response.append(ret.toXml("  "));
-         // this.response.append("  </messageId>\n");
-         this.response.append("\n</publish>\n");
-         flushResponse();
-         return;
-      }
-      if (MethodName.PUBLISH_ARR.equals(methodName)) {
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         int size = this.messageList.size();
-         MsgUnit[] msgs = new MsgUnit[size];
-         for (int i=0; i < size; i++) {
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
-            msgs[i] = (MsgUnit)this.messageList.get(i);
-         }
-         PublishReturnQos[] ret = this.access.publishArr(msgs);
-         this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
-         this.response.append("\n<publishArr>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               this.response.append("\n  <message>");
-               this.response.append(ret[i].toXml("    "));
-               this.response.append("\n  </message>\n");
+   public boolean fireMethod(MethodName methodName) throws XmlBlasterException {
+      if (this.log.TRACE) this.log.trace(ME, "fireMethod " + methodName.toString() + ": " + this.key.toString() + " " + this.qos.toString());
+      try {
+         if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
+            boolean implicitConnect = !MethodName.CONNECT.equals(methodName);
+            // if (this.qos.length() < 1) this.qos.append("<qos />");
+            String ret = null;
+            if (implicitConnect || this.qos.length() < 1) {
+               this.log.warn(ME, "Doing implicit xmlBlaster.connect() as no valid <connect/> markup is in the script");
+               ConnectQos connectQos = new ConnectQos(this.glob);
+               ret = this.access.connect(connectQos, this.callback).toXml();
+            }
+            else {
+               ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
+               // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
+               ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
+               if (tmp != null) ret = tmp.toXml("  ");
+               else ret = "";
+            }
+            writeResponse(methodName, ret);
+            this.isConnected = true;
+            if (!implicitConnect) {
+               return true;
             }
          }
-         this.response.append("\n</publishArr>\n");
-         flushResponse();
-         return;
-      }
-      if (MethodName.SUBSCRIBE.equals(methodName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement subscribe: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
-         this.response.append("\n<subscribe>");
-         // this.response.append("  <subscribeId>");
-         if (ret != null) this.response.append(ret.toXml("    "));
-         // this.response.append("  </subscribeId>\n");
-         this.response.append("\n</subscribe>\n");
-         flushResponse();
-         return;
-      }
-      if (MethodName.UNSUBSCRIBE.equals(methodName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement unSubscribe: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         
-         UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
-         this.response.append("\n<unSubscribe>");
-         if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
-         this.response.append("\n</unSubscribe>\n");
+         if (MethodName.DISCONNECT.equals(methodName)) {
+            if (this.qos.length() < 1) this.qos.append("<qos />");
+            DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
+            boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
+            writeResponse(methodName, "\n"+ret);
+            return true;
+         }
 
-         flushResponse();
-         return;
-      }
-      if (MethodName.ERASE.equals(methodName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement erase: " + this.key.toString() + " " + this.qos.toString());
          if (this.qos.length() < 1) this.qos.append("<qos />");
          if (this.key.length() < 1) this.key.append("<key />");
-         EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
-         this.response.append("\n<erase>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               // this.response.append("  <messageId>");
-               this.response.append(ret[i].toXml("  "));
-               // this.response.append("  </messageId>\n");
+
+         if (MethodName.PUBLISH.equals(methodName)) {
+            MsgUnit msgUnit = buildMsgUnit();
+            if (this.msgUnitCb != null) {
+               this.msgUnitCb.intercept(msgUnit);
             }
+            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
+            PublishReturnQos ret = this.access.publish(msgUnit);
+            writeResponse(methodName, (ret != null)?ret.toXml("  "):null);
+            return true;
          }
-         this.response.append("\n</erase>\n");
-         flushResponse();
-         return;
-      }
-      if (MethodName.GET.equals(methodName)) {
-         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement get: " + this.key.toString() + " " + this.qos.toString());
-         if (this.qos.length() < 1) this.qos.append("<qos />");
-         if (this.key.length() < 1) this.key.append("<key />");
-         MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
-         this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
-         this.response.append("\n<get>");
-         if (ret != null) {
-            for (int i=0; i < ret.length; i++) {
-               this.response.append("\n  <message>");
-               this.response.append(ret[i].toXml("    "));
-               this.response.append("\n  </message>");
+         if (MethodName.PUBLISH_ARR.equals(methodName)) {
+            int size = this.messageList.size();
+            MsgUnit[] msgs = new MsgUnit[size];
+            for (int i=0; i < size; i++) {
+               if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+               msgs[i] = (MsgUnit)this.messageList.get(i);
             }
+            PublishReturnQos[] ret = this.access.publishArr(msgs);
+            String[] retStr = new String[ret.length];
+            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            writeResponse(methodName, retStr);
+            return true;
          }
-         this.response.append("\n</get>\n");
-         flushResponse();
-         return;
+         if (MethodName.SUBSCRIBE.equals(methodName)) {
+            SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
+            writeResponse(methodName, ret.toXml("    "));
+            return true;
+         }
+         if (MethodName.UNSUBSCRIBE.equals(methodName)) {
+            UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
+            String[] retStr = new String[ret.length];
+            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            writeResponse(methodName, retStr);
+            return true;
+         }
+         if (MethodName.ERASE.equals(methodName)) {
+            EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
+            String[] retStr = new String[ret.length];
+            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            writeResponse(methodName, retStr);
+            return true;
+         }
+         if (MethodName.GET.equals(methodName)) {
+            MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
+            String[] retStr = new String[ret.length];
+            for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
+            writeResponse(methodName, retStr);
+            return true;
+         }
       }
+      catch (XmlBlasterException e) {
+         log.warn(ME, e.getMessage());
+         
+         // The exception has already a <exception> root tag
+         writeResponse(null/*MethodName.EXCEPTION*/, e.toXml("    "));
+         
+         // For connect excpetions we stop parsing
+         if (MethodName.CONNECT.equals(methodName))
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_STOP, ME, "Connection failed", e);
+         
+         return true;
+      }
+      catch (Throwable e) {
+         log.error(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
+      }
+      
+      this.log.warn(ME, "fireMethod with methodName=" + methodName.toString() + " is not implemented: " + this.key.toString() + " " + this.qos.toString());
+      return false;
+   }
+
+   /*
+<xmlBlasterResponse>
+  <publish>
+     <qos>
+      <key oid='1'/>
+      <rcvTimestamp nanos='1131654994574000000'/>
+     <isPublish/>
+     </qos>
+  </publish>
+  <publishArr>
+    <message>
+       <qos>
+          <key oid='test'/>
+          <rcvTimestamp nanos='1075409585342000001'/>
+          <isPublish/>
+       </qos>
+    </message>
+    <message>
+       <qos>
+          <key oid='test'/>
+          <rcvTimestamp nanos='1075409585348000001'/>
+          <isPublish/>
+       </qos>
+    </message>
+  </publishArr>
+</xmlBlasterResponse>
+    */
+   /**
+    * Write respone message to OutputStream. 
+    * @param methodName Can be null
+    * @param message A well formed XML message or null
+    */
+   private void writeResponse(MethodName methodName, String message) throws XmlBlasterException {
+      String[] messages = new String[(message==null) ? 0 : 1];
+      if (messages.length == 1) messages[0] = message; 
+      writeResponse(methodName, messages);
    }
    
+   private void writeResponse(MethodName methodName, String[] messages) throws XmlBlasterException {
+      super.response.append("\n<!-- __________________________________ ").append((methodName==null)?"":methodName.toString()).append(" ______________________________ -->");
+      if (methodName != null) super.response.append("\n<").append(methodName.toString()).append(">");
+      if (messages != null && messages.length > 0) {
+         if (messages.length == 1)
+            super.response.append(messages[0]);
+         else {
+            for (int i=0; i < messages.length; i++) {
+               super.response.append("\n  <message>");
+               super.response.append(messages[i]);
+               super.response.append("\n  </message>\n");
+            }
+         }
+      }
+      if (methodName != null) super.response.append("\n</").append(methodName.toString()).append(">\n");
+      flushResponse();
+   }
+
    public static void main(String[] args) {
       /*
       String request = "<xmlBlaster>\n" +

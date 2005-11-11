@@ -90,8 +90,8 @@ import java.io.File;
 public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    private final String ME = "XmlScriptInterpreter";
-   private final LogChannel log;
-   protected final Global glob;
+   private LogChannel log;
+   protected Global glob;
    
    /** a set of names of allowed commands */   
    private HashSet commandsToFire = new HashSet();
@@ -120,24 +120,43 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    /** buffer used as a place holder for the responses of the xmlBlaster invocations */
    protected StringBuffer response;
+   protected boolean needsRootEndTag;
    protected OutputStream out;
    
    public final static String ROOT_TAG = "xmlBlaster";
+   public final static String ROOTRESPONSE_TAG = "xmlBlasterResponse";
    public final String KEY_TAG = "key";
    public final String CONTENT_TAG = "content";
    public final String QOS_TAG = "qos";
 
    /**
+    * You need to call initialize() if using this default constructor. 
+    */
+   public XmlScriptInterpreter() {
+   }
+   
+   /**
     * This constructor is the most generic one (more degrees of freedom)
+    * @param glob the global to use
+    * @param attachments the attachments where to search
+    *           when a content is stored in the attachment
+    *           (with the 'link' attribute); can be null
+    * @param out the OutputStream where to send the responses of the invocations done to xmlBlaster
+    */
+   public XmlScriptInterpreter(Global glob, HashMap attachments, OutputStream out) {
+      super(glob);
+      initialize(glob, attachments, out);
+   }
+
+   /**
     * @param glob the global to use
     * @param attachments the attachments where to search when a content is stored in the attachment (with the 'link' attribute)
     * @param out the OutputStream where to send the responses of the invocations done to xmlBlaster
     */
-   public XmlScriptInterpreter(Global glob, HashMap attachments, OutputStream out) {
-      super();
-      setUseLexicalHandler(true);
+   public void initialize(Global glob, HashMap attachments, OutputStream out) {
       this.glob = glob;
       this.log = glob.getLog("script");
+      setUseLexicalHandler(true);
       this.commandsToFire.add(MethodName.GET.toString());
       this.commandsToFire.add(MethodName.CONNECT.toString());
       this.commandsToFire.add(MethodName.PING.toString());
@@ -150,31 +169,12 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       this.commandsToFire.add(MethodName.UPDATE_ONEWAY.toString());
       this.commandsToFire.add(MethodName.ERASE.toString());
       this.commandsToFire.add(MethodName.DISCONNECT.toString());
+      this.commandsToFire.add(MethodName.EXCEPTION.toString());
 
       this.attachments = attachments;
       this.out = out;
+      this.needsRootEndTag = false; // will be true when start tag is written
    }
-
-   /**
-    * This is a convenience constructor which takes the default I_Callback implementation provided
-    * (StreamCallback).
-    */
-   //public XmlScriptInterpreter(Global glob, OutputStream cbStream, OutputStream responseStream, HashMap attachments) {
-   //   this(glob, attachments, responseStream);
-   //}
-
-   /**
-    * Convenience constructor which takes a minimal amount of parameters. The 
-    * accessor taken is the one provided by the given global. The I_Callback 
-    * implementation used is the StreamCallback. The asynchroneous output is sent
-    * to the same stream as the synchroneous one. 
-    * @param glob the global to use. The I_XmlBlasterAccess will be taken from
-    *        it.
-    * @param out. The OutputStream used for all outputs (sync and async).
-    */
-   //public XmlScriptInterpreter(Global glob, OutputStream out) {
-   //   this(glob, out, out, null);
-   //}
 
    /**
     * converts the tag sctart to a string
@@ -209,13 +209,15 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       this.inKey = 0;
       this.inContent = 0;
       this.inCDATA = 0;
-      try {
-         this.out.flush();
+      if (this.out != null) {
+         try {
+            this.out.flush();
+         }
+         catch (IOException ex) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".parse: could not flush the output stream: original message: '" + ex.toString() + "'");
+         }
       }
-      catch (IOException ex) {
-         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".parse: could not flush the output stream: original message: '" + ex.getMessage() + "'");
-      }
-      this.init(new InputSource(in));
+      super.init(new InputSource(in)); // parse with SAX
    }
 
    public void characters(char[] ch, int start, int length) {
@@ -352,9 +354,10 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
       if (ROOT_TAG.equals(qName)) { // "xmlBlaster"
          String id = atts.getValue("id");
-         this.response = new StringBuffer("<xmlBlasterResponse");
+         this.response = new StringBuffer("<").append(ROOTRESPONSE_TAG);
          if (id != null) this.response.append(" id='").append(id).append("'");         
          this.response.append(">\n");
+         this.needsRootEndTag = true;
          return;
       }
    }
@@ -393,7 +396,14 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       return text;
    }
 
-   abstract public void fireMethod(MethodName methodName) throws XmlBlasterException;
+   /**
+    * On each remote method invocation this function is called. 
+    * @param methodName
+    * @return true: The methodName was known and is successfully processed
+    *         false: The methodName is not known and nothing is processed
+    * @throws XmlBlasterException Will lead to stop parsing further
+    */
+   abstract public boolean fireMethod(MethodName methodName) throws XmlBlasterException;
 
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
@@ -416,22 +426,21 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.content.append(replaceVariable(tmp));
       }
       
-      try {
-         fireMethod(MethodName.toMethodName(qName));
-      }
-      catch (IllegalArgumentException e) {
-         // Is no method like "publish"
-      }
-
       if (QOS_TAG.equals(qName)) {
          this.inQos--;
+         return;
       }
       if (KEY_TAG.equals(qName)) {
          this.inKey--;
+         return;
       }
       if (CONTENT_TAG.equals(qName)) {
          this.inContent--;
+         return;
       }
+
+      boolean processed = fireMethod(MethodName.toMethodName(qName));
+      if (processed) return;
    }
 
    protected void flushResponse() throws XmlBlasterException {
@@ -511,8 +520,10 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
             return;
          }
          if (ROOT_TAG.equals(qName)) { // "xmlBlaster"
-            this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
+            this.response = new StringBuffer("\n</");
+            this.response.append(ROOTRESPONSE_TAG).append(">\n");
             flushResponse();
+            this.needsRootEndTag = false;
          }  
          if ("message".equals(qName)) {
             try {
@@ -533,7 +544,28 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       }
       catch (XmlBlasterException e) {
          if (this.log.TRACE) this.log.trace(ME, "endElement exception occured " + e.getMessage());
+         if (this.needsRootEndTag) { // is </xmlBlasterResponse> missing?
+            this.response = new StringBuffer("\n</");
+            this.response.append(ROOTRESPONSE_TAG).append(">\n");
+            try {
+               flushResponse();
+            } catch (XmlBlasterException e1) {
+               e1.printStackTrace();
+            }
+         }
          throw new StopParseException(e);
+      }
+      catch (StopParseException e) {
+         if (this.needsRootEndTag) { // is </xmlBlasterResponse> missing?
+            this.response = new StringBuffer("\n</");
+            this.response.append(ROOTRESPONSE_TAG).append(">\n");
+            try {
+               flushResponse();
+            } catch (XmlBlasterException e1) {
+               e1.printStackTrace();
+            }
+         }
+         throw e;
       }
    }
 
@@ -567,19 +599,44 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       return wrapForScripting(ROOT_TAG, msgUnit, comment);
    }
 
+   /**
+    * Dump the MsgUnit to XML.
+    * <br />
+    * Example: 
+    * <pre>
+    * String xml = XmlScriptInterpreter.wrapForScripting(
+    *      XmlScriptInterpreter.ROOT_TAG,
+    *       msgUnit,
+    *      "XmlScripting dump");
+    *</pre>
+    * @param rootTag Usually XmlScriptInterpreter.ROOT_TAG="xmlBlaster"
+    * @param msgUnit null is OK
+    * @param comment Some comment you want to add or null
+    * @return
+    */
    public static String wrapForScripting(String rootTag, MsgUnit msgUnit, String comment) {
-      String xml = msgUnit.toXml("", Integer.MAX_VALUE);
-      StringBuffer sb = new StringBuffer(xml.length()+1024);
+      MsgUnit[] msgUnitArr = (msgUnit == null) ? new MsgUnit[0] : new MsgUnit[1];
+      if (msgUnitArr.length == 1) msgUnitArr[0] = msgUnit;
+      return wrapForScripting(rootTag, msgUnitArr, comment);
+   }
+
+   public static String wrapForScripting(String rootTag, MsgUnit[] msgUnitArr, String comment) {
+      if (msgUnitArr == null) msgUnitArr = new MsgUnit[0];
+      StringBuffer sb = new StringBuffer(1024+(msgUnitArr.length*256));
       sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
       sb.append("\n<").append(rootTag).append(">");
-      if (comment != null) sb.append("\n<!-- " + comment + " -->");
-      sb.append("\n <").append(msgUnit.getMethodName().toString()).append(">");
-      sb.append(xml);
-      sb.append("\n </").append(msgUnit.getMethodName().toString()).append(">");
+      if (comment != null && comment.length() > 0) sb.append("\n<!-- " + comment + " -->");
+      for (int i=0; i<msgUnitArr.length; i++) {
+         MsgUnit msgUnit = msgUnitArr[i];
+         String xml = msgUnit.toXml("", Integer.MAX_VALUE);
+         sb.append("\n <").append(msgUnit.getMethodName().toString()).append(">");
+         sb.append(xml);
+         sb.append("\n </").append(msgUnit.getMethodName().toString()).append(">");
+      }
       sb.append("\n</").append(rootTag).append(">");
       return sb.toString();
    }
-
+   
    public static String dumpToFile(String path, String fn, String xml) throws XmlBlasterException {
       try {
          if (path != null) {

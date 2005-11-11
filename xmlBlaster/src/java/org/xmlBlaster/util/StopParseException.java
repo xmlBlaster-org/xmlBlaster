@@ -18,6 +18,7 @@ package org.xmlBlaster.util;
  */
 public class StopParseException extends RuntimeException
 {
+   private static final long serialVersionUID = -8413175809990498728L;
    XmlBlasterException e;
    /**
     * Use this constructor to stop parsing when you are done. 

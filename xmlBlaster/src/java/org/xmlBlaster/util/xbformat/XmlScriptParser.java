@@ -5,8 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
-import org.jutils.log.LogChannel;
-
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.script.I_MsgUnitCb;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
@@ -14,6 +19,9 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.protocol.email.Pop3Driver;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.FileOutputStream;
@@ -22,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * XmlScriptParser class for XML formated messages. 
@@ -37,25 +47,27 @@ import java.io.Reader;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
-public class XmlScriptParser implements I_MsgInfoParser
+public class XmlScriptParser extends XmlScriptInterpreter implements I_MsgInfoParser
 {
+   private static Logger log = Logger.getLogger(XmlScriptParser.class.getName());
    private static final String ME = "xbformat.XmlScriptParser";
    private Global glob;
-   private LogChannel log;
 
    public static final String XMLSCRIPT_EXTENSION = ".xml";
    public static final String XMLSCRIPT_ZLIB_EXTENSION = ".xmlz";
 
    /** If not null somebody wants to be notified about the current bytes send over socket */
    private I_ProgressListener progressListener;
+   
+   private MsgInfo msgInfoParsed;
 
    public XmlScriptParser() {
    }
 
    public void init(Global glob, I_ProgressListener progressListener) {
       this.glob = glob;
-      this.log = glob.getLog("script");
       this.progressListener = progressListener;
+      super.initialize(glob, null, null);
    }
    
    /**
@@ -74,9 +86,9 @@ public class XmlScriptParser implements I_MsgInfoParser
     * This method blocks until a message arrives
     */
    public final MsgInfo parse(InputStream in) throws  IOException, IllegalArgumentException {
-      if (log.CALL) log.call(ME, "Entering parse()");
-      MsgInfo msgInfo = new MsgInfo(this.glob);
-      msgInfo.setMsgInfoParser(this);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering parse()");
+      this.msgInfoParsed = new MsgInfo(this.glob);
+      this.msgInfoParsed.setMsgInfoParser(this);
 
       try {
          Reader reader = new InputStreamReader(in);
@@ -84,12 +96,162 @@ public class XmlScriptParser implements I_MsgInfoParser
          //interpreter.parse(reader);
       }
       catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
+         log.severe("Client failed: " + e.toString());
          // e.printStackTrace();
       }
       
-      if (log.TRACE) log.trace(ME, "Leaving parse(), message successfully parsed");
-      return msgInfo;
+      if (log.isLoggable(Level.FINE)) log.fine("Leaving parse(), message successfully parsed");
+      return this.msgInfoParsed;
+   }
+
+   /**
+    * Called during XML parsing. 
+    */
+   public boolean fireMethod(MethodName methodName) throws XmlBlasterException {
+      MsgUnitRaw msgUnitRaw = new MsgUnitRaw(
+                            super.key.toString(),
+                            super.content.toString().getBytes(),
+                            super.qos.toString());
+      this.msgInfoParsed.setMethodName(methodName);
+      this.msgInfoParsed.addMessage(msgUnitRaw);
+      return true;
+      /*
+      if (MethodName.CONNECT.equals(methodName)) {
+         // if (this.qos.length() < 1) this.qos.append("<qos />");
+         String ret = null;
+         if (implicitConnect || this.qos.length() < 1) {
+            ConnectQos connectQos = new ConnectQos(this.glob);
+            ret = this.access.connect(connectQos, this.callback).toXml();
+         }
+         else {
+            ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
+            // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
+            ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
+            if (tmp != null) ret = tmp.toXml("  ");
+            else ret = "";
+         }
+         this.response.append("\n<!-- __________________________________  connect ________________________________ -->");
+         this.response.append("\n<connect>");
+         this.response.append(ret);
+         this.response.append("\n</connect>\n");
+         flushResponse();
+         this.isConnected = true;
+         if (!implicitConnect) {
+            return;
+         }
+      }
+      if (MethodName.DISCONNECT.equals(methodName)) {
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         DisconnectQosData disconnectQosData = this.disconnectQosFactory.readObject(this.qos.toString());
+         boolean ret = this.access.disconnect(new DisconnectQos(this.glob, disconnectQosData));
+         this.response.append("\n<!-- __________________________________  disconnect _____________________________ -->");
+         this.response.append("\n<disconnect>").append(ret).append("</disconnect>\n");
+         flushResponse();
+         return;
+      }
+      if (MethodName.PUBLISH.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         MsgUnit msgUnit = buildMsgUnit();
+         if (this.msgUnitCb != null) {
+            this.msgUnitCb.intercept(msgUnit);
+         }
+         if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
+         PublishReturnQos ret = this.access.publish(msgUnit);
+         this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
+         this.response.append("\n<publish>");
+         // this.response.append("  <messageId>");
+         if (ret != null) this.response.append(ret.toXml("  "));
+         // this.response.append("  </messageId>\n");
+         this.response.append("\n</publish>\n");
+         flushResponse();
+         return;
+      }
+      if (MethodName.PUBLISH_ARR.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         int size = this.messageList.size();
+         MsgUnit[] msgs = new MsgUnit[size];
+         for (int i=0; i < size; i++) {
+            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+            msgs[i] = (MsgUnit)this.messageList.get(i);
+         }
+         PublishReturnQos[] ret = this.access.publishArr(msgs);
+         this.response.append("\n<!-- __________________________________  publishArr _____________________________ -->");
+         this.response.append("\n<publishArr>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               this.response.append("\n  <message>");
+               this.response.append(ret[i].toXml("    "));
+               this.response.append("\n  </message>\n");
+            }
+         }
+         this.response.append("\n</publishArr>\n");
+         flushResponse();
+         return;
+      }
+      if (MethodName.SUBSCRIBE.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  subscribe ______________________________ -->");
+         this.response.append("\n<subscribe>");
+         // this.response.append("  <subscribeId>");
+         if (ret != null) this.response.append(ret.toXml("    "));
+         // this.response.append("  </subscribeId>\n");
+         this.response.append("\n</subscribe>\n");
+         flushResponse();
+         return;
+      }
+      if (MethodName.UNSUBSCRIBE.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         
+         UnSubscribeReturnQos[] ret = this.access.unSubscribe(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  unSubscribe ____________________________ -->");
+         this.response.append("\n<unSubscribe>");
+         if (ret != null) for (int i=0; i < ret.length; i++) this.response.append(ret[i].toXml("  "));
+         this.response.append("\n</unSubscribe>\n");
+
+         flushResponse();
+         return;
+      }
+      if (MethodName.ERASE.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         EraseReturnQos[] ret = this.access.erase(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  erase __________________________________ -->");
+         this.response.append("\n<erase>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               // this.response.append("  <messageId>");
+               this.response.append(ret[i].toXml("  "));
+               // this.response.append("  </messageId>\n");
+            }
+         }
+         this.response.append("\n</erase>\n");
+         flushResponse();
+         return;
+      }
+      if (MethodName.GET.equals(methodName)) {
+         if (this.qos.length() < 1) this.qos.append("<qos />");
+         if (this.key.length() < 1) this.key.append("<key />");
+         MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
+         this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
+         this.response.append("\n<get>");
+         if (ret != null) {
+            for (int i=0; i < ret.length; i++) {
+               this.response.append("\n  <message>");
+               this.response.append(ret[i].toXml("    "));
+               this.response.append("\n  </message>");
+            }
+         }
+         this.response.append("\n</get>\n");
+         flushResponse();
+         return;
+      }
+      */
    }
 
    /**
@@ -105,7 +267,7 @@ public class XmlScriptParser implements I_MsgInfoParser
       }
       catch(IOException e) {
          String text = "Creation of message failed.";
-         log.warn(ME, text + " " + e.toString());
+         log.warning(text + " " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, text, e);
       }
    }

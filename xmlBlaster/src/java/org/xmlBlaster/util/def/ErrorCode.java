@@ -128,6 +128,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode INTERNAL_STOP = new ErrorCode("internal.stop",
+         "An internal control exception, for example to stop parsing of XML.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode RESOURCE_OUTOFMEMORY = new ErrorCode("resource.outOfMemory",
          "The JVM has no more RAM memory, try increasing it like 'java -Xms18M -Xmx256M org.xmlBlaster.Main'",
          new ResourceInfo[] {

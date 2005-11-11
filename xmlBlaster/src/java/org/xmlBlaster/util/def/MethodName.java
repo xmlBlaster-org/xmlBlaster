@@ -49,7 +49,7 @@ public final class MethodName implements java.io.Serializable
    public static final MethodName PING = new MethodName("ping", ARG_QOS, RETURN_STRING);
    public static final MethodName DUMMY = new MethodName("dummy", ARG_QOS, RETURN_STRING);
    public static final MethodName UNKNOWN = new MethodName("unknown", ARG_QOS, RETURN_STRING);
-   //public static final MethodName EXCEPTION = new MethodName("exception", ARG_MSG, RETURN_VOID);
+   public static final MethodName EXCEPTION = new MethodName("exception", ARG_MSGARR, RETURN_VOID);
    // for testsuite only
 
    /**
