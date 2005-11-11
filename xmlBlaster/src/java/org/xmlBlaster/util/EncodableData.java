@@ -65,11 +65,12 @@ public class EncodableData implements java.io.Serializable, Cloneable
    /**
     * Set binary data, will be of type "byte[]" and base64 encoded
     * @param name  The unique property key
-    * @param value The binary data
+    * @param value The binary data (will instantly be base64 encoded)
     */
    public EncodableData(String tagName, String name, byte[] value) {
       this.name = name;
       this.tagName = tagName;
+      this.size = value.length;
       setValue(value);
    }
 
