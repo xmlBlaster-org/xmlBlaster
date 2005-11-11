@@ -127,14 +127,14 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    
    public Object sendEmail(String qos, MethodName methodName,
          boolean expectingResponse) throws XmlBlasterException {
-      MsgUnitRaw[] msgArr = { new MsgUnitRaw(null, null, qos) };
+      MsgUnitRaw[] msgArr = { new MsgUnitRaw(null, (byte[])null, qos) };
       return sendEmail(msgArr, methodName,
             expectingResponse);
    }
 
    public Object sendEmail(String key, String qos, MethodName methodName,
          boolean expectingResponse) throws XmlBlasterException {
-      MsgUnitRaw[] msgArr = { new MsgUnitRaw(key, null, qos) };
+      MsgUnitRaw[] msgArr = { new MsgUnitRaw(key, (byte[])null, qos) };
       return sendEmail(msgArr, methodName,
             expectingResponse);
    }
@@ -214,11 +214,14 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       byte[] encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
                /*TODO: msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib()) */
                XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
+      //log.severe("DEBUG ONLY: " + new String(encodedMsgUnit));
       if (encodedMsgUnit != null) { // Process the messageUnit
          if (encodedMsgUnit.length < XbfParser.NUM_FIELD_LEN) // min 10 bytes, otherwise we block forever when reading the stream
             throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The messageUnit in the email is too short: " + MsgInfo.toLiteral(encodedMsgUnit));
          try {
+            boolean close = false;
             if (this.oStreamForResponse == null) {
+               close = true;
                // Happens if it is not a response but an initial request
                // We need to go over super in case the streams to
                // compress/inflate
@@ -236,6 +239,8 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
             if (log.isLoggable(Level.FINER)) log.finer("Parsing now: " + MsgInfo.toLiteral(encodedMsgUnit));
             this.oStreamForResponse.write(encodedMsgUnit);
             this.oStreamForResponse.flush();
+            if (close)
+               this.oStreamForResponse.close(); // !!!!!!!!!!!!! TODO AWAY
             return true;
          } catch (Exception e) {
             log.severe("Handling POP3 response failed: " + e.toString());
