@@ -367,6 +367,36 @@ java javaclients.script.XmlScript \
 
    </example>
 
+   <example lang="any" type="HTML">
+      <h2>Exception example</h2>
+      <pre>
+<![CDATA[
+<xmlBlasterResponse>
+  <exception errorCode='user.illegalArgument'>
+    <class>org.xmlBlaster.util.XmlBlasterException</class>
+    <isServerSide>true</isServerSide>
+    <node>heron</node>
+    <location>Authenticate-/node/heron.InvalidClientName</location>
+    <lang>en</lang>
+    <message>#1.0.7 Your given loginName is null or shorter 2 chars</message>
+    <versionInfo>version=1.0.7,os.name=Linux,os.version=2.6.13</versionInfo>
+    <timestamp>2005-11-11 09:30:30.69</timestamp>
+    <stackTrace>errorCode=user.illegalArgument message=#1.0.7
+      Your given loginName is null or shorter 2 chars, loginName rejected
+      at Authenticate.connect(Authenticate.java:352)
+      at AuthServerImpl.connectIntern(AuthServerImpl.java:260)
+      at AuthServerImpl.connect(AuthServerImpl.java:232)
+      at RequestProcessor.invokeOperation(RequestProcessor.java:281)
+      at RequestProcessor.process(RequestProcessor.java:576)
+      at RequestProcessor.run(RequestProcessor.java:718)></stackTrace>
+    <embeddedMessage></embeddedMessage>
+  </exception>
+</xmlBlasterResponse>
+]]>
+      </pre>
+   </example>
+
+
    <configuration where="client">
       <p>
       </p>
