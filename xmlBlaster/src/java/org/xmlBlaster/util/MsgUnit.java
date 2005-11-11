@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.QosData;
@@ -358,6 +361,7 @@ public final class MsgUnit implements java.io.Serializable
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
+    * Needs to be portable for XmlScripting
     * @param extraOffset indenting of tags for nice output
     * @param maxContentLen For huge content length you can choose to display
     *        only the given size of the content (from the beginning), the rest is not dumped.<br />
@@ -366,24 +370,17 @@ public final class MsgUnit implements java.io.Serializable
     * @return The data of this MsgUnit as a XML ASCII string
     */
    public String toXml(String extraOffset, int maxContentLen) {
-      StringBuffer sb = new StringBuffer(1024);
-      if (extraOffset == null) extraOffset = "";
-      String offset = Constants.OFFSET + extraOffset;
-
-      //sb.append(offset).append("<MsgUnit>");
-      if (this.keyData != null) {
-         sb.append(this.keyData.toXml(extraOffset+Constants.INDENT));
+      MsgUnitRaw msgUnitRaw = new MsgUnitRaw(
+            (this.keyData != null) ? this.keyData.toXml(extraOffset) : "",
+            this.content,
+            this.qosData.toXml(extraOffset));
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      try {
+         msgUnitRaw.toXml(extraOffset, out);
+         return out.toString(Constants.UTF8_ENCODING);
+      } catch (IOException e) {
+         e.printStackTrace();
+         throw new IllegalArgumentException("Can't dump message to xml: " + e.toString());
       }
-      if (maxContentLen < 0 || this.content.length < maxContentLen) {
-         sb.append(offset).append("  <content><![CDATA[").append(new String(this.content)).append("]]></content>");
-      }
-      else if (maxContentLen > 0) {
-         sb.append(offset).append("  <content size='").append(content.length).append("'><![CDATA[");
-         sb.append(new String(this.content, 0, maxContentLen)).append("...]]></content>");
-      }
-      sb.append(this.qosData.toXml(extraOffset+Constants.INDENT));
-      //sb.append(offset).append("</MsgUnit>\n");
-
-      return sb.toString();
    }
 }
