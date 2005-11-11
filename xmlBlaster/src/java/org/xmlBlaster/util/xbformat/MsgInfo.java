@@ -234,7 +234,7 @@ public class MsgInfo
     * @return The received request ID
     */
    public final String getRequestId() {
-      if (requestId == null) throw new IllegalArgumentException(ME + ": getRequestId returns null");
+      if (this.requestId == null) return ""; //throw new IllegalArgumentException(ME + ": getRequestId returns null");
       return this.requestId;
    }
 
@@ -392,7 +392,8 @@ public class MsgInfo
    }
 
    /**
-    * Returns all messages as an array
+    * Returns all messages as an array. 
+    * @return Never null
     */
    public final MsgUnitRaw[] getMessageArr() {
       if (msgVec.isEmpty()) return new MsgUnitRaw[0];
@@ -462,6 +463,16 @@ public class MsgInfo
       return len;
    }
 
+   /** 
+    * The number of bytes of qos+key+content
+    */
+   public long size() {
+      MsgUnitRaw[] msgs = getMessageArr();
+      long size=0;
+      for (int i=0; i<msgs.length; i++)
+         size += msgs[i].size();
+      return size;
+   }   
 
    /**
     * @param byte4 The byte4 to set.
@@ -524,7 +535,8 @@ public class MsgInfo
     */
    public I_MsgInfoParser getMsgInfoParser() {
       if (this.msgInfoParser == null) {
-         this.msgInfoParser = new XbfParser();
+         this.msgInfoParser = MsgInfoParserFactory.instance().getMsgInfoParser(glob, this.progressListener);
+         // new XbfParser();
          this.msgInfoParser.init(this.glob, this.progressListener);
       }
       return this.msgInfoParser;
@@ -637,7 +649,10 @@ public class MsgInfo
       return this.progressListener;
    }
 
-   /** java org.xmlBlaster.util.xbformat.MsgInfo */
+   /** 
+    * java org.xmlBlaster.util.xbformat.MsgInfo
+    * TODO: Put into test suite with xmlunit
+    */
    public static void main( String[] args ) {
       try {
          Global glob = new Global(args);
@@ -684,7 +699,7 @@ public class MsgInfo
             MsgInfo msgInfo = new MsgInfo(glob);
             msgInfo.setType(MsgInfo.INVOKE_BYTE);
             msgInfo.setRequestId("7711");
-            msgInfo.setMethodName(MethodName.PUBLISH);
+            msgInfo.setMethodName(MethodName.PUBLISH_ARR);
             msgInfo.setSecretSessionId("oxf6hZs");
             msgInfo.setChecksum(false);
             msgInfo.setCompressed(false);
@@ -749,7 +764,7 @@ public class MsgInfo
             msgInfo.setSecretSessionId("oxf6hZs");
             msgInfo.setChecksum(false);
             msgInfo.setCompressed(false);
-            msgInfo.addQos("<qos/>");
+            msgInfo.addQos("<qos></qos>");
 
             rawMsg = msgInfo.createRawMsg();
             String send = msgInfo.toLiteral();
@@ -800,7 +815,7 @@ public class MsgInfo
             }
          }
 
-         testName = "Testing really nothing";
+         testName = "Testing really nothing (ONLY WORKS WITH XfbParser as no valid XML)";
          System.out.println("\n----------------------\n"+testName);
          {
             rawMsg = "        10".getBytes();
