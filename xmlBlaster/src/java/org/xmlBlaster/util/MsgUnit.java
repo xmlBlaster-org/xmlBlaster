@@ -21,6 +21,7 @@ import org.xmlBlaster.util.def.Constants;
  */
 public final class MsgUnit implements java.io.Serializable
 {
+   private static final long serialVersionUID = -4816978454646848077L;
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
    private transient Global glob;
    private QosData qosData; // never null
