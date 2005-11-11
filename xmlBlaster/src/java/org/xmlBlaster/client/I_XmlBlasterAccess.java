@@ -284,6 +284,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * </p>
     * @param subscribeKey Which message topics to retrieve
     * @param subscribeQos Control the behavior and further filter messages with mime based filter plugins
+    * @return Is never null
     * @see org.xmlBlaster.client.I_Callback#update(String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
@@ -327,6 +328,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()
+    *         Is never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">interface.subscribe requirement</a>
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
@@ -336,6 +338,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Subscribe to messages. 
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
+    * @return is never null
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
@@ -365,7 +368,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * </p>
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
-    * @return An array of messages, the sequence is arbitrary
+    * @return An array of messages, the sequence is arbitrary, never null
     * @throws XmlBlasterException if <i>createSynchronousCache()</i> was not used to establish a cache first
     * @see #createSynchronousCache(int)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
@@ -378,6 +381,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Get synchronous messages. 
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
+    * @return never null
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">interface.get requirement</a>
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
