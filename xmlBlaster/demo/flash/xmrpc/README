@@ -40,7 +40,10 @@ Here is a little demo to user Macromedia Flash Player to access xmlBlaster.
 
 	For the client side, I've used the library
 		xmlrpcflash : XMLRPC for ActionScript 2.0 from http://xmlrpcflash.sf.net
-	More details in demo's folder XMLRPC
+	More details in demo's folder XMLRPC.
+	
+	Becarefull, I've made some changes (corrections) to it. They are indexed in the _README.txt file.
+	So the original lib (Version 0.841 Jan 10 2005) does not work, use files distibuted with the demo.
 
 1.c Deployement of the Applet
 
@@ -66,7 +69,8 @@ Here is a little demo to user Macromedia Flash Player to access xmlBlaster.
 		The folder of the xmlrpcflash library
 		Found at http://sourceforge.net/projects/xmlrpcflash
 
-	I've made some changes (corrections) in xmlrpcflash. They are indexed in the _README.txt file.
+		Becarefull, I've made some changes (corrections) to it. They are indexed in the _README.txt file.
+		So the original lib (Version 0.841 Jan 10 2005) does not work, use files distibuted with the demo.
 
 3. Futur plan
 
