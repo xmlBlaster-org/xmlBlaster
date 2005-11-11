@@ -121,7 +121,9 @@ public class XmlScriptClient extends XmlScriptInterpreter {
       this.msgUnitCb = msgUnitCb;
    }
    
-   public boolean fireMethod(MethodName methodName) throws XmlBlasterException {
+   public boolean fireMethod(MethodName methodName,
+         String sessionId, String requestId)
+         throws XmlBlasterException {
       if (this.log.TRACE) this.log.trace(ME, "fireMethod " + methodName.toString() + ": " + this.key.toString() + " " + this.qos.toString());
       try {
          if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
@@ -178,6 +180,16 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             String[] retStr = new String[ret.length];
             for (int i=0; i < ret.length; i++) retStr[i] = ret[i].toXml("    ");
             writeResponse(methodName, retStr);
+            return true;
+         }
+         if (MethodName.PUBLISH_ONEWAY.equals(methodName)) {
+            int size = this.messageList.size();
+            MsgUnit[] msgs = new MsgUnit[size];
+            for (int i=0; i < size; i++) {
+               if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+               msgs[i] = (MsgUnit)this.messageList.get(i);
+            }
+            this.access.publishOneway(msgs);
             return true;
          }
          if (MethodName.SUBSCRIBE.equals(methodName)) {

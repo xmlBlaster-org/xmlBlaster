@@ -12,6 +12,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.StopParseException;
@@ -98,7 +99,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    protected StringBuffer qos = new StringBuffer();
    protected StringBuffer key = new StringBuffer();
-   protected StringBuffer content = new StringBuffer();
+   private StringBuffer content = new StringBuffer(); // To access use contentData
    protected StringBuffer cdata = new StringBuffer();
 
    /** Replace e.g. ${ICAO} with command line setting '-ICAO EDDI' */
@@ -107,10 +108,12 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private boolean replaceContentTokens;
 
    /** Encapsulates the content of the current message (useful for encoding) */
-   private EncodableData contentData;
+   protected EncodableData contentData;
    // private boolean inQos, inKey, inContent;
    private int inQos, inKey, inContent, inCDATA;
    private String link;
+   private String sessionId;
+   private String requestId;
 
    /** the attachments (some contents can be in the attachments) */
    private HashMap attachments;
@@ -125,9 +128,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    public final static String ROOT_TAG = "xmlBlaster";
    public final static String ROOTRESPONSE_TAG = "xmlBlasterResponse";
-   public final String KEY_TAG = "key";
-   public final String CONTENT_TAG = "content";
-   public final String QOS_TAG = "qos";
+   public final String KEY_TAG = MsgUnitRaw.KEY_TAG;
+   public final String CONTENT_TAG = MsgUnitRaw.CONTENT_TAG;
+   public final String QOS_TAG = MsgUnitRaw.QOS_TAG;
 
    /**
     * You need to call initialize() if using this default constructor. 
@@ -268,7 +271,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (this.commandsToFire.contains(qName)) {
          this.character = new StringBuffer();
          this.character.append(this.writeElementStart(qName, atts));
-         if ("publishArr".equals(qName)) this.messageList = new ArrayList();
+         if (MethodName.PUBLISH_ARR.equals(qName) ||
+             MethodName.PUBLISH_ONEWAY.equals(qName))
+            this.messageList = new ArrayList();
+         this.sessionId = atts.getValue("sessionId");
+         this.requestId = atts.getValue("requestId");
          return;
       }
 
@@ -304,11 +311,18 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (CONTENT_TAG.equals(qName)) {
          this.inContent++;
          this.link = null;
-         this.content = new StringBuffer();
-         //String sizeStr = atts.getValue("size"); // long
-         String type = atts.getValue("type");
-         String encoding = atts.getValue("encoding");
+         this.content.setLength(0);
+         String sizeStr = atts.getValue("size"); // long
+         String type = atts.getValue("type"); // byte[]
+         String encoding = atts.getValue("encoding"); // base64
          this.contentData = new EncodableData(CONTENT_TAG, null, type, encoding);
+         try {
+            if (sizeStr != null) {
+               long size = Long.valueOf(sizeStr).longValue();
+               if (size > 0)
+                  this.contentData.setSize(size);
+            }
+         } catch (NumberFormatException e) {}
          String tmp = atts.getValue("link");
          if (tmp != null && tmp.length() > 0) this.link = tmp;
          // this.content.append(this.writeElementStart(qName, atts));
@@ -403,7 +417,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     *         false: The methodName is not known and nothing is processed
     * @throws XmlBlasterException Will lead to stop parsing further
     */
-   abstract public boolean fireMethod(MethodName methodName) throws XmlBlasterException;
+   abstract public boolean fireMethod(MethodName methodName,
+         String sessionId, String requestId) throws XmlBlasterException;
 
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
@@ -439,7 +454,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      boolean processed = fireMethod(MethodName.toMethodName(qName));
+      boolean processed = fireMethod(MethodName.toMethodName(qName), this.sessionId, this.requestId);
       if (processed) return;
    }
 
@@ -527,6 +542,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          }  
          if ("message".equals(qName)) {
             try {
+               if (this.messageList == null) {
+                  throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "To send multiple messages please use " + MethodName.PUBLISH_ARR + " or " + MethodName.PUBLISH_ONEWAY);
+               }
                this.messageList.add(buildMsgUnit());
             }
             catch(XmlBlasterException e) {
@@ -600,7 +618,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    /**
-    * Dump the MsgUnit to XML.
+    * Dump the MsgUnit to XML, the dump includes the xml header (UTF-8). 
     * <br />
     * Example: 
     * <pre>
@@ -636,6 +654,64 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       sb.append("\n</").append(rootTag).append(">");
       return sb.toString();
    }
+   
+   /**
+    * Dump the given MsgUnitRaw to XML.
+    * Example for a PublishReturnQos:
+    * <pre>
+    * &lt;-- A comment -->
+    *   &lt;publish>
+     &lt;qos>
+      &lt;key oid='1'/>
+      &lt;rcvTimestamp nanos='1131654994574000000'/>
+     &lt;isPublish/>
+     &lt;/qos>
+  &lt;/publish>
+</pre>
+    * @param methodName The method to invoke, like "publishArr"
+    * @param sessionId An optional sessionId or null
+    * @param requestId An optional requestId or null
+    * @param msgUnits The msgUnits to serialize
+    * @param comment An optional comment to add, can be null
+    * @param out The output sink for the result
+    * @throws XmlBlasterException
+    */
+   protected void serialize(MethodName methodName, String sessionId, String requestId, MsgUnitRaw[] msgUnits, String comment, OutputStream out) throws IOException {
+      String offset = " ";
+      StringBuffer sb = new StringBuffer(1024+(1024));
+      
+      if (comment != null && comment.length() > 0)
+         sb.append("\n<!-- ").append(comment).append( " -->");
+      if (methodName != null) {
+         sb.append("\n<").append(methodName.toString());
+         if (sessionId != null && sessionId.length() > 0)
+            sb.append(" sessionId='").append(sessionId).append("'");
+         if (requestId != null && requestId.length() > 0)
+            sb.append(" requestId='").append(requestId).append("'");
+         sb.append(">");
+      }
+      out.write(sb.toString().getBytes());
+      
+      if (msgUnits != null && msgUnits.length > 0) {
+         if (msgUnits.length == 1)
+            msgUnits[0].toXml(offset, out);
+         else {
+            for (int i=0; i < msgUnits.length; i++) {
+               out.write("\n  <message>".getBytes());
+               msgUnits[i].toXml(offset, out);
+               out.write("\n  </message>\n".getBytes());
+            }
+         }
+      }
+      
+      if (methodName != null) {
+         out.write("\n</".getBytes());
+         out.write(methodName.toString().getBytes());
+         out.write(">\n".getBytes());
+      }
+      out.flush();
+   }
+   
    
    public static String dumpToFile(String path, String fn, String xml) throws XmlBlasterException {
       try {
