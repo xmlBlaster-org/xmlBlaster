@@ -8,6 +8,8 @@ package org.xmlBlaster.util;
 import java.io.OutputStream;
 import java.io.IOException;
 
+import org.xmlBlaster.util.def.Constants;
+
 /**
  * Encapsulates the xmlKey, content and qos. 
  * <p />
@@ -23,7 +25,11 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
    private transient final Object msgUnit; // transport temporary the parsed instance MsgUnit as well
    private final String qos;
    private final String key;
-   private final byte[] content;
+   private final byte[] content; // One of 'this.content' or 'this.encodedContent' is allways null
+   private final EncodableData encodedContent;
+   public static final String KEY_TAG = "key";
+   public static final String CONTENT_TAG = "content";
+   public static final String QOS_TAG = "qos";
 
    /**
     * @param msgUnit Temporary object with parsed information, this is not evaluated internally
@@ -35,6 +41,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       this.msgUnit = msgUnit;
       this.qos = (qos == null) ? EMPTY_STRING : qos;
       this.key = (key == null) ? EMPTY_STRING : key;
+      this.encodedContent = null;
       this.content = (content == null) ? EMPTY_BYTEARR : content;
    }
 
@@ -42,6 +49,17 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
     */
    public MsgUnitRaw(String key, byte[] content, String qos) {
       this(null, key, content, qos);
+   }
+   
+   public MsgUnitRaw(String key, EncodableData encodedContent, String qos) {
+      this.msgUnit = null;
+      this.qos = (qos == null) ? EMPTY_STRING : qos;
+      this.key = (key == null) ? EMPTY_STRING : key;
+      this.encodedContent = encodedContent;
+      if (this.encodedContent == null)
+         this.content = EMPTY_BYTEARR;
+      else
+         this.content = null;
    }
 
    /**
@@ -55,6 +73,8 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
     * Get the raw content, never null
     */
    public byte[] getContent() {
+      if (this.encodedContent != null)
+         return this.encodedContent.getBlobValue();
       return this.content;
    }
 
@@ -62,7 +82,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
     * Get the raw content, never null
     */
    public String getContentStr() {
-      return new String(this.content);
+      return new String(getContent());
    }
 
    /**
@@ -76,7 +96,10 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
     * The number of bytes of qos+key+content
     */
    public long size() {
-      return this.qos.length() + this.key.length() + this.content.length;
+      if (this.encodedContent != null)
+         return this.qos.length() + this.key.length() + this.encodedContent.getSize();
+      else
+         return this.qos.length() + this.key.length() + this.content.length;
    }
 
    /**
@@ -87,10 +110,18 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       return this.msgUnit;
    }
 
+   /**
+    * @deprecated Please use toXml(String extraOffset, OutputStream out)
+    */
    public String toXml() {
       return toXml((String)null);
    }
 
+   /**
+    * @deprecated Please use toXml(String extraOffset, OutputStream out)
+    * @param extraOffset
+    * @return
+    */
    public String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer();
       String offset = "\n";
@@ -99,51 +130,73 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
 
       sb.append(offset).append("<MsgUnitRaw>");
       sb.append(this.key);
-      sb.append(offset).append(" <content><![CDATA[").append(new String(this.content)).append("]]></content>");
+      if (this.encodedContent != null)
+         sb.append(offset).append(this.encodedContent.toXml(extraOffset, CONTENT_TAG));
+      else
+         sb.append(offset).append(" <content><![CDATA[").append(new String(this.content)).append("]]></content>");
       sb.append(this.qos);
       sb.append(offset).append("</MsgUnitRaw>\n");
 
       return sb.toString();
    }
 
+   /**
+    * Standard message dump. 
+    * Used for logging and XmlScripting
+    * @param extraOffset
+    * @param out
+    * @throws IOException
+    */
    public void toXml(String extraOffset, OutputStream out) throws IOException {
       StringBuffer sb = new StringBuffer(qos.length() + key.length() + 256);
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(qos);
-      sb.append(key);
+      if (this.qos.length() > 0) sb.append(offset).append(qos);
+      if (this.key.length() > 0) sb.append(offset).append(key);
+      
+      if (this.content == null && this.encodedContent != null && this.encodedContent.getSize() == 0 ||
+          this.content != null && this.content.length == 0) {
+         out.write(sb.toString().getBytes());
+         return;
+      }
+      
+      if (this.encodedContent != null) {
+         out.write(this.encodedContent.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG).getBytes());
+         return;
+      }
 
       // TODO: Potential charset problem when not Base64 protected
       boolean doEncode = false;
       int len = content.length - 2;
-      for (int i=0; i<len; i++) {
-         if (content[i] == (byte)']' && content[i+1] == (byte)']' && content[i+2] == (byte)'>') {
+      for (int i=0; i<content.length; i++) {
+         if (i < len && content[i] == (byte)']' && content[i+1] == (byte)']' && content[i+2] == (byte)'>') {
+            doEncode = true;
+            break;
+         }
+         if (content[i] == 0) { // avoid zeros
             doEncode = true;
             break;
          }
       }
-
-      // TODO: Port to EncodableData! But what about J2ME?
+      
       // Needs to be parseable by XmlScriptInterpreter
-      if (doEncode) { // Constants.ENCODING_BASE64="base64"
+      if (doEncode) {
          // link=''?  name=null, size=1000L type=Constants.TYPE_BLOB encoding=Constants.ENCODING_BASE64
-         sb.append(offset).append("<content size='").append(content.length).append("' type='byte[]' encoding='base64'>");
-         out.write(sb.toString().getBytes());
-
-         String encoded = Base64.encode(content);
-         out.write(encoded.getBytes());
-
-         out.write("</content>".getBytes());
+         EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG, null, this.content);
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG); 
+         out.write(contentXml.getBytes());
       }
       else {
-         sb.append(offset).append("<content size='").append(content.length).append("' type='byte[]'><![CDATA[");
-         out.write(sb.toString().getBytes());
-         
-         out.write(content);
-
-         out.write("]]></content>".getBytes());
+         String name = null;
+         EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG,
+               name,
+               Constants.TYPE_STRING,
+               Constants.ENCODING_NONE,
+               new String(this.content));
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG); 
+         out.write(contentXml.getBytes());
       }
    }
 }
