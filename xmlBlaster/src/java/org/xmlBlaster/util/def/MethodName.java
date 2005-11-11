@@ -49,7 +49,7 @@ public final class MethodName implements java.io.Serializable
    public static final MethodName PING = new MethodName("ping", ARG_QOS, RETURN_STRING);
    public static final MethodName DUMMY = new MethodName("dummy", ARG_QOS, RETURN_STRING);
    public static final MethodName UNKNOWN = new MethodName("unknown", ARG_QOS, RETURN_STRING);
-   public static final MethodName EXCEPTION = new MethodName("exception", ARG_MSGARR, RETURN_VOID);
+   public static final MethodName EXCEPTION = new MethodName("exception", ARG_QOS, RETURN_VOID);
    // for testsuite only
 
    /**
@@ -86,6 +86,16 @@ public final class MethodName implements java.io.Serializable
     */
    public boolean equals(MethodName other) {
       return getMethodName().equals(other.getMethodName());
+   }
+
+   /**
+    * When you compare two methodName with == and they are
+    * loaded by different Classloaders it will fail (return false even
+    * if they are the same method), using
+    * this equals() method is safe under such circumstances
+    */
+   public boolean equals(String other) {
+      return getMethodName().equals(other);
    }
 
    /**
