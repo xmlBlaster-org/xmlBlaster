@@ -49,6 +49,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final AvailabilityChecker availabilityChecker;
    private final Global glob;
    private final LogChannel log;
+   private final byte[] EMPTY_BYTEARR = null;
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -79,7 +80,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          
          // import and authorize message
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
-                                       new MsgUnitRaw(xmlKey_literal, null, qos_literal),
+                                       new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.SUBSCRIBE);
 
          SubscribeQosServer subscribeQos = new SubscribeQosServer(glob, (QueryQosData)msgUnit.getQosData());
@@ -114,7 +115,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          // import and authorize message
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
-                                       new MsgUnitRaw(xmlKey_literal, null, qos_literal),
+                                       new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.UNSUBSCRIBE);
          
          UnSubscribeQosServer unSubscribeQosServer = new UnSubscribeQosServer(glob, (QueryQosData)msgUnit.getQosData());
@@ -223,7 +224,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          // import (decrypt) and authorize message
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
-                                       new MsgUnitRaw(xmlKey_literal, null, qos_literal),
+                                       new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.ERASE);
 
          EraseQosServer eraseQosServer = new EraseQosServer(glob, (QueryQosData)msgUnit.getQosData());
@@ -259,7 +260,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          // import (decrypt) and authorize message
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
-                                   new MsgUnitRaw(xmlKey_literal, null, qos_literal),
+                                   new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                    MethodName.GET);
 
          // Parse XML key and XML QoS
