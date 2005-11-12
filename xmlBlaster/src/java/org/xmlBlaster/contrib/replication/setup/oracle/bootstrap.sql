@@ -680,7 +680,7 @@ BEGIN
    SELECT count(*) INTO tmp FROM sys.all_tables WHERE table_name=tblName AND owner=schName;
 
    ${replPrefix}debug('CHECK_TABLES count=' || TO_CHAR(tmp));
-   tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
+   -- tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
              -- even if it exists (this hack makes the assumption the table exists)
    IF tmp = 0 THEN 
       res := 'FALSE';

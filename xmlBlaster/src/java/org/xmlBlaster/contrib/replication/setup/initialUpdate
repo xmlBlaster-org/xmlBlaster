@@ -1,10 +1,10 @@
 #!/bin/sh
 CMD=$1
-FILE=$2
+SID=$2
+FILE=$3
 SCHEMA=AIS
-USER=xmlblaster
-PWD=secret
-SID="test"
+USER=ais
+PWD=ais
 LOG=${HOME}/tmp/${CMD}.log
 
 if test "`echo -e xxx`" = "xxx" 
@@ -19,14 +19,14 @@ else
 fi
 
 if [ "${FILE}" = "" ] ; then
-   ${ECHO} "usage $0 exp|imp filename"
+   ${ECHO} "usage $0 exp|imp SID filename"
    ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
-   ${ECHO} "and exp is used for export and imp for import"
+   ${ECHO} "and exp is used for export and imp for import and SID is the SID of the database"
    exit -1
 fi
 
 if [ "${CMD}" = "exp" ] ; then
-   CMDLINE="exp ${USER}/${PWD}@${SID} owner=${SCHEMA} file=${FILE} log=${LOG}"
+   CMDLINE="exp ${USER}/${PWD}@${SID} consistent=yes owner=${SCHEMA} file=${FILE} log=${LOG}"
 else
    if [ "${CMD}" = "imp" ] ; then
       CMDLINE="imp ${USER}/${PWD}@${SID} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
@@ -34,6 +34,7 @@ else
       ${ECHO} "usage $0 exp|imp filename"
       ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
       ${ECHO} "and exp is used for export and imp for import (use either exp or imp)"
+      ${ECHO} "and SID is the SID of the database"
       exit -1
    fi
 fi

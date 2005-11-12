@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
+import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.queue.I_Queue;
 
@@ -14,7 +15,7 @@ import org.xmlBlaster.util.queue.I_Queue;
  * I_ReplSlave
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public interface I_ReplSlave {
+public interface I_ReplSlave extends I_ContribPlugin {
    
    public final static int STATUS_UNUSED = 0;
    public final static int STATUS_INITIAL = 1;
@@ -25,12 +26,12 @@ public interface I_ReplSlave {
     * Starts the whole initial update
     * @throws Exception
     */
-   void run(String managerInstanceName, String replicationKey, I_Info individualInfo) throws Exception;
+   void run(I_Info individualInfo) throws Exception;
    /**
     * 3
     *
     */
-   void prepareForRequest() throws Exception;
+   void prepareForRequest(I_Info individualInfo) throws Exception;
    
    /**
     * 4
@@ -57,8 +58,6 @@ public interface I_ReplSlave {
    ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception;
 
    
-   void shutdown();
-
    /**
     * @param sqlResponse The sqlResponse to set.
     */

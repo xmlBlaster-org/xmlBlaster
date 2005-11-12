@@ -12,5 +12,7 @@ public interface ReplSlaveMBean {
    long getMaxReplKey();
    String getStatus();
    String getSqlResponse();
+   void doContinue() throws Exception;
+   void doPause() throws Exception;
 
 }

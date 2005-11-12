@@ -7,11 +7,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.Global;
@@ -60,6 +63,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private int status;
    private Object mbeanHandle;
    private String sqlResponse;
+   private String managerInstanceName;
    
    public String getTopic() {
       return this.dataTopic;
@@ -82,20 +86,20 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
    
-   public ReplSlave(Global global, String slaveSessionId) throws XmlBlasterException {
+   public ReplSlave(Global global, String managerInstanceName, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
+      this.managerInstanceName = managerInstanceName;
       this.slaveSessionId = slaveSessionId;
       this.status = STATUS_UNUSED;
    }
 
    
-   private void registerJMX() {
-      
-   }
-
-   private synchronized void init(String managerInstanceName, String replName, I_Info info) throws Exception {
+   public synchronized void init(I_Info info) throws Exception {
       if (this.initialized)
          return;
+      String replName = info.get("_replName", null);
+      if (replName == null) 
+         throw new Exception("The replication name '_replName' has not been defined");
       this.name = "replSlave" + replName + slaveSessionId;
       this.dataTopic = info.get("mom.topicName", "replication." + replName);
       this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
@@ -105,7 +109,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
 
       // this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
       // String instanceName = "replication" + ContextNode.SEP + slaveSessionId;
-      String instanceName = managerInstanceName + ContextNode.SEP + this.slaveSessionId;
+      String instanceName = this.managerInstanceName + ContextNode.SEP + this.slaveSessionId;
       ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
             instanceName, this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
@@ -114,9 +118,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
 
-   public void run(String managerInstanceName, String replName, I_Info info) throws Exception {
-      init(managerInstanceName, replName, info);
-      prepareForRequest();
+   public void run(I_Info info) throws Exception {
+      init(info);
+      prepareForRequest(info);
       requestInitialData();
    }
    
@@ -136,7 +140,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * </ul>
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#prepareForRequest()
     */
-   public void prepareForRequest() throws Exception {
+   public void prepareForRequest(I_Info individualInfo) throws Exception {
       if (!this.initialized)
          throw new Exception("prepareForRequest: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
       log.info("prepareForRequest");
@@ -145,12 +149,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       log.info("clearing of callback queue before initiating: '" + clearedMsg + "' where removed since obsolete");
 
       sendStatusInformation("dbInitStart");
-      session.setDispatcherActive(false); // stop the dispatcher
-      
+      doPause(); // stop the dispatcher
       SubscribeQos subQos = new SubscribeQos(this.global);
       subQos.setMultiSubscribe(false);
       subQos.setWantInitialUpdate(false);
       subQos.setPersistent(true);
+      // this fills the client properties with the contents of the individualInfo object.
+      new ClientPropertiesInfo(subQos.getData().getClientProperties(), individualInfo);
       session.subscribe(this.dataTopic, subQos.toXml());
       synchronized(this) {
          this.status = STATUS_INITIAL;
@@ -197,14 +202,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private I_AdminSession getSession() throws Exception {
       I_Authenticate auth = getEngineGlobal(this.global).getAuthenticate();
       if (auth == null)
-         throw new Exception(this.name + " prepareForRequest: could not retreive the Authenticator object. Can not continue.");
+         throw new Exception("prepareForRequest: could not retreive the Authenticator object. Can not continue.");
       SessionName sessionName = new SessionName(this.global, this.slaveSessionId);
       I_AdminSubject subject = auth.getSubjectInfoByName(sessionName);
       if (subject == null)
-         throw new Exception(this.name + " prepareForRequest: no subject (slave) found with the session name '" + this.slaveSessionId + "'");
+         throw new Exception("prepareForRequest: no subject (slave) found with the session name '" + this.slaveSessionId + "'");
       I_AdminSession session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
       if (session == null)
-         throw new Exception(this.name + " prepareForRequest: no session '" + this.slaveSessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
+         throw new Exception("prepareForRequest: no session '" + this.slaveSessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
       return session;
    }
    
@@ -219,8 +224,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.minReplKey = minReplKey;
       this.maxReplKey = maxReplKey;
       this.status = STATUS_TRANSITION;
-      I_AdminSession session = getSession(); 
-      session.setDispatcherActive(true);
+      doContinue();
    }
 
    /* (non-Javadoc)
@@ -287,5 +291,30 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    public void setSqlResponse(String sqlResponse) {
       this.sqlResponse = sqlResponse;
    }
+
+   /**
+    * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
+    */
+   public Set getUsedPropertyKeys() {
+      return new HashSet();
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#doContinue()
+    */
+   public void doContinue() throws Exception {
+      I_AdminSession session = getSession(); 
+      session.setDispatcherActive(true);
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#doPause()
+    */
+   public void doPause() throws Exception {
+      I_AdminSession session = getSession(); 
+      session.setDispatcherActive(true);
+   }
+   
+   
    
 }
