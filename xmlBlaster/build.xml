@@ -623,8 +623,11 @@ TODO
    <!-- =================================================================== -->
    <target name="contrib" depends="xmlBlaster" description="Compile complete xmlBlaster contrib directory">
       <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties"/>
+      <copy todir="${build.dest}/org/xmlBlaster/contrib/replication/setup">
+         <fileset dir="${src.java.dir}/org/xmlBlaster/contrib/replication/setup"/>
+      </copy>
       <jar destfile="${build.dir}/xmlBlasterContrib.jar" basedir="${build.dest}"
-           includes="xmlBlasterJdk14Logging.properties,/xmlBlaster/contrib/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
+           includes="xmlBlasterJdk14Logging.properties,org/xmlBlaster/contrib/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
       <copy file="${build.dir}/xmlBlasterContrib.jar" tofile="${lib.dir}/xmlBlasterContrib.jar"/>
    </target>
 
