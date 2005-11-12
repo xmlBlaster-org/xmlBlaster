@@ -477,7 +477,10 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          conn  = pool.reserve();
          conn.setAutoCommit(true);
          String sql = null;
-         sql = "CREATE TABLE " + this.tableName + " (first TIMESTAMP, PRIMARY KEY(first))";
+         String type = "TIMESTAMP";
+         // TODO remove this after testing
+         type = "DATE";
+         sql = "CREATE TABLE " + this.tableName + " (first " + type + ", PRIMARY KEY(first))";
          pool.update(sql);
 
          this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
@@ -552,9 +555,6 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
             }
-            
-            
-            
             
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             long time = format.parse(txt).getTime();
