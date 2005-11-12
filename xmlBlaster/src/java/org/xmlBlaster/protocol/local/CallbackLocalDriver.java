@@ -21,7 +21,9 @@ package org.xmlBlaster.protocol.local;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -40,12 +42,13 @@ public class CallbackLocalDriver implements I_CallbackDriver {
    private String ME = "CallbackLocalDriver";
    private Global glob;
    private LogChannel log;
-   private I_LocalCallback  localCallback;
+   private I_CallbackExtended callback;
    private CallbackAddress callbackAddress;
    
    public CallbackLocalDriver (){
       
    }
+   
    /** Get a human readable name of this driver */
    public final String getName() {
       return ME;
@@ -81,51 +84,63 @@ public class CallbackLocalDriver implements I_CallbackDriver {
     * Get the address how to access this driver. 
     * @return "rmi://www.mars.universe:1099/I_AuthServer"
     */
-   public String getRawAddress() {
+   public final String getRawAddress() {
       return callbackAddress.getRawAddress();
    }
 
    /**
+    * 
+    * @return The callback to be invoked. Note that this is known only when the client side
+    * has invoked the init method. Before that the callback will be unknown and this method
+    * will throw a Communication Exception.
+    * @throws XmlBlasterException
+    */
+   private final I_CallbackExtended getCallback() throws XmlBlasterException {
+      if (this.callback != null)
+         return this.callback;
+      synchronized (this) {
+         if (this.callback != null)
+            return this.callback;
+         if (this.callbackAddress == null)
+            throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback");
+         org.xmlBlaster.engine.Global
+            engineGlob = (org.xmlBlaster.engine.Global)this.glob.getObjectEntry("ServerNodeScope");
+         if (engineGlob == null)
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+         this.callback = (I_CallbackExtended)engineGlob.getObjectEntry(getRawAddress());
+         if (this.callback == null)
+            throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback");
+         return this.callback;
+      }
+   }
+   
+   /**
     * Get callback reference here (== connectLowLevel()).
     * @param  callbackAddress Contains the stringified local object in in Global callback handle of the client
     */
-   public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
+   public final synchronized void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
       this.glob = glob;
       this.log = glob.getLog("local");
       this.callbackAddress = callbackAddress;
-      String callbackId = callbackAddress.getRawAddress();
-      try {
-         localCallback  = ( I_LocalCallback )glob.getObjectEntry(callbackId);
-
-         if ( localCallback == null) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the LocalCallbackImpl, was there really one started");
-         } // end of if ()
-         
-      }
-      catch (Throwable e) {
-         log.error(ME, "The given callback id ='" + callbackId + "' is invalid: " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Local-CallbackHandleInvalid", "The given callback Id is invalid: " + e.toString());
-      }
    }
    
    /**
     * This sends the update to the client.
     * @exception Exceptions thrown from client are re thrown as ErrorCode.USER*
     */
-   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException
-   {
+   public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSecretSessionId());
+      if (log.TRACE) 
+         log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSecretSessionId());
       
       try {
-         return localCallback.update(callbackAddress.getSecretSessionId(), msgArr);
-      } catch (XmlBlasterException xmlBlasterException) {
-         
+         return getCallback().update(callbackAddress.getSecretSessionId(), msgArr);
+      } 
+      catch (XmlBlasterException xmlBlasterException) {
          // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
          if (xmlBlasterException.isUser())
             throw xmlBlasterException;
-         
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "Local Callback of " + msgArr.length +
                                        " messages to client [" + callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
@@ -144,8 +159,9 @@ public class CallbackLocalDriver implements I_CallbackDriver {
       if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSecretSessionId());
       
       try {
-         localCallback.updateOneway(callbackAddress.getSecretSessionId(), msgArr);
-      } catch (Throwable e) {
+         getCallback().updateOneway(callbackAddress.getSecretSessionId(), msgArr);
+      } 
+      catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
             "Local oneway callback of message to client [" + callbackAddress.getSecretSessionId() + "] failed", e);
       }
@@ -158,14 +174,9 @@ public class CallbackLocalDriver implements I_CallbackDriver {
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
-   {
-      try {
-         return localCallback.ping(qos);
-      } catch (Throwable e) {
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                                       "Local callback ping failed", e);
-      }
+   public final String ping(String qos) throws XmlBlasterException {
+      getCallback();
+      return Constants.RET_OK;
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
@@ -177,10 +188,9 @@ public class CallbackLocalDriver implements I_CallbackDriver {
     * This method shuts down the driver.
     * <p />
     */
-   public void shutdown()
-   {
-      localCallback = null;
-      callbackAddress = null;
+   public synchronized void shutdown() {
+      this.callback = null;
+      this.callbackAddress = null;
       if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
    }
 

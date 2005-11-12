@@ -1903,11 +1903,12 @@ public class Global implements Cloneable
               "-dispatch/connection/pingInterval", "0",
               "-dispatch/connection/burstMode/collectTime", "0",
               "-dispatch/callback/protocol", "LOCAL",
-              "-dispatch/callback/pingInterval", "0",
+              "-dispatch/callback/pingInterval", "10000",
+              "-dispatch/callback/retries", "-1",
               "-dispatch/callback/burstMode/collectTime", "0",
               /*"-queue/defaultPlugin", "RAM,1.0",*/
               "-queue/connection/defaultPlugin", "RAM,1.0",
-              "-queue/callback/defaultPlugin", "RAM,1.0",
+              "-queue/callback/defaultPlugin", "CACHE,1.0",
               "-queue/subject/defaultPlugin", "RAM,1.0"
            };
       return nativeConnectArgs;

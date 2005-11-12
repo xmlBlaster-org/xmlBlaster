@@ -6,32 +6,31 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.protocol.local;
 
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.I_CallbackRaw;
-import org.xmlBlaster.protocol.local.I_LocalCallback;
-import java.io.IOException;
 
 
 /**
  * A client callback driver for in jvm calls.
- * <p>This does not work if not the serverside local driver is loaded to: {@link org.xmlBlaster.protocol.local.CallbackLocalDriver}</p>
+ * the start/invocation sequence for the local protocol is now decoupled. This means that the
+ * client can come before the server and the server can come before the client (as would
+ * normally be the case when recovering from persistence).
+ * This means that even when choosing the local protocol there could be the situation where
+ * the client is not (yet/anymore) available, particularly on run level changes.
+ *  
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.local.html">The protocol.local requirement</a>
  */
-public class LocalCallbackImpl implements I_CallbackServer, I_LocalCallback
+public class LocalCallbackImpl implements I_CallbackServer
 {
    private String ME = "LocalCallbackImpl";
    private Global glob;
-   private LogChannel log;
    /** The access callback */
    private I_CallbackExtended cbClient;
    /** The id (raw address of this object */
@@ -74,10 +73,9 @@ public class LocalCallbackImpl implements I_CallbackServer, I_LocalCallback
    public synchronized final void initialize(Global glob, String loginName,
                             CallbackAddress callbackAddress, I_CallbackExtended cbClient) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("local");
       this.ME = "LocalCallbackImpl-" + loginName;
+
       this.callbackId = "LOCAL:"+this.hashCode();
-      this.cbClient = cbClient;
       
       // Set this object an the engine.Global so that the server cb handler
       // can find it.
@@ -86,16 +84,17 @@ public class LocalCallbackImpl implements I_CallbackServer, I_LocalCallback
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       
       // Ad the driver to the "naming" store.
-      engineGlob.addObjectEntry(callbackId,this);
-
+      if (cbClient != null) {
+         this.cbClient = cbClient;
+         engineGlob.addObjectEntry(this.callbackId, this.cbClient);
+      }
    }
 
    /**
     * Returns the protocol type. 
     * @return "LOCAL"
     */
-   public final String getCbProtocol()
-   {
+   public final String getCbProtocol() {
       return "LOCAL";
    }
 
@@ -115,40 +114,8 @@ public class LocalCallbackImpl implements I_CallbackServer, I_LocalCallback
     * @return true everything is OK, false if probably messages are lost on shutdown
     */
    public synchronized void shutdown() {
-      engineGlob.removeObjectEntry(callbackId);
+      engineGlob.removeObjectEntry(this.callbackId);
    }
    
-   public String[] update(String cbSessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException
-   {
-      if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
-      if (log.CALL) log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
-      
-      return cbClient.update(cbSessionId, msgUnitArr);
-   }
-   
-   /**
-    * The oneway variant for better performance. 
-    */
-   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) throws XmlBlasterException
-   {
-      if (msgUnitArr == null) return;
-      if (log.CALL) log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
-      try {
-         cbClient.updateOneway(cbSessionId, msgUnitArr);
-      }
-      // FIXME retrow???
-      catch (Throwable e) {
-         log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
-      }
-   }
-   
-   /**
-    * Ping to check if the xmlBlaster server is alive. 
-    * @see org.xmlBlaster.protocol.I_CallbackDriver#ping(String)
-    */
-   public String ping(String str)
-   {
-      return Constants.RET_OK;
-   }
 } // class LocalCallbackImpl
 
