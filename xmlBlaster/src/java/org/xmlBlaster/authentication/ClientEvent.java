@@ -18,20 +18,13 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
  */
 public class ClientEvent extends java.util.EventObject {
    
-   ConnectQosServer connectQos;
-   
    /**
     * Constructs a ClientEvent object.
     *
     * @param the client which does the login or logout
     */
-   public ClientEvent(SessionInfo sessionInfo, ConnectQosServer connectQos          ) {
-       super(sessionInfo);
-       this.connectQos = connectQos;
-   }
-
    public ClientEvent(SessionInfo sessionInfo) {
-      this(sessionInfo, null);
+       super(sessionInfo);
    }
 
    /**
@@ -39,7 +32,7 @@ public class ClientEvent extends java.util.EventObject {
     * @return the connectQos (could be null if not passed in the constructor)
     */
    public ConnectQosServer getConnectQos() {                
-       return this.connectQos;
+       return getSessionInfo().getConnectQos();
    }
    
    /**
