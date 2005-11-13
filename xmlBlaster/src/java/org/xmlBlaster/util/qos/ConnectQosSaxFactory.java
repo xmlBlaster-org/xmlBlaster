@@ -16,7 +16,6 @@ import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.StopParseException;
 import org.xmlBlaster.util.SessionName;
 
 import org.xml.sax.Attributes;
@@ -397,8 +396,15 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 
    public void endElement(String uri, String localName, String name, StringBuffer character) throws org.xml.sax.SAXException {
       if (super.endElementBase(uri, localName, name) == true) {
-         if (name.equalsIgnoreCase("clientProperty")) {
+         // "clientProperty" and "attribute" must match super.clientPropertyTagNames.contains(name))
+         if (name.equalsIgnoreCase(ClientProperty.CLIENTPROPERTY_TAG)) {
             this.connectQosData.addClientProperty(this.clientProperty);
+         }
+         if (name.equalsIgnoreCase(ClientProperty.ATTRIBUTE_TAG)) {
+            if (this.inAddress)
+               this.tmpAddr.addClientProperty(this.clientProperty);
+            else if (this.inCallback)
+               this.tmpCbAddr.addClientProperty(this.clientProperty);
          }
          return;
       }

@@ -7,6 +7,8 @@ Comment:   Holding connect address and callback address string including protoco
 package org.xmlBlaster.util.qos.address;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xml.sax.Attributes;
@@ -17,8 +19,9 @@ import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.qos.ClientProperty;
 
-import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Properties;
 
 
@@ -37,7 +40,9 @@ public abstract class AddressBase
    protected final Global glob;
    protected final LogChannel log;
 
-   private Hashtable pluginAttributes;
+   // Are strongest, usually set by programmer
+   private /*I_Info*/ClientPropertiesInfo pluginAttributes;
+   //private Hashtable pluginAttributes;
    private Properties pluginInfoParameters = new Properties();
 
    /** The root xml element: &lt;callback> or &lt;address>, is set from the derived class */
@@ -229,7 +234,7 @@ public abstract class AddressBase
     * @param value  The value, e.g. "10000"
     */
    public void setPluginProperty(String key, String value) {
-      if (this.pluginAttributes == null) this.pluginAttributes = new Hashtable();
+      if (this.pluginAttributes == null) this.pluginAttributes = new ClientPropertiesInfo(null);
       this.pluginAttributes.put(key, value);
       // refresh compressType or minSize: Those attributes are double used:
       // Once SOCKET specific and again as a common setting in <address ...>
@@ -237,6 +242,11 @@ public abstract class AddressBase
       if ("compress/type".equals(key) || "compress/minSize".equals(key)) {
          initialize();
       }
+   }
+   
+   public void addClientProperty(ClientProperty clientProperty) {
+      if (this.pluginAttributes == null) this.pluginAttributes = new ClientPropertiesInfo(null);
+      this.pluginAttributes.put(clientProperty.getName(), clientProperty);
    }
 
    /**
@@ -277,9 +287,9 @@ public abstract class AddressBase
    public PropString getEnv(String key, String defaultValue) {
       PropString tmp = new PropString(key, this.pluginInfoParameters.getProperty(key,defaultValue));
       if (this.pluginAttributes != null) {
-         Object val = this.pluginAttributes.get(key);
+         Object val = this.pluginAttributes.get(key, (String)null);
          if (val != null) {
-            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
+            tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER); // or by client's ConnectQos
             return tmp;
          }
       }
@@ -297,7 +307,7 @@ public abstract class AddressBase
 
       PropInt tmp = new PropInt(key, defaultValue);
       if (this.pluginAttributes != null) {
-         Object val = this.pluginAttributes.get(key);
+         Object val = this.pluginAttributes.get(key, (String)null);
          if (val != null) {
             tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
             return tmp;
@@ -317,7 +327,7 @@ public abstract class AddressBase
 
       PropLong tmp = new PropLong(key, defaultValue);
       if (this.pluginAttributes != null) {
-         Object val = this.pluginAttributes.get(key);
+         Object val = this.pluginAttributes.get(key, (String)null);
          if (val != null) {
             tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
             return tmp;
@@ -337,7 +347,7 @@ public abstract class AddressBase
 
       PropBoolean tmp = new PropBoolean(key, defaultValue);
       if (this.pluginAttributes != null) {
-         Object val = this.pluginAttributes.get(key);
+         Object val = this.pluginAttributes.get(key, (String)null);
          if (val != null) {
             tmp.setValue((String)val, PropEntry.CREATED_BY_SETTER);
             return tmp;
@@ -1082,6 +1092,14 @@ public abstract class AddressBase
          }
          else {
             sb.append(offset).append(" ").append("<ptp>").append(this.ptpAllowed).append("</ptp>");
+         }
+      }
+      if (this.pluginAttributes != null) {
+         Iterator it = this.pluginAttributes.getClientPropertyMap().values().iterator();
+         while (it.hasNext()) {
+            Object obj = it.next();
+            EncodableData cp = (EncodableData)obj;
+            sb.append(cp.toXml(offset+" ", ClientProperty.ATTRIBUTE_TAG));
          }
       }
       sb.append(offset).append("</").append(rootTag).append(">");

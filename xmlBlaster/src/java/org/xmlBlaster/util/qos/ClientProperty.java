@@ -26,6 +26,12 @@ import org.xmlBlaster.util.Global;
  */
 public final class ClientProperty extends EncodableData
 {
+   private static final long serialVersionUID = 6415499809321164696L;
+   /** Typically used tag name for plugin attributes */
+   public static final String ATTRIBUTE_TAG = "attribute";
+   /** Typicall used tag name for subscribeQos and other Qos */
+   public static final String CLIENTPROPERTY_TAG = "clientProperty";
+
    /**
     * @param name  The unique property key
     * @param type The data type of the value

@@ -7,6 +7,9 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -27,7 +30,9 @@ public class XmlQoSBase extends SaxHandlerBase
    private String ME = "XmlQoSBase";
    protected boolean inQos = false;     // parsing inside <qos> ? </qos>
    protected ClientProperty clientProperty;
-
+   protected final Set clientPropertyTagNames = new TreeSet();
+   protected boolean inClientProperty;
+   protected StringBuffer cpCharacter;
 
    /**
     * Constructs an un initialized QoS (quality of service) object.
@@ -35,11 +40,14 @@ public class XmlQoSBase extends SaxHandlerBase
     */
    public XmlQoSBase()
    {
+      this(null);
    }
 
    public XmlQoSBase(Global glob)
    {
       super(glob);
+      this.clientPropertyTagNames.add(ClientProperty.CLIENTPROPERTY_TAG); // "clientProperty"
+      this.clientPropertyTagNames.add(ClientProperty.ATTRIBUTE_TAG); // "attribute"
    }
 
    /**
@@ -88,7 +96,9 @@ public class XmlQoSBase extends SaxHandlerBase
          Thread.dumpStack();
          return true;
       }
-      if (name.equalsIgnoreCase("clientProperty")) {
+      if (this.clientPropertyTagNames.contains(name)) {
+         this.inClientProperty = true;
+         if (this.cpCharacter == null) this.cpCharacter = new StringBuffer();
          this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
          character.setLength(0);
          return true;
@@ -96,6 +106,19 @@ public class XmlQoSBase extends SaxHandlerBase
       return false;
    }
 
+   /**
+    * Characters.
+    * The text between two tags, in the following example 'Hello':
+    * <key>Hello</key>
+    */
+   public void characters(char ch[], int start, int length) {
+      if (this.inClientProperty) {
+         this.cpCharacter.append(ch, start, length);
+      }
+      else { 
+         super.characters(ch, start, length);
+      }
+   }
 
    /**
     * Start element.
@@ -126,8 +149,10 @@ public class XmlQoSBase extends SaxHandlerBase
          return true;
       }
 
-      if (name.equalsIgnoreCase("clientProperty")) {
-         String tmp = character.toString().trim();
+      if (this.clientPropertyTagNames.contains(name)) {
+         this.inClientProperty = false;
+         String tmp = this.cpCharacter.toString().trim();
+         this.cpCharacter.setLength(0);
          if (this.clientProperty != null) {
             if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
                this.clientProperty.setValue(tmp);

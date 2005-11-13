@@ -83,6 +83,7 @@ public class ConnectQosTest extends TestCase {
          "   <queue relating='connection' type='RAM' version='4.0' maxEntries='22' maxBytes='44'>\n" +
          "      <address type='XMLRPC'>\n" +
          "         http:/www.mars.universe:8080/RPC2\n" +
+         "         <attribute name='intKey2' type='int'>34</attribute>\n" +
          "      </address>\n" +
          "   </queue>\n" +
          "   <queue relating='callback' maxEntries='1600' maxBytes='2000'>\n" +
@@ -91,6 +92,7 @@ public class ConnectQosTest extends TestCase {
          "         http:/www.mars.universe:8080/RPC2\n" +
          "         <compress type='gzip' minSize='1000' />\n" +
          "         <burstMode collectTime='400' maxEntries='12' maxBytes='24' />\n" +
+         "         <attribute name='intKey1' type='int'>1234</attribute>\n" +
          "      </callback>\n" +
          "   </queue>\n" +
          "   <serverRef type='IOR'>\n" +
@@ -138,6 +140,10 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", "RAM", prop.getType());
             assertEquals("", "4.0", prop.getVersion());
             assertEquals("", 44L, prop.getMaxBytes());
+            AddressBase[] addrArr = prop.getAddresses();
+            assertEquals("Address array", 1, addrArr.length);
+            AddressBase addr = addrArr[0];
+            assertEquals("", "34", addr.getEnv("intKey2", "").getValue());
          }
 
          {
@@ -168,6 +174,7 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", 400, addr.getCollectTime());
             assertEquals("", 12, addr.getBurstModeMaxEntries());
             assertEquals("", 24, addr.getBurstModeMaxBytes());
+            assertEquals("", "1234", addr.getEnv("intKey1", "").getValue());
          }
 
          assertEquals("Wrong number of clientProperties", 2, qos.getClientProperties().size());

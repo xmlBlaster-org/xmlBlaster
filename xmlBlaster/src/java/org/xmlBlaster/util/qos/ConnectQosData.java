@@ -39,6 +39,7 @@ import java.util.ArrayList;
  */
 public final class ConnectQosData extends QosData implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = 1L;
    private final String ME = "ConnectQosData";
    protected transient I_ConnectQosFactory factory;
    private ConnectionStateEnum initialConnectionState = ConnectionStateEnum.UNDEF;
