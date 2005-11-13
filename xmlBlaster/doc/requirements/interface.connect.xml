@@ -79,6 +79,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
          &lt;burstMode collectTime='400' maxEntries='20' maxBytes='-1' />
          &lt;compress type='gzip' minSize='3000'/> &lt;!-- only implemented for SOCKET protocol -->
          &lt;ptp>true&lt;/ptp>
+         &lt;attribute name='key1' type='int'>2005&lt;/attribute>
       &lt;/callback>
    &lt;/queue>
 
