@@ -186,7 +186,7 @@ public:
     * @param clearText if true the base64 for properties are dumped decoded in plain text
     * @return internal state of the ClientProperty as a XML ASCII string
     */
-   std::string toXml(std::string extraOffset="", bool clearText=false) const;
+   std::string toXml(std::string extraOffset="", bool clearText=false, std::string tagName="clientProperty") const;
 };
 
 

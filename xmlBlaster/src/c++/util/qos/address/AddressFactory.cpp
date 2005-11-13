@@ -29,13 +29,27 @@ using namespace org::xmlBlaster::util::parser;
 
 AddressFactory::AddressFactory(Global& global)
    : XmlHandlerBase(global), ME("AddressFactory"),
-   address_(new Address(global)) // dummy allocation
+   address_(new Address(global)), // dummy allocation
+   inAttribute_(false),
+   attribute_(0)
 {
+}
+
+AddressFactory::~AddressFactory()
+{
+   log_.call(ME, "destructor");
+   if (attribute_ != 0) {
+      delete(attribute_);
+   }
 }
 
 void AddressFactory::reset(const AddressBaseRef& address)
 {
    address_ = address;
+   inAttribute_ = false;
+   if (attribute_ != 0) {
+      delete(attribute_);
+   }
 }
 
 AddressBaseRef AddressFactory::getAddress()
@@ -160,6 +174,21 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
    if (name.compare("ptp") == 0) {
       return;
    }
+
+   if (name.compare(ATTRIBUTE_TAG) == 0) { // "attribute"
+      inAttribute_ = true;
+      attributeCharacter_.erase();
+      string nameAttr;
+      AttributeMap::const_iterator iter = attrs.find("name");
+      if (iter != attrs.end()) nameAttr = (*iter).second;
+      string encoding;
+      iter = attrs.find("encoding");
+      if (iter != attrs.end()) encoding = (*iter).second;
+      string type;
+      iter = attrs.find("type");
+      if (iter != attrs.end()) type = (*iter).second;
+      attribute_ = new ClientProperty(true, nameAttr, type, encoding);
+   }
 }
 
 /**
@@ -184,6 +213,14 @@ void AddressFactory::endElement(const string &name)
    }
    else if (name.compare("ptp") == 0) {
       address_->ptpAllowed_ = StringTrim::isTrueTrim(character_);
+   }
+   if (name.compare(ATTRIBUTE_TAG) == 0) { // "attribute"
+      inAttribute_ = false;
+      attribute_->setValueRaw(attributeCharacter_);
+      address_->addAttribute(*attribute_);
+      delete attribute_;
+      attribute_ = 0;
+      attributeCharacter_.erase();
    }
    character_.erase();
 }

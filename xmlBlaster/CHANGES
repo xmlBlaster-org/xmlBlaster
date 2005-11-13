@@ -3,8 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
- o #14045 Added possibility to add attributes to protocol configuration to ConnectQos
-   (currently Java only)
+ o #14049 C++: Added possibility to add <attribute>s for protocol configuration to ConnectQos
+
+ o #14045 Java: Added possibility to add <attribute>s for protocol configuration to ConnectQos
 
  o #14043 The QoS attributes are enforced to be case sensitive
 

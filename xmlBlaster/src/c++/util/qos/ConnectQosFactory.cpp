@@ -362,6 +362,7 @@ int main(int args, char* argv[])
    string("      <callback type='IOR' sessionId='4e56890ghdFzj0'>\n") +
    string("         IOR:10000010033200000099000010....\n") +
    string("         <burstMode collectTime='400' />\n") +
+   string("         <attribute name='aKey'>aValue</attribute>\n") +
    string("      </callback>\n") +
    string("   </queue>\n") +
    string("   <serverRef type='IOR'>IOR:100000100332...</serverRef>\n") +

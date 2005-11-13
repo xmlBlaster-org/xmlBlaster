@@ -21,7 +21,9 @@ Version:   $Id$
 #include <util/xmlBlasterDef.h>
 #include <util/Constants.h>
 #include <util/I_Log.h>
+#include <util/qos/ClientProperty.h>
 #include <string>
+#include <map>
 #include <util/ReferenceCounterBase.h>
 #include <util/ReferenceHolder.h>
 
@@ -40,13 +42,16 @@ extern Dll_Export const long      DEFAULT_minSize;
 extern Dll_Export const bool      DEFAULT_ptpAllowed;
 extern Dll_Export const std::string    DEFAULT_sessionId;
 extern Dll_Export const bool      DEFAULT_useForSubjectQueue;
-extern Dll_Export       std::string    DEFAULT_dispatchPlugin;
+extern Dll_Export std::string    DEFAULT_dispatchPlugin;
+extern Dll_Export std::string    ATTRIBUTE_TAG;
 
 
 
 class Dll_Export AddressBase : public org::xmlBlaster::util::ReferenceCounterBase
 {
    friend class AddressFactory;
+
+public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
 
 private:
    int port_;
@@ -151,40 +156,15 @@ protected:
     */
    std::string dispatchPlugin_; // = DEFAULT_dispatchPlugin;
 
+   ClientPropertyMap attributes_; 
+
    void initHostname(const std::string& hostname)
    {
       hostname_ = hostname;
       address_  = ""; // reset cache
    }
 
-   void copy(const AddressBase& addr)
-   {
-      port_                = addr.port_;
-      ME                   = addr.ME;
-      rootTag_             = addr.rootTag_;
-      address_             = addr.address_;
-      hostname_            = addr.hostname_;
-      isHardcodedHostname_ = addr.isHardcodedHostname_;
-      type_                = addr.type_;
-      version_             = addr.version_;
-      collectTime_         = addr.collectTime_;
-      pingInterval_        = addr.pingInterval_;
-      retries_             = addr.retries_;
-      delay_               = addr.delay_;
-      oneway_              = addr.oneway_;
-      dispatcherActive_    = addr.dispatcherActive_;
-      compressType_        = addr.compressType_;
-      minSize_             = addr.minSize_;
-      ptpAllowed_          = addr.ptpAllowed_;
-      sessionId_           = addr.sessionId_;
-      useForSubjectQueue_  = addr.useForSubjectQueue_;
-      dispatchPlugin_      = addr.dispatchPlugin_;
-      nodeId_              = addr.nodeId_;
-      maxEntries_          = addr.maxEntries_;
-      defaultPingInterval_ = addr.defaultPingInterval_;
-      defaultRetries_      = addr.defaultRetries_;
-      defaultDelay_        = addr.defaultDelay_;
-   }
+   void copy(const AddressBase& addr);
 
    long defaultPingInterval_;
    int defaultRetries_;
@@ -223,6 +203,16 @@ public:
     * Show some important settings for logging
     */
    std::string getSettings() const;
+
+   void addAttribute(const ClientProperty& attribute);
+
+   const ClientPropertyMap& getAttributes() const;
+
+   /**
+    * The address and callbackAddress may contain additional attributes
+    * which are passed to the protocol plugin
+    */
+   std::string dumpAttributes(const std::string& extraOffset, bool clearText=false) const;
 
    /**
     * @param type    The protocol type, e.g. "IOR", "SOCKET", "XMLRPC"
@@ -468,6 +458,8 @@ public:
     * @return "undef" or e.g. "Priority,1.0"
     */
    std::string getDispatchPlugin() const;
+
+   const ClientPropertyMap& getClientProperties() const;
 
    /**
     * Dump state of this object into a XML ASCII std::string.

@@ -38,6 +38,8 @@ private:
 
 protected:
    std::string character_;
+   std::string attributeCharacter_;
+   bool inAttribute_; // Nested <attribute>WITH OWN VALUES (attributeCharacter_)</attribute>
    bool doTrimStrings_;
    org::xmlBlaster::util::StringTrim trimmer_;
    std::string locale_;

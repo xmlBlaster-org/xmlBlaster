@@ -162,12 +162,12 @@ void ClientProperty::setValueRaw(const string& value) {
    value_ = value;
 }
 
-std::string ClientProperty::toXml(std::string extraOffset, bool clearText) const {
+std::string ClientProperty::toXml(std::string extraOffset, bool clearText, std::string tagName) const {
    std::string sb = std::string();
    sb.reserve(256);
    std::string offset = Constants::OFFSET + extraOffset;
 
-   sb += offset + "<clientProperty";
+   sb += offset + "<" + tagName;
    if (getName() != "") {
       sb += " name='" + getName() + "'";
    }
@@ -190,7 +190,7 @@ std::string ClientProperty::toXml(std::string extraOffset, bool clearText) const
       //    )
       //   sb += "><![CDATA [" + val + "]]></clientProperty>";
       //else
-      sb += ">" + (clearText?getStringValue():val) + "</clientProperty>";
+      sb += ">" + (clearText?getStringValue():val) + "</" + tagName + ">";
    }
 
    return sb;

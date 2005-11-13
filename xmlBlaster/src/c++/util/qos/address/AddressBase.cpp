@@ -37,11 +37,13 @@ const long   DEFAULT_minSize            = 0L;
 const bool   DEFAULT_ptpAllowed         = true;
 const string DEFAULT_sessionId          = "unknown";
 const bool   DEFAULT_useForSubjectQueue = true;
-      string DEFAULT_dispatchPlugin     = "";
+string DEFAULT_dispatchPlugin     = "";
+string ATTRIBUTE_TAG = "attribute";
 
 
 AddressBase::AddressBase(Global& global, const string& rootTag)
-   : ReferenceCounterBase(), global_(global), log_(global.getLog("org.xmlBlaster.util.qos"))
+   : ReferenceCounterBase(), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")),
+      attributes_()
 {
 
    defaultPingInterval_ = 0L;
@@ -76,7 +78,8 @@ AddressBase::AddressBase(Global& global, const string& rootTag)
 }
 
 AddressBase::AddressBase(const AddressBase& addr)
-   : global_(addr.global_), log_(addr.log_)
+   : global_(addr.global_), log_(addr.log_),
+      attributes_()
 {
    copy(addr);
 }
@@ -90,6 +93,36 @@ AddressBase& AddressBase::operator =(const AddressBase& addr)
 
 AddressBase::~AddressBase()
 {
+}
+
+void AddressBase::copy(const AddressBase& addr)
+{
+   port_                = addr.port_;
+   ME                   = addr.ME;
+   rootTag_             = addr.rootTag_;
+   address_             = addr.address_;
+   hostname_            = addr.hostname_;
+   isHardcodedHostname_ = addr.isHardcodedHostname_;
+   type_                = addr.type_;
+   version_             = addr.version_;
+   collectTime_         = addr.collectTime_;
+   pingInterval_        = addr.pingInterval_;
+   retries_             = addr.retries_;
+   delay_               = addr.delay_;
+   oneway_              = addr.oneway_;
+   dispatcherActive_    = addr.dispatcherActive_;
+   compressType_        = addr.compressType_;
+   minSize_             = addr.minSize_;
+   ptpAllowed_          = addr.ptpAllowed_;
+   sessionId_           = addr.sessionId_;
+   useForSubjectQueue_  = addr.useForSubjectQueue_;
+   dispatchPlugin_      = addr.dispatchPlugin_;
+   nodeId_              = addr.nodeId_;
+   maxEntries_          = addr.maxEntries_;
+   defaultPingInterval_ = addr.defaultPingInterval_;
+   defaultRetries_      = addr.defaultRetries_;
+   defaultDelay_        = addr.defaultDelay_;
+   attributes_          = addr.attributes_;
 }
 
 /**
@@ -490,6 +523,28 @@ string AddressBase::getDispatchPlugin() const
    return dispatchPlugin_;
 }
 
+void AddressBase::addAttribute(const ClientProperty& attribute)
+{
+   attributes_.insert(ClientPropertyMap::value_type(attribute.getName(), attribute));   
+}
+
+const AddressBase::ClientPropertyMap& AddressBase::getAttributes() const
+{
+   return attributes_;
+}
+
+string AddressBase::dumpAttributes(const string& extraOffset, bool clearText) const
+{
+   string ret = "";
+   QosData::ClientPropertyMap::const_iterator iter = attributes_.begin();
+   while (iter != attributes_.end()) {
+      const ClientProperty& cp = (*iter).second;
+      ret += cp.toXml(extraOffset, clearText, ATTRIBUTE_TAG);
+      iter++;
+   }
+   return ret;
+}
+
 
 /**
  * Dump state of this object into a XML ASCII string.
@@ -550,6 +605,7 @@ string AddressBase::toXml(const string& extraOffset) const
    if (ptpAllowed_ != DEFAULT_ptpAllowed) {
       ret += offset2 + string("<ptp>") + lexical_cast<std::string>(ptpAllowed_) + string("</ptp>");
    }
+   ret += dumpAttributes(offset2);
    ret += offset + string("</") + rootTag_ + string(">");
    return ret;
 }

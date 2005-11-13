@@ -28,9 +28,24 @@ class Dll_Export AddressFactory : public parser::XmlHandlerBase
 private:
    const std::string ME;
    org::xmlBlaster::util::qos::address::AddressBaseRef address_;
+   std::string attributeKey_;
+   bool inAttribute_;
+   ClientProperty* attribute_;
+
+   /**
+   * Copy constructor
+   */
+   AddressFactory(const AddressFactory& rhs);
+
+   /**
+   * Assignment constructor
+   */
+   AddressFactory& operator=(const AddressFactory& rhs);
 
 public:
    AddressFactory(org::xmlBlaster::util::Global& global);
+
+   ~AddressFactory();
 
    void reset(const AddressBaseRef& address);
 

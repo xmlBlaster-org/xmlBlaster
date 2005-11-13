@@ -31,7 +31,8 @@ XmlHandlerBase::XmlHandlerBase(Global& global) :
             ME("XmlHandlerBase"),
             global_(global),
             log_(global.getLog("org.xmlBlaster.util.xml")),
-            invocationMutex_()
+            invocationMutex_(),
+            inAttribute_(false)
 {
    doTrimStrings_ = true;
    //if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
@@ -72,9 +73,9 @@ void XmlHandlerBase::parse(const string &xmlData)
    catch (XmlBlasterException& ex) {
       throw ex;
    }
-	catch (std::exception e) {
+   catch (std::exception e) {
      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: ") + e.what());
-	}
+   }
    catch (...) {
      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::parse", string("ParserFactory: unknown exception"));
    }
@@ -126,22 +127,36 @@ void XmlHandlerBase::parse(const string &xmlData)
 void XmlHandlerBase::characters(const string &ch) 
 {
    if (doTrimStrings_) {
-      character_ += trimmer_.trim(ch);
+   	if (inAttribute_)
+   	   attributeCharacter_ += trimmer_.trim(ch);
+      else
+      	character_ += trimmer_.trim(ch);
    }
-   else character_ += ch;
+   else {
+      if (inAttribute_)
+         attributeCharacter_ += ch;
+      else
+         character_ += ch;
+   }
    //if (log_.trace()) log_.trace(ME, string("characters, character:'") + character_ + string("'"));
 }
 
 void XmlHandlerBase::endCDATA()
 {
-   character_ += "]]>";
+   if (inAttribute_)
+      attributeCharacter_ += "]]>";
+   else
+      character_ += "]]>";
    doTrimStrings_ = true;
    if (log_.trace()) log_.trace(ME, "end of cdata");
 }
 
 void XmlHandlerBase::startCDATA()
 {
-   character_ += "<![CDATA[";
+   if (inAttribute_)
+      attributeCharacter_ += "<![CDATA[";
+   else
+      character_ += "<![CDATA[";
    doTrimStrings_ = false;
    if (log_.trace()) log_.trace(ME, "start of cdata");
 }
