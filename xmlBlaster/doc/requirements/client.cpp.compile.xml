@@ -16,7 +16,7 @@
      to compile the xmlBlaster client C++ library, the C++ demo clients and the C++ testsuite.
      All necessary compile tools are provide in the xmlBlaster distribution.
      </p>
-     <p>Tested compilers are gcc/g++ 3.x and 4.x, Intels ICC, MS-Visual C++ 2000 and 2005
+     <p>Tested compilers are gcc/g++ 3.x and 4.x, Intels ICC, MS-Visual C++ 2003 and 2005
      and SUN-OS CC. Others standard conforming compilers should work without major effort.</p>
 
      <p>The rules to compile C++ code with ant are in the file <b>xmlBlaster/build.xml</b> which
