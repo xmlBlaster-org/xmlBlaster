@@ -7,12 +7,18 @@
       In order to build and run c++ clients, several preconditions need to be fulfilled.
    </topic>
    <description>
+     <p>The impatient Unix user may directly jump to the <a href="#exampleSUSE">compilation example</a>,
+     others should read the next paragraphs to save time.</p>
+
      <h2>Overview</h2>
      <p>You can use the <b><a href="http://ant.apache.org/" target="others">ant tool</a></b> with
      the C++ compile extension <b><a href="http://ant-contrib.sourceforge.net/cc.html" target="others">cpptasks</a></b>
      to compile the xmlBlaster client C++ library, the C++ demo clients and the C++ testsuite.
      All necessary compile tools are provide in the xmlBlaster distribution.
      </p>
+     <p>Tested compilers are gcc/g++ 3.x and 4.x, Intels ICC, MS-Visual C++ 2000 and 2005
+     and SUN-OS CC. Others standard conforming compilers should work without major effort.</p>
+
      <p>The rules to compile C++ code with ant are in the file <b>xmlBlaster/build.xml</b> which
      loads your configuration settings (like the installation path of your CORBA library or XML parser)
      from <b>build.properties</b>. See the configuration example below how to set up build.properties.
@@ -32,22 +38,18 @@
      jam, but currently there is no such support in the xmlBlaster distribution.
      </p>
 
-     <p>To use the C++ client library several libraries are needed.
-        <ul>
-           <li>thread library: BOOST or OMNITHREAD (both delivered in the xmlBlaster distribution)</li>
-           <li>XML parser library (currently only apache's xerces-c is supported, download separately)</li>
-           <li>CORBA library (MICO, TAO, OMNIORB, ORBACUS and ORBIX are supported)<br />
-               or the SOCKET library (the latter is delivered in the xmlBlaster distribution)</li>
-           <li>logging library. We provide a simple, colorful default logging and
-               additionally the sophisticated log4cplus logging library
-                (both in the xmlBlaster distribution).
-                See requirement <i>client.cpp.logging</i> for details.
-           </li>
-        </ul>
-     </p>
-     <p/>
+     <h2>Setup</h2>
+     <p>To use the C++ client library you need at least the Xerces XML library.</p>
+     
+     <p>If you want compression support or client side persistent queuing you
+     need additionally the zlib and SQLite</p>
 
-     <h2>The C++ threading abstraction library</h2>
+     <p>Finally, if you don't want to use our native SOCKET communication protocol
+     you can install a CORBA library as well (MICO, TAO, OMNIORB, ORBACUS and ORBIX are supported)</p>
+
+     <h2>Remarks</h2>
+
+     <h3>The C++ threading abstraction library</h3>
         <b>Note: The omnithread library is included in the xmlBlaster distribution
         and is automatically compiled with our <code>xmlBlaster/build</code> task. For details how
         to switch the threading library please read the next paragraphs.
@@ -75,7 +77,7 @@
            includes with THREADS_INC.
          </p>
 
-     <h2>The XML library</h2>
+     <h3>The XML library</h3>
      <p>
         You can download the xerces-c library from <a href="http://xml.apache.org/xerces-c/index.html">
         apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
@@ -86,7 +88,7 @@
         the $xerces.include.dir and $xerces.lib.dir are set correctly (see examples there) and that the link to the directory for xerces is correct.
      </p>
      
-     <h2>The CORBA library</h2>
+     <h3>The CORBA library</h3>
      <b>MICO</b><br/>
      If want to use MICO as the corba implementation you can download it from 
      <a href="http://www.mico.org">the mico homepage</a>. On how to install and build MICO please
@@ -97,14 +99,14 @@
         <li>CORBACPP_HOME</li>
         <li>CORBACPP_VER</li>
      </ul>
-     to the correct values. 
+     <p>to the correct values.</p>
      <br/>
      <b>TAO</b><br/>
      <p>
      If you want to use TAO please follow the <a href="client.cpp.tao.html">specific TAO requirement</a>
      </p>
 
-     <h2>The compression library zlib</h2>
+     <h3>The compression library zlib</h3>
      <p>
         Optionally you can link this xmlBlaster C++ client library to the zlib compression library.
         You need to download zlib yourself at http://www.gzip.org/zlib/.
@@ -209,63 +211,124 @@ Supported tasks are
 </pre>
    </description>
 
+   <example lang="CPP" type="HTML">
+      <h2><a NAME="exampleSUSE"></a>Example on Linux SUSE 10.0 64bit</h2>
+      <p>Installing xmlBlaster C++ client library on a SUSE 10.0 32 or 64 bit system
+      is very simple: Just install the delivered g++ 4.0.2, xerces 2.6, SQLLite 2.8.16, zlib 1.2.3
+      with yast2 from the distribution DVD.</p>
+      <p>Now configure a <code>$HOME/build.properties</code></p>
+      <pre>
+COMPILE_SOCKET_PLUGIN = 1
+COMPILE_CORBA_PLUGIN  = 0
+corba.product         = NONE
+
+XMLBLASTER_ZLIB=1
+zlib.include.dir=/usr/include
+zlib.lib.dir=/usr/lib64
+
+XMLBLASTER_PERSISTENT_QUEUE=1
+sqlite.include.dir=/usr/include
+sqlite.lib.dir=/usr/lib64
+
+xerces.include.dir=/usr/include
+xerces.lib.dir=/usr/lib64
+xerces.lib.name=xerces-c
+   </pre>
+   <p>And compile the xmlBlaster C++ client library:</p>
+   <pre>
+cd xmlBlaster
+./build c cpp
+   </pre>
+   <p>Now you should have shared libraries for C (<code>xmlBlaster/lib/libxmlBlasterClientC.so</code>)
+   and C++ (<code>xmlBlaster/lib/libxmlBlasterClient.so</code>)
+   and a complete set of examples in <code>xmlBlaster/demo/c/socket/bin</code>
+   and <code>xmlBlaster/demo/c++/bin</code>
+   </p>
+   </example>
+
    <configuration where="client">
    <p>
    Take a copy from xmlBlaster/build.properties to ${user.home}/build.properties and
-   edit it to find the installation directory of the CORBA lib and XERCES lib.
+   edit it to find the installation directory of the XERCES lib (and optionally
+   CORBA libs, zlib and sqlite lib).
    </p>
 <pre>
 #------------------------------------------------------------------------------
-# C++ UNIX example with ACE+TAO 1.3 using g++ 3.2
-#corba.product = TAO
-#CORBACPP_HOME = /opt/ACE_wrappers/TAO
-#CORBACPP_VER  = 
+# Switch debugging of C and C++ client library to true or false
+# The debugging shared library name has added a 'D' to its name
+#c.debug       = false
+#cpp.debug     = false
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# C++ Unix/Linux example with mico 2.3.7 and forcing omnithreads
-CORBACPP_HOME = /usr/local/mico
-corba.product = MICO
-CORBACPP_VER  = 2.3.7
-thread.impl   = OMNITHREAD
+# Set to 1 if you want to use log4cplus instead of our primitive native logging
+# We provide the complete source code with xmlBlaster.
+# For configuration hints see http://log4cplus.sourceforge.net
+#XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# C++ Windows example with ACE+TAO 1.3 using VC++ 7 and boost
-#use-msvc      = 1
-#corba.product = TAO
-#CORBACPP_HOME = C:/Dev/ACE_wrappers/TAO
-#idl.cmd       = C:/Dev/ACE_wrappers/bin/tao_idl.exe
-#CORBACPP_VER  = 
-#thread.impl   = BOOST
-#------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
-# C++ Windows example with mico 2.3.8 using VC++ 7
-#use-msvc      = 1
-#CORBACPP_HOME = C:/Dev/mico
-#corba.product = MICO
-#idl.cmd       = ${CORBACPP_HOME}/win32-bin/idl
-#CORBACPP_VER  = 238
-#------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
-# Usage help:
+# Enable compression with zlib http://www.gzip.org/zlib/ (1.2.1)
+# The older version 1.1.4 does not seem to work properly in stream mode
+# You need to download zlib yourself.
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+#  http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#compress
+# - zlib.include.dir is the path to "zlib.h"
+# - zlib.lib.dir is on Unix the path to the shared library libz.so and
+#                on Windows to zlib.dll and zlib.lib (for compilation)
+# As many zlib versions may fly around on your PC you can add a zlib name
+# which contains all references for statical linkage (e.g. zlib.lib on Windows)
 #
-# corba.product = MICO   (Choose one of MICO, TAO)
-#
-#  Note: The code supports one of OMNIORB, ORBACUS, MICO, TAO, ORBIX
-#   but the build.xml compile script currently only supports MICO or TAO
-#   Extend src/c++/client/protocol/corba/CompatibleCorba.h for another ORB
-#
-# thread.impl   = OMNITHREAD | BOOST
-#   The default is to link with the omniORB multi threading library.
+#XMLBLASTER_ZLIB=1
+#zlib.include.dir=/opt/zlib-bin/include
+#zlib.lib.dir=/opt/zlib-bin/lib
+# On Windows you have to choose the name, usually 'zlib' or 'zlib1'
+# (defaults to 'z' for UNIX):
+#zlib.lib.name=zlib
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# Note for Windows: You need to add the path to mico/bin/idl.exe
-# to your PATH environment
+# Settings of the Xerces-C++ validating XML parser.
+# See http://xml.apache.org/xerces-c/ for more details.
+#
+# - xerces.include.dir is the path to the xercesc-include directry
+#                      (assumes ./xercesc subdirectory);
+#                      on Windows the setting could be: C:/xerces-c_2_6_0/src or
+#                      C:/xerces-c_2_6_0-windows_nt-msvc_60/include
+#                      (defaults to /usr/include)
+# - xerces.lib.dir is on Unix the path to the shared library libxerces-c.so and
+#                  on Windows to xerces-c_2.lib (for compilation)
+#                  (defaults to /usr/lib)
+# - xerces.lib.name=xerces-c
+#                  on Windows set to xerces-c_2
+#
+#xerces.include.dir=/usr/include
+#xerces.lib.dir=/usr/lib
+#xerces.lib.name=xerces-c
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Persistent queue support in C or C++ client library with http://www.sqlite.org
+# You need to download SQLite yourself, see:
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+#  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html
+# - sqlite.include.dir is the path to "sqlite.h"
+# - sqlite.lib.dir is the path to the shared library (dll) libsqlite.so (libsqlite.dll)
+#
+#XMLBLASTER_PERSISTENT_QUEUE=1
+#sqlite.include.dir=/opt/sqlite-bin/include
+#sqlite.lib.dir=/opt/sqlite-bin/lib
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Compile the SOCKET plugin only, without CORBA.
+# See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.socket.html
+COMPILE_SOCKET_PLUGIN = 1
+COMPILE_CORBA_PLUGIN  = 0
+corba.product         = NONE
+#------------------------------------------------------------------------------
+
+# More corba examples are in build.properties
 </pre>
 
    <h3>Debugging with Purify</h3>
@@ -313,6 +376,9 @@ build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
    <see type="REQ">client.cpp</see>
    <see type="REQ">client.cpp.logging</see>
    <see type="REQ">client.cpp.tao</see>
+   <see type="INTERNET" label="Xerces XML">http://xerces.apache.org/</see>
+   <see type="INTERNET" label="SQLite Database">http://www.sqlite.org/</see>
+   <see type="INTERNET" label="ZLib compression">http://www.zlib.net/</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>

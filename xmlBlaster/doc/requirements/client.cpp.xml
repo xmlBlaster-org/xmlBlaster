@@ -512,6 +512,19 @@ int main(int args, char ** argv)
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile.</td>
        </tr>
 
+       <tr>
+       <td>22</td>
+       <td>Linux 2.6.13 x86 64 bit</td>
+       <td><a href="http://gcc.gnu.org/" target="others">g++</a> 4.0.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.7</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.6 64-bit</a></td>
+       <td>2005-11-12</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile
+       The 64bit SQLite, Xerces 2.6 and zlib were installed from SUSE 10.0 CD.</td>
+       </tr>
 
       </table>
       <p>
