@@ -26,7 +26,10 @@ public class BufferedInputStreamMicro implements I_ObjectStream {
       int pos = this.rest.indexOf("\n");
       if (pos > -1) {
          String ret = this.rest.substring(0, pos);
-         this.rest = this.rest.substring(pos+1);
+         if (pos == 0)
+            this.rest = this.rest.substring(pos+1);
+         else
+            this.rest = "";
          return ret;
       }
       StringBuffer ret = new StringBuffer(this.rest);
@@ -35,8 +38,11 @@ public class BufferedInputStreamMicro implements I_ObjectStream {
       boolean doRun = true;
       while (doRun) {
          int first = this.in.read();
-         if (first < 0) return null;
+         if (first < 0) 
+            return null;
          int nmax = this.in.available();
+         if (nmax < 0)
+            return null;
          byte[] buffer = new byte[nmax+1];
          buffer[0] = (byte)first;
          if (nmax > 0) {
@@ -45,14 +51,16 @@ public class BufferedInputStreamMicro implements I_ObjectStream {
          }
          String tmp = new String(buffer);
          pos = tmp.indexOf("\n");
-         if (pos < 0) ret.append(tmp);
+         if (pos < 0) 
+            ret.append(tmp);
          else {
             if (pos > 0) {
                this.rest = tmp.substring(pos+1);
                tmp = tmp.substring(0, pos);
                ret.append(tmp);
             }
-            else this.rest = "";
+            else 
+               this.rest = "";
             break;
          }
       }
