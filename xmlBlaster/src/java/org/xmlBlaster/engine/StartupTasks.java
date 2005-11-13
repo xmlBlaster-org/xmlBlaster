@@ -76,8 +76,7 @@ public class StartupTasks implements I_Plugin {
    private URL scriptFileUrl;
    private String outFileName = "";
 
-   private String loginName = "_StartupTasks";
-   private String password = "secret";
+   private ConnectQos connectQos;
    
    // forceBase64==false: ASCII dump for content if possible (XML embedable)
    //private boolean forceBase64 = false;
@@ -124,8 +123,16 @@ public class StartupTasks implements I_Plugin {
             return;
          }
 
-         this.loginName = this.global.get("loginName", this.loginName, null, this.pluginInfo);
-         this.password = this.global.get("password", this.password, null, this.pluginInfo);
+         String tmp  = this.global.get("connectQos", (String)null, null, pluginInfo);
+         if (tmp != null) {
+            this.connectQos = new ConnectQos(this.global, 
+                  this.global.getConnectQosFactory().readObject(tmp));
+         }
+         else {
+            String loginName = this.global.get("loginName", "_StartupTasks", null, this.pluginInfo);
+            String password = this.global.get("password", "secret", null, this.pluginInfo);
+            this.connectQos = new ConnectQos(this.global, loginName, password);
+         }
 
          excuteStartupTasks();
       }
@@ -169,8 +176,7 @@ public class StartupTasks implements I_Plugin {
       try {
          this.connection = new XmlBlasterAccess(this.global);
 
-         ConnectQos connectQos = new ConnectQos(this.global, loginName, password);
-         this.connection.connect(connectQos, new I_Callback() {
+         this.connection.connect(this.connectQos, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.warn(ME, "Ignoring received message '" + updateKey.getOid() + "'");
                return Constants.RET_OK;
