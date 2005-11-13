@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14050 http/j2me: Fixed possible IndexOutOfBound and NegativeArray exceptions in http servlet
+
  o #14049 C++: Added possibility to add <attribute>s for protocol configuration to ConnectQos
 
  o #14045 Java: Added possibility to add <attribute>s for protocol configuration to ConnectQos

@@ -17,6 +17,7 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
@@ -39,6 +40,7 @@ import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.engine.I_SubscriptionListener;
 import org.xmlBlaster.engine.SubscriptionEvent;
+import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -220,7 +222,21 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          }
          this.maxResponseEntries = this.getLong("replication.sqlMaxEntries", 10L);
 
+         
          getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).addClientListener(this);
+
+         SessionInfo[] sessionInfos = getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).getSessionInfoArr();
+         for (int i=0; i < sessionInfos.length; i++) {
+            SessionInfo sessionInfo = sessionInfos[i];
+            ClientEvent event = new ClientEvent(sessionInfo);
+            sessionAdded(event);
+            
+            SubscriptionInfo[] subInfos = getEngineGlobal(this.global).getRequestBroker().getClientSubscriptions().getSubscriptions(sessionInfo);
+            for (int j=0; j < subInfos.length; j++) { 
+               SubscriptionEvent subEvent = new SubscriptionEvent(subInfos[j]);
+               subscriptionAdd(subEvent);
+            }
+         }
          
          this.initialized = true;
       }
@@ -577,7 +593,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    /**
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionAdded(ClientEvent e) throws XmlBlasterException {
+   public synchronized void sessionAdded(ClientEvent e) throws XmlBlasterException {
       if (e == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
       ConnectQosServer connQos = e.getConnectQos();
@@ -668,7 +684,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * 
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionAdd(org.xmlBlaster.engine.SubscriptionEvent)
     */
-   public void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
+   public synchronized void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
       String relativeName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
       
       I_ReplSlave slave = null;

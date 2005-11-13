@@ -300,11 +300,17 @@ public class XBSession extends Thread implements Session, I_Callback {
       return new XBStreamMessage(this, null);
    }
 
-   public TextMessage createTextMessage() throws JMSException {
-      checkIfOpen("createTextMessage");
+   public XBStreamingMessage createStreamingMessage() throws JMSException {
+      checkIfOpen("createStreamingMessage");
       checkControlThread();
       return new XBStreamingMessage(this, null);
       // return new XBTextMessage(this, null, null, null);      
+   }
+
+   public TextMessage createTextMessage() throws JMSException {
+      checkIfOpen("createTextMessage");
+      checkControlThread();
+      return new XBTextMessage(this, null);      
    }
 
    public TextMessage createTextMessage(String text) throws JMSException {

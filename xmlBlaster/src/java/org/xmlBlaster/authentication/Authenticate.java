@@ -636,7 +636,7 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Returns a current snapshot of all sessions
+    * Returns a current snapshot of all sessions, never returns null.
     */
    public final SessionInfo[] getSessionInfoArr() {
       synchronized(this.sessionInfoMap) {

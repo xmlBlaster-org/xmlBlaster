@@ -283,7 +283,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
       XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      XBStreamingMessage msg = (XBStreamingMessage)session.createTextMessage();
+      XBStreamingMessage msg = session.createStreamingMessage();
       msg.setStringProperty("_filename", shortFilename);
       msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
       msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");

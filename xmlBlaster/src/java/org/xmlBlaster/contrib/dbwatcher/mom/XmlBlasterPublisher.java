@@ -299,7 +299,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          }
          else
             qos = new PublishQos(this.glob);
-         qos.setPersistent(true);
+         if (!"UNREGISTER".equals(command)) // unregister are not persistent
+            qos.setPersistent(true);
          qos.setSubscribable(true);
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          // to force to fill the client properties map !!
