@@ -312,7 +312,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public void doPause() throws Exception {
       I_AdminSession session = getSession(); 
-      session.setDispatcherActive(true);
+      session.setDispatcherActive(false);
    }
    
    

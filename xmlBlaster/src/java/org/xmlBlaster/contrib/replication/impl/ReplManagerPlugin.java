@@ -195,7 +195,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
                instanceName, this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
-         this.global.getJmxWrapper().registerMBean(contextNode, this);
+         // this.global.getJmxWrapper().registerMBean(contextNode, this);
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);

@@ -69,7 +69,6 @@ public class SqlRow {
     * It copies (stores) all entries found in the map into the attributes. As values only String and ClientProperty
     * objects are allowed. If another type is found, an IllegalArgumentException is thrown. If null is passed, 
     * nothing is done.
-    * 
     * @param map
     */
    final static void addProps(Map map, Map destinationMap, List destinationList) {

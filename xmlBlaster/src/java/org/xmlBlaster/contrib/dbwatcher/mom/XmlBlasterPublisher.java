@@ -283,15 +283,21 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#publish(String, String, Map)
     */
    public String publish(String changeKey, byte[] out, Map attrMap) throws Exception {
+      
       if (out == null) out = "".getBytes();
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
-      String command = (attrMap != null) ? (String)attrMap.get("_command") : (String)null;
+      String command = null;
+      if (attrMap != null) 
+         command = (String)attrMap.get("_command");
+      else
+         command = "";
       // this is used to register the owner of this object (typically the DbWatcher)
       if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command)) {
+         
          String destination = null;
-         PublishQos qos = null;
          if (attrMap != null)
             destination = (String)attrMap.get("_destination");
+         PublishQos qos = null;
          if (destination != null) {
             Destination dest = new Destination(new SessionName(this.glob, destination));
             dest.forceQueuing(true); // to ensure it works even if this comes before manager
@@ -302,8 +308,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          if (!"UNREGISTER".equals(command)) // unregister are not persistent
             qos.setPersistent(true);
          qos.setSubscribable(true);
-         ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          // to force to fill the client properties map !!
+         ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
          addStringPropToQos(attrMap, qos);
 

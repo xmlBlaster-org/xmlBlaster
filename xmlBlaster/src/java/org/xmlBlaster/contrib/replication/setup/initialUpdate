@@ -31,7 +31,7 @@ else
    if [ "${CMD}" = "imp" ] ; then
       CMDLINE="imp ${USER}/${PWD}@${SID} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
    else
-      ${ECHO} "usage $0 exp|imp filename"
+      ${ECHO} "usage $0 exp|imp SID filename"
       ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"
       ${ECHO} "and exp is used for export and imp for import (use either exp or imp)"
       ${ECHO} "and SID is the SID of the database"

@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * ClientPropertiesInfo This is the I_Info implementation making use of Properties.
@@ -38,7 +38,7 @@ public class ClientPropertiesInfo implements I_Info {
       public String get(String key) {
          if (key == null)
             return null;
-         EncodableData prop = (EncodableData)clientPropertyMap.get(key);
+         ClientProperty prop = (ClientProperty)clientPropertyMap.get(key);
          if (prop != null) {
             String repl = prop.getStringValue();
             if (repl != null)
@@ -112,10 +112,10 @@ public class ClientPropertiesInfo implements I_Info {
       Object obj = this.clientPropertyMap.get(key);
       if (obj == null)
          return null;
-      if (!(obj instanceof EncodableData))
+      if (!(obj instanceof ClientProperty))
          return null;
       
-      EncodableData prop = (EncodableData)obj;
+      ClientProperty prop = (ClientProperty)obj;
       String ret = prop.getStringValue();
       if (ret != null) {
          return replace(ret);
@@ -125,16 +125,16 @@ public class ClientPropertiesInfo implements I_Info {
 
    /**
     * @param key
-    * @return null if not of type EncodableData or of not found
+    * @return null if not of type ClientProperty or of not found
     */
-   protected EncodableData getEncodableData(String key) {
+   protected ClientProperty getClientProperty(String key) {
       Object obj = this.clientPropertyMap.get(key);
       if (obj == null)
          return null;
-      if (!(obj instanceof EncodableData))
-         return null;
+      if (!(obj instanceof ClientProperty))
+         return (ClientProperty)null;
       
-      return (EncodableData)obj;
+      return (ClientProperty)obj;
    }
 
    /**
@@ -160,7 +160,8 @@ public class ClientPropertiesInfo implements I_Info {
        if (value == null)
          this.clientPropertyMap.remove(key);
        else {
-          EncodableData prop = new EncodableData(key, null, null, null, value);
+          // ClientProperty prop = new ClientProperty(key, null, null, null, value);
+          ClientProperty prop = new ClientProperty(key, null, null, value);
           this.clientPropertyMap.put(key, prop);
        }
     }
@@ -168,7 +169,7 @@ public class ClientPropertiesInfo implements I_Info {
     /**
      * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
      */
-    public synchronized void put(String key, EncodableData value) {
+    public synchronized void put(String key, ClientProperty value) {
        if (value == null)
          this.clientPropertyMap.remove(key);
        else {
@@ -256,7 +257,7 @@ public class ClientPropertiesInfo implements I_Info {
       Iterator iter = this.clientPropertyMap.entrySet().iterator();
       while (iter.hasNext()) {
          Map.Entry entry = (Map.Entry)iter.next();
-         if (entry.getValue() instanceof EncodableData)
+         if (entry.getValue() instanceof ClientProperty)
             set.add(entry.getKey());
       }
       return set;
