@@ -127,6 +127,8 @@
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
       <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
+      <attribute id='compress/type'>zlib</attribute>
+      <attribute id='compress/minSize'>200</attribute>
    </plugin>
 -->
 

@@ -60,6 +60,14 @@ public interface I_MsgInfoParser {
 
    /**
     * Get a specific extension for this format. 
+    * @return For example 
+    *  XBFORMAT_MIMETYPE = "application/xmlBlaster-xbf" or
+    *  XBFORMAT_MIMETYPE_ZLIB = "application/xmlBlaster-xbfz"
+    */
+   String getMimetype(boolean isCompressed);
+
+   /**
+    * Get a specific extension for this format. 
     * @return For example XBFORMAT_EXTENSION = ".xbf" or XBFORMAT_ZLIB_EXTENSION = ".xbfz"
     */
    String getExtension(boolean isCompressed);

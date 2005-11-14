@@ -73,7 +73,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor
       }
       else if (isCompressZlib()) { // Compress each message indiviually
          this.iStream = new ZBlockInputStream(iStream);
-         this.oStream = new ZBlockOutputStream(oStream, (int)super.addressConfig.getMinSize());
+         this.oStream = new ZBlockOutputStream(oStream, getMinSizeForCompression());
       }
       else {
          this.iStream = iStream;

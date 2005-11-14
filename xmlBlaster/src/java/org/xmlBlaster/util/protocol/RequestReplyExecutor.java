@@ -97,7 +97,7 @@ public abstract class RequestReplyExecutor
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
          this.compressZlib = true;
-         log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + this.addressConfig.getMinSize() + " bytes");
+         log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + getMinSizeForCompression() + " bytes");
       }
       else {
          this.compressZlibStream = false;
@@ -539,11 +539,20 @@ public abstract class RequestReplyExecutor
    abstract protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException;
       
    public boolean isCompressZlib() {
-      return compressZlib;
+      return this.compressZlib;
+   }
+   
+   /**
+    * Compressing too small messages won't reduce the size
+    * @return The number of bytes, only compress if bigger
+    */
+   public int getMinSizeForCompression() {
+      if (this.addressConfig == null) return 100;
+      return (int)this.addressConfig.getMinSize();
    }
 
    public boolean isCompressZlibStream() {
-      return compressZlibStream;
+      return this.compressZlibStream;
    }
 }
 

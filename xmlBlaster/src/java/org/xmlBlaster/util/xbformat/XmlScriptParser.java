@@ -49,6 +49,10 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
 
    public static final String XMLSCRIPT_ZLIB_EXTENSION = ".xmlz";
 
+   public static final String XMLSCRIPT_MIMETYPE = "text/xml";
+   
+   public static final String XMLSCRIPT_MIMETYPE_ZLIB = "text/xmlz";
+   
    /**
     * If not null somebody wants to be notified about the current bytes send
     * over socket
@@ -64,6 +68,16 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.glob = glob;
       this.progressListener = progressListener;
       super.initialize(glob, null, null);
+   }
+
+   /**
+    * Get a specific extension for this format. 
+    * @return For example 
+    *  XMLSCRIPT_MIMETYPE = "text/xml" or
+    *  XMLSCRIPT_MIMETYPE_ZLIB = "text/xmlz"
+    */
+   public String getMimetype(boolean isCompressed) {
+      return (isCompressed) ? XMLSCRIPT_MIMETYPE_ZLIB : XMLSCRIPT_MIMETYPE;
    }
 
    /**

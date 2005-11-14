@@ -20,9 +20,11 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XbfParser;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.def.Constants;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +57,10 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    private String emailSessionId = "";
 
    protected Pop3Driver pop3Driver;
+   
+   private Deflater compressor;
+   
+   private Inflater decompressor;
 
    /**
     * This init() is called after the init(Global, PluginInfo)
@@ -64,10 +70,11 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
     */
    public void init(Global glob, AddressBase addressBase, I_PluginConfig pluginConfig)
          throws XmlBlasterException {
-      super.initialize(glob, addressBase);
       this.addressBase = addressBase;
       this.pluginConfig = pluginConfig;
-      
+      this.compressor = new Deflater(Deflater.BEST_COMPRESSION);
+      this.decompressor = new Inflater();
+
       // Add
       //   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster,compress/type=zlib:stream
       //   ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib:stream
@@ -76,6 +83,8 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       if (pluginConfig != null)
          this.addressBase.setPluginInfoParameters(pluginConfig.getParameters());
 
+      super.initialize(glob, addressBase);
+      
       this.secretSessionId = addressBase.getSecretSessionId();
       /*
        * TODO: Support adding ConnectQos: <callback type='EMAIL'> a@b.com
@@ -192,12 +201,12 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
     * Enforced by I_ResponseListener
     */
    public void responseEvent(String requestId, Object response) {
-      EmailData messageData = (EmailData) response;
+      EmailData emailData = (EmailData) response;
 
-      byte[] encodedMsgUnit = null;
+      AttachmentHolder holder = null;
       try {
-         // TODO: msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib())
-         encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
+         holder =
+               emailData.getEncodedMsgUnitByExtension(
                XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
@@ -207,39 +216,56 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          return;
       }
 
-      if (encodedMsgUnit != null) {
-         MsgInfo receiver = null;
-         try {
-            // TODO: uncompress the message if needed
-            receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit);
-            receiver.setBounceObject("mail.from", messageData.getFrom());
-            receiver.setBounceObject("messageId", messageData.getMessageId());
-         } catch (Throwable e) {
-            log.warning("Error parsing email data from "
-                              + this.pop3Driver.getPop3Url()
-                              + ", check if client and server have identical compression settings: "
-                              + e.toString() + ": " + messageData.toXml());
-            //shutdown();
-            return;
-         }
-
-         try {
-            // This wakes up the blocking thread of sendEmail() and returns the
-            // returnQos or the received invocation
-            if (receiveReply(receiver, false) == false) {
-               log.warning("Error parsing email data from "
-                     + this.pop3Driver.getPop3Url()
-                     + ", CONNECT etc is not yet implemented");
-            }
-            return;
-         } catch (Throwable e) {
-            log.warning("Can't process email data from "
-                  + this.pop3Driver.getPop3Url() + ": " + e.toString());
-            return;
-         }
+      if (holder == null) {
+         log.warning("No mails via POP3 found");
+         return;
       }
 
-      log.warning("No mails via POP3 found");
+      byte[] encodedMsgUnit = holder.getContent();
+      MsgInfo receiver = null;
+      try {
+         if (MsgInfo.isCompressed(holder.getFileName(), holder.getContentType())) {
+            // Decompress the bytes
+            int length = encodedMsgUnit.length;
+            this.decompressor.reset();
+            this.decompressor.setInput(encodedMsgUnit, 0, length);
+            byte[] buf = new byte[2048+length];
+            ByteArrayOutputStream out = new ByteArrayOutputStream(2048+length);
+            while (!this.decompressor.finished()) {
+               int resultLength = this.decompressor.inflate(buf);
+               if (resultLength > 0)
+                  out.write(buf, 0, resultLength);
+            }
+            encodedMsgUnit = out.toByteArray();
+            if (log.isLoggable(Level.FINE)) log.fine("Decompressed message from " + length + " to " + encodedMsgUnit.length + " bytes");
+         }
+
+         receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit);
+         receiver.setBounceObject("mail.from", emailData.getFrom());
+         receiver.setBounceObject("messageId", emailData.getMessageId());
+      } catch (Throwable e) {
+         log.warning("Error parsing email data from "
+                           + this.pop3Driver.getPop3Url()
+                           + ", check if client and server have identical compression settings: "
+                           + e.toString() + ": " + emailData.toXml());
+         //shutdown();
+         return;
+      }
+
+      try {
+         // This wakes up the blocking thread of sendEmail() and returns the
+         // returnQos or the received invocation
+         if (receiveReply(receiver, false) == false) {
+            log.warning("Error parsing email data from "
+                  + this.pop3Driver.getPop3Url()
+                  + ", CONNECT etc is not yet implemented");
+         }
+         return;
+      } catch (Throwable e) {
+         log.warning("Can't process email data from "
+               + this.pop3Driver.getPop3Url() + ": " + e.toString());
+         return;
+      }
    }
 
    /**
@@ -261,14 +287,40 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       // and for testing as attachment, for example "messageId.mid"
       String attachmentName2 = "messageId" + EmailData.MESSAGEID_EXTENSION;
 
+      // The pay load
+      byte[] origAttachment = msgInfo.getMsgInfoParser().createRawMsg(msgInfo);
+      boolean isCompressed = false;
+      byte[] attachment = origAttachment;
+      if (isCompressZlib()) {
+         if (origAttachment.length > getMinSizeForCompression()) { // > 0
+            this.compressor.reset();
+            this.compressor.setInput(origAttachment, 0, origAttachment.length);
+            this.compressor.finish();
+            attachment = new byte[origAttachment.length+64];
+            int compSize = compressor.deflate(attachment);
+            if (compSize <= 0) {
+               throw new IOException("Compression exception, got 0 bytes output: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+            }
+            if (compSize >= origAttachment.length) { // Compression didn't help
+               attachment = origAttachment;  
+               if (log.isLoggable(Level.FINE)) log.fine("No compression of attachment as size increased from " + origAttachment.length + " to " + compSize + ", we leave it uncompressed");
+            }
+            else {
+               isCompressed = true;
+               byte[] tmp = new byte[compSize];
+               System.arraycopy(attachment, 0, tmp, 0, compSize);
+               attachment = tmp;
+               if (log.isLoggable(Level.FINE)) log.fine("Compressing attachment of size " + origAttachment.length + " to length " + attachment.length);
+            }
+         }
+         else {
+            if (log.isLoggable(Level.FINE)) log.fine("Compressing of attachment skipped as size of " + origAttachment.length + " is smaller minSize " + getMinSizeForCompression());
+         }
+      }
+      
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String attachmentName = "xmlBlasterMessage" + 
-         msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib());
-     
-      byte[] attachment = msgInfo.getMsgInfoParser().createRawMsg(msgInfo);
-      if (super.isCompressZlib()) {
-         log.severe("Compression is not implemented");
-      }
+         msgInfo.getMsgInfoParser().getExtension(isCompressed);
 
       InternetAddress toAddr = this.toAddress;
       String to = (String)msgInfo.getBounceObject("mail.to");
@@ -281,10 +333,15 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       }
       if (toAddr == null)
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
+
+      EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
+      emailData.addAttachment(new AttachmentHolder(attachmentName, msgInfo.getMsgInfoParser().getMimetype(isCompressed), attachment));
+      emailData.addAttachment(new AttachmentHolder(attachmentName2, messageId));
       
-      this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
-            attachmentName, attachment, attachmentName2, messageId,
-            Constants.UTF8_ENCODING);
+      this.smtpClient.sendEmail(emailData);
+      //this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
+      //      attachmentName, attachment, attachmentName2, messageId,
+      //      Constants.UTF8_ENCODING);
 
       if (log.isLoggable(Level.FINE)) log.fine("Sending email from="
             + this.fromAddress.toString() + " to=" + toAddr.toString()

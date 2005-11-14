@@ -3,6 +3,10 @@
  */
 package org.xmlBlaster.util.protocol.email;
 
+import java.io.UnsupportedEncodingException;
+
+import org.xmlBlaster.util.def.Constants;
+
 /**
  * @author Marcel Ruff
  */
@@ -20,6 +24,23 @@ public class AttachmentHolder {
       this.contentType = contentType;
       this.content = content;
    }
+
+   /**
+    * Message contents of type "text/plain". 
+    * @param fileName
+    * @param content
+    */
+   public AttachmentHolder(String fileName, String content) {
+      this.fileName = fileName;
+      this.contentType = "text/plain";
+      try {
+         this.content = content.getBytes(Constants.UTF8_ENCODING);
+      }
+      catch (UnsupportedEncodingException e) {
+         throw new IllegalArgumentException(e.toString());
+      }
+   }
+
    /**
     * @return Returns the content, never null
     */

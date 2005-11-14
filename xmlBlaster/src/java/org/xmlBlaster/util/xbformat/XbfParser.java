@@ -98,6 +98,9 @@ public class XbfParser implements I_MsgInfoParser
    
    public static final String XBFORMAT_EXTENSION = ".xbf";
    public static final String XBFORMAT_ZLIB_EXTENSION = ".xbfz";
+   public static final String XBFORMAT_MIMETYPE = "application/xmlBlaster-xbf";
+   public static final String XBFORMAT_ZLIB_MIMETYPE = "application/xmlBlaster-xbfz";
+
 
    // create only once, for low level parsing
    //private ByteArray byteArray = new ByteArray(256);
@@ -124,6 +127,15 @@ public class XbfParser implements I_MsgInfoParser
    private void initialize() {
       this.buf = new Buf();
       this.first10 = new byte[NUM_FIELD_LEN];
+   }
+
+   /**
+    * @param isCompressed true/false
+    * @return XBFORMAT_MIMETYPE = "application/xmlBlaster-xbf";
+    *         XBFORMAT_ZLIB_MIMETYPE = "application/xmlBlaster-xbfz";
+    */
+   public final String getMimetype(boolean isCompressed) {
+      return (isCompressed) ? XBFORMAT_ZLIB_MIMETYPE : XBFORMAT_MIMETYPE; 
    }
 
    /**

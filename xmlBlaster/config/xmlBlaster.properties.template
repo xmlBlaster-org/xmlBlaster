@@ -84,7 +84,11 @@ CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDrive
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 #CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster
+CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+                             mail.user=xmlBlaster,\
+                             mail.password=xmlBlaster,\
+                             compress/type=zlib,\
+                             compress/minSize=200
 #------------------------------------------------------------------------------
 
 
@@ -98,8 +102,14 @@ ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.Sock
 #ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
 ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
 ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
-ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000
 #ClientProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapConnection
+ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
+                                 mail.user=demo,\
+                                 mail.password=demo,\
+                                 mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+                                 pop3PollingInterval=1000,\
+                                 compress/type=zlib,\
+                                 compress/minSize=200
 
 # Register the client side callback server plugins:
 ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
@@ -110,7 +120,12 @@ ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
 # See xmlBlaster/demo/javaclients/email/README:
-ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX
+ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
+                                         mail.user=demo,\
+                                         mail.password=demo,\
+                                         mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+                                         compress/type=zlib,\
+                                         compress/minSize=200
 #------------------------------------------------------------------------------
 
 

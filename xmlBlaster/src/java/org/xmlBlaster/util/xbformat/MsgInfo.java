@@ -152,6 +152,19 @@ public class MsgInfo
       sessionId = "";
       msgVec.clear();
    }
+   
+   /**
+    * Guessing if attachment is compressed. 
+    * TODO: Ask formatting plugins
+    * @param fileName
+    * @param mimeType
+    * @return true if one of parameters ends with 'z'
+    */
+   public static boolean isCompressed(String fileName, String mimeType) {
+      if (mimeType != null && mimeType.endsWith("z")) return true;
+      if (fileName != null && fileName.endsWith("z")) return true;
+      return false;
+   }
 
    public int getNumMessages()
    {

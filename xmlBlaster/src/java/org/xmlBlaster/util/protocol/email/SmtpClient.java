@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -380,31 +381,59 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
    /**
     * Send a mail.
-    * 
-    * @param aMessageData
-    *           Container holding the message to send
+    * @param emailData
+    *        Container holding the message to send
     */
-   public void sendEmail(EmailData aMessageData) throws AddressException,
-         MessagingException {
-      MimeMessage message = new MimeMessage(getSession());
+   public void sendEmail(EmailData emailData) throws XmlBlasterException {
       try {
-         message.setFrom(new InternetAddress(aMessageData.getFrom()));
+         MimeMessage message = new MimeMessage(getSession());
+         message.setFrom(emailData.getFromAddress());
+         message.setRecipients(Message.RecipientType.TO, emailData.getToAddresses());
+         message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
 
-         String[] recps = aMessageData.getAllRecipients();
-         InternetAddress tos[] = new InternetAddress[recps.length];
-         for (int i = 0; i < recps.length; i++)
-            tos[i] = new InternetAddress(recps[i]);
-         message.setRecipients(Message.RecipientType.TO, tos);
+         // create the Multipart and add its parts to it
+         Multipart multi = new MimeMultipart();
+         
+         if (emailData.getContent() != null && emailData.getContent().length() > 0) {
+            MimeBodyPart mbp = new MimeBodyPart();
+            mbp.setFileName("content.txt");
+            mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+            multi.addBodyPart(mbp);
+         }
 
-         message.setSubject(aMessageData.getSubject(), aMessageData
-               .getEncoding());
+         AttachmentHolder[] holder = emailData.getAttachments();
+         for (int i=0; i<holder.length; i++) {
+            MimeBodyPart mbp = new MimeBodyPart();
+            mbp.setFileName(holder[i].getFileName());
+            if (holder[i].getContentType().startsWith("text/")) {
+               mbp.setText(new String(holder[i].getContent(), Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
+            }
+            else {
+               // "application/xmlBlaster-xbformat"
+               DataSource ds = new ByteArrayDataSource(
+                     holder[i].getContent(),
+                     holder[i].getContentType());
+               mbp.setDataHandler(new DataHandler(ds));
+            }
+            multi.addBodyPart(mbp);
+         }
 
-         message.setText(aMessageData.getContent(), aMessageData.getEncoding());
+         // add the Multipart to the message
+         message.setContent(multi);
 
-      } catch (MessagingException e) {
-         throw e;
+         // set the Date: header
+         message.setSentDate(new Date());
+
+         send(message);
+         if (log.isLoggable(Level.FINE))
+            log.fine("Successful send email from=" + emailData.getFrom() + " to="
+                  + emailData.getRecipientsList());
+      } catch (Exception e) {
+         throw new XmlBlasterException(Global.instance(),
+               ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
+               "Email sending failed, no mail sent from=" + emailData.getFrom() + " to="
+                  + emailData.getRecipientsList(), e);
       }
-      send(message);
    }
 
    public synchronized void shutdown() {

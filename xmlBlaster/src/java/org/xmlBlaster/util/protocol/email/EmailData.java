@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -39,9 +42,9 @@ public class EmailData {
 
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
 
-   protected String[] recipients;
+   protected InternetAddress[] recipients;
 
-   protected String from;
+   protected InternetAddress from;
    
    protected String subject;
 
@@ -69,23 +72,23 @@ public class EmailData {
    /**
     * Create a simple message.
     * 
-    * @param aRecipient
+    * @param recipient
     *           For example "jack@gmx.net"
-    * @param aFrom
+    * @param from
     *           For example "sue@gmx.net"
-    * @param aSubject
+    * @param subject
     *           For example "Hi"
-    * @param aContent
+    * @param content
     *           For example "Best regards, Sue"
     */
-   public EmailData(String aRecipient, String aFrom, String aSubject,
-         String aContent) {
-      this.recipients = new String[aRecipient == null ? 0 : 1];
-      if (aRecipient != null)
-         this.recipients[0] = aRecipient;
-      this.from = aFrom;
-      this.subject = aSubject;
-      this.content = aContent;
+   public EmailData(String recipient, String from, String subject,
+         String content) {
+      this.recipients = new InternetAddress[recipient == null ? 0 : 1];
+      if (recipient != null)
+         this.recipients[0] = toInternetAddress(recipient);
+      this.from = toInternetAddress(from);
+      this.subject = subject;
+      this.content = content;
    }
 
    /**
@@ -93,12 +96,40 @@ public class EmailData {
     * 
     * @see #EmailData(String, String, String, String)
     */
-   public EmailData(String[] aRecipients, String aFrom, String aSubject,
-         String aContent) {
-      this.recipients = aRecipients;
-      this.from = aFrom;
-      this.subject = aSubject;
-      this.content = aContent;
+   public EmailData(String[] recipients, String from, String subject,
+         String content) {
+      if (recipients == null) {
+         this.recipients = new InternetAddress[0];
+      }
+      else {
+         this.recipients = new InternetAddress[recipients.length];
+         for (int i=0; i<recipients.length; i++)
+            this.recipients[i] = toInternetAddress(recipients[i]);
+      }
+      this.from = toInternetAddress(from);
+      this.subject = subject;
+      this.content = content;
+   }
+
+   public EmailData(InternetAddress recipient, InternetAddress from, String subject) {
+      if (recipient == null) {
+         this.recipients = new InternetAddress[0];
+      }
+      else {
+         this.recipients = new InternetAddress[1];
+         this.recipients[0] = recipient;
+      }
+      this.from = from;
+      this.subject = subject;
+      this.content = null;
+   }
+   
+   private InternetAddress toInternetAddress(String address) throws IllegalArgumentException {
+      try {
+         return new InternetAddress(address);
+      } catch (AddressException e) {
+         throw new IllegalArgumentException("Illegal email address '" + address + "': " + e.toString());
+      }
    }
 
    public void addAttachment(AttachmentHolder attachmentHolder) {
@@ -143,16 +174,16 @@ public class EmailData {
     * @param extensionBackup For example ".xml"
     * @return null if no such attachment was found
     */
-   public byte[] getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
+   public AttachmentHolder getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
          if (atts[j].getFileName().endsWith(extension) || atts[j].getFileName().endsWith(extensionZ)) {
-            return atts[j].getContent();
+            return atts[j];
          }
       }
       for (int j = 0; j < atts.length; j++) {
          if (atts[j].getFileName().endsWith(extensionBackup)) {
-            return atts[j].getContent();
+            return atts[j];
          }
       }
       return null;
@@ -215,14 +246,28 @@ public class EmailData {
     * @return All destinations of the message, never null
     */
    public String[] getAllRecipients() {
-      return (this.recipients == null) ? new String[0] : this.recipients;
+      String[] ret = new String[this.recipients.length];
+      for (int i=0; i<this.recipients.length; i++)
+         ret[i] = this.recipients[i].toString();
+      return ret;
    }
 
    /**
     * @return The from of the message, never null
     */
    public String getFrom() {
-      return (this.from == null) ? "" : this.from;
+      return (this.from == null) ? "" : this.from.toString();
+   }
+
+   /**
+    * @return Never null
+    */
+   public InternetAddress getFromAddress() {
+      return this.from;
+   }
+
+   public InternetAddress[] getToAddresses() {
+      return this.recipients;
    }
 
    /**
@@ -266,7 +311,7 @@ public class EmailData {
       sb.append(offset).append("  <from>").append(escape(getFrom())).append(
             "</from>");
       for (int i = 0; i < this.recipients.length; i++) {
-         sb.append(offset).append("  <to>").append(escape(this.recipients[i]))
+         sb.append(offset).append("  <to>").append(escape(this.recipients[i].toString()))
                .append("</to>");
       }
       if (this.recipients.length == 0) {
@@ -498,6 +543,10 @@ public class EmailData {
    
    public String toString() {
       return "from: " + this.from + " to: " + getRecipientsList() + " subject:" + this.subject + " attachments:" + getFileNameList();
+   }
+
+   public void setContent(String content) {
+      this.content = content;
    }
 
 }
