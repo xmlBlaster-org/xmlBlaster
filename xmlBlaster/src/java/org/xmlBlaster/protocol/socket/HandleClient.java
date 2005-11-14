@@ -14,7 +14,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
@@ -39,7 +39,7 @@ import java.io.IOException;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class HandleClient extends Executor implements Runnable
+public class HandleClient extends SocketExecutor implements Runnable
 {
    private String ME = "HandleClient";
    private final LogChannel log;
@@ -185,14 +185,14 @@ public class HandleClient extends Executor implements Runnable
          if (expectingResponse) {
             MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
             parser.addMessage(msgArr);
-            Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
+            Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
             MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
             parser.addMessage(msgArr);
-            execute(parser, Executor.ONEWAY, this.driver.useUdpForOneway());
+            requestAndBlockForReply(parser, SocketExecutor.ONEWAY, this.driver.useUdpForOneway());
             return null;
          }
       }
@@ -234,7 +234,7 @@ public class HandleClient extends Executor implements Runnable
          String cbSessionId = "";
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
          parser.addMessage(qos);
-         Object response = execute(parser, Executor.WAIT_ON_RESPONSE, false);
+         Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
          if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
@@ -249,7 +249,7 @@ public class HandleClient extends Executor implements Runnable
          if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
          // receive() processes all invocations, only connect()/disconnect() we do locally ...
-         if (receive(receiver, udp) == false) {
+         if (receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                conQos.setAddressServer(this.driver.getAddressServer());
@@ -334,7 +334,7 @@ public class HandleClient extends Executor implements Runnable
 
    /**
     * Flush the data to the socket.
-    * Overwrites Executor.sendMessage() 
+    * Overwrites SocketExecutor.sendMessage() 
     */
    protected void sendMessage(byte[] msg, boolean udp) throws IOException {
       I_ProgressListener listener = this.progressListener;

@@ -16,9 +16,9 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
@@ -167,11 +167,11 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
 
       try {
          // sessionId is usually null on login, on reconnect != null
-         return (String)super.sendEmail(connectQos, MethodName.CONNECT, Executor.WAIT_ON_RESPONSE);
+         return (String)super.sendEmail(connectQos, MethodName.CONNECT, SocketExecutor.WAIT_ON_RESPONSE);
 /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId);
          parser.addQos(connectQos);
-         return (String)super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         return (String)super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          */
       }
       catch (XmlBlasterException e) {
@@ -206,10 +206,10 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       }
 
       try {
-         super.sendEmail(qos, MethodName.DISCONNECT, Executor.WAIT_ON_RESPONSE);
+         super.sendEmail(qos, MethodName.DISCONNECT, SocketExecutor.WAIT_ON_RESPONSE);
          //MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          //parser.addQos((qos==null)?"":qos);
-         //super.execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
+         //super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          return true;
       }
       catch (XmlBlasterException e) {
@@ -246,7 +246,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + getSecretSessionId() + ")");
-      return (String)super.sendEmail(xmlKey_literal, qos_literal, MethodName.SUBSCRIBE, Executor.WAIT_ON_RESPONSE);
+      return (String)super.sendEmail(xmlKey_literal, qos_literal, MethodName.SUBSCRIBE, SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -258,11 +258,11 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                                  String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(): id=" + getSecretSessionId());
-      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.UNSUBSCRIBE, Executor.WAIT_ON_RESPONSE);
+      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.UNSUBSCRIBE, SocketExecutor.WAIT_ON_RESPONSE);
          /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
          */
    }
@@ -274,11 +274,11 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + getSecretSessionId());
-      return (String)super.sendEmail(msgUnit, MethodName.PUBLISH, Executor.WAIT_ON_RESPONSE);
+      return (String)super.sendEmail(msgUnit, MethodName.PUBLISH, SocketExecutor.WAIT_ON_RESPONSE);
          /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // return the QoS
          */
@@ -297,12 +297,12 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".InvalidArguments",
                                        "The argument of method publishArr() are invalid");
       }
-      return (String[])super.sendEmail(msgUnitArr, MethodName.PUBLISH, Executor.WAIT_ON_RESPONSE);
+      return (String[])super.sendEmail(msgUnitArr, MethodName.PUBLISH, SocketExecutor.WAIT_ON_RESPONSE);
       /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
@@ -324,12 +324,12 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          if (log.isLoggable(Level.FINE)) log.fine("The argument of method publishOneway() are invalid");
          return;
       }
-      super.sendEmail(msgUnitArr, MethodName.PUBLISH_ONEWAY, Executor.ONEWAY);
+      super.sendEmail(msgUnitArr, MethodName.PUBLISH_ONEWAY, SocketExecutor.ONEWAY);
       /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
-         super.execute(parser, Executor.ONEWAY, SocketUrl.SOCKET_TCP);
+         super.execute(parser, SocketExecutor.ONEWAY, SocketUrl.SOCKET_TCP);
       }
       catch (Throwable e) {
          if (log.isLoggable(Level.FINE)) log.fine("Sending of oneway message failed: " + e.toString());
@@ -345,12 +345,12 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + getSecretSessionId());
-      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.ERASE, Executor.WAIT_ON_RESPONSE);
+      return (String[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.ERASE, SocketExecutor.WAIT_ON_RESPONSE);
       /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
@@ -369,12 +369,12 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                                   String qos_literal) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
-      return (MsgUnitRaw[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.GET, Executor.WAIT_ON_RESPONSE);
+      return (MsgUnitRaw[])super.sendEmail(xmlKey_literal, qos_literal, MethodName.GET, SocketExecutor.WAIT_ON_RESPONSE);
       /*
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = super.execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = super.execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (MsgUnitRaw[])response;
       }
       catch (IOException e1) {
@@ -391,7 +391,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public String ping(String qos) throws XmlBlasterException
    {
       if (!this.isInitialized) return "";
-      return (String)super.sendEmail(qos, MethodName.PING, Executor.WAIT_ON_RESPONSE);
+      return (String)super.sendEmail(qos, MethodName.PING, SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**

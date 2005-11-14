@@ -86,7 +86,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
       this.callbackAddress = callbackAddress;
       setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class
-                              // Executor:callback
+                              // SocketExecutor:callback
 
       this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
             .getName());
@@ -160,7 +160,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
       if (this.pop3Driver != null && super.getEmailSessionId().length() > 0)
          this.pop3Driver.deregisterForEmail(super.getEmailSessionId(),"");
       setCbClient(null); // reset callback client in super class
-                           // Executor:callback
+                           // SocketExecutor:callback
    }
 
 } // class EmailCallbackImpl

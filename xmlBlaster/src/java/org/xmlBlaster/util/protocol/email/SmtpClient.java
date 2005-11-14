@@ -23,7 +23,6 @@ import javax.mail.internet.MimeMultipart;
 
 import java.util.Date;
 import java.util.Properties;
-import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -327,7 +326,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     *           For example "UTF-8"
     */
    public void sendEmail(InternetAddress from, InternetAddress to,
-         String subject, String attachmentName, InputStream attachment,
+         String subject, String attachmentName, byte[] attachment,
          String attachmentName2, String attachment2, String encoding)
          throws XmlBlasterException {
       try {

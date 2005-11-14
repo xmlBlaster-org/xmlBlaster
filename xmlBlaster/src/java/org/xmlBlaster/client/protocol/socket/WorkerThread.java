@@ -47,7 +47,7 @@ public class WorkerThread extends Thread
    public void run() {
       try {
          if (log.TRACE) log.trace(ME, "Starting worker thread, invoking client code with received message");
-         cbHandler.receive(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
+         cbHandler.receiveReply(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
          if (log.TRACE) log.trace(ME, "Worker thread done");
       }
       catch (XmlBlasterException e) {

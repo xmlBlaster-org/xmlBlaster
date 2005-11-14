@@ -218,13 +218,13 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    /**
     * Handle connect/disconnect
     */
-   public final boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
+   public final boolean receiveReply(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
          receiver.setBounceObject("mail.to", receiver.getBounceObject("mail.from"));
          
          // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
-         if (super.receive(receiver, udp) == false) {
+         if (super.receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(this.glob, receiver.getQos());
                conQos.setAddressServer(getAddressServer());

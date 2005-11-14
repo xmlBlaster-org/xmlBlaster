@@ -16,7 +16,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
@@ -32,7 +32,7 @@ import org.xmlBlaster.util.xbformat.MsgInfo;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class SocketCbConnection extends Executor
+public class SocketCbConnection extends SocketExecutor
 {
    private String ME = "SocketCbConnection";
    private Global glob;
@@ -102,7 +102,7 @@ public class SocketCbConnection extends Executor
          //this.localHostname = this.sock.getLocalAddress().getHostAddress();
          log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() + "', callback address is " + getLocalAddress());
 
-         // initialize base class Executor
+         // initialize base class SocketExecutor
          initialize(glob, this.clientAddress, this.sock.getInputStream(), this.sock.getOutputStream());
       }
       catch (java.net.UnknownHostException e) {
@@ -207,12 +207,12 @@ public class SocketCbConnection extends Executor
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
          parser.addMessage(msgArr);
          if (expectingResponse) {
-            Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+            Object response = execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            execute(parser, Executor.ONEWAY, SocketUrl.SOCKET_TCP); // TODO: SOCKET_UDP
+            execute(parser, SocketExecutor.ONEWAY, SocketUrl.SOCKET_TCP); // TODO: SOCKET_UDP
             return null;
          }
       }
@@ -247,7 +247,7 @@ public class SocketCbConnection extends Executor
          String cbSessionId = "";
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId);
          parser.addMessage(qos);
-         Object response = execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;
       }
       catch (Throwable e) {

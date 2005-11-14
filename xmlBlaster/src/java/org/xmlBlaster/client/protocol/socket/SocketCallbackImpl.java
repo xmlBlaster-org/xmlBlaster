@@ -16,7 +16,7 @@ import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import java.net.Socket;
@@ -33,7 +33,7 @@ import java.io.IOException;
  * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
-public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
+public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_CallbackServer
 {
    private String ME = "SocketCallbackImpl";
    private Global glob;
@@ -88,7 +88,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       if (this.pluginInfo != null)
          this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       setLoginName(loginName);
-      setCbClient(cbClient); // access callback client in super class Executor:callback
+      setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
 
       if (this.running == false) {
          // Lookup SocketConnection instance in the NameService
@@ -111,7 +111,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          }
 
 
-         try { // Executor
+         try { // SocketExecutor
             super.initialize(this.sockCon.getGlobal(), this.callbackAddress, this.sock.getInputStream(), this.sock.getOutputStream());
          }
          catch (IOException e) {
@@ -216,7 +216,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
                t.start();
             }
             else {                  
-               receive(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
+               receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
             }
             if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
                if (log.TRACE) log.trace(ME, "Terminating socket callback thread because of disconnect response");
@@ -258,7 +258,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     * Shutdown callback only.
     */
    public synchronized void shutdown() {
-      setCbClient(null); // reset callback client in super class Executor:callback
+      setCbClient(null); // reset callback client in super class SocketExecutor:callback
    }
 
    /**

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.RequestReplyExecutor;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.protocol.email.MessageData;
@@ -23,8 +23,6 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +35,7 @@ import javax.mail.internet.InternetAddress;
  * 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class EmailExecutor extends Executor implements I_ResponseListener {
+public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseListener {
    private String ME = "EmailExecutor";
 
    private static Logger log = Logger.getLogger(EmailExecutor.class.getName());
@@ -58,10 +56,6 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
    protected Pop3Driver pop3Driver;
 
-   protected PipedOutputStream oStreamForResponse;
-
-   protected PipedInputStream iStreamSend;
-
    /**
     * This init() is called after the init(Global, PluginInfo)
     * 
@@ -70,7 +64,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     */
    public void init(Global glob, AddressBase addressBase, I_PluginConfig pluginConfig)
          throws XmlBlasterException {
-      this.glob = glob;
+      super.initialize(glob, addressBase);
       this.addressBase = addressBase;
       this.pluginConfig = pluginConfig;
       
@@ -151,7 +145,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
     * @param methodName
     *           MethodName.UPDATE and others
     * @param withResponse
-    *           one of Executor.WAIT_ON_RESPONSE or Executor.ONEWAY
+    *           one of SocketExecutor.WAIT_ON_RESPONSE or SocketExecutor.ONEWAY
     */
    public Object sendEmail(MsgUnitRaw[] msgArr, MethodName methodName,
          boolean expectingResponse) throws XmlBlasterException {
@@ -165,29 +159,19 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
 
       String requestId = null;
       try {
-         // We use the Executor.java for the request/reply and compression
-         // support
-         // As the Executor works with Input/OutputStream we need to use pipes
-         // to satisfy this need
-         PipedInputStream iStreamResponse = new PipedInputStream();
-         this.oStreamForResponse = new PipedOutputStream(iStreamResponse);
+         // We use the RequestReplyExecutor.java for the request/reply pattern
 
-         PipedOutputStream oStreamSend = new PipedOutputStream();
-         this.iStreamSend = new PipedInputStream(oStreamSend);
-
-         super.initialize(this.glob, addressBase, iStreamResponse, oStreamSend);
-
-         MsgInfo parser = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName,
+         MsgInfo msgInfo = new MsgInfo(this.glob, MsgInfo.INVOKE_BYTE, methodName,
                getSecretSessionId(), super.getProgressListener());
-         parser.addMessage(msgArr);
-         requestId = parser.createRequestId(null);
+         msgInfo.addMessage(msgArr);
+         requestId = msgInfo.createRequestId(null);
 
          if (expectingResponse) { // register at the POP3 poller
             this.pop3Driver.registerForEmail(getEmailSessionId(), requestId, this);
          }
 
          // super calls our sendMessage() which effectively sends the message
-         Object response = super.execute(parser,
+         Object response = super.requestAndBlockForReply(msgInfo,
                expectingResponse, false);
          return response;
       } catch (Throwable e) {
@@ -204,65 +188,17 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    }
 
    /**
-    * Find the MsgUnit in the attachments or the body of the email. We look for
-    * extension "*.xbf" and if not found we try the first "*.xml" found
-    * 
-    * @param messageData
-    * @return true if message is processed
-    */
-   private boolean extractMsgUnit(MessageData messageData) throws XmlBlasterException {
-      byte[] encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
-               /*TODO: msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib()) */
-               XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
-      //log.severe("DEBUG ONLY: " + new String(encodedMsgUnit));
-      if (encodedMsgUnit != null) { // Process the messageUnit
-         if (encodedMsgUnit.length < XbfParser.NUM_FIELD_LEN) // min 10 bytes, otherwise we block forever when reading the stream
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The messageUnit in the email is too short: " + MsgInfo.toLiteral(encodedMsgUnit));
-         try {
-            boolean close = false;
-            if (this.oStreamForResponse == null) {
-               close = true;
-               // Happens if it is not a response but an initial request
-               // We need to go over super in case the streams to
-               // compress/inflate
-               PipedInputStream iStreamResponse = new PipedInputStream();
-               this.oStreamForResponse = new PipedOutputStream(iStreamResponse);
-
-               // Not needed here, but to avoid NPE
-               PipedOutputStream oStreamSend = new PipedOutputStream();
-               this.iStreamSend = new PipedInputStream(oStreamSend);
-
-               super.initialize(this.glob, addressBase, iStreamResponse,
-                     oStreamSend);
-            }
-
-            if (log.isLoggable(Level.FINER)) log.finer("Parsing now: " + MsgInfo.toLiteral(encodedMsgUnit));
-            this.oStreamForResponse.write(encodedMsgUnit);
-            this.oStreamForResponse.flush();
-            if (close)
-               this.oStreamForResponse.close(); // !!!!!!!!!!!!! TODO AWAY
-            return true;
-         } catch (Exception e) {
-            log.severe("Handling POP3 response failed: " + e.toString());
-         }
-      } else {
-         log.severe("Handling POP3 response failed, no MsgUnit found in attachtments '" + messageData.getFileNameList() + "': "
-               + messageData.toXml());
-      }
-      return false;
-   }
-
-   /**
-    * Notification by Pop3Driver when a (response) email message arrives. Enforced by
-    * I_ResponseListener
+    * Notification by Pop3Driver when a (response) email message arrives. 
+    * Enforced by I_ResponseListener
     */
    public void responseEvent(String requestId, Object response) {
       MessageData messageData = (MessageData) response;
 
-      boolean responseArrived;
+      byte[] encodedMsgUnit = null;
       try {
-         // Fills message into this.oStreamForResponse
-         responseArrived = extractMsgUnit(messageData);
+         // TODO: msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib())
+         encodedMsgUnit = messageData.getEncodedMsgUnitByExtension(
+               XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
                + this.pop3Driver.getPop3Url()
@@ -271,13 +207,11 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          return;
       }
 
-      if (responseArrived) {
+      if (encodedMsgUnit != null) {
          MsgInfo receiver = null;
          try {
-            // Reads message again from this.oStreamForResponse
-            // This uncompresses the message if needed
-            receiver = MsgInfo.parse(glob, progressListener, iStream);
-            this.oStreamForResponse = null;
+            // TODO: uncompress the message if needed
+            receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit);
             receiver.setBounceObject("mail.from", messageData.getFrom());
             receiver.setBounceObject("messageId", messageData.getMessageId());
          } catch (Throwable e) {
@@ -292,7 +226,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          try {
             // This wakes up the blocking thread of sendEmail() and returns the
             // returnQos or the received invocation
-            if (receive(receiver, false) == false) {
+            if (receiveReply(receiver, false) == false) {
                log.warning("Error parsing email data from "
                      + this.pop3Driver.getPop3Url()
                      + ", CONNECT etc is not yet implemented");
@@ -309,14 +243,11 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
    }
 
    /**
-    * Extends Executor.sendMessage
+    * Extends SocketExecutor.sendMessage
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId,
          MethodName methodName, boolean udp) throws XmlBlasterException,
          IOException {
-      super.sendMessage(msgInfo, requestId, methodName, udp); // compresses it to
-      // our oStreamSend
-      super.oStream.close();
 
       String subject = this.glob.get("mail.subject",
             "XmlBlaster Generated Email ", null, this.pluginConfig);
@@ -333,6 +264,11 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String attachmentName = "xmlBlasterMessage" + 
          msgInfo.getMsgInfoParser().getExtension(super.isCompressZlib());
+     
+      byte[] attachment = msgInfo.getMsgInfoParser().createRawMsg(msgInfo);
+      if (super.isCompressZlib()) {
+         log.severe("Compression is not implemented");
+      }
 
       InternetAddress toAddr = this.toAddress;
       String to = (String)msgInfo.getBounceObject("mail.to");
@@ -347,7 +283,7 @@ public class EmailExecutor extends Executor implements I_ResponseListener {
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
       
       this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
-            attachmentName, this.iStreamSend, attachmentName2, messageId,
+            attachmentName, attachment, attachmentName2, messageId,
             Constants.UTF8_ENCODING);
 
       if (log.isLoggable(Level.FINE)) log.fine("Sending email from="

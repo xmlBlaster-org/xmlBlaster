@@ -18,7 +18,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -305,7 +305,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
          parser.addQos(connectQos);
-         return (String)getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         return (String)getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -342,7 +342,7 @@ public class SocketConnection implements I_XmlBlasterConnection
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
-         getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
+         getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          return true;
       }
@@ -435,7 +435,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
@@ -458,7 +458,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response;
       }
       catch (IOException e1) {
@@ -478,7 +478,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // return the QoS
       }
@@ -504,7 +504,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
@@ -529,7 +529,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
-         getCbReceiver().execute(parser, Executor.ONEWAY, this.useUdpForOneway);
+         getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.ONEWAY, this.useUdpForOneway);
       }
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
@@ -555,7 +555,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
@@ -576,7 +576,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (MsgUnitRaw[])response;
       }
       catch (IOException e1) {
@@ -607,7 +607,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
-         Object response = getCbReceiver().execute(parser, Executor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;
       }
       catch (IOException e1) {

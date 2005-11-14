@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      Executor.java
+Name:      RequestReplyExecutor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream.
@@ -24,8 +24,6 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,40 +32,30 @@ import java.util.HashMap;
 import java.util.Collections;
 
 /**
- * Send/receive messages over outStream and inStream.
+ * Request/reply simulates a local method invocation. 
  * <p />
- * A common base class for socket based messaging.
+ * A common base class for socket or email based messaging.
  * Allows to block during a request and deliver the return message
  * to the waiting thread.
  *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public abstract class Executor
+public abstract class RequestReplyExecutor
 {
-   private String ME = Executor.class.getName();
+   private String ME = RequestReplyExecutor.class.getName();
    protected Global glob;
    private LogChannel log;
-   /** Reading from socket */
-   protected InputStream iStream;
-   /** Writing to socket */
-   protected OutputStream oStream;
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
-   /** The client login name */
-   protected String loginName = "";
    /** How long to block on remote call waiting on response */
    protected long responseWaitTime = 0;
-   /** How long to block the socket on input stream read */
-   protected long soTimeout = 0;
-   /** How long to block the socket on close with remaining data */
-   protected long soLingerTimeout = 0; // Constants.MINUTE_IN_MILLIS -> this can lead to blocking close(), so we choose '0'
    /** This is the client side */
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
    protected I_XmlBlaster xmlBlasterImpl;
    private final Set latchSet = new HashSet();
-   private AddressBase addressConfig;
+   protected AddressBase addressConfig;
    /** A listener may register to receive send/receive progress informations */
    protected I_ProgressListener progressListener;
    protected boolean compressZlib;
@@ -85,7 +73,7 @@ public abstract class Executor
    /** Used for execute() */
    public static final boolean WAIT_ON_RESPONSE = true;
 
-   public Executor() {
+   public RequestReplyExecutor() {
    }
 
    /**
@@ -96,10 +84,9 @@ public abstract class Executor
     * This executor has mixed client and server specific code for two reasons:<br />
     * - Possibly we can use the same socket between two xmlBlaster server (load balance)<br />
     * - Everything is together<br />
-    * @param iStream The reading stream (for example a socket InputStream)
-    * @param oStream The writing stream (for example a socket OutputStream)
+    * @param addressConfig The configuration to use
     */
-   protected void initialize(Global glob, AddressBase addressConfig, InputStream iStream, OutputStream oStream) throws IOException {
+   protected void initialize(Global glob, AddressBase addressConfig) {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
       this.addressConfig = addressConfig;
@@ -107,20 +94,14 @@ public abstract class Executor
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          this.compressZlibStream = true;
          log.info(ME, "Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
-         this.iStream = new ZFlushInputStream(iStream);
-         this.oStream =  new ZFlushOutputStream(oStream);
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
          this.compressZlib = true;
          log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + this.addressConfig.getMinSize() + " bytes");
-         this.iStream = new ZBlockInputStream(iStream);
-         this.oStream = new ZBlockOutputStream(oStream, (int)this.addressConfig.getMinSize());
       }
       else {
          this.compressZlibStream = false;
          this.compressZlib = false;
-         this.iStream = iStream;
-         this.oStream = oStream;
       }
 
       setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
@@ -154,40 +135,6 @@ public abstract class Executor
       this.responseWaitTime = millis;
    }
 
-   /**
-    * Set the given millis to protect against blocking socket on input stream read() operations
-    * @param millis If <= 0 it is disabled
-    */
-   public final void setSoTimeout(long millis) {
-      if (millis < 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + millis +
-                      " is invalid, is invalid, deactivating timeout");
-         this.soTimeout = 0L;
-      }
-      this.soTimeout = millis;
-   }
-
-   public final long getSoTimeout() {
-      return this.soTimeout;
-   }
-
-   /**
-    * Set the given millis to timeout socket close if data are lingering
-    * @param millis If < 0 it is set to one minute, 0 disable timeout
-    */
-   public final void setSoLingerTimeout(long millis) {
-      if (millis < 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + millis +
-                      " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
-         this.soLingerTimeout = Constants.MINUTE_IN_MILLIS;
-      }
-      this.soLingerTimeout = millis;
-   }
-
-   public final long getSoLingerTimeout() {
-      return this.soLingerTimeout;
-   }
-
    public final void setCbClient(I_CallbackExtended cbClient) {
       this.cbClient = cbClient;
    }
@@ -200,14 +147,6 @@ public abstract class Executor
       return this.cbClient;
    }
 
-   public final OutputStream getOutputStream() {
-      return this.oStream;
-   }
-
-   public final InputStream getInputStream() {
-      return this.iStream;
-   }
-
    public void finalize() {
       if (log.TRACE) log.trace(ME, "Garbage Collected");
    }
@@ -215,10 +154,9 @@ public abstract class Executor
    /**
     * Sets the loginName and automatically the requestId as well
     */
-   protected final void setLoginName(String loginName) {
-      this.loginName = loginName;
+   protected void setLoginName(String loginName) {
       if (loginName != null && loginName.length() > 0)
-         this.prefix = this.loginName + ":";
+         this.prefix = loginName + ":";
       else
          this.prefix = null;
    }
@@ -239,7 +177,6 @@ public abstract class Executor
       }
    }
 
-
    /**
     * Removes the specified listener.
     */
@@ -258,7 +195,6 @@ public abstract class Executor
       }
    }
 
-
    /**
     * Get the response listener object
     */
@@ -269,12 +205,11 @@ public abstract class Executor
       return (I_ResponseListener)responseListenerMap.get(requestId);
    }
 
-
    /**
     * Handle common messages
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
-   public boolean receive(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
+   public boolean receiveReply(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
@@ -448,12 +383,13 @@ public abstract class Executor
     * This should be thread save and may be invoked by many
     * client threads in parallel (though i have not tested it).
     * @param expectingResponse WAIT_ON_RESPONSE=true or ONEWAY=false
+    * @param udp Some user info which is passed through
     * @return the response object of the request, of type String(QoS), MsgUnitRaw[] or XmlBlasterException
     */
-   public Object execute(MsgInfo parser, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
+   public Object requestAndBlockForReply(MsgInfo msgInfo, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
 
-      String requestId = parser.createRequestId(prefix);
-      if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
+      String requestId = msgInfo.createRequestId(prefix);
+      if (log.TRACE) log.trace(ME, "Invoking  msgInfo type='" + msgInfo.getTypeStr() + "' message " + msgInfo.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
@@ -476,17 +412,17 @@ public abstract class Executor
          startSignal = null;
 
       // Send the message / method invocation ...
-      if (log.DUMP) log.dump(ME, "Sending now : >" + parser.toLiteral() + "<");
+      if (log.DUMP) log.dump(ME, "Sending now : >" + msgInfo.toLiteral() + "<");
       try {
-         sendMessage(parser, parser.getRequestId(), parser.getMethodName(), udp);
-         // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
+         sendMessage(msgInfo, msgInfo.getRequestId(), msgInfo.getMethodName(), udp);
+         // if (log.TRACE) log.trace(ME, "Successfully sent " + msgInfo.getNumMessages() + " messages");
       }
       catch (Throwable e) {
          if (startSignal != null) {
             synchronized (latchSet) { latchSet.remove(startSignal); }
          }
-         String tmp = (parser==null) ? "" : parser.getMethodNameStr();
-         String str = "Socket blocked for " + getSoTimeout() + " millis, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
+         String tmp = (msgInfo==null) ? "" : msgInfo.getMethodNameStr();
+         String str = "Request blocked and timedout, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
          if (e instanceof XmlBlasterException) {
             if (log.TRACE) log.trace(ME, str + ": " + e.toString());
             throw (XmlBlasterException)e;
@@ -494,7 +430,7 @@ public abstract class Executor
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
-      if (log.DUMP) log.dump(ME, "Successful sent message: >" + parser.toLiteral() + "<");
+      if (log.DUMP) log.dump(ME, "Successful sent message: >" + msgInfo.toLiteral() + "<");
 
       if (!expectingResponse) {
          return null;
@@ -509,22 +445,22 @@ public abstract class Executor
                break;
             }
             catch (InterruptedException e) {
-               log.warn(ME, "Waking up (waited on " + parser.getMethodName() + "(" + requestId + ") response): " + e.toString());
+               log.warn(ME, "Waking up (waited on " + msgInfo.getMethodName() + "(" + requestId + ") response): " + e.toString());
                // try again
             }
          }
          if (awakened) {
-            if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
+            if (log.TRACE) log.trace(ME, "Waking up, got response for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
-               throw new IOException(ME + ": Lost socket connection for " + parser.getMethodName() + "(requestId=" + requestId + ")");
+               throw new IOException(ME + ": Lost socket connection for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
 
-            if (log.DUMP) log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
+            if (log.DUMP) log.dump(ME, "Response for " + msgInfo.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
+            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
             removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME, str);
          }
@@ -598,24 +534,10 @@ public abstract class Executor
 
    /**
     * Flush the data to the socket. 
-    * Overwrite this in your derived class to send UDP 
+    * Overwrite this in your derived class to send using your specific protocol 
     */
-   protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
-      byte[] msg = msgInfo.createRawMsg();
-      I_ProgressListener listener = this.progressListener;
-      if (listener != null) {
-         listener.progressWrite("", 0, msg.length);
-      }
-      synchronized (oStream) {
-         oStream.write(msg);
-         oStream.flush();
-         if (log.TRACE) log.trace(ME, "TCP data is send");
-      }
-      if (listener != null) {
-         listener.progressWrite("", msg.length, msg.length);
-      }
-   }
-
+   abstract protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException;
+      
    public boolean isCompressZlib() {
       return compressZlib;
    }
@@ -623,8 +545,5 @@ public abstract class Executor
    public boolean isCompressZlibStream() {
       return compressZlibStream;
    }
-
-   //abstract boolean shutdown();
-   //abstract void shutdown();
 }
 

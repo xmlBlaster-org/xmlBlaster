@@ -14,7 +14,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.protocol.Executor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 
 
 /**
@@ -126,7 +126,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       if (this.handler == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                   "SOCKET sendUpdate failed");
-      return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, Executor.WAIT_ON_RESPONSE);
+      return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -137,7 +137,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       if (this.handler == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                   "SOCKET sendUpdateOneway failed");
-      this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, Executor.ONEWAY);
+      this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, SocketExecutor.ONEWAY);
    }
 
    /**

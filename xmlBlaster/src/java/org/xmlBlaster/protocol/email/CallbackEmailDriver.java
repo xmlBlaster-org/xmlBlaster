@@ -11,8 +11,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.protocol.Executor;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -114,7 +114,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     * This sends the update to the client.
     */
    public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      return (String[])super.sendEmail(msgArr, MethodName.UPDATE, Executor.WAIT_ON_RESPONSE);
+      return (String[])super.sendEmail(msgArr, MethodName.UPDATE, SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -124,7 +124,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     *               Is never from the client (oneway).
     */
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      super.sendEmail(msgArr, MethodName.UPDATE_ONEWAY, Executor.ONEWAY);
+      super.sendEmail(msgArr, MethodName.UPDATE_ONEWAY, SocketExecutor.ONEWAY);
    }
 
    /**
