@@ -1,8 +1,8 @@
 /*------------------------------------------------------------------------------
- Name:      MessageData.java
+ Name:      EmailData.java
  Project:   xmlBlaster.org
  Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
- Comment:   javac MessageData.java SmtpClient.java
+ Comment:   javac EmailData.java SmtpClient.java
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
@@ -34,8 +34,8 @@ attachement {
  * </pre>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class MessageData {
-   private static Logger log = Logger.getLogger(MessageData.class.getName());
+public class EmailData {
+   private static Logger log = Logger.getLogger(EmailData.class.getName());
 
    protected String encoding = Constants.UTF8_ENCODING; // "text/plain; charset=UTF-8"
 
@@ -78,7 +78,7 @@ public class MessageData {
     * @param aContent
     *           For example "Best regards, Sue"
     */
-   public MessageData(String aRecipient, String aFrom, String aSubject,
+   public EmailData(String aRecipient, String aFrom, String aSubject,
          String aContent) {
       this.recipients = new String[aRecipient == null ? 0 : 1];
       if (aRecipient != null)
@@ -91,9 +91,9 @@ public class MessageData {
    /**
     * Create a simple message for any number of recipients.
     * 
-    * @see #MessageData(String, String, String, String)
+    * @see #EmailData(String, String, String, String)
     */
-   public MessageData(String[] aRecipients, String aFrom, String aSubject,
+   public EmailData(String[] aRecipients, String aFrom, String aSubject,
          String aContent) {
       this.recipients = aRecipients;
       this.from = aFrom;
@@ -300,7 +300,7 @@ public class MessageData {
       }
       int end = xml.indexOf(endToken, start);
       if (end == -1) {
-         throw new IllegalArgumentException("MessageData token '" + endToken
+         throw new IllegalArgumentException("EmailData token '" + endToken
                + "' is missing");
       }
       value.append(xml.substring(start + startToken.length(), end));
@@ -334,7 +334,7 @@ public class MessageData {
     * omitted and this tag occurs for example in the CDATA section of the
     * content. Therefor we always dump the complete xml in toXml().
     */
-   public static MessageData parseXml(String xml) {
+   public static EmailData parseXml(String xml) {
       int start = 0;
       StringBuffer sb = new StringBuffer(256);
 
@@ -362,19 +362,19 @@ public class MessageData {
       start = parseTag(start, "content", xml, sb);
       String content = sb.toString();
 
-      MessageData msg = new MessageData(recipients, from, subject, content);
+      EmailData msg = new EmailData(recipients, from, subject, content);
       return msg;
    }
 
    /**
-    * For manual tests. java org.xmlBlaster.util.protocol.email.MessageData
+    * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
     */
    public static void main(String[] args) {
       String[] receivers = { "Receiver1", "Receiver2" };
-      MessageData msg = new MessageData(receivers, "Sender", "A subject",
+      EmailData msg = new EmailData(receivers, "Sender", "A subject",
             "A content");
       System.out.println("ORIG:\n" + msg.toXml());
-      msg = MessageData.parseXml(msg.toXml());
+      msg = EmailData.parseXml(msg.toXml());
       System.out.println("NEW:\n" + msg.toXml());
    }
 
@@ -474,7 +474,7 @@ public class MessageData {
    }
 
    /**
-    * Use together with extractMessageId(MessageData messageData, String tag).
+    * Use together with extractMessageId(EmailData messageData, String tag).
     * 
     * @param methodName Can be null
     * @return A well formatted XML

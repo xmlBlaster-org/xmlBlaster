@@ -15,7 +15,7 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.RequestReplyExecutor;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
-import org.xmlBlaster.util.protocol.email.MessageData;
+import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XbfParser;
@@ -192,7 +192,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
     * Enforced by I_ResponseListener
     */
    public void responseEvent(String requestId, Object response) {
-      MessageData messageData = (MessageData) response;
+      EmailData messageData = (EmailData) response;
 
       byte[] encodedMsgUnit = null;
       try {
@@ -253,13 +253,13 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
             "XmlBlaster Generated Email ", null, this.pluginConfig);
       String messageId = (String)msgInfo.getBounceObject("messageId");
       if (messageId == null)
-         messageId = MessageData.createMessageId(getEmailSessionId(),
+         messageId = EmailData.createMessageId(getEmailSessionId(),
             requestId, methodName);
 
       // Transport messageId in subject:
       subject += messageId;
       // and for testing as attachment, for example "messageId.mid"
-      String attachmentName2 = "messageId" + MessageData.MESSAGEID_EXTENSION;
+      String attachmentName2 = "messageId" + EmailData.MESSAGEID_EXTENSION;
 
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String attachmentName = "xmlBlasterMessage" + 

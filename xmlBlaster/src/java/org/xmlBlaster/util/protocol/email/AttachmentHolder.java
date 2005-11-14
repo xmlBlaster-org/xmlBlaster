@@ -64,9 +64,9 @@ public class AttachmentHolder {
      String offset = "\n";
      StringBuffer sb = new StringBuffer(1024);
      sb.append(offset).append("  <attachment>");
-     sb.append(offset).append("    <filename>").append(MessageData.escape(getFileName())).append("</filename>");
-     sb.append(offset).append("    <contenttype>").append(MessageData.escape(getContentType())).append("</contenttype>");
-     sb.append(offset).append("    <content>").append(MessageData.escape(new String(getContent()))).append("</content>");
+     sb.append(offset).append("    <filename>").append(EmailData.escape(getFileName())).append("</filename>");
+     sb.append(offset).append("    <contenttype>").append(EmailData.escape(getContentType())).append("</contenttype>");
+     sb.append(offset).append("    <content>").append(EmailData.escape(new String(getContent()))).append("</content>");
      sb.append(offset).append("  </attachment>");
      return sb.toString();
    }

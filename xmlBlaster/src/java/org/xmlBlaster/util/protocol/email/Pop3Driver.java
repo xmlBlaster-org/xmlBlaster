@@ -2,7 +2,7 @@
  Name:      Pop3Driver.java
  Project:   xmlBlaster.org
  Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
- Comment:   javac MessageData.java Pop3Driver.java
+ Comment:   javac EmailData.java Pop3Driver.java
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
@@ -195,7 +195,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     * @param messageData
     * @return The listener notified or null if none was found
     */
-   private String notify(MessageData messageData) {
+   private String notify(EmailData messageData) {
       if (messageData == null)
          return null;
       String key = messageData.getSessionId() + messageData.getRequestId();
@@ -394,7 +394,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
                this.holdbackMap.remove(keys[i]);
             }
             else {
-               String listenerKey = notify((MessageData)this.holdbackMap.get(keys[i]));
+               String listenerKey = notify((EmailData)this.holdbackMap.get(keys[i]));
                if (listenerKey != null) {
                   this.holdbackMap.remove(keys[i]);
                }
@@ -403,12 +403,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       }
 
       try {
-         MessageData[] msgs = readInbox(Pop3Driver.CLEAR_MESSAGES);
+         EmailData[] msgs = readInbox(Pop3Driver.CLEAR_MESSAGES);
          this.firstException = true;
 
          boolean responseArrived = false;
          for (int i = 0; i < msgs.length; i++) {
-            MessageData messageData = msgs[i];
+            EmailData messageData = msgs[i];
             String notifiedListener = notify(messageData);
             if (notifiedListener == null) {
                if (log.isLoggable(Level.FINE)) log.fine("None of the registered listeners (" + getListeners() + ") wants this email: " + messageData.toXml());
@@ -541,7 +541,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     *           If CLEAR_MESSAGES=true the messages are destroyed on the server
     * @return Never null
     */
-   public MessageData[] readInbox(boolean clear) throws XmlBlasterException {
+   public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
       //if (isShutdown()) Does it recover automatically after a shutdown?
       //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, Pop3Driver.class.getName(), "The plugin is shutdown");
       Store store = null;
@@ -555,7 +555,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          if (msgs == null)
             msgs = new Message[0];
 
-         MessageData[] datas = new MessageData[msgs.length];
+         EmailData[] datas = new EmailData[msgs.length];
          for (int i = 0; i < msgs.length; i++) {
             log.fine("Readig message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
@@ -573,7 +573,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
             for (int j = 0; j < arr.length; j++)
                recips[j] = arr[j].toString();
 
-            datas[i] = new MessageData(recips, from, msg.getSubject(), msg
+            datas[i] = new EmailData(recips, from, msg.getSubject(), msg
                   .getContent().toString());
 
             datas[i].setAttachments(MailUtil.accessAttachments(msg));
@@ -729,7 +729,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          System.out.println("Reading POP3 messages");
          while (true) {
             long start = System.currentTimeMillis();
-            MessageData[] msgs = pop3Client
+            EmailData[] msgs = pop3Client
                   .readInbox(Pop3Driver.CLEAR_MESSAGES);
             long diff = System.currentTimeMillis() - start;
 

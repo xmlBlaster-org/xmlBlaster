@@ -2,7 +2,7 @@
  Name:      SmtpClient.java
  Project:   xmlBlaster.org
  Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
- Comment:   javac MessageData.java SmtpClient.java
+ Comment:   javac EmailData.java SmtpClient.java
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
@@ -384,7 +384,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * @param aMessageData
     *           Container holding the message to send
     */
-   public void sendEmail(MessageData aMessageData) throws AddressException,
+   public void sendEmail(EmailData aMessageData) throws AddressException,
          MessagingException {
       MimeMessage message = new MimeMessage(getSession());
       try {
@@ -440,7 +440,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          String from = glob.getProperty().get("from", "blue@localhost");
          String to = glob.getProperty().get("to", "blue@localhost");
 
-         MessageData msg = new MessageData(to, from, "Hi from java",
+         EmailData msg = new EmailData(to, from, "Hi from java",
                "Some body text");
          mail.sendEmail(msg);
          System.out.println("Sent a message from '" + from + "' to '" + to

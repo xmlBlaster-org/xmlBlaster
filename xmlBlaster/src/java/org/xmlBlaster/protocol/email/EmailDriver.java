@@ -211,7 +211,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     * Notification by Pop3Driver when a (response) message arrives. Enforced by
     * I_ResponseListener
    public void responseEvent(String requestId, Object response) {
-      MessageData messageData = (MessageData) response;
+      EmailData messageData = (EmailData) response;
    }
     */
    
