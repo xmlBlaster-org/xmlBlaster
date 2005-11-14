@@ -10,8 +10,6 @@ package org.xmlBlaster.contrib.htmlmonitor;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -28,7 +26,6 @@ import org.xmlBlaster.util.I_ReplaceVariable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.StringTokenizer;
@@ -72,7 +69,6 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    private Set urlPathClasspathSet = new HashSet();
    private String documentRoot;
    private CommandManager commandManager;
-   private SessionInfo sessionInfo;
    private ReplaceVariable replaceVariable = new ReplaceVariable();
    
    /**
@@ -179,13 +175,14 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
                // "status.html": lookup where the java class resides in xmlBlaster.jar
                urlPath = urlPath.substring(1);
             }
-            text = new String(this.global.getFromClasspath(urlPath, this));
+            text = new String(Global.getFromClasspath(urlPath, this));
             if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
          }
          else {
             File f = new File(urlPath);
-            String name = (urlPath.toLowerCase().indexOf(".html")!=-1 || urlPath.toLowerCase().indexOf(".htm")!=-1) ?
-                          f.getName() : "index.html";
+            // FIXME: check for security
+            // dangerous because one can send: ../../../
+            String name = f.getName();
             if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
             File template = new File(this.documentRoot, name);
             text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
