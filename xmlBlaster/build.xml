@@ -1028,6 +1028,11 @@ TODO
          <fileset dir="${src.java.dir}/org/xmlBlaster/client/protocol/http/j2me">
          </fileset>
       </copy>
+      <copy todir="${build.dir}/j2me/src/org/xmlBlaster">
+         <fileset dir="${src.java.dir}/org/xmlBlaster">
+	    <include name="util/Base64.java"/>
+         </fileset>
+      </copy>
       <copy file="${demo.dir}/j2me/SystemInfoMidlet.java" tofile="${build.dir}/j2me/src/SystemInfoMidlet.java"/>
       <mkdir dir="${build.dir}/j2me/tmpclasses"/>
       <mkdir dir="${build.dir}/j2me/classes"/>
