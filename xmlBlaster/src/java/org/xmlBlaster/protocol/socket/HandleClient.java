@@ -128,18 +128,8 @@ public class HandleClient extends SocketExecutor implements Runnable
 
          driver.removeClient(this);
 
-         if (this.secretSessionId != null) {
-            String tmp = this.secretSessionId;
-            this.secretSessionId = null;
-            try { // check first if session is in shutdown process already (avoid recursive disconnect()):
-               if (authenticate.sessionExists(tmp))
-                  authenticate.disconnect(driver.getAddressServer(), tmp, "<qos/>");
-            }
-            catch(Throwable e) {
-               log.warn(ME, e.toString());
-               e.printStackTrace();
-            }
-         }
+         this.secretSessionId = null;
+
          if (responseListenerMap.size() > 0) {
             java .util.Iterator iterator = responseListenerMap.keySet().iterator();
             StringBuffer buf = new StringBuffer(256);
