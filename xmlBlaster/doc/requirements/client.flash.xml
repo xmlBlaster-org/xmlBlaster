@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.flash' type='NEW' prio='MEDIUM' status='INWORK'>
+   <topic>
+      XmlBlaster provides access from Flash (Macromedia Flash Player).
+   </topic>
+
+   <description>
+   <h2>Overview</h2>
+   <p>
+   With Flash we can only have a synchronous access to XmlBlaster. Flash does not want to listen the network. But I think a Flash Killer can write some asynchronous call using a never closing socket.
+   </p>
+   <p>
+   You can have a look at the README file <a href="http://www.xmlblaster.net/xmlBlaster/demo/flash/xmlrpc/README">here</a>.
+   </p>
+   <p>
+   The demo is in xmlBlaster/demo/flash and looks like :
+   </p>
+   <p>
+   <img src="client.flash.xmlrpc.demo1.png" alt="demo screenshot" border="1" />
+   </p>
+   <p>
+   It is a simple app that make some calls iteration.<br/>
+   Becarefull to get the right hostname, Flash is very strict about that. For example, if your browser point to localhost, change the url from 127.0.0.1 to localhost. If not, like in the screenshot, you will got a error 'Failed to connect'.
+   </p>
+   </description>
+
+   <todo type="HTML">
+    <ul>
+      <li>Finish this requirement and rewrite bad english sentences (all my excuses, cyrille).</li>
+    </ul>
+   </todo>
+
+   <author><a href="mailto:cyrille@giquello.com">Cyrille Giquello</a></author>
+   <date>2005 11 14</date>
+
+</requirement>
