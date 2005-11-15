@@ -18,6 +18,7 @@ import org.xmlBlaster.util.protocol.ZFlushOutputStream;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XbfParser;
 import org.xmlBlaster.util.def.Constants;
 
 import java.io.IOException;
@@ -48,6 +49,9 @@ public abstract class SocketExecutor extends RequestReplyExecutor
    protected long soLingerTimeout = 0; // Constants.MINUTE_IN_MILLIS -> this can lead to blocking close(), so we choose '0'
    /** This is the client side */
    protected String loginName;
+   /** Which message format parser to use */
+   protected String msgInfoParserClassName;
+   
 
    public SocketExecutor() {
    }
@@ -87,6 +91,18 @@ public abstract class SocketExecutor extends RequestReplyExecutor
    protected void setLoginName(String loginName) {
       super.setLoginName(loginName);
       this.loginName = loginName;
+   }
+   
+   /**
+    * Which parser to use. 
+    * The SOCKET protocol uses as a default setting the XbfParser
+    * @return The class name of the parser, "org.xmlBlaster.util.xbformat.XbfParser"
+    */
+   public String getMsgInfoParserClassName() {
+      if (this.msgInfoParserClassName == null) {
+         this.msgInfoParserClassName = this.addressConfig.getEnv("parserClass", XbfParser.class.getName()).getValue();
+      }
+      return this.msgInfoParserClassName; // "org.xmlBlaster.util.xbformat.XbfParser"
    }
 
    /**

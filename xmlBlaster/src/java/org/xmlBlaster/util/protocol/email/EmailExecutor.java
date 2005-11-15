@@ -18,6 +18,7 @@ import org.xmlBlaster.util.protocol.email.SmtpClient;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
 import org.xmlBlaster.util.xbformat.XbfParser;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -61,6 +62,9 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    private Deflater compressor;
    
    private Inflater decompressor;
+   
+   /** Which message format parser to use */
+   protected String msgInfoParserClassName;
 
    /**
     * This init() is called after the init(Global, PluginInfo)
@@ -128,6 +132,21 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
    }
    
+   /**
+    * Which parser to use. 
+    * The EMAIL protocol uses as a default setting the XbfParser
+    * but usig the XmlScriptParser may be convenient as well. 
+    * <p />
+    * The environment setting 'parserClass=' is checked.
+    * @return The class name of the parser, "org.xmlBlaster.util.xbformat.XbfParser"
+    */
+   public String getMsgInfoParserClassName() {
+      if (this.msgInfoParserClassName == null) {
+         this.msgInfoParserClassName = this.addressConfig.getEnv("parserClass", XbfParser.class.getName()).getValue();
+      }
+      return this.msgInfoParserClassName; //XbfParser.class.getName();
+   }
+
    public Object sendEmail(String qos, MethodName methodName,
          boolean expectingResponse) throws XmlBlasterException {
       MsgUnitRaw[] msgArr = { new MsgUnitRaw(null, (byte[])null, qos) };
@@ -206,8 +225,8 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       AttachmentHolder holder = null;
       try {
          holder =
-               emailData.getEncodedMsgUnitByExtension(
-               XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
+               emailData.getEncodedMsgUnit(); // "*.xbf", "*.xbfz", "*.xmlz", ...
+               //XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
                + this.pop3Driver.getPop3Url()
@@ -218,6 +237,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
 
       if (holder == null) {
          log.warning("No mails via POP3 found");
+         //log.fine("DUMP:" + emailData.toXml());
          return;
       }
 
@@ -239,8 +259,8 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
             encodedMsgUnit = out.toByteArray();
             if (log.isLoggable(Level.FINE)) log.fine("Decompressed message from " + length + " to " + encodedMsgUnit.length + " bytes");
          }
-
-         receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit);
+         String className = MsgInfoParserFactory.instance().guessParserName(holder.getFileName(), holder.getContentType());
+         receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit, className);
          receiver.setBounceObject("mail.from", emailData.getFrom());
          receiver.setBounceObject("messageId", emailData.getMessageId());
       } catch (Throwable e) {
@@ -288,7 +308,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       String attachmentName2 = "messageId" + EmailData.MESSAGEID_EXTENSION;
 
       // The pay load
-      byte[] origAttachment = msgInfo.getMsgInfoParser().createRawMsg(msgInfo);
+      byte[] origAttachment = msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).createRawMsg(msgInfo);
       boolean isCompressed = false;
       byte[] attachment = origAttachment;
       if (isCompressZlib()) {
@@ -320,7 +340,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String attachmentName = "xmlBlasterMessage" + 
-         msgInfo.getMsgInfoParser().getExtension(isCompressed);
+         msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getExtension(isCompressed);
 
       InternetAddress toAddr = this.toAddress;
       String to = (String)msgInfo.getBounceObject("mail.to");
@@ -335,7 +355,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
-      emailData.addAttachment(new AttachmentHolder(attachmentName, msgInfo.getMsgInfoParser().getMimetype(isCompressed), attachment));
+      emailData.addAttachment(new AttachmentHolder(attachmentName, msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getMimetype(isCompressed), attachment));
       emailData.addAttachment(new AttachmentHolder(attachmentName2, messageId));
       
       this.smtpClient.sendEmail(emailData);

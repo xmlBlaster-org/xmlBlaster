@@ -113,6 +113,13 @@ public class XbfParser implements I_MsgInfoParser
 
    /** If not null somebody wants to be notified about the current bytes send over socket */
    private I_ProgressListener progressListener;
+   
+   static {
+      MsgInfoParserFactory.instance().register(XBFORMAT_EXTENSION, XbfParser.class.getName());
+      MsgInfoParserFactory.instance().register(XBFORMAT_ZLIB_EXTENSION, XbfParser.class.getName());
+      MsgInfoParserFactory.instance().register(XBFORMAT_MIMETYPE, XbfParser.class.getName());
+      MsgInfoParserFactory.instance().register(XBFORMAT_ZLIB_MIMETYPE, XbfParser.class.getName());
+   }
 
    public XbfParser() {
       //initialize();

@@ -49,10 +49,17 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
 
    public static final String XMLSCRIPT_ZLIB_EXTENSION = ".xmlz";
 
-   public static final String XMLSCRIPT_MIMETYPE = "text/xml";
+   public static final String XMLSCRIPT_MIMETYPE = "text/xmlBlasterScript";
    
-   public static final String XMLSCRIPT_MIMETYPE_ZLIB = "text/xmlz";
+   public static final String XMLSCRIPT_ZLIB_MIMETYPE = "text/xmlBlasterScriptz";
    
+   static {
+      MsgInfoParserFactory.instance().register(XMLSCRIPT_EXTENSION, XmlScriptParser.class.getName());
+      MsgInfoParserFactory.instance().register(XMLSCRIPT_ZLIB_EXTENSION, XmlScriptParser.class.getName());
+      MsgInfoParserFactory.instance().register(XMLSCRIPT_MIMETYPE, XmlScriptParser.class.getName());
+      MsgInfoParserFactory.instance().register(XMLSCRIPT_ZLIB_MIMETYPE, XmlScriptParser.class.getName());
+   }
+
    /**
     * If not null somebody wants to be notified about the current bytes send
     * over socket
@@ -73,11 +80,11 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    /**
     * Get a specific extension for this format. 
     * @return For example 
-    *  XMLSCRIPT_MIMETYPE = "text/xml" or
-    *  XMLSCRIPT_MIMETYPE_ZLIB = "text/xmlz"
+    *  XMLSCRIPT_MIMETYPE = "text/xmlBlasterScript" or
+    *  XMLSCRIPT_MIMETYPE_ZLIB = "text/xmlBlasterScriptz"
     */
    public String getMimetype(boolean isCompressed) {
-      return (isCompressed) ? XMLSCRIPT_MIMETYPE_ZLIB : XMLSCRIPT_MIMETYPE;
+      return (isCompressed) ? XMLSCRIPT_ZLIB_MIMETYPE : XMLSCRIPT_MIMETYPE;
    }
 
    /**

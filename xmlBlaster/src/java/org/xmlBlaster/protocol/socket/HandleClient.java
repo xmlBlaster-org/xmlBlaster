@@ -361,7 +361,7 @@ public class HandleClient extends SocketExecutor implements Runnable
             MsgInfo msgInfo = null;
             try {
                // blocks until a message arrives
-               msgInfo = MsgInfo.parse(glob, progressListener, iStream);
+               msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName());
                handleMessage(msgInfo, false);
             }
             catch (Throwable e) {

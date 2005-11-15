@@ -183,7 +183,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
                }
                InputStream iStream = new ByteArrayInputStream(packet.getData(), 0, actualSize);
                try {
-                  receiver = MsgInfo.parse(glob, null, iStream);
+                  receiver = MsgInfo.parse(glob, null, iStream, null/*getMsgInfoParserClassName()*/);
                }
                catch (Throwable e) {
                   log.error(ME, "Error parsing data from UDP packet: " + e);

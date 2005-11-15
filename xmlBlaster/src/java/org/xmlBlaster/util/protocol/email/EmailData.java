@@ -15,6 +15,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
 
 /**
  * Value object holding the most commonly used email fields.
@@ -174,15 +175,12 @@ public class EmailData {
     * @param extensionBackup For example ".xml"
     * @return null if no such attachment was found
     */
-   public AttachmentHolder getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
+//   public AttachmentHolder getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
+   public AttachmentHolder getEncodedMsgUnit() {
+      MsgInfoParserFactory fac = MsgInfoParserFactory.instance();
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(extension) || atts[j].getFileName().endsWith(extensionZ)) {
-            return atts[j];
-         }
-      }
-      for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(extensionBackup)) {
+         if (fac.parserExists(atts[j].getFileName(), atts[j].getContentType())) {
             return atts[j];
          }
       }
@@ -205,7 +203,7 @@ public class EmailData {
    
    /**
     * Comma separated value list of all recipient email addresses for logging. 
-    * @return For example "joe@locahost,a.xbf, b.xml, m.mid"
+    * @return For example "joe@locahost,demo@localhost"
     */
    public String getRecipientsList() {
       if (this.recipients == null) return "";
