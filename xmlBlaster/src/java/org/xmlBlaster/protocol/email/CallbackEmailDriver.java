@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.email;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -23,14 +24,21 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * example:
  * 
  * <pre>
-CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster
+CbProtocolPlugin[EMAIL][1.0]=\
+    org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+    mail.user=xmlBlaster,\
+    mail.password=xmlBlaster,\
+    compress/type=zlib,\
+    compress/minSize=200,\
+    parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
  * </pre>
- * 
- * see javaclients.ClientSubEmail
+ * The parserClass is optional, the default message serialization
+ * is XbfParser.
  * 
  * @author xmlBlaster@marcelruff.info
  */
-public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriver {
+public class CallbackEmailDriver extends EmailExecutor implements
+      I_CallbackDriver {
    private String ME = "CallbackEmailDriver";
 
    private LogChannel log;
@@ -105,7 +113,11 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
       super.init(glob, callbackAddress, this.pluginInfo);
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
-      try { super.pop3Driver.activate(); } catch (Exception e) { e.printStackTrace(); }
+      try {
+         super.pop3Driver.activate();
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
       super.setSecretSessionId(callbackAddress.getSecretSessionId());
       super.setEmailSessionId(callbackAddress.getSessionName());
    }
@@ -114,7 +126,8 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     * This sends the update to the client.
     */
    public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      return (String[])super.sendEmail(msgArr, MethodName.UPDATE, SocketExecutor.WAIT_ON_RESPONSE);
+      return (String[]) super.sendEmail(msgArr, MethodName.UPDATE,
+            SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**
@@ -132,15 +145,23 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     * availability on the application level.
     * 
     * @param qos
-    *           Currently an empty string ""
-    * @return Currently an empty string ""
+    * @return Constants.RET_OK or the remote ping return
     * @exception XmlBlasterException
     *               If client not reachable
     */
    public String ping(String qos) throws XmlBlasterException {
-      // TODO ping()
-      log.info(ME, "Email ping is not supported, request ignored");
-      return "";
+      
+      if (Thread.currentThread().getName().equals(
+            super.pop3Driver.getThreadName())) {
+         if (log.TRACE) log.trace(ME,
+                  "Email ping is suppressed as doing this from thread '"
+                  + super.pop3Driver.getThreadName()
+                  + "' would deadlock");
+         return Constants.RET_OK;
+      }
+      
+      return (String) super.sendEmail(qos, MethodName.PING,
+            SocketExecutor.WAIT_ON_RESPONSE);
    }
 
    /**

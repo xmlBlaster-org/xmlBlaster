@@ -109,11 +109,14 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    public static final String POP3_FOLDER = "inbox";
 
    public static final String UTF8 = "UTF-8";
+   
+   private String threadName;
 
    /**
     * You need to call setSessionProperties() thereafter.
     */
    public Pop3Driver() {
+      this.threadName = "POP3Driver-pollingTimer";
    }
 
    /**
@@ -294,7 +297,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
       glob.addObjectEntry(Pop3Driver.class.getName(), this);
 
-      this.timeout = new Timeout("POP3Driver-pollingTimer");
+      this.timeout = new Timeout(this.threadName);
       if (activate) { 
          try { activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
       }
@@ -755,5 +758,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          if (pop3Client != null)
             pop3Client.shutdown();
       }
+   }
+
+   public String getThreadName() {
+      return threadName;
    }
 }
