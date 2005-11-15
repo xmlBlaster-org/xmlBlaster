@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.csharp' type='NEW' prio='MEDIUM' status='INWORK'>
+   <topic>
+      XmlBlaster provides full access from C#.
+   </topic>
+   <description>
+   <h2>Overview</h2>
+     <p>
+     You get a full access to XmlBlaster's interface from C#.
+     One way you can use the full XmlBlaster Client capabilities (fail-over, client cache, ...)
+     when using the ActiveX technologies,
+     or you can have a complet access using the XML-RPC protocol but without advanced client features.
+     </p>
+   <h2>ActiveX</h2>
+     <p>
+     For Windows users only, you can use the original xmlBlaster Java Client library by hosting it with the free ActiveX bridge from SUN (Java JDK 1.5). <br/>
+     To see detail about using the ActiveX bridge from SUN (Java JDK 1.5) to host the XmlBlaster Client library, have a look at the <a href="client.activex.html">client.activex</a> requirement.
+     </p>
+   <h2>XML-RPC</h2>
+     <p>
+     The second way use XML-RPC protocol to access XmlBlaster. This page will explain this technology.
+     You will find the demonstration in the directory xmlBlaster/demo/csharp/xmlrpc.
+     </p>
+     <p>
+     All XmlBlaster's interface are supported:
+     </p>
+     <p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for erasing <sup><b>*</b></sup> read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting * read the  <a href="interface.get.html">get interface</a></li>
+     <li>for unsubscribing * read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     </ul>
+ 		Items with an asterix are fully functionnals but not implemented in the demo (for the moment).
+     </p>
+   <h3>The demo</h3>
+   	<p>
+   	The demonstration was done with Microsoft Visual Studio .NET 2003,
+   	but it should works with CSharpDevelop IDE
+   		(just create a new projet, reference xml-rpc library and System.Remoting and include the *.cs files).
+   	Problably it will or not need some changes to run with mono.
+   	</p>
+   	<p>
+   	The Microsoft .Net Framework does not include the xml-rpc protocol, so we have to use a external library (assembly).
+   	I've choose xml-rpc.net.0.9.2 from http://www.xml-rpc.net/ written by Charles Cook. It seems to be nice and it implements Client and Server side of the protocol.
+   	</p>
+   	<p>
+   The demo consists in a little drawing application. <br/>
+   You can draw in the white panel of the form, your drawings will be send to each other drawing demo connected to the XmlBlaster server.
+   	</p>
+   	<p>
+	To run the demo, click on the exe file two times.<br/>
+	In each instance, choose a different username then click connect.<br/>
+	After connected you can start drawing on one instance and see your drawings on the second instance.<br/>
+	Of course, you can start instances on differents computers, just think to adapt the server_url to be the address of the computer running XmlBlaster server.
+   	</p>
+   	<p>
+   	Screenshot <br/>
+   	<img src="client.csharp.xmlrpc.drawingdemo1.png" alt="DrawingDemo screenshot1" border="1" />
+   	</p>
+   </description>
+
+   <example lang="CSHARP" type="HTML">
+	<p>
+	Start XmlBlaster server
+	</p>
+	<pre>
+   > set XMLBLASTER_HOME=D:\xmlBlaster_REL_1_0_7\xmlBlaster
+   > java -cp %XMLBLASTER_HOME%/lib -jar %XMLBLASTER_HOME%/lib/xmlBlaster.jar
+	</pre>
+	<p>
+	Start 2 demo applications by clicking on xmlBlaster/demo/csharp/xmlrpc/bin/CSharpDrawingDemo.exe.<br/>
+	On the first instance of the application, click button connect.<br/>
+	On the second one change the username to 'guest2' then click button connect.<br/>
+	In one application instance, draw some forms (line, rectangle...), and have a look to other instance.
+	Normally you can see your drawings on each.
+	</p>
+   </example>
+
+   <example lang="CSHARP" type="HTML">
+	<p>Here will come some peace of code.
+	</p>
+   </example>
+
+   <configuration where="client">
+   Client Side
+   	<ul>
+   	<li>Got a xmlrpc library (provided with the demo). The demo using the xml-rpc.net.0.9.2 from http://www.xml-rpc.net/.</li>
+   	</ul>
+   </configuration >
+   <configuration where="server">
+   Server Side
+   	<ul>
+   	<li>Be shure to have the xmlrpc plugin activated (should be already in default distribution).</li>
+   	<li>To activate the debug mode of the xmlrpc plugin, add '-plugin/xmlrpc/debug true' in the command line for starting XmlBlaster</li>
+   	</ul>
+   </configuration>
+
+   <todo type="HTML">
+    <ul>
+      <li>Finish this requirement and rewrite bad english sentences (all my excuses, cyrille).</li>
+      <li>make a demo that demonstrate all XmlBlaster interface methods implementation in a simple way (without any other functionnality).</li>
+      <li>Make the CSharpDevelop project files.</li>
+      <li>Make the demo compiling and running with Mono.</li>
+    </ul>
+   </todo>
+
+	<!-- how to make that links works ? -->
+   <see type="CODE" lang="CSHARP">http://www.xmlBlaster.org/xmlBlaster/demo/csharp/xmlrpc/src/CSharpDrawingDemo/XmlBlaster.cs</see>
+   <see type="CODE" lang="CSHARP">xmlBlaster/demo/csharp/xmlrpc/src/CSharpDrawingDemo/XmlBlaster.cs</see>
+
+   <see type="INTERNET" lang="CSHARP">http://www.xmlBlaster.org/xmlBlaster/demo/csharp/xmlrpc/README</see>
+
+   <see type="REQ">interface</see>
+   <see type="REQ">protocol.xmlrpc</see>
+
+   <author><a href="mailto:cyrille@giquello.com">Cyrille Giquello</a></author>
+   <date>2005 11 14</date>
+
+</requirement>
