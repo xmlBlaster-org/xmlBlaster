@@ -135,6 +135,10 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
    }
    
+   public String getType() {
+      return "EMAIL";
+   }
+   
    /**
     * Which parser to use. 
     * The EMAIL protocol uses as a default setting the XbfParser

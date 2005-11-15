@@ -101,6 +101,10 @@ public class HandleClient extends SocketExecutor implements Runnable
       t.start();
    }
 
+   public String getType() {
+      return this.driver.getType();
+   }
+
    synchronized public boolean isShutdown() {
       return (this.running == false);
    }

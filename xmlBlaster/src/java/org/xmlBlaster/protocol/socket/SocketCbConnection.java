@@ -72,6 +72,10 @@ public class SocketCbConnection extends SocketExecutor
       return this.glob;
    }
 
+   public String getType() {
+      return "SOCKET";
+   }
+
    /**
     * Connects to clients callback server with one socket connection. 
     */

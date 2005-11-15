@@ -39,6 +39,7 @@ import java.util.Collections;
  * to the waiting thread.
  *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html" target="others">xmlBlaster EMAIL access protocol</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public abstract class RequestReplyExecutor
@@ -112,6 +113,12 @@ public abstract class RequestReplyExecutor
       //        and with "jacorb.client.pending_reply_timeout"
    }
 
+   /**
+    * The protocol type, used for logging
+    * @return "SOCKET" or "EMAIL"
+    */
+   abstract public String getType();
+   
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
       I_ProgressListener oldOne = this.progressListener;
       this.progressListener = listener;
@@ -234,7 +241,7 @@ public abstract class RequestReplyExecutor
             try {
                I_CallbackExtended cbClientTmp = this.cbClient;
                if (cbClientTmp == null) {
-                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "The " + getType() + " callback driver is not created, can't process the remote invocation. Try configuration ' -protocol "+getType()+"'");
                }
                MsgUnitRaw[] arr = receiver.getMessageArr();
                if (arr == null || arr.length < 1) {
@@ -257,7 +264,7 @@ public abstract class RequestReplyExecutor
             try {
                I_CallbackExtended cbClientTmp = this.cbClient; // Remember to avoid synchronized block
                if (cbClientTmp == null) {
-                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No "+getType()+" callback driver is available, can't process the remote invocation.");
                }
                MsgUnitRaw[] arr = receiver.getMessageArr();
                if (arr == null || arr.length < 1) {
@@ -286,7 +293,7 @@ public abstract class RequestReplyExecutor
          else if (MethodName.PING == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
-               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
+               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No "+getType()+" callback driver is available, can't process the remote invocation.");
                executeException(receiver, xmlBlasterException, udp);
                return true;
             }
