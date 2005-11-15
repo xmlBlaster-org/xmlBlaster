@@ -203,6 +203,21 @@ public class MsgInfo {
    public final byte getType() {
       return this.type;
    }
+   
+   /**
+    * Access the char representation to send over the wire. 
+    * @param type
+    * @return 'I', 'R' or 'E'
+    */
+   public static char getTypeChar(byte type) {
+      if (type == INVOKE_BYTE)
+         return 'I';
+      else if (type == RESPONSE_BYTE)
+         return 'R';
+      else if (type == EXCEPTION_BYTE)
+         return 'E';
+      return 0;
+   }
 
    /**
     * Similar to getType() but returns a nice human readable string for logging
@@ -214,6 +229,20 @@ public class MsgInfo {
       else if (isResponse())
          return "RESPONSE";
       else if (isException())
+         return "EXCEPTION";
+      return "UNKNOWN_TYPE";
+   }
+
+   /**
+    * Similar to getType() but returns a nice human readable string for logging
+    * output
+    */
+   public final static String getTypeStr(byte type) {
+      if (type == INVOKE_BYTE)
+         return "INVOKE";
+      else if (type == RESPONSE_BYTE)
+         return "RESPONSE";
+      else if (type == EXCEPTION_BYTE)
          return "EXCEPTION";
       return "UNKNOWN_TYPE";
    }
@@ -270,7 +299,7 @@ public class MsgInfo {
    /**
     * Use this when receiving a message.
     * 
-    * @return The received request ID
+    * @return The received request ID, is never null
     */
    public final String getRequestId() {
       if (this.requestId == null)

@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -114,6 +115,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private String link;
    private String sessionId;
    private String requestId;
+   private byte type; // I=invoke R=response E=exception
 
    /** the attachments (some contents can be in the attachments) */
    private HashMap attachments;
@@ -276,6 +278,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
             this.messageList = new ArrayList();
          this.sessionId = atts.getValue("sessionId");
          this.requestId = atts.getValue("requestId");
+         String typeStr = atts.getValue("type");
+         if (typeStr!=null && typeStr.length() > 0)
+            this.type = typeStr.getBytes()[0];
+         else
+            this.type = MsgInfo.INVOKE_BYTE; // 'I'
          return;
       }
 
@@ -413,12 +420,13 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    /**
     * On each remote method invocation this function is called. 
     * @param methodName
+    * @param type 'I'=invoke 'R'=response 'E'=exception
     * @return true: The methodName was known and is successfully processed
     *         false: The methodName is not known and nothing is processed
     * @throws XmlBlasterException Will lead to stop parsing further
     */
    abstract public boolean fireMethod(MethodName methodName,
-         String sessionId, String requestId) throws XmlBlasterException;
+         String sessionId, String requestId, byte type) throws XmlBlasterException;
 
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
@@ -454,7 +462,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      boolean processed = fireMethod(MethodName.toMethodName(qName), this.sessionId, this.requestId);
+      boolean processed = fireMethod(MethodName.toMethodName(qName), this.sessionId, this.requestId, this.type);
       if (processed) return;
    }
 
@@ -671,12 +679,14 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     * @param methodName The method to invoke, like "publishArr"
     * @param sessionId An optional sessionId or null
     * @param requestId An optional requestId or null
+    * @param type 'I' is for invoke, 'R' for reply and 'E' for exception
     * @param msgUnits The msgUnits to serialize
     * @param comment An optional comment to add, can be null
     * @param out The output sink for the result
+    * @param type TODO
     * @throws XmlBlasterException
     */
-   protected void serialize(MethodName methodName, String sessionId, String requestId, MsgUnitRaw[] msgUnits, String comment, OutputStream out) throws IOException {
+   protected void serialize(MethodName methodName, String sessionId, String requestId, MsgUnitRaw[] msgUnits, String comment, OutputStream out, byte type) throws IOException {
       String offset = " ";
       StringBuffer sb = new StringBuffer(1024+(1024));
       
@@ -688,6 +698,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
             sb.append(" sessionId='").append(sessionId).append("'");
          if (requestId != null && requestId.length() > 0)
             sb.append(" requestId='").append(requestId).append("'");
+         if (type != 0) {
+            sb.append(" type='").append(MsgInfo.getTypeChar(type)).append("'");
+         }
          sb.append(">");
       }
       out.write(sb.toString().getBytes());

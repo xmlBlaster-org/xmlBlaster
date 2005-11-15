@@ -216,7 +216,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       // A request/reply handler is interested in specific messages only
       if (listenerRequest != null) {
          if (log.isLoggable(Level.FINER)) log.finer("Request specific listener found for key=" + key + ", email is " + messageData.toString());
-         listenerRequest.responseEvent(messageData.getRequestId(), messageData);
+         listenerRequest.incomingMessage(messageData.getRequestId(), messageData);
          return key;
       }
 
@@ -224,7 +224,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       if (listenerSession != null) {
          if (log.isLoggable(Level.FINER)) log.finer("SessRequest specific listener found for key=" + messageData
                .getSessionId() + ", email is " + messageData.toString());
-         listenerSession.responseEvent(messageData.getRequestId(), messageData);
+         listenerSession.incomingMessage(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
       
@@ -232,7 +232,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       if (listenerClusterNodeId != null) {
          if (log.isLoggable(Level.FINER)) log.finer("Node specific listener found for key=" + this.glob.getId()
                   + ", email is " + messageData.toString());
-         listenerClusterNodeId.responseEvent(messageData.getRequestId(), messageData);
+         listenerClusterNodeId.incomingMessage(messageData.getRequestId(), messageData);
          return messageData.getSessionId();
       }
       
@@ -408,10 +408,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
 
          boolean responseArrived = false;
          for (int i = 0; i < msgs.length; i++) {
-            EmailData messageData = msgs[i];
-            String notifiedListener = notify(messageData);
+            EmailData emailData = msgs[i];
+            if (log.isLoggable(Level.FINER))
+               log.finer("Got from POP3 email" + emailData.toXml(true));
+            String notifiedListener = notify(emailData);
             if (notifiedListener == null) {
-               if (log.isLoggable(Level.FINE)) log.fine("None of the registered listeners (" + getListeners() + ") wants this email: " + messageData.toXml());
+               if (log.isLoggable(Level.FINE)) log.fine("None of the registered listeners (" + getListeners() + ") wants this email: " + emailData.toXml(true));
             }
          }
 
@@ -734,7 +736,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
             long diff = System.currentTimeMillis() - start;
 
             for (int i = 0; i < msgs.length; i++)
-               System.out.println(msgs[i].toXml());
+               System.out.println(msgs[i].toXml(true));
             if (msgs.length == 0) {
                System.out.println("[" + pop3Client.getPop3Url()
                      + "] No mails over POP3 found");

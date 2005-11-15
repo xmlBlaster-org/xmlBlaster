@@ -14,6 +14,6 @@ package org.xmlBlaster.util;
  */
 public interface I_ResponseListener
 {
-   public void responseEvent(String requestId, Object response);
+   public void incomingMessage(String requestId, Object response);
 }
 

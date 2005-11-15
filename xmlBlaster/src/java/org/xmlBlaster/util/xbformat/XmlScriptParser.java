@@ -51,7 +51,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
 
    public static final String XMLSCRIPT_MIMETYPE = "text/xmlBlasterScript";
    
-   public static final String XMLSCRIPT_ZLIB_MIMETYPE = "text/xmlBlasterScriptz";
+   public static final String XMLSCRIPT_ZLIB_MIMETYPE = "application/xmlBlasterScriptz";
    
    static {
       MsgInfoParserFactory.instance().register(XMLSCRIPT_EXTENSION, XmlScriptParser.class.getName());
@@ -130,7 +130,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
     * Called during XML parsing.
     */
    public boolean fireMethod(MethodName methodName,
-         String sessionId, String requestId)
+         String sessionId, String requestId, byte type)
          throws XmlBlasterException {
       if (this.msgInfoParsed.getNumMessages() > 0) {
          log.severe("Multiple method invocation in one message is not yet supported, we ignore "
@@ -149,6 +149,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.msgInfoParsed.setMethodName(methodName);
       this.msgInfoParsed.setSecretSessionId(sessionId);
       this.msgInfoParsed.setRequestId(requestId);
+      this.msgInfoParsed.setType(type);
       this.msgInfoParsed.addMessage(msgUnitRaw);
       return true;
    }
@@ -164,7 +165,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
                          msgInfo.getSecretSessionId(),
                          msgInfo.getRequestId(),
                          msgInfo.getMessageArr(),
-                         null, out);
+                         null, out, msgInfo.getType());
          if (this.progressListener != null) {
             this.progressListener.progressWrite(msgInfo.getMethodNameStr(),
                   len, len);

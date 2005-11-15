@@ -65,6 +65,9 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    
    /** Which message format parser to use */
    protected String msgInfoParserClassName;
+   
+   /** Use to protect against looping messages */
+   protected String lastMessageId;
 
    /**
     * This init() is called after the init(Global, PluginInfo)
@@ -219,14 +222,13 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
     * Notification by Pop3Driver when a (response) email message arrives. 
     * Enforced by I_ResponseListener
     */
-   public void responseEvent(String requestId, Object response) {
+   public void incomingMessage(String requestId, Object response) {
       EmailData emailData = (EmailData) response;
 
       AttachmentHolder holder = null;
       try {
          holder =
-               emailData.getEncodedMsgUnit(); // "*.xbf", "*.xbfz", "*.xmlz", ...
-               //XbfParser.XBFORMAT_EXTENSION, XbfParser.XBFORMAT_ZLIB_EXTENSION, ".xml"); // "*.xbf", "*.xbfz"
+            emailData.getMsgUnitAttachment(); // "*.xbf", "*.xbfz", "*.xmlz", ...
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
                + this.pop3Driver.getPop3Url()
@@ -267,12 +269,27 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          log.warning("Error parsing email data from "
                            + this.pop3Driver.getPop3Url()
                            + ", check if client and server have identical compression settings: "
-                           + e.toString() + ": " + emailData.toXml());
+                           + e.toString() + ": " + emailData.toXml(true));
          //shutdown();
          return;
       }
 
       try {
+         {
+            // Some weak looping protection
+            // TODO: Enforce requestId to be strong-monotonous accending
+            // to also detect email duplicates (which can be produced by MTAs)
+            String messageId = receiver.getSecretSessionId()+receiver.getRequestId();
+            if (receiver.isInvoke() && messageId.equals(this.lastMessageId)) {
+               log.warning("Can't process email data from "
+                     + this.pop3Driver.getPop3Url()
+                     + ", it seems to be looping as requestId has been processed already"
+                     + ": " + emailData.toXml(true));
+               return;
+            }
+            this.lastMessageId = messageId;
+         }
+         
          // This wakes up the blocking thread of sendEmail() and returns the
          // returnQos or the received invocation
          if (receiveReply(receiver, false) == false) {

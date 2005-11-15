@@ -5,6 +5,7 @@ package org.xmlBlaster.util.protocol.email;
 
 import java.io.UnsupportedEncodingException;
 
+import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
 
 /**
@@ -79,15 +80,51 @@ public class AttachmentHolder {
    }
 
    /**
-    * Dumps message to xml. 
+    * Get the raw messages as a string, for tests and for dumping only
+    * @return The stringified message, null or special bytes are replaced by '*'
     */
-   public String toXml() {
+   public static final String createLiteral(byte[] arr) {
+      StringBuffer buffer = new StringBuffer(arr.length+10);
+      byte[] dummy = new byte[1];
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii] == 0)
+            buffer.append("*");
+         //else if (!Character.isLetterOrDigit((char)arr[ii]))
+         //   buffer.append("0x").append((int)(arr[ii]));
+         else {
+            dummy[0] = arr[ii];
+            try {
+               buffer.append(new String(dummy, Constants.UTF8_ENCODING));
+            } catch (UnsupportedEncodingException e) {
+               e.printStackTrace();
+            }
+         }
+      }
+      return buffer.toString();
+   }
+   
+   /**
+    * Dumps message to xml.
+    * @param readable If true '\0' are replaced by '*' 
+    */
+   public String toXml(boolean readable) {
      String offset = "\n";
      StringBuffer sb = new StringBuffer(1024);
      sb.append(offset).append("  <attachment>");
-     sb.append(offset).append("    <filename>").append(EmailData.escape(getFileName())).append("</filename>");
-     sb.append(offset).append("    <contenttype>").append(EmailData.escape(getContentType())).append("</contenttype>");
-     sb.append(offset).append("    <content>").append(EmailData.escape(new String(getContent()))).append("</content>");
+     sb.append(offset).append("    <filename>").append(XmlNotPortable.escape(getFileName())).append("</filename>");
+     sb.append(offset).append("    <contenttype>").append(XmlNotPortable.escape(getContentType())).append("</contenttype>");
+     try {
+        sb.append(offset).append("    <content size='").append(getContent().length).append("'>");
+        if (readable) {
+           sb.append(XmlNotPortable.escape(createLiteral(getContent())));
+        }
+        else {
+           sb.append(XmlNotPortable.escape(new String(getContent(), Constants.UTF8_ENCODING)));
+        }
+        sb.append("</content>");
+     } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+     }
      sb.append(offset).append("  </attachment>");
      return sb.toString();
    }

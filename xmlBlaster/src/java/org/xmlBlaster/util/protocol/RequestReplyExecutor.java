@@ -344,24 +344,24 @@ public abstract class RequestReplyExecutor
 
       if (receiver.isResponse()) {
          if (receiver.getMethodName().returnsMsgArr()) { // GET returns MsgUnitRaw[]
-            listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
+            listener.incomingMessage(receiver.getRequestId(), receiver.getMessageArr());
          }
          else if (receiver.getMethodName().returnsStringArr()) {  // PUBLISH etc. return String[]
-            listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
+            listener.incomingMessage(receiver.getRequestId(), receiver.getQosArr());
          }
          else if (receiver.getMethodName().returnsString()) { // SUBSCRIBE, CONNECT etc. return a String
-            listener.responseEvent(receiver.getRequestId(), receiver.getQos());
+            listener.incomingMessage(receiver.getRequestId(), receiver.getQos());
          }
          else {  // SUBSCRIBE, CONNECT etc. return a String
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The method " + receiver.getMethodName() + " is not expected in this context");
          }
       }
       else if (receiver.isException()) { // XmlBlasterException
-         listener.responseEvent(receiver.getRequestId(), receiver.getException());
+         listener.incomingMessage(receiver.getRequestId(), receiver.getException());
       }
       else {
          log.error(ME, "PANIC: Invalid response message for " + receiver.getMethodName());
-         listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response message '" + receiver.getMethodName()));
+         listener.incomingMessage(receiver.getRequestId(), new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response message '" + receiver.getMethodName()));
       }
 
       return true;
@@ -401,7 +401,7 @@ public abstract class RequestReplyExecutor
          synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
          if (!hasConnection()) return null;
          addResponseListener(requestId, new I_ResponseListener() {
-            public void responseEvent(String reqId, Object responseObj) {
+            public void incomingMessage(String reqId, Object responseObj) {
                if (log.TRACE) log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
                response[0] = responseObj;
                startSignal.release(); // wake up

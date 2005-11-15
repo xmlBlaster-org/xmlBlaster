@@ -138,6 +138,7 @@ public class CallbackEmailDriver extends EmailExecutor implements I_CallbackDriv
     *               If client not reachable
     */
    public String ping(String qos) throws XmlBlasterException {
+      // TODO ping()
       log.info(ME, "Email ping is not supported, request ignored");
       return "";
    }

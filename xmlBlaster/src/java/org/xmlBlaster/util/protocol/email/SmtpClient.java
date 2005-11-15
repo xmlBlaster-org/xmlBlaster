@@ -428,6 +428,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          if (log.isLoggable(Level.FINE))
             log.fine("Successful send email from=" + emailData.getFrom() + " to="
                   + emailData.getRecipientsList());
+         if (log.isLoggable(Level.FINER))
+            log.finer("Successful send email" + emailData.toXml(true));
       } catch (Exception e) {
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",

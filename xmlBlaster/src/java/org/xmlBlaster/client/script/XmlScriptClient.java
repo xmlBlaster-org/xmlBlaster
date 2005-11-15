@@ -24,6 +24,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.DisconnectQosSaxFactory;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -122,9 +123,15 @@ public class XmlScriptClient extends XmlScriptInterpreter {
    }
    
    public boolean fireMethod(MethodName methodName,
-         String sessionId, String requestId)
+         String sessionId, String requestId, byte type)
          throws XmlBlasterException {
-      if (this.log.TRACE) this.log.trace(ME, "fireMethod " + methodName.toString() + ": " + this.key.toString() + " " + this.qos.toString());
+      if (this.log.TRACE) this.log.trace(ME, "fireMethod "
+            + MsgInfo.getTypeStr(type)
+            + ": " + methodName.toString()
+            + ": " + this.key.toString()
+            + " " + this.qos.toString());
+      if (type != MsgInfo.INVOKE_BYTE)
+         log.warn(ME, "Unexpected message of type '" + MsgInfo.getTypeStr(type) + "'");
       try {
          if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
             boolean implicitConnect = !MethodName.CONNECT.equals(methodName);

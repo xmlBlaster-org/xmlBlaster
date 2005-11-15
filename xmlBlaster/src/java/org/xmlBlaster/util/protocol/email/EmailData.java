@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.xbformat.MsgInfoParserFactory;
@@ -176,7 +177,7 @@ public class EmailData {
     * @return null if no such attachment was found
     */
 //   public AttachmentHolder getEncodedMsgUnitByExtension(String extension, String extensionZ, String extensionBackup) {
-   public AttachmentHolder getEncodedMsgUnit() {
+   public AttachmentHolder getMsgUnitAttachment() {
       MsgInfoParserFactory fac = MsgInfoParserFactory.instance();
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
@@ -283,43 +284,29 @@ public class EmailData {
    }
 
    /**
-    * Encapsulate the given string with CDATA, escapes "]]>" tokens in str.
-    */
-   public static String escape(String str) {
-      str = (str == null) ? "" : str;
-      int index;
-      while ((index = str.indexOf("]]>")) != -1) {
-         String tmp = str;
-         str = tmp.substring(0, index + 2);
-         str += "&gt;";
-         str += tmp.substring(index + 3);
-         System.out.println("Can't handle strings containing a CDATA end"
-               + " section ']]>', i'll escape it to: " + str);
-      }
-      return "<![CDATA[" + str + "]]>";
-   }
-
-   /**
     * Dumps message to xml.
+    * @param readable If true '\0' are replaced by '*' 
     */
-   public String toXml() {
+   public String toXml(boolean readable) {
       String offset = "\n";
       StringBuffer sb = new StringBuffer(1024);
       sb.append(offset).append("<message>");
-      sb.append(offset).append("  <from>").append(escape(getFrom())).append(
+      sb.append(offset).append("  <from>").append(XmlNotPortable.escape(getFrom())).append(
             "</from>");
       for (int i = 0; i < this.recipients.length; i++) {
-         sb.append(offset).append("  <to>").append(escape(this.recipients[i].toString()))
+         sb.append(offset).append("  <to>").append(XmlNotPortable.escape(this.recipients[i].toString()))
                .append("</to>");
       }
       if (this.recipients.length == 0) {
          sb.append(offset).append("  <to></to>");
       }
-      sb.append(offset).append("  <subject>").append(escape(getSubject()))
+      sb.append(offset).append("  <subject>").append(XmlNotPortable.escape(getSubject()))
             .append("</subject>");
+      if (this.content != null && this.content.length() > 0)
+         sb.append(offset).append("  <content>").append(XmlNotPortable.escape(getContent())).append("</content>");
       AttachmentHolder[] att = getAttachments();
       for (int i = 0; i < att.length; i++)
-         sb.append(att[i].toXml());
+         sb.append(att[i].toXml(readable));
       sb.append(offset).append("</message>");
       return sb.toString();
    }
@@ -376,6 +363,7 @@ public class EmailData {
     * Hand made parser to parse xml, much faster than SAX. Will fail if a tag is
     * omitted and this tag occurs for example in the CDATA section of the
     * content. Therefor we always dump the complete xml in toXml().
+    * Not for production use, Attachments are not yet supported!
     */
    public static EmailData parseXml(String xml) {
       int start = 0;
@@ -407,18 +395,6 @@ public class EmailData {
 
       EmailData msg = new EmailData(recipients, from, subject, content);
       return msg;
-   }
-
-   /**
-    * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
-    */
-   public static void main(String[] args) {
-      String[] receivers = { "Receiver1", "Receiver2" };
-      EmailData msg = new EmailData(receivers, "Sender", "A subject",
-            "A content");
-      System.out.println("ORIG:\n" + msg.toXml());
-      msg = EmailData.parseXml(msg.toXml());
-      System.out.println("NEW:\n" + msg.toXml());
    }
 
    /**
@@ -512,7 +488,7 @@ public class EmailData {
          }
       }
       if (log.isLoggable(Level.FINE)) log.fine("No <" + tag + "> found for "
-            + toXml());
+            + toXml(true));
       return null;
    }
 
@@ -547,4 +523,16 @@ public class EmailData {
       this.content = content;
    }
 
+   /**
+    * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
+    */
+   public static void main(String[] args) {
+      String[] receivers = { "Receiver1", "Receiver2" };
+      EmailData msg = new EmailData(receivers, "Sender", "A subject",
+            "A content");
+      msg.addAttachment(new AttachmentHolder("xy.xbf", "application/xmlBlaster", "Hello World".getBytes()));
+      System.out.println("ORIG:\n" + msg.toXml(true));
+      msg = EmailData.parseXml(msg.toXml(true));
+      System.out.println("NEW:\n" + msg.toXml(true));
+   }
 }

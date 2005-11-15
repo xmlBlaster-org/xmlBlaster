@@ -1121,8 +1121,10 @@ public abstract class AddressBase
      // text += "                       Port to use for the protocol [" + DEFAULT_port + "]\n";
       text += "   -dispatch/" + this.instanceName + "/pingInterval\n";
       text += "                       Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
+      text += "                       0 switches pinging off\n";
       text += "   -dispatch/" + this.instanceName + "/retries\n";
       text += "                       How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
+      text += "                       Set to -1 for failsafe operation\n";
       text += "   -dispatch/" + this.instanceName + "/delay\n";
       text += "                       Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
