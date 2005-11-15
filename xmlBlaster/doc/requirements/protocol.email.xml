@@ -81,10 +81,50 @@
 
        </pre>
 
+<p>Supported formats</p>
+<pre>
+XfbParser:
+  mimeType="application/xmlBlaster-xbfz; name=xmlBlasterMessage.xbfz"
+  fileName=xmlBlasterMessage.xbf
+
+
+XmlScriptParser:
+  mimeType="text/plain; name=xmlBlasterMessage.xml; charset=UTF-8"
+  fileName = "xmlBlasterMessage.xml"      
+
+  messageId = "xmlBlaster.mid"
+
+
+</pre>
 
 </description>
+
+<example type="html">
+<pre>
+&lt;message>
+  &lt;from>demo@localhost&lt;/from>
+  &lt;to>xmlBlaster@localhost&lt;/to>
+  &lt;subject>XmlBlaster Generated Email&lt;/subject>
+  &lt;content>javax.mail.internet.MimeMultipart@16614e7&lt;/content>
+  &lt;attachment>
+    &lt;filename>xmlBlasterMessage.xml&lt;/filename>
+    &lt;contenttype>text/plain; name=xmlBlasterMessage.xml; charset=UTF-8&lt;/contenttype>
+    &lt;content><![CDATA[
+&lt;ping sessionId='unknown' requestId='1' type='I'>
+&lt;/ping>
+]]>&lt;/content>
+  &lt;/attachment>
+  &lt;attachment>
+    &lt;filename>messageId.mid&lt;/filename>
+    &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
+    &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>&lt;requestId>1&lt;/requestId>&lt;methodName>ping&lt;/methodName>&lt;/messageId>]]>&lt;/content>
+  &lt;/attachment>
+&lt;/message>
+</pre>
+</example>
    
     <configuration where="server">
+    <h2>Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
     <p>The fastest way for a test environment is to use the James MTA http://james.apache.org
     Here are the steps for a running test environment (runs fine on Windows or on Unix/Linux):
     </p>
@@ -114,6 +154,13 @@ listusers
 quit
 </pre>
   <p>Now our MTA is ready for testing.</p>
+
+  <h2>Debugging</h2>
+<pre>
+call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+call[org.xmlBlaster.util.protocol.email.SmtpClient] true
+call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
+</pre>
 
 
       <table border="1">
