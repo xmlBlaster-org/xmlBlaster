@@ -88,7 +88,9 @@ CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.user=xmlBlaster,\
                              mail.password=xmlBlaster,\
                              compress/type=zlib,\
-                             compress/minSize=200
+                             compress/minSize=200,\
+                             parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #------------------------------------------------------------------------------
 
 
@@ -107,9 +109,11 @@ ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConne
                                  mail.user=demo,\
                                  mail.password=demo,\
                                  mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
-                                 pop3PollingInterval=1000,\
+                                 pop3PollingInterval=500,\
                                  compress/type=zlib,\
-                                 compress/minSize=200
+                                 compress/minSize=200,\
+                                 parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                                 parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 
 # Register the client side callback server plugins:
 ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
@@ -119,13 +123,15 @@ ClientCbServerProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.soc
 ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
-# See xmlBlaster/demo/javaclients/email/README:
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html
 ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
                                          mail.user=demo,\
                                          mail.password=demo,\
                                          mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
                                          compress/type=zlib,\
-                                         compress/minSize=200
+                                         compress/minSize=200,\
+                                         parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                                         parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #------------------------------------------------------------------------------
 
 

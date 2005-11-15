@@ -129,6 +129,7 @@
       <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
       <attribute id='compress/type'>zlib</attribute>
       <attribute id='compress/minSize'>200</attribute>
+      <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XbfParser</attribute>
    </plugin>
 -->
 
