@@ -194,6 +194,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/java_cup.jar:${CLASSPATH}
 
+   # CORBA
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jacorb/avalon-framework-4.1.5.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jacorb/logkit-1.2.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jacorb/jacorb.jar
+
    export CLASSPATH
 
    PATH=${PATH}:${XMLBLASTER_HOME}/bin:${XMLBLASTER_HOME}/testsuite/src/c/bin:${XMLBLASTER_HOME}/testsuite/src/c++/bin:${XMLBLASTER_HOME}/demo/c/socket/bin:${XMLBLASTER_HOME}/demo/c++/bin
