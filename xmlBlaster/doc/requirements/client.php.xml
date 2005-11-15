@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.php' type='NEW' prio='MEDIUM' status='INWORK'>
+   <topic>
+      XmlBlaster provides access from PHP.
+   </topic>
+
+   <description>
+   <h2>Overview</h2>
+   <p>
+   With Php you can get full access to XmlBlaster's interface, with synchronous and asynchronous calls.<br/>At the moment there is only demo with Php as a web script engine.
+   </p>
+   <p>
+   You can have a look at the README file <a href="http://www.xmlblaster.net/xmlBlaster/demo/php/xmlrpc/README">here</a>.
+   </p>
+   <p>
+   The demo is in xmlBlaster/demo/php and looking like a simple app for querying and publishing.
+   </p>
+   <p>
+   <img src="client.php.xmlrpc.demo1.png" alt="demo screenshot" border="1" />
+   </p>
+   </description>
+
+   <todo type="HTML">
+    <ul>
+      <li>Finish this requirement and rewrite bad english sentences (all my excuses, cyrille).</li>
+      <li>Create another demo with callback (a chat or what ?).</li>
+    </ul>
+   </todo>
+
+   <author><a href="mailto:cyrille@giquello.com">Cyrille Giquello</a></author>
+   <date>2005 11 14</date>
+
+</requirement>
