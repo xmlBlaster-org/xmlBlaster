@@ -114,7 +114,7 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
          int status = deflate(zlibP, Z_SYNC_FLUSH);
          if (zlibWriteBufP->debug) dumpZlib("writen(): In while after compress", 0, zlibWriteBufP);
          if (status != Z_OK) {
-            fprintf(stderr, "[%s:%d] deflate error during sending of %u bytes: %s\n", __FILE__, __LINE__, nbytes, zError(status));
+            fprintf(stderr, "[%s:%d] deflate error during sending of %u bytes: %s\n", __FILE__, __LINE__, (unsigned int)nbytes, zError(status));
             return -1;
          }
          onceMore = zlibP->avail_out == 0; /* && Z_OK which is checked above already */
@@ -135,7 +135,7 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
          written += ret;
       }
       */
-      if (zlibWriteBufP->debug) printf("deflate - compressed %u bytes to %u\n", nbytes, written);
+      if (zlibWriteBufP->debug) printf("deflate - compressed %u bytes to %u\n", (unsigned int)nbytes, (unsigned int)written);
 
       return nbytes; /*written*/
    }
@@ -220,7 +220,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             fpNumRead(userP2, (size_t)zlibP->next_out-(size_t)ptr, nbytes); /* Callback with current status */
          }
          if (zlibP->avail_out == 0) {
-            if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u currCompBytes=%u\n", __FILE__, __LINE__, nbytes, zlibReadBufP->currCompBytes);
+            if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u currCompBytes=%u\n", __FILE__, __LINE__, (unsigned int)nbytes, zlibReadBufP->currCompBytes);
             if (fpNumRead != 0) {
                fpNumRead(userP2, nbytes, nbytes);
             }
@@ -230,11 +230,11 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
          if (zlibReadBufP->currCompBytes == 0 && readBytes != nbytes) {
             const int flag = 0;
             int nCompRead;
-            if (zlibReadBufP->debug) printf("[%s:%d] recv() readBytes=%u, nbytes=%u, currCompBytes=%u\n", __FILE__, __LINE__, readBytes, nbytes, zlibReadBufP->currCompBytes);
+            if (zlibReadBufP->debug) printf("[%s:%d] recv() readBytes=%u, nbytes=%u, currCompBytes=%u\n", __FILE__, __LINE__, readBytes, (unsigned int)nbytes, zlibReadBufP->currCompBytes);
             zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
             nCompRead = recv(fd, zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
             if (nCompRead == -1 || nCompRead == 0) { /* 0 is not possible as we are blocking */
-               if (zlibReadBufP->debug) printf("[%s:%d] EOF during reading of %u bytes\n", __FILE__, __LINE__, nbytes-readBytes);
+               if (zlibReadBufP->debug) printf("[%s:%d] EOF during reading of %u bytes\n", __FILE__, __LINE__, (unsigned int)(nbytes-readBytes));
                return -1;
             }
             zlibReadBufP->currCompBytes += nCompRead;
@@ -246,14 +246,14 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
          while (zlibP->avail_in > 0 && zlibP->avail_out > 0) {
             int status = inflate(zlibP, Z_SYNC_FLUSH);
             if (status != Z_OK) {
-               fprintf(stderr, "[%s:%d] inflate error during reading of %u bytes: %s\n", __FILE__, __LINE__, nbytes, zError(status));
+               fprintf(stderr, "[%s:%d] inflate error during reading of %u bytes: %s\n", __FILE__, __LINE__, (unsigned int)nbytes, zError(status));
                return -1;
             }
             zlibReadBufP->currCompBufferP = zlibP->next_in;
             zlibReadBufP->currCompBytes = zlibP->avail_in;
             if (zlibReadBufP->debug) dumpZlib("readn(): inflate() returned", zlibReadBufP, 0);
             if (zlibP->avail_out == 0) {
-               if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u\n", __FILE__, __LINE__, nbytes);
+               if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u\n", __FILE__, __LINE__, (unsigned int)nbytes);
                if (fpNumRead != 0) {
                   fpNumRead(userP2, nbytes, nbytes);
                }
