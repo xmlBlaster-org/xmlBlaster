@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.php' type='NEW' prio='MEDIUM' status='INWORK'>
+<requirement id='client.php' type='NEW' prio='MEDIUM' status='CLOSED'>
    <topic>
       XmlBlaster provides access from PHP.
    </topic>
