@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
@@ -110,19 +111,31 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       return this.msgUnit;
    }
 
-   /**
-    * @deprecated Please use toXml(String extraOffset, OutputStream out)
-    */
    public String toXml() {
       return toXml((String)null);
    }
 
    /**
-    * @deprecated Please use toXml(String extraOffset, OutputStream out)
     * @param extraOffset
     * @return
     */
    public String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+      sb.append(offset).append("<MsgUnitRaw>");
+      try {
+         toXml(extraOffset, out);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+      sb.append(offset).append("</MsgUnitRaw>\n");
+      sb.append(out.toByteArray());
+      return sb.toString();
+      /*
       StringBuffer sb = new StringBuffer();
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
@@ -138,6 +151,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       sb.append(offset).append("</MsgUnitRaw>\n");
 
       return sb.toString();
+      */
    }
 
    /**
@@ -155,10 +169,11 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
 
       if (this.qos.length() > 0) sb.append(offset).append(qos);
       if (this.key.length() > 0) sb.append(offset).append(key);
+      out.write(sb.toString().getBytes());
+      sb.setLength(0);
       
       if (this.content == null && this.encodedContent != null && this.encodedContent.getSize() == 0 ||
           this.content != null && this.content.length == 0) {
-         out.write(sb.toString().getBytes());
          return;
       }
       
