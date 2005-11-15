@@ -83,6 +83,8 @@
                   <xsd:enumeration value="XmlRpc"/>
                   <xsd:enumeration value="Csharp"/>
                   <xsd:enumeration value="VisualBasic"/>
+                  <xsd:enumeration value="Flash"/>
+                  <xsd:enumeration value="ActionScript"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
@@ -150,6 +152,8 @@
                   <xsd:enumeration value="XmlRpc"/>
                   <xsd:enumeration value="Csharp"/>
                   <xsd:enumeration value="VisualBasic"/>
+                  <xsd:enumeration value="Flash"/>
+                  <xsd:enumeration value="ActionScript"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
@@ -233,6 +237,8 @@
                   <xsd:enumeration value="XmlRpc"/>
                   <xsd:enumeration value="Csharp"/>
                   <xsd:enumeration value="VisualBasic"/>
+                  <xsd:enumeration value="Flash"/>
+                  <xsd:enumeration value="ActionScript"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
