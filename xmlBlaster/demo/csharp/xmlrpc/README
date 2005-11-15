@@ -1,0 +1,28 @@
+
+	CSharp (C#) Access to XmlBlaster using XML-RPC Protocol
+
+Note:
+
+	All compiled stuff (exe and lib) are for windows.
+	I hope one day someone will add C# compiled stuff for other platforms.
+
+Folders :
+
+	./bin : the executable demo
+		it was compiled with Microsoft Visual Studio .Net 2003 on Windows XP.
+	./lib : the xml-rpc library for C# from http://www.xml-rpc.net/
+	./src : sources files for demos (C# and graphics).
+	./VisualStudioNet2003 : projects files
+
+Running the demo :
+
+	Start XmlBlaster
+
+   > set XMLBLASTER_HOME=D:\xmlBlaster_REL_1_0_7\xmlBlaster
+   > java -cp %XMLBLASTER_HOME%/lib -jar %XMLBLASTER_HOME%/lib/xmlBlaster.jar
+
+	Start two CSharpDrawingDemo.exe
+	Set the right server url in both and one different username in each instance.
+	Click connect button on both, then start drawing.
+
+2005-11-15 Cyrille Giquello <cyrille@giquello.com>
