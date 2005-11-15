@@ -99,10 +99,12 @@ public class HelloWorld3 implements I_Callback
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
          UnSubscribeReturnQos[] urq = con.unSubscribe(uk, uq);
+         if (urq.length > 0) log.info("", "Unsubscribed from topic");
 
          EraseKey ek = new EraseKey(glob, "HelloWorld3");
          EraseQos eq = new EraseQos(glob);
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
+         if (eraseArr.length > 0) log.info("", "Erased topic");
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
