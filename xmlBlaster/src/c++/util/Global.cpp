@@ -394,10 +394,10 @@ string& Global::getCompiler()
 
 string& Global::getDefaultProtocol()
 {
-#  if COMPILE_CORBA_PLUGIN
-   static string defaultProtocol = Constants::IOR;
-#  elif COMPILE_SOCKET_PLUGIN
+#  if COMPILE_SOCKET_PLUGIN
    static string defaultProtocol = Constants::SOCKET;
+#  elif COMPILE_CORBA_PLUGIN
+   static string defaultProtocol = Constants::IOR;
 #  else
    log_.error(ME, "Missing protocol in getDefaultProtocol(), please set COMPILE_CORBA_PLUGIN or COMPILE_SOCKET_PLUGIN on compilation");
 #  endif

@@ -9,6 +9,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
@@ -195,7 +196,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
          if (type == null) {
             log.error(ME, "Missing 'serverRef' attribute 'type' in login-qos");
-            type = "IOR";
+            type = AddressBase.DEFAULT_type;// Since 1.0.7 "SOCKET", before "IOR";
          }
          tmpServerRef = new ServerRef(type);
          if (tmp.length() > 0) {

@@ -63,8 +63,8 @@ public abstract class AddressBase
    public static final int DEFAULT_bootstrapPort = Constants.XMLBLASTER_PORT; // 3412
    private PropInt bootstrapPort = new PropInt(DEFAULT_bootstrapPort);
 
-   /** The unique protocol type, e.g. "IOR" */
-   public static final String DEFAULT_type = "IOR";
+   /** The unique protocol type, defaults to SOCKET */
+   public static final String DEFAULT_type = "SOCKET";
    protected PropString type = new PropString(DEFAULT_type);
    
    /** The protocol version, e.g. "1.0" */
