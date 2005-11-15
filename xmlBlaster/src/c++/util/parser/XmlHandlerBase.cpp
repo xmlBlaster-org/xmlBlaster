@@ -29,10 +29,10 @@ using namespace org::xmlBlaster::util::thread;
 
 XmlHandlerBase::XmlHandlerBase(Global& global) :
             ME("XmlHandlerBase"),
+            inAttribute_(false),
             global_(global),
             log_(global.getLog("org.xmlBlaster.util.xml")),
-            invocationMutex_(),
-            inAttribute_(false)
+            invocationMutex_()
 {
    doTrimStrings_ = true;
    //if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
@@ -127,10 +127,10 @@ void XmlHandlerBase::parse(const string &xmlData)
 void XmlHandlerBase::characters(const string &ch) 
 {
    if (doTrimStrings_) {
-   	if (inAttribute_)
-   	   attributeCharacter_ += trimmer_.trim(ch);
+        if (inAttribute_)
+           attributeCharacter_ += trimmer_.trim(ch);
       else
-      	character_ += trimmer_.trim(ch);
+        character_ += trimmer_.trim(ch);
    }
    else {
       if (inAttribute_)
