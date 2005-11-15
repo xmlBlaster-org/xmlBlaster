@@ -432,6 +432,55 @@ public class XmlNotPortable
       return tw;
    }
 
+   /**
+    * Encapsulate the given string with CDATA, escapes "]]>" tokens in str.
+    * Please use for dumps only as it can't handle internally used ]]>
+    * (no Base64 encoding is done)
+    */
+   public static String escape(String str) {
+      // TODO: Move to something like a XmlUtil class
+      int protect = protectionNeeded(str);
+      if (protect == 0) return str;
+      if (protect == 2) {
+         //System.out.println("Can't handle strings containing a CDATA end"
+         //      + " section ']]>', as i won't make Base64");
+         //return str;
+      }
+      str = (str == null) ? "" : str;
+      int index;
+      while ((index = str.indexOf("]]>")) != -1) {
+         String tmp = str;
+         str = tmp.substring(0, index + 2);
+         str += "&gt;";
+         str += tmp.substring(index + 3);
+         //Thread.dumpStack();
+         //System.out.println("Can't handle strings containing a CDATA end"
+         //      + " section ']]>', i'll escape it to: " + str);
+      }
+      return "<![CDATA[" + str + "]]>";
+   }
+   
+   /**
+    * If value contains XML harmful characters it needs to be
+    * wrapped by CDATA or encoded to Base64. 
+    * @param value The string to verify
+    * @return 0 No protection necessary
+    *         1 Protection with CDATA is needed
+    *         2 Protection with Base64 is needed
+    */
+   public static int protectionNeeded(String value) {
+      // TODO: Move to something like a XmlUtil class
+      if (value == null) return 0;
+      if (value.indexOf("]]>") >= 0)
+         return 2;
+      for (int i=0; i<value.length(); i++) {
+         int c = value.charAt(i);
+         if (c == '<' || c == '&')
+            return 1;
+      }
+      return 0;
+   }
+
    /*
     * Replacing a node (located within a certain DOM hierachy) with an other
     * one
