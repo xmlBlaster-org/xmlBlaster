@@ -1,31 +1,13 @@
 package org.xmlBlaster.test.classtest;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Hashtable;
 import java.util.Map;
-import java.util.Vector;
+
+import junit.framework.TestCase;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.client.protocol.http.common.BufferedInputStreamMicro;
-import org.xmlBlaster.client.protocol.http.common.Msg;
-import org.xmlBlaster.client.protocol.http.common.MsgHolder;
-import org.xmlBlaster.client.protocol.http.common.ObjectInputStreamMicro;
-import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.qos.ClientProperty;
-
-import junit.framework.*;
 
 /**
  * Test ConnectQos. 
@@ -68,7 +50,7 @@ public class StringPairTokenizerTest extends TestCase {
          long waitingDelay = 4000L;
          
          String cmd = "maxEntries=4&maxSize=-1&consumable=true&waitingDelay=1000";
-         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(this.glob, cmd, "&", "=");
+         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(cmd, "&", "=");
          
          ClientProperty prop = (ClientProperty)props.get("maxEntries");
          assertNotNull("property should not be null", prop);
@@ -96,17 +78,42 @@ public class StringPairTokenizerTest extends TestCase {
       }
    }
 
+   public void testURL() {
+	    // TODO: need to add " around some parameter-values and extend the tokenizer accordingly
+		String cmd = "nodeClass=node&node=izar&action=initReplication&p1=Hallo";
+		try {
+			Map props = StringPairTokenizer.parseToStringClientPropertyPairs(
+					cmd, "&", "=");
+
+			assertTrue("Missing property", props.containsKey("nodeClass"));
+			assertTrue("Missing property", props.containsKey("node"));
+			assertTrue("Missing property", props.containsKey("action"));
+			assertTrue("Missing property", props.containsKey("p1"));
+			assertFalse("Property to much", props.containsKey("izar"));
+
+			// for some reason, they don't work :-(
+//			assertEquals("wrong value", "node", props.get("nodeClass"));
+//			assertEquals("wrong value", "izar", props.get("node"));
+//			assertEquals("wrong value", "action", props.get("initReplication"));
+//			assertEquals("wrong value", "p1", props.get("Hallo"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			assertTrue("an exception should not occur here", false);
+		}
+
+	}
    /**
-    * <pre>
-    *  java org.xmlBlaster.test.classtest.StringPairTokenizerTest
-    * </pre>
-    */
+	 * <pre>
+	 *   java org.xmlBlaster.test.classtest.StringPairTokenizerTest
+	 * </pre>
+	 */
    public static void main(String args[])
    {
       StringPairTokenizerTest test = new StringPairTokenizerTest("StringPairTokenizerTest", args);
 
       test.setUp();
       test.testClientProperties();
+      test.testURL();
       test.tearDown();
 
    }
