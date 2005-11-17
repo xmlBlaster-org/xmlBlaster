@@ -196,7 +196,7 @@ public class HtPasswd {
 
       try {
          String rawString = org.jutils.io.FileUtil.readAsciiFile(htpasswdFilename);
-         java.util.Map map = org.xmlBlaster.util.StringPairTokenizer.parseToStringStringPairs(glob, rawString, "\n", ":");
+         java.util.Map map = org.xmlBlaster.util.StringPairTokenizer.parseToStringStringPairs(rawString, "\n", ":");
          java.util.Iterator it = map.keySet().iterator();
          while (it.hasNext()) {
             String user = (String)it.next();

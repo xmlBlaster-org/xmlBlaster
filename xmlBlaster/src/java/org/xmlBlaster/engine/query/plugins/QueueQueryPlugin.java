@@ -107,7 +107,7 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
          String query = "";
          if (querySpec.getQuery() != null) query = querySpec.getQuery().getQuery();
          // "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
-         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(this.global, query, "&", "=");
+         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(query, "&", "=");
          ClientProperty prop = (ClientProperty)props.get("maxEntries");
          if (prop != null) this.maxEntries = prop.getIntValue();
          prop = (ClientProperty)props.get("maxSize");

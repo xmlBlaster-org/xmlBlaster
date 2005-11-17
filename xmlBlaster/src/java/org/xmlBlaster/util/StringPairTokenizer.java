@@ -29,47 +29,6 @@ public class StringPairTokenizer {
     * @param outerToken is for example ";" or ","
     * @param innterToken is for example "=" or " "
     * @param wantClientProperties if set to <code>true</code> returns pairs 'String,ClientProperty', returns 'String,String' pairs otherwise.
-    * @deprecated use method without global now.
-    */
-   private static Map parseStringProperties(Global glob, String rawString, String outerToken, String innerToken, boolean wantClientProperties) {
-	  return parseStringProperties(rawString, outerToken, innerToken, wantClientProperties);
-   }
-   
-     
-   /**
-    * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
-    * @param outerToken is for example ";" or ","
-    * @param innterToken is for example "=" or " "
-    * If a value is missing then a null object as value.
-    * the map returns pairs 'String,ClientProperty'.
-    * @deprecated use method without global now.
-    */
-   public static Map parseToStringClientPropertyPairs(Global glob, String rawString, String outerToken, String innerToken) {
-      return parseStringProperties(glob, rawString, outerToken, innerToken, true);
-   }
-   
-   /**
-    * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
-    * @param outerToken is for example ";" or ","
-    * @param innterToken is for example "=" or " "
-    * If a value is missing then a null object as value.
-    * the map returns pairs 'String,String'.
-    * @deprecated use method without global now.
-    */
-   public static Map parseToStringStringPairs(Global glob, String rawString, String outerToken, String innerToken) {
-      return parseStringProperties(glob, rawString, outerToken, innerToken, false);
-   }
-
-
-   /**
-    * If a value is missing then a null object will be put into the map as value.
-    * The map returns pairs 'String,ClientProperty' if wantClientProperties is true,
-    * otherwise it returns 'String,String' pairs. 
-    *   
-    * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
-    * @param outerToken is for example ";" or ","
-    * @param innterToken is for example "=" or " "
-    * @param wantClientProperties if set to <code>true</code> returns pairs 'String,ClientProperty', returns 'String,String' pairs otherwise.
     */
    private static Map parseStringProperties(String rawString, String outerToken, String innerToken, boolean wantClientProperties) {
       if (rawString==null) throw new IllegalArgumentException("SessionInfo.parsePropertyValue(null)");
