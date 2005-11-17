@@ -53,6 +53,15 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    
    public static final String XMLSCRIPT_ZLIB_MIMETYPE = "application/xmlBlasterScriptz";
    
+   /** <?xml version='1.0' encoding='UTF-8'?> */
+   private String xmlDecl;
+
+   /**
+    *  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+    *   xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
+   */
+   private String schemaDecl;
+   
    static {
       MsgInfoParserFactory.instance().register(XMLSCRIPT_EXTENSION, XmlScriptParser.class.getName());
       MsgInfoParserFactory.instance().register(XMLSCRIPT_ZLIB_EXTENSION, XmlScriptParser.class.getName());
@@ -74,6 +83,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    public void init(Global glob, I_ProgressListener progressListener) {
       this.glob = glob;
       this.progressListener = progressListener;
+      this.xmlDecl = glob.getProperty().get("xmlBlaster/xmlDeclaration", (String)null);
+      this.schemaDecl = glob.getProperty().get("xmlBlaster/schemaDeclaration", (String)null);
       super.initialize(glob, null, null);
    }
 
@@ -165,7 +176,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
                          msgInfo.getSecretSessionId(),
                          msgInfo.getRequestId(),
                          msgInfo.getMessageArr(),
-                         null, out, msgInfo.getType());
+                         this.xmlDecl, null, this.schemaDecl,
+                         out, msgInfo.getType());
          if (this.progressListener != null) {
             this.progressListener.progressWrite(msgInfo.getMethodNameStr(),
                   len, len);

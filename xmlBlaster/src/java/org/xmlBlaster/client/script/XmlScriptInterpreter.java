@@ -679,21 +679,33 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     * @param methodName The method to invoke, like "publishArr"
     * @param sessionId An optional sessionId or null
     * @param requestId An optional requestId or null
-    * @param type 'I' is for invoke, 'R' for reply and 'E' for exception
     * @param msgUnits The msgUnits to serialize
+    * @param header For example 
+<?xml version='1.0' encoding='UTF-8'?>
     * @param comment An optional comment to add, can be null
+    * @param schemaDecl Used for root tag, for example
+xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
     * @param out The output sink for the result
-    * @param type TODO
+    * @param type 'I' is for invoke, 'R' for reply and 'E' for exception
     * @throws XmlBlasterException
     */
-   protected void serialize(MethodName methodName, String sessionId, String requestId, MsgUnitRaw[] msgUnits, String comment, OutputStream out, byte type) throws IOException {
+   protected void serialize(MethodName methodName, String sessionId,
+         String requestId, MsgUnitRaw[] msgUnits,
+         String header, String comment, String schemaDecl,
+         OutputStream out, byte type) throws IOException {
       String offset = " ";
       StringBuffer sb = new StringBuffer(1024+(1024));
+      
+      if (header == null) header = "<?xml version='1.0' encoding='UTF-8'?>\n";
+      sb.append(header);
       
       if (comment != null && comment.length() > 0)
          sb.append("\n<!-- ").append(comment).append( " -->");
       if (methodName != null) {
          sb.append("\n<").append(methodName.toString());
+         if (schemaDecl != null && schemaDecl.length() > 0)
+            sb.append(" ").append(schemaDecl);
          if (sessionId != null && sessionId.length() > 0)
             sb.append(" sessionId='").append(sessionId).append("'");
          if (requestId != null && requestId.length() > 0)
