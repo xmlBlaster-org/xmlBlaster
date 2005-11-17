@@ -649,7 +649,7 @@ public class SocketConnection implements I_XmlBlasterConnection
     *                      Specify the hostname who we are. Makes sense for multi homed computers
     *                      Defaults to our hostname</li>
     *  <li>-dispatch/connection/plugin/socket/responseTimeout  How long to wait for a method invocation to return
-    *                      Defaults to one minute</li>
+    *                      Defaults to 'forever', the value to pass is milli seconds</li>
     *  <li>-dispatch/connection/plugin/socket/multiThreaded Use seperate threads per update() on client side [true]</li>
     *  <li>-dump[socket]   true switches on detailed SOCKET debugging [false]</li>
     * <p />
@@ -674,7 +674,8 @@ public class SocketConnection implements I_XmlBlasterConnection
       text += "                       Defaults to our hostname.\n";
       text += "   -dispatch/connection/plugin/socket/responseTimeout\n";
       text += "                       How long to wait for a method invocation to return.\n";
-      text += "                       Defaults to one minute.\n";
+//    text += "                       The default is " +getDefaultResponseTimeout() + ".\n";
+      text += "                       Defaults to 'forever', the value to pass is milli seconds.\n";
       text += "   -dispatch/connection/plugin/socket/multiThreaded\n";
       text += "                       Use seperate threads per update() on client side [true].\n";
       text += "   -dispatch/connection/plugin/socket/SSL\n";

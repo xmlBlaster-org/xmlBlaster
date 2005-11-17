@@ -585,7 +585,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "   -"+getEnvPrefix()+"SoTimeout\n";
       text += "                       How long may a socket read block in msec [0] (0 is forever).\n";
       text += "   -"+getEnvPrefix()+"responseTimeout\n";
-      text += "                       Max wait for the method return value/exception [60000] msec.\n";
+      text += "                       Max wait for the method return value/exception in msec.\n";
+//      text += "                       The default is " +getDefaultResponseTimeout() + ".\n";
+      text += "                       Defaults to 'forever', the value to pass is milli seconds.\n";
       text += "   -"+getEnvPrefix()+"backlog\n";
       text += "                       Queue size for incoming connection request [50].\n";
       text += "   -"+getEnvPrefix()+"threadPrio\n";

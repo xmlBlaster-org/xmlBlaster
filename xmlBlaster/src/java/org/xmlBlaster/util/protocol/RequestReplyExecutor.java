@@ -50,7 +50,7 @@ public abstract class RequestReplyExecutor
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
    /** How long to block on remote call waiting on response */
-   protected long responseWaitTime = 0;
+   protected long responseWaitTime = Integer.MAX_VALUE;
    /** This is the client side */
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -105,7 +105,7 @@ public abstract class RequestReplyExecutor
          this.compressZlib = false;
       }
 
-      setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
+      setResponseWaitTime(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
       // the responseWaitTime is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
@@ -130,14 +130,26 @@ public abstract class RequestReplyExecutor
    }
 
    /**
+    * How long to block on remote call waiting on response. 
+    * The default is to block forever (Integer.MAX_VALUE)
+    * Changed after xmlBlaster release 1.0.7 (before it was one minute: Constants.MINUTE_IN_MILLIS)
+    * Can be overwritten by implementations like EMAIL
+    */
+   public long getDefaultResponseTimeout() {
+      return Integer.MAX_VALUE;
+   }
+
+   /**
     * Set the given millis to protect against blocking client.
-    * @param millis If <= 0 it is set to one minute
+    * @param millis If <= 0 it is set to the default (forever).
+    * An argument less than or equal to zero means not to wait at all
+    * and is not supported
     */
    public final void setResponseWaitTime(long millis) {
       if (millis <= 0L) {
          log.warn(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + millis +
-                      " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
-         this.responseWaitTime = Constants.MINUTE_IN_MILLIS;
+                      " is invalid, setting it to " + getDefaultResponseTimeout() + " millis");
+         this.responseWaitTime = getDefaultResponseTimeout();
       }
       this.responseWaitTime = millis;
    }
@@ -434,6 +446,8 @@ public abstract class RequestReplyExecutor
             if (log.TRACE) log.trace(ME, str + ": " + e.toString());
             throw (XmlBlasterException)e;
          }
+         if (e instanceof NullPointerException)
+            e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
@@ -448,6 +462,7 @@ public abstract class RequestReplyExecutor
          boolean awakened = false;
          while (true) {
             try {
+               //  An argument less than or equal to zero means not to wait at all
                awakened = startSignal.attempt(responseWaitTime); // block max. milliseconds
                break;
             }
