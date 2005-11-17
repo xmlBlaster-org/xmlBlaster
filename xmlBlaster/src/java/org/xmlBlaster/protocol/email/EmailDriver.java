@@ -221,7 +221,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    public final boolean receiveReply(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-         receiver.setBounceObject("mail.to", receiver.getBounceObject("mail.from"));
+         receiver.setBounceObject(BOUNCE_MAILTO_KEY, receiver.getBounceObject(BOUNCE_MAILFROM_KEY));
          
          // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (super.receiveReply(receiver, udp) == false) {
@@ -311,7 +311,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       text += "   -"+getEnvPrefix()+"pop3PollingInterval\n";
       text += "                       How often to check for new emails in milli seconds [1000].\n";
       text += "   -"+getEnvPrefix()+"responseTimeout\n";
-      text += "                       Max wait for the method return value/exception [60000] msec.\n";
+      text += "                       Max wait for the method return value/exception in msec.\n";
+      text += "                       The default is " +getDefaultResponseTimeout() + ".\n";
       text += "   -"+getEnvPrefix()+"compress/type\n";
       text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
       text += "                       '' disables compression, '"+Constants.COMPRESS_ZLIB_STREAM+"' compresses whole stream.\n";

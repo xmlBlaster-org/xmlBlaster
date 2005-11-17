@@ -16,7 +16,10 @@ import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.MessagingException;
 import javax.mail.URLName;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimePart;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,31 +46,40 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * Configuration is done in <code>xmlBlasterPlugins.xml</code>:
  * 
  * <pre>
- *   &lt;plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'&gt;
- *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='2' 
- *   onFail='resource.configuration.pluginFailed'/&gt;
- *   &lt;action do='STOP' onShutdownRunlevel='7' sequence='5'/&gt;   
- *   &lt;attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute>
- *   &lt;attribute id='pop3PollingInterval'>500&lt;/attribute>
- *   &lt;/plugin&gt;
+ *    &lt;plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'&gt;
+ *    &lt;action do='LOAD' onStartupRunlevel='7' sequence='2' 
+ *    onFail='resource.configuration.pluginFailed'/&gt;
+ *    &lt;action do='STOP' onShutdownRunlevel='7' sequence='5'/&gt;   
+ *    &lt;attribute id='mail.pop3.url'&gt;pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute&gt;
+ *    &lt;attribute id='pop3PollingInterval'&gt;500&lt;/attribute&gt;
+ *    &lt;/plugin&gt;
  * </pre>
  * 
  * <p>
  * Switch on logging with
- * <pre>-trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true</pre>
+ * 
+ * <pre>
+ * -trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+ * </pre>
+ * 
  * and add to xmlBlasterJdk14Logging.properties:
- * <pre>handlers = org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler
- * .level= FINEST</pre>
- *
+ * 
+ * <pre>
+ * handlers = org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler.level = FINEST
+ * </pre>
+ * 
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
+ * @see <a
+ *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The
+ *      protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Pop3DriverMBean {
+public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
+      Pop3DriverMBean {
    private static Logger log = Logger.getLogger(Pop3Driver.class.getName());
 
    private Global glob;
@@ -85,7 +97,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    private Timestamp timeoutHandle;
 
    private long pollingInterval;
-   
+
    private Properties props;
 
    private final Map listeners = new HashMap();
@@ -94,22 +106,23 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
 
    // Avoid too many logging output lines
    private boolean isConnected;
-   
+
    /** My JMX registration */
    private Object mbeanHandle;
-   
+
    // Not tested and currently switched off
    private Map holdbackMap = new HashMap();
+
    private long holdbackExpireTimeout;
 
    public static final boolean CLEAR_MESSAGES = true;
 
    public static final boolean LEAVE_MESSAGES = false;
-   
+
    public static final String POP3_FOLDER = "inbox";
 
    public static final String UTF8 = "UTF-8";
-   
+
    private String threadName;
 
    /**
@@ -157,7 +170,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       synchronized (this.listeners) {
          this.listeners.put(key, listener);
       }
-      if (log.isLoggable(Level.FINE)) log.fine("Added listener with key=" + key);
+      if (log.isLoggable(Level.FINE))
+         log.fine("Added listener with key=" + key);
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -173,17 +187,18 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          return this.listeners.remove(key);
       }
    }
-   
+
    public String[] getListenerKeys() {
       synchronized (this.listeners) {
-         return (String[])this.listeners.keySet().toArray(new String[this.listeners.size()]);
+         return (String[]) this.listeners.keySet().toArray(
+               new String[this.listeners.size()]);
       }
    }
 
    public String getListeners() {
       String[] arr = getListenerKeys();
       StringBuffer buf = new StringBuffer();
-      for (int i=0; i<arr.length; i++) {
+      for (int i = 0; i < arr.length; i++) {
          buf.append(arr[i]);
          if (i < arr.length - 1)
             buf.append(", ");
@@ -207,44 +222,55 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       I_ResponseListener listenerClusterNodeId = null;
       synchronized (this.listeners) {
          listenerRequest = (I_ResponseListener) this.listeners.get(key);
-         if (listenerRequest  == null) {
-            listenerSession = (I_ResponseListener) this.listeners.get(messageData
-                  .getSessionId());
-            if (listenerSession  == null) {
-               listenerClusterNodeId = (I_ResponseListener) this.listeners.get(this.glob.getId());
+         if (listenerRequest == null) {
+            listenerSession = (I_ResponseListener) this.listeners
+                  .get(messageData.getSessionId());
+            if (listenerSession == null) {
+               listenerClusterNodeId = (I_ResponseListener) this.listeners
+                     .get(this.glob.getId());
             }
          }
       }
 
       // A request/reply handler is interested in specific messages only
       if (listenerRequest != null) {
-         if (log.isLoggable(Level.FINER)) log.finer("Request specific listener found for key=" + key + ", email is " + messageData.toString());
-         listenerRequest.incomingMessage(messageData.getRequestId(), messageData);
+         if (log.isLoggable(Level.FINER))
+            log.finer("Request specific listener found for key=" + key
+                  + ", email is " + messageData.toString());
+         listenerRequest.incomingMessage(messageData.getRequestId(),
+               messageData);
          return key;
       }
 
       // A session is interested in all messages
       if (listenerSession != null) {
-         if (log.isLoggable(Level.FINER)) log.finer("SessRequest specific listener found for key=" + messageData
-               .getSessionId() + ", email is " + messageData.toString());
-         listenerSession.incomingMessage(messageData.getRequestId(), messageData);
+         if (log.isLoggable(Level.FINER))
+            log.finer("SessRequest specific listener found for key="
+                  + messageData.getSessionId() + ", email is "
+                  + messageData.toString());
+         listenerSession.incomingMessage(messageData.getRequestId(),
+               messageData);
          return messageData.getSessionId();
       }
-      
+
       // A cluster node is interested in all messages (EmailDriver.java)
       if (listenerClusterNodeId != null) {
-         if (log.isLoggable(Level.FINER)) log.finer("Node specific listener found for key=" + this.glob.getId()
-                  + ", email is " + messageData.toString());
-         listenerClusterNodeId.incomingMessage(messageData.getRequestId(), messageData);
+         if (log.isLoggable(Level.FINER))
+            log.finer("Node specific listener found for key="
+                  + this.glob.getId() + ", email is " + messageData.toString());
+         listenerClusterNodeId.incomingMessage(messageData.getRequestId(),
+               messageData);
          return messageData.getSessionId();
       }
-      
+
       if (this.holdbackExpireTimeout > 0) {
          Timestamp timestamp = new Timestamp();
          this.holdbackMap.put(new Long(timestamp.getTimestamp()), messageData);
       }
-      
-      log.warning("None of our registered listeners '" + getListeners() + "' matches for key=" + key + ", email is " + messageData.toString());
+
+      log.warning("None of our registered listeners '" + getListeners()
+            + "' matches for key=" + key + ", email is "
+            + messageData.toString());
       return null;
    }
 
@@ -277,20 +303,20 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       this.pluginInfo = pluginInfo;
 
       // For JMX instanceName may not contain ","
-      this.contextNode = new ContextNode(this.glob, ContextNode.SERVICE_MARKER_TAG, 
-                          "Pop3Driver", this.glob.getContextNode());
+      this.contextNode = new ContextNode(this.glob,
+            ContextNode.SERVICE_MARKER_TAG, "Pop3Driver", this.glob
+                  .getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
             this.pluginInfo);
 
-      boolean activate = glob.get("activate", true, null,
-            this.pluginInfo);
+      boolean activate = glob.get("activate", true, null, this.pluginInfo);
 
       // Default is off
       this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 0, null,
             this.pluginInfo);
-      
+
       setSessionProperties(null, glob, pluginInfo);
 
       // Make this singleton available for others
@@ -298,8 +324,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       glob.addObjectEntry(Pop3Driver.class.getName(), this);
 
       this.timeout = new Timeout(this.threadName);
-      if (activate) { 
-         try { activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      if (activate) {
+         try {
+            activate();
+         } catch (Exception e) {
+            throw (XmlBlasterException) e;
+         }
       }
    }
 
@@ -328,8 +358,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     *      href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/pop3/package-summary.html">POP3
     *      API</a>
     */
-   public synchronized void setSessionProperties(Properties properties, Global glob,
-         I_PluginConfig pluginConfig) throws XmlBlasterException {
+   public synchronized void setSessionProperties(Properties properties,
+         Global glob, I_PluginConfig pluginConfig) throws XmlBlasterException {
       this.props = properties;
       if (this.props == null)
          this.props = new Properties();
@@ -344,20 +374,20 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       String user = this.props.getProperty("mail.pop3.user").trim();
 
       if (this.props.getProperty("mail.pop3.password") == null)
-         this.props.put("mail.pop3.password", glob.get("mail.pop3.password", user,
-               null, pluginConfig));
+         this.props.put("mail.pop3.password", glob.get("mail.pop3.password",
+               user, null, pluginConfig));
       String password = this.props.getProperty("mail.pop3.password").trim();
 
       if (this.props.getProperty("mail.store.protocol") == null)
          this.props.put("mail.store.protocol", glob.get("mail.store.protocol",
                "pop3", null, pluginConfig));
       if (this.props.getProperty("mail.pop3.host") == null)
-         this.props.put("mail.pop3.host", glob.get("mail.pop3.host", "127.0.0.1",
-               null, pluginConfig));
+         this.props.put("mail.pop3.host", glob.get("mail.pop3.host",
+               "127.0.0.1", null, pluginConfig));
       String host = this.props.getProperty("mail.pop3.host").trim();
       if (this.props.getProperty("mail.pop3.port") == null)
-         this.props.put("mail.pop3.port", glob.get("mail.pop3.port", "110", null,
-               pluginConfig));
+         this.props.put("mail.pop3.port", glob.get("mail.pop3.port", "110",
+               null, pluginConfig));
       String port = this.props.getProperty("mail.pop3.port").trim();
 
       // "pop3://user:password@host:port/INBOX"
@@ -370,34 +400,37 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       try { // Produces a success logging output
          getStore();
       } catch (XmlBlasterException e) {
-         log.warning(e.getMessage() + " We poll every "
-              + this.pollingInterval + " milliseconds again.");
+         log.warning(e.getMessage() + " We poll every " + this.pollingInterval
+               + " milliseconds again.");
       }
    }
-   
+
    private Long[] getHoldbackTimestamps() {
-      return (Long[])this.holdbackMap.keySet().toArray(new Long[this.holdbackMap.size()]);
+      return (Long[]) this.holdbackMap.keySet().toArray(
+            new Long[this.holdbackMap.size()]);
    }
 
    /**
     * Polling for response messages.
     */
    public void timeout(Object userData) {
-      if (log.isLoggable(Level.FINER)) log.finer("Timeout: Reading POP3 messages from " + getPop3Url());
-      
+      //if (log.isLoggable(Level.FINER))
+      //   log.finer("Timeout: Reading POP3 messages from " + getPop3Url());
+
       // First try to deliver hold back messages
-      // This happens if on startup we access POP3 messages but nobody has registered yet
+      // This happens if on startup we access POP3 messages but nobody has
+      // registered yet
       if (this.holdbackExpireTimeout > 0 && this.holdbackMap.size() > 0) {
          Long[] keys = getHoldbackTimestamps();
          Timestamp now = new Timestamp(); // nano seconds
          long expireNanos = this.holdbackExpireTimeout * Timestamp.MILLION;
-         for (int i=0; i<keys.length; i++) {
+         for (int i = 0; i < keys.length; i++) {
             long tt = keys[i].longValue();
             if ((tt + expireNanos) > now.getTimestamp()) {
                this.holdbackMap.remove(keys[i]);
-            }
-            else {
-               String listenerKey = notify((EmailData)this.holdbackMap.get(keys[i]));
+            } else {
+               String listenerKey = notify((EmailData) this.holdbackMap
+                     .get(keys[i]));
                if (listenerKey != null) {
                   this.holdbackMap.remove(keys[i]);
                }
@@ -416,12 +449,16 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
                log.finer("Got from POP3 email" + emailData.toXml(true));
             String notifiedListener = notify(emailData);
             if (notifiedListener == null) {
-               if (log.isLoggable(Level.FINE)) log.fine("None of the registered listeners (" + getListeners() + ") wants this email: " + emailData.toXml(true));
+               if (log.isLoggable(Level.FINE))
+                  log.fine("None of the registered listeners ("
+                        + getListeners() + ") wants this email: "
+                        + emailData.toXml(true));
             }
          }
 
          if (!responseArrived) {
-            if (log.isLoggable(Level.FINER)) log.finer("No mails via POP3 found");
+            //if (log.isLoggable(Level.FINER))
+            //   log.finer("No mails via POP3 found");
          }
 
       } catch (XmlBlasterException e) {
@@ -430,12 +467,12 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
             log.severe("[" + this.pop3Url + "] POP3 polling failed: "
                   + e.getMessage());
          else { // RESOURCE_CONFIGURATION_CONNECT is logged already
-            if (log.isLoggable(Level.FINE)) log.fine("[" + this.pop3Url + "] POP3 polling failed: "
-                  + e.getMessage());
+            if (log.isLoggable(Level.FINE))
+               log.fine("[" + this.pop3Url + "] POP3 polling failed: "
+                     + e.getMessage());
          }
          this.firstException = false;
-      }
-      catch (Throwable e) {
+      } catch (Throwable e) {
          log.severe("[" + this.pop3Url + "] POP3 polling failed: "
                + e.toString());
       }
@@ -484,10 +521,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     */
    public String getUrlWithoutPassword() {
       URLName urln = new URLName(this.pop3Url);
-      return urln.getProtocol() + "://"
-              + urln.getUsername() + "@" + urln.getHost()
-              + ((urln.getPort() > 0) ? (":" + urln.getPort()) : "")
-              + "/" + urln.getFile();
+      return urln.getProtocol() + "://" + urln.getUsername() + "@"
+            + urln.getHost()
+            + ((urln.getPort() > 0) ? (":" + urln.getPort()) : "") + "/"
+            + urln.getFile();
    }
 
    /**
@@ -525,14 +562,14 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          }
          if (e instanceof javax.mail.AuthenticationFailedException)
             throw new XmlBlasterException(this.glob,
-               ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
-                     .getName(), "The POP3 server '" + this.pop3Url
-                     + "' is not available", e);
+                  ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
+                        .getName(), "The POP3 server '" + this.pop3Url
+                        + "' is not available", e);
          else
             throw new XmlBlasterException(this.glob,
                   ErrorCode.RESOURCE_CONFIGURATION_CONNECT, Pop3Driver.class
-                        .getName(), "The POP3 server '" + getUrlWithoutPassword()
-                        + "' is not available", e);
+                        .getName(), "The POP3 server '"
+                        + getUrlWithoutPassword() + "' is not available", e);
       }
    }
 
@@ -546,9 +583,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     *           If CLEAR_MESSAGES=true the messages are destroyed on the server
     * @return Never null
     */
-   public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
-      //if (isShutdown()) Does it recover automatically after a shutdown?
-      //   throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, Pop3Driver.class.getName(), "The plugin is shutdown");
+public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
+      // if (isShutdown()) Does it recover automatically after a shutdown?
+      // throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE,
+      // Pop3Driver.class.getName(), "The plugin is shutdown");
       Store store = null;
       Folder inbox = null;
       try {
@@ -577,9 +615,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
             String[] recips = new String[arr.length];
             for (int j = 0; j < arr.length; j++)
                recips[j] = arr[j].toString();
-
-            datas[i] = new EmailData(recips, from, msg.getSubject(), msg
-                  .getContent().toString());
+            
+            //String content = retrieveContent(msg); // Would sometimes deliver an attachment
+            String content = "";
+            datas[i] = new EmailData(recips, from, msg.getSubject(), content);
 
             datas[i].setAttachments(MailUtil.accessAttachments(msg));
          }
@@ -589,11 +628,13 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
                ErrorCode.RESOURCE_CONFIGURATION, Pop3Driver.class.getName(),
                "Problems to read POP3 email from '" + getUrlWithoutPassword()
                      + "'", e);
+      /*
       } catch (IOException e) {
          throw new XmlBlasterException(this.glob,
                ErrorCode.RESOURCE_CONFIGURATION, Pop3Driver.class.getName(),
                "Problems to read POP3 email from '" + getUrlWithoutPassword()
                      + "'", e);
+      */
       } finally {
          try {
             if (inbox != null)
@@ -609,7 +650,6 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          }
       }
    }
-
    /**
     * @return Syntax is "pop3://user:password@host:port/INBOX"
     */
@@ -618,7 +658,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    }
 
    /**
-    * @param pop3Url Syntax is "pop3://user:password@host:port/INBOX"
+    * @param pop3Url
+    *           Syntax is "pop3://user:password@host:port/INBOX"
     */
    public void setPop3Url(String pop3Url) {
       this.pop3Url = pop3Url;
@@ -640,20 +681,55 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    }
 
    /**
-    * Activate xmlBlaster access through this protocol.
-    * Triggers an immediate POP3 access and starts polling thereafter
+    * Get content text. 
+    * 
+    * @param part
+    *           the MimePart to check for content
+    * @return The retrieved string
+    * @throws MessagingException
+    * @throws IOException
+    */
+   protected String retrieveContent(MimePart part) throws MessagingException,
+         IOException {
+      if (part.isMimeType("text/plain")) {
+         return part.getContent().toString();
+      } else if (part.isMimeType("text/html")) {
+         return part.getContent().toString();
+      } else if (part.isMimeType("multipart/mixed")) {
+         // Find the first body part, and determine what to do then.
+         MimeMultipart multipart = (MimeMultipart) part.getContent();
+         MimeBodyPart firstPart = (MimeBodyPart) multipart.getBodyPart(0);
+         return retrieveContent(firstPart);
+      } else if (part.isMimeType("multipart/alternative")) {
+         MimeMultipart multipart = (MimeMultipart) part.getContent();
+         int count = multipart.getCount();
+         for (int index = 0; index < count; index++) {
+            MimeBodyPart mimeBodyPart = (MimeBodyPart) multipart
+                  .getBodyPart(index);
+            return retrieveContent(mimeBodyPart);
+         }
+         return "";
+      } else {
+         return "";
+      }
+   }
+
+   /**
+    * Activate xmlBlaster access through this protocol. Triggers an immediate
+    * POP3 access and starts polling thereafter
     */
    public void activate() throws Exception {
       log.fine("Entering activate()");
       try {
-         this.timeoutHandle = this.timeout.addOrRefreshTimeoutListener(this,
-               0, null, this.timeoutHandle);
+         this.timeoutHandle = this.timeout.addOrRefreshTimeoutListener(this, 0,
+               null, this.timeoutHandle);
       } catch (XmlBlasterException e) {
          log.severe("Activating timeout listener failed: " + e.getMessage());
-         throw new Exception("Activating timeout listener failed: " + e.getMessage());
+         throw new Exception("Activating timeout listener failed: "
+               + e.getMessage());
       }
    }
-   
+
    public boolean isActive() {
       return this.timeoutHandle != null;
    }
@@ -667,9 +743,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
       this.timeoutHandle = null;
    }
 
-
    /**
-    * Halt the plugin. 
+    * Halt the plugin.
     */
    public synchronized void shutdown() {
       if (this.session != null) {
@@ -682,7 +757,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          this.session = null;
       }
    }
-   
+
    public boolean isShutdown() {
       return this.session == null;
    }
@@ -692,8 +767,8 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
     */
    public java.lang.String usage() {
       return "The pop3Url has the syntax 'pop3://user:password@host:port/INBOX'"
-      +"\nCalling shutdown destroys the service (you can't start it again)"
-      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+            + "\nCalling shutdown destroys the service (you can't start it again)"
+            + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
 
    /**
@@ -702,9 +777,10 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
    public java.lang.String getUsageUrl() {
       return Global.getJavadocUrl(this.getClass().getName(), null);
    }
-   
+
    /* dummy to have a copy/paste functionality in jconsole */
-   public void setUsageUrl(java.lang.String url) {}
+   public void setUsageUrl(java.lang.String url) {
+   }
 
    /**
     * java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX
@@ -734,8 +810,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout, Po
          System.out.println("Reading POP3 messages");
          while (true) {
             long start = System.currentTimeMillis();
-            EmailData[] msgs = pop3Client
-                  .readInbox(Pop3Driver.CLEAR_MESSAGES);
+            EmailData[] msgs = pop3Client.readInbox(Pop3Driver.CLEAR_MESSAGES);
             long diff = System.currentTimeMillis() - start;
 
             for (int i = 0; i < msgs.length; i++)

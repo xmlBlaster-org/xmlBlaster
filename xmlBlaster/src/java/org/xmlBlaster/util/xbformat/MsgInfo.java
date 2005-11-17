@@ -12,13 +12,16 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.protocol.email.AttachmentHolder;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -742,6 +745,22 @@ public class MsgInfo {
     */
    public Map getBounceObjects() {
       return this.bounceObjects;
+   }
+
+   /**
+    * @return Returns the bounceObjects of type AttachmentHolder,
+    *  is never null
+    */
+   public AttachmentHolder[] getBounceAttachments() {
+      if (this.bounceObjects == null) return new AttachmentHolder[0];
+      Iterator it = this.bounceObjects.entrySet().iterator();
+      ArrayList list = new ArrayList();
+      while (it.hasNext()) {
+         Map.Entry entry = (Map.Entry)it.next();
+         if (entry.getValue() instanceof AttachmentHolder)
+            list.add(entry.getValue());
+      }
+      return (AttachmentHolder[])list.toArray(new AttachmentHolder[list.size()]);
    }
 
    /**

@@ -5,10 +5,12 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
+import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -68,6 +70,19 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    
    /** Use to protect against looping messages */
    protected String lastMessageId;
+   
+   protected final String BOUNCE_MESSAGEID_KEY = "bounce:messageId";
+   protected final String BOUNCE_MAILTO_KEY = "mail.to";
+   protected final String BOUNCE_MAILFROM_KEY = "mail.from";
+
+   protected String messageIdFileName = "messageId" + EmailData.MESSAGEID_EXTENSION;
+   
+   /** The extension is added later to for example "xmlBlasterMessage.xfb" */
+   protected String payloadFileNamePrefix = "xmlBlasterMessage";
+   
+   protected String subjectTemplate;
+   
+   protected final String SUBJECT_MESSAGEID_TOKEN = "$_{xmlBlaster/email/messageId}";
 
    /**
     * This init() is called after the init(Global, PluginInfo)
@@ -93,11 +108,6 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       super.initialize(glob, addressBase);
       
       this.secretSessionId = addressBase.getSecretSessionId();
-      /*
-       * TODO: Support adding ConnectQos: <callback type='EMAIL'> a@b.com
-       * <clientProperty name='responseTimeout'>120000</clientProperty>
-       * </callback>
-       */
 
       String to = addressBase.getRawAddress();
       if (to != null && to.length() > 0) {
@@ -123,6 +133,12 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
                ME, "Illegal 'from' address '" + from + "'");
       }
+      
+      // if template contains SUBJECT_MESSAGEID_TOKEN = "${xmlBlaster/email/messageId}"
+      // this will be replaced by the current messageId
+      this.subjectTemplate = this.glob.get("mail.subject",
+            "XmlBlaster Generated Email "+SUBJECT_MESSAGEID_TOKEN, null, this.pluginConfig);
+
 
       this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
             .getName());
@@ -137,6 +153,13 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    
    public String getType() {
       return "EMAIL";
+   }
+   
+   /**
+    * Defaults to one day. 
+    */
+   public long getDefaultResponseTimeout() {
+      return Constants.DAY_IN_MILLIS;
    }
    
    /**
@@ -209,8 +232,11 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          Object response = super.requestAndBlockForReply(msgInfo,
                expectingResponse, false);
          return response;
-      } catch (Throwable e) {
+      } catch (XmlBlasterException e) {
          // ErrorCode.USER* errors can't arrive here
+         throw e;
+      } catch (Throwable e) {
+         e.printStackTrace();
          throw new XmlBlasterException(glob,
                ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                "Sorry, email sending " + methodName.toString()
@@ -229,9 +255,9 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    public void incomingMessage(String requestId, Object response) {
       EmailData emailData = (EmailData) response;
 
-      AttachmentHolder holder = null;
+      AttachmentHolder msgUnitAttachmentHolder = null;
       try {
-         holder =
+         msgUnitAttachmentHolder =
             emailData.getMsgUnitAttachment(); // "*.xbf", "*.xbfz", "*.xmlz", ...
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
@@ -241,16 +267,16 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          return;
       }
 
-      if (holder == null) {
+      if (msgUnitAttachmentHolder == null) {
          log.warning("No mails via POP3 found");
          //log.fine("DUMP:" + emailData.toXml());
          return;
       }
 
-      byte[] encodedMsgUnit = holder.getContent();
-      MsgInfo receiver = null;
+      byte[] encodedMsgUnit = msgUnitAttachmentHolder.getContent();
+      MsgInfo msgInfo = null;
       try {
-         if (MsgInfo.isCompressed(holder.getFileName(), holder.getContentType())) {
+         if (MsgInfo.isCompressed(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType())) {
             // Decompress the bytes
             int length = encodedMsgUnit.length;
             this.decompressor.reset();
@@ -265,10 +291,20 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
             encodedMsgUnit = out.toByteArray();
             if (log.isLoggable(Level.FINE)) log.fine("Decompressed message from " + length + " to " + encodedMsgUnit.length + " bytes");
          }
-         String className = MsgInfoParserFactory.instance().guessParserName(holder.getFileName(), holder.getContentType());
-         receiver = MsgInfo.parse(glob, progressListener, encodedMsgUnit, className);
-         receiver.setBounceObject("mail.from", emailData.getFrom());
-         receiver.setBounceObject("messageId", emailData.getMessageId());
+         String parserClassName = MsgInfoParserFactory.instance().guessParserName(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType());
+         msgInfo = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName);
+         msgInfo.setBounceObject(BOUNCE_MAILFROM_KEY, emailData.getFrom());
+         // The messageId could be in the subject and not in the attachment
+         msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId());
+         AttachmentHolder[] attachments = emailData.getAttachments();
+         for (int i=0; i<attachments.length; i++) {
+            AttachmentHolder a = attachments[i];
+            if (a == msgUnitAttachmentHolder)
+               continue;
+            // TODO: Determine which attachments to bounce
+            msgInfo.setBounceObject(a.getFileName(), a);
+         }
+
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
                            + this.pop3Driver.getPop3Url()
@@ -283,8 +319,8 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
             // Some weak looping protection
             // TODO: Enforce requestId to be strong-monotonous accending
             // to also detect email duplicates (which can be produced by MTAs)
-            String messageId = receiver.getSecretSessionId()+receiver.getRequestId();
-            if (receiver.isInvoke() && messageId.equals(this.lastMessageId)) {
+            String messageId = msgInfo.getSecretSessionId()+msgInfo.getRequestId();
+            if (msgInfo.isInvoke() && messageId.equals(this.lastMessageId)) {
                log.warning("Can't process email data from "
                      + this.pop3Driver.getPop3Url()
                      + ", it seems to be looping as requestId has been processed already"
@@ -296,7 +332,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          
          // This wakes up the blocking thread of sendEmail() and returns the
          // returnQos or the received invocation
-         if (receiveReply(receiver, false) == false) {
+         if (receiveReply(msgInfo, false) == false) {
             log.warning("Error parsing email data from "
                   + this.pop3Driver.getPop3Url()
                   + ", CONNECT etc is not yet implemented");
@@ -310,48 +346,50 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    }
 
    /**
-    * Extends SocketExecutor.sendMessage
+    * Extends RequestReplyExecutor.sendMessage
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId,
          MethodName methodName, boolean udp) throws XmlBlasterException,
          IOException {
 
-      String subject = this.glob.get("mail.subject",
-            "XmlBlaster Generated Email ", null, this.pluginConfig);
-      String messageId = (String)msgInfo.getBounceObject("messageId");
+      String subject = this.subjectTemplate;
+      // messageId="<messageId><sessionId>sessionId:4423c443</sessionId><requestId>3</requestId><methodName>subscribe</methodName></messageId>"
+      String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
       if (messageId == null)
          messageId = EmailData.createMessageId(getEmailSessionId(),
             requestId, methodName);
 
-      // Transport messageId in subject:
-      subject += messageId;
-      // and for testing as attachment, for example "messageId.mid"
-      String attachmentName2 = "messageId" + EmailData.MESSAGEID_EXTENSION;
+      if (subject != null && subject.length() > 0) {
+         // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:
+         // The responseQos gets it already replaced and the messageId remains same (which we must assure)
+         subject = StringHelper.replaceFirst(subject, SUBJECT_MESSAGEID_TOKEN, messageId); 
+         // and for testing as attachment, for example this.messageIdFileName="messageId.mid"
+      }
 
       // The pay load
       byte[] origAttachment = msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).createRawMsg(msgInfo);
       boolean isCompressed = false;
-      byte[] attachment = origAttachment;
+      byte[] payload = origAttachment;
       if (isCompressZlib()) {
          if (origAttachment.length > getMinSizeForCompression()) { // > 0
             this.compressor.reset();
             this.compressor.setInput(origAttachment, 0, origAttachment.length);
             this.compressor.finish();
-            attachment = new byte[origAttachment.length+64];
-            int compSize = compressor.deflate(attachment);
+            payload = new byte[origAttachment.length+64];
+            int compSize = compressor.deflate(payload);
             if (compSize <= 0) {
                throw new IOException("Compression exception, got 0 bytes output: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
             }
             if (compSize >= origAttachment.length) { // Compression didn't help
-               attachment = origAttachment;  
+               payload = origAttachment;  
                if (log.isLoggable(Level.FINE)) log.fine("No compression of attachment as size increased from " + origAttachment.length + " to " + compSize + ", we leave it uncompressed");
             }
             else {
                isCompressed = true;
                byte[] tmp = new byte[compSize];
-               System.arraycopy(attachment, 0, tmp, 0, compSize);
-               attachment = tmp;
-               if (log.isLoggable(Level.FINE)) log.fine("Compressing attachment of size " + origAttachment.length + " to length " + attachment.length);
+               System.arraycopy(payload, 0, tmp, 0, compSize);
+               payload = tmp;
+               if (log.isLoggable(Level.FINE)) log.fine("Compressing attachment of size " + origAttachment.length + " to length " + payload.length);
             }
          }
          else {
@@ -360,11 +398,11 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       }
       
       // The real message blob, for example "xmlBlasterMessage.xbf"
-      String attachmentName = "xmlBlasterMessage" + 
+      String payloadFileName = this.payloadFileNamePrefix + 
          msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getExtension(isCompressed);
 
       InternetAddress toAddr = this.toAddress;
-      String to = (String)msgInfo.getBounceObject("mail.to");
+      String to = (String)msgInfo.getBounceObject(BOUNCE_MAILTO_KEY);
       if (to != null) {
          try { // The EmailDriver has different destinations for each client
             toAddr = new InternetAddress(to);
@@ -376,8 +414,17 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
-      emailData.addAttachment(new AttachmentHolder(attachmentName, msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getMimetype(isCompressed), attachment));
-      emailData.addAttachment(new AttachmentHolder(attachmentName2, messageId));
+      String payloadMimetype = msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getMimetype(isCompressed);
+      emailData.addAttachment(new AttachmentHolder(payloadFileName, payloadMimetype, payload));
+      emailData.addAttachment(new AttachmentHolder(this.messageIdFileName, messageId));
+      // Bounce all other attachments back to sender
+      AttachmentHolder[] attachments = msgInfo.getBounceAttachments();
+      for (int i=0; i<attachments.length; i++) {
+         AttachmentHolder a = attachments[i];
+         if (this.messageIdFileName.equals(a.getFileName()))
+            continue; // added alread, see above
+         emailData.addAttachment(a);
+      }
       
       this.smtpClient.sendEmail(emailData);
       //this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,

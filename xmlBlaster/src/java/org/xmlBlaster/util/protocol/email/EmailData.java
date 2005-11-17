@@ -302,8 +302,17 @@ public class EmailData {
       }
       sb.append(offset).append("  <subject>").append(XmlNotPortable.escape(getSubject()))
             .append("</subject>");
-      if (this.content != null && this.content.length() > 0)
-         sb.append(offset).append("  <content>").append(XmlNotPortable.escape(getContent())).append("</content>");
+      if (this.content != null && this.content.length() > 0) {
+         String con = this.content;
+         /*
+         if (this.content instanceof javax.mail.internet.MimeMultipart) {
+            MimeMultipart part = (MimeMultipart)this.content;
+            if (part.getCount() > 0)
+               con = part.getBodyPart(0).getContent();
+         }
+         */
+         sb.append(offset).append("  <content>").append(XmlNotPortable.escape(con)).append("</content>");
+      }
       AttachmentHolder[] att = getAttachments();
       for (int i = 0; i < att.length; i++)
          sb.append(att[i].toXml(readable));
@@ -448,6 +457,7 @@ public class EmailData {
       String str = getSubject();
       final String startToken = "<" + MESSAGEID_TAG + ">";
       if (str.indexOf(startToken) == -1) {
+         // Look into attachment ...
          str = null;
          // The <messageId> is not in the subject,
          // search in an attachment with extension ".mid"
@@ -462,6 +472,14 @@ public class EmailData {
                str = new String(atts[i].getContent());
             }
          }
+      }
+      else {
+         // strip other text in subject
+         final String endToken = "</" + MESSAGEID_TAG + ">";
+         int startIndex = str.indexOf(startToken);
+         int endIndex = str.indexOf(endToken);
+         if (endIndex > startIndex)
+            str = str.substring(startIndex, endIndex+endToken.length());
       }
       return str;
    }
