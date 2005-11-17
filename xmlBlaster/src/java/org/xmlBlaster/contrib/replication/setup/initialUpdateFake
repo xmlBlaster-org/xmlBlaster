@@ -1,0 +1,24 @@
+#!/bin/sh
+FILE=$3
+SCHEMA=AIS
+
+if test "`echo -e xxx`" = "xxx" 
+then
+   ECHO="echo -e"
+   BLACK_LTGREEN="\033[40;46m"
+   BLACK_RED="\033[30;41m"
+   BLACK_YELLOW="\033[40;43m"
+   ESC="\033[0m"
+else
+    ECHO=echo
+fi
+
+if [ "${FILE}" = "" ] ; then
+   ${ECHO} "usage $0 filename"
+   ${ECHO} "where 'filename' is the name of the file where to store the message"
+   exit -1
+fi
+
+touch ${FILE}
+${ECHO} "Fake Message which replaces an export/import operation"
+
