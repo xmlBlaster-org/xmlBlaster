@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,17 +44,98 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 public class InitialUpdater implements I_Update, I_ContribPlugin {
 
+   public class ConnectionInfo {
+      private Connection connection;
+      private boolean committed;
+
+      public ConnectionInfo(Connection conn) {
+         this.connection = conn;
+      }
+      
+      /**
+       * @return Returns the connection.
+       */
+      public Connection getConnection() {
+         return connection;
+      }
+      
+      /**
+       * @return Returns the committed.
+       */
+      public boolean isCommitted() {
+         return committed;
+      }
+      
+      /**
+       * @param committed The committed to set.
+       */
+      public synchronized void commit() {
+         if (this.connection == null)
+            return;
+         try {
+            this.connection.commit();
+            this.committed = true;
+         }
+         catch (SQLException ex) {
+            ex.printStackTrace();
+         }
+      }
+   }
+   
    class ExecuteListener implements I_ExecuteListener {
 
       StringBuffer errors = new StringBuffer();
+      long sleepTime = 0L;
+      ConnectionInfo connInfo;
+      final String stringToCheck;
 
+      public ExecuteListener(String stringToCheck, ConnectionInfo connInfo) {
+         this.stringToCheck = stringToCheck;
+         this.connInfo = connInfo;
+      }
+      
+      /**
+       * Use since the CPU time is getting high when outputs are coming slowly
+       * @param sleepTime
+       */
+      private final void sleep(long sleepTime) {
+         if (sleepTime < 1L)
+            return;
+         try {
+            Thread.sleep(sleepTime);
+         }
+         catch (Exception ex) {
+         }
+      }
+
+      /**
+       * This method will commit the current transaction on the connection passed in case
+       * the string to be searched is found. 
+       * @param data
+       */
+      private final void checkForCommit(String data) {
+         if (this.connInfo == null || this.connInfo.isCommitted())
+            return;
+         synchronized (this) {
+            if (this.connInfo == null || this.connInfo.isCommitted())
+               return;
+            if (data != null && this.stringToCheck != null && data.indexOf(this.stringToCheck) > -1)
+               this.connInfo.commit();
+         }
+      }
+      
       public void stderr(String data) {
          log.warning(data);
+         // log.info(data);
+         // this.errors.append(data).append("\n");
+         // sleep(this.sleepTime);
+         // checkForCommit(data);
       }
 
       public void stdout(String data) {
          log.info(data);
-         this.errors.append(data).append("\n");
+         // sleep(this.sleepTime);
+         // checkForCommit(data);
       }
 
       String getErrors() {
@@ -65,18 +148,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
 
    /** used to publish CREATE changes */
    protected I_ChangePublisher publisher;
-
    protected I_Info info;
-
    private String initialCmd;
-
    private String initialCmdPath;
- 
    private boolean keepDumpFiles;
-
    private String replPrefix;
-   
    private I_DbSpecific dbSpecific;
+   private String stringToCheck;
    
    /**
     * Not doing anything.
@@ -95,6 +173,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
       if (this.publisher != null)
          PropertiesInfo.addSet(set, this.publisher.getUsedPropertyKeys());
       return set;
+   }
+
+   public ConnectionInfo getConnectionInfo(Connection conn) {
+      return new ConnectionInfo(conn);
    }
    
    /**
@@ -138,7 +220,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
       this.initialCmd = this.info.get("replication.initialCmd", null);
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      
+      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
+      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
    }
 
    /**
@@ -305,12 +388,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
     * 
     * @param cmd
     * @throws Exception
+    * @return true if the transaction has already been committed, false otherwise
     */
-   private void osExecute(String cmd) throws Exception {
+   private void osExecute(String cmd, ConnectionInfo connInfo) throws Exception {
       if (Execute.isWindows()) cmd = "cmd " + cmd;
       String[] args = StringHelper.toArray(cmd, " ");
       Execute execute = new Execute(args, null);
-      ExecuteListener listener = new ExecuteListener();
+      ExecuteListener listener = new ExecuteListener(this.stringToCheck, connInfo);
       execute.setExecuteListener(listener);
       execute.run(); // blocks until finished
       if (execute.getExitValue() != 0) {
@@ -325,11 +409,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
     * It is a helper method.
     * 
     * @param argument the argument to execute. It is normally the absolute file name to be
-    * exported/imported.
+    * exported/imported. Can be null, if null, one is generated by using the current timestamp.
+    * @param conn the connection to perform a commit on. Can be null, if null, no commit
+    * is done asynchronously.
     * 
     * @throws Exception
     */
-   public final String initialCommand(String completeFilename) throws Exception {
+   public final String initialCommand(String completeFilename, ConnectionInfo connInfo) throws Exception {
       String filename = null;
       if (completeFilename == null) {
          filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
@@ -339,7 +425,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
          log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
       else {
          String cmd = this.initialCmd + " " + completeFilename;
-         this.osExecute(cmd);
+         osExecute(cmd, connInfo);
+         
       }
       return filename;
    }

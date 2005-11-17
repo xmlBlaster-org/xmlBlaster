@@ -7,6 +7,7 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -76,51 +77,59 @@ public class SpecificOracle extends SpecificDefault {
          String colName = cols[i].getColName();
          String typeName = cols[i].getTypeName();
          int type = cols[i].getSqlType();
-         String varName = newOldPrefix + prefix + "." + colName; // for example
-                                                                  // ':new.colname'
+         String varName = newOldPrefix + prefix + "." + colName; // for example :new.colname'
+         
+         buf.append("          IF ").append(varName).append(" IS NOT NULL THEN\n");
+         
          if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
                || type == Types.STRUCT) {
-            buf.append("       blobCont := EMPTY_BLOB;\n");
-            buf.append("       dbms_lob.createtemporary(blobCont, TRUE);\n");
-            buf.append("       dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
-            if (type == Types.BLOB)
-               buf.append("       dbms_lob.append(blobCont,").append(varName).append(");\n");
-            else buf.append("       dbms_lob.writeappend(blobCont,").append("length(").append(varName).append("),")
-                  .append(varName).append(");\n");
-            buf.append("       dbms_lob.close(blobCont);\n");
-            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
-                  "col2xml_base64('").append(colName).append("', blobCont));\n");
+            buf.append("          blobCont := EMPTY_BLOB;\n");
+            buf.append("          dbms_lob.createtemporary(blobCont, TRUE);\n");
+            buf.append("          dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
+            if (type == Types.BLOB) {
+               buf.append("          dbms_lob.append(blobCont,").append(varName).append(");\n");
+            }
+            else {
+               buf.append("          dbms_lob.writeappend(blobCont,").append("length(");
+               buf.append(varName).append("),").append(varName).append(");\n");
+            }
+            buf.append("          dbms_lob.close(blobCont);\n");
+            buf.append("          dbms_lob.append(").append(contName).append(", ");
+            buf.append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont));\n");
          }
          else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
-            buf.append("       tmpCont := EMPTY_CLOB;\n");
-            buf.append("       dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("       dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            buf.append("          tmpCont := EMPTY_CLOB;\n");
+            buf.append("          dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("          dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             // on new oracle data coming from old versions could be sqlType=TIMESTAMP but type='DATE'
             if (typeName.equals("DATE") || type == Types.DATE) 
-               buf.append("       tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
+               buf.append("          tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
             else // then timestamp
-               buf.append("       tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
-            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("       dbms_lob.close(tmpCont);\n");
-            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+               buf.append("          tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
+            buf.append("          dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("          dbms_lob.close(tmpCont);\n");
+            buf.append("          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
                   "col2xml('").append(colName).append("', tmpCont));\n");
          }
          else {
-            buf.append("       tmpCont := EMPTY_CLOB;\n");
-            buf.append("       dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("       dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            buf.append("          tmpCont := EMPTY_CLOB;\n");
+            buf.append("          dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("          dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
-               buf.append("       tmpNum := TO_CHAR(").append(varName).append(");\n");
+               buf.append("          tmpNum := TO_CHAR(").append(varName).append(");\n");
             }
             else {
-               buf.append("       tmpNum := ").append(varName).append(";\n");
+               buf.append("          tmpNum := ").append(varName).append(";\n");
             }
-            buf.append("       dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("       dbms_lob.close(tmpCont);\n");
-            buf.append("       dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+            buf.append("          dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("          dbms_lob.close(tmpCont);\n");
+            buf.append("          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
                   "col2xml('").append(colName).append("', tmpCont));\n");
          }
+         
+         buf.append("          END IF;\n");
+         
       }
       // buf.append(" oid :=
       // ROWIDTOCHAR(:").append(prefix).append(".rowid);\n");
@@ -430,5 +439,163 @@ public class SpecificOracle extends SpecificDefault {
          return false;
       }
    }
+   
+   private int cleanupOp(Connection conn, ArrayList names, String schema, String prefix, String postfix) throws SQLException {
+      int sum = 0;
+      for (int i=0; i < names.size(); i++) {
+         Statement st = null;
+         try {
+            String name = (String)names.get(i);
+            if (schema != null)
+               name = schema + "." + name;
+            // String sql = "DROP TABLE "  + name + " CASCADE CONSTRAINTS";
+            String sql = prefix + " " + name + " " + postfix;
+            st = conn.createStatement();
+            sum += st.executeUpdate(sql);
+         }
+         catch (SQLException ex) {
+            if (st != null) {
+               st.close();
+            }
+         }
+      }
+      return sum;
+   }
+   
+   public int wipeoutSchema(String catalog, String schema) throws Exception {
+      int sum = 0;
+      int count = 0;
+      int maxCount = 50;
+      int oldSum = 0;
+      while (count < maxCount) {
+         sum = wipeoutSchemaSingleSweep(catalog, schema);
+         count++;
+         log.info("sweep '" + count + "' for schema '" + schema + "' has erased '" + sum + "' objects");
+         if (sum == oldSum)
+            break;
+         oldSum = sum;
+      }
+      if (count == maxCount)
+         throw new Exception("Could not clean up complete schema '" + schema + "' after maximum sweeps '" + maxCount + "'. Processed/deleted '" + sum + "' objects");
+      return sum;
+   }
+
+   private int wipeoutSchemaSingleSweep(String catalog, String schema) throws Exception {
+      Connection conn = null;
+      Statement st = null;
+      ResultSet rs = null;
+      int sum = 0;
+      try {
+         conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
+         
+         {  // TRIGGERS
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            // since cleanupOp does not really return the number of effectively removed entries
+            cleanupOp(conn, names, schema, "DROP TRIGGER", "");
+            rs.close();
+            st.close();
+         }
+         {  // SEQUENCES
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
+            rs.close();
+            st.close();
+         }
+         {  // FUNCTIONS
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP FUNCTION", "");
+            rs.close();
+            st.close();
+         }
+         {  // PROCEDURES
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
+            rs.close();
+            st.close();
+         }
+         {  // VIEWS
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
+            rs.close();
+            st.close();
+         }
+         {  // TABLES
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
+            rs.close();
+            st.close();
+         }
+         {  // SYNONYMS
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP SYNONYM", "FORCE");
+            rs.close();
+            st.close();
+         }
+         {  // INDEXES
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
+            rs.close();
+            st.close();
+         }
+      }
+      finally {
+         if (rs != null)
+            rs.close();
+         if (st != null)
+            st.close();
+         
+      }
+      return sum;
+   }
+   
 
 }

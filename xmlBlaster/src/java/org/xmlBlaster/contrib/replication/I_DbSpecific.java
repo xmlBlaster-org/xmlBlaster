@@ -185,5 +185,16 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    boolean removeTrigger(String triggerName, String tableName, boolean isSchemaTrigger);
+ 
+   /**
+    * Cleans up the complete schema. It cleans tables, sequences, views, functions,
+    * procedures, triggers and indexes.
+    *  
+    * @param catalog
+    * @param schema
+    * @return the number of entries removed.
+    * @throws Exception
+    */
+   int wipeoutSchema(String catalog, String schema) throws Exception;
    
 }

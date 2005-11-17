@@ -29,7 +29,7 @@ if [ "${CMD}" = "exp" ] ; then
    CMDLINE="exp ${USER}/${PWD}@${SID} consistent=yes owner=${SCHEMA} file=${FILE} log=${LOG}"
 else
    if [ "${CMD}" = "imp" ] ; then
-      CMDLINE="imp ${USER}/${PWD}@${SID} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} destroy=y log=${LOG}"
+      CMDLINE="imp ${USER}/${PWD}@${SID} file=${FILE} fromuser=${SCHEMA} touser=${SCHEMA} ignore=y log=${LOG}"
    else
       ${ECHO} "usage $0 exp|imp SID filename"
       ${ECHO} "where 'filename' is the name of the file where to store the export of the db ${ESC}"

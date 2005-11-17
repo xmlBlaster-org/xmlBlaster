@@ -97,7 +97,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       // How long may a query last
       long busyToIdle = this.info.getLong("db.busyToIdleTimeout", 0);
       // How long does an unused connection survive (10 min)
-      long idleToErase = this.info.getLong("db.idleToEraseTimeout", 10*60*1000L);
+      long idleToErase = this.info.getLong("db.idleToEraseTimeout", 120*60*1000L);
       this.maxResourceExhaustRetries = this.info.getInt("db.maxResourceExhaustRetries", 5);
       // millis
       this.resourceExhaustSleepGap = this.info.getLong("db.resourceExhaustSleepGap", 1000);

@@ -6,11 +6,15 @@
 package org.xmlBlaster.contrib.replication;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -62,9 +66,24 @@ public class ReplicationAgent {
          I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
          I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
          
+         boolean isInteractive = cfgInfo.getBoolean("interactive", false);
+         
          ReplicationAgent agent = new ReplicationAgent();
          agent.init(readerInfo, writerInfo);
-         agent.process();
+
+         log.info("REPLICATION AGENT IS NOW READY");
+         if (isInteractive)
+            agent.process();
+         else {
+            while (true) {
+               try {
+                  Thread.sleep(500L);
+               }
+               catch (Exception ex) {
+                  
+               }
+            }
+         }
          agent.shutdown();
 
       } 
@@ -161,6 +180,34 @@ public class ReplicationAgent {
       cfgInfo.putObject("writerInfo", writerInfo);
       setupProperties(usedPropsMap, readerInfo, writerInfo);
    }
+   
+   private static InputStream getFileFromClasspath(String filename) throws IOException {
+      Class clazz = ReplicationAgent.class;
+      Enumeration enm = clazz.getClassLoader().getResources(filename);
+      if(enm.hasMoreElements()) {
+         URL url = (URL)enm.nextElement();
+         log.fine(" loading file '" + url.getFile() + "'");
+         while(enm.hasMoreElements()) {
+            url = (URL)enm.nextElement();
+            log.warning("init: an additional matching file has been found in the classpath at '"
+               + url.getFile() + "' please check that the correct one has been loaded (see info above)"
+            );
+         }
+         return clazz.getClassLoader().getResourceAsStream(filename); 
+      }
+      else {
+         ClassLoader cl = clazz.getClassLoader();
+         StringBuffer buf = new StringBuffer();
+         if (cl instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader)cl).getURLs();
+            for (int i=0; i < urls.length; i++) 
+               buf.append(urls[i].toString()).append("\n");
+         }
+         throw new IOException("init: no file found with the name '" + filename + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
+      }
+   }
+   
+   
    /**
     * Configure database access.
     */
@@ -173,9 +220,9 @@ public class ReplicationAgent {
       if (masterFilename != null) {
          Properties props = new Properties(System.getProperties());
          if (!masterFilename.equalsIgnoreCase("default")) {
-            FileInputStream fis = new FileInputStream(masterFilename);
-            props.load(fis);
-            fis.close();
+            InputStream is = getFileFromClasspath(masterFilename);
+            props.load(is);
+            is.close();
          }
          readerInfo = new PropertiesInfo(props);
       }
@@ -183,9 +230,9 @@ public class ReplicationAgent {
          Properties props = new Properties(System.getProperties());
          if (!slaveFilename.equalsIgnoreCase("default")) {
             System.out.println("slave is initializing");
-            FileInputStream fis = new FileInputStream(slaveFilename);
-            props.load(fis);
-            fis.close();
+            InputStream is = getFileFromClasspath(slaveFilename);
+            props.load(is);
+            is.close();
          }
          writerInfo = new PropertiesInfo(props);
       }
@@ -338,18 +385,19 @@ public class ReplicationAgent {
          I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
          I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
          Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
-         System.out.println("usage: java org.xmlBlaster.contrib.replication.ReplicationAgent [-master masterPropertiesFilename] [-slave slavePropertiesFilename]");
+         System.out.println("usage: java org.xmlBlaster.contrib.replication.ReplicationAgent [-master masterPropertiesFilename] [-slave slavePropertiesFilename] [-interactive true/false]");
          System.out.println("for example :");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -slave slave.properties");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties -slave slave.properties");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master default");
+         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master default -interactive true");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master");
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
          System.out.println("\nwhere in the first case it will act as a master, the second as a slave and the third as both master and slave");
          System.out.println("The fourth will act as a master with the default properties, and so the fifth.");
          
          System.out.println("You could have several instances of slaves running but only one master instance on the same topic.");
+         System.out.println("The 'interactive' flag is false per default.");
          System.out.println("\n");
          System.out.println("The content of the property files follows the java properties syntax");
          System.out.println("For the master the configuration parameters are (here displayed with the associated default values)");
@@ -371,7 +419,6 @@ public class ReplicationAgent {
    
    
    public final void process() throws Exception {
-      log.info("Start");
       InputStreamReader isr = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isr);
 
@@ -390,10 +437,9 @@ public class ReplicationAgent {
       
       try {
          conn  = pool.reserve();
-         
+
          System.out.println(prompt + "make your sql statement");
          System.out.print(prompt);
-         
          String line = null;
          while ( (line = br.readLine()) != null) {
             line = line.trim();

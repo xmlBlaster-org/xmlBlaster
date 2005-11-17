@@ -61,6 +61,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -76,7 +77,7 @@ import java.util.logging.Logger;
  * logging framework. You can switch this off by setting the attribute <tt>xmlBlaster/jdk14loggingCapture</tt> to false.
  * </p>
  * 
- * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener, I_SubscriptionListener {
    
@@ -199,7 +200,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);
-         connectQos.setPersistent(true);
+         boolean persistentConnection = false;
+         boolean persistentSubscription = false;
+         connectQos.setPersistent(persistentConnection);
          connectQos.setMaxSessions(1);
          connectQos.setPtpAllowed(true);
          connectQos.setSessionTimeout(0L);
@@ -216,7 +219,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          if (this.sqlTopic != null) {
             SubscribeKey subKey = new SubscribeKey(this.global, this.sqlTopic);
             SubscribeQos subQos = new SubscribeQos(this.global);
-            subQos.setPersistent(true);
+            subQos.setPersistent(persistentSubscription);
             subQos.setMultiSubscribe(false);
             conn.subscribe(subKey, subQos);
          }
@@ -282,6 +285,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    /**
     * Used to register a dbWatcher. This is a request coming directly from the
     * DbWatcher which registeres himself to this plugin.
+    * Note that if you are using the same id for the replication on several DbWatcher
+    * (several writers) only the first dbWatcher will pass the configuration. You are
+    * responsible of ensuring that the relevant configuration parameters are the same
+    * for all such DbWatcher instances.
+    * 
     * @param senderSession The session requesting this registration. This is needed
     * to reply to the right requestor.
     * 
@@ -292,13 +300,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       I_Info oldInfo = (I_Info)this.replications.get(replId);
       info.put("_senderSession", senderSession);
       if (oldInfo != null) {
+         log.info("register '" + replId + "' by senderSession='" + senderSession + "'");
          String oldSenderSession = oldInfo.get("_senderSession", senderSession);
          if (oldSenderSession.equals(senderSession)) {
             log.info("register '" + replId + "' by senderSession='" + senderSession + "' will overwrite old registration done previously");
             this.replications.put(replId, info);
          }
          else {
-            log.warning("register '" + replId + "' by senderSession='" + senderSession + "' was not done since there is a registration done by '" + oldSenderSession + "'. Please remove first old registration" + "");
+            log.info("register '" + replId + "' by senderSession='" + senderSession + "' was not done since there is a registration done by '" + oldSenderSession + "'. Will ignore the new one.");
          }
       }
       else
@@ -310,6 +319,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (oldInfo == null)
          log.info("unregister '" + replId + "' by senderSession='" + senderSession + "' is ignored since there is no such registration done");
       else {
+         log.info("unregister '" + replId + "' by senderSession='" + senderSession + "'");
+         if (log.isLoggable(Level.FINE)) {
+            log.fine("unregister '" + replId + "' by senderSession='" + senderSession + "' the stack trace is:");
+            Thread.dumpStack();
+         }
          String oldSenderSession = oldInfo.get("_senderSession", senderSession);
          if (oldSenderSession.equals(senderSession)) {
             this.replications.remove(replId);
@@ -411,6 +425,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             Thread.dumpStack();
          }
          else {
+            log.info("Adding dispatch Manager for '" + sessionName + "'");
             String relativeSessionName = sessionName.getRelativeName();
             I_ReplSlave slave = new ReplSlave(this.global, this.instanceName, relativeSessionName);
             synchronized (this.replSlaveMap) {
@@ -610,6 +625,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String ownName = getType() + "," + getVersion();
          if (ownName.equals(dispatchPluginName)) {
             String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+            log.info("addition of session for '" + sessionName +"' occured");
             synchronized (this.replSlaveMap) {
                if (this.replSlaveMap.containsKey(sessionName))
                   log.warning("The slave '" + sessionName + "' is already registered.");
@@ -642,6 +658,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String ownName = getType() + "," + getVersion();
          if (ownName.equals(dispatchPluginName)) {
             String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+            log.info("removal of session for '" + sessionName +"' occured");
             synchronized (this.replSlaveMap) {
                if (!this.replSlaveMap.containsKey(sessionName))
                   log.warning("The slave '" + sessionName + "' is not registered.");
@@ -686,6 +703,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public synchronized void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
       String relativeName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
+      log.info("addition of subscription for '" + relativeName +"' occured");
       
       I_ReplSlave slave = null;
       synchronized (this.replSlaveMap) {
@@ -707,7 +725,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
       String relativeName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
-      
+      log.info("removal of subscription for '" + relativeName +"' occured");
       I_ReplSlave slave = null;
       synchronized (this.replSlaveMap) {
          slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);

@@ -899,19 +899,22 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
       
       Connection conn = null;
-      int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
+      // int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
+      // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
+      int oldTransactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
       try {
          conn = this.dbPool.reserve();
          oldTransactionIsolation = conn.getTransactionIsolation();
-         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+         conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
          long minKey = this.incrementReplKey(conn);
          // the result must be sent as a high prio message to the real
          // destination
          addTriggersIfNeeded();
-
-         String filename = this.initialUpdater.initialCommand(null);
+         InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
+         String filename = this.initialUpdater.initialCommand(null, connInfo);
          
          long maxKey = this.incrementReplKey(conn); 
+         // if (!connInfo.isCommitted())
          conn.commit();
          this.initialUpdater.sendInitialDataResponse(topic, filename, destination, slaveName, minKey, maxKey);
       }
@@ -931,7 +934,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
       finally {
          if (conn != null) {
-            if (oldTransactionIsolation != Connection.TRANSACTION_SERIALIZABLE)
+            if (oldTransactionIsolation != Connection.TRANSACTION_READ_COMMITTED)
                try {
                   conn.setTransactionIsolation(oldTransactionIsolation);
                }
@@ -996,7 +999,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String)
     */
    public void initialCommand(String completeFilename) throws Exception {
-      this.initialUpdater.initialCommand(completeFilename);
+      this.initialUpdater.initialCommand(completeFilename, null);
    }
    
 

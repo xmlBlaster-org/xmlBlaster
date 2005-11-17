@@ -102,7 +102,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          throw new Exception("The replication name '_replName' has not been defined");
       this.name = "replSlave" + replName + slaveSessionId;
       this.dataTopic = info.get("mom.topicName", "replication." + replName);
-      this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
+      // only send status messages if it has been configured that way
+      this.statusTopic = info.get("mom.statusTopicName", null);
+      // this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
       this.masterSessionId = info.get("_senderSession", null);
       if (this.masterSessionId == null)
          throw new Exception("ReplSlave '" + this.name + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
@@ -148,7 +150,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       long clearedMsg = session.clearCallbackQueue();
       log.info("clearing of callback queue before initiating: '" + clearedMsg + "' where removed since obsolete");
 
-      sendStatusInformation("dbInitStart");
+      if (this.statusTopic != null)
+         sendStatusInformation("dbInitStart");
       doPause(); // stop the dispatcher
       SubscribeQos subQos = new SubscribeQos(this.global);
       subQos.setMultiSubscribe(false);
@@ -255,7 +258,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
          log.info("check: processing '" + replKey + "'");
          if (replKey < 0L) {
-            log.severe("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
+            log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
             ret.add(entry);
             continue;
          }

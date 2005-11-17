@@ -55,6 +55,7 @@ private final static String ME = "ReplicationWriter";
    private boolean doAlter;
    private boolean doStatement;
    private String sqlTopic;
+   private String schemaToWipeout;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -112,7 +113,8 @@ private final static String ME = "ReplicationWriter";
       this.doCreate = info.getBoolean("replication.creates", true);
       this.doAlter = info.getBoolean("replication.alters", true);
       this.doStatement = info.getBoolean("replication.statements", true);
-
+      this.schemaToWipeout = info.get("replication.writer.schemaToWipeout", null);
+      
       if (this.doStatement)
          this.sqlTopic = this.info.get("replication.sqlTopic", null);
       
@@ -417,7 +419,7 @@ private final static String ME = "ReplicationWriter";
             log.info("Primary key found colName=" + colName);
          }
          if (count == 0) {
-            log.severe("No primary key found for table '" + tableName + "'");
+            log.info("No primary key found for table '" + tableName + "'");
          }
       }
       finally {
@@ -462,6 +464,17 @@ private final static String ME = "ReplicationWriter";
       
       if (isEof && !isException) {
          String completeFilename = this.importLocation + "/" + filename;
+         
+         if (this.schemaToWipeout != null) {
+            log.info("Going to clean up the schema '" + this.schemaToWipeout);
+            try {
+               this.dbSpecific.wipeoutSchema(null, this.schemaToWipeout);
+            }
+            catch (Exception ex) {
+               log.severe("Could not clean up completely the schema");
+               ex.printStackTrace();
+            }
+         }
          this.dbSpecific.initialCommand(completeFilename);
          if (!this.keepDumpFiles) {
             File fileToDelete = new File(completeFilename);
