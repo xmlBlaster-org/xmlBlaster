@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14087 Java SOCKET protocol:
+   Changed the default responseTimeout from one minute to 'forever'.
+
+ o # TODO: C/C++ SOCKET protocol driver
+   Change the default responseTimeout from one minute to 'forever'.
+
  o #14081 Changed default communication protocol from IOR (Corba) to SOCKET
 
  o #14058 Functional email protocol driver with or without ZLIB compression 
@@ -18,6 +24,8 @@ Current subversion
 
  o #14041 changed LOCAL protocol: simplified and decoupled client from slave: now they can 
    start in random sequence
+
+ o # Added C# (C sharp) XMLRPC client
 
  o #14023 Added Macromedia Flash Player XMLRPC demo client (Cyrille)
    See xmlBlaster/demo/flash/xmrpc/README

@@ -792,8 +792,8 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
 
          <tr>
             <td>plugin/socket/responseTimeout</td>
-            <td>60000 (one minute)</td>
-            <td>When a method is invoked we wait the given time on a response, the value must be
+            <td>forever</td>
+            <td>When a method is invoked we wait the given time [milli-seconds] on a response, the value must be
             bigger than zero, there is no unlimited setting possible.<br />
             The response is the return value or an exception for method invocations which
             are not marked oneway.<br />

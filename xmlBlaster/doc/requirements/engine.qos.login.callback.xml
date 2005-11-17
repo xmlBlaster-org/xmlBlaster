@@ -13,8 +13,11 @@
       qos (Quality of Service) parameter of the login method.<br />
       </p>
       <p>
-      The default callback protocol is "IOR" which stands for a CORBA callback.
-      The client must supply a Corba callback interface with the
+      The default callback protocol is "SOCKET" which stands for our native protocol format.
+      </p>
+      <p>
+      "IOR" stands for a CORBA callback.
+      The client must in this case supply a Corba callback interface with the
       method update() and ping(), see xmlBlaster.idl. This method is called by xmlBlaster for callbacks.
       </p>
       <p>
