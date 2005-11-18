@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='protocol.email' type='NEW' prio='LOW' status="INWORK">
-   <topic>XmlBlaster has a protocol plugin to support access via EMAIL</topic>
+<requirement id='protocol.email' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster has a protocol plugin to support access via email</topic>
    <description>
      <p>
      It is possible for a client to send/receive messages to xmlBlaster via email. This way the
@@ -24,6 +24,7 @@
      abstraction paradigm. So before any publishing or subscription can be done, the user must 
      connect to get a session id.
      </p>
+<!--
      <p>
      To simplify the usage, it is permitted to send any number of commands in a single email. It is 
      even permitted to send messages (publish messages) where the content of the message is sent as
@@ -80,7 +81,7 @@
 &lt;/xmlBlaster>
 
        </pre>
-
+-->
 <p>Supported formats</p>
 <pre>
 XfbParser:
@@ -117,7 +118,10 @@ XmlScriptParser:
   &lt;attachment>
     &lt;filename>messageId.mid&lt;/filename>
     &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
-    &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>&lt;requestId>1&lt;/requestId>&lt;methodName>ping&lt;/methodName>&lt;/messageId>]]>&lt;/content>
+    &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>
+                &lt;requestId>1&lt;/requestId>
+                &lt;methodName>ping&lt;/methodName>&lt;/messageId>
+    ]]>&lt;/content>
   &lt;/attachment>
 &lt;/message>
 </pre>
@@ -162,6 +166,93 @@ call[org.xmlBlaster.util.protocol.email.SmtpClient] true
 call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
 </pre>
 
+  <h2>Example configuration server side</h2>
+<p>The email driver plugin listening on incoming emails is configured in <code>xmlBlasterPlugins.xml</code>
+ (for example listening on connect(), subscribe() and publish() requests)</p>
+<pre>
+   &lt;!-- General EMAIL SMTP client service -->
+   &lt;!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   &lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+      &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+      &lt;attribute id='mail.user'>xmlBlaster&lt;/attribute>
+      &lt;attribute id='mail.password'>xmlBlaster&lt;/attribute>
+   &lt;/plugin>
+
+   &lt;!-- General EMAIL POP3 polling service -->
+   &lt;!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   &lt;plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+      &lt;action do='LOAD' onStartupRunlevel='4' sequence='9' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
+      &lt;attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute>
+      &lt;attribute id='activate'>false&lt;/attribute>
+      &lt;attribute id='pop3PollingInterval'>500&lt;/attribute>
+   &lt;/plugin>
+
+   &lt;!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
+   &lt;plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='7' sequence='10' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='7' sequence='10'/>
+      &lt;attribute id='mail.smtp.from'>xmlBlaster@localhost&lt;/attribute>   
+      &lt;attribute id='compress/type'>zlib&lt;/attribute>
+      &lt;attribute id='compress/minSize'>200&lt;/attribute>
+      &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
+      &lt;attribute id='mail.subject'>XmlBlaster Generated&lt;/attribute>
+   &lt;/plugin>
+</pre>
+
+<p>The format of the returned messages from the xmlBlaster server to email clients
+is configured in <code>xmlBlaster.properties</code> (for example PublishReturnQos, Update messages, ConnectReturnQos etc.)</p>
+<pre>
+CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+                             mail.user=xmlBlaster,\
+                             mail.password=xmlBlaster,\
+                             compress/minSize=200,\
+                             compress/type=zlib,\
+                             parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+</pre>
+<p>
+The format of the message in the email is defined by our XbfParser (see protocl.socket requirement), additionally
+messages bigger 200 bytes are compressed with zlib.
+Optionally you can choose to send the message in clear text XML markup by using our XmlScriptParser
+instead of XbfParser.
+</p>
+
+  <h2>Example configuration for an email client</h2>
+<p>The format of send messages from the client to the xmlBlaster server
+or to listen on server messages
+is configured in <code>xmlBlaster.properties</code> (for example sending publish() or receiving update() etc.)</p>
+<pre>
+ClientProtocolPlugin[email][1.0]=\
+      org.xmlBlaster.client.protocol.email.EmailConnection,\
+      mail.user=demo,\
+      mail.password=demo,\
+      mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+      pop3PollingInterval=500,\
+      compress/minSize=200,\
+      parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#compress/type=zlib,\
+#parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+
+# Register the client side callback server plugin (to listen on update() or publishReturnQos)
+ClientCbServerProtocolPlugin[email][1.0]=\
+      org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
+      mail.user=demo,\
+      mail.password=demo,\
+      mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+      compress/minSize=200,\
+      parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+#parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#compress/type=zlib,\
+</pre>
+<p>The above client has chosen to don't compress the outgoing mails.
+Further it sends the UpdateReturnQos in clear XML text instead
+of using our native XfbParser protocol.
+</p>
 
       <table border="1">
          <tr>
@@ -172,53 +263,46 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
          </tr>
 
          <tr>
-            <td>email.hostname</td>
+            <td>mail.smtp.host</td>
             <td>localhost</td>
-            <td>Specify a hostname where the EMAIL server runs
+            <td>Specify a hostname where the SMTP server runs
             </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>email.user</td>
+            <td>mail.user</td>
             <td>xmlBlaster</td>
             <td>The EMAIL user account
                 </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>email.type</td>
-            <td>xmlBlaster</td>
-            <td>The EMAIL type to use (either pop3 or imap)
-                </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td>mail.pop3.url</td>
+            <td>pop3://demo:demo@localhost/INBOX</td>
+            <td>The POP3 connection URL</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>ProtocolPlugin[EMAIL][1.0]</td>
+            <td>ProtocolPlugin[email][1.0]</td>
             <td><pre>org.xmlBlaster.protocol.email.EmailDriver</pre></td>
             <td>You need to activate EMAIL support in your xmlBlaster.properties file
             </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>CbProtocolPlugin[EMAIL][1.0]</td>
+            <td>CbProtocolPlugin[email][1.0]</td>
             <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</pre></td>
             <td>You need to activate EMAIL support in your xmlBlaster.properties file
             </td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
    <todo>
-   <ol>
-      <li>
-      EMAIL support is not implemented.<br />
-      The callback is already implemented.         
-      </li>
-   </ol>
    </todo>
    <see type="REQ">protocol</see>
    <!-- <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see> -->
