@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
@@ -125,10 +126,12 @@ public class XbfParser implements I_MsgInfoParser
       //initialize();
    }
 
-   public void init(Global glob, I_ProgressListener progressListener) {
+   public void init(Global glob, I_ProgressListener progressListener,
+         I_PluginConfig pluginConfig) {
       this.glob = glob;
       this.log = glob.getLog("xfb");
       this.progressListener = progressListener;
+      //this.someConfig = glob.get("someConfig", (String)null, null, pluginConfig);
    }
    
    private void initialize() {

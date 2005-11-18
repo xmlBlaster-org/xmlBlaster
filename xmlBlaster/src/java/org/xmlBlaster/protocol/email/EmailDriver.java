@@ -31,12 +31,12 @@ import java.util.logging.Logger;
 /**
  * Email driver class to invoke the xmlBlaster server over ordinary emails. 
  * <p />
- * This "EMAIL:" driver needs to be registered in xmlBlaster.properties
+ * This "email:" driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup, for example:
  * <pre>
- * ProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.EmailDriver
+ * ProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.EmailDriver
  *
- * CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
  * </pre>
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
@@ -72,15 +72,15 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
 
    /**
     * Access the xmlBlaster internal name of the protocol driver.
-    * @return The configured [type] in xmlBlaster.properties, defaults to "EMAIL"
+    * @return The configured [type] in xmlBlaster.properties, defaults to "email"
     */
    public String getProtocolId() {
-      return (this.pluginInfo == null) ? "EMAIL" : this.pluginInfo.getType();
+      return (this.pluginInfo == null) ? "email" : this.pluginInfo.getType();
    }
 
    /**
     * Enforced by I_Plugin
-    * @return The configured type in xmlBlaster.properties, defaults to "EMAIL"
+    * @return The configured type in xmlBlaster.properties, defaults to "email"
     */
    public String getType() {
       return getProtocolId();
@@ -297,7 +297,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     *  <li><i>-plugin/email/hostname</i>    Specify a hostname where the EMAIL web server runs
     *                                          Default is the localhost.</li>
     *  <li><i>-plugin/email/backlog</i>     Queue size for incoming connection request [50]</li>
-    *  <li><i>-dump[email]</i>       true switches on detailed EMAIL debugging [false]</li>
+    *  <li><i>-dump[email]</i>       true switches on detailed 'email' debugging [false]</li>
     * </ul>
     * <p />
     * Enforced by interface I_Driver.

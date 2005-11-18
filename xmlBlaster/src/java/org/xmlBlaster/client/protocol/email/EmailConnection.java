@@ -35,10 +35,10 @@ import javax.mail.internet.InternetAddress;
 /**
  * This driver sends emails to the xmlBlaster server, the return QOS are polled via POP3. 
  * <p />
- * This "EMAIL" driver needs to be registered in xmlBlaster.properties
+ * This "email" driver needs to be registered in xmlBlaster.properties
  * and will be started on xmlBlaster startup:
  * <pre>
- * ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection
+ * ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection
  * </pre>
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.email.EmailConnection#usage()}
@@ -186,10 +186,10 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
 
    /**
     * Returns the protocol type. 
-    * @return "EMAIL"
+    * @return "email"
     */
    public final String getProtocol() {
-      return (this.pluginInfo == null) ? "EMAIL" : this.pluginInfo.getType();
+      return (this.pluginInfo == null) ? "email" : this.pluginInfo.getType();
    }
 
     /**
@@ -401,7 +401,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public static String usage()
    {
       String text = "\n";
-      text += "EmailConnection 'EMAIL' options:\n";
+      text += "EmailConnection 'email' options:\n";
       text += "   -dispatch/connection/plugin/email/port\n";
       text += "                       Specify a port number where the SMTP MTA listens [25].\n";
       text += "   -dispatch/connection/plugin/email/hostname\n";
@@ -417,7 +417,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
       text += "                       '"+Constants.COMPRESS_ZLIB+"' only compresses flushed chunks bigger than 'compress/minSize' bytes.\n";
       text += "   -dispatch/connection/plugin/email/compress/minSize\n";
       text += "                       Compress message bigger than given bytes, see above.\n";
-      text += "   -dump[email]       true switches on detailed EMAIL debugging [false].\n";
+      text += "   -dump[email]       true switches on detailed 'email' debugging [false].\n";
       text += "\n";
       return text;
    }

@@ -40,7 +40,7 @@ import javax.mail.internet.InternetAddress;
  * 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseListener {
+public abstract class EmailExecutor extends  RequestReplyExecutor implements I_ResponseListener {
    private String ME = "EmailExecutor";
 
    private static Logger log = Logger.getLogger(EmailExecutor.class.getName());
@@ -75,6 +75,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    protected final String BOUNCE_MAILTO_KEY = "mail.to";
    protected final String BOUNCE_MAILFROM_KEY = "mail.from";
 
+   /** "messageId.mid" */
    protected String messageIdFileName = "messageId" + EmailData.MESSAGEID_EXTENSION;
    
    /** The extension is added later to for example "xmlBlasterMessage.xfb" */
@@ -98,9 +99,9 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       this.decompressor = new Inflater();
 
       // Add
-      //   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster,compress/type=zlib:stream
-      //   ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib:stream
-      //   ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000,compress/type=zlib:stream
+      //   CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,mail.user=xmlBlaster,mail.password=xmlBlaster,compress/type=zlib:stream
+      //   ClientCbServerProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib:stream
+      //   ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000,compress/type=zlib:stream
       // settings to the clients Address configuration
       if (pluginConfig != null)
          this.addressBase.setPluginInfoParameters(pluginConfig.getParameters());
@@ -143,17 +144,17 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
             .getName());
       if (this.pop3Driver == null) {
-         log.warning("Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
+         log.warning("Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
-               "Please register a Pop3Driver in xmlBlasterPlugins.xml to have EMAIL support");
+               "Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support");
       }
       
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
    }
    
-   public String getType() {
-      return "EMAIL";
-   }
+  // public String getType() {
+  //    return "email";
+  // }
    
    /**
     * Defaults to one day. 
@@ -164,7 +165,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
    
    /**
     * Which parser to use. 
-    * The EMAIL protocol uses as a default setting the XbfParser
+    * The 'email' protocol uses as a default setting the XbfParser
     * but usig the XmlScriptParser may be convenient as well. 
     * <p />
     * The environment setting 'parserClass=' is checked.
@@ -367,7 +368,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       }
 
       // The pay load
-      byte[] origAttachment = msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).createRawMsg(msgInfo);
+      byte[] origAttachment = msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).createRawMsg(msgInfo);
       boolean isCompressed = false;
       byte[] payload = origAttachment;
       if (isCompressZlib()) {
@@ -399,7 +400,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
       
       // The real message blob, for example "xmlBlasterMessage.xbf"
       String payloadFileName = this.payloadFileNamePrefix + 
-         msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getExtension(isCompressed);
+         msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).getExtension(isCompressed);
 
       InternetAddress toAddr = this.toAddress;
       String to = (String)msgInfo.getBounceObject(BOUNCE_MAILTO_KEY);
@@ -414,7 +415,7 @@ public class EmailExecutor extends  RequestReplyExecutor implements I_ResponseLi
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
-      String payloadMimetype = msgInfo.getMsgInfoParser(getMsgInfoParserClassName()).getMimetype(isCompressed);
+      String payloadMimetype = msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).getMimetype(isCompressed);
       emailData.addAttachment(new AttachmentHolder(payloadFileName, payloadMimetype, payload));
       emailData.addAttachment(new AttachmentHolder(this.messageIdFileName, messageId));
       // Bounce all other attachments back to sender

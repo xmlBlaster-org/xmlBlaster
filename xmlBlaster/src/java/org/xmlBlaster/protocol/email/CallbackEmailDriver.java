@@ -24,7 +24,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * example:
  * 
  * <pre>
-CbProtocolPlugin[EMAIL][1.0]=\
+CbProtocolPlugin[email][1.0]=\
     org.xmlBlaster.protocol.email.CallbackEmailDriver,\
     mail.user=xmlBlaster,\
     mail.password=xmlBlaster,\
@@ -55,10 +55,10 @@ public class CallbackEmailDriver extends EmailExecutor implements
    /**
     * Access the xmlBlaster internal name of the protocol driver.
     * 
-    * @return "NativeDemo"
+    * @return "email"
     */
    public String getProtocolId() {
-      return (this.pluginInfo == null) ? "EMAIL" : this.pluginInfo.getType();
+      return (this.pluginInfo == null) ? "email" : this.pluginInfo.getType();
    }
 
    /** Enforced by I_Plugin */

@@ -140,10 +140,10 @@ public class EmailCallbackImpl extends EmailExecutor implements
     * Returns the protocol type.
     * 
     * @return The configured [type] in xmlBlaster.properties, defaults to
-    *         "EMAIL"
+    *         "email"
     */
    public final String getCbProtocol() {
-      return (this.pluginInfo == null) ? "EMAIL" : this.pluginInfo.getType();
+      return (this.pluginInfo == null) ? "email" : this.pluginInfo.getType();
    }
 
    /**

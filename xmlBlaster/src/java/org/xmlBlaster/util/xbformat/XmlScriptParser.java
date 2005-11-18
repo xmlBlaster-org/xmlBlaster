@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
@@ -80,11 +81,12 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    public XmlScriptParser() {
    }
 
-   public void init(Global glob, I_ProgressListener progressListener) {
+   public void init(Global glob, I_ProgressListener progressListener,
+         I_PluginConfig pluginConfig) throws XmlBlasterException {
       this.glob = glob;
       this.progressListener = progressListener;
-      this.xmlDecl = glob.getProperty().get("xmlBlaster/xmlDeclaration", (String)null);
-      this.schemaDecl = glob.getProperty().get("xmlBlaster/schemaDeclaration", (String)null);
+      this.xmlDecl = glob.get("xmlDeclaration", (String)null, null, pluginConfig);
+      this.schemaDecl = glob.get("schemaDeclaration", (String)null, null, pluginConfig);
       super.initialize(glob, null, null);
    }
 
@@ -221,7 +223,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
          XmlScriptParser parser = new XmlScriptParser();
          {
             System.out.println("TEST0 PING");
-            parser.init(glob, null);
+            parser.init(glob, null, null);
             MsgInfo msgInfo = new MsgInfo(glob, MsgInfo.RESPONSE_BYTE, "12",
                   MethodName.PING, "secret", null);
             byte[] content = null;
@@ -242,7 +244,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
          }
          {
             System.out.println("TEST1 SHOULD FORCE BASE64");
-            parser.init(glob, null);
+            parser.init(glob, null, null);
             MsgInfo msgInfo = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, "12",
                   MethodName.PUBLISH, "secret", null);
             byte[] content = "hello&bye]]>".getBytes();
@@ -263,7 +265,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
          }
          {
             System.out.println("TEST2 SHOULD KEEP LITERAL STRING");
-            parser.init(glob, null);
+            parser.init(glob, null, null);
             MsgInfo msgInfo = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, "12",
                   MethodName.PUBLISH, "secret", null);
             byte[] content = "Hello World!".getBytes();
@@ -283,7 +285,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
          }
          {
             System.out.println("TEST3");
-            parser.init(glob, null);
+            parser.init(glob, null, null);
             MsgInfo msgInfo = new MsgInfo(glob, MsgInfo.RESPONSE_BYTE, "12",
                   MethodName.PUBLISH, "secret", null);
             byte[] content = null;

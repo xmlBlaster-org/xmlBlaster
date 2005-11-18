@@ -11,6 +11,7 @@ import java.util.Map;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 
 /**
  * Creates a parser instance to serialize xmlBlaster messages. For example the
@@ -98,10 +99,12 @@ public class MsgInfoParserFactory {
     * @param className For example "org.xmlBlaster.util.xbformat.XbfParser"
     *           or "org.xmlBlaster.util.xbformat.XmlScriptParser"
     *           Can be null
+    * @param pluginConfig TODO
     * @return Defaults to XbfParser()
     */
    public I_MsgInfoParser getMsgInfoParser(Global glob,
-         I_ProgressListener progressListener, String className)
+         I_ProgressListener progressListener,
+         String className, I_PluginConfig pluginConfig)
          throws XmlBlasterException {
       I_MsgInfoParser msgInfoParser = null;
       if (className == null)
@@ -118,7 +121,7 @@ public class MsgInfoParserFactory {
                         + "' is not found or has no default constructor", e);
          }
       }
-      msgInfoParser.init(glob, progressListener);
+      msgInfoParser.init(glob, progressListener, pluginConfig);
       return msgInfoParser;
    }
 }

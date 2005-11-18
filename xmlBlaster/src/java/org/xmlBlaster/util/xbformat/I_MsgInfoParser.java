@@ -11,6 +11,7 @@ import java.io.InputStream;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 
 /**
  * Interface to support different serialization formats of messages. 
@@ -25,8 +26,10 @@ public interface I_MsgInfoParser {
     * Is guaranteed to be called by the MsgInfoParserFactory after construction. 
     * @param glob
     * @param progressListener
+    * @param pluginConfig Can be null
     */
-   void init(Global glob, I_ProgressListener progressListener);
+   void init(Global glob, I_ProgressListener progressListener,
+         I_PluginConfig pluginConfig) throws XmlBlasterException;
    
    /**
     * Parses a serialized message from input stream
