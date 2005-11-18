@@ -96,7 +96,7 @@
 -->
 
    <!-- General EMAIL SMTP client service -->
-   <!-- needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
 <!--
    <plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
       <action do='LOAD' onStartupRunlevel='4' sequence='7' 
@@ -108,7 +108,7 @@
 -->
 
    <!-- General EMAIL POP3 polling service -->
-   <!-- needed by 'email' plugin and 'CbProtocolPlugin[EMAIL][1.0]' plugin -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
 <!--
    <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='9' 

@@ -84,7 +84,7 @@ CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDrive
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 #CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
-CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.user=xmlBlaster,\
                              mail.password=xmlBlaster,\
                              compress/type=zlib,\
@@ -105,7 +105,7 @@ ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.Sock
 ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
 ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
 #ClientProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapConnection
-ClientProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
+ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
                                  mail.user=demo,\
                                  mail.password=demo,\
                                  mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
@@ -124,7 +124,7 @@ ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html
-ClientCbServerProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
+ClientCbServerProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
                                          mail.user=demo,\
                                          mail.password=demo,\
                                          mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
