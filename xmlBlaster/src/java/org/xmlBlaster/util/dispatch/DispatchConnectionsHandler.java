@@ -187,7 +187,7 @@ abstract public class DispatchConnectionsHandler
                      }
                   }
                   catch (XmlBlasterException e) {
-                     //log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                     log.warn(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
                      throw e;
                   }
                   catch (Throwable e) {
