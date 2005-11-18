@@ -197,12 +197,12 @@ public class PluginManagerBase implements I_PluginManager {
    private I_Plugin instantiatePluginFirstPhase(PluginInfo pluginInfo, boolean usePluginCache) 
       throws XmlBlasterException {
       // separate parameter and plugin name
-
       if (pluginInfo.ignorePlugin()) return null;
 
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
       if (pluginName == null) {
+         log.warn(ME, "The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME,
                "The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
       }
@@ -244,6 +244,7 @@ public class PluginManagerBase implements I_PluginManager {
       }
       catch (Throwable e) {
          String text = "The plugin class or initializer '" + pluginName + "' is invalid, check the plugin name, check if the plugin has a default constructor and check the CLASSPATH to the plugin";
+         log.error(ME, text);
          //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
       }
