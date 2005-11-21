@@ -37,6 +37,8 @@ Current subversion
  o #14007 Partly fix for expiry of volatile message timing out during publish processing
    This bug could led to NPE
  
+ o #13977 Added usage help for JMX (jconsole)
+
  o #13949 -xmlBlaster/jdk14loggingCapture defaults now to true
    Like this als java.util.logging will be automatically redirected to our jutils logging
    This is for the server and the client library
