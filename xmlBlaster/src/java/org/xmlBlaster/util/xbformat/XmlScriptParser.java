@@ -56,6 +56,9 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    
    /** <?xml version='1.0' encoding='UTF-8'?> */
    private String xmlDecl;
+   
+   private boolean sendResponseSessionId;
+   private boolean sendResponseRequestId;
 
    /**
     *  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
@@ -87,6 +90,9 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.progressListener = progressListener;
       this.xmlDecl = glob.get("xmlDeclaration", (String)null, null, pluginConfig);
       this.schemaDecl = glob.get("schemaDeclaration", (String)null, null, pluginConfig);
+      this.sendResponseSessionId = glob.get("sendResponseSessionId", true, null, pluginConfig);
+      this.sendResponseRequestId = glob.get("sendResponseRequestId", true, null, pluginConfig);
+      super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
       super.initialize(glob, null, null);
    }
 
@@ -174,9 +180,22 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       try {
          long len = msgInfo.getUserDataLen() + 500;
          ByteArray out = new ByteArray((int) len);
+         
+         boolean isResponseOrException = 
+              msgInfo.getType() == MsgInfo.RESPONSE_BYTE ||
+              msgInfo.getType() == MsgInfo.EXCEPTION_BYTE;
+         
+         String sessionId = msgInfo.getSecretSessionId();
+         if (isResponseOrException && !this.sendResponseSessionId)
+            sessionId = null;
+         
+         String requestId = msgInfo.getRequestId();
+         if (isResponseOrException && !this.sendResponseRequestId)
+            requestId = null;
+         
          super.serialize(msgInfo.getMethodName(),
-                         msgInfo.getSecretSessionId(),
-                         msgInfo.getRequestId(),
+                         sessionId,
+                         requestId,
                          msgInfo.getMessageArr(),
                          this.xmlDecl, null, this.schemaDecl,
                          out, msgInfo.getType());

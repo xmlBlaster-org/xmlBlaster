@@ -14,6 +14,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.email.AttachmentHolder;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.IOException;
@@ -342,7 +343,10 @@ public class MsgInfo {
       this.sessionId = sessionId;
    }
 
-   /** The authentication sessionId */
+   /**
+    * The authentication sessionId
+    * @return never null
+    */
    public final String getSecretSessionId() {
       if (sessionId == null)
          return "";
@@ -539,6 +543,24 @@ public class MsgInfo {
                + ": getException() is called without having an exception");
       }
       MsgUnitRaw msg = (MsgUnitRaw) msgVec.elementAt(0);
+      
+      if (msg.getContent() == null || msg.getContent().length == 0) {
+         // For example when using XmlInterpreter
+         // <qos><state id='ERROR' info='communication'/></qos>
+         ErrorCode errorCode = ErrorCode.INTERNAL; // default setting
+         try{
+            // See serialization in XmlScriptInterpreter.java
+            StatusQosData data = glob.getStatusQosFactory().readObject(msg.getQos());
+            errorCode = ErrorCode.toErrorCode(data.getStateInfo());
+         }
+         catch (Throwable e) {
+            log.error(ME, "Unexpected exception markup in: '" + msg.getQos() + "': " + e.toString());
+         }
+         XmlBlasterException e = new XmlBlasterException(glob, errorCode, ME, "");
+         e.isServerSide(!glob.isServerSide()); // mark to be from the other side
+         return e;
+      }
+      
       return XmlBlasterException.parseByteArr(glob, msg.getContent());
    }
 
