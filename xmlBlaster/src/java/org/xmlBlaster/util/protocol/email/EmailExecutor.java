@@ -314,6 +314,12 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          //shutdown();
          return;
       }
+      
+      // If counterside has stripped information we add it again from the messageId attachment
+      if (msgInfo.getRequestId().length() == 0)
+         msgInfo.setRequestId(emailData.getRequestId());
+      if (msgInfo.getSecretSessionId().length() == 0)
+         msgInfo.setSecretSessionId(emailData.getSessionId());
 
       try {
          {
@@ -367,7 +373,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          // and for testing as attachment, for example this.messageIdFileName="messageId.mid"
       }
 
-      // The pay load
+      // Serialize the pay load
       byte[] origAttachment = msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).createRawMsg(msgInfo);
       boolean isCompressed = false;
       byte[] payload = origAttachment;
