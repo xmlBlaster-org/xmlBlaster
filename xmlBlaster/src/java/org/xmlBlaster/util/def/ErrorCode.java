@@ -35,6 +35,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode INTERNAL = new ErrorCode("internal",
+         "These category is an internal exception, usually a Java runtime exception, please post it to the mailing list.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "admin.errorcodes", "admin.errorcodes")
+         }
+      );
+
    public static final ErrorCode INTERNAL_UNKNOWN = new ErrorCode("internal.unknown",
          "This is an unknown and unexpected error, usually a Java runtime exception, please post it to the mailing list.",
          new ResourceInfo[] {
@@ -130,6 +137,12 @@ public final class ErrorCode implements java.io.Serializable
 
    public static final ErrorCode INTERNAL_STOP = new ErrorCode("internal.stop",
          "An internal control exception, for example to stop parsing of XML.",
+         new ResourceInfo[] {
+         }
+      );
+
+   public static final ErrorCode RESOURCE = new ErrorCode("resource",
+         "This category is for resource problems like too low memory. It can usually be fixed by the administrator",
          new ResourceInfo[] {
          }
       );
@@ -291,6 +304,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode COMMUNICATION = new ErrorCode("communication",
+         "This category is related to communication problems between client and server.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode COMMUNICATION_NOCONNECTION = new ErrorCode("communication.noConnection",
          "A specific remote connection throws an exception on invocation.",
          new ResourceInfo[] {
@@ -340,6 +359,12 @@ public final class ErrorCode implements java.io.Serializable
             new ResourceInfo(ResourceInfo.REQ, "client.failsafe", "client.failsafe"),
             new ResourceInfo(ResourceInfo.API, "client queue configuration", "org.xmlBlaster.util.qos.address.Address"),
             new ResourceInfo(ResourceInfo.API, "callback queue configuration", "org.xmlBlaster.util.qos.address.CallbackAddress")
+         }
+      );
+
+   public static final ErrorCode USER = new ErrorCode("user",
+         "This category stands for wrong usage by the programmer using xmlBlaster.",
+         new ResourceInfo[] {
          }
       );
 
@@ -615,6 +640,30 @@ public final class ErrorCode implements java.io.Serializable
     */
    public ResourceInfo[] getResourceInfos() {
       return this.resourceInfos;
+   }
+   
+   /**
+    * @return The top level category like 'internal'
+    */
+   public static ErrorCode getCategory(ErrorCode errorCode) {
+      if (errorCode == null || errorCode.errorCode == null) return ErrorCode.INTERNAL;
+      int index = errorCode.errorCode.indexOf(".");
+      if (index == -1) return errorCode; // is already a top level
+      if (index == 0) return ErrorCode.INTERNAL; // ".blabla" shouldn't appear (no leading dots)
+      String top = errorCode.errorCode.substring(0,index);
+      return toErrorCode(top);
+   }
+
+   /**
+    * @return The top level category like 'internal'
+    */
+   public static ErrorCode getCategory(String errorCode) {
+      if (errorCode == null) return ErrorCode.INTERNAL;
+      int index = errorCode.indexOf(".");
+      if (index == -1) return ErrorCode.toErrorCode(errorCode); // is already a top level
+      if (index == 0) return ErrorCode.INTERNAL; // ".blabla" shouldn't appear (no leading dots)
+      String top = errorCode.substring(0,index);
+      return toErrorCode(top);
    }
 
    /**
