@@ -128,6 +128,17 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    protected boolean needsRootEndTag;
    protected OutputStream out;
    
+   /**
+    * Set true to send a simple exception format like
+      <pre>
+      &lt;update type='E'>
+       &lt;qos>&lt;state id='ERROR' info='user'/>&lt;/qos>
+      &lt;/update>
+      </pre>
+      <p>Note: The errorCode is stripped to the main category</p>
+    */
+   protected boolean sendSimpleExceptionFormat;
+   
    public final static String ROOT_TAG = "xmlBlaster";
    public final static String ROOTRESPONSE_TAG = "xmlBlasterResponse";
    public final String KEY_TAG = MsgUnitRaw.KEY_TAG;
@@ -718,8 +729,20 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
       out.write(sb.toString().getBytes());
       
       if (msgUnits != null && msgUnits.length > 0) {
-         if (msgUnits.length == 1)
-            msgUnits[0].toXml(offset, out);
+         if (msgUnits.length == 1) {
+            if (type == MsgInfo.EXCEPTION_BYTE && this.sendSimpleExceptionFormat) {
+               // This must be parsable on the other side similar to XmlBlasterException.parseByteArr()
+               // See code in MsgInfo.java
+               ErrorCode errorCode = ErrorCode.getCategory(msgUnits[0].getQos()); 
+               StringBuffer buf = new StringBuffer(1024);
+               buf.append("<qos><state id='ERROR' info='").append(errorCode.getErrorCode());
+               buf.append("'/></qos>");
+               out.write(buf.toString().getBytes(Constants.UTF8_ENCODING));
+            }
+            else {
+               msgUnits[0].toXml(offset, out);
+            }
+         }
          else {
             for (int i=0; i < msgUnits.length; i++) {
                out.write("\n  <message>".getBytes());
