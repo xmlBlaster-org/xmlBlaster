@@ -300,6 +300,17 @@ of using our native XfbParser protocol.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+<!-- TODO:
+plugin/email/schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='avitech.xsd'
+plugin/email/xmlDeclaration=<?xml version='1.0' encoding='UTF-8'?>
+plugin/email/mail.subject=Generated Email
+                                         sendResponseSessionId=false,\
+                                         sendResponseRequestId=false,\
+                                         sendSimpleExceptionFormat=true
+call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+call[org.xmlBlaster.util.protocol.email.SmtpClient] true
+call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
+-->
       </table>
    </configuration>
    <todo>
