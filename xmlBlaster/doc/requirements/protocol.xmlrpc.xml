@@ -10,7 +10,7 @@
       </p>
       <p>
       XmlBlaster has fully operational XmlRpc support, 
-      we provide client examples in C, Perl, PHP, Python, Macromedia Flash and Java which use
+      we provide client examples in C, Perl, PHP, Python, Macromedia Flash, CSharp (C#) and Java which use
       XmlRpc to connect to xmlBlaster. Please see <i>xmlBlaster/demo/javaclients</i>.
       </p>
       <p><b>This documentation is under construction</b></p>
