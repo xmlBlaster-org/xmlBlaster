@@ -181,7 +181,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
             Exception exc = saxE.getException();
             if (exc instanceof XmlBlasterException) {
                XmlBlasterException stop = (XmlBlasterException)exc;
-               String txt = (exc.getMessage() != null && exc.getMessage().length() > 0) ? exc.getMessage() : "Error while SAX parsing";
+               String txt = (stop.getMessage() != null && stop.getMessage().length() > 0) ? stop.getMessage() : "Error while SAX parsing";
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, txt, e);
             }
             else if (exc instanceof StopParseException) {
