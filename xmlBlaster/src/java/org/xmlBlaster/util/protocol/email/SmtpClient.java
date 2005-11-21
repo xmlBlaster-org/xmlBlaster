@@ -61,8 +61,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
    private PasswordAuthentication authentication;
 
-   public static final String UTF8 = "UTF-8";
-
    private String user;
    private String password;
    private String host;

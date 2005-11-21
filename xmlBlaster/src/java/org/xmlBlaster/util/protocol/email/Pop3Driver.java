@@ -121,8 +121,6 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
 
    public static final String POP3_FOLDER = "inbox";
 
-   public static final String UTF8 = "UTF-8";
-
    private String threadName;
 
    /**
