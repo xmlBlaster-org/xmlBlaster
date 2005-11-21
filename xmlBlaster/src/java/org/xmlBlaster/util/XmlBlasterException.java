@@ -531,7 +531,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    /**
     * Serialize the complete exception. 
     * Take care when changing!!!
-    * Is used e.g. in CallbackServerUnparsed.c
+    * Is used e.g. in CallbackServerUnparsed.c and XmlScriptInterpreter.java
     */
    public static XmlBlasterException parseByteArr(Global glob, byte[] data) {
       if (data == null)
