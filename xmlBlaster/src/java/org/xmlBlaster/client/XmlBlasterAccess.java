@@ -287,6 +287,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                        getSecurityPlugin(), this.clientQueue, this,
                                        this.connectQos.getAddresses(), sn);
 
+               getDispatchStatistic(); // Force creation of dispatchStatistic as this syncs on 'this' and could deadlock if don later from a update()
+               
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
                
                if (log.TRACE) log.trace(ME, "Switching to synchronous delivery mode ...");
