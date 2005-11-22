@@ -131,6 +131,10 @@ public class TestReplication extends XMLTestCase {
       setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
       setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
+      setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
+      setProp(writerInfo, "replication.mapper.table.test1", "test1_replica", false);
+      setProp(writerInfo, "replication.mapper.table.test2", "test2_replica", false);
+      setProp(writerInfo, "replication.mapper.table.test3", "test3_replica", false);
       String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='testRepl'/>");
       setProp(writerInfo, "mom.subscribeKey", subscribeKey, true);
       setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>", false);
@@ -139,52 +143,6 @@ public class TestReplication extends XMLTestCase {
       setProp(writerInfo, "dispatch/callback/retries", "-1", true);
       setProp(writerInfo, "dispatch/callback/delay", "10000", true);
       setProp(writerInfo, "queue/callback/maxEntries", "10000", true);
-      
-      /**
-       * Complete set of properties ...
-       * 
-       * alertProducer.class
-       * changeDetector.MINSTR
-       * changeDetector.class
-       * changeDetector.detectStatement
-       * changeDetector.groupColName
-       * changeDetector.postUpdateStatement
-       * charSet
-       * converter.class
-       * converter.rootName
-       * db.password
-       * db.pool.owner
-       * db.queryMeatStatement
-       * db.url
-       * db.user
-       * dbPool.class
-       * jdbc.drivers
-       * mom.alertSubscribeKey
-       * mom.alertSubscribeQos
-       * mom.class
-       * mom.connectQos
-       * mom.loginName
-       * mom.password
-       * mom.publishKey
-       * mom.publishQos
-       * mom.publisher.owner
-       * mom.subscriptions
-       * mom.topicName
-       * parser.class
-       * replication.bootstrapFile
-       * replication.exportLocation
-       * replication.importLocation
-       * replication.cleanupFile
-       * replication.dbSpecific.class
-       * replication.doBootstrap
-       * replication.mapper.class
-       * replication.mapper.tables
-       * replication.overwriteTables
-       * dbWriter.writer.class
-       * transformer.class
-       * 
-       */
-      
    }
 
    /**

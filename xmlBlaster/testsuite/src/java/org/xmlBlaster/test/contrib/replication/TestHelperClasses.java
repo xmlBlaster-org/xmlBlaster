@@ -5,14 +5,17 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
+import org.xmlBlaster.contrib.replication.impl.DefaultMapper;
 
 /**
  * Test helper classes as for example beans used for the configuration.
@@ -35,6 +38,14 @@ public class TestHelperClasses extends XMLTestCase {
       
       TestHelperClasses test = new TestHelperClasses();
       try {
+
+         test.setUp();
+         test.testInfoHelper();
+         test.tearDown();
+
+         test.setUp();
+         test.testTableMapper();
+         test.tearDown();
 
          test.setUp();
          test.testTableToWatchInfoKeys();
@@ -214,6 +225,89 @@ public class TestHelperClasses extends XMLTestCase {
       log.info("SUCCESS");
    }
 
+   /**
+    * 
+    */
+   public final void testInfoHelper() {
+      log.info("Start testInfoHelper");
+      
+      PropertiesInfo info = new PropertiesInfo(new Properties());
+      
+      info.put("replication.mapper.schema.testSchema", "testSchema1");
+      info.put("replication.mapper.schema.testSchema1", "testSchema2");
+      info.put("replication.mapper.schema2.testSchema100", "testSchema2");
+      info.put("replication.mapper.sch.testSchema100", "testSchema2");
+      
+      Map map = InfoHelper.getPropertiesStartingWith("replication.mapper.schema.", info, null);
+      assertEquals("testing amount", 2, map.size());
+      assertEquals("testing 1/2", "testSchema1", (String)map.get("testSchema"));
+      assertEquals("testing 1/2", "testSchema2", (String)map.get("testSchema1"));
+      
+      map = InfoHelper.getPropertiesStartingWith(null, info, null);
+      assertEquals("testing complete info size", 4, map.size());
+
+      log.info("SUCCESS");
+   }
+
+   /**
+    * 
+    */
+   public final void testTableMapper() {
+      log.info("Start testTableMapper");
+      
+      PropertiesInfo info = new PropertiesInfo(new Properties());
+      
+      info.put("replication.mapper.schema.AIS", "AIS1");
+      info.put("replication.mapper.table.AIS.C_OUTS", "C_INS");
+      info.put("replication.mapper.column.AIS.C_OUTS.COM_MESSAGEID", "COM_RECORDID");
+
+      DefaultMapper mapper = new DefaultMapper();
+      try {
+         mapper.init(info);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("An exception should not occur when initiating the mapper '" + ex.getMessage(), false);
+      }
+      {
+         String catalog = null;
+         String schema = "AIS";
+         String table = "C_OUTS";
+         String column = "COM_MESSAGEID";
+         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         assertEquals("checking schema", "AIS1", res);
+         res = mapper.getMappedTable(catalog, schema, table, column);
+         assertEquals("checking table", "C_INS", res);
+         res = mapper.getMappedColumn(catalog, schema, table, column);
+         assertEquals("checking column", "COM_RECORDID", res);
+      }
+      {
+         String catalog = null;
+         String schema = "AIS";
+         String table = "C_OUTS";
+         String column = "COM_RECORDID";
+         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         assertEquals("checking schema", "AIS1", res);
+         res = mapper.getMappedTable(catalog, schema, table, column);
+         assertEquals("checking table", "C_INS", res);
+         res = mapper.getMappedColumn(catalog, schema, table, column);
+         assertEquals("checking column", "COM_RECORDID", res);
+      }
+      {
+         String catalog = null;
+         String schema = "AIS";
+         String table = "OTHER";
+         String column = "COM_MESSAGEID";
+         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         assertEquals("checking schema", "AIS1", res);
+         res = mapper.getMappedTable(catalog, schema, table, column);
+         assertEquals("checking table", "OTHER", res);
+         res = mapper.getMappedColumn(catalog, schema, table, column);
+         assertEquals("checking column", "COM_MESSAGEID", res);
+      }
+      log.info("SUCCESS");
+   }
+   
    /**
     * 
     */

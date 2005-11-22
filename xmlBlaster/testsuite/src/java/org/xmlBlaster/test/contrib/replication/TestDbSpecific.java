@@ -90,6 +90,11 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
        TestDbSpecific test = new TestDbSpecific();
        
        try {
+          
+          test.setUp();
+          test.testSchemaWipeout();
+          test.tearDown();
+          
           test.setUp();
           test.testGetObjectName();
           test.tearDown();
@@ -105,6 +110,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
           test.setUp();
           test.testCreateTablesWithDifferentTypes();
           test.tearDown();
+          
        }
        catch (Exception ex) {
           ex.printStackTrace();
@@ -518,6 +524,20 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       }
       log.info("SUCCESS");
    }
+   
+   public final void testSchemaWipeout() throws Exception {
+      currentMethod = new String("testSchemaCleanup");
+      log.info("Start " + currentMethod);
+      try {
+         dbSpecific.wipeoutSchema(null, specificHelper.getOwnSchema(dbPool));
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("An exception should not occur when testing complete schema clanup", false);
+      }
+   }
+   
+   
    
    /**
     * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
