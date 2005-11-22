@@ -9,6 +9,7 @@ package org.xmlBlaster.util.xbformat;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -293,12 +294,19 @@ public class MsgInfo {
       if (this.requestId == null || this.requestId.length() < 1) {
          if (prefix == null)
             prefix = "";
+         /* We need a unique timestamp over time
+          * otherwise on client restart the timestamp
+          * starts at 0 again and will be rejected by the
+          * server (it thinks it is older than the last mail)
          synchronized (MsgInfo.class) {
             if (counter >= (Long.MAX_VALUE - 1L))
                counter = 0L;
             counter++;
             this.requestId = prefix + counter;
          }
+         */
+         Timestamp ts = new Timestamp();
+         this.requestId = prefix + ts.getTimestamp();
       }
       return this.requestId;
    }
@@ -764,6 +772,7 @@ public class MsgInfo {
    public static MsgInfo parse(Global glob,
          I_ProgressListener progressListener, byte[] rawMsg, String className)
          throws IOException, XmlBlasterException {
+      //log.finer(new String(rawMsg));
       return parse(glob, progressListener, new ByteArrayInputStream(rawMsg),
             className);
    }
