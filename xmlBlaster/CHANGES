@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14119 Java: Added possibility to initialize complete xmlBlaster client library
+   without sending a connect() to the xmlBlaster server (see XmlBlasterAccess).
+
  o #14087 Java SOCKET protocol:
    Changed the default responseTimeout from one minute to 'forever'.
 
