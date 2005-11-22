@@ -242,5 +242,28 @@ public class Constants {
     * globally unique Identifier. */
    public final static String STREAM_ID = "__STREAM_ID";
    
+   /** Mimetypes */
+   // see @apache/mime.conf or so
+
+   /**
+    * Hypertext Markup Language
+    */
+   public final static String MIME_HTML = "text/html";
+   
+   /**
+    * Cascading Style Sheet
+    */
+   public final static String MIME_CSS = "text/css";
+
+   /**
+    * The mime type for the xml.
+    * See http://www.rfc-editor.org/rfc/rfc3023.txt
+    */
+   public final static String MIME_XML = "text/xml";
+   
+   /**
+    * Joint Photographic Experts Group
+    */
+   public final static String MIME_JPG = "image/jpg";
 }
 
