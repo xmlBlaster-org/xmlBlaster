@@ -91,7 +91,8 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (this.driver == null)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, protocol type='" + super.address.getType() + "' is not supported");
       this.driver.connectLowlevel((Address)super.address);
-      this.driver.ping("");  // Try a low level ping
+      if (super.address.getPingInterval() > 0)
+         this.driver.ping("");  // Try a low level ping
       if (log.TRACE) log.trace(ME, "Connected low level to " + super.address.toString());
    }
 
