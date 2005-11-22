@@ -15,12 +15,14 @@ package org.xmlBlaster.util.admin;
  */
 public interface I_AdminPop3Driver extends I_AdminService {
    /**
-    * Access the polling interval [milli seconds]
+    * Access the polling interval
+    * @return The pollingInterval in milli seconds
     */
    public long getPollingInterval();
 
    /**
-    * Set the polling interval [milli seconds]
+    * Set the polling interval
+    * @param pollingInterval [milli seconds]
     */
    public void setPollingInterval(long pollingInterval);
    
