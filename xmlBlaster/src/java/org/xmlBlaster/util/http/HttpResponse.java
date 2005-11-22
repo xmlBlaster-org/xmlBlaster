@@ -8,6 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.http;
 
+import org.xmlBlaster.util.def.Constants;
+
 /**
  * Used for returning the HTML page and mime type of a HTTP request. 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
@@ -15,13 +17,14 @@ package org.xmlBlaster.util.http;
 public class HttpResponse
 {
    byte[] content;
-   String mimeType="text/html";
+   String mimeType = Constants.MIME_HTML;
 
    public HttpResponse(String text) {
       this.content = text.getBytes();
    }
    public HttpResponse(String text, String mimeType) {
       this.content = text.getBytes();
+      this.mimeType = mimeType;
    }
    public HttpResponse(byte[] content) {
       this.content = content;
