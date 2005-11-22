@@ -339,7 +339,14 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    //========== ErrorHandler interface methods =============
    /** Warning. */
    public void warning(SAXParseException ex) {
-      log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+      // "Declared encoding "UTF-8" does not match actual one "UTF8" -> Why this strange warning??
+      String msg = ex.getMessage();
+      if (msg!=null && msg.startsWith("Declared encoding")) {
+         log.trace(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+      }
+      else {
+         log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+      }
    }
 
    /** Error. */
