@@ -214,6 +214,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
+      return connect(qos, updateListener, true);
+   }
+
+   public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener, boolean sendConnect) throws XmlBlasterException {
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
           
@@ -292,11 +296,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   createDefaultCbServer();
                }
 
-               MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
-
-               // Try to connect to xmlBlaster ...
-               this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
-               this.connectReturnQos.getData().setInitialConnectionState(this.dispatchManager.getDispatchConnectionsHandler().getState());
+               if (sendConnect) {
+                  // Try to connect to xmlBlaster ...
+                  sendConnectQos();
+               }
+               else {
+                  log.info(ME, "Initialized client library, but no connect() is send to xmlBlaster, a delegate should do any subscribe if required");
+               }
             }
             catch (XmlBlasterException e) {
                if (isConnected()) disconnect(null);
@@ -345,6 +351,17 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");
+   }
+
+   /**
+    * Sends the current connectQos to xmlBlaster and stores the connectReturnQos.
+    * @throws XmlBlasterException
+    */
+   public void sendConnectQos() throws XmlBlasterException {
+      MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
+      // Try to connect to xmlBlaster ...
+      this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
+      this.connectReturnQos.getData().setInitialConnectionState(this.dispatchManager.getDispatchConnectionsHandler().getState());
    }
 
    public boolean isConnected() {
@@ -1658,6 +1675,25 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          System.out.println("ERROR: Test failed: " + e.toString());
       }
       System.exit(0);
+   }
+
+   /**
+    * The implementation which receives the callback messages. 
+    * @return Returns the updateListener or null if none was registered
+    */
+   public I_Callback getUpdateListener() {
+      return this.updateListener;
+   }
+
+   /**
+    * Register a listener to receive the callback messages. 
+    * <br />
+    * Note: Usually you don't need to call this method directly
+    * as you should pass your callback listener with connect(). 
+    * @param updateListener The updateListener to set.
+    */
+   public void setUpdateListener(I_Callback updateListener) {
+      this.updateListener = updateListener;
    }
 }
 
