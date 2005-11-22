@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14125 XmlBlasterAccess.java:
+   Changed getDispatchStatistic() to avoid potential deadlock if an update receives during connect
 
  o #14119 Java: Added possibility to initialize complete xmlBlaster client library
    without sending a connect() to the xmlBlaster server (see XmlBlasterAccess).
