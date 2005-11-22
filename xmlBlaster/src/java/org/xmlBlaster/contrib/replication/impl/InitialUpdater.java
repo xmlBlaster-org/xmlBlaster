@@ -21,6 +21,8 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 
 import org.jutils.text.StringHelper;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
@@ -40,9 +42,10 @@ import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class InitialUpdater implements I_Update, I_ContribPlugin {
+public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener {
 
    public class ConnectionInfo {
       private Connection connection;
@@ -179,6 +182,38 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
       return new ConnectionInfo(conn);
    }
    
+   
+   private synchronized void sendRegistrationMessage() throws Exception {
+      log.info("Sending registration message for '" + this.replPrefix + "'");
+      // fill the info to be sent with the own info objects
+      HashMap msgMap = new HashMap();
+      new ClientPropertiesInfo(msgMap, this.info);
+      msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
+      msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
+
+      log.info("going to initialize publisher for replication '" + this.replPrefix + "'");
+      if (this.publisher != null) {
+         synchronized(this.info) {
+            boolean isRegistered = this.info.getBoolean("_InitialUpdaterRegistered", false);
+            log.info("replication '" + this.replPrefix + "' registered='" + isRegistered + "'");
+            if (!isRegistered) {
+               String topic = this.info.get("mom.topicName", null);
+               if (topic == null)
+                  throw new Exception("InitialUpdater.init: registering the dbWatcher to the Replication Manager: no topic was defined but need one. Please add to your configuration 'mom.topicName'");
+               msgMap.put("_topic", topic);
+               log.info("replication '" + this.replPrefix + "' publishing registration message on topic '" + topic + "'");
+               this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
+               this.info.put("_InitialUpdaterRegistered", "true");
+            }
+         }
+      }
+      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
+      this.initialCmd = this.info.get("replication.initialCmd", null);
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
+      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
+   }
+   
    /**
     * @see I_DbSpecific#init(I_Info)
     * 
@@ -190,38 +225,17 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
       Map map = new HashMap();
       map.put("replPrefix", this.replPrefix);
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
-      if (needsPublisher)
+      if (needsPublisher) {
+         this.info.putObject("_connectionStateListener", this);
          this.publisher = DbWatcher.getChangePublisher(this.info);
+      }
       
       // registering this instance to the Replication Manager
       HashMap subscriptionMap = new HashMap();
       subscriptionMap.put("ptp", "true");
       if (this.publisher != null)
          this.publisher.registerAlertListener(this, subscriptionMap);
-      // fill the info to be sent with the own info objects
-      HashMap msgMap = new HashMap();
-      new ClientPropertiesInfo(msgMap, this.info);
-      msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-      msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
-
-      if (this.publisher != null) {
-         synchronized(this.info) {
-            boolean isRegistered = this.info.getBoolean("_InitialUpdaterRegistered", false);
-            if (!isRegistered) {
-               String topic = this.info.get("mom.topicName", null);
-               if (topic == null)
-                  throw new Exception("InitialUpdater.init: registering the dbWatcher to the Replication Manager: no topic was defined but need one. Please add to your configuration 'mom.topicName'");
-               msgMap.put("_topic", topic);
-               this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
-               this.info.put("_InitialUpdaterRegistered", "true");
-            }
-         }
-      }
-      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
-      this.initialCmd = this.info.get("replication.initialCmd", null);
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
-      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
+      sendRegistrationMessage();
    }
 
    /**
@@ -429,6 +443,36 @@ public class InitialUpdater implements I_Update, I_ContribPlugin {
          
       }
       return filename;
+   }
+
+   
+   
+   /**
+    * Sends a new registration message
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAlive(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      try {
+         log.info("connection is going in ALIVE from '" + oldState + "'");
+         sendRegistrationMessage();
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.info("connection is going in DEAD from '" + oldState + "'");
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedPolling(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      log.info("connection is going in POLLING from '" + oldState + "'");
    }
 
 }

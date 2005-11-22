@@ -475,6 +475,8 @@ public class SpecificOracle extends SpecificDefault {
             break;
          oldSum = sum;
       }
+      if (sum != 0)
+         log.warning("Could not clean up properly all objects belonging to '" + schema + "' '" + sum + "' objects remain. Continuing anyway");
       if (count == maxCount)
          throw new Exception("Could not clean up complete schema '" + schema + "' after maximum sweeps '" + maxCount + "'. Processed/deleted '" + sum + "' objects");
       return sum;
@@ -570,7 +572,7 @@ public class SpecificOracle extends SpecificDefault {
             while (rs.next())
                names.add(rs.getString(1));
             sum += names.size();
-            cleanupOp(conn, names, schema, "DROP SYNONYM", "FORCE");
+            cleanupOp(conn, names, schema, "DROP SYNONYM", "");
             rs.close();
             st.close();
          }

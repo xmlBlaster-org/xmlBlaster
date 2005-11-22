@@ -89,7 +89,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (transformerClassName != null && transformerClassName.length() > 0) {
          this.transformer = (I_AttributeTransformer)cl.loadClass(transformerClassName).newInstance();
          this.transformer.init(info);
-         log.info("Loaded transformer pluing '" + transformerClassName + "'");
+         log.info("Loaded transformer pluging '" + transformerClassName + "'");
       }
       this.dbSpecific = getDbSpecific(info);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);

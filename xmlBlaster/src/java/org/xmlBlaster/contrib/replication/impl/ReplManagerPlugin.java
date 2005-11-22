@@ -61,7 +61,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -320,10 +319,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          log.info("unregister '" + replId + "' by senderSession='" + senderSession + "' is ignored since there is no such registration done");
       else {
          log.info("unregister '" + replId + "' by senderSession='" + senderSession + "'");
+         /*
          if (log.isLoggable(Level.FINE)) {
             log.fine("unregister '" + replId + "' by senderSession='" + senderSession + "' the stack trace is:");
             Thread.dumpStack();
          }
+         */
          String oldSenderSession = oldInfo.get("_senderSession", senderSession);
          if (oldSenderSession.equals(senderSession)) {
             this.replications.remove(replId);
@@ -614,6 +615,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       ConnectQosServer connQos = e.getConnectQos();
       if (connQos == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with empty connenctQos event object");
+      log.info("Connecting with qos : " + connQos.toXml());
       CallbackAddress cbAddr = connQos.getData().getCurrentCallbackAddress();
       if (cbAddr == null) {
          log.info("entry '" + connQos.toXml() + "' has no callback address defined");
@@ -624,6 +626,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (dispatchPluginName != null) {
          String ownName = getType() + "," + getVersion();
          if (ownName.equals(dispatchPluginName)) {
+            log.info("Connecting with qos : " + connQos.toXml());
             String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
             log.info("addition of session for '" + sessionName +"' occured");
             synchronized (this.replSlaveMap) {

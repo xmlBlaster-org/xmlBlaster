@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.Global;
@@ -40,7 +41,10 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -75,7 +79,7 @@ import org.xmlBlaster.util.MsgUnit;
  *
  * @author Marcel Ruff
  */
-public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, I_Callback
+public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, I_Callback, I_ConnectionStateListener
 {
    private static Logger log = Logger.getLogger(XmlBlasterPublisher.class.getName());
    protected I_ChangeDetector changeDetector;
@@ -94,6 +98,11 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    protected boolean eraseOnDelete;
    private int initCount = 0; 
    private I_Update defaultUpdate;
+   /** 
+    * Can be null, taken out of the info object if the owner of this object has set the
+    * parameter _connectionStateListener.
+    */
+   private I_ConnectionStateListener connectionStateListener;
    
    /**
     * Default constructor. 
@@ -170,6 +179,13 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#init(I_Info)
     */
    public synchronized void init(I_Info info) throws Exception {
+      // here because if somebody makes it as a second object it still works
+      if (this.connectionStateListener == null) {
+         log.info("The connection status listener will be added");
+         this.connectionStateListener = (I_ConnectionStateListener)info.getObject("_connectionStateListener");
+      }
+      else
+         log.warning("The connection status listener for this info has already been defined, ignoring this new request");
       if (this.initCount > 0) {
          this.initCount++;
          return;
@@ -223,6 +239,9 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
          int maxSessions = info.getInt("mom.maxSessions", 100);
          this.connectQos.setMaxSessions(maxSessions);
+         this.connectQos.getAddress().setRetries(-1);
+         CallbackAddress cb = this.connectQos.getData().getCurrentCallbackAddress();
+         cb.setRetries(-1);
          /*
          if (isRunningNative) {
             Address address = this.connectQos.getAddress();
@@ -244,6 +263,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       
       this.con = this.glob.getXmlBlasterAccess();
+      this.con.registerConnectionListener(this);
       this.con.connect(this.connectQos, this);
       this.initCount++;
       // Make myself available
@@ -498,5 +518,28 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    public XBSession getJmsSession() {
       return new XBSession(this.glob, XBSession.AUTO_ACKNOWLEDGE, false);
    }
-   
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAlive(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      if (this.connectionStateListener != null)
+         this.connectionStateListener.reachedAlive(oldState, connection);
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      if (this.connectionStateListener != null)
+         this.connectionStateListener.reachedDead(oldState, connection);
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedPolling(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
+    */
+   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+      if (this.connectionStateListener != null)
+         this.connectionStateListener.reachedPolling(oldState, connection);
+   }
 }
