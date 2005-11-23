@@ -7,16 +7,22 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.http;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.http.I_HttpRequest;
-import org.xmlBlaster.util.http.HttpResponse;
-//import org.xmlBlaster.util.UriAuthority;
-//import org.xmlBlaster.util.Uri;
-import java.util.*;
-import java.net.*;
-import java.io.*;
 
 
 /**
@@ -153,7 +159,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
                log.info(ME, "Closing http server bootstrapPort=" + HTTP_PORT + ".");
                break;
             }
-            HandleRequest hh = new HandleRequest(glob, log, accept, knownRequests);
+            new HandleRequest(glob, log, accept, knownRequests);
          }
       }
       catch (java.net.UnknownHostException e) {
@@ -215,12 +221,12 @@ public class HttpIORServer extends Thread implements I_HttpRequest
    public HttpResponse service(String urlPath, Map properties) {
       if (urlPath.indexOf(icoRequestFile) != -1) {
          // set the application icon "favicon.ico"
-         byte[] img = this.glob.getFromClasspath(icoRequestFile, this);
+         byte[] img = Global.getFromClasspath(icoRequestFile, this);
          if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
          return new HttpResponse(img, icoMimeType);
       }
       else if (urlPath.indexOf(fishRequestFile) != -1) {
-         byte[] img = this.glob.getFromClasspath(fishRequestFile, this);
+         byte[] img = Global.getFromClasspath(fishRequestFile, this);
          if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
          return new HttpResponse(img, fishMimeType);
       }
@@ -238,7 +244,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
          if (running) {
             // Wait on thread to startup
             for (int i=0; i<10; i++) {
-               try { Thread.currentThread().sleep(20L); } catch( InterruptedException e) {}
+               try { Thread.sleep(20L); } catch( InterruptedException e) {}
                if (this.listen != null) break;
             }
          }
@@ -329,7 +335,8 @@ class HandleRequest extends Thread
 
          String method = toks.nextToken();   // "GET"
          String resource = toks.nextToken(); // "/AuthenticationService.ior"
-         String version = toks.nextToken();  // "HTTP/1.0"
+//         String version = 
+    	 toks.nextToken();  // "HTTP/1.0"
 
 /*
          if (false) { // TEST ONLY:
@@ -375,7 +382,10 @@ class HandleRequest extends Thread
 
          // lookup if request is registered
          resource = resource.trim();
+
+         
          Object obj = knownRequests.get(resource);
+         if(log.TRACE) log.trace(ME, "1. Resource: " + resource + " => " + obj);
          if (obj == null) {
             Iterator it = knownRequests.keySet().iterator();
             while (it.hasNext()) {
@@ -392,6 +402,7 @@ class HandleRequest extends Thread
                return;
             }
          }
+         if(log.TRACE) log.trace(ME, "2. Resource: " + resource + " => " + obj);
 
          HttpResponse httpResponse;
          if (obj instanceof String) {
