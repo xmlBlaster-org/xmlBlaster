@@ -217,7 +217,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             int numOfCols = dbUpdateInfo.getDescription().getColumns().length;
             assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
             assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", msg, msg1);
-            String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null);
+            String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null, "IDU");
             
             log.fine("-- ---------------------------------------------------------------------------");
             log.fine(functionAndTrigger);

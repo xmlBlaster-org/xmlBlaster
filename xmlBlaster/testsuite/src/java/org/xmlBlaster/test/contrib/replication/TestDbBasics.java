@@ -512,7 +512,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          {
             sql = "{? = call " + this.replPrefix + "add_table(?,?,?,?)}"; // name text, content text)
             try {
-               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", false, null);
+               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null);
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, null);
                st.setString(3, this.specificHelper.getOwnSchema(this.pool));
@@ -893,7 +893,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     * @throws Exception
     */
    private void changesToReplTables(Connection conn, String catalog, String schema, String tableName, boolean doReplicate) throws Exception {
-      this.dbSpecific.addTableToWatch(catalog, schema, tableName, doReplicate, null);
+      String flags = "";
+      if (doReplicate)
+         flags = "IDU";
+      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null);
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
@@ -990,7 +993,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          st.close();
          
          // add the tables to be detected to the repl_tables table
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true, null);
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -1072,7 +1075,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          try { pool.update("DROP TABLE " + tableName + cascade); } catch (Exception ex) { }
 
          // add the tables to be detected to the repl_tables table
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, true, null);
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();
