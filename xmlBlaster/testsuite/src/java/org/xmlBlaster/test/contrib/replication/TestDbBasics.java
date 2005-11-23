@@ -901,7 +901,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       assertEquals("testing if the name of the added table is the same as the retrieved one '" + tableName + "'", this.dbHelper.getIdentifier(tableName), name);
       String doReplTxt = rs.getString(4);
       boolean doRepl = false;
-      if (doReplTxt.equalsIgnoreCase("t"))
+      if (doReplTxt != null && doReplTxt.length() > 0)
          doRepl = true;
       assertEquals("testing if the 'replicate' flag for table '" + tableName + "' is the same as used when adding it", doReplicate, doRepl);
       rs.close();

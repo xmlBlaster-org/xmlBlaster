@@ -77,6 +77,10 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
+         
+         test.setUp();
+         test.testTableWithLongs();
+         test.tearDown();
       } 
       catch (Exception ex) {
          ex.printStackTrace();
@@ -394,6 +398,198 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
+
+   /**
+    * 
+    */
+   public final void testTableWithLongs() {
+      
+      log.info("Start testTableWithLongs");
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         {
+            try {
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), comments LONG, PRIMARY KEY(name))";
+               pool.update(sql);
+               Thread.sleep(500L);
+               conn = this.pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+               assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+               
+               String transKey = rs.getString(2);
+               String tableName = rs.getString(4);
+               String dbAction = rs.getString(6);
+               assertEquals("Testing the content of the action", "CREATE", dbAction);
+               assertNotNull("Testing that the transaction is not null", transKey);
+               assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
+               this.pool.update("DELETE from " + this.replPrefix + "items");
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  this.pool.release(conn);
+            }
+         }
+
+         this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
+         
+         {
+            try {
+               sql = "INSERT INTO " + this.tableName + " VALUES ('first', 'some very long text here')";
+               pool.update(sql);
+               Thread.sleep(500L);
+               conn = this.pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+               assertEquals("Testing insertion into table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+               String transKey = rs.getString(2);
+               String tableName = rs.getString(4);
+               String dbAction = rs.getString(6);
+               InputStream content = rs.getAsciiStream(9);
+               // must be null since it contains LONG which must be read individually
+               assertTrue("The content must be null since entry contains LONG", content == null);
+
+               String guid = rs.getString(5);
+               String dbCatalog = rs.getString(7);
+               String dbSchema = rs.getString(8);
+               assertTrue("The guid can not be null", guid != null);
+               
+               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName); 
+
+               assertEquals("Testing the content of the action", "INSERT", dbAction);
+               assertNotNull("Testing that the transaction is not null", transKey);
+               assertNotNull("Testing that the content is not null", contentTxt);
+               assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
+               log.info("'" + sql + "' generates (new) '" + contentTxt + "'");
+               this.pool.update("DELETE from " + this.replPrefix + "items");
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  this.pool.release(conn);
+            }
+         }
+      
+         {
+            try {
+               sql = "UPDATE " + this.tableName + " SET comments='some very long text here' WHERE name='first'";
+               pool.update(sql);
+               Thread.sleep(500L);
+               conn = this.pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+               assertEquals("Testing UPDATE of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+               String transKey = rs.getString(2);
+               String tableName = rs.getString(4);
+               String dbAction = rs.getString(6);
+               byte[] tmp = new byte[10000];
+
+               String guid = rs.getString(5);
+               String dbCatalog = rs.getString(7);
+               String dbSchema = rs.getString(8);
+               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName);
+               
+               InputStream oldContent = rs.getAsciiStream(10);
+               oldContent.read(tmp);
+               String oldContentTxt = new String(tmp);
+               assertEquals("Testing the content of the action", "UPDATE", dbAction);
+               // assertEquals("Testing the content of the replKey", 5+ref, replKey);
+               assertNotNull("Testing that the transaction is not null", transKey);
+               assertNotNull("Testing that the content is not null", contentTxt);
+               assertNotNull("Testing that the old content is not null", oldContentTxt);
+               assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
+               log.info("'" + sql + "' generates (new) '" + contentTxt + "'");
+               log.info("'" + sql + "' generates (old) '" + oldContentTxt + "'");
+               this.pool.update("DELETE from " + this.replPrefix + "items");
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'UPDATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  this.pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               sql = "DELETE FROM " + this.tableName;
+               pool.update(sql);
+               Thread.sleep(500L);
+               conn = this.pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+               assertEquals("Testing DELETE of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+               String transKey = rs.getString(2);
+               String tableName = rs.getString(4);
+               String dbAction = rs.getString(6);
+               // InputStream content = rs.getAsciiStream(9);
+               byte[] tmp = new byte[10000];
+               InputStream oldContent = rs.getAsciiStream(10);
+               oldContent.read(tmp);
+               String oldContentTxt = new String(tmp);
+               assertEquals("Testing the content of the action", "DELETE", dbAction);
+               assertNotNull("Testing that the transaction is not null", transKey);
+               assertNotNull("Testing that the old content is not null", oldContentTxt);
+               assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
+               log.info("'" + sql + "' generates (old) '" + oldContentTxt + "'");
+               this.pool.update("DELETE from " + this.replPrefix + "items");
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DELETE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  this.pool.release(conn);
+            }
+         }
+         {
+            try {
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               Thread.sleep(500L);
+               conn = this.pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
+               assertEquals("Testing DROP table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
+               String transKey = rs.getString(2);
+               String tableName = rs.getString(4);
+               String dbAction = rs.getString(6);
+               assertEquals("Testing the content of the action", "DROP", dbAction);
+               assertNotNull("Testing that the transaction is not null", transKey);
+               assertEquals("Testing that the table name is correct", this.dbHelper.getIdentifier(this.tableName), tableName);
+               this.pool.update("DELETE from " + this.replPrefix + "items");
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  this.pool.release(conn);
+            }
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
 
    
    

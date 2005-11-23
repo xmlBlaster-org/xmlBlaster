@@ -534,22 +534,4 @@ public class TestReplication extends XMLTestCase {
    }
    
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
 }
