@@ -6,17 +6,25 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.admin.extern;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
 
+import com.sun.jdmk.comm.AuthInfo;
+import com.sun.jdmk.comm.HtmlAdaptorServer;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
 import javax.management.QueryExp;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.ReflectionException;
 
 //since JDK 1.5 or with additional jmxremote.jar
 //import javax.management.remote.JMXServiceURL;
@@ -27,10 +35,9 @@ import javax.management.MBeanServerFactory;
 import java.rmi.RemoteException;
 import java.rmi.Naming;
 
-import com.sun.jdmk.comm.AuthInfo;
-import com.sun.jdmk.comm.HtmlAdaptorServer;
-
 import javax.security.auth.Subject;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.HashMap;
@@ -103,7 +110,6 @@ public class JmxWrapper
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    private static JmxWrapper theJmxWrapper;
-   private Object defaultLowMemoryDetector;
 
    /**
     * Singleton to avoid that different Global instances create more than one JmxWrapper. 
@@ -454,7 +460,7 @@ public class JmxWrapper
 
                   float thresholdFactor = glob.getProperty().get("xmlBlaster/jmx/memoryThresholdFactor", (float)0.9);
                   Object[] params = new Object[] { new Float(thresholdFactor) };
-                  this.defaultLowMemoryDetector = ctor.newInstance(params);
+            	  ctor.newInstance(params);
                }
             }
             catch (Exception e) {
@@ -612,6 +618,89 @@ public class JmxWrapper
          return null;
       }
    }
+   
+   public Object invokeAction(final String args) {
+      if (log.CALL) log.call(ME, "invoke with: '" + args);
+      if (this.mbeanServer == null) return null;
+      if (useJmx == 0) return null;
+      if (args == null || args.length() < 1) return null;
+
+      // args could be somethig like:
+      // '/InvokeAction//org.xmlBlaster:nodeClass=node,node="izar",contribClass=contrib,contrib="Heini"
+      //  /action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
+
+      // so we check for invoke cmd
+      if (!args.startsWith("/InvokeAction")) {
+         // not invoke Action
+         return new Object();
+      }
+      // strip cmd
+      String callString = args.substring("/InvokeAction//".length());
+      
+      // check for actionName (method)
+      int j = callString.indexOf("/action=", 1);
+
+      // get action, between '/action=' and '?'
+      String action = getAction(callString.substring(j + 1));
+
+//    for (Iterator mbeanIt = mbeanMap.entrySet().iterator() ; mbeanIt.hasNext();) {
+//    Object key = ((Entry)mbeanIt.next()).getKey();
+//    Object element = mbeanMap.get(key);
+//    if (log.TRACE) log.trace(ME, "key: " + key + " element: '" + element);
+// }
+ 
+      // scan for arguments, starting with '&'
+      int k = callString.indexOf("&");
+
+      ArrayList p = new ArrayList();
+      ArrayList s = new ArrayList();
+
+      getParams(p, s, callString.substring(k+1));
+      Object[] params = p.toArray(new Object[p.size()]);
+      String[] signature = (String[]) s.toArray(new String[s.size()]);
+      
+      ObjectName objectName = null;
+      Object returnObject = null;
+      
+      try {
+         if (log.TRACE) log.trace(ME, "get object: '" + callString.substring(0, j));
+         objectName = new ObjectName(callString.substring(0, j));
+         Set set = mbeanServer.queryNames(objectName, null);
+         if(set.size() <= 0)
+         {
+             log.error("Unable to get MBean [" + callString.substring(0, j) + "]", "Instance Not Found");
+             return returnObject;
+         }
+         
+         if (log.TRACE) log.trace(ME, "invoke: '" + action + "@" + objectName);
+
+//         params = new Object[]{"arg1"};
+//         signature = new String[]{"java.lang.String"};
+         
+         returnObject = mbeanServer.invoke(objectName, action, params,
+               signature);
+      } catch (InstanceNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (MBeanException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (ReflectionException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (MalformedObjectNameException e) { // for new ObjectNames
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (NullPointerException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+
+      return returnObject;
+
+
+   }
+
 
    /**
     * Unregisters the specified mbean from the mbean server. 
@@ -682,4 +771,35 @@ public class JmxWrapper
       // TODO: Implement complete shutdown
       //javax.management.MBeanServerFactory.releaseMBeanServer(this.mbeanServer);
    }
+   
+   private final String getAction(final String s) {
+      int i = s.indexOf("action=");
+      if (i < 0)
+         return null;
+      int j = s.indexOf("?", i);
+      if (j < 0)
+         return null;
+      else
+         return s.substring(i + 7, j);
+   }
+
+   private void getParams(ArrayList parms, ArrayList sigs, String callArgs) {
+      if (log.TRACE) log.trace(ME, "getParams from: '" + callArgs);
+      Map param = StringPairTokenizer.parseToStringStringPairs(callArgs, "&", "+");
+      if (log.TRACE) log.trace(ME, "params: '" + param);
+      
+      for (int p = 1; p <= param.size(); p++) {
+         String key = "p" + p;
+         if (param.containsKey(key)) {
+            String argument = (String) param.get(key);
+            String value = argument.substring(argument.indexOf('=') + 1, argument.length());
+            String signature = argument.substring(0, argument.indexOf('='));
+            parms.add(value);
+            sigs.add(signature);
+         }
+      }
+      
+   }
+
+
 }

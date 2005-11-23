@@ -13,6 +13,8 @@ import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.http.I_HttpRequest;
 import org.xmlBlaster.util.http.HttpResponse;
@@ -22,7 +24,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.I_ReplaceVariable;
 
-
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
@@ -30,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.StringTokenizer;
 import java.io.File;
+import java.net.URLDecoder;
 
 /**
  * HtmlMonitorPlugin is a native plugin to build simple HTML monitoring pages. 
@@ -71,11 +74,20 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    private CommandManager commandManager;
    private ReplaceVariable replaceVariable = new ReplaceVariable();
    
+   private Map mimeTypes = new HashMap();
+   
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
     */
    public HtmlMonitorPlugin() {
-      // void
+      mimeTypes.put("css", Constants.MIME_CSS);
+      mimeTypes.put("html", Constants.MIME_HTML);
+      mimeTypes.put("htm", Constants.MIME_HTML);
+      mimeTypes.put("xml", Constants.MIME_XML);
+      mimeTypes.put("js", Constants.MIME_JS);
+      mimeTypes.put("png", Constants.MIME_PNG);
+      mimeTypes.put("jpg", Constants.MIME_JPG);
+      // to be extended
    }
    
    /**
@@ -155,6 +167,15 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    public String getVersion() {
       return this.pluginInfo.getVersion();
    }
+   
+   private String getMimeType(String fileName) {
+      int index = fileName.lastIndexOf('.');
+      if (index < 0 || (index + 1) >= fileName.length()) {
+         return Constants.MIME_HTML;
+      }
+      String extension = fileName.substring(index + 1);
+      return (String) (mimeTypes.containsKey(extension)?mimeTypes.get(extension):Constants.MIME_HTML);
+   }
 
    /**
     * A HTTP request needs to be processed
@@ -165,12 +186,27 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
     * @return The HTML page to return
     */
    public HttpResponse service(String urlPath, Map properties) {
+	  if (log.isLoggable(Level.FINE)) {
+         log.fine("Invoking with '" + urlPath + "' urlPath, properties='" + properties + "'");
+	  }
       if (urlPath == null || urlPath.length() < 1) {
          return new HttpResponse("<html><h2>Empty request, please provide a URL path</h2></html>");
       }
       try {
+         String path;
+         String parameter = null;
+    	  if (urlPath.indexOf('?') > -1) {
+			 // has Parameter
+    		 path = urlPath.substring(0, urlPath.indexOf('?'));
+          parameter = URLDecoder.decode(urlPath.substring(urlPath.indexOf('?') + 1,
+ 					urlPath.length()), Constants.UTF8_ENCODING);
+		 } else {
+			// has no parameter 
+			path = urlPath;
+		 }
          String text;
-         if (this.urlPathClasspathSet.contains(urlPath)) { // "/status.html"
+         String mimeType = getMimeType(path.toString());
+         if (this.urlPathClasspathSet.contains(path)) { // "/status.html"
             if (urlPath.startsWith("/")) {
                // "status.html": lookup where the java class resides in xmlBlaster.jar
                urlPath = urlPath.substring(1);
@@ -179,17 +215,20 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
             if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
          }
          else {
-            File f = new File(urlPath);
+            File f = new File(path);
             // FIXME: check for security
-            // dangerous because one can send: ../../../
+            // dangerous because one could send: ../../../
             String name = f.getName();
             if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
             File template = new File(this.documentRoot, name);
             text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
             if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
          }
+         if (parameter != null && !(parameter.length() < 0)) {
+            invokeAction(parameter);
+         }
          text = replaceAllVariables(text);
-         return new HttpResponse(text);
+         return new HttpResponse(text, mimeType);
       }
       catch (Throwable e) {
          e.printStackTrace();
@@ -197,12 +236,41 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       }
    }
 
-   
    /**
-    * Replace ${...} occurrences. 
-    * @param template The template text containing ${}
-    * @return The result text with replaced ${}
+    * Checks for parameter in the URL and if it contains an invokeAction part,
+    * it starts this action.
+    * 
+    * @param parameter
+    *           contains the parameter given in the URL.
     */
+   private void invokeAction(String parameter) {
+		if (log.isLoggable(Level.FINE)) {
+			log.fine("Using '" + parameter + "'");
+		}
+
+      JmxWrapper jmxwrapper = null;
+      try {
+         jmxwrapper = JmxWrapper.getInstance(global);
+      } catch (XmlBlasterException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      
+      Object obj = jmxwrapper.invokeAction(parameter);
+      
+      if (log.isLoggable(Level.FINE)) {
+         log.fine("return '" + obj + "'");
+      }
+
+   }
+
+/**
+ * Replace ${...} occurrences.
+ * 
+ * @param template
+ *            The template text containing ${}
+ * @return The result text with replaced ${}
+ */
    private String replaceAllVariables(String template) throws XmlBlasterException {
       String text = replaceVariable.replace(template,
          new I_ReplaceVariable() {
