@@ -221,7 +221,7 @@ public class SpecificOracle extends SpecificDefault {
             first = false;
          buf.append(" INSERT");
       }
-      buf.append("ON ").append(completeTableName).append("\n");
+      buf.append(" ON ").append(completeTableName).append("\n");
       buf.append("FOR EACH ROW\n");
       buf.append("DECLARE\n");
       buf.append("   blobCont BLOB; \n");
