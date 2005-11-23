@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14135 
+   Added method in JmxWrapper to invoke methods called from the HmlMonitorPlugin.
+   This enables us to call MBean-methods from within a website which runs in the HtmlMonitorPlugin.
+
  o #14125 XmlBlasterAccess.java:
    Changed getDispatchStatistic() to avoid potential deadlock if an update receives during connect
 
