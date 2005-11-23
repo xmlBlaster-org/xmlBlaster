@@ -256,6 +256,11 @@ public class Constants {
    public final static String MIME_CSS = "text/css";
 
    /**
+    * Javascript
+    */
+   public final static String MIME_JS = "text/javascript";
+
+   /**
     * The mime type for the xml.
     * See http://www.rfc-editor.org/rfc/rfc3023.txt
     */
@@ -265,5 +270,10 @@ public class Constants {
     * Joint Photographic Experts Group
     */
    public final static String MIME_JPG = "image/jpg";
+
+   /**
+    * Portable Network Graphics Format Image
+    */
+   public final static String MIME_PNG = "image/png";
 }
 
