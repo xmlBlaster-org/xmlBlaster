@@ -89,7 +89,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param triggerName the name to give to the trigger associated with this table,
     * @return
     */
-   String createTableTrigger(SqlDescription infoDescription, String triggerName);
+   String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags);
 
    
    /**
@@ -118,7 +118,10 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param catalog the name of the catalog to use. If null, an empty string is stored (since part of the PK)
     * @param schema the name of the schema to use. If null, an empty string is stored (since part of the PK).
     * @param tableName the name of the table to be added.
-    * @param doReplicate 'false' if it does not need to replicate, 'true' otherwise.
+    * @param replFlags is a String containing a combination of 'IDU' (I)nsert, (U)pdate and (D)elete.
+    * If null or emtpy, then the trigger used to detect stuff to be replicated is not put anywhere, it
+    * is equivalent to not to replicate. If you pass I, then only inserts are performed. 
+    * You normally will pass IDU' here.
     * @param triggerName is the name which will be given to the trigger to add to the table. Can be null. If null
     * is passed, then a name is choosed by the application. It is good practice to provide with a unique name.
     * @return true if the table was added, false otherwise. If the table already was registered (added), then
@@ -126,7 +129,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   boolean addTableToWatch(String catalog, String schema, String tableName, boolean doReplicate, String triggerName) throws Exception;
+   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName) throws Exception;
    
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the schema. 

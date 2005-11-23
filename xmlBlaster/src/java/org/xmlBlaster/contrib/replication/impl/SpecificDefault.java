@@ -601,7 +601,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             boolean addTrigger = tableToWatch.isReplicate();
             Statement st = null;
             if (addTrigger) { // create the function and trigger here
-               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
+               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName, tableToWatch.getFlags());
                if (createString != null && createString.length() > 1) {
                   log.info("adding triggers to '" + table + "':\n\n" + createString);
                   st = conn.createStatement();
@@ -763,7 +763,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
    public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         boolean doReplicate, String triggerName) throws Exception {
+         String replFlags, String triggerName) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -774,9 +774,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          schema = " ";
       tableName = this.dbMetaHelper.getIdentifier(tableName);
 
-      String replTxt = "";
-      if (doReplicate)
-         replTxt = "IDU";
       Connection conn = null;
       try {
          conn = this.dbPool.reserve();
@@ -789,7 +786,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
          String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
-               + schema + "','" + tableName + "','" + replTxt
+               + schema + "','" + tableName + "','" + replFlags
                + "', 'CREATING'," + tmp + ",'" + triggerName + "')";
          this.dbPool.update(conn, sql);
          return true;
@@ -872,16 +869,15 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       return buf.toString();
    }
 
-   
    private final void addTriggersIfNeeded() throws Exception {
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
       for (int i=0; i < tablesToWatch.length; i++) {
          String catalog = tablesToWatch[i].getCatalog();
          String schema = tablesToWatch[i].getSchema();
          String table = tablesToWatch[i].getTable();
-         boolean doReplicate = tablesToWatch[i].isReplicate();
+         String replFlags = tablesToWatch[i].getFlags();
          String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, doReplicate, trigger);
+         addTableToWatch(catalog, schema, table, replFlags, trigger);
       }
    }
 

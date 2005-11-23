@@ -420,5 +420,11 @@ public class TableToWatchInfo {
       }
    }
    
+   public String getFlags() {
+      if (this.replFlags == null)
+         return "";
+      return this.replFlags;
+   }
+   
    
 }

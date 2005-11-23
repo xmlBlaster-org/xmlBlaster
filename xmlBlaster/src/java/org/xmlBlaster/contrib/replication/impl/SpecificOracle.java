@@ -169,8 +169,13 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }
 
-   public String createTableTrigger(SqlDescription infoDescription, String triggerName) {
-      boolean doDeletes = true; // TODO pass this in the arguments list
+   public String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags) {
+      if (replFlags == null)
+         replFlags = "";
+      boolean doDeletes = replFlags.indexOf('D') > -1;
+      boolean doInserts = replFlags.indexOf('I') > -1;
+      boolean doUpdates = replFlags.indexOf('U') > -1;
+      
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
       String completeTableName = tableName;
@@ -196,10 +201,26 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("\n");
       buf.append("CREATE OR REPLACE TRIGGER ").append(triggerName).append("\n");
-      buf.append("AFTER UPDATE");
-      if (doDeletes)
-         buf.append(" OR DELETE");
-      buf.append(" OR INSERT\n");
+      boolean first = true;
+      buf.append("AFTER");
+      if (doUpdates) {
+         buf.append(" UPDATE");
+         first = false;
+      }
+      if (doDeletes) {
+         if (!first)
+            buf.append(" OR");
+         else
+            first = false;
+         buf.append(" DELETE");
+      }
+      if (doInserts) {
+         if (!first)
+            buf.append(" OR");
+         else
+            first = false;
+         buf.append(" INSERT");
+      }
       buf.append("ON ").append(completeTableName).append("\n");
       buf.append("FOR EACH ROW\n");
       buf.append("DECLARE\n");

@@ -144,8 +144,7 @@ public class SpecificPostgres extends SpecificDefault {
     *           table.
     * @return a String containing the sql update. It can be executed.
     */
-   public String createTableTrigger(SqlDescription infoDescription, String triggerName) {
-
+   public String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags) {
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
       String functionName = tableName + "_f";
