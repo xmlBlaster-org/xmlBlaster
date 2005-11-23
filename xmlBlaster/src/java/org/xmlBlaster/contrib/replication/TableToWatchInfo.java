@@ -30,11 +30,15 @@ public class TableToWatchInfo {
    private String catalog;
    private String schema;
    private String table;
-   private boolean replicate = true;
    private String status;
    private long replKey = -1L;
    private String trigger;
-
+   /**
+    * flags which are set mean the replication does not happen for these flags.
+    * For example 'IDU' means nothing will be replicated, no (I)nserts, no (D)eletes nor (U)pdates
+    */
+   private String replFlags = "";
+   
    public final static String TABLE_PREFIX = "table";
    public final static String KEY_SEP = ".";
    public final static String VAL_SEP = ",";
@@ -156,8 +160,8 @@ public class TableToWatchInfo {
    /**
     * Parses the value and fills the object appropriately. The 
     * syntax to be parsed is of the kind: <br/>
-    * [${doReplicate}.][${triggerName}.]${sequenceNr}<br/>
-    * Defaults are doReplicate=true, triggerName=null (will be 
+    * [${replicateTxt}.][${triggerName}.]${sequenceNr}<br/>
+    * Defaults are replicateTxt=IDU, triggerName=null (will be 
     * assigned by the application, sequenceNr=-1, will be assigned
     * by the application.
     * @param val
@@ -165,7 +169,7 @@ public class TableToWatchInfo {
     */
    private final void parseValue(String val) throws Exception {
       if (val == null || val.trim().length() < 1) {
-         this.replicate = true;
+         this.replFlags = "";
          this.trigger = null;
          this.replKey = -1L;
          return;
@@ -195,7 +199,9 @@ public class TableToWatchInfo {
       }
       try {
          if (tmp1 != null && tmp1.trim().length() > 0)
-            this.replicate = (new Boolean(tmp1.trim())).booleanValue();
+            this.replFlags = tmp1.trim().toUpperCase();
+         else
+            this.replFlags = "";
       }
       catch (Throwable ex) {
          throw new Exception("Can not parse the value '" + tmp1 + "' as a boolean inside the value '" + val + "' must either be true or false");
@@ -244,14 +250,20 @@ public class TableToWatchInfo {
     * @return Returns the replicate.
     */
    public boolean isReplicate() {
-      return replicate;
+      if (this.replFlags == null)
+         return false;
+      return this.replFlags.length() > 0;
    }
 
    /**
     * @param replicate The replicate to set.
     */
-   public void setReplicate(boolean replicate) {
-      this.replicate = replicate;
+   public void setReplFlags(String replFlags) {
+      if (replFlags != null) {
+         this.replFlags = replFlags.trim().toUpperCase();
+      }
+      else
+         this.replFlags = "";
    }
 
    /**
@@ -333,23 +345,35 @@ public class TableToWatchInfo {
       String catalog = rs.getString(1);
       String schema = rs.getString(2);
       String table = rs.getString(3);
-      boolean doReplicate = false;
-      String doReplicateTxt = rs.getString(4);
-      doReplicate = doReplicateTxt.equalsIgnoreCase("t"); // stands for true
+      String replFlags = rs.getString(4);
       String status = rs.getString(5);
       long replKey = rs.getLong(6);
       String triggerName  = rs.getString(7);
       TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, table);
-      tableToWatch.setReplicate(doReplicate);
+      tableToWatch.setReplFlags(replFlags);
       tableToWatch.setStatus(status);
       tableToWatch.setReplKey(replKey);
       tableToWatch.setTrigger(triggerName);
       return tableToWatch;
    }
    
+   /**
+    * 
+    * @param conn
+    * @param tableName The name of the table from which to retrieve the information
+    * @param catalog
+    * @param schema
+    * @param table
+    * @return
+    * @throws Exception
+    */
    public static TableToWatchInfo get(Connection conn, String tableName, String catalog, String schema, String table) throws Exception {
       Statement st = null;
       ResultSet rs = null;
+      if (catalog == null)
+         catalog = EMPTY;
+      if (schema == null)
+         schema = EMPTY;
       try {
          st = conn.createStatement();
          rs = st.executeQuery("SELECT * from " + tableName + " WHERE catalogname='" + catalog + "' AND schemaname='" + schema + "' AND tablename='" + table + "'");

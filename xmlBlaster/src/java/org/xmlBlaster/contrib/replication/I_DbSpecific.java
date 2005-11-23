@@ -196,5 +196,19 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    int wipeoutSchema(String catalog, String schema) throws Exception;
+
+   /**
+    * This is used for cases where it was not possible to retrieve the (new) content 
+    * of an entry synchronously in the PL/SQL Code.
+    *  
+    * @param guid the unique Id identifying this entry. This is needed. Can not be null 
+    * @param catalog can be null
+    * @param schema can be null
+    * @param table must be defined (can not be null).
+    * @return the String containing the serialized entry.
+    * @throws Exception
+    */
+   String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception;
+   
    
 }

@@ -593,36 +593,21 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
          // check if function and trigger are necessary (they are only if the
          // table has to be replicated.
-         // it does not need this if the table only needs an initial
-         // synchronization. Also it is only
-         // needed if this is not invoked for a PtP, i.e. it is only neeed for
-         // global alignement, not
-         // for local alignement.
-
-         String sql = "SELECT replicate,trigger_name FROM " + this.replPrefix + "tables WHERE tablename='"
-               + table + "'";
-         Statement st = conn.createStatement();
-         ResultSet rs = st.executeQuery(sql);
-         String doReplicateTxt = "f"; // if the entry does not exist (yet),
-                                       // then it is not replicated
-         boolean doReplicate = false;
-         String triggerName = null;
-         if (rs.next()) {
-            doReplicateTxt = rs.getString(1);
-            doReplicate = doReplicateTxt.equalsIgnoreCase("t"); // stands for true
-            triggerName = rs.getString(2);
-         }
-         rs.close();
-         st.close();
-         boolean addTrigger = doReplicate;
-
-         if (addTrigger) { // create the function and trigger here
-            String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
-            if (createString != null && createString.length() > 1) {
-               log.info("adding triggers to '" + table + "':\n\n" + createString);
-               st = conn.createStatement();
-               st.executeUpdate(createString);
-               st.close();
+         // it does not need this if the table only needs an initial synchronization. 
+         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table);
+         
+         if (tableToWatch != null) {
+            String triggerName = tableToWatch.getTrigger();
+            boolean addTrigger = tableToWatch.isReplicate();
+            Statement st = null;
+            if (addTrigger) { // create the function and trigger here
+               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName);
+               if (createString != null && createString.length() > 1) {
+                  log.info("adding triggers to '" + table + "':\n\n" + createString);
+                  st = conn.createStatement();
+                  st.executeUpdate(createString);
+                  st.close();
+               }
             }
          }
 
@@ -636,7 +621,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          
          if (sendInitialContents) {
             this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
-            sql = new String("SELECT * FROM " + table);
+            String sql = new String("SELECT * FROM " + table);
             this.dbPool.select(conn, sql, false, this);
          }
          conn.commit();
@@ -789,9 +774,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          schema = " ";
       tableName = this.dbMetaHelper.getIdentifier(tableName);
 
-      char replTxt = 'f';
+      String replTxt = "";
       if (doReplicate)
-         replTxt = 't';
+         replTxt = "IDU";
       Connection conn = null;
       try {
          conn = this.dbPool.reserve();
@@ -816,6 +801,16 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
+    * Currently made public for testing.
+    * @param schema
+    */
+   public void removeSchemaTriggers(String schema) {
+      removeTrigger(this.replPrefix + "drtg_" + schema, null, true);
+      removeTrigger(this.replPrefix + "altg_" + schema, null, true);
+      removeTrigger(this.replPrefix + "crtg_" + schema, null, true);
+   }
+   
+   /**
     * @see I_DbSpecific#removeTableToWatch(String)
     */
    public final void removeTableToWatch(TableToWatchInfo tableToWatch, boolean removeAlsoSchemaTrigger) throws Exception {
@@ -836,11 +831,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             + "' AND schemaname='" + schema + "' AND catalogname='" + catalog
             + "'";
       this.dbPool.update(sql);
-      if (removeAlsoSchemaTrigger) {
-         removeTrigger(this.replPrefix + "drtg_" + schema, null, true);
-         removeTrigger(this.replPrefix + "altg_" + schema, null, true);
-         removeTrigger(this.replPrefix + "crtg_" + schema, null, true);
-      }
+      if (removeAlsoSchemaTrigger)
+         removeSchemaTriggers(schema);
+
       if (tableToWatch.isReplicate()) {
          String triggerName = tableToWatch.getTrigger();
          removeTrigger(triggerName, tableName, false);

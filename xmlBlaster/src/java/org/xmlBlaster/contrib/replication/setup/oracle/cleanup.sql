@@ -8,7 +8,8 @@ DROP PROCEDURE ${replPrefix}debug
 -- FLUSH (dropped ${replPrefix}debug)                                           
 DROP TABLE ${replPrefix}debug_table
 -- FLUSH (dropped ${replPrefix}debug_table)                                     
-
+DROP TABLE ${replPrefix}longs_table
+-- FLUSH (dropped ${replPrefix}longs_table)                                     
 DROP FUNCTION ${replPrefix}add_table
 -- FLUSH (dropped ${replPrefix}add_table)                                       
 DROP FUNCTION ${replPrefix}base64_enc_blob

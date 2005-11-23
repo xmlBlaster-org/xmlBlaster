@@ -57,10 +57,10 @@ DROP TABLE ${replPrefix}items CASCADE;
 -- ---------------------------------------------------------------------------- 
 
 CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname 
-                         VARCHAR(30), tablename VARCHAR(30), replicate CHAR(1),
-			 status VARCHAR(10), repl_key INTEGER, 
-			 trigger_name VARCHAR(30), PRIMARY KEY(catalogname, 
-			 schemaname, tablename));
+                         VARCHAR(30), tablename VARCHAR(30), 
+			 repl_flags CHAR(3), status VARCHAR(10), 
+			 repl_key INTEGER, trigger_name VARCHAR(30), 
+			 PRIMARY KEY(catalogname, schemaname, tablename));
 
 -- ---------------------------------------------------------------------------- 
 -- create the ${replPrefix}current_tables as a placeholder for the current      

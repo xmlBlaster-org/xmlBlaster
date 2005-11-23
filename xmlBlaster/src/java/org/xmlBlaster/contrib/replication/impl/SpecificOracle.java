@@ -20,6 +20,8 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
 public class SpecificOracle extends SpecificDefault {
 
@@ -60,6 +62,21 @@ public class SpecificOracle extends SpecificDefault {
 
    /**
     * 
+    * @param description
+    * @return
+    */
+   private boolean checkIfContainsLongs(SqlDescription description) {
+      SqlColumn[] cols = description.getColumns();
+      for (int i = 0; i < cols.length; i++) {
+         int type = cols[i].getSqlType();
+         if (type == Types.LONGVARCHAR || type == Types.LONGVARBINARY)
+            return true;
+      }
+      return false;
+   }
+   
+   /**
+    * 
     * @param col
     * @param prefix
     *           can be 'old' or 'new'
@@ -70,6 +87,13 @@ public class SpecificOracle extends SpecificDefault {
       SqlColumn[] cols = description.getColumns();
       String contName = prefix + "Cont"; // will be newCont or oldCont
       StringBuffer buf = new StringBuffer();
+      String tablePrefix = newOldPrefix + prefix;
+      buf.append("       oid := ROWIDTOCHAR(").append(tablePrefix).append(".rowid);\n");
+      if ("new".equals(prefix)) {
+         if (checkIfContainsLongs(description))
+            return buf.toString();
+      }
+      
       buf.append("       ").append(contName).append(" := EMPTY_CLOB;\n");
       buf.append("       dbms_lob.createtemporary(").append(contName).append(", TRUE);\n");
       buf.append("       dbms_lob.open(").append(contName).append(", dbms_lob.lob_readwrite);\n");
@@ -77,68 +101,76 @@ public class SpecificOracle extends SpecificDefault {
          String colName = cols[i].getColName();
          String typeName = cols[i].getTypeName();
          int type = cols[i].getSqlType();
-         String varName = newOldPrefix + prefix + "." + colName; // for example :new.colname'
+         String varName = tablePrefix + "." + colName; // for example :new.colname'
+         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
+            buf.append("          IF ").append(varName).append(" IS NOT NULL THEN\n");
          
-         buf.append("          IF ").append(varName).append(" IS NOT NULL THEN\n");
-         
-         if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
+         if (type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
+            /*
+            buf.append("          longKey := ").append(this.replPrefix).append("increment();\n");
+            // buf.append("          INSERT INTO ").append(this.replPrefix).append("LONGS_TABLE SELECT longKey, TO_LOB(").append(colName).append(") FROM ").append(tableName).append(" WHERE rowid IN (").append(tablePrefix).append(".rowid").append(");\n");
+            buf.append("--          INSERT INTO ").append(this.replPrefix).append("LONGS_TABLE SELECT longKey, TO_LOB(").append(colName).append(") FROM ").append(tableName).append(";\n");
+            buf.append("--          SELECT content INTO tmpCont FROM ").append(this.replPrefix).append("LONGS_TABLE WHERE repl_key=longKey;\n");
+            buf.append("--          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+            "col2xml('").append(colName).append("', tmpCont));\n");
+            */
+         }
+         else if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
                || type == Types.STRUCT) {
-            buf.append("          blobCont := EMPTY_BLOB;\n");
-            buf.append("          dbms_lob.createtemporary(blobCont, TRUE);\n");
-            buf.append("          dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
+            buf.append("             blobCont := EMPTY_BLOB;\n");
+            buf.append("             dbms_lob.createtemporary(blobCont, TRUE);\n");
+            buf.append("             dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.BLOB) {
-               buf.append("          dbms_lob.append(blobCont,").append(varName).append(");\n");
+               buf.append("             dbms_lob.append(blobCont,").append(varName).append(");\n");
             }
             else {
-               buf.append("          dbms_lob.writeappend(blobCont,").append("length(");
+               buf.append("             dbms_lob.writeappend(blobCont,").append("length(");
                buf.append(varName).append("),").append(varName).append(");\n");
             }
-            buf.append("          dbms_lob.close(blobCont);\n");
-            buf.append("          dbms_lob.append(").append(contName).append(", ");
+            buf.append("             dbms_lob.close(blobCont);\n");
+            buf.append("             dbms_lob.append(").append(contName).append(", ");
             buf.append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont));\n");
          }
          else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
-            buf.append("          tmpCont := EMPTY_CLOB;\n");
-            buf.append("          dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("          dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            buf.append("             tmpCont := EMPTY_CLOB;\n");
+            buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             // on new oracle data coming from old versions could be sqlType=TIMESTAMP but type='DATE'
             if (typeName.equals("DATE") || type == Types.DATE) 
-               buf.append("          tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
+               buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
             else // then timestamp
-               buf.append("          tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
-            buf.append("          dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("          dbms_lob.close(tmpCont);\n");
-            buf.append("          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+               buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
+            buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("             dbms_lob.close(tmpCont);\n");
+            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
                   "col2xml('").append(colName).append("', tmpCont));\n");
          }
          else {
-            buf.append("          tmpCont := EMPTY_CLOB;\n");
-            buf.append("          dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("          dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            buf.append("             tmpCont := EMPTY_CLOB;\n");
+            buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
-               buf.append("          tmpNum := TO_CHAR(").append(varName).append(");\n");
+               buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
             }
             else {
-               buf.append("          tmpNum := ").append(varName).append(";\n");
+               buf.append("             tmpNum := ").append(varName).append(";\n");
             }
-            buf.append("          dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("          dbms_lob.close(tmpCont);\n");
-            buf.append("          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+            buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("             dbms_lob.close(tmpCont);\n");
+            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
                   "col2xml('").append(colName).append("', tmpCont));\n");
          }
          
-         buf.append("          END IF;\n");
+         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
+            buf.append("          END IF;\n");
          
       }
-      // buf.append(" oid :=
-      // ROWIDTOCHAR(:").append(prefix).append(".rowid);\n");
-      // TODO this has to be changed later on
-      buf.append("       oid := ''; -- TODO: this has to be changed later on \n");
       return buf.toString();
    }
 
    public String createTableTrigger(SqlDescription infoDescription, String triggerName) {
+      boolean doDeletes = true; // TODO pass this in the arguments list
       String tableName = infoDescription.getIdentity(); // should be the table
                                                          // name
       String completeTableName = tableName;
@@ -164,7 +196,10 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("\n");
       buf.append("CREATE OR REPLACE TRIGGER ").append(triggerName).append("\n");
-      buf.append("AFTER UPDATE OR DELETE OR INSERT\n");
+      buf.append("AFTER UPDATE");
+      if (doDeletes)
+         buf.append(" OR DELETE");
+      buf.append(" OR INSERT\n");
       buf.append("ON ").append(completeTableName).append("\n");
       buf.append("FOR EACH ROW\n");
       buf.append("DECLARE\n");
@@ -178,6 +213,7 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   ret     VARCHAR(10);\n");
       buf.append("   transId VARCHAR2(30);\n");
       buf.append("   op      VARCHAR(10);\n");
+      buf.append("   longKey INTEGER;\n");
       buf.append("BEGIN\n");
       buf.append("\n");
       buf.append("    IF INSERTING THEN\n");
@@ -598,6 +634,62 @@ public class SpecificOracle extends SpecificDefault {
       }
       return sum;
    }
-   
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#getContentFromGuid(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+    */
+   public String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception {
+      // throw new Exception("SpecificOracle.getContentFromGuid is not implemented yet for table='" + table + "' and guid='" + guid + "'");
+      SqlInfo obj = new SqlInfo(this.info);
+      Connection conn = null;
+      Statement st = null;
+      String completeTable = schema;
+      if (completeTable != null)
+         completeTable += "." + table;
+      else
+         completeTable = table;
+      try {
+         conn = this.dbPool.reserve();
+         st = conn.createStatement();
+         String sql = "select * from " + completeTable + " WHERE rowid=CHARTOROWID('" + guid + "')";
+         ResultSet rs = st.executeQuery(sql);
+         if (rs.next()) {
+            obj.fillOneRowWithObjects(rs, null);
+            SqlRow row = (SqlRow)obj.getRows().get(0);
+            rs.close();
+            return row.toXml("", false);
+         }
+         else {
+            log.severe("The entry guid='" + guid + "' for table '" + completeTable + "' was not found (anymore)");
+            return "";
+         }
+            
+      }
+      catch (Exception ex) {
+         if (conn != null) {
+            try {
+               this.dbPool.erase(conn);
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+            }
+            conn = null;
+         }
+         throw ex;
+      }
+      finally { 
+         if (st != null) {
+            try {
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
+         if (conn != null)
+            this.dbPool.release(conn);
+         conn = null;
+      }
+   }
 
 }

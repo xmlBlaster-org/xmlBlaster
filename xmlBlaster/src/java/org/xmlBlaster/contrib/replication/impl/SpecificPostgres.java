@@ -194,6 +194,13 @@ public class SpecificPostgres extends SpecificDefault {
    public int wipeoutSchema(String catalog, String schema) throws Exception {
       throw new Exception("cleanupSchema for '" + schema + "' can not be executed since not implemented");
    }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#getContentFromGuid(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+    */
+   public String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception {
+      throw new Exception("SpecificPostgres.getContentFromGuid is not implemented yet for table='" + table + "' and guid='" + guid + "'");
+   }
    
    
 }

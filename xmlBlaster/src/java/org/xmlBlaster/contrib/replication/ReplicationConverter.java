@@ -155,6 +155,15 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          clob.getAsciiStream().read(buf);
          oldContent = new String(buf);
       }
+      // check if it needs to read the new content explicitly, this is used for cases
+      // where it was not possible to fill with meat in the synchronous PL/SQL part.
+      if (newContent == null && ("INSERT".equals(action) || ("UPDATE".equals(action)))) {
+         if (guid == null)
+            log.severe("could not operate since no guid and no newContent on UPDATE or INSERT");
+         else
+            newContent = this.dbSpecific.getContentFromGuid(guid, catalog, schema, tableName);
+      }
+      
       String version = rs.getString(11);
       
       if (this.dbUpdateInfo.getRowCount() == 0L) {

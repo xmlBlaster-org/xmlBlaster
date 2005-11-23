@@ -2,7 +2,7 @@
 -- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
 --                                                                              
 -- Some Comments:                                                               
---                                  
+--                                                                              
 --  The effect of triggers has been checked. An open issue is how to determine  
 --  wether an action has been caused by a direct operation of the user (primary 
 --  action) or if it is a reaction to that as an operation performed by a       
@@ -36,12 +36,23 @@ CREATE TABLE ${replPrefix}debug_table(replKey INTEGER, line VARCHAR(255))
 
 CREATE OR REPLACE PROCEDURE ${replPrefix}debug(lineTxt VARCHAR2) AS
    replKey INTEGER;
-BEGIN
+BEGIN							    
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
 END;
 -- EOC (end of command: needed as a separator for our script parser)            
 
+
+-- ---------------------------------------------------------------------------- 
+-- This is only for old LONG datas                                              
+-- ---------------------------------------------------------------------------- 
+--CREATE GLOBAL TEMPORARY TABLE ${replPrefix}longs_table(repl_key INTEGER, 
+--                              content CLOB, PRIMARY KEY (repl_key)) 
+--			      ON COMMIT DELETE ROWS 
+
+CREATE TABLE ${replPrefix}longs_table(repl_key INTEGER, 
+                              content CLOB, PRIMARY KEY (repl_key)) 
+-- EOC (end of command: needed as a separator for our script parser)            
 
 
 -- ---------------------------------------------------------------------------- 
@@ -52,7 +63,7 @@ END;
 -- ---------------------------------------------------------------------------- 
 
 CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
-                         tablename VARCHAR(30), replicate CHAR(1),
+                         tablename VARCHAR(30), repl_flags CHAR(3),
 			 status VARCHAR(10), repl_key INTEGER, 
 			 trigger_name VARCHAR(30), PRIMARY KEY(catalogname, 
 			 schemaname, tablename))
