@@ -161,7 +161,7 @@ public class EmailData {
    public byte[] getContentByExtension(String extension) {
       AttachmentHolder[] atts = getAttachments();
       for (int j = 0; j < atts.length; j++) {
-         if (atts[j].getFileName().endsWith(extension)) {
+         if (atts[j].hasExtension(extension)) {
             return atts[j].getContent();
          }
       }
@@ -189,7 +189,7 @@ public class EmailData {
    }
    
    /**
-    * Comma separated value list of all attachment file names for logging. 
+    * Comma separated value list of all attachment file names (unquoted) for logging. 
     * @return For example "a.xbf, b.xml, m.mid"
     */
    public String getFileNameList() {
@@ -464,12 +464,21 @@ public class EmailData {
          // or in an attachment without extension
          AttachmentHolder[] atts = getAttachments();
          for (int i = 0; i < atts.length; i++) {
-            if (atts[i].getFileName().endsWith(MESSAGEID_EXTENSION)) {
+            if (atts[i].hasExtension(MESSAGEID_EXTENSION)) {
                str = new String(atts[i].getContent());
-               break; // strongest
+               return str; // strongest
             }
+         }
+         for (int i = 0; i < atts.length; i++) {
             if (atts[i].getFileName().indexOf(".") == -1) {
+               // Trying extensionless attachments
                str = new String(atts[i].getContent());
+               if (str.indexOf(startToken) == -1) {
+                  log.warning("Can't guess messageId, trying this failed: '" + str + "'");
+               }
+               else {
+                  break;
+               }
             }
          }
       }

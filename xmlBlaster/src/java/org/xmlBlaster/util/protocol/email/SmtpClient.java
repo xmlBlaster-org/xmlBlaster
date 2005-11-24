@@ -402,7 +402,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          AttachmentHolder[] holder = emailData.getAttachments();
          for (int i=0; i<holder.length; i++) {
             MimeBodyPart mbp = new MimeBodyPart();
+            // 'AA xmlBlasterMessage.xbf' will be automatically quoted to '"AA xmlBlasterMessage.xbf"' by javamail implementation
+            // 'xx.xbf' names will be send unquoted
             mbp.setFileName(holder[i].getFileName());
+            // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
+            //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
             if (holder[i].getContentType().startsWith("text/")) {
                mbp.setText(new String(holder[i].getContent(), Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
             }
@@ -422,13 +426,16 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          // set the Date: header
          message.setSentDate(new Date());
 
+         //log.severe("DEBUG ONLY: Trying to send email" + emailData.toXml(true));
          send(message);
+         //log.severe("DEBUG ONLY: Successful send email" + emailData.toXml(true));
          if (log.isLoggable(Level.FINE))
             log.fine("Successful send email from=" + emailData.getFrom() + " to="
                   + emailData.getRecipientsList());
          if (log.isLoggable(Level.FINER))
             log.finer("Successful send email" + emailData.toXml(true));
       } catch (Exception e) {
+         log.warning("Can't send mail: " + e.toString() + ": " + emailData.toXml(true));
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
                "Email sending failed, no mail sent from=" + emailData.getFrom() + " to="

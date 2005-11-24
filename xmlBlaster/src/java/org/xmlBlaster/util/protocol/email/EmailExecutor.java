@@ -75,7 +75,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    protected final String BOUNCE_MAILTO_KEY = "mail.to";
    protected final String BOUNCE_MAILFROM_KEY = "mail.from";
 
-   /** "messageId.mid" */
+   /** 'messageId.mid' */
    protected String messageIdFileName = "messageId" + EmailData.MESSAGEID_EXTENSION;
    
    /** The extension is added later to for example "xmlBlasterMessage.xfb" */
@@ -269,7 +269,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
 
       if (msgUnitAttachmentHolder == null) {
-         log.warning("No mails via POP3 found");
+         log.warning("Got email from POP3 but there was no MsgUnit attachment, we ignore it: " + emailData.toXml(true));
          //log.fine("DUMP:" + emailData.toXml());
          return;
       }

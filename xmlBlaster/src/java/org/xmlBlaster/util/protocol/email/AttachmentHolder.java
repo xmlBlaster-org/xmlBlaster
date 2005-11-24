@@ -12,16 +12,17 @@ import org.xmlBlaster.util.def.Constants;
  * @author Marcel Ruff
  */
 public class AttachmentHolder {
-   private String fileName;
+  private String fileName;
    private String contentType;
    private byte[] content;
+   
    /**
     * @param fileName
     * @param contentType
     * @param content
     */
    public AttachmentHolder(String fileName, String contentType, byte[] content) {
-      this.fileName = fileName;
+      setFileName(fileName);
       this.contentType = contentType;
       this.content = content;
    }
@@ -32,7 +33,7 @@ public class AttachmentHolder {
     * @param content
     */
    public AttachmentHolder(String fileName, String content) {
-      this.fileName = fileName;
+      setFileName(fileName);
       this.contentType = "text/plain";
       try {
          this.content = content.getBytes(Constants.UTF8_ENCODING);
@@ -54,18 +55,36 @@ public class AttachmentHolder {
    public void setContent(byte[] content) {
       this.content = content;
    }
+   
    /**
+    * Returns the fileName, ready to be used as an
+    * attachment name in an email
     * @return Returns the fileName, never null
     */
    public String getFileName() {
       return (this.fileName == null) ? "" : this.fileName;
    }
+   
+   /**
+    * Checks if we are the given extension type. 
+    * @param extension For example ".txt"
+    * @return true if our attachment is of this type
+    */
+   public boolean hasExtension(String extension) {
+      return getFileName().endsWith(extension);
+   }
+
    /**
     * @param fileName The fileName to set.
     */
    public void setFileName(String fileName) {
+      if (fileName == null) {
+         this.fileName = "";
+         return;
+      }
       this.fileName = fileName;
    }
+   
    /**
     * @return Returns the contentType, never null
     */
