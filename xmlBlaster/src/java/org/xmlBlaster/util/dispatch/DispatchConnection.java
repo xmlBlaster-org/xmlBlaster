@@ -126,7 +126,7 @@ abstract public class DispatchConnection implements I_Timeout
          handleTransition(true, null);
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, e.getMessage());
+         log.warn(ME, "initialize:" + e.getMessage());
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
             handleTransition(true, e); // never returns (only if DEAD) - throws exception
          }
@@ -360,6 +360,14 @@ abstract public class DispatchConnection implements I_Timeout
       }
    }
 
+   protected void spanPingTimer(long timeout, boolean isPing) throws XmlBlasterException {
+      String userData = (isPing) ? null : "poll";
+      synchronized (this.PING_TIMER_MONITOR) {
+         this.timerKey = this.glob.getPingTimer().addOrRefreshTimeoutListener(this,
+               timeout, userData, this.timerKey);
+      }
+   }
+
    /**
     * @param toReconnected If true if the connection is OK (it is a transition to reconnected)
     * @param byDispatchConnectionsHandler true if invoked by DispatchConnectionsHandler,
@@ -425,10 +433,7 @@ abstract public class DispatchConnection implements I_Timeout
                // so we respan the timer.
                // Probably this slows down on many updates and seldom pings,
                // should we remove the following two lines?
-               synchronized (this.PING_TIMER_MONITOR) {
-                  this.timerKey = this.glob.getPingTimer().addOrRefreshTimeoutListener(this,
-                              this.address.getPingInterval(), null, this.timerKey);
-               }
+               spanPingTimer(this.address.getPingInterval(), true);
             }
             return;
          }
@@ -465,10 +470,7 @@ abstract public class DispatchConnection implements I_Timeout
                   if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
-                  synchronized (this.PING_TIMER_MONITOR) { // do one instant try:
-                     this.timerKey = this.glob.getPingTimer().addOrRefreshTimeoutListener(this,
-                              400, "poll", this.timerKey);
-                  }
+                  spanPingTimer(400, false); // do one instant try
                }
                if (byDispatchConnectionsHandler)
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState);
@@ -520,9 +522,9 @@ abstract public class DispatchConnection implements I_Timeout
    public void shutdown() throws XmlBlasterException {
       this.state = ConnectionStateEnum.DEAD;
       if (log.CALL) log.call(ME, "Entering shutdown ...");
-      if (timerKey != null) {
-         this.glob.getPingTimer().removeTimeoutListener(timerKey);
-         timerKey = null;
+      if (this.timerKey != null) {
+         this.glob.getPingTimer().removeTimeoutListener(this.timerKey);
+         this.timerKey = null;
       }
       retryCounter = 0;
    }
