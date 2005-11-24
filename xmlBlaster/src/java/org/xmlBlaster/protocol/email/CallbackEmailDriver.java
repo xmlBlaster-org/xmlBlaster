@@ -170,7 +170,7 @@ public class CallbackEmailDriver extends EmailExecutor implements
     */
    public void shutdown() {
       super.shutdown();
-      log.trace(ME, "shutdown() does currently nothing");
+      if (log != null) log.trace(ME, "shutdown() does currently nothing");
    }
 
    /**
