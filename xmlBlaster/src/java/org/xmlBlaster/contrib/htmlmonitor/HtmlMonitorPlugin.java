@@ -205,14 +205,14 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
 			// has no parameter 
 			path = urlPath;
 		 }
-         String text;
+         byte[] text;
          String mimeType = getMimeType(path.toString());
          if (this.urlPathClasspathSet.contains(path)) { // "/status.html"
             if (urlPath.startsWith("/")) {
                // "status.html": lookup where the java class resides in xmlBlaster.jar
                urlPath = urlPath.substring(1);
             }
-            text = new String(Global.getFromClasspath(urlPath, this));
+            text = Global.getFromClasspath(urlPath, this);
             if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
          }
          else {
@@ -222,13 +222,15 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
             String name = f.getName();
             if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
             File template = new File(this.documentRoot, name);
-            text = org.jutils.io.FileUtil.readAsciiFile(template.toString());
+            text = org.jutils.io.FileUtil.readFile(template.toString());
             if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
          }
          if (parameter != null && !(parameter.length() < 0)) {
             invokeAction(parameter);
          }
-         text = replaceAllVariables(text);
+         if (mimeType.startsWith("text")) {
+            text = replaceAllVariables(new String(text)).getBytes();
+         }
          return new HttpResponse(text, mimeType);
       }
       catch (Throwable e) {
