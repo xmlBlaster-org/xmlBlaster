@@ -269,7 +269,7 @@ public class Constants {
    /**
     * Joint Photographic Experts Group
     */
-   public final static String MIME_JPG = "image/jpg";
+   public final static String MIME_JPG = "image/jpeg";
 
    /**
     * Portable Network Graphics Format Image
