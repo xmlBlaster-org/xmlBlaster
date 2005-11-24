@@ -275,5 +275,10 @@ public class Constants {
     * Portable Network Graphics Format Image
     */
    public final static String MIME_PNG = "image/png";
+   
+   /**
+    * GIF Image
+    */
+   public final static String MIME_GIF = "image/gif";
 }
 

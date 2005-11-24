@@ -87,6 +87,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       mimeTypes.put("js", Constants.MIME_JS);
       mimeTypes.put("png", Constants.MIME_PNG);
       mimeTypes.put("jpg", Constants.MIME_JPG);
+      mimeTypes.put("gif", Constants.MIME_GIF);
       // to be extended
    }
    
