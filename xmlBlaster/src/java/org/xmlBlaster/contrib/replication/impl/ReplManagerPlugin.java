@@ -140,8 +140,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public void initiateReplication(String slaveSessionName, String replicationKey) throws Exception {
       try {
+         if (slaveSessionName == null || slaveSessionName.length() < 1)
+            throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
+         if (replicationKey == null || replicationKey.length() < 1)
+            throw new Exception("ReplManagerPlugin.initiateReplication: The replicationKey is null, please provide one");
          log.info("initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationKey + "'");
-
+         
          I_Info individualInfo = (I_Info)this.replications.get(replicationKey);
          if (individualInfo != null) {
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
