@@ -14,5 +14,5 @@ public interface ReplSlaveMBean {
    String getSqlResponse();
    void doContinue() throws Exception;
    void doPause() throws Exception;
-
+   boolean toggleActive() throws Exception;
 }

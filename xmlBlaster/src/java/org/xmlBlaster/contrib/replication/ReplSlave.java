@@ -318,6 +318,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       session.setDispatcherActive(false);
    }
    
-   
+   /**
+    * Toggles the dispatcher from active to inactive or vice versa.
+    * Returns the actual state.
+    * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#toggleActive()
+    * @return the actual state.
+    */
+   public boolean toggleActive() throws Exception {
+      I_AdminSession session = getSession();
+      session.setDispatcherActive(!session.getDispatcherActive());
+      return session.getDispatcherActive();
+   }
    
 }
