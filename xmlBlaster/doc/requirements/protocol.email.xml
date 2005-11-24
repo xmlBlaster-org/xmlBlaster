@@ -310,6 +310,9 @@ plugin/email/mail.subject=Generated Email
 call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
 call[org.xmlBlaster.util.protocol.email.SmtpClient] true
 call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
+
+plugin/email/responseTimeout=60000
+plugin/email/pingResponseTimeout=30000
 -->
       </table>
    </configuration>
