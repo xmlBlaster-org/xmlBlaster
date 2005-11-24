@@ -94,7 +94,7 @@
       This is the XmlRpc server interface variant:
       </p>
       <pre>
-   public String unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
+   public String[] unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
                                                          throws XmlBlasterException
       </pre>
    </example>
