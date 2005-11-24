@@ -62,14 +62,15 @@ public class HandleClient extends SocketExecutor implements Runnable
     * Creates an instance which serves exactly one client.
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock, DatagramSocket sockUDP) throws IOException {
-      super.initialize(glob, driver.getAddressServer(), sock.getInputStream(), sock.getOutputStream());
-      super.setXmlBlasterCore(driver.getXmlBlaster());
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.sock = sock;
       this.sockUDP = sockUDP;
       this.authenticate = driver.getAuthenticate();
       this.ME = driver.getType()+"-HandleClient";
+
+      super.initialize(glob, driver.getAddressServer(), sock.getInputStream(), sock.getOutputStream());
+      super.setXmlBlasterCore(driver.getXmlBlaster());
 
       this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
       
