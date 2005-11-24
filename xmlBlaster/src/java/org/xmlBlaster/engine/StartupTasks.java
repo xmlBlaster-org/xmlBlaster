@@ -75,6 +75,8 @@ public class StartupTasks implements I_Plugin {
    private String scriptFileName = "xmlBlasterStartup.xml";
    private URL scriptFileUrl;
    private String outFileName = "";
+   private boolean doConnect;
+   private boolean doDisconnect;
 
    private ConnectQos connectQos;
    
@@ -97,6 +99,8 @@ public class StartupTasks implements I_Plugin {
          this.directoryName = this.global.get("directoryName", this.directoryName, null, this.pluginInfo);
          this.scriptFileName = this.global.get("scriptFileName", this.scriptFileName, null, this.pluginInfo);
          this.outFileName = this.global.get("outFileName", this.outFileName, null, this.pluginInfo);
+         this.doConnect = this.global.get("doConnect", true, null, this.pluginInfo);
+         this.doDisconnect = this.global.get("doDisconnect", true, null, this.pluginInfo);
 
          if (this.directoryName == null || this.directoryName.length() < 1) {
             // Use xmlBlaster search path (including CLASSPATH)
@@ -176,12 +180,14 @@ public class StartupTasks implements I_Plugin {
       try {
          this.connection = new XmlBlasterAccess(this.global);
 
-         this.connection.connect(this.connectQos, new I_Callback() {
-            public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.warn(ME, "Ignoring received message '" + updateKey.getOid() + "'");
-               return Constants.RET_OK;
-            }
-         });
+         if (this.doConnect) {
+            this.connection.connect(this.connectQos, new I_Callback() {
+               public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+                  log.warn(ME, "Ignoring received message '" + updateKey.getOid() + "'");
+                  return Constants.RET_OK;
+               }
+            });
+         }
 
          OutputStream outStream = System.out;
          boolean needsClosing = false;
@@ -218,7 +224,7 @@ public class StartupTasks implements I_Plugin {
       finally {
          try {
             if (this.connection != null) {
-               if (this.connection.isConnected()) {
+               if (this.doDisconnect && this.connection.isConnected()) {
                   this.connection.disconnect(null);
                }
                this.connection = null;
