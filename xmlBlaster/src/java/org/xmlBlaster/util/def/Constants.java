@@ -27,6 +27,7 @@ public class Constants {
    public final static long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
    public final static long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
 
+   public final static String EMAIL_TRANSFER_ENCODING = "Content-Transfer-Encoding";
    public final static String ENCODING_BASE64 = "base64";
    public final static String ENCODING_NONE = null;
 

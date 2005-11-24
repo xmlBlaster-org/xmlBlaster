@@ -67,6 +67,24 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    private int port;
    
    private boolean isInitialized;
+   
+   /** 
+    * Setting this to true we can force the messageId attachment to
+    * always be base64 encoded.
+    * <br />
+    * Javamail does base64 encoding automatically if need so
+    * the default of this variable is false.
+    */
+   private boolean messageIdForceBase64;
+
+   /** 
+    * Setting this to true we can force the MsgUnit attachment to
+    * always be base64 encoded.
+    * <br />
+    * Javamail does base64 encoding automatically if need so
+    * the default of this variable is false.
+    */
+   private boolean contentForceBase64;
 
    /** My JMX registration */
    private Object mbeanHandle;
@@ -224,7 +242,19 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                pluginConfig));
       String p = props.getProperty("mail.smtp.port");
       this.port = new Integer(p).intValue();
-
+      
+      if (props.getProperty("messageIdForceBase64") == null)
+         props.put("messageIdForceBase64", ""+glob.get("messageIdForceBase64", false, null,
+               pluginConfig));
+      p = props.getProperty("messageIdForceBase64");
+      this.messageIdForceBase64 = new Boolean(p).booleanValue();
+      
+      if (props.getProperty("contentForceBase64") == null)
+         props.put("contentForceBase64", ""+glob.get("contentForceBase64", false, null,
+               pluginConfig));
+      p = props.getProperty("contentForceBase64");
+      this.contentForceBase64 = new Boolean(p).booleanValue();
+      
       // Pass "this" for SMTP authentication with Authenticator
       // For only sending mails we can pass null
       this.session = Session.getDefaultInstance(props, this);
@@ -405,15 +435,25 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             // 'AA xmlBlasterMessage.xbf' will be automatically quoted to '"AA xmlBlasterMessage.xbf"' by javamail implementation
             // 'xx.xbf' names will be send unquoted
             mbp.setFileName(holder[i].getFileName());
+            byte[] content = holder[i].getContent();
+            if (this.messageIdForceBase64 && emailData.isMessageIdAttachment(holder[i])
+                 || this.contentForceBase64 && emailData.isMsgUnitAttachment(holder[i])) {
+               //We don't need to do it, javamail does it for us
+               //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
+               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
+            }
+            
             // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
             //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
             if (holder[i].getContentType().startsWith("text/")) {
-               mbp.setText(new String(holder[i].getContent(), Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
+               mbp.setText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
+               mbp.setHeader("Content-Type", "application/octet-stream");
+               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);
             }
             else {
                // "application/xmlBlaster-xbformat"
                DataSource ds = new ByteArrayDataSource(
-                     holder[i].getContent(),
+                     content,
                      holder[i].getContentType());
                mbp.setDataHandler(new DataHandler(ds));
             }
@@ -489,48 +529,76 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       }
    }
 
-public String getHost() {
-	return host;
-}
-
-public void setHost(String host) {
-	this.host = host;
-}
-
-public String getPassword() {
-	return password;
-}
-
-public void setPassword(String password) {
-	this.password = password;
-}
-
-public int getPort() {
-	return port;
-}
-
-public void setPort(int port) {
-	this.port = port;
-}
-
-public void setUser(String user) {
-	this.user = user;
-}
-/**
- * @return a human readable usage help string
- */
-public java.lang.String usage() {
-   return "Provides access to a remote SMTP mail transfer agent (MTA)"
-   +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
-}
-
-/**
- * @return A link for JMX usage
- */
-public java.lang.String getUsageUrl() {
-   return Global.getJavadocUrl(this.getClass().getName(), null);
-}
-
-/* dummy to have a copy/paste functionality in jconsole */
-public void setUsageUrl(java.lang.String url) {}
+   public String getHost() {
+   	return host;
+   }
+   
+   public void setHost(String host) {
+   	this.host = host;
+   }
+   
+   public String getPassword() {
+   	return password;
+   }
+   
+   public void setPassword(String password) {
+   	this.password = password;
+   }
+   
+   public int getPort() {
+   	return port;
+   }
+   
+   public void setPort(int port) {
+   	this.port = port;
+   }
+   
+   public void setUser(String user) {
+   	this.user = user;
+   }
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage() {
+      return "Provides access to a remote SMTP mail transfer agent (MTA)"
+      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {}
+   
+   /**
+    * @return Returns the contentForceBase64.
+    */
+   public boolean isContentForceBase64() {
+      return this.contentForceBase64;
+   }
+   
+   /**
+    * @param contentForceBase64 The contentForceBase64 to set.
+    */
+   public void setContentForceBase64(boolean contentForceBase64) {
+      this.contentForceBase64 = contentForceBase64;
+   }
+   
+   /**
+    * @return Returns the messageIdForceBase64.
+    */
+   public boolean isMessageIdForceBase64() {
+      return this.messageIdForceBase64;
+   }
+   
+   /**
+    * @param messageIdForceBase64 The messageIdForceBase64 to set.
+    */
+   public void setMessageIdForceBase64(boolean messageIdForceBase64) {
+      this.messageIdForceBase64 = messageIdForceBase64;
+   }
 }

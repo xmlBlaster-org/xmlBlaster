@@ -35,8 +35,10 @@ import javax.mail.event.StoreEvent;
 import javax.mail.event.StoreListener;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 
+import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -242,7 +244,14 @@ public class MailUtil {
           * actual content data until we need it.
           */
          if (p.isMimeType("text/plain")) { // All "UTF-8"
-            AttachmentHolder a = new AttachmentHolder(fileName, ct, ((String)p.getContent()).getBytes(Constants.UTF8_ENCODING));
+            AttachmentHolder a = null;
+            if (p instanceof MimeBodyPart && Constants.EMAIL_TRANSFER_ENCODING.equals(((MimeBodyPart)p).getEncoding())) {
+               byte[] content = Base64.decode((String)p.getContent());
+               a = new AttachmentHolder(fileName, ct, content);
+            }
+            else {
+               a = new AttachmentHolder(fileName, ct, ((String)p.getContent()).getBytes(Constants.UTF8_ENCODING));
+            }
             attachments.add(a);
          } else if (p.isMimeType("multipart/*")) { // Go one level deeper ...
             Multipart mp = (Multipart) p.getContent();
@@ -256,19 +265,23 @@ public class MailUtil {
             level = accessPart((Part) p.getContent(), level, attachments);
             level--;
          } else {
+               byte[] content; 
                Object o = p.getContent();
                if (o instanceof String) {
-                  AttachmentHolder a = new AttachmentHolder(fileName, ct, ((String)o).getBytes(Constants.UTF8_ENCODING));
-                  attachments.add(a);
+                  content = ((String)o).getBytes(Constants.UTF8_ENCODING);
                } else if (o instanceof InputStream) {
                   InputStream is = (InputStream) o;
                   ByteArray ba = new ByteArray(p.getSize() > 0 ? p.getSize() : 1024, is);
-                  AttachmentHolder a = new AttachmentHolder(fileName, ct, ba.toByteArray());
-                  attachments.add(a);
+                  content = ba.toByteArray();
                } else {
-                  AttachmentHolder a = new AttachmentHolder(fileName, ct, (o.toString()).getBytes(Constants.UTF8_ENCODING));
-                  attachments.add(a);
+                  content = (o.toString()).getBytes(Constants.UTF8_ENCODING);
                }
+               
+               if (p instanceof MimeBodyPart && Constants.EMAIL_TRANSFER_ENCODING.equals(((MimeBodyPart)p).getEncoding())) {
+                  content = Base64.decode((String)p.getContent());
+               }
+               AttachmentHolder a = new AttachmentHolder(fileName, ct, content);
+               attachments.add(a);
          }
       }catch (Exception e) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, MailUtil.class.getName(), "Can't access email attachments", e);

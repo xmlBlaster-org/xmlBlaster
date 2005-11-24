@@ -42,6 +42,15 @@ public class AttachmentHolder {
          throw new IllegalArgumentException(e.toString());
       }
    }
+   
+   /**
+    * Does not need to be the same object instance. 
+    * @param attachmentHolder
+    * @return If the fileName are equal
+    */
+   public boolean equals(AttachmentHolder attachmentHolder) {
+      return getFileName().equals(attachmentHolder.getFileName());
+   }
 
    /**
     * @return Returns the content, never null

@@ -188,6 +188,12 @@ public class EmailData {
       return null;
    }
    
+   public boolean isMsgUnitAttachment(AttachmentHolder holder) {
+      AttachmentHolder msgUnitHolder = getMsgUnitAttachment();
+      if (msgUnitHolder == null) return false;
+      return msgUnitHolder.equals(holder);
+   }
+   
    /**
     * Comma separated value list of all attachment file names (unquoted) for logging. 
     * @return For example "a.xbf, b.xml, m.mid"
@@ -454,30 +460,43 @@ public class EmailData {
     * or for example <messageId><sessionId>somesecret</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
    public String getMessageId() {
-      String str = getSubject();
+      AttachmentHolder attachmentHolder = getMessageIdAttachment();
+      if (attachmentHolder == null) return null;
+      return new String(attachmentHolder.getContent());
+   }
+
+   /**
+    * Find the messageId of this message. 
+    * 
+    * This is usually in the subject or in an attachment
+    * with extension ".mid" 
+    * 
+    * @return null if none is found
+    * or for example <messageId><sessionId>somesecret</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
+    */
+   public AttachmentHolder getMessageIdAttachment() {
+      String subject = getSubject();
       final String startToken = "<" + MESSAGEID_TAG + ">";
-      if (str.indexOf(startToken) == -1) {
+      if (subject.indexOf(startToken) == -1) {
          // Look into attachment ...
-         str = null;
          // The <messageId> is not in the subject,
          // search in an attachment with extension ".mid"
          // or in an attachment without extension
          AttachmentHolder[] atts = getAttachments();
          for (int i = 0; i < atts.length; i++) {
             if (atts[i].hasExtension(MESSAGEID_EXTENSION)) {
-               str = new String(atts[i].getContent());
-               return str; // strongest
+               return atts[i]; // strongest
             }
          }
          for (int i = 0; i < atts.length; i++) {
             if (atts[i].getFileName().indexOf(".") == -1) {
                // Trying extensionless attachments
-               str = new String(atts[i].getContent());
+               String str = new String(atts[i].getContent());
                if (str.indexOf(startToken) == -1) {
                   log.warning("Can't guess messageId, trying this failed: '" + str + "'");
                }
                else {
-                  break;
+                  return atts[i];
                }
             }
          }
@@ -485,12 +504,20 @@ public class EmailData {
       else {
          // strip other text in subject
          final String endToken = "</" + MESSAGEID_TAG + ">";
-         int startIndex = str.indexOf(startToken);
-         int endIndex = str.indexOf(endToken);
+         int startIndex = subject.indexOf(startToken);
+         int endIndex = subject.indexOf(endToken);
          if (endIndex > startIndex)
-            str = str.substring(startIndex, endIndex+endToken.length());
+            subject = subject.substring(startIndex, endIndex+endToken.length());
+         // "messageId.mid"
+         return new AttachmentHolder(MESSAGEID_TAG+MESSAGEID_EXTENSION,subject);
       }
-      return str;
+      return null;
+   }
+   
+   public boolean isMessageIdAttachment(AttachmentHolder holder) {
+      AttachmentHolder messageIdHolder = getMessageIdAttachment();
+      if (messageIdHolder == null) return false;
+      return messageIdHolder.equals(holder);
    }
    
    /**
