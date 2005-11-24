@@ -313,6 +313,25 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
 
 plugin/email/responseTimeout=60000
 plugin/email/pingResponseTimeout=30000
+
+   /** 
+    * Setting this to true we can force the messageId attachment to
+    * always be base64 encoded.
+    * <br />
+    * Javamail does base64 encoding automatically if need so
+    * the default of this variable is false.
+    */
+   private boolean messageIdForceBase64;
+
+   /** 
+    * Setting this to true we can force the MsgUnit attachment to
+    * always be base64 encoded.
+    * <br />
+    * Javamail does base64 encoding automatically if need so
+    * the default of this variable is false.
+    */
+   private boolean contentForceBase64;
+
 -->
       </table>
    </configuration>
