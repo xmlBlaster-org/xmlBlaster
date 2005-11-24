@@ -50,7 +50,9 @@ public abstract class RequestReplyExecutor
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
    /** How long to block on remote call waiting on response */
-   protected long responseWaitTime = Integer.MAX_VALUE;
+   protected long responseTimeout = Integer.MAX_VALUE;
+   /** How long to block on remote call waiting on ping responses */
+   protected long pingResponseTimeout = Constants.MINUTE_IN_MILLIS;
    /** This is the client side */
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -89,8 +91,9 @@ public abstract class RequestReplyExecutor
     */
    protected void initialize(Global glob, AddressBase addressConfig) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("socket");
+      this.log = this.glob.getLog(getType().toLowerCase());
       this.addressConfig = addressConfig;
+      this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          this.compressZlibStream = true;
@@ -104,18 +107,21 @@ public abstract class RequestReplyExecutor
          this.compressZlibStream = false;
          this.compressZlib = false;
       }
-
-      setResponseWaitTime(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
-      // the responseWaitTime is used later to wait on a return value
+      
+      setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
+      // the responseTimeout is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
       //        and with "jacorb.client.pending_reply_timeout"
+
+      setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout", getDefaultPingResponseTimeout()).getValue());
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
    }
 
    /**
     * The protocol type, used for logging
-    * @return "SOCKET" or "EMAIL"
+    * @return "SOCKET" or "EMAIL", never null
     */
    abstract public String getType();
    
@@ -140,18 +146,52 @@ public abstract class RequestReplyExecutor
    }
 
    /**
+    * How long to block on remote call waiting on a ping response. 
+    * The default is to block for one minute
+    * This method can be overwritten by implementations like EMAIL
+    */
+   public long getDefaultPingResponseTimeout() {
+      return Constants.MINUTE_IN_MILLIS;
+   }
+
+   /**
     * Set the given millis to protect against blocking client.
     * @param millis If <= 0 it is set to the default (forever).
     * An argument less than or equal to zero means not to wait at all
     * and is not supported
     */
-   public final void setResponseWaitTime(long millis) {
+   public final void setResponseTimeout(long millis) {
       if (millis <= 0L) {
          log.warn(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + millis +
                       " is invalid, setting it to " + getDefaultResponseTimeout() + " millis");
-         this.responseWaitTime = getDefaultResponseTimeout();
+         this.responseTimeout = getDefaultResponseTimeout();
       }
-      this.responseWaitTime = millis;
+      this.responseTimeout = millis;
+   }
+
+   /**
+    * Set the given millis to protect against blocking client for ping invocations. 
+    * @param millis If <= 0 it is set to the default (one minute).
+    * An argument less than or equal to zero means not to wait at all
+    * and is not supported
+    */
+   public final void setPingResponseTimeout(long millis) {
+      if (millis <= 0L) {
+         log.warn(ME, this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + millis +
+                      " is invalid, setting it to " + getDefaultPingResponseTimeout() + " millis");
+         this.pingResponseTimeout = getDefaultPingResponseTimeout();
+      }
+      this.pingResponseTimeout = millis;
+   }
+
+   /**
+    * @return Returns the responseTimeout.
+    */
+   public long getResponseTimeout(MethodName methodName) {
+      if (MethodName.PING.equals(methodName)) {
+         return this.pingResponseTimeout;
+      }
+      return this.responseTimeout;
    }
 
    public final void setCbClient(I_CallbackExtended cbClient) {
@@ -463,7 +503,7 @@ public abstract class RequestReplyExecutor
          while (true) {
             try {
                //  An argument less than or equal to zero means not to wait at all
-               awakened = startSignal.attempt(responseWaitTime); // block max. milliseconds
+               awakened = startSignal.attempt(getResponseTimeout(msgInfo.getMethodName())); // block max. milliseconds
                break;
             }
             catch (InterruptedException e) {
@@ -474,7 +514,7 @@ public abstract class RequestReplyExecutor
          if (awakened) {
             if (log.TRACE) log.trace(ME, "Waking up, got response for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
-               throw new IOException(ME + ": Lost socket connection for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
+               throw new IOException(ME + ": Lost " + getType() + " connection for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
 
             if (log.DUMP) log.dump(ME, "Response for " + msgInfo.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
@@ -482,7 +522,7 @@ public abstract class RequestReplyExecutor
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
+            String str = "Timeout of " + responseTimeout + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/"+getType()+"/responseTimeout <millis>";
             removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME, str);
          }
@@ -555,7 +595,7 @@ public abstract class RequestReplyExecutor
    }
 
    /**
-    * Flush the data to the socket. 
+    * Flush the data to the protocol layer (socket, email, ...). 
     * Overwrite this in your derived class to send using your specific protocol 
     */
    abstract protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException;
