@@ -91,8 +91,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (this.driver == null)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, protocol type='" + super.address.getType() + "' is not supported");
       this.driver.connectLowlevel((Address)super.address);
-      if (super.address.getPingInterval() > 0)
+      if (super.address.getPingInterval() > 0) {
+         //spanPingTimer(1, true); // Could deadlock as it uses complete dispatch framework with its synchronized?
          this.driver.ping("");  // Try a low level ping
+      }
       if (log.TRACE) log.trace(ME, "Connected low level to " + super.address.toString());
    }
 
