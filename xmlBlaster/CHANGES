@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14139 HtmlMonitorPlugin.java
+   Using byte[] instead of String due to failure at image loading.
+   ReplaceVariables is used only for text-mime-types now.
+ 
  o #14135 
    Added method in JmxWrapper to invoke methods called from the HmlMonitorPlugin.
    This enables us to call MBean-methods from within a website which runs in the HtmlMonitorPlugin.
