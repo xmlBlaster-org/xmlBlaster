@@ -214,10 +214,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
-      return connect(qos, updateListener, true);
-   }
-
-   public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener, boolean sendConnect) throws XmlBlasterException {
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
           
@@ -298,7 +294,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   createDefaultCbServer();
                }
 
-               if (sendConnect) {
+               if (this.connectQos.doSendConnect()) {
                   // Try to connect to xmlBlaster ...
                   sendConnectQos();
                }

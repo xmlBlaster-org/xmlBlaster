@@ -130,7 +130,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * </pre>
     * @param qos Your configuration desire
     * @param updateListener If not null a callback server will be created and 
-    *        callback messages will be routed to your updateListener.update() method. 
+    *        callback messages will be routed to your updateListener.update() method.
+    * @return Can only be null if '-dispatch/connection/doSendConnect false' was set  
     * @throws XmlBlasterException only if connection state is DEAD, typically thrown on wrong configurations.
     *            You must call connect again with different settings.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
@@ -175,6 +176,9 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *       This is often the case if the client disappears and at a later point wants
     *       to reconnect. On server side the queue for this session remains alive and
     *       collects messages.
+    * <p />
+    * If '-dispatch/connection/doSendConnect false' was set call disconnect() nevertheless
+    * to cleanup client side resources.  
     * @param disconnectQos Describe the desired behavior on disconnect
     * @return false if connect() wasn't called before or if you call disconnect() multiple times
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>

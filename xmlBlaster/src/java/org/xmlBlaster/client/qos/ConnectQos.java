@@ -28,9 +28,9 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
  */
 public final class ConnectQos
 {
-   private String ME = "ConnectQos";
    private final Global glob;
    private final ConnectQosData connectQosData;
+   private boolean doSendConnect=true;
    /** Access to encrypt/decrypt framework, used by protocol plugins */
    //private I_MsgSecurityInterceptor securityInterceptor;
 
@@ -46,7 +46,8 @@ public final class ConnectQos
     */
    public ConnectQos(Global glob) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.connectQosData = new ConnectQosData(this.glob); 
+      this.connectQosData = new ConnectQosData(this.glob);
+      init();
    }
 
    /**
@@ -59,6 +60,7 @@ public final class ConnectQos
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = new ConnectQosData(this.glob, this.glob.getConnectQosFactory(), null, null); 
       this.connectQosData.loadClientPlugin(null, null, userId, passwd);
+      init();
    }
 
    /**
@@ -67,6 +69,11 @@ public final class ConnectQos
    public ConnectQos(Global glob, ConnectQosData connectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = connectQosData;
+      init();
+   }
+   
+   private void init() {
+      this.doSendConnect = this.glob.getProperty().get("dispatch/connection/doSendConnect", true);
    }
 
    public ConnectQosData getData() {
@@ -456,10 +463,34 @@ public final class ConnectQos
    }
    
    /**
+    * @return Returns the doSendConnect.
+    */
+   public boolean doSendConnect() {
+      return this.doSendConnect;
+   }
+
+   /**
+    * If set to false the connect() is not send to the
+    * server. In this case the client library is completely
+    * initialized and you can receive for example callback
+    * messages over 'email' or 'XMLRPC' protocols.<br />
+    * This is useful for clients which can't connect
+    * themselves (for example because of a firewall) and
+    * have a delegate client which does the real connect
+    * and possible subscribes.
+    * <br />
+    * Can be changed on command line with '-dispatch/connection/doSendConnect false'
+    * or in a property file. 
+    * @param doSendConnect Overwrites default or value from environment
+    */
+   public void doSendConnect(boolean doSendConnect) {
+      this.doSendConnect = doSendConnect;
+   }
+
+   /**
     *  For testing invoke: java org.xmlBlaster.client.qos.ConnectQos
     */
    public static void main( String[] args ) throws XmlBlasterException {
-      Global glob = new Global(args);
       {
          ConnectQos qos =new ConnectQos(new Global(args), "joe/2", "secret");//new SessionName(glob, "joe"));
          System.out.println(qos.toXml());
