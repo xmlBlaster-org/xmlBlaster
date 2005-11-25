@@ -17,7 +17,6 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
-import org.xmlBlaster.util.protocol.email.Pop3Driver;
 
 /**
  * Used for client to receive xmlBlaster callbacks over emails.
@@ -40,8 +39,6 @@ public class EmailCallbackImpl extends EmailExecutor implements
    private CallbackAddress callbackAddress;
 
    private PluginInfo pluginInfo;
-
-   private Pop3Driver pop3Driver;
 
    /** Stop the thread */
    boolean running = false;
@@ -88,12 +85,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
       setCbClient(cbClient); // access callback client in super class
                               // SocketExecutor:callback
 
-      this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
-            .getName());
-      if (this.pop3Driver == null) {
-         this.pop3Driver = new Pop3Driver();
-         this.pop3Driver.init(glob, this.pluginInfo);
-      }
+      //super.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginInfo);
 
       // Now we can do super.init() as it needs the pop3Driver in global
       super.init(glob, callbackAddress, this.pluginInfo);
@@ -127,9 +119,8 @@ public class EmailCallbackImpl extends EmailExecutor implements
                ME, "Illegal 'from' address '" + to + "'");
       }
 
-      this.pop3Driver.registerForEmail(super.getEmailSessionId(),
+      getPop3Driver().registerForEmail(super.getEmailSessionId(),
             "", this);
-      try { super.pop3Driver.activate(); } catch (Exception e) { e.printStackTrace(); }
 
       log.info(ME, "Initialized email callback, from '"
             + super.fromAddress.toString() + "' to="
@@ -157,8 +148,8 @@ public class EmailCallbackImpl extends EmailExecutor implements
     * Shutdown callback only.
     */
    public synchronized void shutdown() {
-      if (this.pop3Driver != null && super.getEmailSessionId().length() > 0)
-         this.pop3Driver.deregisterForEmail(super.getEmailSessionId(),"");
+      if (super.pop3Driver != null && super.getEmailSessionId().length() > 0)
+         super.pop3Driver.deregisterForEmail(super.getEmailSessionId(),"");
       setCbClient(null); // reset callback client in super class
                            // SocketExecutor:callback
    }

@@ -114,7 +114,7 @@ public class CallbackEmailDriver extends EmailExecutor implements
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
       try {
-         super.pop3Driver.activate();
+         getPop3Driver().activate();
       } catch (Exception e) {
          e.printStackTrace();
       }
@@ -152,11 +152,20 @@ public class CallbackEmailDriver extends EmailExecutor implements
    public String ping(String qos) throws XmlBlasterException {
       
       if (Thread.currentThread().getName().equals(
-            super.pop3Driver.getThreadName())) {
+            getPop3Driver().getThreadName())) {
          if (log.TRACE) log.trace(ME,
                   "Email ping is suppressed as doing this from thread '"
-                  + super.pop3Driver.getThreadName()
+                  + getPop3Driver().getThreadName()
                   + "' would deadlock");
+         return Constants.RET_OK;
+      }
+      
+      // "<qos><state info='INITIAL'/></qos>"
+      // 
+      if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
+         if (log.TRACE) log.trace(ME,
+               "Email callback ping is suppressed as doing it before connect() may" +
+               " block the clients connect() if the callback is not functional");
          return Constants.RET_OK;
       }
       

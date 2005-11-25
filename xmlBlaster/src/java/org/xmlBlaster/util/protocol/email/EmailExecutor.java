@@ -14,6 +14,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.RequestReplyExecutor;
 import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
@@ -91,7 +92,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     * @param addressBase
     *           Contains the email TO: address
     */
-   public void init(Global glob, AddressBase addressBase, I_PluginConfig pluginConfig)
+   public void init(Global glob, AddressBase addressBase, PluginInfo pluginConfig)
          throws XmlBlasterException {
       this.addressBase = addressBase;
       this.pluginConfig = pluginConfig;
@@ -103,8 +104,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       //   ClientCbServerProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,compress/type=zlib:stream
       //   ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,mail.user=demo,mail.password=demo,mail.pop3.url=pop3://demo:demo@localhost/INBOX,pop3PollingInterval=1000,compress/type=zlib:stream
       // settings to the clients Address configuration
-      if (pluginConfig != null)
-         this.addressBase.setPluginInfoParameters(pluginConfig.getParameters());
+      if (this.pluginConfig != null)
+         this.addressBase.setPluginInfoParameters(this.pluginConfig.getParameters());
 
       super.initialize(glob, addressBase);
       
@@ -122,12 +123,9 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          }
       }
 
-      this.smtpClient = SmtpClient.instance();
-      this.smtpClient.setSessionProperties(null, this.glob, this.pluginConfig);
-
       // from="xmlBlaster@localhost"
-      String from = this.glob.get("mail.smtp.from", this.smtpClient.getUser()
-            + "@localhost", null, this.pluginConfig);
+      String from = this.glob.get("mail.smtp.from",
+            "unknown@localhost", null, this.pluginConfig);
       try {
          this.fromAddress = new InternetAddress(from);
       } catch (AddressException e) {
@@ -141,15 +139,48 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             "XmlBlaster Generated Email "+SUBJECT_MESSAGEID_TOKEN, null, this.pluginConfig);
 
 
-      this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.class
-            .getName());
-      if (this.pop3Driver == null) {
-         log.warning("Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support");
-         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
-               "Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support");
-      }
       
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
+   }
+
+   /**
+    * Access the Pop3Driver. 
+    * @return never null
+    */
+   public Pop3Driver getPop3Driver() throws XmlBlasterException {
+      if (this.pop3Driver == null) {
+         this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.OBJECTENTRY_KEY);
+         
+         if (this.pop3Driver == null) {
+            if (this.glob.isServerSide()) {
+               // On server side the SmtpClient is created by the runlevel manager as configured in xmlBlasterPlugins.xml
+               String text = "Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support";
+               log.warning(text);
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+            }
+            // On client side we create it dynamically as configured in xmlBlaster.properties
+            this.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginConfig);
+         }
+      }
+      return this.pop3Driver;
+   }
+   
+   public SmtpClient getSmtpClient() throws XmlBlasterException {
+      if (this.smtpClient == null) {
+         this.smtpClient = (SmtpClient) glob.getObjectEntry(SmtpClient.OBJECTENTRY_KEY);
+
+         if (this.smtpClient == null) {
+            if (this.glob.isServerSide()) {
+               // On server side the SmtpClient is created by the runlevel manager as configured in xmlBlasterPlugins.xml
+               String text = "Please register a SmtpClient in xmlBlasterPlugins.xml to have 'email' support";
+               log.warning(text);
+               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+            }
+            // On client side we create it dynamically as configured in xmlBlaster.properties
+            this.smtpClient = SmtpClient.getSmtpClient(this.glob, this.pluginConfig);
+         }
+      }
+      return this.smtpClient;
    }
    
   // public String getType() {
@@ -160,6 +191,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     * Defaults to one day. 
     */
    public long getDefaultResponseTimeout() {
+      return Constants.DAY_IN_MILLIS;
+   }
+   
+   /**
+    * Defaults to one day. 
+    */
+   public long getDefaultUpdateResponseTimeout() {
       return Constants.DAY_IN_MILLIS;
    }
    
@@ -226,7 +264,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          requestId = msgInfo.createRequestId(null);
 
          if (expectingResponse) { // register at the POP3 poller
-            this.pop3Driver.registerForEmail(getEmailSessionId(), requestId, this);
+            getPop3Driver().registerForEmail(getEmailSessionId(), requestId, this);
          }
 
          // super calls our sendMessage() which effectively sends the message
@@ -245,7 +283,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                      + addressBase.getRawAddress(), e);
       } finally {
          if (expectingResponse)
-            this.pop3Driver.deregisterForEmail(getEmailSessionId(), requestId);
+            getPop3Driver().deregisterForEmail(getEmailSessionId(), requestId);
       }
    }
 
@@ -257,12 +295,14 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       EmailData emailData = (EmailData) response;
 
       AttachmentHolder msgUnitAttachmentHolder = null;
+      String pop3Url = null;
       try {
+         pop3Url = getPop3Driver().getPop3Url(); // for logging only
          msgUnitAttachmentHolder =
             emailData.getMsgUnitAttachment(); // "*.xbf", "*.xbfz", "*.xmlz", ...
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
-               + this.pop3Driver.getPop3Url()
+               + pop3Url
                + ", please check the format: "
                + e.toString());
          return;
@@ -308,7 +348,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
 
       } catch (Throwable e) {
          log.warning("Error parsing email data from "
-                           + this.pop3Driver.getPop3Url()
+                           + pop3Url
                            + ", check if client and server have identical compression settings: "
                            + e.toString() + ": " + emailData.toXml(true));
          //shutdown();
@@ -329,7 +369,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             String messageId = msgInfo.getSecretSessionId()+msgInfo.getRequestId();
             if (msgInfo.isInvoke() && messageId.equals(this.lastMessageId)) {
                log.warning("Can't process email data from "
-                     + this.pop3Driver.getPop3Url()
+                     + getPop3Driver().getPop3Url()
                      + ", it seems to be looping as requestId has been processed already"
                      + ": " + emailData.toXml(true));
                return;
@@ -341,13 +381,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          // returnQos or the received invocation
          if (receiveReply(msgInfo, false) == false) {
             log.warning("Error parsing email data from "
-                  + this.pop3Driver.getPop3Url()
+                  + getPop3Driver().getPop3Url()
                   + ", CONNECT etc is not yet implemented");
          }
          return;
       } catch (Throwable e) {
          log.warning("Can't process email data from "
-               + this.pop3Driver.getPop3Url() + ": " + e.toString());
+               + pop3Url + ": " + e.toString());
          return;
       }
    }
@@ -433,7 +473,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          emailData.addAttachment(a);
       }
       
-      this.smtpClient.sendEmail(emailData);
+      getSmtpClient().sendEmail(emailData);
       //this.smtpClient.sendEmail(this.fromAddress, toAddr, subject,
       //      attachmentName, attachment, attachmentName2, messageId,
       //      Constants.UTF8_ENCODING);
@@ -540,7 +580,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       if (sessionName.isPubSessionIdUser()) 
          setEmailSessionId(sessionName.getRelativeName());
       else {
-         log.warning("The current email callback implementation can handle max one connection per client name (like 'joe') if you don't supply a positive sessionId");
+         log.warning("The current email callback implementation can handle max one connection per email account (like 'joe' on the POP3 server) if you don't supply a positive sessionId");
          setEmailSessionId(sessionName.getLoginName());
       }
    }

@@ -50,9 +50,11 @@ public abstract class RequestReplyExecutor
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
    /** How long to block on remote call waiting on response */
-   protected long responseTimeout = Integer.MAX_VALUE;
+   protected long responseTimeout;
    /** How long to block on remote call waiting on ping responses */
-   protected long pingResponseTimeout = Constants.MINUTE_IN_MILLIS;
+   protected long pingResponseTimeout;
+   /** How long to block on remote call waiting on update responses */
+   protected long updateResponseTimeout;
    /** This is the client side */
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
@@ -117,6 +119,9 @@ public abstract class RequestReplyExecutor
 
       setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout", getDefaultPingResponseTimeout()).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
+
+      setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout", getDefaultUpdateResponseTimeout()).getValue());
+      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
    }
 
    /**
@@ -155,6 +160,15 @@ public abstract class RequestReplyExecutor
    }
 
    /**
+    * How long to block on remote call waiting on a update() response. 
+    * The default is to block forever
+    * This method can be overwritten by implementations like EMAIL
+    */
+   public long getDefaultUpdateResponseTimeout() {
+      return Integer.MAX_VALUE;
+   }
+
+   /**
     * Set the given millis to protect against blocking client.
     * @param millis If <= 0 it is set to the default (forever).
     * An argument less than or equal to zero means not to wait at all
@@ -185,13 +199,46 @@ public abstract class RequestReplyExecutor
    }
 
    /**
+    * Set the given millis to protect against blocking client for update() invocations. 
+    * @param millis If <= 0 it is set to the default (one minute).
+    * An argument less than or equal to zero means not to wait at all
+    * and is not supported
+    */
+   public final void setUpdateResponseTimeout(long millis) {
+      if (millis <= 0L) {
+         log.warn(ME, this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + millis +
+                      " is invalid, setting it to " + getDefaultUpdateResponseTimeout() + " millis");
+         this.updateResponseTimeout = getDefaultUpdateResponseTimeout();
+      }
+      this.updateResponseTimeout = millis;
+   }
+
+   /**
     * @return Returns the responseTimeout.
     */
    public long getResponseTimeout(MethodName methodName) {
       if (MethodName.PING.equals(methodName)) {
          return this.pingResponseTimeout;
       }
+      else if (MethodName.UPDATE.equals(methodName)) {
+         return this.updateResponseTimeout;
+      }
       return this.responseTimeout;
+   }
+   
+   /**
+    * For logging. 
+    * @param methodName
+    * @return
+    */
+   public String getResponseTimeoutPropertyName(MethodName methodName) {
+      if (MethodName.PING.equals(methodName)) {
+         return "pingResponseTimeout";
+      }
+      else if (MethodName.UPDATE.equals(methodName)) {
+         return "updateResponseTimeout";
+      }
+      return "responseTimeout";
    }
 
    public final void setCbClient(I_CallbackExtended cbClient) {
@@ -522,7 +569,10 @@ public abstract class RequestReplyExecutor
             return response[0];
          }
          else {
-            String str = "Timeout of " + responseTimeout + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/"+getType()+"/responseTimeout <millis>";
+            String str = "Timeout of " + getResponseTimeout(msgInfo.getMethodName()) 
+                       + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId 
+                       + ") response. You can change it with -plugin/"
+                       + getType()+"/"+getResponseTimeoutPropertyName(msgInfo.getMethodName())+" <millis>";
             removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME, str);
          }
@@ -615,6 +665,13 @@ public abstract class RequestReplyExecutor
 
    public boolean isCompressZlibStream() {
       return this.compressZlibStream;
+   }
+
+   /**
+    * @return Returns the updateResponseTimeout.
+    */
+   public long getUpdateResponseTimeout() {
+      return this.updateResponseTimeout;
    }
 }
 

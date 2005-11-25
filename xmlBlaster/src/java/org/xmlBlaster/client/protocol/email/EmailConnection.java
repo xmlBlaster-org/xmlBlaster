@@ -17,7 +17,6 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
-import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
@@ -93,12 +92,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
       if (!this.isInitialized) {
-         super.pop3Driver = (Pop3Driver)glob.getObjectEntry(Pop3Driver.class.getName());
-         if (super.pop3Driver == null) {
-            super.pop3Driver = new Pop3Driver();
-            super.pop3Driver.init(glob, this.pluginInfo);
-         }
-
+         //super.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginInfo);
          super.init(glob, address, this.pluginInfo);
          super.setEmailSessionId(""+new Timestamp().getTimestamp()); // Initially until the secret session id is known
          

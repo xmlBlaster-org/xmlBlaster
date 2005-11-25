@@ -21,12 +21,14 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMultipart;
 
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XbUri;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
@@ -47,7 +49,6 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBean {
-   private static SmtpClient theMailClient;
 
    private static Logger log = Logger.getLogger(SmtpClient.class.getName());
 
@@ -61,10 +62,13 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
    private PasswordAuthentication authentication;
 
+   /*
    private String user;
    private String password;
    private String host;
    private int port;
+   */
+   private XbUri xbUri;
    
    private boolean isInitialized;
    
@@ -89,30 +93,44 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    /** My JMX registration */
    private Object mbeanHandle;
 
+   public static final String OBJECTENTRY_KEY = SmtpClient.class.getName();
+   
    /**
     * @return Returns the user.
     */
    public String getUser() {
-      return this.user;
-   }
-
-   public static SmtpClient instance() {
-      if (theMailClient == null) {
-         synchronized (SmtpClient.class) {
-            if (theMailClient == null) {
-               theMailClient = new SmtpClient();
-            }
-         }
-      }
-      return theMailClient;
+      return this.xbUri.getUser();
    }
 
    /**
-    * Usually a singleton, but you can create your own instances as the
-    * constructor is public
+    * The SmtpClient is a singleton in the Global scope. 
+    * Access this singleton for the given global, and if it
+    * doesn't exist create one instance.
+    * @param glob
+    * @param pluginInfo
+    * @return never null
+    * @throws XmlBlasterException 
+    */
+   public static SmtpClient getSmtpClient(Global glob, I_PluginConfig pluginConfig)
+                              throws XmlBlasterException {
+      SmtpClient smtpClient = (SmtpClient)glob.getObjectEntry(OBJECTENTRY_KEY);
+      if (smtpClient != null)
+         return smtpClient;
+      
+      synchronized(glob.objectMapMonitor) {
+         smtpClient = (SmtpClient)glob.getObjectEntry(OBJECTENTRY_KEY);
+         if (smtpClient == null) {
+            smtpClient = new SmtpClient();
+            smtpClient.setSessionProperties(null, glob, pluginConfig); // adds itself as ObjectEntry
+         }
+         return smtpClient;
+      }
+   }
+
+   /**
+    * Called from runlevel manager on server side. 
     */
    public SmtpClient() {
-      if (theMailClient == null) theMailClient = this;
    }
 
    /**
@@ -160,7 +178,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
       // Make this singleton available for others
       // key="org.xmlBlaster.util.protocol.email.SmtpClient"
-      this.glob.addObjectEntry(SmtpClient.class.getName(), this);
+      this.glob.addObjectEntry(OBJECTENTRY_KEY, this);
    }
 
    /**
@@ -181,12 +199,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * 
     * <pre>
     * Properties props = System.getProperties();
-    * props.put(&quot;mail.user&quot;, &quot;joe&quot;);
-    * props.put(&quot;mail.password&quot;, &quot;joe&quot;);
     * props.put(&quot;mail.debug&quot;, &quot;true&quot;);
-    * props.put(&quot;mail.transport.protocol&quot;, &quot;smtp&quot;);
-    * props.put(&quot;mail.smtp.host&quot;, &quot;localhost&quot;);
-    * props.put(&quot;mail.smtp.port&quot;, &quot;25&quot;);
+    * props.put(&quot;mail.smtp.url&quot;, &quot;smtp://demo:secret@localhost:2525&quot;);
     * </pre>
     * 
     * <p>
@@ -217,6 +231,26 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          props.put("mail.debug", glob.get("mail.debug", System.getProperty(
                "mail.debug", "false"), null, pluginConfig));
 
+      String uri = glob.get("mail.smtp.url", System
+            .getProperty("mail.smtp.url"), null, pluginConfig);
+      if (uri == null) {
+         throw new XmlBlasterException(glob,
+               ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
+               "Please configure a mail.smtp.url to access the SMTP MTA, for example 'mail.smtp.url=smtp://joe:password@smtp.xmlBlaster.org:25'");
+      }
+      if (props.getProperty("mail.smtp.url") == null)
+         props.put("mail.smtp.url", uri);
+      try {
+         this.xbUri = new XbUri(props.getProperty("mail.smtp.url").trim());
+      } catch (URISyntaxException e) {
+         throw new XmlBlasterException(glob,
+               ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
+               "Your URI '" + props.getProperty("mail.smtp.url").trim() +
+               "' is illegal", e);
+      }
+      
+      String p;
+      /*
       if (props.getProperty("mail.user") == null)
          props.put("mail.user", glob.get("mail.user", System
                .getProperty("user.name"), null, pluginConfig));
@@ -240,8 +274,9 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       if (props.getProperty("mail.smtp.port") == null)
          props.put("mail.smtp.port", glob.get("mail.smtp.port", "25", null,
                pluginConfig));
-      String p = props.getProperty("mail.smtp.port");
+      p = props.getProperty("mail.smtp.port");
       this.port = new Integer(p).intValue();
+      */
       
       if (props.getProperty("messageIdForceBase64") == null)
          props.put("messageIdForceBase64", ""+glob.get("messageIdForceBase64", false, null,
@@ -258,7 +293,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       // Pass "this" for SMTP authentication with Authenticator
       // For only sending mails we can pass null
       this.session = Session.getDefaultInstance(props, this);
-      this.authentication = new PasswordAuthentication(getUser(), password);
+      this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());
       this.isInitialized = true;
       
       if (this.mbeanHandle == null) {
@@ -268,10 +303,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 	      this.mbeanHandle = glob.registerMBean(this.contextNode, this);
       }
 
-      if (log.isLoggable(Level.FINER))
-         log.finer("Setting user='" + user + "' password='" + password + "'");
-      log.info("SMTP client to '" + shema + "://" + getUser() + "@" + host + ":"
-            + port + "' is ready");
+      log.info("SMTP client to '" + this.xbUri.getUrlWithoutPassword() + "' is ready");
    }
 
    /**
@@ -505,7 +537,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
       SmtpClient mail = null;
       try {
-         mail = SmtpClient.instance();
+         mail = SmtpClient.getSmtpClient(glob, null);
 
          final boolean debug = false;
 
@@ -529,33 +561,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       }
    }
 
-   public String getHost() {
-   	return host;
+   public String getUri() {
+   	return this.xbUri.toString();
    }
    
-   public void setHost(String host) {
-   	this.host = host;
+   public void setUri(String uri) {
+      try {
+         this.xbUri = new XbUri(uri);
+      } catch (URISyntaxException e) {
+         throw new IllegalArgumentException(
+               "Your URI '" + uri +
+               "' is illegal: " + e.toString());
+      }
    }
    
-   public String getPassword() {
-   	return password;
-   }
-   
-   public void setPassword(String password) {
-   	this.password = password;
-   }
-   
-   public int getPort() {
-   	return port;
-   }
-   
-   public void setPort(int port) {
-   	this.port = port;
-   }
-   
-   public void setUser(String user) {
-   	this.user = user;
-   }
    /**
     * @return a human readable usage help string
     */

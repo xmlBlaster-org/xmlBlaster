@@ -101,6 +101,7 @@ public class Constants {
    /** The returned message status if OK */
    public final static String STATE_OK = "OK";
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
+   public final static String INFO_INITIAL = "INITIAL";
 
    /* C-client if queued on client side: "<qos><state id='OK' info='QUEUED'/></qos>" */
       

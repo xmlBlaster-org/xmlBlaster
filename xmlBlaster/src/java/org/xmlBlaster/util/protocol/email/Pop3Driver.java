@@ -21,6 +21,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -78,7 +79,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *      protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
+public class Pop3Driver extends Authenticator
+implements I_Plugin, I_Timeout,
       Pop3DriverMBean {
    private static Logger log = Logger.getLogger(Pop3Driver.class.getName());
 
@@ -90,7 +92,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
 
    private String pop3Url;
 
-   private PluginInfo pluginInfo;
+   private I_PluginConfig pluginConfig;
 
    private Timeout timeout;
 
@@ -111,7 +113,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
    private Object mbeanHandle;
 
    // Not tested and currently switched off
-   private Map holdbackMap = new HashMap();
+   private Map holdbackMap = Collections.synchronizedMap(new HashMap());
 
    private long holdbackExpireTimeout;
 
@@ -122,6 +124,81 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
    public static final String POP3_FOLDER = "inbox";
 
    private String threadName;
+   
+   public static final String OBJECTENTRY_KEY = Pop3Driver.class.getName();
+   
+   /**
+    * The Pop3Driver is a singleton in the Global scope. 
+    * Access this singleton for the given global, and if it
+    * doesn't exist create one instance.
+    * @param glob
+    * @param pluginConfig
+    * @return never null
+    * @throws XmlBlasterException 
+    */
+   public static Pop3Driver getPop3Driver(Global glob, I_PluginConfig pluginConfig)
+                              throws XmlBlasterException {
+      Pop3Driver pop3Driver = (Pop3Driver)glob.getObjectEntry(OBJECTENTRY_KEY);
+      if (pop3Driver != null)
+         return pop3Driver;
+      
+      synchronized(glob.objectMapMonitor) {
+         pop3Driver = (Pop3Driver)glob.getObjectEntry(OBJECTENTRY_KEY);
+         if (pop3Driver == null) {
+            pop3Driver = new Pop3Driver();
+            // Uhhh - a downcast:
+            pop3Driver.init(glob, pluginConfig); // adds itself as ObjectEntry
+         }
+         return pop3Driver;
+      }
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). The
+    * Pop3Driver singleton is registered in the Global object store.
+    * 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(Global glob, PluginInfo pluginInfo)
+         throws XmlBlasterException {
+      init(glob, (I_PluginConfig)pluginInfo);
+   }
+
+   public void init(Global glob, I_PluginConfig pluginConfig)
+      throws XmlBlasterException {
+      this.glob = glob;
+      this.pluginConfig = pluginConfig;
+
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(this.glob,
+            ContextNode.SERVICE_MARKER_TAG, "Pop3Driver", this.glob
+                  .getContextNode());
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+
+      this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
+            this.pluginConfig);
+
+      boolean activate = glob.get("activate", true, null, this.pluginConfig);
+
+      // Default is 0 which is off
+      this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 0, null,
+            this.pluginConfig);
+
+      setSessionProperties(null, glob, this.pluginConfig);
+
+      // Make this singleton available for others
+      // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
+      glob.addObjectEntry(OBJECTENTRY_KEY, this);
+
+      this.timeout = new Timeout(this.threadName);
+      if (activate) {
+         try {
+            activate();
+         } catch (Exception e) {
+            throw (XmlBlasterException) e;
+         }
+      }
+   }
 
    /**
     * You need to call setSessionProperties() thereafter.
@@ -136,7 +213,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
     * @return The configured [type] in xmlBlaster.properties, defaults to "pop3"
     */
    public String getProtocolId() {
-      return (this.pluginInfo == null) ? "pop3" : this.pluginInfo.getType();
+      return (this.pluginConfig == null) ? "pop3" : this.pluginConfig.getType();
    }
 
    /**
@@ -170,6 +247,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
       }
       if (log.isLoggable(Level.FINE))
          log.fine("Added listener with key=" + key);
+
+      // Try to deliver hold back messages
+      tryToDeliverHoldbackMails();
    }
 
    public Object deregisterForEmail(String secretSessionId, String requestId) {
@@ -203,18 +283,32 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
       }
       return buf.toString();
    }
+   
+   private void handleLostEmail(EmailData emailData) {
+      // TODO: What to do with lost emails?
+      /*
+      try {
+         emailData.convertToException(ErrorCode.COMMUNICATION);
+         SmtpClient.getSmtpClient(this.glob, this.pluginConfig).sendEmail(emailData);
+      }
+      catch (XmlBlasterException e) {
+         log.severe("Lost email: " + e.getMessage() + ": " + emailData.toXml(true));
+      }
+      */
+   }
 
    /**
     * Notify a listener about a new email. The registration remains The listener
     * is searched as a "sessionId-requestId" and as a general "sessionId"
     * 
-    * @param messageData
+    * @param emailData
+    * @param calledFromHoldbackMap is true if we try a redelivery
     * @return The listener notified or null if none was found
     */
-   private String notify(EmailData messageData) {
-      if (messageData == null)
+   private String notify(EmailData emailData, boolean calledFromHoldbackMap) {
+      if (emailData == null)
          return null;
-      String key = messageData.getSessionId() + messageData.getRequestId();
+      String key = emailData.getSessionId() + emailData.getRequestId();
       I_ResponseListener listenerSession = null;
       I_ResponseListener listenerRequest = null;
       I_ResponseListener listenerClusterNodeId = null;
@@ -222,7 +316,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
          listenerRequest = (I_ResponseListener) this.listeners.get(key);
          if (listenerRequest == null) {
             listenerSession = (I_ResponseListener) this.listeners
-                  .get(messageData.getSessionId());
+                  .get(emailData.getSessionId());
             if (listenerSession == null) {
                listenerClusterNodeId = (I_ResponseListener) this.listeners
                      .get(this.glob.getId());
@@ -234,9 +328,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
       if (listenerRequest != null) {
          if (log.isLoggable(Level.FINER))
             log.finer("Request specific listener found for key=" + key
-                  + ", email is " + messageData.toString());
-         listenerRequest.incomingMessage(messageData.getRequestId(),
-               messageData);
+                  + ", email is " + emailData.toString());
+         listenerRequest.incomingMessage(emailData.getRequestId(),
+               emailData);
          return key;
       }
 
@@ -244,31 +338,41 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
       if (listenerSession != null) {
          if (log.isLoggable(Level.FINER))
             log.finer("SessRequest specific listener found for key="
-                  + messageData.getSessionId() + ", email is "
-                  + messageData.toString());
-         listenerSession.incomingMessage(messageData.getRequestId(),
-               messageData);
-         return messageData.getSessionId();
+                  + emailData.getSessionId() + ", email is "
+                  + emailData.toString());
+         listenerSession.incomingMessage(emailData.getRequestId(),
+               emailData);
+         return emailData.getSessionId();
       }
 
       // A cluster node is interested in all messages (EmailDriver.java)
       if (listenerClusterNodeId != null) {
          if (log.isLoggable(Level.FINER))
             log.finer("Node specific listener found for key="
-                  + this.glob.getId() + ", email is " + messageData.toString());
-         listenerClusterNodeId.incomingMessage(messageData.getRequestId(),
-               messageData);
-         return messageData.getSessionId();
+                  + this.glob.getId() + ", email is " + emailData.toString());
+         listenerClusterNodeId.incomingMessage(emailData.getRequestId(),
+               emailData);
+         return emailData.getSessionId();
+      }
+      
+      if (calledFromHoldbackMap) {
+         if (log.isLoggable(Level.FINER))
+            log.finer("No registrar for holdback mail found, we try again later: " + emailData.toString());
+         return null; // try again later
       }
 
       if (this.holdbackExpireTimeout > 0) {
          Timestamp timestamp = new Timestamp();
-         this.holdbackMap.put(new Long(timestamp.getTimestamp()), messageData);
+         this.holdbackMap.put(new Long(timestamp.getTimestamp()), emailData);
+         log.warning("None of our registered listeners '" + getListeners()
+               + "' matches for key=" + key + ", email is holdback in RAM, we try later again");
       }
-
-      log.warning("None of our registered listeners '" + getListeners()
-            + "' matches for key=" + key + ", email is "
-            + messageData.toString());
+      else {
+         log.warning("None of our registered listeners '" + getListeners()
+               + "' matches for key=" + key + ", this email is discarded: "
+               + emailData.toString());
+         handleLostEmail(emailData);
+      }
       return null;
    }
 
@@ -286,49 +390,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
 
    /** Enforced by I_Plugin */
    public String getVersion() {
-      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
-   }
-
-   /**
-    * This method is called by the PluginManager (enforced by I_Plugin). The
-    * Pop3Driver singleton is registered in the Global object store.
-    * 
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
-    */
-   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
-         throws XmlBlasterException {
-      this.glob = glob;
-      this.pluginInfo = pluginInfo;
-
-      // For JMX instanceName may not contain ","
-      this.contextNode = new ContextNode(this.glob,
-            ContextNode.SERVICE_MARKER_TAG, "Pop3Driver", this.glob
-                  .getContextNode());
-      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
-
-      this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
-            this.pluginInfo);
-
-      boolean activate = glob.get("activate", true, null, this.pluginInfo);
-
-      // Default is off
-      this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 0, null,
-            this.pluginInfo);
-
-      setSessionProperties(null, glob, pluginInfo);
-
-      // Make this singleton available for others
-      // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
-      glob.addObjectEntry(Pop3Driver.class.getName(), this);
-
-      this.timeout = new Timeout(this.threadName);
-      if (activate) {
-         try {
-            activate();
-         } catch (Exception e) {
-            throw (XmlBlasterException) e;
-         }
-      }
+      return (this.pluginConfig == null) ? "1.0" : this.pluginConfig.getVersion();
    }
 
    /**
@@ -404,8 +466,45 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
    }
 
    private Long[] getHoldbackTimestamps() {
-      return (Long[]) this.holdbackMap.keySet().toArray(
-            new Long[this.holdbackMap.size()]);
+      synchronized (this.holdbackMap) {
+         return (Long[]) this.holdbackMap.keySet().toArray(
+               new Long[this.holdbackMap.size()]);
+      }
+   }
+
+   /**
+    * Try to deliver hold back messages to local registrars. 
+    * This happens if on startup we access POP3 messages but nobody has
+    * registered yet
+    * <br />
+    * Switch this feature on by setting holdbackExpireTimeout to a value > 0.
+    * After the given milli seconds the message is discarded.
+    * <br />
+    * For example a client may on startup receive update() mails before he
+    * has initialized the CallbackEmailDriver. Those messages are kept in RAM
+    * if the client stops immediately the mails are lost but redelivered by the server
+    * after the responseTimeout.
+    */
+   private void tryToDeliverHoldbackMails() {
+      if (this.holdbackExpireTimeout > 0 && getNumberOfHoldbackEmails() > 0) {
+         Long[] keys = getHoldbackTimestamps();
+         Timestamp now = new Timestamp();
+         for (int i = 0; i < keys.length; i++) {
+            long tt = new Timestamp(keys[i].longValue()).getMillis();
+            EmailData emailData = (EmailData)this.holdbackMap.get(keys[i]);
+            if ((tt + this.holdbackExpireTimeout) < now.getMillis()) {
+               log.warning("Can't deliver holdback email, we discard it now: " + emailData.toString());
+               this.holdbackMap.remove(keys[i]);
+               handleLostEmail(emailData);
+            } else {
+               String listenerKey = notify(emailData, true);
+               if (listenerKey != null) {
+                  log.fine("Holdback email is now delivered: " + emailData.toString());
+                  this.holdbackMap.remove(keys[i]);
+               }
+            }
+         }
+      }
    }
 
    /**
@@ -415,26 +514,9 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
       //if (log.isLoggable(Level.FINER))
       //   log.finer("Timeout: Reading POP3 messages from " + getPop3Url());
 
-      // First try to deliver hold back messages
-      // This happens if on startup we access POP3 messages but nobody has
-      // registered yet
-      if (this.holdbackExpireTimeout > 0 && this.holdbackMap.size() > 0) {
-         Long[] keys = getHoldbackTimestamps();
-         Timestamp now = new Timestamp(); // nano seconds
-         long expireNanos = this.holdbackExpireTimeout * Timestamp.MILLION;
-         for (int i = 0; i < keys.length; i++) {
-            long tt = keys[i].longValue();
-            if ((tt + expireNanos) > now.getTimestamp()) {
-               this.holdbackMap.remove(keys[i]);
-            } else {
-               String listenerKey = notify((EmailData) this.holdbackMap
-                     .get(keys[i]));
-               if (listenerKey != null) {
-                  this.holdbackMap.remove(keys[i]);
-               }
-            }
-         }
-      }
+      // TODO: Remove here again, but for now we leave it to have an expiry check
+      //        we need to add a specific holdbackExpireTimeout Timer 
+      tryToDeliverHoldbackMails();
 
       try {
          EmailData[] msgs = readInbox(Pop3Driver.CLEAR_MESSAGES);
@@ -445,7 +527,7 @@ public class Pop3Driver extends Authenticator implements I_Plugin, I_Timeout,
             EmailData emailData = msgs[i];
             if (log.isLoggable(Level.FINER))
                log.finer("Got from POP3 email" + emailData.toXml(true));
-            String notifiedListener = notify(emailData);
+            String notifiedListener = notify(emailData, false);
             if (notifiedListener == null) {
                if (log.isLoggable(Level.FINE))
                   log.fine("None of the registered listeners ("
@@ -835,5 +917,23 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
 
    public String getThreadName() {
       return threadName;
+   }
+
+   /**
+    * @return Returns the holdbackExpireTimeout.
+    */
+   public long getHoldbackExpireTimeout() {
+      return this.holdbackExpireTimeout;
+   }
+
+   /**
+    * @param holdbackExpireTimeout The holdbackExpireTimeout to set.
+    */
+   public void setHoldbackExpireTimeout(long holdbackExpireTimeout) {
+      this.holdbackExpireTimeout = holdbackExpireTimeout;
+   }
+   
+   public int getNumberOfHoldbackEmails() {
+      return this.holdbackMap.size();
    }
 }

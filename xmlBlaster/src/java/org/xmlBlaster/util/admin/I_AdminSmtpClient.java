@@ -15,45 +15,14 @@ package org.xmlBlaster.util.admin;
  */
 public interface I_AdminSmtpClient extends I_AdminUsage {
    /**
-    * Access the SMTP host name
-    * @return The SMTP server host name
+    * Access the SMTP access uri,
+    * for example "smtp://aUser:mypassword@mySmtpHost.org:25"
+    * @return The SMTP server uri
     */
-   public String getHost();
+   public String getUri();
 
    /**
-    * @param hostname the host name of the SMTP server
+    * @param uri For example "smtp://aUser:mypassword@mySmtpHost.org:25"
     */
-   public void setHost(String host);
-
-   /**
-    * @return The SMTP server port
-    */
-   public int getPort();
-
-   /**
-    * Set the SMTP server port
-    */
-   public void setPort(int port);
-   
-   /**
-    * Access the SMTP user name
-    * @return The SMTP server user name
-    */
-   public String getUser();
-
-   /**
-    * @param user the user name to login to the SMTP server
-    */
-   public void setUser(String user);
-
-   /**
-    * Access the SMTP password name
-    * @return The SMTP server password name
-    */
-   public String getPassword();
-
-   /**
-    * @param password the password name to login to the SMTP server
-    */
-   public void setPassword(String password);
+   public void setUri(String uri);
 }

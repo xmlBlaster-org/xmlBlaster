@@ -42,4 +42,22 @@ public interface I_AdminPop3Driver extends I_AdminService {
     * @return Keys of interested party for incoming POP3 mails
     */
    public String getListeners();
+
+   /**
+    * @return Returns the holdbackExpireTimeout.
+    */
+   public long getHoldbackExpireTimeout();
+
+   /**
+    * Configure how long a not yet dispatched message shall live in the Pop3Driver map.
+    * Note that the map is transient, after restart such mails are lost (but resend be the server). 
+    * @param holdbackExpireTimeout In milli seconds, set to zero to switch holback off
+    */
+   public void setHoldbackExpireTimeout(long holdbackExpireTimeout);
+   
+   /**
+    * Get the number of received emails for which no java bean is interested. 
+    * @return Number of emails
+    */
+   public int getNumberOfHoldbackEmails();
 }
