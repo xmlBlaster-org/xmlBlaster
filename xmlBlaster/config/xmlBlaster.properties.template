@@ -89,8 +89,12 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.password=xmlBlaster,\
                              compress/type=zlib,\
                              compress/minSize=200,\
+                             mail.subject=Server generated email,\
                              parserClass=org.xmlBlaster.util.xbformat.XbfParser
 #                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+#plugin/email/responseTimeout=300000
+#plugin/email/pingResponseTimeout=60000
+#plugin/email/updateResponseTimeout=30000000
 #------------------------------------------------------------------------------
 
 
@@ -106,10 +110,11 @@ ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCo
 ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
 #ClientProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapConnection
 ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
-                                 mail.user=demo,\
-                                 mail.password=demo,\
+                                 mail.smtp.url=smtp://demo:demo@localhost,\
+                                 mail.smtp.from=demo@localhost,\
                                  mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
                                  pop3PollingInterval=500,\
+                                 holdbackExpireTimeout=20000,\
                                  compress/type=zlib,\
                                  compress/minSize=200,\
                                  parserClass=org.xmlBlaster.util.xbformat.XbfParser
@@ -125,12 +130,22 @@ ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.Lo
 #ClientCbServerProtocolPlugin[SOAP][1.0]=org.xmlBlaster.client.protocol.soap.SoapCallbackServer
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html
 ClientCbServerProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
-                                         mail.user=demo,\
-                                         mail.password=demo,\
+                                         mail.smtp.url=smtp://demo:demo@localhost,\
+                                         mail.smtp.from=demo@localhost,\
                                          mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+                                         pop3PollingInterval=500,\
+                                         holdbackExpireTimeout=20000,\
                                          compress/type=zlib,\
                                          compress/minSize=200,\
+                                         messageIdForceBase64=false,\
+                                         contentForceBase64=false,\
                                          parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                                         schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd',\
+#                                         xmlDeclaration=<?xml version='1.0' encoding='UTF-8'?>,\
+#                                         mail.subject=Generated email,\
+#                                         sendResponseSessionId=false,\
+#                                         sendResponseRequestId=false,\
+#                                         sendSimpleExceptionFormat=true,\
 #                                         parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #------------------------------------------------------------------------------
 

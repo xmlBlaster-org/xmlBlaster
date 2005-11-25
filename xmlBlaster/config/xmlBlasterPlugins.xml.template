@@ -102,8 +102,7 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='7' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
-      <attribute id='mail.user'>xmlBlaster</attribute>
-      <attribute id='mail.password'>xmlBlaster</attribute>
+      <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost</attribute>
    </plugin>
 -->
 
@@ -115,7 +114,6 @@
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
       <attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX</attribute>
-      <attribute id='activate'>false</attribute>
       <attribute id='pop3PollingInterval'>500</attribute>
    </plugin>
 -->
@@ -130,6 +128,7 @@
       <attribute id='compress/type'>zlib</attribute>
       <attribute id='compress/minSize'>200</attribute>
       <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XbfParser</attribute>
+      <attribute id='mail.subject'>XmlBlaster generated mail</attribute>
    </plugin>
 -->
 
@@ -189,6 +188,8 @@
       <action do='STOP' onShutdownRunlevel='5' sequence='5'/>
       <attribute id='loginName'>_StartupTasks</attribute>
       <attribute id='password'>secret</attribute>
+      <attribute id='doConnect'>true</attribute>
+      <attribute id='doDisconnect'>true</attribute>
       <attribute id='directoryName'></attribute>
       <attribute id='scriptFileName'>xmlBlasterStartup.xml</attribute>
       <attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt</attribute>
