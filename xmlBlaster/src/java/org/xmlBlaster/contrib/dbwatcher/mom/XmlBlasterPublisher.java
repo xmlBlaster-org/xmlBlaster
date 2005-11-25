@@ -40,9 +40,9 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.jms.XBSession;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -476,22 +476,22 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @return The UpdateReturnQos 
     * @see I_Callback#update
     */
-   public String update(String s, UpdateKey k, byte[] c, UpdateQos q) {
+   public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
       if (this.defaultUpdate == null) { 
          log.warning("No update message expected, ignoring received " + k.toXml());
-         return "OK";
+         return Constants.RET_OK;
       }
       synchronized(this) {
          try {
             // TODO Add here the specific qos attributes to the map.
             q.getData().addClientProperty("_sender", q.getSender().getRelativeName());
             this.defaultUpdate.update(s, c, q.getClientProperties());
-            return "OK";
+            return Constants.RET_OK;
          }
          catch (Exception ex) {
             ex.printStackTrace();
             log.severe("Exception occured in the update method for key='" + s + "'");
-            return "NOK";
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_CLIENTCODE, "XmlBlasterPublisher.update", "user exception", ex);
          }
       }
    }

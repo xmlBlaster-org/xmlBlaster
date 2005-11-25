@@ -24,6 +24,7 @@ import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
@@ -163,7 +164,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
             this.eventHandler.update(updateKey.getOid(), content, updateQos.getClientProperties());
          else 
             throw new Exception("update: No event handler has been registered, you must register one");
-         return "OK";
+         return Constants.RET_OK;
       }
       catch (Exception ex) {
          ex.printStackTrace();
