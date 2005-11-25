@@ -85,9 +85,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
       setCbClient(cbClient); // access callback client in super class
                               // SocketExecutor:callback
 
-      //super.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginInfo);
-
-      // Now we can do super.init() as it needs the pop3Driver in global
+      // Now we can do super.init() for smtpClient and pop3Driver setup
       super.init(glob, callbackAddress, this.pluginInfo);
       super.setEmailSessionId(callbackAddress.getSessionName());
       
