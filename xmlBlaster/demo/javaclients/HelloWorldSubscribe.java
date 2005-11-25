@@ -246,7 +246,8 @@ public class HelloWorldSubscribe implements I_Callback
          qos.setRefreshSession(connectRefreshSession);
          log.info(ME, "ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
-         log.info(ME, "Connect success as " + crq.toXml());
+         // crq can be null if '-dispatch/connection/doSendConnect false' is set
+         log.info(ME, "Connect success as " + ((crq==null)?" faked connect":crq.toXml()));
 
          subscribe(); // first time
 
