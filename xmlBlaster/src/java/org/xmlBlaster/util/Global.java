@@ -152,6 +152,9 @@ public class Global implements Cloneable
    protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objects in the scope of one client connection or server instance */
    protected /*final*/ Map objectMap;
+   /** Helper to synchronize objectMap access */
+   public final Object objectMapMonitor = new Object();
+   
    protected Address bootstrapAddress;
    protected PluginLoader clientSecurityLoader;
 
@@ -281,7 +284,7 @@ public class Global implements Cloneable
       //log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
-      objectMap = Collections.synchronizedMap(new HashMap());
+      objectMap = new HashMap();
 
       boolean jdk14loggingCapture = getProperty().get("xmlBlaster/jdk14loggingCapture", true);
       if (jdk14loggingCapture) {
@@ -869,7 +872,9 @@ public class Global implements Cloneable
    }
 
    /**
-    * @return false
+    * Check where we are, on client or on server side?
+    * engine.Global overwrites this
+    * @return false As we are util.Global and running client side
     */
    public boolean isServerSide() {
       return false;
@@ -1189,7 +1194,9 @@ public class Global implements Cloneable
     */
    public final Object getObjectEntry(String key)
    {
-      return objectMap.get(key);
+      synchronized (this.objectMapMonitor) {
+         return objectMap.get(key);
+      }
    }
 
    /**
@@ -1203,7 +1210,9 @@ public class Global implements Cloneable
     */
    public final void addObjectEntry(String key, Object driver)
    {
-      objectMap.put(key, driver);
+      synchronized (this.objectMapMonitor) {
+         objectMap.put(key, driver);
+      }
    }
 
    /**
@@ -1216,7 +1225,9 @@ public class Global implements Cloneable
     */
    public final void removeObjectEntry(String key)
    {
-      objectMap.remove(key);
+     synchronized (this.objectMapMonitor) {
+        objectMap.remove(key);
+     }
    }
 
    /**
@@ -1800,15 +1811,6 @@ public class Global implements Cloneable
       }
       
       this.isDoingShutdown = false;
-   }
-
-   /**
-    * Check where we are, on client or on server side?
-    * engine.Global overwrites this
-    * @return false As we are util.Global and running client side
-    */
-   public boolean isServer() {
-      return false;
    }
 
    /**

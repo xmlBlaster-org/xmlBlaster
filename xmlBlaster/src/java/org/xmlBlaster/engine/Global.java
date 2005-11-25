@@ -155,8 +155,9 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * engin.Global returns true, util.Global returns false
-    * @return true
+    * Check where we are, on client or on server side?
+    * util.Global returns false
+    * @return true As we are engine.Global and running server side
     */
    public boolean isServerSide() {
       return true;
@@ -655,15 +656,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       }
       sb.append(offset).append("</xmlBlaster>");
       return sb.toString();
-   }
-
-   /**
-    * Check where we are, on client or on server side?
-    * util.Global returns false
-    * @return true As we are engine.Global and running server side
-    */
-   public boolean isServer() {
-      return true;
    }
 
    /**

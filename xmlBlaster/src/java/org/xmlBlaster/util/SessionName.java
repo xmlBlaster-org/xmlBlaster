@@ -20,6 +20,7 @@ import org.xmlBlaster.util.cluster.NodeId;
  */
 public final class SessionName implements java.io.Serializable
 {
+   private static final long serialVersionUID = 2684742715895586788L;
    /** Name for logging output */
    private static String ME = "SessionName";
    private transient final Global glob;
@@ -111,7 +112,7 @@ public final class SessionName implements java.io.Serializable
             this.nodeId = nodeId; // given nodeId is strongest
             this.nodeIdExplicitlyGiven = true;
          }
-         else if (this.glob.isServer()) { // if nodeId still not known we set it to the servers nodeId
+         else if (this.glob.isServerSide()) { // if nodeId still not known we set it to the servers nodeId
             this.nodeId = glob.getNodeId();
             this.nodeIdExplicitlyGiven = false;
          }

@@ -30,6 +30,7 @@ import org.xmlBlaster.util.property.PropString;
  */
 public final class TopicProperty implements java.io.Serializable
 {
+   private static final long serialVersionUID = -8978046284014075499L;
    private String ME = "TopicProperty";
    private transient Global glob;
    private transient LogChannel log;
@@ -70,7 +71,7 @@ public final class TopicProperty implements java.io.Serializable
     */
    public TopicProperty(Global glob) {
       setGlobal(glob);
-      if (this.glob.isServer()) 
+      if (this.glob.isServerSide()) 
          this.msgDistributor.setFromEnv(this.glob, null, "MsgDistributorPlugin/defaultPlugin");
    }
 
