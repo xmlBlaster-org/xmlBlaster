@@ -203,7 +203,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       getPop3Driver().registerForEmail(key, null, this);
       // Usually the pop3Driver is set to <attribute id='activate'>false</attribute> on
       // startup to not loose any messages until we have registered
-      try { getPop3Driver().activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      //try { getPop3Driver().activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
+      // this is now solved by holdbackExpireTimeout
       log.info("Initialized email listener with key '" + key + "' and email address '" + super.fromAddress.toString() + "'");
    }
 

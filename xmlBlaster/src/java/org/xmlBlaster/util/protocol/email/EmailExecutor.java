@@ -153,10 +153,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          
          if (this.pop3Driver == null) {
             if (this.glob.isServerSide()) {
-               // On server side the SmtpClient is created by the runlevel manager as configured in xmlBlasterPlugins.xml
+               // On server side the Pop3Driver is created by the runlevel manager as configured in xmlBlasterPlugins.xml
                String text = "Please register a Pop3Driver in xmlBlasterPlugins.xml to have 'email' support";
+               // If the session was loaded on startup from persistent store we shouldn't to a log.warn
+               // but how to detect this? We don't have connectQosServer.isFromPersistenceRecovery(true);
                log.warning(text);
-               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+               // Throw a communication exception to go to polling until Pop3Driver is available
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
             }
             // On client side we create it dynamically as configured in xmlBlaster.properties
             this.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginConfig);
@@ -173,8 +176,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             if (this.glob.isServerSide()) {
                // On server side the SmtpClient is created by the runlevel manager as configured in xmlBlasterPlugins.xml
                String text = "Please register a SmtpClient in xmlBlasterPlugins.xml to have 'email' support";
+               // If the session was loaded on startup from persistent store we shouldn't to a log.warn
+               // but how to detect this?
                log.warning(text);
-               throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
             }
             // On client side we create it dynamically as configured in xmlBlaster.properties
             this.smtpClient = SmtpClient.getSmtpClient(this.glob, this.pluginConfig);

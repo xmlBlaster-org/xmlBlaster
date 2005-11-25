@@ -123,7 +123,7 @@ implements I_Plugin, I_Timeout,
 
    public static final String POP3_FOLDER = "inbox";
 
-   private String threadName;
+   public static String threadName = "POP3Driver-pollingTimer";
    
    public static final String OBJECTENTRY_KEY = Pop3Driver.class.getName();
    
@@ -190,7 +190,7 @@ implements I_Plugin, I_Timeout,
       // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
       glob.addObjectEntry(OBJECTENTRY_KEY, this);
 
-      this.timeout = new Timeout(this.threadName);
+      this.timeout = new Timeout(threadName);
       if (activate) {
          try {
             activate();
@@ -204,7 +204,6 @@ implements I_Plugin, I_Timeout,
     * You need to call setSessionProperties() thereafter.
     */
    public Pop3Driver() {
-      this.threadName = "POP3Driver-pollingTimer";
    }
 
    /**
@@ -913,10 +912,6 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
          if (pop3Client != null)
             pop3Client.shutdown();
       }
-   }
-
-   public String getThreadName() {
-      return threadName;
    }
 
    /**

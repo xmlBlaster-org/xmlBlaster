@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
+import org.xmlBlaster.util.protocol.email.Pop3Driver;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -113,11 +114,6 @@ public class CallbackEmailDriver extends EmailExecutor implements
       super.init(glob, callbackAddress, this.pluginInfo);
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
-      try {
-         getPop3Driver().activate();
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
       super.setSecretSessionId(callbackAddress.getSecretSessionId());
       super.setEmailSessionId(callbackAddress.getSessionName());
    }
@@ -152,16 +148,16 @@ public class CallbackEmailDriver extends EmailExecutor implements
    public String ping(String qos) throws XmlBlasterException {
       
       if (Thread.currentThread().getName().equals(
-            getPop3Driver().getThreadName())) {
+            Pop3Driver.threadName)) {
          if (log.TRACE) log.trace(ME,
                   "Email ping is suppressed as doing this from thread '"
-                  + getPop3Driver().getThreadName()
+                  + Pop3Driver.threadName
                   + "' would deadlock");
          return Constants.RET_OK;
       }
       
       // "<qos><state info='INITIAL'/></qos>"
-      // 
+      // Send from CbDispatchConnection.java on connect 
       if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
          if (log.TRACE) log.trace(ME,
                "Email callback ping is suppressed as doing it before connect() may" +
