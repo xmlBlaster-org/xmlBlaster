@@ -5,7 +5,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 //import org.xmlBlaster.client.qos.UpdateReturnQos;
@@ -53,14 +52,19 @@ public class HelloWorld7 implements I_Callback
       
       try {
          ConnectQos qos = new ConnectQos(glob);
+
+         // '-dispatch/connection/doSendConnect false' on command line would do the same
+         qos.doSendConnect(false);
          
          // Initializes everything but does NOT send connect message
-         ((XmlBlasterAccess)con).connect(qos, this, false);
+         con.connect(qos, this);
 
-         log.info("HelloWorld3", "Waiting now for updates ...");
+         log.info("HelloWorld7", "Waiting now for updates ...");
          char ret = 0;
          while (ret != 'q')
             ret = (char)Global.waitOnKeyboardHit("Enter 'q' to quit");
+         
+         con.disconnect(null); // Cleanup client library
       }
       catch (XmlBlasterException e) {
          log.error("HelloWorld7", e.getMessage());
