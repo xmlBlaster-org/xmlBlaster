@@ -108,6 +108,20 @@
       Be prepared to receive all sorts of messages on update, like
       normal messages or internal xmlBlaster messages or administrative command messages.
       </p>
+
+      <h3>Note for XML-RPC Clients</h3>
+      <p>
+      The update interface change a little bit with actual XML-RPC implementation.<br/>
+      The update method signature looks like:
+      </p>
+      <pre>
+      	string update( string cbSessionId, string key, byte[] content, string qos )
+      </pre>
+      <p>
+      The XmlRpcCallbackImpl.java:update() does not allow to send an array of messages.
+      So for each message, XmlBlaster server will call the client's callback update method.<br/>
+      </p>
+
    </description>
 
 
