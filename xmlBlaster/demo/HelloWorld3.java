@@ -76,10 +76,11 @@ public class HelloWorld3 implements I_Callback
          GetKey gk = new GetKey(glob, "HelloWorld3");
          GetQos gq = new GetQos(glob);
          MsgUnit[] msgs = con.get(gk, gq);
-         GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
-
-         log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+         if (msgs.length > 0) {
+            GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
+            log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                       "' and status=" + grq.getState());
+         }
 
 
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorld3");
