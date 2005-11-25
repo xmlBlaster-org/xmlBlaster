@@ -3,6 +3,22 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+
+ o #14161 Enhancements
+   - Added lazy Smtp and Pop3 initialization
+   - Fixed to not send initial ping to avoid deadlock (email protocol driver)
+   - Added updateResponseTimeout to configure update() specific timeouts (SOCKET and email protocol)
+   - Changed SmtpClient configuration to URL syntax
+   - Added email store in Pop3Driver to hold emails until a bean registers interest for it (see holdbackExpireTimeout)
+
+ o #14161 Added specific method invocation timeouts (for 'SOCKET' and 'email' protocol only)
+   Fires if a method invocation does not return:
+    responseTimeout         connect(), subscribe(), publish(), unSubscribe(), erase(), disconnect() and oneway variants
+    updateResponseTimeout   update()
+    pingResponseTimeout     ping() from client to server and vice versa
+
+ o #14158 Removed global.isServer() as it was redundant with global.isServerSide()
+
  o #14139 HtmlMonitorPlugin.java
    Using byte[] instead of String due to failure at image loading.
    ReplaceVariables is used only for text-mime-types now.
