@@ -26,5 +26,8 @@ public interface I_PluginConfig {
     */
    public String getPrefix();
    
+   public String getType();
+
+   public String getVersion();
 }
 
