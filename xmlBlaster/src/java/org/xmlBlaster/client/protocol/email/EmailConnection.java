@@ -92,7 +92,6 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
       if (!this.isInitialized) {
-         //super.pop3Driver = Pop3Driver.getPop3Driver(glob, this.pluginInfo);
          super.init(glob, address, this.pluginInfo);
          super.setEmailSessionId(""+new Timestamp().getTimestamp()); // Initially until the secret session id is known
          
@@ -100,12 +99,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          // We need to correct the mail addresses from EmailExecutor
          // as it assumes server side operation
          if (super.fromAddress == null) {
-            //try {
-            //   super.fromAddress = new InternetAddress(this.callbackAddress.getRawAddress());
-            //} catch (AddressException e) {
-               throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-                     ME, "Please configure a 'from' address with 'mail.smtp.from=xy@somehost.com'");
-            //}
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
+                  ME, "Please configure a 'from' address with 'mail.smtp.from=xy@somehost.com'");
          }
          
          // Guess the email address to reach the xmlBlaster server
