@@ -69,8 +69,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    /** Which message format parser to use */
    protected String msgInfoParserClassName;
    
-   /** Use to protect against looping messages */
-   protected String lastMessageId;
+   // Use to protect against looping messages
+   //protected String lastSessionId;
+   /** Use to protect against looping messages, is a monotonous ascending timestamp */
+   protected long lastRequestId=-1;
    
    protected final String BOUNCE_MESSAGEID_KEY = "bounce:messageId";
    protected final String BOUNCE_MAILTO_KEY = "mail.to";
@@ -367,19 +369,25 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          msgInfo.setSecretSessionId(emailData.getSessionId());
 
       try {
-         {
+         if (msgInfo.isInvoke()) {
             // Some weak looping protection
-            // TODO: Enforce requestId to be strong-monotonous accending
-            // to also detect email duplicates (which can be produced by MTAs)
-            String messageId = msgInfo.getSecretSessionId()+msgInfo.getRequestId();
-            if (msgInfo.isInvoke() && messageId.equals(this.lastMessageId)) {
-               log.warning("Can't process email data from "
-                     + getPop3Driver().getPop3Url()
-                     + ", it seems to be looping as requestId has been processed already"
-                     + ": " + emailData.toXml(true));
-               return;
+            // Assume requestId to be strictly increasing
+            // to detect email duplicates (which can be produced by MTAs)
+            try {
+               long currRequestId = new Long(msgInfo.getRequestId()).longValue();
+               if (this.lastRequestId >= 0 && currRequestId <= this.lastRequestId) {
+                  log.warning("Can't process email data from "
+                        + getPop3Driver().getPop3Url()
+                        + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastRequestId+") has been processed already"
+                        + ": " + emailData.toXml(true));
+                  return;
+               }
+               //this.lastSessionId = msgInfo.getSecretSessionId();
+               this.lastRequestId = currRequestId;
             }
-            this.lastMessageId = messageId;
+            catch (Throwable e) {
+               log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
+            }
          }
          
          // This wakes up the blocking thread of sendEmail() and returns the
