@@ -72,6 +72,14 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       public String getPrefix() {
          return "";
       }
+
+      public String getType() {
+         return "";
+      }
+
+      public String getVersion() {
+         return "";
+      }
    }
    
    public TestFilePollerPlugin() {
