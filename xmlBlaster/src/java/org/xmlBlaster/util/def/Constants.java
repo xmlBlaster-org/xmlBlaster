@@ -100,6 +100,8 @@ public class Constants {
 
    /** The returned message status if OK */
    public final static String STATE_OK = "OK";
+   // UpdateReturnQos uq = new UpdateReturnQos(glob);
+   // return uq.toXml(); should be somehow similar to RET_OK?
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
    public final static String INFO_INITIAL = "INITIAL";
 
