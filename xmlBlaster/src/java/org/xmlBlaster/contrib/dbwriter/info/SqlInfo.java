@@ -239,7 +239,7 @@ public class SqlInfo implements ReplicationConstants {
          // this.description.setAttribute(new ClientProperty(SCHEMA_ATTR, null, null, schema));
          // this.description.setAttribute(new ClientProperty(VERSION_ATTR, null, null, version));
          
-         if (transformer != null) {
+         if (transformer != null && queryRs != null) {
             Map attr = transformer.transform(queryRs, -1);
             if (attr != null) {
                Iterator iter = attr.entrySet().iterator();
@@ -397,7 +397,7 @@ public class SqlInfo implements ReplicationConstants {
    }
 
    /**
-    * 
+    * Never returns null. If the result is null, the value of the returned client property will be null.
     * @param name
     * @param val
     * @return
@@ -408,8 +408,8 @@ public class SqlInfo implements ReplicationConstants {
 
       if (val == null)
          return new ClientProperty(name, null, null, (String)null);
-      if (val instanceof String)
-         return new ClientProperty(name, null, null, (String)val);
+      if (val instanceof String) // TODO FIX THIS DIRTY HACK
+         return new ClientProperty(name, null, Constants.ENCODING_BASE64, (String)val);
       
       if (val instanceof Boolean)
          return new ClientProperty(name, null, null, "" + ((Boolean)val).booleanValue());
@@ -532,7 +532,8 @@ public class SqlInfo implements ReplicationConstants {
       getRows().add(row);
       for (int i=1; i<=numberOfColumns; i++) {
          ClientProperty prop = buildClientProperty(meta, rs, i);
-         row.setColumn(prop);
+         if (prop.getValueRaw() != null)
+            row.setColumn(prop);
       }
       if (transformer != null) {
          Map attr = transformer.transform(rs, count);

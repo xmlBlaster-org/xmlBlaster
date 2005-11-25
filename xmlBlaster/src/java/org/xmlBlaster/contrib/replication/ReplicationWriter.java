@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,6 +157,39 @@ private final static String ME = "ReplicationWriter";
       return false;
    }
    
+   /**
+    * Returns the number of columns modified.
+    * @param originalCatalog
+    * @param originalSchema
+    * @param originalTable
+    * @param row
+    * @return
+    * @throws Exception
+    */
+   private final int modifyColumnsIfNecessary(String originalCatalog, String originalSchema, String originalTable, SqlRow row) throws Exception {
+      if (this.mapper == null)
+         return 0;
+      String[] cols = row.getColumnNames();
+      Map colsToChange = new HashMap();
+      for (int i=0; i < cols.length; i++) {
+         String newCol = this.mapper.getMappedColumn(originalCatalog, originalSchema, originalTable, cols[i]);
+         if (newCol == null)
+            continue;
+         if (cols[i].equalsIgnoreCase(newCol))
+            continue;
+         colsToChange.put(cols[i], newCol);
+         log.info("Renaming '" + cols[i] + "' to '" + newCol + "'");
+      }
+      if (colsToChange.size() < 1)
+         return 0;
+      Iterator iter = colsToChange.entrySet().iterator();
+      while (iter.hasNext()) {
+         Map.Entry entry = (Map.Entry)iter.next();
+         row.renameColumn((String)entry.getKey(), (String)entry.getValue());
+      }
+      return colsToChange.size();
+   }
+   
    public void store(SqlInfo dbInfo) throws Exception {
       
       SqlDescription description = dbInfo.getDescription();
@@ -170,7 +204,7 @@ private final static String ME = "ReplicationWriter";
       String originalCatalog = getStringAttribute(CATALOG_ATTR, null, description); 
       String originalSchema = getStringAttribute(SCHEMA_ATTR, null, description);
       String originalTable = getStringAttribute(TABLE_NAME_ATTR, null, description);
-      
+      // these are still without consideration of the column
       String catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null);
       String schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
       String table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null);
@@ -201,13 +235,15 @@ private final static String ME = "ReplicationWriter";
                   originalCatalog = getStringAttribute(CATALOG_ATTR, row, description);
                   originalSchema = getStringAttribute(SCHEMA_ATTR, row, description);
                   originalTable = getStringAttribute(TABLE_NAME_ATTR, row, description);
-
+                  // row specific but still without considering colums
                   catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null);
                   schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
                   table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null);
 
                   if (action == null)
                      throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
+                  int count = modifyColumnsIfNecessary(originalCatalog, originalSchema, originalTable, row);
+                  log.info("modified '" + count  + "' entries");
                   log.fine("store: " + row.toXml(""));
                   SqlDescription desc = getTableDescription(schema, table, conn);
                   if (action.equalsIgnoreCase(INSERT_ACTION)) {
@@ -361,13 +397,19 @@ private final static String ME = "ReplicationWriter";
       }
    }
 
+   private synchronized SqlDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
+      SqlInfo sqlInfo = new SqlInfo(this.info);
+      sqlInfo.fillMetadata(conn, null, schema, tableName, null, null);
+      return sqlInfo.getDescription();
+   }
    
    /**
     * This retrieves the complete Information about a table description.
     * @param tableName
     * @param conn
+    * @deprecated
     */
-   private synchronized SqlDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
+   private synchronized SqlDescription getTableDescriptionDEPRECATED(String schema, String tableName, Connection conn) throws Exception {
       if (tableName == null)
          throw new Exception(ME + ".getTableDescription: the table name is null");
       log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");

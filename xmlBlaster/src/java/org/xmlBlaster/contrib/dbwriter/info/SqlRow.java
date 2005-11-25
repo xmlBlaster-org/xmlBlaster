@@ -94,11 +94,69 @@ public class SqlRow {
          }
       }
    }
+
+   /**
+    * returns the client property with the given name out of the list. If the list or the name are null, null is returned.
+    * 
+    * @param list
+    * @param doRemove if true, the entry is removed.
+    * @return
+    */
+   private final static String findStringEntry(String name, List list, boolean doRemove) {
+      if (list == null)
+         return null;
+      if (name == null)
+         return null;
+      for (int i=0; i < list.size(); i++) {
+         String val = (String)list.get(i);
+         if (val == null)
+            continue;
+         if (name.equals(val)) {
+            if (doRemove)
+               list.remove(i);
+            return val;
+         }
+      }
+      return null;
+   }
+   
+   /**
+    * 
+    * Renames the given Property. The property must not be null.
+    * If the new name is the same as the old name, nothing is done.
+    * If an entry with newName already exists it will be removed.
+    * 
+    * @param oldName The name of the property to replace. If null an exception is thrown.
+    * @param newName The new name of the property. If null, an exception is thrown.
+    * @param map The map on which to operate.
+    * @param list The list on which to operate.
+    * @throws Exception 
+    */
+   final static void renameProp(String oldName, String newName, Map map, List list) throws Exception {
+      if (oldName == null)
+         throw new Exception("RecordRow.renameProp: the oldName is null, which is not allowed");
+      if (newName == null)
+         throw new Exception("RecordRow.renameProp: the newName is null, which is not allowed when trying to rename '" + oldName + "'");
+      
+      // remove entry having the new name (if any)
+      findStringEntry(newName, list, true);
+      map.remove(newName);
+      String listEntryName = findStringEntry(oldName, list, true);
+      if (listEntryName != null) {
+         ClientProperty oldEntry = (ClientProperty)map.remove(oldName);
+         if (oldEntry == null)
+            throw new Exception("The renaming of '" + oldName + "' to '" + newName + "' failed because the old entry was not found in the map");
+         ClientProperty newProp = new ClientProperty(newName, oldEntry.getType(), oldEntry.getEncoding(), oldEntry.getValueRaw());
+         map.put(newName, newProp);
+         list.add(newName);
+      }
+   }
    
    
    
    /**
     * Stores the client property as a new value. If the attribute is found, then its value is overwritten.
+    * 
     * @param value the value to store as an attribute.
     */
    final static void storeProp(ClientProperty value, Map map, List list) {
@@ -187,6 +245,18 @@ public class SqlRow {
          storeProp(value, this.columns, this.columnKeys);
    }
    
+   /**
+    * Renames the given column. If a column with the new name exists, it is first removed.
+    * @param oldName
+    * @param newName
+    * @throws Exception if one of the names is null
+    */
+   public void renameColumn(String oldName, String newName) throws Exception {
+      if (this.colsRawContent != null)
+         throw new IllegalStateException("SqlRow.renameColumn can not be invoked since the raw value '" + this.colsRawContent + "' has already been set");
+         renameProp(oldName, newName, this.columns, this.columnKeys);
+   }
+   
    public String toXml(String extraOffset) {
       return toXml(extraOffset, true);
    }
@@ -240,10 +310,11 @@ public class SqlRow {
 
 
    /**
+    * Used when filling one row directly from a result set (not by explicit setters).
     * @param colsRawContent
     * @throws IllegalStateException if at least one column has already been set.
     */
-   public void setColsRawContent(String colsRawContent) {
+   void setColsRawContent(String colsRawContent) {
       if (this.columns.size() > 0)
          throw new IllegalStateException("SqlRow.setColsRawContent can not be invoked since there are already '" + this.columns.size() + "' columns defined");
       this.colsRawContent = colsRawContent;

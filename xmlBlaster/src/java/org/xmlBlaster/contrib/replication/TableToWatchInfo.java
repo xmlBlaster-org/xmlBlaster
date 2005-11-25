@@ -425,6 +425,25 @@ public class TableToWatchInfo {
          return "";
       return this.replFlags;
    }
-   
+
+   public String toXml() {
+      StringBuffer buf = new StringBuffer();
+      buf.append("<tableToWatch ");
+      if (this.catalog != null)
+         buf.append(" catalog='" + this.catalog + "'");
+      if (this.schema != null)
+         buf.append(" schema='" + this.schema + "'");
+      if (this.table != null)
+         buf.append(" table='" + this.table + "'");
+      if (this.status != null)
+         buf.append(" status='" + this.status + "'");
+      buf.append(" replKey='" + this.replKey + "'");
+      if (this.trigger  != null)
+         buf.append(" trigger='" + this.trigger + "'");
+      if (this.replFlags  != null)
+         buf.append(" flags='" + this.replFlags + "'");
+      buf.append(" doReplicate='" + isReplicate() + "' />");
+      return buf.toString();
+   }
    
 }

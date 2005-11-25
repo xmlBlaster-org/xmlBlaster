@@ -317,6 +317,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          content = new byte[0];
       String msg = new String(content);
       // this comes from the requesting ReplSlave
+      log.info("update for '" + topic + "' and msg='" + msg + "'");
       if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
          ClientProperty prop = (ClientProperty)attrMap.get("_sender");
          if (prop == null)
@@ -454,7 +455,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
          log.info("connection is going in ALIVE from '" + oldState + "'");
-         sendRegistrationMessage();
+         // TODO : Reimplement this when finished to test.
+         // sendRegistrationMessage();
       }
       catch (Exception ex) {
          ex.printStackTrace();

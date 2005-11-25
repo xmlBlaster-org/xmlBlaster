@@ -27,6 +27,7 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
+import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -280,7 +281,8 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-         if (colContent != null && colContent.getStringValue() != null) {
+
+         if (colContent != null && colContent.getStringValue() != null && getColumn(colNames[i]) != null) {
             searchEntries.add(colContent);
             if (firstHit) {
                firstHit = false;
@@ -329,6 +331,7 @@ public class SqlDescription {
    }
    
    /**
+    * TODO remove this
     * 
     * @throws SQLException
     * @deprecated
@@ -515,6 +518,7 @@ public class SqlDescription {
    
    
    /**
+    * TODO remove this
     * 
     * @param conn
     * @param row
@@ -560,7 +564,7 @@ public class SqlDescription {
    }
 
    /**
-    * 
+    * TODO remove this
     * @param conn
     * @param row
     * @return
@@ -740,6 +744,8 @@ public class SqlDescription {
    }
 
    /**
+    * TODO remove this
+    * 
     * Returns the number of entries updated
     * @param conn
     * @param row

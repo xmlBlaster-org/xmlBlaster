@@ -609,7 +609,11 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
                   st.close();
                }
             }
+            else
+               log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
          }
+         else
+            log.info("table to watch '" + table + "' not found");
 
          conn.commit(); // just to make oracle happy for the next set transaction
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -775,19 +779,25 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       tableName = this.dbMetaHelper.getIdentifier(tableName);
 
       Connection conn = null;
+      log.info("Checking for addition of '" + tableName + "'");
       try {
          conn = this.dbPool.reserve();
          long tmp = this.incrementReplKey(conn);
-         if (!isSchemaRegistered(conn, schema))
+         if (!isSchemaRegistered(conn, schema)) {
+            log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
-         if (isTableRegistered(conn, catalog, schema, tableName))
+         }
+         if (isTableRegistered(conn, catalog, schema, tableName)) {
+            log.info("table '" + tableName + "' is already registered, will not add it");
             return false;
+         }
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
          String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
                + schema + "','" + tableName + "','" + replFlags
                + "', 'CREATING'," + tmp + ",'" + triggerName + "')";
+         log.info("Inserting the statement '" + sql + "'");
          this.dbPool.update(conn, sql);
          return true;
       } 
@@ -871,6 +881,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
    private final void addTriggersIfNeeded() throws Exception {
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
+      log.info("there are '" + tablesToWatch.length + "' tables to watch");
       for (int i=0; i < tablesToWatch.length; i++) {
          String catalog = tablesToWatch[i].getCatalog();
          String schema = tablesToWatch[i].getSchema();
@@ -887,6 +898,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
       
+      log.info("initial replication for destination=*" + destination + "' and slave='" + slaveName + "'");
       Connection conn = null;
       // int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
@@ -976,7 +988,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          I_DbSpecific specific = ReplicationConverter.getDbSpecific(info);
          I_DbPool pool = (I_DbPool) info.getObject("db.pool");
          Connection conn = pool.reserve();
-         specific.cleanup(conn, true);
+         String schema = info.get("wipeout.schema", null);
+         if (schema == null) {
+            specific.cleanup(conn, true);
+         }
+         else {
+            specific.wipeoutSchema(null, schema);
+         }
          pool.release(conn);
       } catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
