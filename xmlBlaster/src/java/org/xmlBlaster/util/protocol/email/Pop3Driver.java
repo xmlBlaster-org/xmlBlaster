@@ -265,6 +265,35 @@ implements I_Plugin, I_Timeout,
       }
    }
 
+   /**
+    * Deregister all existing registrations for the given listener. 
+    * @param listener The listener to cleanup
+    * @return Number of registrations cleared
+    */
+   public int deregisterForEmail(I_ResponseListener listener) {
+      if (listener == null)
+         throw new IllegalArgumentException(
+               "deregisterForEmail with null listener argument");
+      int count=0;
+      Map.Entry[] arr = getListenerInterfaces();
+      for (int i = 0; i < arr.length; i++) {
+         if (listener == arr[i].getValue()) {
+            synchronized (this.listeners) {
+               Object o = this.listeners.remove(arr[i].getKey());
+               if (o != null) count++;
+            }
+         }
+      }
+      return count;
+   }
+   
+   public Map.Entry[] getListenerInterfaces() {
+      synchronized (this.listeners) {
+         return (Map.Entry[]) this.listeners.entrySet().toArray(
+               new Map.Entry[this.listeners.size()]);
+      }
+   }
+
    public String[] getListenerKeys() {
       synchronized (this.listeners) {
          return (String[]) this.listeners.keySet().toArray(

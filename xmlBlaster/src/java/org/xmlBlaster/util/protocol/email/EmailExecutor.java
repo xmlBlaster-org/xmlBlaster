@@ -533,7 +533,11 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     * <p />
     */
    public void shutdown() {
-      log.warning("shutdown implementation is missing");
+      try {
+         getPop3Driver().deregisterForEmail(this);
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+      }
    }
 
    /**
