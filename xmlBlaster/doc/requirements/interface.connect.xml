@@ -348,6 +348,44 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
       </p>
    </example>
 
+   <example lang="Java" type="HTML">
+      <h3><a NAME="doSendConnect"></a>Inhibit sending the connect request</h3>
+      <p>
+      Imagine a case where your client is behind a firewall and may not
+      send a connect or subscribe to the xmlBlaster server.
+      But still it wants to setup the callback server instance to receive update() messages,
+      which means you need a fully operational java client library (class <code>XmlBlasterAccess</code>).
+      Here is a 'hard coded' example doing so:
+      </p>
+      <pre>
+// HelloWorld7.java
+
+...
+
+ConnectQos qos = new ConnectQos(glob);
+
+// '-dispatch/connection/doSendConnect false' on command line would do the same
+qos.doSendConnect(false);
+
+// Initializes everything but does NOT send connect message
+con.connect(qos, this);
+
+log.info("HelloWorld7", "Waiting now for updates ...");
+      </pre>
+      <p>
+      It is possible to set the behavior in the <code>xmlBlaster.properties</code> file
+      or on command line as well:
+      </p>
+      <pre>
+java MyClient -dispatch/connection/doSendConnect false
+      </pre>
+      <p>
+      In such cases you need a 'delegate client' which connects from somewhere else and
+      does the subscribe for you, with your callback address. This works fine with the
+      XMLRPC callback server and with the 'email' callback server.
+      </p>
+   </example>
+
    <configuration>
    </configuration>
 
