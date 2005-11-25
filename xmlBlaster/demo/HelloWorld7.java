@@ -2,12 +2,13 @@
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
+//import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
@@ -85,8 +86,9 @@ public class HelloWorld7 implements I_Callback
                    " content=" + new String(content) + 
                    " clientProperty myAge=" + myAge + " from xmlBlaster");
 
-      UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
+      return Constants.RET_OK;
+      //UpdateReturnQos uq = new UpdateReturnQos(glob);
+      //return uq.toXml();
    }
 
    /**
