@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -14,6 +15,9 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
+import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.DefaultMapper;
 
@@ -292,6 +296,49 @@ public class TestHelperClasses extends XMLTestCase {
          assertEquals("checking table", "C_INS", res);
          res = mapper.getMappedColumn(catalog, schema, table, column);
          assertEquals("checking column", "COM_RECORDID", res);
+         String xmlTxt = 
+            "<?xml version='1.0' encoding='UTF-8' ?>\n" + 
+            "<sql>\n" + 
+            "  <desc>\n" + 
+            "    <command>REPLICATION</command>\n" + 
+            "    <ident>16</ident>\n" + 
+            "  </desc>\n" + 
+            "  <row num='0'>\n" + 
+            "    <col name='COM_MESSAGEID'></col>\n" + 
+            "    <col name='COM_RECORDID'>55</col>\n" + 
+            "    <col name='COM_TABLE' encoding='base64'>TjF8Mg==</col>\n" + 
+            "    <col name='COM_COMMAND' encoding='base64'>RA==</col>\n" + 
+            "    <col name='COM_TXT1'></col>\n" + 
+            "    <col name='COM_TXTL' encoding='base64'>OTg0NTA5AwM=</col>\n" + 
+            "    <col name='COM_CHANNEL'></col>\n" + 
+            "    <col name='COM_DEBUG'></col>\n" + 
+            "    <attr name='replKey'>16</attr>\n" + 
+            "    <attr name='action'>INSERT</attr>\n" + 
+            "    <attr name='transaction'>4.24.2232</attr>\n" + 
+            "    <attr name='guid'>AAAT0EAAGAAAAKsAAA</attr>\n" + 
+            "    <attr name='tableName'>C_OUTS</attr>\n" + 
+            "    <attr name='schema'>AIS</attr>\n" + 
+            "    <attr name='dbId'>NULL</attr>\n" + 
+            "    <attr name='version'>0.0</attr>\n" + 
+            "  </row>\n" + 
+            "</sql>\n";
+         try {
+            String oldName = "COM_RECORDID";
+            String newName = "COM_MESSAGEID";
+            DbUpdateParser  parser = new DbUpdateParser();
+            parser.init(info);
+            SqlInfo sqlInfo = parser.parse(xmlTxt);
+            List rows = sqlInfo.getRows();
+            assertEquals("The number of rows is wrong", 1, rows.size());
+            SqlRow row = (SqlRow)rows.get(0);
+            log.info(row.toXml(""));
+            row.renameColumn(oldName, newName);
+            log.info(row.toXml(""));
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("An Exception should not occur when testing renaming of columns " + ex.getMessage(), false);
+         }
       }
       {
          String catalog = null;
