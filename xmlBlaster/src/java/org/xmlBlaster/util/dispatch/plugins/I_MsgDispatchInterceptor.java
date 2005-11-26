@@ -71,14 +71,15 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     *
     *  return entryList;
     * </pre>
-    * @param entries null: Take messages yourself from queue (async mode) <br />
-    *                not null: Use messages pushed (sync mode)
+    * @param pushEntries null: Take messages yourself from queue (async mode) <br />
+    *                not null: Use messages pushed (sync mode) or messages from ErrorCode.COMMUNICATION*
     * @return An ArrayList containing the I_QueueEntry to send.<br />
     *         If list.size() == 0 the worker thread stops and does nothing<br />
-    *         If list.size() > 0 the given messages are sent
+    *         If list.size() > 0 the given messages are sent.
+    *            In case of pushEntries>0 and ErrorCode.COMMUNICATION* if you return them they are send to error handler.
     * @exception If XmlBlasterException is thrown, dispatch of messages is stopped.
-    *            other exceptions giving up dispatch (as configured with I_MsgErrorHandler,
-    *            usually shutdown queue and sending dead messages).
+    *            Other exceptions will lead to giving up sending messages as configured with I_MsgErrorHandler,
+    *            usually shutdown queue and sending dead messages.
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException;
 
