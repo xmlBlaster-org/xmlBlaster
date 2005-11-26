@@ -15,4 +15,5 @@ public interface ReplSlaveMBean {
    void doContinue() throws Exception;
    void doPause() throws Exception;
    boolean toggleActive() throws Exception;
+   void cancelInitialUpdate() throws Exception;
 }

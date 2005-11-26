@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.client.I_ConnectionStateListener;
@@ -146,6 +147,44 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
    }
 
+   
+   
+   class ExecutionThread extends Thread {
+      
+      private String replTopic;
+      private String destination;
+      private String slaveName;
+      private I_DbSpecific dbSpecific;
+      
+      public ExecutionThread(String replTopic, String destination, String slaveName, I_DbSpecific dbSpecific) {
+         this.replTopic = replTopic;
+         this.destination = destination;
+         this.slaveName = slaveName;
+         this.dbSpecific = dbSpecific;
+      }
+      
+      public void run() {
+         try {
+            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
+         }
+         catch (Exception ex) {
+            log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + destination + "' as slave '" + slaveName);
+            ex.printStackTrace();
+         }
+      }
+   };
+
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    private String CREATE_COUNTER_KEY = "_createCounter";
    private static Logger log = Logger.getLogger(InitialUpdater.class.getName());
 
@@ -158,6 +197,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private String replPrefix;
    private I_DbSpecific dbSpecific;
    private String stringToCheck;
+   private Map runningExecutes = new HashMap();
    
    /**
     * Not doing anything.
@@ -313,6 +353,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
     */
    public final void update(String topic, byte[] content, Map attrMap) throws Exception {
+
       if (content == null)
          content = new byte[0];
       String msg = new String(content);
@@ -332,14 +373,39 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          if (prop == null)
             throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
          String slaveName = prop.getStringValue();
-         this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
+         
+         // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
+         ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, this.dbSpecific);
+         executionThread.start();
+         
+      }
+      else if (ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
+         // do cancel
+         ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
+         if (prop == null)
+            throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
+         String slaveName = prop.getStringValue();
+         synchronized (this) {
+            Execute exec = (Execute)this.runningExecutes.remove(slaveName);
+            if (exec != null)
+               exec.stop();
+         }
       }
       else {
          log.warning("update from '" + topic + "' with request '" + msg + "'");
       }
    }
 
-   
+   /**
+    * 
+    * @param topic
+    * @param filename
+    * @param destination
+    * @param slaveName
+    * @param minKey
+    * @param maxKey
+    * @throws Exception
+    */
    public final void sendInitialDataResponse(String topic, String filename, String destination, String slaveName, long minKey, long maxKey) throws Exception {
       sendInitialFile(topic, filename, minKey);
       HashMap attrs = new HashMap();
@@ -395,6 +461,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          }
       }
       fis.close();
+      TextMessage  endMsg = session.createTextMessage();
+      endMsg.setText("INITIAL UPDATE ENDS HERE");
+      endMsg.setBooleanProperty(ReplicationConstants.END_OF_TRANSITION , true);
+      producer.send(endMsg);
    }
    
 
@@ -405,15 +475,34 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws Exception
     * @return true if the transaction has already been committed, false otherwise
     */
-   private void osExecute(String cmd, ConnectionInfo connInfo) throws Exception {
-      if (Execute.isWindows()) cmd = "cmd " + cmd;
-      String[] args = StringHelper.toArray(cmd, " ");
-      Execute execute = new Execute(args, null);
-      ExecuteListener listener = new ExecuteListener(this.stringToCheck, connInfo);
-      execute.setExecuteListener(listener);
-      execute.run(); // blocks until finished
-      if (execute.getExitValue() != 0) {
-         throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
+   private void osExecute(String slaveName, String cmd, ConnectionInfo connInfo) throws Exception {
+      try {
+         if (Execute.isWindows()) cmd = "cmd " + cmd;
+         String[] args = StringHelper.toArray(cmd, " ");
+         Execute execute = new Execute(args, null);
+         synchronized (this) {
+            if (slaveName != null) {
+               Execute oldExecute = (Execute)this.runningExecutes.remove(slaveName);
+               if (oldExecute != null) {
+                  log.warning("A new request for an initial update has come for '" + slaveName + "' but there is one already running. Will shut down the running one first");
+                  oldExecute.stop();
+                  log.info("old initial request for '" + slaveName + "' has been shut down");
+                  this.runningExecutes.put(slaveName, execute);
+               }
+            }
+         }
+         ExecuteListener listener = new ExecuteListener(this.stringToCheck, connInfo);
+         execute.setExecuteListener(listener);
+         execute.run(); // blocks until finished
+         if (execute.getExitValue() != 0) {
+            throw new Exception("Exception occured on executing '" + cmd + "': " + listener.getErrors());
+         }
+      }
+      finally {
+         synchronized (this) {
+            if (slaveName != null)
+               this.runningExecutes.remove(slaveName);
+         }
       }
    }
    
@@ -430,7 +519,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * 
     * @throws Exception
     */
-   public final String initialCommand(String completeFilename, ConnectionInfo connInfo) throws Exception {
+   public final String initialCommand(String invoker, String completeFilename, ConnectionInfo connInfo) throws Exception {
       String filename = null;
       if (completeFilename == null) {
          filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
@@ -440,7 +529,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
       else {
          String cmd = this.initialCmd + " " + completeFilename;
-         osExecute(cmd, connInfo);
+         osExecute(invoker, cmd, connInfo);
          
       }
       return filename;
@@ -455,8 +544,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
          log.info("connection is going in ALIVE from '" + oldState + "'");
-         // TODO : Reimplement this when finished to test.
-         // sendRegistrationMessage();
+         sendRegistrationMessage();
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -473,8 +561,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    /**
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedPolling(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */
-   public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+   public synchronized void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info("connection is going in POLLING from '" + oldState + "'");
+      this.info.put("_InitialUpdaterRegistered", "false");
    }
 
 }

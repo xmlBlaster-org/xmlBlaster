@@ -26,6 +26,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 
@@ -64,6 +65,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private Object mbeanHandle;
    private String sqlResponse;
    private String managerInstanceName;
+   private boolean forceSending;
    
    public String getTopic() {
       return this.dataTopic;
@@ -81,7 +83,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       switch (this.status) {
          case STATUS_INITIAL : return "INITIAL";
          case STATUS_TRANSITION : return "TRANSITION";
-         case STATUS_UNUSED : return "UNUSED";
+         // case STATUS_UNUSED : return "UNUSED";
          default : return "NORMAL";
       }
    }
@@ -90,13 +92,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.global = global;
       this.managerInstanceName = managerInstanceName;
       this.slaveSessionId = slaveSessionId;
-      this.status = STATUS_UNUSED;
+      // this.status = STATUS_UNUSED;
+      this.status = STATUS_NORMAL;
    }
 
-   
+   /**
+    * The info comes as the client properties of the subscription Qos. Avoids double configuration.
+    */
    public synchronized void init(I_Info info) throws Exception {
-      if (this.initialized)
-         return;
+      // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
+      // if (this.initialized)
+      //    return;
       String replName = info.get("_replName", null);
       if (replName == null) 
          throw new Exception("The replication name '_replName' has not been defined");
@@ -115,12 +121,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
             instanceName, this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
-      this.global.getJmxWrapper().registerMBean(contextNode, this);
       this.initialized = true;
    }
    
 
    public void run(I_Info info) throws Exception {
+      if (this.status != STATUS_NORMAL) {
+         log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
+         return;
+      }
       init(info);
       prepareForRequest(info);
       requestInitialData();
@@ -248,7 +257,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       if (this.status == STATUS_INITIAL)
          return new ArrayList();
       
-      if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
+      // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
+      // TODO find a clean solution for this: currently we have the case where several masters send data to one single
+      // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
+      // is to let everything pass for now.
+      if (this.status == STATUS_NORMAL || this.forceSending)
          return entries;
       
       ArrayList ret = new ArrayList();
@@ -257,21 +270,31 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
          log.info("check: processing '" + replKey + "'");
-         if (replKey < 0L) {
-            log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
-            ret.add(entry);
-            continue;
+         if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
+            ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
+            if (endMsg == null) {
+               log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
+               ret.add(entry);
+               continue;
+            }
+            else {
+               log.info("Received msg marking the end of the initial update: '" + this.name + "' going into NORMAL operations");
+               this.status = STATUS_NORMAL;
+               queue.removeRandom(entry);
+               continue;
+            }
          }
          log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
          if (replKey >= this.minReplKey) {
             log.info("repl adding the entry");
             ret.add(entry);
+            
             if (replKey > this.maxReplKey) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");
                this.status = STATUS_NORMAL;
             }
          }
-         else {
+         else { // such messages have been already from the initial update. (obsolete messages are removed)
             log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "'");
             queue.removeRandom(entry);
             
@@ -328,6 +351,37 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       I_AdminSession session = getSession();
       session.setDispatcherActive(!session.getDispatcherActive());
       return session.getDispatcherActive();
+   }
+   
+   /**
+    * TODO fix this since it potentially could delete request from other slaves since the DbWatcher is serving
+    * several slaves.
+    * Cancels an ongoing initialUpdate Request.
+    */
+   public void cancelInitialUpdate() throws Exception {
+      if (this.status == STATUS_NORMAL)
+         return;
+      if (!this.initialized)
+         throw new Exception("cancelInitialUpdate: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
+      I_AdminSession session = getSession();
+      long clearedMsg = session.clearCallbackQueue();
+      log.info("clearing of callback queue: '" + clearedMsg + "' where removed since a cancel request was done");
+
+      // sending the cancel op to the DbWatcher
+      log.info(this.name + " sends now a cancel request to the Master '" + this.masterSessionId + "'");
+      I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+      // no oid for this ptp message 
+      PublishKey pubKey = new PublishKey(this.global);
+      Destination destination = new Destination(new SessionName(this.global, this.masterSessionId));
+      destination.forceQueuing(true);
+      PublishQos pubQos = new PublishQos(this.global, destination);
+      pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
+      pubQos.setPersistent(false);
+      MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.getBytes(), pubQos);
+      conn.publish(msg);
+      // TODO Check this since it could mess up the current status if one is exaclty finished now
+      this.status = STATUS_NORMAL;
+      
    }
    
 }

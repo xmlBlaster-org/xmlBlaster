@@ -17,7 +17,7 @@ import org.xmlBlaster.util.queue.I_Queue;
  */
 public interface I_ReplSlave extends I_ContribPlugin {
    
-   public final static int STATUS_UNUSED = 0;
+   // public final static int STATUS_UNUSED = 0;
    public final static int STATUS_INITIAL = 1;
    public final static int STATUS_TRANSITION = 2;
    public final static int STATUS_NORMAL = 3;

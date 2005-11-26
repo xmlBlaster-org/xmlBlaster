@@ -15,11 +15,14 @@ public interface ReplicationConstants {
    public final static String REPL_MANAGER_UNREGISTER = "UNREGISTER";
    public final static String REPL_PREFIX_KEY = "replication.prefix";
    public final static String REPL_REQUEST_UPDATE = "REQUEST_UPDATE";
+   /** invoked to cancel an ongoing initial update */
+   public final static String REPL_REQUEST_CANCEL_UPDATE = "REQUEST_CANCEL_UPDATE";
 
    public final static String SLAVE_NAME = "_slaveName";
    
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
+   /** This is the identity (unique Key of the replication entry from DbWatcher) */
    public final static String REPL_KEY_ATTR = "replKey";
    public final static String EXTRA_REPL_KEY_ATTR = "extraReplKey";
    public final static String TRANSACTION_ATTR = "transaction";
@@ -44,6 +47,8 @@ public interface ReplicationConstants {
    public final static String ALTER_ACTION = "ALTER";
    public final static String DUMP_ACTION = "DUMP";
    public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement
+   
+   public final static String END_OF_TRANSITION = "_END_OF_TRANSITION"; // sent to determine that the transition status is finished
    
    
 }

@@ -177,7 +177,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * 
     * @throws Exception
     */
-   void initialCommand(String completeFilename) throws Exception;
+   void initialCommand(String slaveName, String completeFilename) throws Exception;
    
    /**
     * removes the specified trigger from the specified table.

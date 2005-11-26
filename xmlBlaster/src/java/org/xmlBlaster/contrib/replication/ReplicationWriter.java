@@ -517,7 +517,7 @@ private final static String ME = "ReplicationWriter";
                ex.printStackTrace();
             }
          }
-         this.dbSpecific.initialCommand(completeFilename);
+         this.dbSpecific.initialCommand(null, completeFilename);
          if (!this.keepDumpFiles) {
             File fileToDelete = new File(completeFilename);
             boolean del = fileToDelete.delete();

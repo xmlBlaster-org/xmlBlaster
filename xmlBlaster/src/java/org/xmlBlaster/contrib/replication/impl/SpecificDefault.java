@@ -907,12 +907,19 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          conn = this.dbPool.reserve();
          oldTransactionIsolation = conn.getTransactionIsolation();
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-         long minKey = this.incrementReplKey(conn);
          // the result must be sent as a high prio message to the real
          // destination
+         
+         /*
+          *  TODO Here we need to split this method in two since the triggers are generated/added asynchronously by the
+          *  polling of the DbWatcher. So we need to add the tables to watch, the DbWatcher needs to send a message to
+          *  us to notify us when he finished the job and then we could continue with phase2 of the initial Update
+          */
+         
          addTriggersIfNeeded();
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
-         String filename = this.initialUpdater.initialCommand(null, connInfo);
+         long minKey = this.incrementReplKey(conn);
+         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo);
          
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
@@ -1003,10 +1010,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String)
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String, java.lang.String)
     */
-   public void initialCommand(String completeFilename) throws Exception {
-      this.initialUpdater.initialCommand(completeFilename, null);
+   public void initialCommand(String slaveName, String completeFilename) throws Exception {
+      this.initialUpdater.initialCommand(slaveName, completeFilename, null);
    }
    
 
