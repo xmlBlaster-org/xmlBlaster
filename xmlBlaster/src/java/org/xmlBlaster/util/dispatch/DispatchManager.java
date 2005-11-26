@@ -773,11 +773,6 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
-      if (this.dispatchConnectionsHandler.isPolling()) {
-         if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
-         return false;
-      }
-
       if (this.msgInterceptor != null) {
          if (this.msgInterceptor.doActivate(this) == false) {
             if (log.TRACE) log.trace(ME, "this.msgInterceptor.doActivate==false");
@@ -786,6 +781,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return true;
       }
 
+      /* 
+       * The msgInterceptor plugin needs to have a chance to take care of this even in polling mode
+       */
+      if (this.dispatchConnectionsHandler.isPolling()) {
+         if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
+         return false;
+      }
 
       //if (log.TRACE) log.trace(ME, "Check sending is OK");
       return true;
