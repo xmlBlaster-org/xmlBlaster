@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14180 Java client library: Added '-dispatch/connection/doSendConnect false'
+   for clients behind a firewall which can only receive callback messages, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#doSendConnect
+   
  o #14161 Enhancements
    - Added lazy Smtp and Pop3 initialization
    - Fixed to not send initial ping to avoid deadlock (email protocol driver)
