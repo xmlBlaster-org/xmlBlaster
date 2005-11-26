@@ -17,7 +17,6 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -110,8 +109,8 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
 
       // Note: This fires an initial event to statusChanged("startup")
 
-      this.specificConfigPropertyKey = this.CONFIG_PROPERTY_KEY + "[" + typeVersion + "]";
-      this.glob.getProperty().addPropertyChangeListener(this.CONFIG_PROPERTY_KEY, "startup", this);
+      this.specificConfigPropertyKey = CONFIG_PROPERTY_KEY + "[" + typeVersion + "]";
+      this.glob.getProperty().addPropertyChangeListener(CONFIG_PROPERTY_KEY, "startup", this);
       this.glob.getProperty().addPropertyChangeListener(this.specificConfigPropertyKey, "startup", this);
       log.info(ME, "Succefully initialized");
    }
@@ -147,7 +146,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
       if (this.specificConfigPropertyKey.equals(ev.getKey())) 
          hasSpecificConf = true;
 
-      if (hasSpecificConf && this.CONFIG_PROPERTY_KEY.equals(ev.getKey()))
+      if (hasSpecificConf && CONFIG_PROPERTY_KEY.equals(ev.getKey()))
          return;  // Ignore unspecific configuration
 
       synchronized (this) {
@@ -203,7 +202,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      java.util.Properties props = pluginInfo.getParameters();
+      //java.util.Properties props = pluginInfo.getParameters();
    }
 
    /**

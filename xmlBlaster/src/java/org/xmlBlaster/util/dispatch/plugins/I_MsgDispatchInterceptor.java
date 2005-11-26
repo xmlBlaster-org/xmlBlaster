@@ -38,7 +38,15 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
    /**
     * If there are new messages available in the queue, you get invoked
     * here and are asked if you want to start a worker thread (from the thread pool)
-    * to start taking messages from the queue and send them over the remote connection. 
+    * to start taking messages from the queue and send them over the remote connection.
+    * <p/> 
+    * Note: If the session cb is in polling and the callback queue contains entries and you
+    * return true, the dispatchWorker thread will loop! In such a case check with
+    * <pre>
+    * if (dispatchManager.getDispatchConnectionsHandler().isPolling()) {
+    *     return false;
+    *  }
+    * </pre>
     * @return true: create a worker thread to process messages from queue (it will call our getNextMessages() method
     *               where we can decide which messages it will process<br />
     *         false: abort, don't start worker thread

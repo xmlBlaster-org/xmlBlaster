@@ -8,7 +8,6 @@ package org.xmlBlaster.util.dispatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
@@ -75,7 +74,7 @@ public final class DispatchWorker implements Runnable
          
          dispatchManager.getDispatchConnectionsHandler().send(entries); // entries are filled with return values
 
-         ArrayList defaultEntries = filterDistributorEntries(entryList, null);
+         /*ArrayList defaultEntries = */filterDistributorEntries(entryList, null);
          if (log.TRACE) log.trace(ME, "Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
       catch(Throwable throwable) {
@@ -94,7 +93,7 @@ public final class DispatchWorker implements Runnable
     * such messages the normal way.
     */
    protected ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
-      // TODO move this on the server side 
+      // TODO move this on the server side
       ArrayList entriesWithNoDistributor = new ArrayList();
       for (int i=0; i < entries.size(); i++) {
          Object obj = entries.get(i); 
