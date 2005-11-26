@@ -101,6 +101,7 @@ XmlScriptParser:
 </description>
 
 <example type="html">
+<p>This example shows the structure of an email transporting xmlBlaster messages:</p>
 <pre>
 &lt;message>
   &lt;from>demo@localhost&lt;/from>
@@ -111,19 +112,54 @@ XmlScriptParser:
     &lt;filename>xmlBlasterMessage.xml&lt;/filename>
     &lt;contenttype>text/plain; name=xmlBlasterMessage.xml; charset=UTF-8&lt;/contenttype>
     &lt;content><![CDATA[
-&lt;ping sessionId='unknown' requestId='1' type='I'>
-&lt;/ping>
+<ping sessionId='unknown' requestId='1' type='I'>
+</ping>
 ]]>&lt;/content>
   &lt;/attachment>
   &lt;attachment>
     &lt;filename>messageId.mid&lt;/filename>
     &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
     &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>
-                &lt;requestId>1&lt;/requestId>
+                &lt;requestId>1132965149890000000&lt;/requestId>
                 &lt;methodName>ping&lt;/methodName>&lt;/messageId>
     ]]>&lt;/content>
   &lt;/attachment>
 &lt;/message>
+</pre>
+<p>The raw email content looks more like this</p>
+<pre>
+Return-Path: &lt;demo@localhost>
+Received: from localhost ([127.0.0.1])
+          by linux (JAMES SMTP Server 2.2.0) with SMTP ID 248
+          for &lt;xmlBlaster@localhost>;
+          Thu, 17 Nov 2005 16:45:12 +0100 (CET)
+Message-ID: &lt;5683514.1132242312629.JavaMail.root@linux>
+Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
+From: demo@localhost
+To: xmlBlaster@localhost
+Subject: XmlBlaster Generated Email
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+   boundary="----=_Part_3_23776721.1132242312553"
+Delivered-To: xmlBlaster@localhost
+
+------=_Part_3_23776721.1132242312553
+Content-Type: text/plain; name=attachment1.xml; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=attachment1.xml
+
+
+&lt;update sessionId='unknown' requestId='5' type='R'>
+ &lt;qos>&lt;state id='OK'/>&lt;/qos>
+&lt;/update>
+
+------=_Part_3_23776721.1132242312553
+Content-Type: text/plain; name=attachment2; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=attachment2
+
+&lt;messageId>&lt;sessionId>xmlblast&lt;/sessionId>&lt;requestId>5&lt;/requestId>&lt;methodName>update&lt;/methodName>&lt;/messageId>
+------=_Part_3_23776721.1132242312553--
 </pre>
 </example>
    
@@ -176,8 +212,7 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
       &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
               onFail='resource.configuration.pluginFailed'/>
       &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
-      &lt;attribute id='mail.user'>xmlBlaster&lt;/attribute>
-      &lt;attribute id='mail.password'>xmlBlaster&lt;/attribute>
+      &lt;attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost&lt;/attribute>
    &lt;/plugin>
 
    &lt;!-- General EMAIL POP3 polling service -->
@@ -187,7 +222,6 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
               onFail='resource.configuration.pluginFailed'/>
       &lt;action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
       &lt;attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute>
-      &lt;attribute id='activate'>false&lt;/attribute>
       &lt;attribute id='pop3PollingInterval'>500&lt;/attribute>
    &lt;/plugin>
 
@@ -199,8 +233,8 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
       &lt;attribute id='mail.smtp.from'>xmlBlaster@localhost&lt;/attribute>   
       &lt;attribute id='compress/type'>zlib&lt;/attribute>
       &lt;attribute id='compress/minSize'>200&lt;/attribute>
-      &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
-      &lt;attribute id='mail.subject'>XmlBlaster Generated&lt;/attribute>
+      &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XbfParser&lt;/attribute>
+      &lt;attribute id='mail.subject'>XmlBlaster generated mail&lt;/attribute>
    &lt;/plugin>
 </pre>
 
@@ -210,10 +244,15 @@ is configured in <code>xmlBlaster.properties</code> (for example PublishReturnQo
 CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.user=xmlBlaster,\
                              mail.password=xmlBlaster,\
-                             compress/minSize=200,\
                              compress/type=zlib,\
+                             compress/minSize=200,\
+                             mail.subject=Server generated email,\
                              parserClass=org.xmlBlaster.util.xbformat.XbfParser
 #                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+
+#plugin/email/responseTimeout=300000
+#plugin/email/pingResponseTimeout=60000
+#plugin/email/updateResponseTimeout=30000000
 </pre>
 <p>
 The format of the message in the email is defined by our XbfParser (see protocl.socket requirement), additionally
@@ -227,27 +266,37 @@ instead of XbfParser.
 or to listen on server messages
 is configured in <code>xmlBlaster.properties</code> (for example sending publish() or receiving update() etc.)</p>
 <pre>
-ClientProtocolPlugin[email][1.0]=\
-      org.xmlBlaster.client.protocol.email.EmailConnection,\
-      mail.user=demo,\
-      mail.password=demo,\
-      mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
-      pop3PollingInterval=500,\
-      compress/minSize=200,\
-      parserClass=org.xmlBlaster.util.xbformat.XbfParser
-#compress/type=zlib,\
-#parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
+                                 mail.smtp.url=smtp://demo:demo@localhost,\
+                                 mail.smtp.from=demo@localhost,\
+                                 mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+                                 pop3PollingInterval=500,\
+                                 holdbackExpireTimeout=20000,\
+                                 compress/type=zlib,\
+                                 compress/minSize=200,\
+                                 parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#                                 parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 
 # Register the client side callback server plugin (to listen on update() or publishReturnQos)
-ClientCbServerProtocolPlugin[email][1.0]=\
-      org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
-      mail.user=demo,\
-      mail.password=demo,\
-      mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
-      compress/minSize=200,\
-      parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
-#parserClass=org.xmlBlaster.util.xbformat.XbfParser
-#compress/type=zlib,\
+ClientCbServerProtocolPlugin[email][1.0]=
+         org.xmlBlaster.client.protocol.email.EmailCallbackImpl,\
+         mail.smtp.url=smtp://demo:demo@localhost,\
+         mail.smtp.from=demo@localhost,\
+         mail.pop3.url=pop3://demo:demo@localhost/INBOX,\
+         pop3PollingInterval=500,\
+         holdbackExpireTimeout=20000,\
+         compress/type=zlib,\
+         compress/minSize=200,\
+         messageIdForceBase64=false,\
+         contentForceBase64=false,\
+         parserClass=org.xmlBlaster.util.xbformat.XbfParser
+#         schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd',\
+#         xmlDeclaration=&lt;?xml version='1.0' encoding='UTF-8'?>,\
+#         mail.subject=Generated email,\
+#         sendResponseSessionId=false,\
+#         sendResponseRequestId=false,\
+#         sendSimpleExceptionFormat=true,\
+#         parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 </pre>
 <p>The above client has chosen to don't compress the outgoing mails.
 Further it sends the UpdateReturnQos in clear XML text instead
@@ -263,25 +312,16 @@ of using our native XfbParser protocol.
          </tr>
 
          <tr>
-            <td>mail.smtp.host</td>
-            <td>localhost</td>
-            <td>Specify a hostname where the SMTP server runs
-            </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-
-         <tr>
-            <td>mail.user</td>
-            <td>xmlBlaster</td>
-            <td>The EMAIL user account
-                </td>
+            <td>mail.smtp.url</td>
+            <td>smtp://demo:demo@localhost:25</td>
+            <td>The SMTP connection URL, the port is optional</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>mail.pop3.url</td>
-            <td>pop3://demo:demo@localhost/INBOX</td>
-            <td>The POP3 connection URL</td>
+            <td>pop3://demo:demo@localhost:110/INBOX</td>
+            <td>The POP3 connection URL, the port is optional</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
@@ -332,16 +372,21 @@ plugin/email/pingResponseTimeout=30000
     */
    private boolean contentForceBase64;
 
+
+The requestId is requested to be strictly increasing
+to detect email duplicates and assure sequency
 -->
       </table>
    </configuration>
-   <todo>
+   <todo type="HTML">
+Make last requestId persistent to have loop and sequence protection after a restart
    </todo>
    <see type="REQ">protocol</see>
-   <!-- <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see> -->
-   <author>laghi@swissinfo.org</author>
-   <date>2002 09 23</date>
-   <revision>$Revision: 1.4 $</revision>
+   <see type="API">org.xmlBlaster.util.protocol.email.Pop3Driver</see>
+   <see type="API">org.xmlBlaster.util.protocol.email.SmtpClient</see>
+   <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
+   <author>mr@marcelruff.info</author>
+   <date>2005 11 23</date>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
