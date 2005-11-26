@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ 
+ o #14186 Changed DispachManager to fix a loop when using I_MsgInterceptor and in Polling Mode
 
  o #14180 Java client library: Added '-dispatch/connection/doSendConnect false'
    for clients behind a firewall which can only receive callback messages, see
