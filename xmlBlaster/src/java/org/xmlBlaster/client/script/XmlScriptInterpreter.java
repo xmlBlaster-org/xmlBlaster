@@ -270,11 +270,13 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          incrementInElementCounters(qName);
          return;
       }
+      
       if (this.inKey > 0) {
          this.key.append(writeElementStart(qName, atts));
          incrementInElementCounters(qName);
          return;
       }
+
       if (this.inContent > 0) {
          this.content.append(writeElementStart(qName, atts));
          incrementInElementCounters(qName);
@@ -304,7 +306,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
       if (KEY_TAG.equals(qName)) {
          this.inKey++;
-         this.key = new StringBuffer();
+         this.key.setLength(0);
          this.key.append(this.writeElementStart(qName, atts));
          return;
       }
@@ -316,7 +318,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
       if (QOS_TAG.equals(qName)) {
          this.inQos++;
-         this.qos = new StringBuffer();
+         this.qos.setLength(0);
          this.qos.append(this.writeElementStart(qName, atts));
          return;
       }
@@ -474,7 +476,12 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       }
 
       boolean processed = fireMethod(MethodName.toMethodName(qName), this.sessionId, this.requestId, this.type);
-      if (processed) return;
+      if (processed) {
+         if (this.content != null) this.content.setLength(0);
+         if (this.qos != null) this.qos.setLength(0);
+         if (this.key != null) this.key.setLength(0);
+         return;
+      }
    }
 
    protected void flushResponse() throws XmlBlasterException {
