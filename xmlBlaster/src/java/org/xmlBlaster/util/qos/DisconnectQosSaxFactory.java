@@ -6,7 +6,6 @@ Comment:   Parsing disconnect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -31,9 +30,7 @@ import org.xml.sax.Attributes;
  */
 public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_DisconnectQosFactory
 {
-   private String ME = "DisconnectQosSaxFactory";
    private final Global glob;
-   private final LogChannel log;
 
    private DisconnectQosData disconnectQosData;
    
@@ -42,7 +39,6 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
    public DisconnectQosSaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
    }
    
    /**
@@ -94,7 +90,8 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
     */
    public void endElement(String uri, String localName, String name) {
       if (super.endElementBase(uri, localName, name) == true) {
-         if (name.equalsIgnoreCase("clientProperty")) {
+         // "clientProperty" and "attribute" must match super.clientPropertyTagNames.contains(name))
+         if (name.equalsIgnoreCase(ClientProperty.CLIENTPROPERTY_TAG)) {
             this.disconnectQosData.addClientProperty(this.clientProperty);
          }
          return;

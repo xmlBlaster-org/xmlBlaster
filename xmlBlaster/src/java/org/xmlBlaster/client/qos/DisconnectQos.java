@@ -9,7 +9,6 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropBoolean;
 
 /**
@@ -26,7 +25,21 @@ import org.xmlBlaster.util.property.PropBoolean;
  *  &lt;/qos>
  * </pre>
  * <p />
- * see xmlBlaster/src/dtd/XmlQoS.xml
+ * The following properties are evaluated (command line or xmlBlaster.properties)
+ * and control the behaviour on client side:
+ * <pre>
+ * dispatch/connection/shutdownDispatcher  true/false
+ * dispatch/connection/shutdownCbServer    true/false
+ * dispatch/connection/leaveServer         true/false
+ * </pre>
+ * Additionally you can set these values as clientProperties, which have priority:
+ * <pre>
+ *    &lt;qos>
+ *       &lt;clientProperty name='shutdownDispatcher'>true&lt;/clientProperty>
+ *       &lt;clientProperty name='shutdownCbServer'>true&lt;/clientProperty>
+ *       &lt;clientProperty name='leaveServer'>false&lt;/clientProperty>
+ *    &lt;/qos>
+ * </pre>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
  * @see org.xmlBlaster.test.classtest.DisconnectQosTest
  */
@@ -36,8 +49,9 @@ public class DisconnectQos
    private final DisconnectQosData disconnectQosData;
 
    private PropBoolean clearClientQueue = new PropBoolean(true);
-   private boolean shutdownDispatcher = true;
-   private boolean shutdownCbServer = true;
+   private boolean shutdownDispatcher;
+   private boolean shutdownCbServer;
+   private boolean leaveServer;
 
    public DisconnectQos(Global glob) {
       this(glob, null);
@@ -50,6 +64,7 @@ public class DisconnectQos
    public DisconnectQos(Global glob, DisconnectQosData disconnectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.disconnectQosData = (disconnectQosData==null) ? new DisconnectQosData(this.glob) : disconnectQosData;
+      init();
    }
 
    /** @deprecated */
@@ -62,6 +77,24 @@ public class DisconnectQos
     */
    public DisconnectQosData getData() {
       return this.disconnectQosData;
+   }
+   
+   private void init() {
+      
+      this.shutdownDispatcher = this.glob.getProperty().get("dispatch/connection/shutdownDispatcher", true);
+      if (this.disconnectQosData.getClientProperties().containsKey("shutdownDispatcher")) {
+         this.shutdownDispatcher = this.disconnectQosData.getClientProperty("shutdownDispatcher", this.shutdownDispatcher);
+      }
+      
+      this.shutdownCbServer = this.glob.getProperty().get("dispatch/connection/shutdownCbServer", true);
+      if (this.disconnectQosData.getClientProperties().containsKey("shutdownCbServer")) {
+         this.shutdownCbServer = this.disconnectQosData.getClientProperty("shutdownCbServer", this.shutdownCbServer);
+      }
+      
+      this.leaveServer = this.glob.getProperty().get("dispatch/connection/leaveServer", false);
+      if (this.disconnectQosData.getClientProperties().containsKey("leaveServer")) {
+         this.leaveServer = this.disconnectQosData.getClientProperty("leaveServer", this.leaveServer);
+      }
    }
 
    /**
@@ -189,5 +222,23 @@ public class DisconnectQos
     */
    public boolean shutdownCbServer() {
       return this.shutdownCbServer;
+   }
+
+   /**
+    * @return Returns the current setting
+    */
+   public boolean isLeaveServer() {
+      return this.leaveServer;
+   }
+
+   /**
+    * Set this to true if you just want to cleanup the
+    * client library but not disconnect from the server.
+    * At the server our session remains and will queue messages
+    * for us until we login again.
+    * @param leaveServer The leaveServer to set.
+    */
+   public void setLeaveServer(boolean leaveServer) {
+      this.leaveServer = leaveServer;
    }
 }

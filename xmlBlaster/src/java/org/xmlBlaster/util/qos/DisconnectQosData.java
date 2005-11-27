@@ -19,6 +19,7 @@ import org.xmlBlaster.util.property.PropBoolean;
  */
 public class DisconnectQosData extends QosData implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = 2690405423464959314L;
    private String ME = "DisconnectQosData";
    protected transient I_DisconnectQosFactory factory;
    private PropBoolean deleteSubjectQueue = new PropBoolean(true);

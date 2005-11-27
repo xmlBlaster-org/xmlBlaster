@@ -344,7 +344,6 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * @return How often the message has travelled the node already
     */
    public boolean dirtyRead(NodeId nodeId) {
-      int count = 0;
       if (routeNodeList == null || nodeId == null)
          return false;
       for (int ii=0; ii<routeNodeList.size(); ii++) {
