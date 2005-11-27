@@ -110,8 +110,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
 
       // For JMX instanceName may not contain ","
       String instanceName = this.glob.validateJmxValue(this.uniqueKey);
-      this.contextNode = new ContextNode(this.glob, ContextNode.SUBSCRIPTION_MARKER_TAG, 
-                           instanceName, this.glob.getContextNode());
+      this.contextNode = new ContextNode(ContextNode.SUBSCRIPTION_MARKER_TAG, instanceName, 
+                           this.glob.getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");

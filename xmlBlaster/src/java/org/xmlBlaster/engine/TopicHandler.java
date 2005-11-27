@@ -194,7 +194,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       // JMX does not allow commas ','
       String instanceName = this.glob.validateJmxValue(this.uniqueKey);
-      this.contextNode = new ContextNode(this.glob, ContextNode.TOPIC_MARKER_TAG, instanceName, this.glob.getContextNode());
+      this.contextNode = new ContextNode(ContextNode.TOPIC_MARKER_TAG, instanceName, this.glob.getContextNode());
 
       this.requestBroker = requestBroker;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();

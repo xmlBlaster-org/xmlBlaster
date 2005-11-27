@@ -21,6 +21,31 @@ public class ContextNodeTest extends TestCase {
       this.glob = Global.instance();
    }
 
+   public void testMerge() {
+      System.out.println("***ContextNodeTest: testMerge ...");
+      {
+         ContextNode root = ContextNode.valueOf("/node/heron/client/joe");
+         ContextNode other = ContextNode.valueOf("/node/xyz/client/joe/session/1");
+         ContextNode leaf = root.mergeChildTree(other);
+         System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + leaf.getAbsoluteName());
+         assertEquals("merge", "/xmlBlaster/node/heron/client/joe/session/1", leaf.getAbsoluteName());
+      }
+      {
+         ContextNode root = ContextNode.valueOf("/node/heron/client/joe/session/1");
+         ContextNode other = ContextNode.valueOf("/node/xyz/client/joe/session/1");
+         ContextNode leaf = root.mergeChildTree(other);
+         System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + leaf.getAbsoluteName());
+         assertEquals("merge", "/xmlBlaster/node/heron/client/joe/session/1", leaf.getAbsoluteName());
+      }
+      {
+         ContextNode root = ContextNode.valueOf("/node/heron/client/joe/session/1");
+         ContextNode other = ContextNode.valueOf("/node/xyz/service/Pop3Driver");
+         ContextNode leaf = root.mergeChildTree(other);
+         System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + leaf.getAbsoluteName());
+         assertEquals("merge", "/xmlBlaster/node/heron/client/joe/session/1/service/Pop3Driver", leaf.getAbsoluteName());
+      }
+   }
+
    public void testParse() {
       System.out.println("***ContextNodeTest: testParse ...");
       try {
@@ -28,7 +53,7 @@ public class ContextNodeTest extends TestCase {
          for (int i=0; i<urls.length; i++) {
             String url = urls[i];
             System.out.println("Testing syntax parsing: " + url);
-            ContextNode contextNode = ContextNode.valueOf(glob, url);
+            ContextNode contextNode = ContextNode.valueOf(url);
             assertEquals("", "heron", contextNode.getInstanceName());
             assertEquals("", ContextNode.CLUSTER_MARKER_TAG, contextNode.getClassName());
             assertTrue("parent not null", contextNode.getParent() == null);
@@ -45,7 +70,7 @@ public class ContextNodeTest extends TestCase {
          for (int i=0; i<urls.length; i++) {
             String url = urls[i];
             System.out.println("Testing syntax parsing: " + url);
-            ContextNode contextNode = ContextNode.valueOf(glob, url);
+            ContextNode contextNode = ContextNode.valueOf(url);
             ContextNode cluster = contextNode.getParent(ContextNode.CLUSTER_MARKER_TAG);
             assertEquals("", "heron", cluster.getInstanceName());
          }
@@ -60,7 +85,7 @@ public class ContextNodeTest extends TestCase {
          for (int i=0; i<urls.length; i++) {
             String url = urls[i];
             System.out.println("Testing JMX syntax parsing: " + url);
-            ContextNode contextNode = ContextNode.valueOf(glob, url);
+            ContextNode contextNode = ContextNode.valueOf(url);
             ContextNode cluster = contextNode.getParent(ContextNode.CLUSTER_MARKER_TAG);
             assertEquals("", "heron", cluster.getInstanceName());
          }
@@ -71,9 +96,9 @@ public class ContextNodeTest extends TestCase {
 
       try {
          String url = "org.xmlBlaster:nodeClass=node,node=\"avalon\",connectionClass=connection,connection=\"jack\",queueClass=queue,queue=\"connection-99\"";
-         ContextNode newParentNode = ContextNode.valueOf(glob, "org.xmlBlaster:nodeClass=node,node=heron");
+         ContextNode newParentNode = ContextNode.valueOf("org.xmlBlaster:nodeClass=node,node=heron");
          System.out.println("Testing JMX syntax parsing: " + url);
-         ContextNode contextNode = ContextNode.valueOf(glob, url);
+         ContextNode contextNode = ContextNode.valueOf(url);
          contextNode.changeParentName(newParentNode);
          String newString = contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
          assertEquals("", "org.xmlBlaster:nodeClass=node,node=\"heron\",connectionClass=connection,connection=\"jack\",queueClass=queue,queue=\"connection-99\"",
@@ -84,7 +109,7 @@ public class ContextNodeTest extends TestCase {
       }
 
       try {
-         ContextNode contextNode = ContextNode.valueOf(glob, null);
+         ContextNode contextNode = ContextNode.valueOf(null);
          assertTrue("Expected null", contextNode==ContextNode.ROOT_NODE);
       }
       catch (IllegalArgumentException e) {
@@ -92,7 +117,7 @@ public class ContextNodeTest extends TestCase {
       }
          
       try {
-         ContextNode contextNode = ContextNode.valueOf(glob, "");
+         ContextNode contextNode = ContextNode.valueOf("");
          assertTrue("Expected null", contextNode==ContextNode.ROOT_NODE);
       }
       catch (IllegalArgumentException e) {
@@ -112,6 +137,7 @@ public class ContextNodeTest extends TestCase {
       ContextNodeTest testSub = new ContextNodeTest("ContextNodeTest");
       testSub.setUp();
       testSub.testParse();
+      testSub.testMerge();
       //testSub.tearDown();
    }
 }

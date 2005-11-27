@@ -181,8 +181,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          synchronized(this) {
             if (this.instanceId == null) {
                // TODO: Two mirrored /node/heron: add IP:port to instanceId?
-               ContextNode node = new ContextNode(this, "instanceId",
-                                      ""+System.currentTimeMillis(), getContextNode());
+               ContextNode node = new ContextNode("instanceId", ""+System.currentTimeMillis(),
+                                      getContextNode());
                this.instanceId = node.getAbsoluteName();
                //this.instanceId = getLogPrefix() + "/instanceId/" + System.currentTimeMillis();
             }
@@ -214,7 +214,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       super.setId(id);
       if (id == null) return;
       this.nodeId = new NodeId(id); // ContextNode should replace NodeId one day
-      this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
+      this.contextNode = new ContextNode(ContextNode.CLUSTER_MARKER_TAG, getStrippedId(), (ContextNode)null);
    }
 
    /**

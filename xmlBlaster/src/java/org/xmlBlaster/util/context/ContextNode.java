@@ -66,17 +66,25 @@ public final class ContextNode
    public final static ContextNode ROOT_NODE = null; // new ContextNode(null, "/xmlBlaster", "", (ContextNode)null);
 
    /**
+    * @deprecated Use constructor without global
+    */
+   public ContextNode(Global glob, String className, String instanceName, ContextNode parent) {
+      this(className, instanceName, parent);
+   }
+
+   /**
     * @param className The tag name like 'node' (ContextNode.CLUSTER_MARKER_TAG) or 'client' (ContextNode.SUBJECT_MARKER_TAG)
     * @param instanceName The instance like 'heron' or 'joe', can be null
     * @param parent The parent node or null if root ContextNode ('node/heron' etc)
     */
-   public ContextNode(Global glob, String className, String instanceName, ContextNode parent) {
+   public ContextNode(String className, String instanceName, ContextNode parent) {
       if (className == null) {
          throw new IllegalArgumentException("ContextNode: Missing className argument");
       }
       this.className = className;
       this.instanceName = instanceName;
       this.parent = parent;
+      if (this.parent != null) this.parent.addChild(this);
    }
 
    /*
@@ -98,6 +106,13 @@ public final class ContextNode
     */
    public String getInstanceName() {
       return this.instanceName;
+   }
+
+   /**
+    * @return Is never null
+    */
+   public String getInstanceNameNotNull() {
+      return (this.instanceName==null) ? "" : this.instanceName;
    }
 
    /**
@@ -170,11 +185,95 @@ public final class ContextNode
       }
    }
 
-   public void addChild(ContextNode child) {
+   /**
+    * Add the given child, it exists already nothing happens
+    * @param child The child to add
+    * @return true if the child was added, the parent of your child is modified!
+    *          false if it existed already or if you given child is null
+    */
+   public boolean addChild(ContextNode child) {
+      return addChild(child, false);
+   }
+   
+   /**
+    * Add the given child, it exists already nothing happens
+    * @param child The child to add
+    * @param doClone If true the given child is not modified
+    *                 if false the given child is changed to have us as a new parent 
+    * @return true if the child was added,
+    *          false if it existed already or if you given child is null
+    */
+   public boolean addChild(ContextNode child, boolean doClone) {
+      if (child == null) return false;
       if (this.childs == null) {
          this.childs = new ArrayList();
       }
-      this.childs.add(child);
+      for (int i=0; i<this.childs.size(); i++) {
+         ContextNode currentChild = (ContextNode)this.childs.get(i);
+         if (child.equalsAbsolute(currentChild))
+            return false; // Child is already here
+      }
+      if (doClone) {
+         ContextNode clone = child.getClone();
+         this.childs.add(clone);
+         clone.parent = this;
+      }
+      else {
+         this.childs.add(child);
+         child.parent = this;
+      }
+      return true;
+   }
+   
+   public ContextNode getClone() {
+      return ContextNode.valueOf(getAbsoluteName());
+   }
+
+   /**
+    * Merges the given child, it exists already nothing happens. 
+    * <p />
+    * <pre>
+    * this = "/node/heron/client/joe"
+    * child = "/node/xyz/client/joe/session/1"
+    * results to "/node/heron/client/joe/session/1"
+    * </pre>
+    * <pre>
+    * this = "/node/heron/client/joe/session/1"
+    * child = "/node/xyz/service/Pop3Driver"
+    * results to "/xmlBlaster/node/heron/client/joe/session/1/service/Pop3Driver"
+    * </pre>
+    * @param child The child to add, it is not touched as we take a clone
+    * @return The new leave or null if failed
+    */
+   public ContextNode mergeChildTree(final ContextNode child) {
+      if (child == null) return null;
+      ContextNode childClone = child.getClone();
+      ContextNode childParent = childClone;
+      while (true) {
+         ContextNode thisParent = this.getParent(childParent.getClassName());
+         if (thisParent != null) {
+            //System.out.println("thisParent=" + thisParent.getAbsoluteName() + " - childParent=" + childParent.getAbsoluteName());
+            if (thisParent.getInstanceNameNotNull().equals(childParent.getInstanceNameNotNull())) {
+               ContextNode childs[] = childParent.getChildren();
+               for (int i=0; i<childs.length; i++) {
+                  thisParent.addChild(childs[i]); // suppresses duplicates
+               }
+               return thisParent.getChild(child.getClassName(), child.getInstanceName());
+            }
+            ContextNode pp = thisParent.getParent();
+            if (pp != null) {
+               // Found a node to merge, attach it here
+               pp.addChild(childParent);
+               return thisParent.getChild(child.getClassName(), child.getInstanceName());
+            }
+            break; // nothing found to merge with
+         }
+         childParent = childParent.getParent();
+         if (childParent==null) break;
+      }
+      // Append if not merged:
+      this.addChild(childClone);
+      return getChild(child.getClassName(), child.getInstanceName());
    }
 
    /**
@@ -185,6 +284,35 @@ public final class ContextNode
          return new ContextNode[0];
       }
       return (ContextNode[])this.childs.toArray(new ContextNode[this.childs.size()]);
+   }
+
+   /**
+    * Search down the children tree for the given className and instanceName. 
+    * Only the first match is returned
+    * @param className If null only a given instanceName is searched
+    * @param instanceName If null only the given className is searched
+    * @return The child, is null if not found
+    */
+   public ContextNode getChild(String className, String instanceName) {
+      return getChild(this, className, instanceName);
+   }
+
+   /**
+    * Recursive search
+    */
+   protected ContextNode getChild(ContextNode node, String className, String instanceName) {
+      if (className == null && instanceName == null) return null;
+      ContextNode[] childs = node.getChildren();
+      if (className == null && node.getInstanceNameNotNull().equals(instanceName))
+         return node;
+      if (instanceName == null && node.getClassName().equals(className))
+         return node;
+      if (node.getClassName().equals(className) && node.getInstanceNameNotNull().equals(instanceName))
+         return node;
+      for (int i=0; i<childs.length; i++) {
+         return getChild(childs[i], className, instanceName);
+      }
+      return null;
    }
 
    /**
@@ -314,7 +442,7 @@ public final class ContextNode
     * @return The lowest ContextNode instance, you can navigate upwards with getParent()
     *         or ContextNode.ROOT_NODE==null.
     */
-   public static ContextNode valueOf(Global glob, String url) {
+   public static ContextNode valueOf(String url) {
       if (url == null || url.length() == 0)
          return ROOT_NODE;
       String lower = url.toLowerCase();
@@ -336,11 +464,11 @@ public final class ContextNode
                    i--; // Hack: We add "session" for "client/joe/1" -> "client/joe/session/1" for backward compatibility
                }
                else {
-                  glob.getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
+                  Global.instance().getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
                   break;
                }
             }
-            node = new ContextNode(glob, className, toks[i+1], node);
+            node = new ContextNode(className, toks[i+1], node);
             i++;
          }
          return node;
@@ -364,7 +492,7 @@ public final class ContextNode
                 instanceName = instanceName.substring(1,instanceName.length()-1);
                i++;
                 }
-            node = new ContextNode(glob, className, instanceName, node);
+            node = new ContextNode(className, instanceName, node);
          }
          return node;
       }
@@ -401,31 +529,46 @@ public final class ContextNode
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.context.ContextNode
     */
    public static void main(String args[]) {
-      Global glob = new Global(args);
       try {
-         ContextNode heron = new ContextNode(glob, ContextNode.CLUSTER_MARKER_TAG, "heron", null);
+         ContextNode heron = new ContextNode(ContextNode.CLUSTER_MARKER_TAG, "heron", null);
          System.out.println("AbsoluteName=" + heron.getAbsoluteName() + " RelativeName=" + heron.getRelativeName());
-         ContextNode jack = new ContextNode(glob, ContextNode.SUBJECT_MARKER_TAG, "jack", heron);
+         ContextNode jack = new ContextNode(ContextNode.SUBJECT_MARKER_TAG, "jack", heron);
          System.out.println("AbsoluteName=" + jack.getAbsoluteName() + " RelativeName=" + jack.getRelativeName());
          
-         ContextNode ses2 = new ContextNode(glob, ContextNode.SESSION_MARKER_TAG, "2", jack);
+         ContextNode ses2 = new ContextNode(ContextNode.SESSION_MARKER_TAG, "2", jack);
          System.out.println("AbsoluteName=" + ses2.getAbsoluteName() + " RelativeName=" + ses2.getRelativeName());
          System.out.println("AbsoluteName=" + ses2.getAbsoluteName("xpath") + " RelativeName=" + ses2.getRelativeName("xpath"));
          System.out.println("AbsoluteName=" + ses2.getAbsoluteName("jmx") + " RelativeName=" + ses2.getRelativeName("jmx"));
 
          {
             System.out.println("\nTopic:");
-            ContextNode hello = new ContextNode(glob, ContextNode.TOPIC_MARKER_TAG, "hello", heron);
+            ContextNode hello = new ContextNode(ContextNode.TOPIC_MARKER_TAG, "hello", heron);
             System.out.println("AbsoluteName=" + hello.getAbsoluteName() + " RelativeName=" + hello.getRelativeName());
             System.out.println("AbsoluteName=" + hello.getAbsoluteName("xpath") + " RelativeName=" + hello.getRelativeName("xpath"));
             System.out.println("AbsoluteName=" + hello.getAbsoluteName("jmx") + " RelativeName=" + hello.getRelativeName("jmx"));
          }
          {
             System.out.println("\nWith NULL:");
-            ContextNode hello = new ContextNode(glob, ContextNode.TOPIC_MARKER_TAG, null, heron);
+            ContextNode hello = new ContextNode(ContextNode.TOPIC_MARKER_TAG, null, heron);
             System.out.println("AbsoluteName=" + hello.getAbsoluteName() + " RelativeName=" + hello.getRelativeName());
             System.out.println("AbsoluteName=" + hello.getAbsoluteName("xpath") + " RelativeName=" + hello.getRelativeName("xpath"));
             System.out.println("AbsoluteName=" + hello.getAbsoluteName("jmx") + " RelativeName=" + hello.getRelativeName("jmx"));
+         }
+         {
+            System.out.println("\nMERGE:");
+            ContextNode root = ContextNode.valueOf("/node/heron/client/joe");
+            ContextNode other = ContextNode.valueOf("/node/xyz/client/joe/session/1");
+            ContextNode leaf = root.mergeChildTree(other);
+            // -> /xmlBlaster/node/heron/client/joe/session/1
+            System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + leaf.getAbsoluteName());
+         }
+         {
+            System.out.println("\nMERGE:");
+            ContextNode root = ContextNode.valueOf("/node/heron/client/joe/session/1");
+            ContextNode other = ContextNode.valueOf("/node/xyz/service/Pop3Driver");
+            ContextNode leaf = root.mergeChildTree(other);
+            // -> /xmlBlaster/node/heron/client/joe/session/1/service/Pop3Driver
+            System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + ((leaf==null)?"null":leaf.getAbsoluteName()) );
          }
       }
       catch (IllegalArgumentException e) {

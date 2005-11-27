@@ -69,7 +69,7 @@ public class StoragePluginManager extends PluginManagerBase
     */
    public I_Map getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       return getPlugin(new PluginInfo(glob, this, typeVersion, 
-                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                                      new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
                        storageId, props);
    }
 
@@ -84,7 +84,7 @@ public class StoragePluginManager extends PluginManagerBase
    public I_Map getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "getPlugin(type="+type+", version="+version+", storageId="+storageId+", pluginEnvClass="+this.pluginEnvClass+")");
       return getPlugin(new PluginInfo(glob, this, type, version,
-                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                                      new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
                        storageId, props);
    }
 

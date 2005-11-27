@@ -198,8 +198,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             this.instanceName = "replication" + debugInstanceNum;
          }
          
-         ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
-               instanceName, this.global.getContextNode());
+         ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
+               this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
          // this.global.getJmxWrapper().registerMBean(contextNode, this);
          

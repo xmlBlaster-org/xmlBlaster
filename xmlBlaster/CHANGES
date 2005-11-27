@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
  
+ o #14191 Fixed ContextNode.addChild to update the parent link
+   Added ContextNode.mergeChildTree() and getChild() for easy lookup
+   Removed Global from ContextNode constructor and valueOf() method
+   Fixed JMX registration to have global unique entries (for example for Pop3Poller with a native client)
+
  o #14186 Changed DispachManager to fix a loop when using I_MsgInterceptor and in Polling Mode
 
  o #14180 Java client library: Added '-dispatch/connection/doSendConnect false'

@@ -118,8 +118,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
       // String instanceName = "replication" + ContextNode.SEP + slaveSessionId;
       String instanceName = this.managerInstanceName + ContextNode.SEP + this.slaveSessionId;
-      ContextNode contextNode = new ContextNode(this.global, ContextNode.CONTRIB_MARKER_TAG,
-            instanceName, this.global.getContextNode());
+      ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
+            this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
       this.initialized = true;
    }

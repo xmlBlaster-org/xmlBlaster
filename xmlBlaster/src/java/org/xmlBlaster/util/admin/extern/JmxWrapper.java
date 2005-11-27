@@ -138,11 +138,11 @@ public class JmxWrapper
       if (useJmx > 0) {
          // Export Global.getProperty() to JMX
          this.jmxProperties = new JmxProperties(this.glob);
-         ContextNode propNode = new ContextNode(this.glob, ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
+         ContextNode propNode = new ContextNode(ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
          this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
 
          this.jmxLogLevel = new JmxLogLevel(this.glob);
-         ContextNode logNode = new ContextNode(this.glob, ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
          this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
 
@@ -507,6 +507,82 @@ public class JmxWrapper
 
    /**
     * Reorganize the registration for a new parent node. 
+    * Newer variant
+    * @param oldName The existing registry, is used to lookup all matching sub-entries.
+    *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
+    * @param oldRootClassname The existing parent node like
+    *        "org.xmlBlaster:nodeClass=node,node=clientjoe1"
+    *        Note: Instance names may not contain commas "," for example "joe,Smith" is not valid
+    * @return The resulting registration like
+    *        "org.xmlBlaster:nodeClass=node,node=heron,clientClass=connection,connection=jack,queueClass=queue,queue=connection-99"
+    */
+   public synchronized int renameMBean(String oldName, String oldRootClassname, final ContextNode newRootNode) {
+      if (this.mbeanServer == null) return 0;
+      if (useJmx == 0) return 0;
+      if (oldName == null || newRootNode == null) return 0;
+      String newRootName = newRootNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
+      int count = 0;
+      if (log.CALL) log.call(ME, "JMX rename registration from '" + oldName + "' to new root '" + newRootName + "'");
+      try {
+         // e.g. "org.xmlBlaster:nodeClass=node,node=clientSUB1,*"
+         ObjectName query = new ObjectName(oldName+",*");
+         QueryExp queryExp = null;
+         Set mbeanSet = this.mbeanServer.queryMBeans(query, queryExp);
+         if (mbeanSet.size() == 0) {
+            if (log.TRACE) log.trace(ME, "JMX rename registration from '" + oldName + "' to '" + newRootName + "', nothing found for '" + query + "'");
+            return count;
+         }
+         Iterator it = mbeanSet.iterator();
+         while (it.hasNext()) {
+            ObjectInstance instance = (ObjectInstance)it.next();
+            ObjectName tmp = instance.getObjectName();
+            JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
+            if (mbeanHandle == null) {
+               log.error(ME, "Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               continue;
+            }
+            // /node/heron/connection/joe/session/2
+            ContextNode newRoot = ContextNode.valueOf(newRootName);
+            
+            // /node/clientjoe1/service/Pop3Driver
+            ContextNode current = ContextNode.valueOf(tmp.toString());
+            if (current == null) continue;
+            
+            // /node/clientjoe1
+            ContextNode parent = current.getParent(oldRootClassname);
+            if (parent == null) continue;
+            
+            // service/Pop3Driver
+            ContextNode[] childs = parent.getChildren();
+            if (childs.length != 1) continue;
+
+            this.mbeanServer.unregisterMBean(tmp);
+            this.mbeanMap.remove(tmp.toString());
+
+            // take this leg and attach it to the newRoot
+            ContextNode result = newRoot.mergeChildTree(childs[0]);
+            if (log.TRACE) log.trace(ME, "Renamed '" + oldName + "' to '" + result.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
+            if (result != null) {
+               registerMBean(result, mbeanHandle.getMBean(), mbeanHandle);
+               this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
+            }
+            else {
+               log.warn(ME, "Renamed '" + oldName + "' to '" + newRoot.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' failed, JMX bean is not registered");
+            }
+            count++;
+         }
+         return count;
+      }
+      catch (Exception e) {
+         log.error(ME, "JMX rename registration problem from '" + oldName + "' to '" + newRootName + "': " + e.toString());
+         e.printStackTrace();
+         return count;
+      }
+   }
+
+   /**
+    * Reorganize the registration for a new parent node. 
+    * Can we set this to deprecated?
     * @param oldName The existing registry, is used to lookup all matching sub-entries.
     *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
     * @param newNodeClass The new parent node like
@@ -541,7 +617,7 @@ public class JmxWrapper
             }
             this.mbeanServer.unregisterMBean(tmp);
             this.mbeanMap.remove(tmp.toString());
-            ContextNode renamed = ContextNode.valueOf(this.glob, tmp.toString());
+            ContextNode renamed = ContextNode.valueOf(tmp.toString());
             renamed.changeParentName(classNameToChange, instanceName);
             if (log.TRACE) log.trace(ME, "Renamed '" + oldName + "' to '" + renamed.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
             registerMBean(renamed, mbeanHandle.getMBean(), mbeanHandle);
@@ -556,7 +632,7 @@ public class JmxWrapper
          return count;
       }
    }
-
+   
    /**
     * Registers the specified mbean into the mbean server.
     * A typical registration string is
@@ -579,7 +655,7 @@ public class JmxWrapper
    private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle) {
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
-      if (contextNode == null) return null;
+      if (contextNode == null) return null; // Remove? code below handles a null
       if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
       //Thread.dumpStack();
 
@@ -604,12 +680,13 @@ public class JmxWrapper
          return mbeanHandle;
       }
       catch (javax.management.InstanceAlreadyExistsException e) {
-         log.warn(ME, "Ignoring JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          if (objectName != null) {
-            this.mbeanMap.remove(objectName.toString());
+            log.warn(ME, "JMX entry exists already, we replace it with new one: " + e.toString());
+            // this.mbeanMap.remove(objectName.toString()); is done in unregisterMBean
             unregisterMBean(objectName);
             return registerMBean(contextNode, mbean);
          }
+         log.warn(ME, "Ignoring JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          return null;
       }
       catch (Exception e) {

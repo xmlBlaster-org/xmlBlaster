@@ -947,7 +947,7 @@ public class Global implements Cloneable
       if (getStrippedId() == null) return;
       if (this.contextNode == null) {
          String instanceName = validateJmxValue(getStrippedId());
-         this.contextNode = new ContextNode(this, ContextNode.CLUSTER_MARKER_TAG, instanceName, ContextNode.ROOT_NODE);
+         this.contextNode = new ContextNode(ContextNode.CLUSTER_MARKER_TAG, instanceName, ContextNode.ROOT_NODE);
       }
       else {
          this.contextNode.setInstanceName(getStrippedId());
@@ -1035,7 +1035,7 @@ public class Global implements Cloneable
    protected Object clone() {
       Global g = new Global(Property.propsToArgs(this.property.getProperties()), false, false);
       if (this.contextNode != null) {
-         g.setContextNode(new ContextNode(g, this.contextNode.getClassName(), this.contextNode.getInstanceName(), this.contextNode.getParent()));
+         g.setContextNode(new ContextNode(this.contextNode.getClassName(), this.contextNode.getInstanceName(), this.contextNode.getParent()));
       }
       return g;
    }
@@ -2130,8 +2130,8 @@ public class Global implements Cloneable
       if (this.instanceId == null) {
          synchronized(this) {
             if (this.instanceId == null) {
-               ContextNode node = new ContextNode(this, "instanceId",
-                                       ""+System.currentTimeMillis(), getContextNode());
+               ContextNode node = new ContextNode("instanceId", ""+System.currentTimeMillis(),
+                                       getContextNode());
                this.instanceId = node.getAbsoluteName();
             }
          }

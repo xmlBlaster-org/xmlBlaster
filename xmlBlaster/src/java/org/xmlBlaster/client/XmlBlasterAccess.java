@@ -697,7 +697,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
       
       // parse new cluster node name ...
-      ContextNode tmp = ContextNode.valueOf(this.glob, nodeId);
+      ContextNode tmp = ContextNode.valueOf(nodeId);
       ContextNode tmpClusterContext = (tmp==null)?null:tmp.getParent(ContextNode.CLUSTER_MARKER_TAG);
       if (tmpClusterContext == null) {
          log.error(ME, "Ignoring unknown serverNodeId '" + nodeId + "'");
@@ -714,8 +714,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          clusterContext = this.glob.getContextNode();
          if (getLoginName() != null && getLoginName().length() > 0) {
             String instanceName = this.glob.validateJmxValue(getLoginName());
-            ContextNode contextNodeSubject = new ContextNode(this.glob, ContextNode.CONNECTION_MARKER_TAG, instanceName, clusterContext);
-            this.contextNode = new ContextNode(this.glob, ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId(), contextNodeSubject);
+            ContextNode contextNodeSubject = new ContextNode(ContextNode.CONNECTION_MARKER_TAG, instanceName, clusterContext);
+            this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+getPublicSessionId(), contextNodeSubject);
          }
       }
       else {
@@ -724,9 +724,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       
       try {
          // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
-         // For example our connectionQueue or our plugins
+         // For example our connectionQueue or our plugins like Pop3Driver
          if (oldClusterObjectName.length() > 0) {
-            int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, newServerNodeInstanceName);
+            int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, this.contextNode);
             if (log.TRACE) log.trace(ME, "Renamed " + num + " jmx nodes to new '" + nodeId + "'");
          }
 

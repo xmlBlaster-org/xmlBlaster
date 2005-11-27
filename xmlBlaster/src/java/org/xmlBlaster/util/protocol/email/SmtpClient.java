@@ -298,8 +298,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       
       if (this.mbeanHandle == null) {
 	      // For JMX instanceName may not contain ","
-	      this.contextNode = new ContextNode(glob, ContextNode.SERVICE_MARKER_TAG, 
-	                          "SmtpClient", glob.getContextNode());
+	      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG, "SmtpClient", 
+	                          glob.getContextNode());
 	      this.mbeanHandle = glob.registerMBean(this.contextNode, this);
       }
 

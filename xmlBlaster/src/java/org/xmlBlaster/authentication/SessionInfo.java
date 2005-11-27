@@ -153,8 +153,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getInstanceId());
       }
       this.ME = "SessionInfo-" + this.sessionName.getAbsoluteName();
-      this.contextNode = new ContextNode(this.glob, ContextNode.SESSION_MARKER_TAG, 
-                                       ""+this.sessionName.getPublicSessionId(), subjectInfo.getContextNode());
+      this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+this.sessionName.getPublicSessionId(), 
+                                       subjectInfo.getContextNode());
 
 
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());

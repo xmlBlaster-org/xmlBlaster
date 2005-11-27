@@ -170,8 +170,8 @@ implements I_Plugin, I_Timeout,
       this.pluginConfig = pluginConfig;
 
       // For JMX instanceName may not contain ","
-      this.contextNode = new ContextNode(this.glob,
-            ContextNode.SERVICE_MARKER_TAG, "Pop3Driver", this.glob
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "Pop3Driver", this.glob
                   .getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 

@@ -154,8 +154,8 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       }
 
       String instanceName = this.glob.validateJmxValue(this.subjectName.getLoginName());
-      this.contextNode = new ContextNode(this.glob, ContextNode.SUBJECT_MARKER_TAG, 
-                                       instanceName, this.glob.getContextNode());
+      this.contextNode = new ContextNode(ContextNode.SUBJECT_MARKER_TAG, instanceName, 
+                                       this.glob.getContextNode());
 
       this.ME = "SubjectInfo-" + this.instanceId + "-" + this.subjectName.getAbsoluteName();
       this.dispatchStatistic = new DispatchStatistic();
