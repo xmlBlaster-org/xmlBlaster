@@ -494,7 +494,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       if (disconnectQos == null)
          disconnectQos = new DisconnectQos(glob);
-
+      
       if (!disconnectQos.getClearClientQueueProp().isModified()) {
          boolean clearClientQueue = true;
          if (this.connectQos != null) {
@@ -550,7 +550,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }
          this.updateDispatcher.clear();
 
-         if (this.clientQueue != null) {
+
+         // Now send the disconnect() to the server ...
+         if (!disconnectQos.isLeaveServer() && this.clientQueue != null) {
             try {
                MsgQueueDisconnectEntry entry = new MsgQueueDisconnectEntry(this.glob, this.clientQueue.getStorageId(), disconnectQos);
                queueMessage(entry);  // disconnects are always transient
@@ -721,6 +723,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       else {
          clusterContext.setInstanceName(newServerNodeInstanceName);
       }
+      
+      this.glob.setScopeContextNode(this.contextNode);
       
       try {
          // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
