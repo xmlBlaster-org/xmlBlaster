@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.context;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.def.Constants;
 import java.util.ArrayList;
 import javax.management.ObjectName;
@@ -61,6 +62,8 @@ public final class ContextNode
    private String instanceName; // e.g. "heron"
    private ContextNode parent;
    private ArrayList childs;
+   
+   public static char QUOTE = '\"';
 
    //Placeholder for top level node
    public final static ContextNode ROOT_NODE = null; // new ContextNode(null, "/xmlBlaster", "", (ContextNode)null);
@@ -82,7 +85,7 @@ public final class ContextNode
          throw new IllegalArgumentException("ContextNode: Missing className argument");
       }
       this.className = className;
-      this.instanceName = instanceName;
+      setInstanceName(instanceName);
       this.parent = parent;
       if (this.parent != null) this.parent.addChild(this);
    }
@@ -98,6 +101,20 @@ public final class ContextNode
    }
 
    public void setInstanceName(String instanceName) {
+      /** TODO: Needs some testing
+      //Escape offending '/' in the name with quotes "joe/the/great"
+      if (instanceName != null 
+            && instanceName.indexOf("/") != -1
+            && instanceName.charAt(0) != QUOTE) {
+         instanceName = QUOTE + instanceName + QUOTE;
+      }
+      
+      //See valueOf(), we use parseLine already which can handle quoted tokens:
+      //   String[] toks = StringPairTokenizer.parseLine(url, '/', QUOTE, true);
+      //   //String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
+      //   
+      //For the time being we suppress '/' in JmxWrapper.validateJmxValue()
+      */
       this.instanceName = instanceName;
    }
 
@@ -450,10 +467,12 @@ public final class ContextNode
          throw new IllegalArgumentException("ContextNode.valueOf(): Unkown schema in '" + url + "'");
       }
       if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/")) {
-         String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
+         String[] toks = StringPairTokenizer.parseLine(url, '/', QUOTE, true);
+         //String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
             String className = toks[i];
+            String instanceValue = null;
             if (i == 0 && "xmlBlaster".equals(className)) {
                node = ROOT_NODE;
                continue;
@@ -462,13 +481,18 @@ public final class ContextNode
                if (node != null && ContextNode.SUBJECT_MARKER_TAG.equals(node.getClassName())) {
                    className = ContextNode.SESSION_MARKER_TAG;
                    i--; // Hack: We add "session" for "client/joe/1" -> "client/joe/session/1" for backward compatibility
+                   instanceValue = toks[i+1];
                }
                else {
-                  Global.instance().getLog("core").warn(ME, "Unexpected syntax in '" + url + "', missing value for class");
-                  break;
+                  // For example "/xmlBlaster/node/heron/logging"
+                  instanceValue = null;
+                  Global.instance().getLog("core").trace(ME, "Unexpected syntax in '" + url + "', missing value for class, we assume a 'null' value.");
                }
             }
-            node = new ContextNode(className, toks[i+1], node);
+            else {
+               instanceValue = toks[i+1];
+            }
+            node = new ContextNode(className, instanceValue, node);
             i++;
          }
          return node;
@@ -477,7 +501,8 @@ public final class ContextNode
          // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
          int index = url.indexOf(":");
          String tmp = url.substring(index+1);
-         String[] toks = org.jutils.text.StringHelper.toArray(tmp, ",");
+         String[] toks = StringPairTokenizer.parseLine(tmp, ',', QUOTE, true);
+         //String[] toks = org.jutils.text.StringHelper.toArray(tmp, ",");
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
             index = toks[i].indexOf("=");
@@ -566,6 +591,14 @@ public final class ContextNode
             System.out.println("\nMERGE:");
             ContextNode root = ContextNode.valueOf("/node/heron/client/joe/session/1");
             ContextNode other = ContextNode.valueOf("/node/xyz/service/Pop3Driver");
+            ContextNode leaf = root.mergeChildTree(other);
+            // -> /xmlBlaster/node/heron/client/joe/session/1/service/Pop3Driver
+            System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + ((leaf==null)?"null":leaf.getAbsoluteName()) );
+         }
+         {
+            System.out.println("\nMERGE:");
+            ContextNode root = ContextNode.valueOf("/node/heron/client/joe/session/1");
+            ContextNode other = ContextNode.valueOf("/node/clientjoe1/\"connection:client/joe/1\"");
             ContextNode leaf = root.mergeChildTree(other);
             // -> /xmlBlaster/node/heron/client/joe/session/1/service/Pop3Driver
             System.out.println("Orig=" + root.getAbsoluteName() + " merge=" + other.getAbsoluteName() + " result=" + ((leaf==null)?"null":leaf.getAbsoluteName()) );
