@@ -129,7 +129,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     </p>
     <p>
     Setting <i>reconnectSameClientOnly='true'</i> would only allow the client which
-    is the creator of a session to reconnect to a session. See requirement <code>client.confiuration</code>
+    is the creator of a session to reconnect to a session. See requirement <code>client.configuration</code>
     for more details.
     </p>
    </td>
@@ -390,6 +390,7 @@ java MyClient -dispatch/connection/doSendConnect false
    </configuration>
 
    <see type="REQ">interface</see>
+   <see type="REQ">client.configuration</see>
    <see type="API">org.xmlBlaster.client.qos.ConnectQos</see>
    <see type="API">org.xmlBlaster.client.qos.ConnectReturnQos</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.AuthenticateImpl</see>
