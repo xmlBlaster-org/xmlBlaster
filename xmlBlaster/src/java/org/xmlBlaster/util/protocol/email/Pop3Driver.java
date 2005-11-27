@@ -172,7 +172,7 @@ implements I_Plugin, I_Timeout,
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "Pop3Driver", this.glob
-                  .getContextNode());
+                  .getScopeContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
