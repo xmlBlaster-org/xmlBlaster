@@ -66,6 +66,10 @@
 &lt;qos>
   &lt;deleteSubjectQueue>true&lt;/deleteSubjectQueue>
   &lt;clearSessions>false&lt;/clearSessions>
+
+  &lt;clientProperty name='shutdownDispatcher'>true&lt;/clientProperty>
+  &lt;clientProperty name='shutdownCbServer'>true&lt;/clientProperty>
+  &lt;clientProperty name='leaveServer'>false&lt;/clientProperty>
 &lt;/qos>
    </pre>
    </td></tr></table>
@@ -110,6 +114,11 @@
    </example>
 
    <configuration>
+<pre>
+dispatch/connection/shutdownDispatcher  true/false
+dispatch/connection/shutdownCbServer    true/false
+dispatch/connection/leaveServer         true/false
+</pre>
    </configuration>
 
    <see type="REQ">interface</see>
