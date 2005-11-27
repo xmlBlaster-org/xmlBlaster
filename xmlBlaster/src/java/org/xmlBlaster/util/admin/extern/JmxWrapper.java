@@ -224,6 +224,9 @@ public class JmxWrapper
     * JMX property values may not contain a comma ','. 
     * Here we replace commas with an underscore.
     * Even if we use quoted ObjectName values the comma is not allowed.
+    * <br /> 
+    * Additionally we replace '/' as these would break the admin telent commands
+    * syntax, it it is nice to be able to use those interchangeable
     * @param value The value to verify
     * @return The beautified value to be usable as a value for JMX properties
     */
@@ -231,6 +234,14 @@ public class JmxWrapper
       if (value == null) return value;
       while (true) {
          int index = value.indexOf(",");
+         if (index >= 0)
+            value = value.substring(0,index) + "_" + value.substring(index+1);
+         else
+            break;
+      }
+      // new since xmlBlaster 1.0.7+
+      while (true) {
+         int index = value.indexOf("/");
          if (index >= 0)
             value = value.substring(0,index) + "_" + value.substring(index+1);
          else
@@ -567,7 +578,8 @@ public class JmxWrapper
                this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
             }
             else {
-               log.warn(ME, "Renamed '" + oldName + "' to '" + newRoot.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' failed, JMX bean is not registered");
+               //Thread.dumpStack();
+               log.warn(ME, "Renamed '" + current.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' to '" + newRoot.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' failed, JMX bean is not registered");
             }
             count++;
          }
@@ -657,7 +669,6 @@ public class JmxWrapper
       if (useJmx == 0) return null;
       if (contextNode == null) return null; // Remove? code below handles a null
       if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
-      //Thread.dumpStack();
 
       String hierarchy = (contextNode == null) ? 
                             ("org.xmlBlaster:type=" + this.glob.getId()) :
