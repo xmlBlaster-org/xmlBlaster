@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14196-#14298 Added DisconnectQos configurations:
+    dispatch/connection/shutdownDispatcher  true/fale
+    dispatch/connection/shutdownCbServer    true/false
+    dispatch/connection/leaveServer         true/false
+
  o #14192 ContextNode now uses StringPairTokenizer.parseLine() which handles quotes
           and accepts empty instanceNames
  
