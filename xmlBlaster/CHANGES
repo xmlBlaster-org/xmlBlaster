@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+
+ o #14192 ContextNode now uses StringPairTokenizer.parseLine() which handles quotes
+          and accepts empty instanceNames
  
  o #14191 Fixed ContextNode.addChild to update the parent link
    Added ContextNode.mergeChildTree() and getChild() for easy lookup
