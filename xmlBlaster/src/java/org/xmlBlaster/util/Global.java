@@ -137,6 +137,7 @@ public class Global implements Cloneable
    protected String errorText = null;
 
    protected ContextNode contextNode;
+   protected ContextNode scopeContextNode;
 
    protected String cbHostname = null;
 
@@ -869,6 +870,20 @@ public class Global implements Cloneable
     */
    public void setContextNode(ContextNode contextNode) {
       this.contextNode = contextNode;
+   }
+   
+   /**
+    * Helper for the time being to be used on client side by
+    * services like SmtpClient. 
+    * Is filled by XmlBlasterAccess with for example "/node/heron/client/joe/session/1"
+    * @return
+    */
+   public ContextNode getScopeContextNode() {
+      if (this.scopeContextNode == null) return getContextNode();
+      return this.scopeContextNode;
+   }
+   public void setScopeContextNode(ContextNode contextNode) {
+      this.scopeContextNode = contextNode;
    }
 
    /**
