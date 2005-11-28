@@ -81,9 +81,6 @@ public class MsgInfo {
 
    private I_ProgressListener progressListener;
 
-   /** Unique counter */
-   private static long counter = 0L;
-
    /** Holding MsgUnitRaw objects which acts as a holder for the method arguments */
    private Vector msgVec;
 
