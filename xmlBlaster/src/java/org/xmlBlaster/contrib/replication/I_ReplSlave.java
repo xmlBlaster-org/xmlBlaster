@@ -26,7 +26,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * Starts the whole initial update
     * @throws Exception
     */
-   void run(I_Info individualInfo) throws Exception;
+   void run(I_Info individualInfo, String dbWatcherSessionId) throws Exception;
    /**
     * 3
     *
@@ -37,7 +37,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * 4
     *
     */
-   void requestInitialData() throws Exception;
+   void requestInitialData(String dbWatcherSessionId) throws Exception;
    
    
    /**

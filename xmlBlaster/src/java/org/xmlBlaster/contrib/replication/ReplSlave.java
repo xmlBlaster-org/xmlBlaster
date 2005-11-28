@@ -57,7 +57,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String statusTopic;
    private String dataTopic;
    private Global global;
-   private String masterSessionId;
+   // private String masterSessionId;
    boolean initialized; 
    private long minReplKey;
    private long maxReplKey;
@@ -65,7 +65,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private Object mbeanHandle;
    private String sqlResponse;
    private String managerInstanceName;
-   private boolean forceSending;
+   private boolean forceSending; // temporary Hack to be removed TODO
    
    public String getTopic() {
       return this.dataTopic;
@@ -111,12 +111,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // only send status messages if it has been configured that way
       this.statusTopic = info.get("mom.statusTopicName", null);
       // this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
-      this.masterSessionId = info.get("_senderSession", null);
-      if (this.masterSessionId == null)
-         throw new Exception("ReplSlave '" + this.name + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
+
+      //this.masterSessionId = info.get("_senderSession", null);
+      //if (this.masterSessionId == null)
+      //   throw new Exception("ReplSlave '" + this.name + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
 
       // this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
       // String instanceName = "replication" + ContextNode.SEP + slaveSessionId;
+      
+      // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
+      boolean forceSending = info.getBoolean("replication.forceSending", false);
+      if (forceSending)
+         this.forceSending = true; 
       String instanceName = this.managerInstanceName + ContextNode.SEP + this.slaveSessionId;
       ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
             this.global.getContextNode());
@@ -125,14 +131,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
 
-   public void run(I_Info info) throws Exception {
+   public void run(I_Info info, String dbWatcherSessionId) throws Exception {
       if (this.status != STATUS_NORMAL) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
          return;
       }
       init(info);
       prepareForRequest(info);
-      requestInitialData();
+      requestInitialData(dbWatcherSessionId);
    }
    
    /**
@@ -193,12 +199,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * 
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#requestInitialData()
     */
-   public void requestInitialData() throws Exception {
-      log.info(this.name + " sends now an initial update request to the Master '" + this.masterSessionId + "'");
+   public void requestInitialData(String dbWatcherSessionId) throws Exception {
+      log.info(this.name + " sends now an initial update request to the Master '" + dbWatcherSessionId + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
       PublishKey pubKey = new PublishKey(this.global);
-      Destination destination = new Destination(new SessionName(this.global, this.masterSessionId));
+      Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
       pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
@@ -358,7 +364,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * several slaves.
     * Cancels an ongoing initialUpdate Request.
     */
-   public void cancelInitialUpdate() throws Exception {
+   public void cancelInitialUpdate(String dbWatcherSessionId) throws Exception {
       if (this.status == STATUS_NORMAL)
          return;
       if (!this.initialized)
@@ -368,11 +374,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       log.info("clearing of callback queue: '" + clearedMsg + "' where removed since a cancel request was done");
 
       // sending the cancel op to the DbWatcher
-      log.info(this.name + " sends now a cancel request to the Master '" + this.masterSessionId + "'");
+      log.info(this.name + " sends now a cancel request to the Master '" + dbWatcherSessionId + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
       PublishKey pubKey = new PublishKey(this.global);
-      Destination destination = new Destination(new SessionName(this.global, this.masterSessionId));
+      Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
       pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);

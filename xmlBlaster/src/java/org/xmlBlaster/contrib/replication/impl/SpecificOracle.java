@@ -585,6 +585,21 @@ public class SpecificOracle extends SpecificDefault {
             rs.close();
             st.close();
          }
+
+         {  // PACKAGES
+            st = conn.createStatement();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
+            rs = st.executeQuery(sql);
+            ArrayList names = new ArrayList();
+            while (rs.next())
+               names.add(rs.getString(1));
+            sum += names.size();
+            cleanupOp(conn, names, schema, "DROP PACKAGE", "");
+            rs.close();
+            st.close();
+         }
+         
+         
          {  // PROCEDURES
             st = conn.createStatement();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";

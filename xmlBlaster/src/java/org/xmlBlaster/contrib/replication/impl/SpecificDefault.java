@@ -904,6 +904,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
       int oldTransactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
       try {
+         if (this.dbPool == null)
+            throw new Exception("intitiate update: The Database pool has not been instantiated (yet)");
          conn = this.dbPool.reserve();
          oldTransactionIsolation = conn.getTransactionIsolation();
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);

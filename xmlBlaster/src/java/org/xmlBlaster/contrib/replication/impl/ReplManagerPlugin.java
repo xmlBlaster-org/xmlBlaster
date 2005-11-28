@@ -145,7 +145,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          if (slaveSessionName == null || slaveSessionName.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
          if (replicationPrefix == null || replicationPrefix.length() < 1)
-            throw new Exception("ReplManagerPlugin.initiateReplication: The replicationKey is null, please provide one");
+            throw new Exception("ReplManagerPlugin.initiateReplication: The replication.prefix is null, please provide one");
          log.info("initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationPrefix + "'");
          
          I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
@@ -157,7 +157,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             }
             if (slave != null) {
                individualInfo.put("_replName", replicationPrefix);
-               slave.run(individualInfo);
+               String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+               if (dbWatcherSessionId == null)
+                  throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
+               slave.run(individualInfo, dbWatcherSessionId);
             }
             else {
                StringBuffer buf = new StringBuffer();
@@ -452,6 +455,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#doActivate(org.xmlBlaster.util.dispatch.DispatchManager)
     */
    public boolean doActivate(DispatchManager dispatchManager) {
+      if (dispatchManager.getDispatchConnectionsHandler().isPolling()) {
+         log.fine("Can't send message as connection is lost and we are polling");
+         return false;
+      }
       return true;
    }
 
