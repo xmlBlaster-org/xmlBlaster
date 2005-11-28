@@ -5,16 +5,12 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.email;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 
@@ -92,30 +88,16 @@ public class EmailCallbackImpl extends EmailExecutor implements
       // Who are we?
       // We need to correct the mail addresses from EmailExecutor
       // as it assumes server side operation
-      try {
-         // super.fromAddress = new InternetAddress(from);
-         if (super.fromAddress != null
-               && this.callbackAddress.getRawAddress().length() == 0)
-            this.callbackAddress.setRawAddress(super.fromAddress.toString());
-         else
-            super.fromAddress = new InternetAddress(this.callbackAddress
-                  .getRawAddress());
-      } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'from' address '"
-                     + this.callbackAddress.getRawAddress() + "'");
-      }
+      if (super.fromAddress != null
+            && this.callbackAddress.getRawAddress().length() == 0)
+         this.callbackAddress.setRawAddress(super.fromAddress.toString());
+      else
+         super.setFrom(this.callbackAddress.getRawAddress());
 
       // Guess the email address to reach the xmlBlaster server
       // TODO: Extract the address dynamically from the received UPDATE message
-      String to = this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
-            this.pluginInfo);
-      try {
-         super.toAddress = new InternetAddress(to);
-      } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'from' address '" + to + "'");
-      }
+      super.setTo(this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
+            this.pluginInfo));
 
       getPop3Driver().registerForEmail(super.getEmailSessionId(),
             "", this);

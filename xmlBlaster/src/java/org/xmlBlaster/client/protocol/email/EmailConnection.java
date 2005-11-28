@@ -27,10 +27,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-
 /**
  * This driver sends emails to the xmlBlaster server, the return QOS are polled via POP3. 
  * <p />
@@ -103,16 +99,10 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
                   ME, "Please configure a 'from' address with 'mail.smtp.from=xy@somehost.com'");
          }
          
-         // Guess the email address to reach the xmlBlaster server
-         // TODO: Extract the address dynamically from the received UPDATE message 
-         String to = this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
-               this.pluginInfo);
-         try {
-            super.toAddress = new InternetAddress(to);
-         } catch (AddressException e) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-                  ME, "Illegal 'from' address '" + to + "'");
-         }
+         // The email address to reach the xmlBlaster server
+         super.setTo(this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
+               this.pluginInfo));
+
          this.isInitialized = true;
          log.info("Initialized email connection from='" + super.fromAddress.toString() + "' to='" + super.toAddress.toString() + "'");
       }
