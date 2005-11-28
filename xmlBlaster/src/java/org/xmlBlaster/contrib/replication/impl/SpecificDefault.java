@@ -999,11 +999,20 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          Connection conn = pool.reserve();
          String schema = info.get("wipeout.schema", null);
          if (schema == null) {
-            specific.cleanup(conn, true);
+            String initialUpdateFile = info.get("initialUpdate.file", null);
+            if (initialUpdateFile != null) {
+               specific.initialCommand(null, initialUpdateFile);
+            }
+            else
+               specific.cleanup(conn, true);
          }
          else {
             specific.wipeoutSchema(null, schema);
          }
+         
+         
+         
+         
          pool.release(conn);
       } catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
