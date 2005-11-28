@@ -6,6 +6,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
@@ -46,6 +48,10 @@ public class EmailData {
 
    protected InternetAddress[] recipients;
 
+   protected InternetAddress[] cc;
+
+   protected InternetAddress[] bcc;
+
    protected InternetAddress from;
    
    protected String subject;
@@ -60,6 +66,8 @@ public class EmailData {
 
    /** Contains requestId * */
    protected String requestId;
+   
+   protected Timestamp expiryTime;
 
    /** The root tag &lt;messageId> */
    public static final String MESSAGEID_TAG = "messageId";
@@ -305,6 +313,14 @@ public class EmailData {
       }
       if (this.recipients.length == 0) {
          sb.append(offset).append("  <to></to>");
+      }
+      for (int i = 0; this.cc!=null && i < this.cc.length; i++) {
+         sb.append(offset).append("  <cc>").append(XmlNotPortable.escape(this.cc[i].toString()))
+               .append("</cc>");
+      }
+      for (int i = 0; this.bcc!=null && i < this.bcc.length; i++) {
+         sb.append(offset).append("  <bcc>").append(XmlNotPortable.escape(this.bcc[i].toString()))
+               .append("</bcc>");
       }
       sb.append(offset).append("  <subject>").append(XmlNotPortable.escape(getSubject()))
             .append("</subject>");
@@ -588,5 +604,39 @@ public class EmailData {
       System.out.println("ORIG:\n" + msg.toXml(true));
       msg = EmailData.parseXml(msg.toXml(true));
       System.out.println("NEW:\n" + msg.toXml(true));
+   }
+
+   /**
+    * @return Returns the bcc array, is never null
+    */
+   public InternetAddress[] getBcc() {
+      return (this.bcc==null) ? new InternetAddress[0] : this.bcc;
+   }
+
+   /**
+    * @param bcc The bcc to set.
+    */
+   public void setBcc(String bcc) {
+      String[] bccs = StringPairTokenizer.parseLine(bcc);
+      this.bcc = new InternetAddress[bccs.length];
+      for (int i=0; i<bccs.length; i++)
+         this.bcc[i] = toInternetAddress(bccs[i]);
+   }
+
+   /**
+    * @return Returns the cc array, is never null
+    */
+   public InternetAddress[] getCc() {
+      return (this.cc==null) ? new InternetAddress[0] : this.cc;
+   }
+
+   /**
+    * @param cc The cc to set.
+    */
+   public void setCc(String cc) {
+      String[] ccs = StringPairTokenizer.parseLine(cc);
+      this.cc = new InternetAddress[ccs.length];
+      for (int i=0; i<ccs.length; i++)
+         this.cc[i] = toInternetAddress(ccs[i]);
    }
 }
