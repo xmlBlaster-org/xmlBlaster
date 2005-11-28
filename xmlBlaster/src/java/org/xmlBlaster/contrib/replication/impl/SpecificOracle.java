@@ -510,10 +510,9 @@ public class SpecificOracle extends SpecificDefault {
             st = conn.createStatement();
             sum += st.executeUpdate(sql);
          }
-         catch (SQLException ex) {
-            if (st != null) {
+         finally {
+            if (st != null)
                st.close();
-            }
          }
       }
       return sum;
@@ -539,134 +538,139 @@ public class SpecificOracle extends SpecificDefault {
       return sum;
    }
 
-   private int wipeoutSchemaSingleSweep(String catalog, String schema) throws Exception {
-      Connection conn = null;
+   /**
+    * 
+    * @param conn
+    * @param st
+    * @param rs
+    * @return
+    * @throws SQLException
+    */
+   private int invokeListStatement(Connection conn, List names, String sql) throws SQLException {
       Statement st = null;
       ResultSet rs = null;
+      
+      try {
+         st = conn.createStatement();
+         rs = st.executeQuery(sql);
+         while (rs.next())
+            names.add(rs.getString(1));
+         return names.size();
+      }
+      finally {
+         try {
+            if (rs != null)   
+               rs.close();
+         }
+         catch (Throwable ex) { ex.printStackTrace(); }
+         try {
+            if (st != null)
+               st.close();
+         }
+         catch (Throwable ex) { ex.printStackTrace(); }
+      }
+   }
+   
+   
+   private int wipeoutSchemaSingleSweep(String catalog, String schema) throws Exception {
+      Connection conn = null;
       int sum = 0;
       try {
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          
          {  // TRIGGERS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
             // since cleanupOp does not really return the number of effectively removed entries
-            cleanupOp(conn, names, schema, "DROP TRIGGER", "");
-            rs.close();
-            st.close();
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP TRIGGER", "");
          }
          {  // SEQUENCES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
          }
          {  // FUNCTIONS
-            st = conn.createStatement();
+            ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP FUNCTION", "");
-            rs.close();
-            st.close();
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP FUNCTION", "");
          }
-
          {  // PACKAGES
-            st = conn.createStatement();
+            ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP PACKAGE", "");
-            rs.close();
-            st.close();
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP PACKAGE", "");
          }
-         
-         
          {  // PROCEDURES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
          }
          {  // VIEWS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
          }
          {  // TABLES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
          }
          {  // SYNONYMS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP SYNONYM", "");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP SYNONYM", "");
          }
          {  // INDEXES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
-            rs = st.executeQuery(sql);
             ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
-            rs.close();
-            st.close();
+            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
+            log.info("going to execute sql statement '" + sql + "'");
+            sum += invokeListStatement(conn, names, sql);
+            // since cleanupOp does not really return the number of effectively removed entries
+            if (names.size() > 0)
+               cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
          }
+
+      }
+      catch (SQLException ex) {
+        if (conn != null)
+           dbPool.erase(conn);
+        conn = null;
       }
       finally {
-         if (rs != null)
-            rs.close();
-         if (st != null)
-            st.close();
-         
+         if (conn != null)
+            dbPool.release(conn);
+         conn = null;
       }
       return sum;
    }
