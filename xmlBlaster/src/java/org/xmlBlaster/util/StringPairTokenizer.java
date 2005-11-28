@@ -18,17 +18,35 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * StringPairTokenizer is a utility class used to parse a string giving
- * back a map containing pairs of key/value strings.
+ * back a map containing pairs of key/value strings. 
+ * <br />
+ * The method parseLine repsects quoted '"' tokens and ignores the separator inside the quotes.
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
- */
-
-/**
- * Helper class to split Strings. 
+ * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>
  */
 public class StringPairTokenizer {
+   public static final char DEFAULT_QUOTE_CHARACTER = '"';
+   public static final char ESCAPE_CHARACTER = '\\';
+   public static final char DEFAULT_SEPARATOR = ',';
 
+   /**
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
+    */
+   public static String[] parseLine(String nextLine) {
+      return parseLine(nextLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, true);
+   }
 
+   /**
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
+    */
+   public static String[] parseLine(String nextLine, char separator) {
+      return parseLine(nextLine, separator, DEFAULT_QUOTE_CHARACTER, true);
+   }
+
+   /**
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
+    */
    public static String[] parseLine(String nextLine, char separator, char quotechar, boolean trimEmpty) {
       if (nextLine == null || nextLine.length()==0) return new String[0];
       String[] nextLines = new String[1];
@@ -49,6 +67,8 @@ public class StringPairTokenizer {
     *</pre>  
     *
     * Thanks to http://opencsv.sourceforge.net/ (under Apache license)
+    * 
+    * @return Never null, if nextLines is null or empty we return an empty array
     */
    public static String[] parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty) {
       List tokensOnThisLine = new ArrayList();
@@ -137,6 +157,46 @@ public class StringPairTokenizer {
       return (String[])list.toArray(new String[list.size()]);
    }
     */
+
+         /*
+        public static final char ESCAPE_CHARACTER = '\\';
+        
+        public static final char DEFAULT_SEPARATOR = ',';
+        
+        public static final char DEFAULT_QUOTE_CHARACTER = '"';
+         * Writes the next line to the file.
+         * 
+         * @param nextLine a string array with each comma-separated element as a separate
+         *         entry.
+         * 
+         * @throws IOException
+         *             if bad things happen during the write
+        public void writeNext(String[] nextLine) throws IOException {
+                StringBuffer sb = new StringBuffer();
+                for (int i = 0; i < nextLine.length; i++) {
+                        String nextElement = nextLine[i];
+                        sb.append(quotechar);
+                        for (int j = 0; j < nextElement.length(); j++) {
+                                char nextChar = nextElement.charAt(j);
+                                if (nextChar == quotechar) {
+                                        sb.append(ESCAPE_CHARACTER).append(nextChar);
+                                } else if (nextChar == ESCAPE_CHARACTER) {
+                                        sb.append(ESCAPE_CHARACTER).append(nextChar);
+                                } else {
+                                        sb.append(nextChar);
+                                }
+                        }
+                        sb.append(quotechar);
+                        if (i != nextLine.length - 1) {
+                                sb.append(separator);
+                        }
+                }
+                sb.append('\n');
+                pw.write(sb.toString());
+
+        }
+         */
+
 
    /**
     * If a value is missing then a null object will be put into the map as value.
