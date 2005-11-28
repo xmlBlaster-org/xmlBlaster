@@ -24,6 +24,8 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,6 +67,7 @@ public abstract class RequestReplyExecutor
    protected I_ProgressListener progressListener;
    protected boolean compressZlib;
    protected boolean compressZlibStream;
+   protected boolean useEmailExpiryTimestamp;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -109,6 +112,11 @@ public abstract class RequestReplyExecutor
          this.compressZlibStream = false;
          this.compressZlib = false;
       }
+      
+      // TODO: Is still experimental:
+      // 1. Response should never expire
+      // 2. Otherwise the Pop3Driver must be changed to nevertheless return it to wake up the blocking latch
+      setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", false).getValue());
       
       setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
@@ -224,6 +232,18 @@ public abstract class RequestReplyExecutor
          return this.updateResponseTimeout;
       }
       return this.responseTimeout;
+   }
+   
+   /**
+    * Return the time in future when the email can be deleted. 
+    * @return Returns the expiry timestamp, is null if message never expires
+    */
+   public Timestamp getExpiryTimestamp(MethodName methodName) {
+      if (!useEmailExpiryTimestamp()) return null;
+      long diff = getResponseTimeout(methodName);
+      if (diff <= 0) return null;
+      long current = new Date().getTime();
+      return new Timestamp(current+diff);
    }
    
    /**
@@ -672,6 +692,20 @@ public abstract class RequestReplyExecutor
     */
    public long getUpdateResponseTimeout() {
       return this.updateResponseTimeout;
+   }
+
+   /**
+    * @return Returns the useEmailExpiryTimestamp.
+    */
+   public boolean useEmailExpiryTimestamp() {
+      return this.useEmailExpiryTimestamp;
+   }
+
+   /**
+    * @param useEmailExpiryTimestamp The useEmailExpiryTimestamp to set.
+    */
+   public void setUseEmailExpiryTimestamp(boolean useEmailExpiryTimestamp) {
+      this.useEmailExpiryTimestamp = useEmailExpiryTimestamp;
    }
 }
 

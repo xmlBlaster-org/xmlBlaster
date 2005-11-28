@@ -416,7 +416,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
       if (messageId == null)
          messageId = EmailData.createMessageId(getEmailSessionId(),
-            requestId, methodName);
+            requestId, methodName, getExpiryTimestamp(methodName));
 
       if (subject != null && subject.length() > 0) {
          // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:

@@ -22,6 +22,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -127,6 +128,8 @@ implements I_Plugin, I_Timeout,
    
    public static final String OBJECTENTRY_KEY = Pop3Driver.class.getName();
    
+   public static final String DISCARD = "--discard--";
+
    /**
     * The Pop3Driver is a singleton in the Global scope. 
     * Access this singleton for the given global, and if it
@@ -336,6 +339,23 @@ implements I_Plugin, I_Timeout,
    private String notify(EmailData emailData, boolean calledFromHoldbackMap) {
       if (emailData == null)
          return null;
+      
+      String expires = emailData.extractMessageId(EmailData.EXPIRES_TAG);
+      if (expires != null) {
+         try {
+            // TODO: Wrong code: who removes it from the listeners map?
+            Timestamp timestamp = Timestamp.valueOf(expires);
+            Date now = new Date();
+            if (now.getTime() > timestamp.getMillis()) {
+               log.warning("Email is epxired, we discard it: " + emailData.toString());
+               return DISCARD;
+            }
+         }
+         catch (Throwable e) {
+            log.warning("Ignoring expires setting '" + expires + "':" + e.toString());
+         }
+      }
+      
       String key = emailData.getSessionId() + emailData.getRequestId();
       I_ResponseListener listenerSession = null;
       I_ResponseListener listenerRequest = null;
@@ -527,8 +547,11 @@ implements I_Plugin, I_Timeout,
             } else {
                String listenerKey = notify(emailData, true);
                if (listenerKey != null) {
-                  log.fine("Holdback email is now delivered: " + emailData.toString());
-                  this.holdbackMap.remove(keys[i]);
+                  if (!DISCARD.equals(listenerKey)) {
+                     if (log.isLoggable(Level.FINE))
+                        log.fine("Holdback email is now delivered: " + emailData.toString());
+                     this.holdbackMap.remove(keys[i]);
+                  }
                }
             }
          }

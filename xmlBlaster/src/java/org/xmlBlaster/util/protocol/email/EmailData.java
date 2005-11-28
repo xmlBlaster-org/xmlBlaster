@@ -76,6 +76,8 @@ public class EmailData {
 
    public static final String SESSIONID_TAG = "sessionId";
 
+   public static final String EXPIRES_TAG = "expires";
+
    /** Holding the relevant email meta info like a request identifier */
    public static final String MESSAGEID_EXTENSION = ".mid";
 
@@ -566,23 +568,38 @@ public class EmailData {
     * Use together with extractMessageId(EmailData messageData, String tag).
     * 
     * @param methodName Can be null
+    * @param expiryTimestamp Can be null
     * @return A well formatted XML
     * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName></messageId>
     */
-   public String createMessageId(MethodName methodName) {
-      return createMessageId(this.sessionId, this.requestId, methodName);
+   public String createMessageId(MethodName methodName, Timestamp expiryTimestamp) {
+      return createMessageId(this.sessionId, this.requestId, methodName, expiryTimestamp);
    }
    
-   public static String createMessageId(String sessionId, String requestId, MethodName methodName) {
+   /**
+    * 
+    * @param methodName Can be null
+    * @param expiryTimestamp Can be null
+    * @return A well formatted XML, the timestamp follows the ASCII ISO notation
+    * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName><expires>2005-11-30 12:42:24.200</expires></messageId>
+    */
+   public static String createMessageId(String sessionId, String requestId, MethodName methodName, Timestamp expiryTimestamp) {
+      String timestamp = "";
+      if (expiryTimestamp!=null)   
+         timestamp = "<expires>" + expiryTimestamp.toString() + "</expires>";
       if (methodName == null)
          return "<messageId><sessionId>" + sessionId
                + "</sessionId><requestId>" + requestId
-               + "</requestId></messageId>";
+               + "</requestId>"
+               + timestamp
+               + "</messageId>";
       else
          return "<messageId><sessionId>" + sessionId
                + "</sessionId><requestId>" + requestId
                + "</requestId><methodName>" + methodName.toString()
-               + "</methodName></messageId>";
+               + "</methodName>"
+               + timestamp
+               + "</messageId>";
    }
    
    public String toString() {
@@ -638,5 +655,20 @@ public class EmailData {
       this.cc = new InternetAddress[ccs.length];
       for (int i=0; i<ccs.length; i++)
          this.cc[i] = toInternetAddress(ccs[i]);
+   }
+
+   /**
+    * @return Returns the expiryTime or null if none is defined
+    */
+   public Timestamp getExpiryTime() {
+      return this.expiryTime;
+   }
+
+   /**
+    * Set an absolute time in future when this email is regarded as obsolete. 
+    * @param expiryTime The expiryTime to set.
+    */
+   public void setExpiryTime(Timestamp expiryTime) {
+      this.expiryTime = expiryTime;
    }
 }
