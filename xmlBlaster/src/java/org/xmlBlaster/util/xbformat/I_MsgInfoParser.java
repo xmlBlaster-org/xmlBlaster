@@ -38,7 +38,7 @@ public interface I_MsgInfoParser {
     * @throws IOException
     * @throws IllegalArgumentException
     */
-   MsgInfo parse(InputStream in) throws  IOException, IllegalArgumentException;
+   MsgInfo parse(InputStream in) throws  IOException, IllegalArgumentException, XmlBlasterException;
    
    /**
     * Dumps the given MsgInfo to a byte array
