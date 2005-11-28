@@ -53,6 +53,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    protected InternetAddress fromAddress;
 
    protected InternetAddress toAddress;
+   
+   protected String cc;
+
+   protected String bcc;
 
    protected SmtpClient smtpClient;
 
@@ -117,23 +121,18 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       if (to != null && to.length() > 0) {
          // The xmlBlaster address is given on client side
          // but not on server side
-         try {
-            this.toAddress = new InternetAddress(to);
-         } catch (AddressException e) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-                  ME, "Illegal 'to' address '" + to + "'");
-         }
+         setTo(to);
       }
 
       // from="xmlBlaster@localhost"
-      String from = this.glob.get("mail.smtp.from",
-            "unknown@localhost", null, this.pluginConfig);
-      try {
-         this.fromAddress = new InternetAddress(from);
-      } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'from' address '" + from + "'");
-      }
+      setFrom(this.glob.get("mail.smtp.from",
+            "unknown@localhost", null, this.pluginConfig));
+
+      setCc(this.glob.get("mail.smtp.cc",
+            "", null, this.pluginConfig));
+
+      setBcc(this.glob.get("mail.smtp.bcc",
+            "", null, this.pluginConfig));
       
       // if template contains SUBJECT_MESSAGEID_TOKEN = "${xmlBlaster/email/messageId}"
       // this will be replaced by the current messageId
@@ -142,7 +141,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
 
 
       
-      if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + from + " to=" + to);
+      if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + this.fromAddress.toString() + " to=" + to);
    }
 
    /**
@@ -474,6 +473,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
+      emailData.setCc(this.cc);
+      emailData.setBcc(this.bcc);
       String payloadMimetype = msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).getMimetype(isCompressed);
       emailData.addAttachment(new AttachmentHolder(payloadFileName, payloadMimetype, payload));
       emailData.addAttachment(new AttachmentHolder(this.messageIdFileName, messageId));
@@ -600,5 +601,51 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          log.warning("The current email callback implementation can handle max one connection per email account (like 'joe' on the POP3 server) if you don't supply a positive sessionId");
          setEmailSessionId(sessionName.getLoginName());
       }
+   }
+
+   /**
+    * @return Returns the cc.
+    */
+   public String getCc() {
+      return this.cc;
+   }
+
+   /**
+    * @param cc The cc to set.
+    */
+   public void setCc(String cc) {
+      this.cc = cc;
+   }
+
+   public void setTo(String to) throws XmlBlasterException {
+      try {
+         this.toAddress = new InternetAddress(to);
+      } catch (AddressException e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
+               ME, "Illegal 'to' address '" + to + "'");
+      }
+   }
+
+   public void setFrom(String from) throws XmlBlasterException {
+      try {
+         this.fromAddress = new InternetAddress(from);
+      } catch (AddressException e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
+               ME, "Illegal 'from' address '" + from + "'");
+      }
+   }
+
+   /**
+    * @return Returns the bcc.
+    */
+   public String getBcc() {
+      return this.bcc;
+   }
+
+   /**
+    * @param bcc The bcc to set.
+    */
+   public void setBcc(String bcc) {
+      this.bcc = bcc;
    }
 }
