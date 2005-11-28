@@ -477,8 +477,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     */
    private void osExecute(String slaveName, String cmd, ConnectionInfo connInfo) throws Exception {
       try {
-         if (Execute.isWindows()) cmd = "cmd " + cmd;
+         // if (Execute.isWindows()) cmd = "cmd " + cmd;
          String[] args = StringHelper.toArray(cmd, " ");
+         log.info("running for *" + slaveName + "' for cmd '" + cmd + "'");
          Execute execute = new Execute(args, null);
          synchronized (this) {
             if (slaveName != null) {
