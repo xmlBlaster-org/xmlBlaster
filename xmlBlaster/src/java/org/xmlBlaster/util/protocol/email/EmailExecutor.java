@@ -77,6 +77,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    //protected String lastSessionId;
    /** Use to protect against looping messages, is a monotonous ascending timestamp */
    protected long lastRequestId=-1;
+   /** Ping runs in another thread, we need to protect seperately (an update can legally overtake a ping and vice versa) */
+   protected long lastPingRequestId=-1;
    
    protected final String BOUNCE_MESSAGEID_KEY = "bounce:messageId";
    protected final String BOUNCE_MAILTO_KEY = "mail.to";
@@ -374,15 +376,28 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             // to detect email duplicates (which can be produced by MTAs)
             try {
                long currRequestId = new Long(msgInfo.getRequestId()).longValue();
-               if (this.lastRequestId >= 0 && currRequestId <= this.lastRequestId) {
-                  log.warning("Can't process email data from "
-                        + getPop3Driver().getPop3Url()
-                        + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastRequestId+") has been processed already"
-                        + ": " + emailData.toXml(true));
-                  return;
+               if (MethodName.PING.equals(msgInfo.getMethodName())) {
+                  if (this.lastPingRequestId >= 0 && currRequestId <= this.lastPingRequestId) {
+                     log.warning("Can't process email data from "
+                           + getPop3Driver().getPop3Url()
+                           + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastPingRequestId+") has been processed already"
+                           + ": " + emailData.toXml(true));
+                     return;
+                  }
+                  //this.lastSessionId = msgInfo.getSecretSessionId();
+                  this.lastPingRequestId = currRequestId;
                }
-               //this.lastSessionId = msgInfo.getSecretSessionId();
-               this.lastRequestId = currRequestId;
+               else {
+                  if (this.lastRequestId >= 0 && currRequestId <= this.lastRequestId) {
+                     log.warning("Can't process email data from "
+                           + getPop3Driver().getPop3Url()
+                           + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastRequestId+") has been processed already"
+                           + ": " + emailData.toXml(true));
+                     return;
+                  }
+                  //this.lastSessionId = msgInfo.getSecretSessionId();
+                  this.lastRequestId = currRequestId;
+               }
             }
             catch (Throwable e) {
                log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
