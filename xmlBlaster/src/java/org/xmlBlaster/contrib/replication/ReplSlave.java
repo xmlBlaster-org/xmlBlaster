@@ -94,6 +94,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
       this.status = STATUS_NORMAL;
+      setStatus(this.status);
    }
 
    /**
@@ -130,6 +131,20 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.initialized = true;
    }
    
+   private void setStatus(int status) {
+      String client = "client/";
+      int pos = this.slaveSessionId.indexOf(client);
+      if (pos < 0)
+         log.warning("session name '" + this.slaveSessionId + "' does not start with '" + client + "'");
+      else {
+         String key = "__" + this.slaveSessionId.substring(pos + client.length());
+         org.xmlBlaster.engine.Global engineGlob = this.getEngineGlobal(this.global);
+         if (engineGlob == null)
+            log.warning("Can not write status since no engine global found");
+         else
+         engineGlob.getProperty().getProperties().setProperty(key, getStatus());
+      }
+   }
 
    public void run(I_Info info, String dbWatcherSessionId) throws Exception {
       if (this.status != STATUS_NORMAL) {
@@ -177,6 +192,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       session.subscribe(this.dataTopic, subQos.toXml());
       synchronized(this) {
          this.status = STATUS_INITIAL;
+         setStatus(this.status);
       }
    }
    
@@ -242,6 +258,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.minReplKey = minReplKey;
       this.maxReplKey = maxReplKey;
       this.status = STATUS_TRANSITION;
+      setStatus(this.status);
       doContinue();
    }
 
@@ -286,6 +303,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             else {
                log.info("Received msg marking the end of the initial update: '" + this.name + "' going into NORMAL operations");
                this.status = STATUS_NORMAL;
+               setStatus(this.status);
                queue.removeRandom(entry);
                continue;
             }
@@ -298,6 +316,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             if (replKey > this.maxReplKey) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");
                this.status = STATUS_NORMAL;
+               setStatus(this.status);
             }
          }
          else { // such messages have been already from the initial update. (obsolete messages are removed)
@@ -387,7 +406,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       conn.publish(msg);
       // TODO Check this since it could mess up the current status if one is exaclty finished now
       this.status = STATUS_NORMAL;
-      
+      setStatus(this.status);
    }
    
 }

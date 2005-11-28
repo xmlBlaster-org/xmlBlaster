@@ -767,11 +767,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
    }
 
-   
-   // Subscription Listener here 
-   
-   
-   
+   void setEngineGlobalProperty(String key, String val) {
+      org.xmlBlaster.engine.Global engineGlobal = (org.xmlBlaster.engine.Global)this.global.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
+      if (engineGlobal != null)
+         engineGlobal.getProperty().getProperties().setProperty(key, val);
+   }
    
    
 }
