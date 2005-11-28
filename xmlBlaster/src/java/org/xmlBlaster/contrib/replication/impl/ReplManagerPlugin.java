@@ -476,7 +476,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       // take messages from queue (none blocking) ...
       I_Queue cbQueue = dispatchManager.getQueue();
       // ArrayList entryList = cbQueue.peekSamePriority(-1, this.maxSize);
-      ArrayList entryList = cbQueue.peekSamePriority(2, this.maxSize);
+      // TODO: FIXME: Is 1 stable?
+      ArrayList entryList = cbQueue.peekSamePriority(1, this.maxSize);
       log.info("handleNextMessages invoked with '" + entryList.size() + " entries");
 
       // filter expired entries etc. ...
