@@ -89,6 +89,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * the default of this variable is false.
     */
    private boolean contentForceBase64;
+   
+   /**
+    * Comma separated list of fileName extensions to send attachment as inline
+    */
+   private String inlineExtension;
 
    /** My JMX registration */
    private Object mbeanHandle;
@@ -289,6 +294,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                pluginConfig));
       p = props.getProperty("contentForceBase64");
       this.contentForceBase64 = new Boolean(p).booleanValue();
+
+      if (props.getProperty("inlineExtension") == null)
+         props.put("inlineExtension", ""+glob.get("inlineExtension", "", null,
+               pluginConfig));
+      this.inlineExtension = props.getProperty("inlineExtension");
       
       // Pass "this" for SMTP authentication with Authenticator
       // For only sending mails we can pass null
@@ -449,6 +459,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          MimeMessage message = new MimeMessage(getSession());
          message.setFrom(emailData.getFromAddress());
          message.setRecipients(Message.RecipientType.TO, emailData.getToAddresses());
+         if (emailData.getCc().length > 0)
+            message.setRecipients(Message.RecipientType.CC, emailData.getCc());
+         if (emailData.getBcc().length > 0)
+            message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
 
          // create the Multipart and add its parts to it
@@ -458,6 +472,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             MimeBodyPart mbp = new MimeBodyPart();
             mbp.setFileName("content.txt");
             mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+            //mbp.setDisposition(MimeBodyPart.INLINE);
             multi.addBodyPart(mbp);
          }
 
@@ -474,13 +489,15 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
                mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
             }
+            else {
+               if (holder[i].hasExtensionFromList(this.inlineExtension))
+                  mbp.setDisposition(MimeBodyPart.INLINE);
+            }
             
             // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
             //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
             if (holder[i].getContentType().startsWith("text/")) {
                mbp.setText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
-               mbp.setHeader("Content-Type", "application/octet-stream");
-               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);
             }
             else {
                // "application/xmlBlaster-xbformat"
