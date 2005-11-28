@@ -145,6 +145,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    public final String CONTENT_TAG = MsgUnitRaw.CONTENT_TAG;
    public final String QOS_TAG = MsgUnitRaw.QOS_TAG;
 
+   public final String ECHO_TAG = "echo";
+   public final String INPUT_TAG = "input";
+   
    /**
     * You need to call initialize() if using this default constructor. 
     */
@@ -362,7 +365,16 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
-      if ("input".equals(qName)) { // User input from console <input message="Hit a key: " delay="100"/>
+      if (ECHO_TAG.equals(qName)) { // console output <echo message="Hello"/>
+         String message = atts.getValue("message");
+         if (message == null) {
+            message = "";
+         }
+         System.out.println(message);
+         return;
+      }
+
+      if (INPUT_TAG.equals(qName)) { // User input from console <input message="Hit a key: " delay="100"/>
          String inputMessage = atts.getValue("message");
          if (inputMessage == null) {
             inputMessage = "Hit a key to continue> ";
