@@ -5,6 +5,7 @@ package org.xmlBlaster.util.protocol.email;
 
 import java.io.UnsupportedEncodingException;
 
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
 
@@ -81,6 +82,21 @@ public class AttachmentHolder {
     */
    public boolean hasExtension(String extension) {
       return getFileName().endsWith(extension);
+   }
+
+   /**
+    * A comma separated list like ".txt,.xml"
+    * @param extensionList "*" matches all
+    * @return true if mark INLINE
+    */
+   public boolean hasExtensionFromList(String extensionList) {
+      if ("*".equals(extensionList)) return true;
+      String[] extensions = StringPairTokenizer.parseLine(extensionList);
+      for (int i=0; i<extensions.length; i++) {
+         if (getFileName().endsWith(extensions[i]))
+            return true;
+      }
+      return false;
    }
 
    /**
