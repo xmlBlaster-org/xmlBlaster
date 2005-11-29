@@ -1549,7 +1549,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution                                            -->
    <!-- =================================================================== -->
-   <target name="dist" depends="java-delete,all,dist-only" description="Creates a server distribution for deployment (see usage)"/>
+   <target name="dist" depends="java-delete,xmlBlaster,dist-only" description="Creates a server distribution for deployment (see usage)"/>
    <target name="dist-only" depends="" description="">
       <delete dir="${dist.dir}"/>
       <delete dir="${dist-classes.dir}"/>
@@ -1723,11 +1723,11 @@ TODO
          <default>
             <echo message="Adding ${demo.java.dir}" />
             <copy todir="${dist-classes.dir}">
-               <fileset dir="${demo.java.dir}" includes="**/XmlScript.java"/>
-               <fileset dir="${demo.java.dir}" includes="**/HelloWorldErase.java"/>
-               <fileset dir="${demo.java.dir}" includes="**/HelloWorldGet.java"/>
-               <fileset dir="${demo.java.dir}" includes="**/HelloWorldPublish.java"/>
-               <fileset dir="${demo.java.dir}" includes="**/HelloWorldSubscribe.java"/>
+               <fileset dir="${build.dest}" includes="**/HelloWorldErase*"/>
+               <fileset dir="${build.dest}" includes="**/HelloWorldGet*"/>
+               <fileset dir="${build.dest}" includes="**/HelloWorldPublish*"/>
+               <fileset dir="${build.dest}" includes="**/HelloWorldSubscribe*"/>
+               <fileset dir="${build.dest}" includes="**/XmlScript*"/>
             </copy>
          </default>
       </switch>
