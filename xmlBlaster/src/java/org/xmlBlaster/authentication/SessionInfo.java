@@ -14,6 +14,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -174,8 +175,10 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       CallbackAddress[] cba = this.connectQos.getSessionCbQueueProperty().getCallbackAddresses();
       if (cba.length > 0) {
          if (log.TRACE) log.trace(ME, "Creating dispatch manager as ConnectQos contains callback addresses");
-         for (int i=0; i<cba.length; i++)
+         for (int i=0; i<cba.length; i++) {
             cba[i].setSessionName(this.sessionName);
+            cba[i].addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
+         }
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 cba, this.sessionName);
