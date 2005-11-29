@@ -339,22 +339,11 @@ implements I_Plugin, I_Timeout,
    private String notify(EmailData emailData, boolean calledFromHoldbackMap) {
       if (emailData == null)
          return null;
-      
-      String expires = emailData.extractMessageId(EmailData.EXPIRES_TAG);
-      if (expires != null) {
-         try {
-            // TODO: Wrong code: who removes it from the listeners map?
-            Timestamp timestamp = Timestamp.valueOf(expires);
-            Date now = new Date();
-            if (now.getTime() > timestamp.getMillis()) {
-               log.warning("Email is epxired, we discard it: " + emailData.toString());
-               return DISCARD;
-            }
-         }
-         catch (Throwable e) {
-            log.warning("Ignoring expires setting '" + expires + "':" + e.toString());
-         }
-      }
+
+      // TODO: Does not cleanup listeners!!
+      // so we deliver them to the registrar and they should decide
+      //if (emailData.isExpired())
+      //   return DISCARD;
       
       String key = emailData.getSessionId() + emailData.getRequestId();
       I_ResponseListener listenerSession = null;
@@ -408,6 +397,9 @@ implements I_Plugin, I_Timeout,
             log.finer("No registrar for holdback mail found, we try again later: " + emailData.toString());
          return null; // try again later
       }
+
+      if (emailData.isExpired())
+         return DISCARD;
 
       if (this.holdbackExpireTimeout > 0) {
          Timestamp timestamp = new Timestamp();

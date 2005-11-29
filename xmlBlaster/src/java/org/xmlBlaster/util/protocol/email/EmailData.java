@@ -8,6 +8,7 @@ package org.xmlBlaster.util.protocol.email;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -657,6 +658,29 @@ public class EmailData {
          this.cc[i] = toInternetAddress(ccs[i]);
    }
 
+   /**
+    * Check if an email can be deleted. 
+    * @param emailData email to check
+    * @return true if is expired
+    */
+   public boolean isExpired() {
+      String expires = extractMessageId(EmailData.EXPIRES_TAG);
+      if (expires != null) {
+         try {
+            Timestamp timestamp = Timestamp.valueOf(expires);
+            Date now = new Date();
+            if (now.getTime() > timestamp.getTime()) {
+               if (log.isLoggable(Level.FINE)) log.fine("Email is epxired, we discard it: " + toString());
+               return true;
+            }
+         }
+         catch (Throwable e) {
+            log.warning("Ignoring expires setting '" + expires + "':" + e.toString());
+         }
+      }
+      return false;
+   }
+   
    /**
     * @return Returns the expiryTime or null if none is defined
     */
