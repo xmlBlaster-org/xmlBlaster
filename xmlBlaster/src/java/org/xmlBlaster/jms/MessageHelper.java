@@ -114,19 +114,24 @@ public class MessageHelper {
                   ptpDest.forceQueuing(true);
                qos = new PublishQos(global, ptpDest);
             }
-            else 
+            else {
                qos = new PublishQos(global);
+            }
             String tmp = xbDest.getTopicName();
-            if (tmp == null)
+            if (tmp == null && ptpName == null)
                throw new XBException("client.configuration", "A Topic must be specified in the message to be sent");
 
             // determine if it is a complete key 
-            if (tmp.indexOf('<') > -1) { // complete key
+            if (tmp != null && tmp.indexOf('<') > -1) { // complete key
                MsgKeySaxFactory keyFactory = new MsgKeySaxFactory(global);
                key = new PublishKey(global, keyFactory.readObject(tmp));
             }
-            else // then it is a simple oid
-               key = new PublishKey(global, tmp);
+            else { // then it is a simple oid
+               if (tmp != null)
+                  key = new PublishKey(global, tmp);
+               else
+                  key = new PublishKey(global);
+            }
          }
          else
             throw new XBException("client.configuration", "A destination must be specified in the message to be sent");
