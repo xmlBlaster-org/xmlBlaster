@@ -7,6 +7,7 @@ Comment:   Send/receive messages over outStream and inStream.
 package org.xmlBlaster.util.protocol;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -28,7 +29,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -44,7 +44,7 @@ import java.util.Collections;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html" target="others">xmlBlaster EMAIL access protocol</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public abstract class RequestReplyExecutor
+public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 {
    private String ME = RequestReplyExecutor.class.getName();
    protected Global glob;
@@ -61,6 +61,7 @@ public abstract class RequestReplyExecutor
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
    protected I_XmlBlaster xmlBlasterImpl;
+   /** A set containing LatchHolder instances */
    private final Set latchSet = new HashSet();
    protected AddressBase addressConfig;
    /** A listener may register to receive send/receive progress informations */
@@ -80,7 +81,11 @@ public abstract class RequestReplyExecutor
    public static final boolean ONEWAY = false;
    /** Used for execute() */
    public static final boolean WAIT_ON_RESPONSE = true;
-
+   
+   /** My JMX registration, can be done optionally by implementing classes */
+   protected Object mbeanHandle;
+   protected ContextNode contextNode;
+   
    public RequestReplyExecutor() {
    }
 
@@ -519,18 +524,18 @@ public abstract class RequestReplyExecutor
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
-      final Latch startSignal;
+      final LatchHolder startSignal;
 
       // Register the return value / Exception listener ...
       if (expectingResponse) {
-         startSignal = new Latch(); // defaults to false
-         synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
+         //startSignal = new Latch(); // defaults to false
+         startSignal = addLatch(new Latch()); //synchronized (this.latchSet) { this.latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
          if (!hasConnection()) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void incomingMessage(String reqId, Object responseObj) {
                if (log.TRACE) log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
                response[0] = responseObj;
-               startSignal.release(); // wake up
+               startSignal.latch.release(); // wake up
             }
          });
       }
@@ -545,7 +550,7 @@ public abstract class RequestReplyExecutor
       }
       catch (Throwable e) {
          if (startSignal != null) {
-            synchronized (latchSet) { latchSet.remove(startSignal); }
+            removeLatch(startSignal); // synchronized (this.latchSet) { this.latchSet.remove(startSignal); }
          }
          String tmp = (msgInfo==null) ? "" : msgInfo.getMethodNameStr();
          String str = "Request blocked and timedout, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
@@ -570,7 +575,11 @@ public abstract class RequestReplyExecutor
          while (true) {
             try {
                //  An argument less than or equal to zero means not to wait at all
-               awakened = startSignal.attempt(getResponseTimeout(msgInfo.getMethodName())); // block max. milliseconds
+               awakened = startSignal.latch.attempt(getResponseTimeout(msgInfo.getMethodName())); // block max. milliseconds
+               if (startSignal.latchIsInterrupted) {
+                  awakened = false; // Simulates a responseTimeout
+                  startSignal.latchIsInterrupted = false;
+               }
                break;
             }
             catch (InterruptedException e) {
@@ -598,8 +607,52 @@ public abstract class RequestReplyExecutor
          }
       }
       finally {
-         synchronized (latchSet) { latchSet.remove(startSignal); }
+         removeLatch(startSignal); //synchronized (this.latchSet) { this.latchSet.remove(startSignal); }
       }
+   }
+   
+   private class LatchHolder {
+      public LatchHolder(Latch latch) {
+         this.latch = latch;
+      }
+      Latch latch;
+      boolean latchIsInterrupted;
+   }
+   
+   /**
+    * Interrupts a blocking request with a not returning reply. 
+    * The pending message is handled as not delivered and will be queued
+    */
+   public int interruptInvocation() {
+      LatchHolder[] latches = getLatches();
+      for (int i=0; i<latches.length; i++) {
+         latches[i].latchIsInterrupted = true;
+         latches[i].latch.release(); // wake up
+         log.error(ME, "DEBUG ONLY: Forced release of latch");
+      }
+      return latches.length;
+   }
+   
+   private LatchHolder addLatch(Latch latch) {
+      LatchHolder latchHolder = new LatchHolder(latch);
+      synchronized (this.latchSet) {
+         boolean added = this.latchSet.add(latchHolder);
+         if (!added)
+            throw new IllegalArgumentException("Didn't expect the latch already");
+      }
+      return latchHolder;
+   }
+   
+   private void removeLatch(LatchHolder latchHolder) {
+      synchronized (this.latchSet) {
+         this.latchSet.remove(latchHolder);
+      }
+   }
+   
+   private LatchHolder[] getLatches() {
+      synchronized (this.latchSet) { 
+         return (LatchHolder[])this.latchSet.toArray(new LatchHolder[this.latchSet.size()]);
+      } 
    }
 
    /**
@@ -607,7 +660,14 @@ public abstract class RequestReplyExecutor
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log != null && log.TRACE && latchSet!=null && latchSet.size()>0) log.trace(ME, "Freeing " + latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (log != null && log.TRACE && this.latchSet.size()>0) log.trace(ME, "Freeing " + this.latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      LatchHolder[] latches = getLatches();
+      for (int i=0; i<latches.length; i++) {
+         latches[i].latchIsInterrupted = true;
+         latches[i].latch.release(); // wake up
+      }
+      synchronized (this.latchSet) { latchSet.clear(); }
+      /*
       if (latchSet != null) {
          while (true) {
             Latch l = null;
@@ -628,6 +688,7 @@ public abstract class RequestReplyExecutor
             latchSet.clear();
          }
       }
+      */
    }
 
    /**
@@ -706,6 +767,10 @@ public abstract class RequestReplyExecutor
     */
    public void setUseEmailExpiryTimestamp(boolean useEmailExpiryTimestamp) {
       this.useEmailExpiryTimestamp = useEmailExpiryTimestamp;
+   }
+   
+   public boolean isShutdown() {
+      return true;
    }
 }
 
