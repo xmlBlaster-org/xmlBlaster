@@ -377,7 +377,7 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
     * Command line usage.
     * @see  SmtpClient#setSessionProperties(Properties, Global, I_PluginConfig)
     */
-   public static String usage()
+   public String usage()
    {
       String text = "\n";
       text += "EmailConnection 'email' options:\n";
