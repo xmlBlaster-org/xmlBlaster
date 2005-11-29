@@ -406,8 +406,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String topic, String filename, String destination, String slaveName, long minKey, long maxKey) throws Exception {
-      sendInitialFile(topic, filename, minKey);
+   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey) throws Exception {
+      sendInitialFile(slaveSessionName, filename, minKey);
       HashMap attrs = new HashMap();
       attrs.put("_destination", destination);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
@@ -427,7 +427,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String topic, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
       // now read the file which has been generated
       String filename = null;
       
@@ -444,7 +444,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          return;
       }
       XBSession session = this.publisher.getJmsSession();
-      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
+      // XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
+      
+      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(null, slaveSessionName));
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
       XBStreamingMessage msg = session.createStreamingMessage();

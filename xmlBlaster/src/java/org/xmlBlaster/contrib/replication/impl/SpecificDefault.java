@@ -926,7 +926,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         this.initialUpdater.sendInitialDataResponse(topic, filename, destination, slaveName, minKey, maxKey);
+         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey);
       }
       catch (Exception ex) {
          if (conn != null) {
