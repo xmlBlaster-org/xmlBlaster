@@ -579,7 +579,8 @@ public class SpecificOracle extends SpecificDefault {
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          
-         {  // TRIGGERS
+         try {  
+            // TRIGGERS
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -588,7 +589,11 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP TRIGGER", "");
          }
-         {  // SEQUENCES
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         
+         try {  // SEQUENCES
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -597,7 +602,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
          }
-         {  // FUNCTIONS
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // FUNCTIONS
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -606,7 +614,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP FUNCTION", "");
          }
-         {  // PACKAGES
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // PACKAGES
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -615,7 +626,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP PACKAGE", "");
          }
-         {  // PROCEDURES
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // PROCEDURES
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -624,7 +638,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
          }
-         {  // VIEWS
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // VIEWS
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -633,7 +650,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
          }
-         {  // TABLES
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // TABLES
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -642,7 +662,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
          }
-         {  // SYNONYMS
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // SYNONYMS
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -651,7 +674,10 @@ public class SpecificOracle extends SpecificDefault {
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP SYNONYM", "");
          }
-         {  // INDEXES
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         try {  // INDEXES
             ArrayList names = new ArrayList();
             String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
             log.info("going to execute sql statement '" + sql + "'");
@@ -659,6 +685,9 @@ public class SpecificOracle extends SpecificDefault {
             // since cleanupOp does not really return the number of effectively removed entries
             if (names.size() > 0)
                cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
          }
 
       }

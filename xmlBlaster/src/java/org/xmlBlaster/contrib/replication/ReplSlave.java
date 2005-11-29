@@ -141,8 +141,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          org.xmlBlaster.engine.Global engineGlob = this.getEngineGlobal(this.global);
          if (engineGlob == null)
             log.warning("Can not write status since no engine global found");
-         else
-         engineGlob.getProperty().getProperties().setProperty(key, getStatus());
+         else {
+            log.info("setting property '" + key + "' to '" + getStatus());
+            engineGlob.getProperty().getProperties().setProperty(key, getStatus());
+         }
       }
    }
 
