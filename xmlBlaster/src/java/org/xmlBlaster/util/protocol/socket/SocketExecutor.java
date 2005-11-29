@@ -35,7 +35,7 @@ import java.io.OutputStream;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">xmlBlaster SOCKET access protocol</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public abstract class SocketExecutor extends RequestReplyExecutor
+public abstract class SocketExecutor extends RequestReplyExecutor implements SocketExecutorMBean
 {
    private String ME = SocketExecutor.class.getName();
    private LogChannel log;

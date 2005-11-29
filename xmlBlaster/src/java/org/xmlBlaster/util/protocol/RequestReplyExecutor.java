@@ -66,6 +66,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    protected AddressBase addressConfig;
    /** A listener may register to receive send/receive progress informations */
    protected I_ProgressListener progressListener;
+   protected int minSizeForCompression;
    protected boolean compressZlib;
    protected boolean compressZlibStream;
    protected boolean useEmailExpiryTimestamp;
@@ -104,6 +105,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       this.log = this.glob.getLog(getType().toLowerCase());
       this.addressConfig = addressConfig;
       this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
+
+      setMinSizeForCompression((int)this.addressConfig.getMinSize());
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          this.compressZlibStream = true;
@@ -240,11 +243,18 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
    
    /**
+    * @return Returns the responseTimeout for JMX
+    */
+   public long getResponseTimeout(String methodName) {
+      return getResponseTimeout(MethodName.toMethodName(methodName));
+   }
+   
+   /**
     * Return the time in future when the email can be deleted. 
     * @return Returns the expiry timestamp, is null if message never expires
     */
    public Timestamp getExpiryTimestamp(MethodName methodName) {
-      if (!useEmailExpiryTimestamp()) return null;
+      if (!isUseEmailExpiryTimestamp()) return null;
       long diff = getResponseTimeout(methodName);
       if (diff <= 0) return null;
       long current = new Date().getTime();
@@ -667,28 +677,6 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          latches[i].latch.release(); // wake up
       }
       synchronized (this.latchSet) { latchSet.clear(); }
-      /*
-      if (latchSet != null) {
-         while (true) {
-            Latch l = null;
-            synchronized (latchSet) {
-               Iterator it = latchSet.iterator();
-               if (it.hasNext()) {
-                  l = (Latch)it.next();
-                  it.remove();
-               }
-               else
-                  break;
-            }
-            if (l == null)
-               break;
-            l.release();
-         }
-         synchronized(latchSet) {
-            latchSet.clear();
-         }
-      }
-      */
    }
 
    /**
@@ -740,8 +728,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * @return The number of bytes, only compress if bigger
     */
    public int getMinSizeForCompression() {
-      if (this.addressConfig == null) return 100;
-      return (int)this.addressConfig.getMinSize();
+      return this.minSizeForCompression;
    }
 
    public boolean isCompressZlibStream() {
@@ -751,14 +738,14 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    /**
     * @return Returns the updateResponseTimeout.
     */
-   public long getUpdateResponseTimeout() {
+   public final long getUpdateResponseTimeout() {
       return this.updateResponseTimeout;
    }
 
    /**
     * @return Returns the useEmailExpiryTimestamp.
     */
-   public boolean useEmailExpiryTimestamp() {
+   public boolean isUseEmailExpiryTimestamp() {
       return this.useEmailExpiryTimestamp;
    }
 
@@ -769,8 +756,41 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       this.useEmailExpiryTimestamp = useEmailExpiryTimestamp;
    }
    
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage() {
+      return 
+        "interruptInvocation(): Interrupts a blocking request" + 
+        "\n  The pending message is handled as not delivered and will be kept in queue";
+   }
+
    public boolean isShutdown() {
       return true;
+   }
+
+   /**
+    * The invocation timeout for "ping" method calls. 
+    * @return Returns the pingResponseTimeout.
+    */
+   public final long getPingResponseTimeout() {
+      return this.pingResponseTimeout;
+   }
+
+   /**
+    * The invocation timeout for all remaining method calls like "publish", "connect", "subscribe"
+    * but NOT for "ping" and "update" 
+    * @return Returns the responseTimeout.
+    */
+   public final long getResponseTimeout() {
+      return this.responseTimeout;
+   }
+
+   /**
+    * @param minSizeForCompression The minSizeForCompression to set.
+    */
+   public void setMinSizeForCompression(int minSizeForCompression) {
+      this.minSizeForCompression = minSizeForCompression;
    }
 }
 

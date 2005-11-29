@@ -9,6 +9,7 @@ package org.xmlBlaster.protocol.email;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
@@ -106,9 +107,15 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
+      this.glob = glob;
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+
+      // For JMX instanceName may not contain ","
+      super.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "EmailDriver", glob.getContextNode());
+      super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
 
       try {
          this.authenticate = engineGlob.getAuthenticate();
@@ -286,7 +293,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       } catch (XmlBlasterException e) {
          log.warning(e.toString());
       }
-
+      this.glob.unregisterMBean(this.mbeanHandle);
       log.info("Email driver '" + getType() + "' stopped, all resources released.");
    }
 

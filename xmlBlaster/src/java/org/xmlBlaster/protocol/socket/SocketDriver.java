@@ -10,6 +10,7 @@ package org.xmlBlaster.protocol.socket;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -64,7 +65,7 @@ import java.io.InputStream;
  * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
-public class SocketDriver extends Thread implements I_Driver /* which extends I_Plugin */
+public class SocketDriver extends Thread implements I_Driver /* which extends I_Plugin */, SocketDriverMBean
 {
    private String ME = "SocketDriver";
    /** The global handle */
@@ -108,6 +109,12 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
     */
    private boolean useUdpForOneway = false;
 
+   /** My JMX registration */
+   protected Object mbeanHandle;
+   protected ContextNode contextNode;
+   
+   protected boolean isShutdown;
+   
    void addClient(String sessionId, HandleClient h) {
       synchronized(handleClientMap) {
          handleClientMap.put(sessionId, h);
@@ -271,9 +278,15 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
+      this.glob = glob;
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "SocketDriver", glob.getContextNode());
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       try {
          this.authenticate = engineGlob.getAuthenticate();
@@ -384,11 +397,15 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          try { Thread.sleep(10); } catch( InterruptedException i) {}
       }
    }
+   
+   public boolean isActive() {
+      return running == true;
+   }
 
    /**
     * Deactivate xmlBlaster access (standby), no clients can connect.
     */
-   public synchronized void deActivate() throws XmlBlasterException {
+   public synchronized void deActivate() throws RuntimeException {
       if (log.CALL) log.call(ME, "Entering deActivate");
       running = false; runningUDP = false;
 
@@ -549,11 +566,30 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
 
       try {
          deActivate();
-      } catch (XmlBlasterException e) {
+      } catch (Exception e) {
          log.error(ME, e.toString());
       }
 
+      this.glob.unregisterMBean(this.mbeanHandle);
+      
+      this.isShutdown = true;
+
       log.info(ME, "Socket driver '" + getType() + "' stopped, all resources released.");
+   }
+
+   public boolean isShutdown() {
+      return this.isShutdown;
+   }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
    }
 
    /**
@@ -605,6 +641,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       text += "   -"+getEnvPrefix()+"compress/minSize\n";
       text += "                       Compress message bigger than given bytes, see above.\n";
       text += "   -dump[socket]       true switches on detailed "+getType()+" debugging [false].\n";
+      text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
       text += "\n";
       return text;
    }

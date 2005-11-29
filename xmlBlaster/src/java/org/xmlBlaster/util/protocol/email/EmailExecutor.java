@@ -41,7 +41,7 @@ import javax.mail.internet.InternetAddress;
  * 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public abstract class EmailExecutor extends  RequestReplyExecutor implements I_ResponseListener {
+public abstract class EmailExecutor extends  RequestReplyExecutor implements I_ResponseListener, EmailExecutorMBean {
    private String ME = "EmailExecutor";
 
    private static Logger log = Logger.getLogger(EmailExecutor.class.getName());
@@ -642,6 +642,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
    }
 
+   /**
+    * @return Returns the 'to' email address.
+    */
+   public String getTo() {
+      return (this.toAddress == null) ? "" : this.toAddress.toString();
+   }
+
    public void setFrom(String from) throws XmlBlasterException {
       try {
          this.fromAddress = new InternetAddress(from);
@@ -649,6 +656,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
                ME, "Illegal 'from' address '" + from + "'");
       }
+   }
+
+   /**
+    * @return Returns the 'from' email address.
+    */
+   public String getFrom() {
+      return (this.fromAddress == null) ? "" : this.fromAddress.toString();
    }
 
    /**
@@ -669,7 +683,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     * @return a human readable usage help string
     */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return super.usage() + "\n" + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
 
    /**

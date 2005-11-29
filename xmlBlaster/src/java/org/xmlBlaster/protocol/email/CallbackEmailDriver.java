@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.email;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -26,12 +27,13 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * 
  * <pre>
 CbProtocolPlugin[email][1.0]=\
-    org.xmlBlaster.protocol.email.CallbackEmailDriver,\
-    mail.user=xmlBlaster,\
-    mail.password=xmlBlaster,\
-    compress/type=zlib,\
-    compress/minSize=200,\
-    parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+   org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+   mail.smtp.bcc=sniffer@localhost,\
+   inlineExtension=*,\
+   compress/minSize=200,\
+   compress/type=zlib,\
+   mail.subject=XmlBlaster generated mail,\
+   parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
  * </pre>
  * The parserClass is optional, the default message serialization
  * is XbfParser.
@@ -115,7 +117,19 @@ public class CallbackEmailDriver extends EmailExecutor implements
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
       super.setSecretSessionId(callbackAddress.getSecretSessionId());
-      super.setEmailSessionId(callbackAddress.getSessionName());
+      if (callbackAddress.getSessionName() != null)
+         super.setEmailSessionId(callbackAddress.getSessionName());
+      else
+         log.trace(ME, "No emailSessionId set, our callback sessionName is null");
+      
+      String tmp = callbackAddress.getEnv("__ContextNode", (String)null).getValueString();
+      if (tmp != null) {
+         ContextNode parent = ContextNode.valueOf(tmp);
+         // For JMX instanceName may not contain ","
+         super.contextNode = new ContextNode(ContextNode.PROTOCOL_MARKER_TAG,
+               "CallbackEmailDriver", parent);
+         super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
+      }
    }
 
    /**
@@ -175,6 +189,8 @@ public class CallbackEmailDriver extends EmailExecutor implements
     */
    public void shutdown() {
       super.shutdown();
+      this.glob.unregisterMBean(this.mbeanHandle);
+      this.mbeanHandle = null; 
       if (log != null) log.trace(ME, "shutdown() does currently nothing");
    }
 
