@@ -38,6 +38,8 @@ public final class ContextNode
    public final static String QUEUE_MARKER_TAG = "queue";
    /** Use to mark a service */
    public final static String SERVICE_MARKER_TAG = "service";
+   /** Use to mark a protocol plugin like XMLRPC or email */
+   public final static String PROTOCOL_MARKER_TAG = "protocol";
    /** Use to mark a message store map */
    public final static String MAP_MARKER_TAG = "map";
    /** Use to mark a topic */
