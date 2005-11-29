@@ -357,6 +357,7 @@ TODO
       <echo message="         -DADD_PLUGINPROP=[xml file] Adds your customized xmlBlasterPlugins.xml file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
+      <echo message="         -DADD_JAVACLIENTS=false basic java clients (XmlScript and some HelloWorld*) [true]"/>
       <echo message="   clean       --> cleans up the class directory"/>
       <echo message="   delete      --> cleans up the class directory and all created distribution jar files"/>
       <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
@@ -1030,7 +1031,7 @@ TODO
       </copy>
       <copy todir="${build.dir}/j2me/src/org/xmlBlaster">
          <fileset dir="${src.java.dir}/org/xmlBlaster">
-	    <include name="util/Base64.java"/>
+            <include name="util/Base64.java"/>
          </fileset>
       </copy>
       <copy file="${demo.dir}/j2me/SystemInfoMidlet.java" tofile="${build.dir}/j2me/src/SystemInfoMidlet.java"/>
@@ -1560,7 +1561,6 @@ TODO
       <mkdir dir="${dist-classes.dir}"/>
 
       <property name="DIST_PATH" value="."/>
-      <property name="ADD_EMAIL" value="true"/>
       <property name="ADD_HSQLDB" value="true"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
@@ -1574,7 +1574,9 @@ TODO
       <property name="ADD_PLUGINPROP" value="default"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterProperties.xml (to configure MoM) -->
       <property name="ADD_POLICY" value="default"/> <!-- e.g. -DADD_POLICY=myclient/xmlBlaster.policy (for RMI security) -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
-
+      <property name="ADD_EMAIL" value="true"/>
+      <property name="ADD_JAVACLIENTS" value="true"/>
+                      
       <mkdir dir="${DIST_PATH}/lib"/>
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-classes.dir}" />
@@ -1590,16 +1592,6 @@ TODO
       <unjar src="${lib.dir}/commons-lang-2.0.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/commons-logging.jar" dest="${dist-classes.dir}" />
 
-      <switch value="${ADD_EMAIL}">
-         <case value="true">
-            <echo message="Adding activation.jar/mail.jar for EMAIL support" />
-            <unjar src="${lib.dir}/activation.jar" dest="${dist-classes.dir}" />
-            <unjar src="${lib.dir}/mail.jar" dest="${dist-classes.dir}" />
-         </case>
-         <default>
-            <echo message="ADD_EMAIL=${ADD_EMAIL}: No EMAIL support added." />
-         </default>
-      </switch>
       <switch value="${ADD_HSQLDB}">
          <case value="true">
             <echo message="Adding ${lib.dir}/hsqldb.jar for HSQLDB support" />
@@ -1644,7 +1636,7 @@ TODO
          <case value="true">
             <echo message="Adding ${lib.dir}/jmxtools.jar for JMX HTMLAdaptor support" />
             <unjar src="${lib.dir}/jmxtools.jar" dest="${dist-classes.dir}" />
-	    <!-- added this since it does not work with JDK1.4 otherwise -->
+            <!-- added this since it does not work with JDK1.4 otherwise -->
             <unjar src="${lib.dir}/jmxremote.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/jmxri.jar" dest="${dist-classes.dir}" />
          </case>
@@ -1725,6 +1717,30 @@ TODO
             </copy>
          </default>
       </switch>
+      <switch value="${ADD_JAVACLIENTS}">
+         <case value="false">
+         </case>
+         <default>
+            <echo message="Adding ${demo.java.dir}" />
+            <copy todir="${dist-classes.dir}">
+               <fileset dir="${demo.java.dir}" includes="**/XmlScript.java"/>
+               <fileset dir="${demo.java.dir}" includes="**/HelloWorldErase.java"/>
+               <fileset dir="${demo.java.dir}" includes="**/HelloWorldGet.java"/>
+               <fileset dir="${demo.java.dir}" includes="**/HelloWorldPublish.java"/>
+               <fileset dir="${demo.java.dir}" includes="**/HelloWorldSubscribe.java"/>
+            </copy>
+         </default>
+      </switch>
+      <switch value="${ADD_EMAIL}"> <!-- last task to force our javamail.jar -->
+         <case value="true">
+            <echo message="Adding activation.jar/mail.jar for EMAIL support" />
+            <unjar src="${lib.dir}/activation.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/mail.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+            <echo message="ADD_EMAIL=${ADD_EMAIL}: No EMAIL support added." />
+         </default>
+      </switch>
 
       <copy file="config/jacorb.properties.template" tofile="${dist-classes.dir}/jacorb.properties" overwrite="yes" preservelastmodified="true"/>
 
@@ -1786,6 +1802,7 @@ TODO
       <property name="ADD_PLUGINPROP" value="false"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterPlugins.xml -->
       <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
+      <property name="ADD_EMAIL" value="false"/>
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/concurrent.jar" dest="${dist-client.dir}/classes" />
@@ -1893,6 +1910,16 @@ TODO
             <copy todir="${dist-client.dir}/classes">
                <fileset dir="${ADD_DIRECTORY}"/>
             </copy>
+         </default>
+      </switch>
+      <switch value="${ADD_EMAIL}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/activation.jar and ${lib.dir}/mail.jar EMAIL libraries" />
+            <unjar src="${lib.dir}/activation.jar" dest="${dist-client.dir}/classes" />
+            <unjar src="${lib.dir}/mail.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default>
+            <echo message="ADD_EMAIL=${ADD_EMAIL}: No XML parser added, we assume you supply one yourself!" />
          </default>
       </switch>
 
