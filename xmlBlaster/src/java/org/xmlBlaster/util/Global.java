@@ -2234,7 +2234,8 @@ public class Global implements Cloneable
             ByteArrayOutputStream bo = new ByteArrayOutputStream(size);
             while (in.available() > 0) {
                int length = in.read(tmp);
-               bo.write(tmp, 0, length);
+               if (length > 0)
+                  bo.write(tmp, 0, length);
             }
             in.close();
             return bo.toByteArray();
