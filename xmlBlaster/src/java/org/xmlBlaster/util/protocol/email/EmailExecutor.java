@@ -45,6 +45,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    private String ME = "EmailExecutor";
 
    private static Logger log = Logger.getLogger(EmailExecutor.class.getName());
+   
+   private boolean isShutdown;
 
    private AddressBase addressBase;
 
@@ -142,7 +144,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             "XmlBlaster Generated Email "+SUBJECT_MESSAGEID_TOKEN, null, this.pluginConfig);
 
 
-      
+      this.isShutdown = false;
       if (log.isLoggable(Level.FINE)) log.fine("Initialized email connector from=" + this.fromAddress.toString() + " to=" + to);
    }
 
@@ -362,6 +364,12 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          //shutdown();
          return;
       }
+
+      // Response and Exception messages should NEVER expire
+      if (emailData.isExpired() && msgInfo.isInvoke()) {
+         log.warning("Message is expired, we discard it: " + emailData.toString());
+         return;
+      }
       
       // If counterside has stripped information we add it again from the messageId attachment
       if (msgInfo.getRequestId().length() == 0)
@@ -539,29 +547,22 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       return "";
    }
 
-   /*
-    * private String getMailBody(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-    * StringBuffer sb = new StringBuffer(); String offset = "\n";
-    * 
-    * sb.append(offset).append("<xmlBlaster>"); for (int ii = 0; ii <
-    * msgArr.length; ii++) { MsgUnitRaw msgUnit = msgArr[ii];
-    * sb.append(offset).append(msgUnit.getKey()).append("\n");
-    * sb.append(offset).append(" <content><![CDATA[").append( new
-    * String(msgUnit.getContent())).append("]]></content>");
-    * sb.append(offset).append(msgUnit.getQos()); } sb.append(offset).append("</xmlBlaster>\n");
-    * return sb.toString(); }
-    */
-
    /**
     * This method shuts down the driver.
     * <p />
     */
    public void shutdown() {
+      this.isShutdown = true;
       try {
          getPop3Driver().deregisterForEmail(this);
       } catch (XmlBlasterException e) {
          e.printStackTrace();
       }
+   }
+   
+   /** I_AdminPlugin#isShutodwn */
+   public boolean isShutdown() {
+      return this.isShutdown;
    }
 
    /**
@@ -662,5 +663,23 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     */
    public void setBcc(String bcc) {
       this.bcc = bcc;
+   }
+   
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
    }
 }
