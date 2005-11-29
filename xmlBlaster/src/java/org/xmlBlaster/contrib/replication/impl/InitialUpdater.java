@@ -430,7 +430,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
       // now read the file which has been generated
       String filename = null;
-      
+      log.info("sending initial file *" + shortFilename + "' for user '" + slaveSessionName  + "'");
       if (this.initialCmdPath != null)
          filename = this.initialCmdPath + "/" + shortFilename;
       else

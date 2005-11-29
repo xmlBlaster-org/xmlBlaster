@@ -24,6 +24,8 @@ import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.jms.XBConnectionFactory;
 import org.xmlBlaster.jms.XBDestination;
+import org.xmlBlaster.jms.XBMessageProducer;
+import org.xmlBlaster.jms.XBSession;
 
 import junit.framework.*;
 
@@ -82,6 +84,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
 
+   
    public TestJmsSubscribe(String name) {
       super(name);
       try {
@@ -234,6 +237,36 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
 
+
+   
+   
+   
+   public void dummy() {
+      // Session.AUTO_ACKNOWLEDGE
+      try {
+         boolean transacted = false;
+         
+         Session session = connection.createSession(transacted, Session.CLIENT_ACKNOWLEDGE);
+         // String topic = "jms-topic";
+         String topic = null;
+         String sessionName = "hello/1";
+         MessageProducer producer = session.createProducer(new XBDestination(topic, sessionName));
+         // producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
+         // producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+         TextMessage msg = session.createTextMessage();
+         msg.setText("Hallo");
+         producer.send(msg);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+
+   
+   
+   
+   
+   
    public void testSubClientAck() {
       async(Session.CLIENT_ACKNOWLEDGE, "clientAcknowledge");
    }
@@ -326,11 +359,15 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    {
       TestJmsSubscribe test = new TestJmsSubscribe("TestJmsSubscribe");
       test.prepare(args);
+
+      test.setUp();
+      test.dummy();
+      test.tearDown();
       
       test.setUp();
       test.testSubDupsOk();
       test.tearDown();
-      
+
       test.setUp();
       test.testSubAutoAck();
       test.tearDown();
