@@ -166,5 +166,27 @@ public abstract class SocketExecutor extends RequestReplyExecutor
          listener.progressWrite("", msg.length, msg.length);
       }
    }
+   
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * @return a human readable usage help string
+    */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
+   }
 }
 
