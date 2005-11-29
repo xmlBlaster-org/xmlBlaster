@@ -147,6 +147,24 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          }
       }
    }
+   
+   private void setMaxReplKey(long replKey) {
+      String client = "client/";
+      int pos = this.slaveSessionId.indexOf(client);
+      if (pos < 0)
+         log.warning("session name '" + this.slaveSessionId + "' does not start with '" + client + "'");
+      else {
+         String key = "__" + this.slaveSessionId.substring(pos + client.length()) + "_MaxReplKey";
+         org.xmlBlaster.engine.Global engineGlob = this.getEngineGlobal(this.global);
+         if (engineGlob == null)
+            log.warning("Can not write status since no engine global found");
+         else {
+            log.info("setting property '" + key + "' to '" + getMaxReplKey());
+            engineGlob.getProperty().getProperties().setProperty(key, String.valueOf(getMaxReplKey()));
+         }
+      }
+   }
+
 
    public void run(I_Info info, String dbWatcherSessionId) throws Exception {
       if (this.status != STATUS_NORMAL) {
@@ -310,6 +328,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                continue;
             }
          }
+         setMaxReplKey(replKey);
          log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
          if (replKey >= this.minReplKey) {
             log.info("repl adding the entry");
