@@ -128,7 +128,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       String urlPathList = get("urlPath", ""); // "/monitor"
       StringTokenizer st = new StringTokenizer(urlPathList, ",");
       while (st.hasMoreTokens()) {
-         String path = (String)st.nextToken();
+         String path = st.nextToken();
          if (path != null && path.length() > 0) {
             this.httpServer.registerRequest(path, this);
          }
@@ -137,7 +137,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       String urlPathClasspathList = get("urlPath.CLASSPATH", ""); // "status.html"
       st = new StringTokenizer(urlPathClasspathList, ",");
       while (st.hasMoreTokens()) {
-         String path = (String)st.nextToken();
+         String path = st.nextToken();
          if (path != null && path.length() > 0) {
             this.urlPathClasspathSet.add(path);
             this.httpServer.registerRequest(path, this);
@@ -255,7 +255,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
       try {
          jmxwrapper = JmxWrapper.getInstance(global);
       } catch (XmlBlasterException e) {
-         // TODO Auto-generated catch block
+         log.warning("Can't get JmxWrapper instance: " + e.toString());
          e.printStackTrace();
       }
       
