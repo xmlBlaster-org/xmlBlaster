@@ -16,15 +16,11 @@ import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
 import javax.management.QueryExp;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.ReflectionException;
 
 //since JDK 1.5 or with additional jmxremote.jar
 //import javax.management.remote.JMXServiceURL;
@@ -767,20 +763,8 @@ public class JmxWrapper
          
          returnObject = mbeanServer.invoke(objectName, action, params,
                signature);
-      } catch (InstanceNotFoundException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (MBeanException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (ReflectionException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (MalformedObjectNameException e) { // for new ObjectNames
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (NullPointerException e) {
-         // TODO Auto-generated catch block
+      } catch (Throwable e) {
+         log.warn(ME, "args: '" + args + "' invoke: '" + action + "@" + objectName + " failed: " + e.toString());
          e.printStackTrace();
       }
 
