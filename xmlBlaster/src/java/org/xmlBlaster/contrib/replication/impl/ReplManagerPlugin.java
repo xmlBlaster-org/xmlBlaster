@@ -356,73 +356,80 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.client.I_Callback#update(java.lang.String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      SessionName senderSession = updateQos.getSender();
-      String request = updateQos.getClientProperty("_command", "");
-      log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
+      try {
+         SessionName senderSession = updateQos.getSender();
+         String request = updateQos.getClientProperty("_command", "");
+         log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
 
-      if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
-         String sender = updateQos.getSender().getRelativeName();
-         
-         I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(sender);
-         if (slave == null) {
-            StringBuffer buf = new StringBuffer();
-            String[] slaves = getSlaves();
-            for (int i=0; i < slaves.length; i++) {
-               if (i > 0)
-                  buf.append(",");
-               buf.append(slaves);
-            }
-            log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + buf.toString());
-         }
-         else {
-            log.info("Update data from SQL request came from user '" + sender + "'");
-            slave.setSqlResponse(new String(content));
-         }
-         
-               
-               
-               
-      }
-      else if ("INITIAL_DATA_RESPONSE".equals(request)) {
-         long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
-         long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
-         try {
-            String slaveName = updateQos.getClientProperty("_slaveName", (String)null);
-            if (slaveName == null)
-               log.severe("on initial data response the slave name was not specified. Can not perform operation");
-            else {
-               I_ReplSlave slave = null;
-               synchronized (this.replSlaveMap) {
-                  slave = (I_ReplSlave)this.replSlaveMap.get(slaveName);
+         if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
+            String sender = updateQos.getSender().getRelativeName();
+            
+            I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(sender);
+            if (slave == null) {
+               StringBuffer buf = new StringBuffer();
+               String[] slaves = getSlaves();
+               for (int i=0; i < slaves.length; i++) {
+                  if (i > 0)
+                     buf.append(",");
+                  buf.append(slaves);
                }
-               if (slave == null)
-                  log.severe("on initial data response the slave name '" + slaveName + "' was not registered (could have already logged out)");
-               else
-                  slave.reactivateDestination(minReplKey, maxReplKey);
-            }
-         }
-         catch (Exception ex) {
-            log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
-         }
-      }
-      else { // PtP Messages from DbWatcher (Register/Unregister)
-         String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
-         if (replId == null || replId.length() < 1)
-            log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
-         else {
-            if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
-               I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
-               register(senderSession.getRelativeName(), replId, info);
-            }
-            else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
-               unregister(senderSession.getRelativeName(), replId);
+               log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + buf.toString());
             }
             else {
-               log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
+               log.info("Update data from SQL request came from user '" + sender + "'");
+               slave.setSqlResponse(new String(content));
+            }
+            
+                  
+                  
+                  
+         }
+         else if ("INITIAL_DATA_RESPONSE".equals(request)) {
+            long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
+            long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
+            try {
+               String slaveName = updateQos.getClientProperty("_slaveName", (String)null);
+               if (slaveName == null)
+                  log.severe("on initial data response the slave name was not specified. Can not perform operation");
+               else {
+                  I_ReplSlave slave = null;
+                  synchronized (this.replSlaveMap) {
+                     slave = (I_ReplSlave)this.replSlaveMap.get(slaveName);
+                  }
+                  if (slave == null)
+                     log.severe("on initial data response the slave name '" + slaveName + "' was not registered (could have already logged out)");
+                  else
+                     slave.reactivateDestination(minReplKey, maxReplKey);
+               }
+            }
+            catch (Exception ex) {
+               log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
             }
          }
+         else { // PtP Messages from DbWatcher (Register/Unregister)
+            String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+            if (replId == null || replId.length() < 1)
+               log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+            else {
+               if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
+                  I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
+                  register(senderSession.getRelativeName(), replId, info);
+               }
+               else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
+                  unregister(senderSession.getRelativeName(), replId);
+               }
+               else {
+                  log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
+               }
+            }
+         }
+         return "OK";
       }
-      return "OK";
+      catch (Throwable ex) {
+         ex.printStackTrace();
+         log.severe("Throwable occured in the update method of ReplManagerPlugin");
+         throw new XmlBlasterException(this.global, ErrorCode.USER_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
+      }
    }
    
 
