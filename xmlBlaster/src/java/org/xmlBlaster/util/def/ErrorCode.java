@@ -368,6 +368,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_HOLDBACK = new ErrorCode("user",
+         "TODO: Forces callback message to be redelivered by server (is handled as communication exception). Will be changed again, use with care.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode USER_WRONG_API_USAGE = new ErrorCode("user.wrongApiUsage",
          "Please check your client code.",
          new ResourceInfo[] {
