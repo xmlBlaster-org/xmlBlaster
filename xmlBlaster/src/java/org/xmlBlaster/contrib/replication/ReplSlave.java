@@ -150,6 +150,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    private void setMaxReplKey(long replKey) {
       String client = "client/";
+      if (this.slaveSessionId == null)
+         return;
       int pos = this.slaveSessionId.indexOf(client);
       if (pos < 0)
          log.warning("session name '" + this.slaveSessionId + "' does not start with '" + client + "'");
@@ -312,6 +314,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);
          MsgUnit msgUnit = entry.getMsgUnit();
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+         if (replKey > -1L) {
+            this.maxReplKey = replKey;
+            setMaxReplKey(this.maxReplKey);
+         }
          log.info("check: processing '" + replKey + "'");
          if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
             ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
