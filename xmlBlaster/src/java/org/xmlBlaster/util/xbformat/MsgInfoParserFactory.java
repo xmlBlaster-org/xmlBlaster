@@ -33,6 +33,7 @@ public class MsgInfoParserFactory {
                instance = new MsgInfoParserFactory();
             }
          }
+         instance.init();  // outside of synchronized as it calls recursively instance()
       }
       return instance;
    }
@@ -40,6 +41,9 @@ public class MsgInfoParserFactory {
    private MsgInfoParserFactory() {
       instance = this;
       this.pluginNames = new HashMap();
+   }
+
+   private void init() {
       // TODO: We force register() of plugins here:
       // This needs to be changed to be dynamically
       new XbfParser();
