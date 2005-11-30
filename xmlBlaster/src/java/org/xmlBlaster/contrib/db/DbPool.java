@@ -146,7 +146,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       while (true) {
          try {
             synchronized(this.meetingPoint) {
-               ResourceWrapper rw = (ResourceWrapper)this.poolManager.reserve(PoolManager.USE_OBJECT_REF);
+               ResourceWrapper rw = this.poolManager.reserve(PoolManager.USE_OBJECT_REF);
                Connection con = (Connection)rw.getResource();
                return con;
             }
@@ -255,7 +255,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
    public int update(String command) throws Exception {
       Connection  conn = null;
       Statement   stmt = null;
-      ResultSet   rs = null;
       try {
          conn =  reserve();
          conn.setAutoCommit(true);
@@ -283,7 +282,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
       }
       finally {
          try {
-            if (rs!=null) rs.close();
             if (stmt!=null) stmt.close();
          }
          catch (SQLException e) {
@@ -301,7 +299,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
          return update(command);
       
       Statement   stmt = null;
-      ResultSet   rs = null;
       try {
          stmt = conn.createStatement();
          if (log.isLoggable(Level.FINE)) log.fine("Running update command '" + command + "'");
@@ -321,7 +318,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
       }
       finally {
          try {
-            if (rs!=null) rs.close();
             if (stmt!=null) stmt.close();
          }
          catch (SQLException e) {
@@ -389,7 +385,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
       }
       finally {
          try {
-            if (rs!=null) rs.close();
             if (stmt!=null) stmt.close();
          }
          catch (SQLException e) {
