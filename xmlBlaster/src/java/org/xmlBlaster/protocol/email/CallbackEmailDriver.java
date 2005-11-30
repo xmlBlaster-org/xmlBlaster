@@ -136,8 +136,13 @@ public class CallbackEmailDriver extends EmailExecutor implements
     * This sends the update to the client.
     */
    public String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      return (String[]) super.sendEmail(msgArr, MethodName.UPDATE,
+      try {
+         return (String[]) super.sendEmail(msgArr, MethodName.UPDATE,
             SocketExecutor.WAIT_ON_RESPONSE);
+      }
+      catch (XmlBlasterException e) {
+         throw XmlBlasterException.tranformCallbackException(e);
+      }
    }
 
    /**
@@ -147,7 +152,12 @@ public class CallbackEmailDriver extends EmailExecutor implements
     *               Is never from the client (oneway).
     */
    public void sendUpdateOneway(MsgUnitRaw[] msgArr) throws XmlBlasterException {
-      super.sendEmail(msgArr, MethodName.UPDATE_ONEWAY, SocketExecutor.ONEWAY);
+      try {
+         super.sendEmail(msgArr, MethodName.UPDATE_ONEWAY, SocketExecutor.ONEWAY);
+      }
+      catch (XmlBlasterException e) {
+         throw XmlBlasterException.tranformCallbackException(e);
+      }
    }
 
    /**

@@ -395,6 +395,13 @@ abstract public class DispatchConnection implements I_Timeout
          }
       }
 
+      if (ex != null) {
+         if (ErrorCode.COMMUNICATION_USER_HOLDBACK.equals(ex.getErrorCode())) {
+            this.connectionsHandler.getDispatchManager().setDispatcherActive(false);
+            log.warn(ME, "We have set dispatchActive=false, please activate dispatcher manually when the client side problem is resolved: " + ex.getMessage());
+         }
+      }
+
       if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler + ": " + ((ex == null) ? "" : ex.toXml()));
 
       synchronized (this) {

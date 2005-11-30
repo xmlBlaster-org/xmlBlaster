@@ -191,21 +191,8 @@ public class HandleClient extends SocketExecutor implements Runnable
             return null;
          }
       }
-      catch (XmlBlasterException xmlBlasterException) {
-         // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
-         if (xmlBlasterException.isUser())
-            throw xmlBlasterException;
-
-         // and server side communication problems (how to assure if from server?)
-         if (xmlBlasterException.isCommunication() && xmlBlasterException.isServerSide())
-            throw xmlBlasterException;
-
-         // The SOCKET protocol plugin throws this when a client has shutdown its callback server
-         //if (xmlBlasterException.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE)
-         //   throw xmlBlasterException;
-
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
-                   "Callback of " + msgArr.length + " messages failed", xmlBlasterException);
+      catch (XmlBlasterException e) {
+         throw XmlBlasterException.tranformCallbackException(e);
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());

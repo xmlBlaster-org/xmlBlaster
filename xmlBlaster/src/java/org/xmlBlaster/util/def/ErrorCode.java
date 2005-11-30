@@ -362,14 +362,22 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   // The dispatch framework reacts specific for communication exceptions
+   public static final ErrorCode COMMUNICATION_USER_HOLDBACK = new ErrorCode("communication.user.holdback",
+         "See USER_HOLDBACK.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode USER = new ErrorCode("user",
          "This category stands for wrong usage by the programmer using xmlBlaster.",
          new ResourceInfo[] {
          }
       );
 
+   // TODO: Replace by finer adjusting possibilities (like retry timeouts etc.)
    public static final ErrorCode USER_HOLDBACK = new ErrorCode("user",
-         "TODO: Forces callback message to be redelivered by server (is handled as communication exception). Will be changed again, use with care.",
+         "You can throw this on client side in your update() method: Like this the server queues the message and sets the dispatcActive to false. You need to manually activate the dispatcher again. Will be changed again, use with care.",
          new ResourceInfo[] {
          }
       );

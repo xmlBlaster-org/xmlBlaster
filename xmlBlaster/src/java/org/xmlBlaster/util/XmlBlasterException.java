@@ -690,6 +690,34 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    public void setLogFormatInternal(String logFormatInternal) {
       this.logFormatInternal = logFormatInternal;
    }
+   
+
+   public static XmlBlasterException tranformCallbackException(XmlBlasterException e) {
+      // TODO: Marcel: For the time being the client has the chance
+      // to force requeueing by sending a USER_HOLDBACK which will lead
+      // to a COMMUNICATION exception behaviour
+      if (ErrorCode.USER_HOLDBACK.toString().equals(e.getErrorCode().toString())) {
+         // Will set dispatcherActive==false
+         return new XmlBlasterException(e.getGlobal(),
+              ErrorCode.COMMUNICATION_USER_HOLDBACK,
+              e.getEmbeddedMessage());
+      }
+   
+      // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
+      if (e.isUser())
+         return e;
+   
+      
+      // and server side communication problems (how to assure if from server?)
+      if (e.isCommunication() && e.isServerSide())
+         return e;
+   
+      // The SOCKET protocol plugin throws this when a client has shutdown its callback server
+      //if (xmlBlasterException.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE)
+      //   throw xmlBlasterException;
+   
+      return new XmlBlasterException(e.getGlobal(), ErrorCode.USER_UPDATE_ERROR, e.getLocation(), e.getRawMessage(), e);
+   }
 
    /**
     * java org.xmlBlaster.util.XmlBlasterException
