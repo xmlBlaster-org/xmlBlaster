@@ -39,7 +39,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    protected List subscribeQosList;
    protected ConnectQos connectQos;
    protected I_Update eventHandler;
-   
+
    public MomEventEngine() {
       this.subscribeKeyList = new ArrayList();
       this.subscribeQosList = new ArrayList();
