@@ -165,15 +165,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
 
-
-   public void run(I_Info info, String dbWatcherSessionId) throws Exception {
+   public boolean run(I_Info info, String dbWatcherSessionId) throws Exception {
       if (this.status != STATUS_NORMAL) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
-         return;
+         return false;
       }
       init(info);
       prepareForRequest(info);
       requestInitialData(dbWatcherSessionId);
+      return true;
    }
    
    /**
