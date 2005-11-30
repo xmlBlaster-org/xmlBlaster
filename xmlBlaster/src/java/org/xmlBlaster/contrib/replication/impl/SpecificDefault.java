@@ -697,12 +697,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          st.registerOutParameter(1, Types.VARCHAR);
          st.executeQuery();
       } finally {
+         try {
+            if (st != null)
+               st.close();
+         } catch (Exception ex) {
+            ex.printStackTrace();
+         }
          if (conn != null) {
-            try {
-               if (st != null)
-                  st.close();
-            } catch (Exception ex) {
-            }
             this.dbPool.release(conn);
          }
       }
@@ -729,10 +730,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
       finally {
          if (rs == null) {
-            try { rs.close(); } catch (SQLException ex) {}
+            try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
          if (st == null) {
-            try { st.close(); } catch (SQLException ex) {}
+            try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
       }
    }
@@ -755,10 +756,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
       finally {
          if (rs == null) {
-            try { rs.close(); } catch (SQLException ex) {}
+            try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
          if (st == null) {
-            try { st.close(); } catch (SQLException ex) {}
+            try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
       }
    }
@@ -933,26 +934,24 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             try {
                conn.rollback();
             }
-            catch (SQLException e) { }
-            try {
-               this.dbPool.erase(conn);
-            }
-            catch (Exception e) { }
-            conn = null;
+            catch (SQLException e) {e.printStackTrace(); }
          }
          ex.printStackTrace();
       }
       finally {
          if (conn != null) {
-            if (oldTransactionIsolation != Connection.TRANSACTION_READ_COMMITTED)
+            if (oldTransactionIsolation != Connection.TRANSACTION_READ_COMMITTED) {
                try {
                   conn.setTransactionIsolation(oldTransactionIsolation);
                }
-               catch (SQLException e) { }
-               try {
-                  conn.close();
-               }
-               catch (SQLException e) { }
+               catch (SQLException e) { e.printStackTrace(); }
+            }
+
+            try {
+               this.dbPool.erase(conn);
+            }
+            catch (Exception e) {e.printStackTrace(); }
+            conn = null;
          }
       }
    }
@@ -969,6 +968,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     *           Command line
     */
    public static void main(String[] args) {
+      I_DbPool pool = null;
+      Connection conn = null;
       try {
          System.setProperty("java.util.logging.config.file",
                "testlog.properties");
@@ -995,8 +996,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
          I_Info info = new PropertiesInfo(System.getProperties());
          I_DbSpecific specific = ReplicationConverter.getDbSpecific(info);
-         I_DbPool pool = (I_DbPool) info.getObject("db.pool");
-         Connection conn = pool.reserve();
+         pool = (I_DbPool) info.getObject("db.pool");
+         conn = pool.reserve();
          String schema = info.get("wipeout.schema", null);
          if (schema == null) {
             String initialUpdateFile = info.get("initialUpdate.file", null);
@@ -1009,14 +1010,18 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          else {
             specific.wipeoutSchema(null, schema);
          }
-         
-         
-         
-         
-         pool.release(conn);
       } catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
          e.printStackTrace();
+      }
+      finally {
+         if (pool != null && conn != null) {
+            try {
+               pool.release(conn);
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
       }
    }
 
