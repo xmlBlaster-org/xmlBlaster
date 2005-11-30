@@ -26,12 +26,14 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * Starts the whole initial update
     * @throws Exception
     */
-   void run(I_Info individualInfo, String dbWatcherSessionId) throws Exception;
+   boolean run(I_Info individualInfo, String dbWatcherSessionId) throws Exception;
    /**
     * 3
     *
     */
    void prepareForRequest(I_Info individualInfo) throws Exception;
+   
+   String getStatus();
    
    /**
     * 4

@@ -160,7 +160,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                String dbWatcherSessionId = individualInfo.get("_senderSession", null);
                if (dbWatcherSessionId == null)
                   throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
-               slave.run(individualInfo, dbWatcherSessionId);
+               boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId);
+               if (isOkToStart == false)
+                  ret += " did fail since your status is '" + slave.getStatus() + "'";
             }
             else {
                StringBuffer buf = new StringBuffer();
