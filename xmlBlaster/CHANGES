@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14226 SOCKET&email Refactored Latch handling and added interruptInvocation()
+   to be able to interrupt pending method calls (currently JMX exposed for email only)
+
  o #14196-#14298 Added DisconnectQos configurations:
     dispatch/connection/shutdownDispatcher  true/fale
     dispatch/connection/shutdownCbServer    true/false
