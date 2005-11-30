@@ -193,7 +193,6 @@ public class TimestampChangeDetector implements I_ChangeDetector
       // We need the connection for detection and in the same transaction to the queryMeat
       Connection conn = null;
       boolean reported = false;
-      boolean exceptionOccured = false;
       
       if (attrMap != null && attrMap.containsKey("oldTimestamp")) {
          this.oldTimestamp = (String)attrMap.get("oldTimestamp");
@@ -288,7 +287,6 @@ public class TimestampChangeDetector implements I_ChangeDetector
          }
       }
       catch (Exception e) {
-         exceptionOccured = true;
          if (conn != null) {
             try {
                conn.rollback();
@@ -302,7 +300,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
          }
       }
       finally {
-         if (conn != null && !exceptionOccured) {
+         if (conn != null) {
             conn.commit();
             this.dbPool.release(conn);
          }
