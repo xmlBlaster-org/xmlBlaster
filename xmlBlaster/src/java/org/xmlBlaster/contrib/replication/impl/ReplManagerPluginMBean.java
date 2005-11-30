@@ -29,7 +29,7 @@ public interface ReplManagerPluginMBean {
     * @param replicationKey
     * @throws Exception
     */
-   void initiateReplication(String slaveSessionName, String replicationKey) throws Exception;
+   String initiateReplication(String slaveSessionName, String replicationKey) throws Exception;
    
    /**
     * Executes either a query or an update. Responses will come back asynchronously.

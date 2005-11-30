@@ -140,14 +140,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @param replicationKey This is the dbWatcher replication.prefix attribute.
     * @throws Exception
     */
-   public void initiateReplication(String slaveSessionName, String replicationPrefix) throws Exception {
+   public String initiateReplication(String slaveSessionName, String replicationPrefix) throws Exception {
       try {
          if (slaveSessionName == null || slaveSessionName.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
          if (replicationPrefix == null || replicationPrefix.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The replication.prefix is null, please provide one");
-         log.info("initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationPrefix + "'");
-         
+         String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationPrefix + "'";
+         log.info(ret);
          I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
          if (individualInfo != null) {
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
@@ -180,6 +180,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                buf.append(repl[i]).append(" ");
             throw new Exception("initiateReplication failed for '" + slaveSessionName + "' with replication key '" + replicationPrefix + "' since not known. Known are '" + buf.toString() + "'");
          }
+         return ret;
       }
       catch (Exception ex) {
          ex.printStackTrace();
