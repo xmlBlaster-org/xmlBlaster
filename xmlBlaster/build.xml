@@ -1549,7 +1549,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates the distribution                                            -->
    <!-- =================================================================== -->
-   <target name="dist" depends="java-delete,xmlBlaster,dist-only" description="Creates a server distribution for deployment (see usage)"/>
+   <target name="dist" depends="java-delete,all,dist-only" description="Creates a server distribution for deployment (see usage)"/>
    <target name="dist-only" depends="" description="">
       <delete dir="${dist.dir}"/>
       <delete dir="${dist-classes.dir}"/>
