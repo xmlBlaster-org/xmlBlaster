@@ -3,6 +3,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDrawingDemo", "CSharp
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlBlasterMessagesManager", "XmlBlasterMessagesManager\XmlBlasterMessagesManager.csproj", "{B329052F-D742-4A49-A7F2-7C5B6405E0A3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlBlasterLib", "XmlBlasterLib\XmlBlasterLib.csproj", "{24FC966F-3095-4FA0-A608-B30C72B2150B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -13,6 +21,14 @@ Global
 		{216C1901-D5B1-4BE4-8922-2C98D8E8F627}.Debug.Build.0 = Debug|.NET
 		{216C1901-D5B1-4BE4-8922-2C98D8E8F627}.Release.ActiveCfg = Release|.NET
 		{216C1901-D5B1-4BE4-8922-2C98D8E8F627}.Release.Build.0 = Release|.NET
+		{B329052F-D742-4A49-A7F2-7C5B6405E0A3}.Debug.ActiveCfg = Debug|.NET
+		{B329052F-D742-4A49-A7F2-7C5B6405E0A3}.Debug.Build.0 = Debug|.NET
+		{B329052F-D742-4A49-A7F2-7C5B6405E0A3}.Release.ActiveCfg = Release|.NET
+		{B329052F-D742-4A49-A7F2-7C5B6405E0A3}.Release.Build.0 = Release|.NET
+		{24FC966F-3095-4FA0-A608-B30C72B2150B}.Debug.ActiveCfg = Debug|.NET
+		{24FC966F-3095-4FA0-A608-B30C72B2150B}.Debug.Build.0 = Debug|.NET
+		{24FC966F-3095-4FA0-A608-B30C72B2150B}.Release.ActiveCfg = Release|.NET
+		{24FC966F-3095-4FA0-A608-B30C72B2150B}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

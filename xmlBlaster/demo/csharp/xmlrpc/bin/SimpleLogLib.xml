@@ -1,0 +1,413 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SimpleLogLib</name>
+    </assembly>
+    <members>
+        <member name="T:SimpleLogLib.LogLevel">
+            <summary>
+            Réglage du niveau de trace d'un logger.
+            Pour l'instant il y a seulement Debug, Info et Error
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.LogLevel.Debug">
+            <summary>
+            Niveau de trace Debug
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.LogLevel.Call">
+            <summary>
+            Niveau de trace Call
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.LogLevel.Info">
+            <summary>
+            Niveau de trace Info
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.LogLevel.Warn">
+            <summary>
+            Niveau de trace Warn
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.LogLevel.Error">
+            <summary>
+            Niveau de trace Error
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLogManager">
+            <summary>
+            Le point d'entrée de SimpleLogLib. C'est à SimpleManager que l'on demande un logger
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.CRLF">
+            <summary>
+            Stocke le retour de ligne. Raccourci d'écriture.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.DEFAULT_LOG_SECTION">
+            <summary>
+            Section correspond à un fichier. Par défaut on prend le nom de l'application "AppName.log"
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.DEFAULT_LOG_LEVEL">
+            <summary>
+            Le LogLevel par défaut.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.isDebuggerActivated">
+            <summary>
+            Est-ce qu'un debugger est attaché au processus.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.logs">
+            <summary>
+            Index des loggers distribués.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.logsConfig">
+            <summary>
+            Pour stocker l'optionnelle configuration.
+            Les éléments de la Hashtable sont des struct SimpleLogConfigEntry.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.logStreams">
+            <summary>
+            Les streams des sections utilisées.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.logsPath">
+            <summary>
+            Le chemin dans lequel écrire les fichiers.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.init">
+            <summary>
+            Pour forcer du code au lancement de l'application.
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.Init">
+            <summary>
+            Pour forcer du code au lancement de l'application.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.cleanExit">
+            <summary>
+            Pour forcer du code quand l'application se termine
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.dateTimeString">
+            <summary>
+            la chaine représentant la date et l'heure affichée dans les logs.
+            cette chaîne est mise à jour par le timer dateTimeStringTimer
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogManager.dateTimeStringTimer">
+            <summary>
+            Timer pour mise à jour de la chaîne dateTimeString
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.dateTimeString_refresh(System.Object,System.Timers.ElapsedEventArgs)">
+            <summary>
+            Evennement Timer pour mise à jour de la chaîne dateTimeString
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.dateTimeStringTimerInit">
+            <summary>
+            Première initialisation de la gestion de la chaîne dateTimeString
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog">
+            <summary>
+            Pour obtenir un logger par défaut.
+            </summary>
+            <returns>un logger SimpleLog</returns>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog(System.String)">
+            <summary>
+            Pour obtenir un logger nommé.
+            </summary>
+            <param name="logName">Nom du logger</param>
+            <returns>un logger SimpleLog</returns>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog(SimpleLogLib.LogLevel)">
+            <summary>
+            Pour obtenir un logger en définissant seulement son niveau de trace.
+            </summary>
+            <param name="level"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog(System.String,SimpleLogLib.LogLevel)">
+            <summary>
+            Pour obtenir un logger nommé en spécifiant le niveau de trace.
+            </summary>
+            <param name="logName">Nom du logger</param>
+            <param name="level">Niveau de trace</param>
+            <returns>un logger SimpleLog</returns>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog(System.String,System.String)">
+            <summary>
+            Pour obtenir un logger nommé qui sera dirigé vers un fichier spécifique.
+            </summary>
+            <param name="logName">Nom du logger</param>
+            <param name="section">Identifiant du fichier de destination</param>
+            <returns>un logger SimpleLog</returns>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.GetLog(System.String,System.String,SimpleLogLib.LogLevel)">
+            <summary>
+            Pour obtenir un logger nommé en spécifiant le niveau de trace et qui sera dirigé vers un fichier spécifique.
+            </summary>
+            <param name="logName">Nom du logger</param>
+            <param name="section">Identifiant du fichier de destination</param>
+            <param name="level">Niveau de trace</param>
+            <returns>un logger SimpleLog</returns>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLogManager.LogsPath">
+            <summary>
+            Le chemin dans lequel écrire les fichiers.
+            Le chemin par défaut sera celui de l'application plus le sous-répertoire "Logs".
+            Si l'on veut définir son propre chemin il faut le faire avant le 1er appel à LogManager.GetLog().
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLogManager.CleanExit">
+            <summary>
+            Pour forcer du code quand l'application se termine
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogManager.CleanExit.Finalize">
+            <summary>
+            Pour forcer du code quand l'application se termine
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLogConfigEntry">
+            <summary>
+            Structure pour contenir une entrée de configuration.
+            Cette structure est à usage interne de la librairie.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogConfigEntry.name">
+            <summary>
+            Nom du logger pour cette entrée de configuration.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogConfigEntry.section">
+            <summary>
+            La section du logger
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogConfigEntry.logLevel">
+            <summary>
+            Niveau de log pour le logger.
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogConfigEntry.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Création de l'objet pour une ligne de configuration.
+            </summary>
+            <param name="name"></param>
+            <param name="section"></param>
+            <param name="logLevel"></param>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLogConfigSectionHandler">
+            <summary>
+            Cette méthode est appelée par ConfigurationSettings.GetConfig afin de construire un objet à partir de la section de configuration lue dans App.config.
+            L'interface définie un retour de type objet, il faudra donc le caster du bon type, à savoir Hashtable.
+            Cette hashtable aura pour clef des strings représentants les noms des loggers et des SimpleLogConfigEntry comme valeur.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLogConfigSectionHandler.CRLF">
+            <summary>
+            Stocke le retour de ligne. Raccourci d'écriture.
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLogConfigSectionHandler.Create(System.Object,System.Object,System.Xml.XmlNode)">
+            <summary>
+            Implémentation de l'interface System.Configuration.IConfigurationSectionHandler
+            </summary>
+            <param name="parent">pas utilisé (null dans notre cas)</param>
+            <param name="configContext">seulement pour ASP.net</param>
+            <param name="section">Le noeud xml de la section de configuration demandé par ConfigurationSettings.GetConfig("NomDeLaSection")</param>
+            <returns></returns>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog">
+            <summary>
+            La classe des logger
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.CRLF">
+            <summary>
+            Stocke le retour de ligne. Raccourci d'écriture.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.name">
+            <summary>
+            Le nom du logger. Permet d'identifier les lignes dans un fichier de trace.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.level">
+            <summary>
+            Le niveau de trace.
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.sw">
+            <summary>
+            Le flux vers lequel sont écris les traces.
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.#ctor(System.String,System.IO.StreamWriter,SimpleLogLib.LogLevel)">
+            <summary>
+            Ce constructeur est utilisé par SimpleLogManager.
+            </summary>
+            <param name="logName">Nom du logger</param>
+            <param name="sw">Le flux vers lequel sont écris les traces</param>
+            <param name="level">Le niveau de trace</param>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.debugCallback">
+            <summary>
+            Callback auquel s'inscrire pour obtenir les messages de Debug.
+            ATTENTION à la récursion INFINIE. Dans le callback ne pas faire d'appel à la trace correspondante !!!
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.callCallback">
+            <summary>
+            Callback auquel s'inscrire pour obtenir les messages de Call
+            ATTENTION à la récursion INFINIE. Dans le callback ne pas faire d'appel à la trace correspondante !!!
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.infoCallback">
+            <summary>
+            Callback auquel s'inscrire pour obtenir les messages de Info
+            ATTENTION à la récursion INFINIE. Dans le callback ne pas faire d'appel à la trace correspondante !!!
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.warnCallback">
+            <summary>
+            Callback auquel s'inscrire pour obtenir les messages de Warning
+            ATTENTION à la récursion INFINIE. Dans le callback ne pas faire d'appel à la trace correspondante !!!
+            </summary>
+        </member>
+        <member name="F:SimpleLogLib.SimpleLog.errorCallback">
+            <summary>
+            Callback auquel s'inscrire pour obtenir les messages de Error
+            ATTENTION à la récursion INFINIE. Dans le callback ne pas faire d'appel à la trace correspondante !!!
+            </summary>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Debug(System.String,System.Object[])">
+            <summary>
+            Emet un trace Debug
+            </summary>
+            <param name="format">chaîne pour String.Format</param>
+            <param name="list">Ensemble de paramètres séparés par une virgule</param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Debug(System.String)">
+            <summary>
+            Emet un trace Debug
+            </summary>
+            <param name="msg">Le message à tracer</param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Call(System.String,System.Object[])">
+            <summary>
+            Emet une trace Call
+            </summary>
+            <param name="format"></param>
+            <param name="list"></param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Call(System.String)">
+            <summary>
+            Emet une trace Call
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Info(System.String,System.Object[])">
+            <summary>
+            Emet un trace Info
+            </summary>
+            <param name="format">chaîne pour String.Format</param>
+            <param name="list">Ensemble de paramètres séparés par une virgule</param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Info(System.String)">
+            <summary>
+            Emet une trace Info
+            </summary>
+            <param name="msg">Le message à tracer</param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Warn(System.String,System.Object[])">
+            <summary>
+            Emet une trace Warning
+            </summary>
+            <param name="format"></param>
+            <param name="list"></param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Warn(System.String)">
+            <summary>
+            Emet une trace Warning
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Error(System.String,System.Object[])">
+            <summary>
+            Emet un trace Error
+            </summary>
+            <param name="format">chaîne pour String.Format</param>
+            <param name="list">Ensemble de paramètres séparés par une virgule</param>
+        </member>
+        <member name="M:SimpleLogLib.SimpleLog.Error(System.String)">
+            <summary>
+            Emet un trace Error
+            </summary>
+            <param name="msg">Le message à tracer</param>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLog.LogLevel">
+            <summary>
+            Le niveau de trace.
+            </summary>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLog.IsDebug">
+            <summary>
+            Est-ce que le niveau de trace affiche les traces Debug
+            </summary>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLog.IsCall">
+            <summary>
+            Est-ce que le niveau de trace affiche les traces Call
+            </summary>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLog.IsInfo">
+            <summary>
+            Est-ce que le niveau de trace affiche les traces Info
+            </summary>
+        </member>
+        <member name="P:SimpleLogLib.SimpleLog.IsWarn">
+            <summary>
+            Est-ce que le niveau de trace affiche les traces Warning
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog.DebugCallbackDelegate">
+            <summary>
+            Type du callback à inscrire pour obtenir les messages de Debug
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog.CallCallbackDelegate">
+            <summary>
+            Type du callback à inscrire pour obtenir les messages de Call
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog.InfoCallbackDelegate">
+            <summary>
+            Type du callback à inscrire pour obtenir les messages de Info
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog.WarnCallbackDelegate">
+            <summary>
+            Type du callback à inscrire pour obtenir les messages de Warning
+            </summary>
+        </member>
+        <member name="T:SimpleLogLib.SimpleLog.ErrorCallbackDelegate">
+            <summary>
+            Type du callback à inscrire pour obtenir les messages de Error
+            </summary>
+        </member>
+    </members>
+</doc>

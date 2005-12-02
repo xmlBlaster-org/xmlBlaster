@@ -6,23 +6,55 @@ Note:
 	All compiled stuff (exe and lib) are for windows.
 	I hope one day someone will add C# compiled stuff for other platforms.
 
+	You can run directly them, without need to compile the demos sources.
+
 Folders :
 
 	./bin : the executable demo
 		it was compiled with Microsoft Visual Studio .Net 2003 on Windows XP.
 	./lib : the xml-rpc library for C# from http://www.xml-rpc.net/
+		and others stuff.
 	./src : sources files for demos (C# and graphics).
 	./VisualStudioNet2003 : projects files
 
+	I hope to get time soon for creating projects file for the fabulous SharpDevelop IDE.
+
 Running the demo :
 
-	Start XmlBlaster
+	At first start a XmlBlaster's server:
 
+	Dos command lines :
    > set XMLBLASTER_HOME=D:\xmlBlaster_REL_1_0_7\xmlBlaster
    > java -cp %XMLBLASTER_HOME%/lib -jar %XMLBLASTER_HOME%/lib/xmlBlaster.jar
 
+	CSharpDrawingDemo demo:
+
+	from the bin folder,
 	Start two CSharpDrawingDemo.exe
-	Set the right server url in both and one different username in each instance.
+	Set the right server url in both and one different username for each instance.
 	Click connect button on both, then start drawing.
 
+	XmlBlasterMessagesManager demo:
+
+	from the bin folder,
+	Start XmlBlasterMessagesManager.exe
+	then click on connect.
+	This demo is more a usefull tool to see messages.
+
+	If you run XmlBlasterMessagesManager.exe when CSharpDrawingDemo.exe is running,
+	you will see all drawing messages.
+
+Note about XmlBlasterLib
+
+	It is under development. For instant, only XmlBlasterMessagesManager is using it.
+	I should to update CSharpDrawingDemo to use that library.
+	Feel free to give some time on that job ;o)
+
+Note about sources
+
+	Sorry, sometimes comment are in english, but often in french ...
+	It's depends of the time (morning, afternoon or night !).
+	Feel free to add english comments ;o)
+
+2005-12-01 Cyrille
 2005-11-15 Cyrille Giquello <cyrille@giquello.com>
