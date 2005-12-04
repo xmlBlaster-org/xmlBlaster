@@ -67,8 +67,18 @@ h3 {
   font-weight:      bold;
 }
 
-.sitetitel {font-size: 18pt; font-weight: bold; text-align : center;}
-.celltitel {font-weight: bold;}
+h2.xb_design, h3.xb_design, h4.xb_design, h5.xb_design, h6.xb_design {
+        background-color: #007524;
+        color: #F1C101;
+}
+.sitetitel {
+        background-color: #007524;
+        color: #F1C101;
+        font-size: 18pt; font-weight: bold; text-align : center;}
+.celltitel {
+        background-color: #007524;
+        color: #F1C101;
+        font-weight: bold;}
 .small {font-size: 8pt;}
 .sideend {color: #aaaaaa}
 
