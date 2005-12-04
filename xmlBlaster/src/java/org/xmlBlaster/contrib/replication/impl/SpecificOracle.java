@@ -29,6 +29,8 @@ public class SpecificOracle extends SpecificDefault {
 
    private String ownSchema;
    
+   private boolean debug;
+   
    /**
     * Not doing anything.
     */
@@ -39,6 +41,7 @@ public class SpecificOracle extends SpecificDefault {
    public void init(I_Info info) throws Exception {
       super.init(info);
       this.ownSchema = this.info.get("db.user", null);
+      this.debug = this.info.getBoolean("replication.plsql.debug", true); // TODO make this false once removed.
    }
    
    /**
@@ -102,6 +105,15 @@ public class SpecificOracle extends SpecificDefault {
          String typeName = cols[i].getTypeName();
          int type = cols[i].getSqlType();
          String varName = tablePrefix + "." + colName; // for example :new.colname'
+         
+         if (this.debug) {
+            buf.append("       IF debug != 0 THEN\n");
+            buf.append("          ").append(this.replPrefix).append("debug('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
+            buf.append("       END IF;\n");
+            // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
+            // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
+         }
+         
          if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
             buf.append("          IF ").append(varName).append(" IS NOT NULL THEN\n");
          
@@ -235,8 +247,19 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   transId VARCHAR2(30);\n");
       buf.append("   op      VARCHAR(10);\n");
       buf.append("   longKey INTEGER;\n");
+      buf.append("   debug   INTEGER;\n");
+      
       buf.append("BEGIN\n");
       buf.append("\n");
+      if (this.debug) {
+         buf.append("    debug := ").append(this.replPrefix).append("debug_trigger('").append(schemaName).append("','").append(tableName).append("');\n");
+         buf.append("    IF debug != 0 THEN\n");
+         buf.append("       ").append(this.replPrefix).append("debug('TRIGGER ON ").append(completeTableName).append(" invoked');\n");
+         buf.append("    END IF;\n");
+         // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
+         // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
+      }
+      
       buf.append("    IF INSERTING THEN\n");
       buf.append("       op := 'INSERT';\n");
       buf.append(createVariableSqlPart(infoDescription, "new"));
@@ -248,6 +271,7 @@ public class SpecificOracle extends SpecificDefault {
       buf.append(createVariableSqlPart(infoDescription, "old"));
       buf.append(createVariableSqlPart(infoDescription, "new"));
       buf.append("    END IF;\n");
+
       String dbNameTmp = null;
       String tableNameTmp = "'" + tableName + "'";
       String schemaNameTmp = null;

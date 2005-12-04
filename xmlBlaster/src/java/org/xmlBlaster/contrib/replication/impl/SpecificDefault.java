@@ -795,9 +795,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
+         long debug = 0;
          String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
                + schema + "','" + tableName + "','" + replFlags
-               + "', 'CREATING'," + tmp + ",'" + triggerName + "')";
+               + "', 'CREATING'," + tmp + ",'" + triggerName + "'," + debug + ")";
          log.info("Inserting the statement '" + sql + "'");
          this.dbPool.update(conn, sql);
          return true;

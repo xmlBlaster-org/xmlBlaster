@@ -57,7 +57,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String statusTopic;
    private String dataTopic;
    private Global global;
-   // private String masterSessionId;
    boolean initialized; 
    private long minReplKey;
    private long maxReplKey;
@@ -93,8 +92,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.managerInstanceName = managerInstanceName;
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
-      this.status = STATUS_NORMAL;
-      setStatus(this.status);
+      setStatus(STATUS_NORMAL);
    }
 
    /**
@@ -131,7 +129,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.initialized = true;
    }
    
-   private void setStatus(int status) {
+   
+   private final void setStatus(int status) {
+      this.status = status;
+      // this is a temporary solution for the monitoring
       String client = "client/";
       int pos = this.slaveSessionId.indexOf(client);
       if (pos < 0)
@@ -148,7 +149,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
    
-   private void setMaxReplKey(long replKey) {
+   private final void setMaxReplKey(long replKey) {
+      this.maxReplKey = replKey;
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -213,8 +215,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       new ClientPropertiesInfo(subQos.getData().getClientProperties(), individualInfo);
       session.subscribe(this.dataTopic, subQos.toXml());
       synchronized(this) {
-         this.status = STATUS_INITIAL;
-         setStatus(this.status);
+         setStatus(STATUS_INITIAL);
       }
    }
    
@@ -279,8 +280,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
 
       this.minReplKey = minReplKey;
       this.maxReplKey = maxReplKey;
-      this.status = STATUS_TRANSITION;
-      setStatus(this.status);
+      setStatus(STATUS_TRANSITION);
       doContinue();
    }
 
@@ -299,24 +299,50 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       log.info("check invoked with status '" + getStatus() + "'");
-      if (this.status == STATUS_INITIAL)
+      if (this.status == STATUS_INITIAL) // should not happen since Dispatcher is set to false
          return new ArrayList();
+
+      if (entries.size() > 0) {
+         for (int i=entries.size()-1; i > -1; i++) {
+            ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+            MsgUnit msgUnit = entry.getMsgUnit();
+            long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+            if (replKey > -1L) {
+               setMaxReplKey(replKey);
+               break; // the other messages will have lower numbers (if any) so we break for performance.
+            }
+         }      
+      }
       
       // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
       // TODO find a clean solution for this: currently we have the case where several masters send data to one single
       // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
       // is to let everything pass for now.
-      if (this.status == STATUS_NORMAL || this.forceSending)
+      if (this.status == STATUS_NORMAL)
          return entries;
-      
+      // check if one of the messages is the transition end tag            
+      if (this.forceSending) {
+         for (int i=0; i < entries.size(); i++) {
+            ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+            MsgUnit msgUnit = entry.getMsgUnit();
+            ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
+            if (endMsg != null) {
+               log.info("Received msg marking the end of the initial update: '" + this.name + "' going into NORMAL operations");
+               setStatus(STATUS_NORMAL);
+               queue.removeRandom(entry);
+               entries.remove(i);
+               break; // there should only be one such message 
+            }
+         }
+      }
+
       ArrayList ret = new ArrayList();
       for (int i=0; i < entries.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);
          MsgUnit msgUnit = entry.getMsgUnit();
          long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
          if (replKey > -1L) {
-            this.maxReplKey = replKey;
-            setMaxReplKey(this.maxReplKey);
+            setMaxReplKey(replKey);
          }
          log.info("check: processing '" + replKey + "'");
          if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
@@ -326,15 +352,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                ret.add(entry);
                continue;
             }
-            else {
-               log.info("Received msg marking the end of the initial update: '" + this.name + "' going into NORMAL operations");
-               this.status = STATUS_NORMAL;
-               setStatus(this.status);
-               queue.removeRandom(entry);
-               continue;
-            }
          }
-         setMaxReplKey(replKey);
          log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
          if (replKey >= this.minReplKey) {
             log.info("repl adding the entry");
@@ -342,8 +360,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             
             if (replKey > this.maxReplKey) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");
-               this.status = STATUS_NORMAL;
-               setStatus(this.status);
+               setStatus(STATUS_NORMAL);
             }
          }
          else { // such messages have been already from the initial update. (obsolete messages are removed)
@@ -432,8 +449,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.getBytes(), pubQos);
       conn.publish(msg);
       // TODO Check this since it could mess up the current status if one is exaclty finished now
-      this.status = STATUS_NORMAL;
-      setStatus(this.status);
+      setStatus(STATUS_NORMAL);
    }
    
 }

@@ -33,6 +33,8 @@ public class TableToWatchInfo {
    private String status;
    private long replKey = -1L;
    private String trigger;
+   private long debug;
+   
    /**
     * flags which are set mean the replication does not happen for these flags.
     * For example 'IDU' means nothing will be replicated, no (I)nserts, no (D)eletes nor (U)pdates
@@ -349,11 +351,13 @@ public class TableToWatchInfo {
       String status = rs.getString(5);
       long replKey = rs.getLong(6);
       String triggerName  = rs.getString(7);
+      long debug = rs.getInt(8);
       TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, table);
       tableToWatch.setReplFlags(replFlags);
       tableToWatch.setStatus(status);
       tableToWatch.setReplKey(replKey);
       tableToWatch.setTrigger(triggerName);
+      tableToWatch.setDebug((int)debug);
       return tableToWatch;
    }
    
@@ -442,8 +446,18 @@ public class TableToWatchInfo {
          buf.append(" trigger='" + this.trigger + "'");
       if (this.replFlags  != null)
          buf.append(" flags='" + this.replFlags + "'");
+      if (this.debug  >  0)
+         buf.append(" debug='" + this.debug + "'");
       buf.append(" doReplicate='" + isReplicate() + "' />");
       return buf.toString();
+   }
+
+   public int getDebug() {
+      return (int)this.debug;
+   }
+
+   public void setDebug(int debug) {
+      this.debug = debug;
    }
    
 }

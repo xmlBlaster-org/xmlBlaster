@@ -505,7 +505,7 @@ private final static String ME = "ReplicationWriter";
       }
       
       if (isEof && !isException) {
-         String completeFilename = this.importLocation + "/" + filename;
+         String completeFilename = this.importLocation + File.pathSeparator + filename;
          
          if (this.schemaToWipeout != null) {
             log.info("Going to clean up the schema '" + this.schemaToWipeout);

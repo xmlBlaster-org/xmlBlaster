@@ -65,8 +65,8 @@ CREATE TABLE ${replPrefix}longs_table(repl_key INTEGER,
 CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
                          tablename VARCHAR(30), repl_flags CHAR(3),
 			 status VARCHAR(10), repl_key INTEGER, 
-			 trigger_name VARCHAR(30), PRIMARY KEY(catalogname, 
-			 schemaname, tablename))
+			 trigger_name VARCHAR(30), debug INTEGER, 
+			 PRIMARY KEY(catalogname, schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -667,6 +667,24 @@ CREATE OR REPLACE FUNCTION ${replPrefix}check_structure
 BEGIN
    RETURN 'OK';
 END ${replPrefix}check_structure;
+
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}debug_trigger is used to check wether a trigger has to be       
+-- debugged or not.                                                             
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}debug_trigger(schmName VARCHAR, 
+   tblName VARCHAR) RETURN INTEGER AS 
+   ret    INTEGER;
+BEGIN
+   SELECT debug INTO ret FROM ${replPrefix}tables WHERE tablename=tblName AND
+          schemaname=schmName;
+   RETURN ret;
+END ${replPrefix}debug_trigger;
+
 -- EOC (end of command: needed as a separator for our script parser)            
 
 -- ---------------------------------------------------------------------------- 
