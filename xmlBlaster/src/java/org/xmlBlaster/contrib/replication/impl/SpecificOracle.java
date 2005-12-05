@@ -754,7 +754,6 @@ public class SpecificOracle extends SpecificDefault {
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          
-         
          try {  
             // TRIGGERS
             ArrayList names = new ArrayList();

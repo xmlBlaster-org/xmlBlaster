@@ -481,7 +481,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       try {
          // if (Execute.isWindows()) cmd = "cmd " + cmd;
          String[] args = StringHelper.toArray(cmd, " ");
-         log.info("running for *" + slaveName + "' for cmd '" + cmd + "'");
+         log.info("running for '" + slaveName + "' for cmd '" + cmd + "'");
          Execute execute = new Execute(args, null);
          synchronized (this) {
             if (slaveName != null) {
@@ -531,7 +531,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       if (this.initialCmd == null)
          log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
       else {
-         String cmd = this.initialCmd + " \"" + completeFilename + "\"";
+         // String cmd = this.initialCmd + " \"" + completeFilename + "\"";
+         String cmd = this.initialCmd + " " + completeFilename;
          osExecute(invoker, cmd, connInfo);
          
       }
