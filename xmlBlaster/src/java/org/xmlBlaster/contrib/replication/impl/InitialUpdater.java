@@ -432,7 +432,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       String filename = null;
       log.info("sending initial file *" + shortFilename + "' for user '" + slaveSessionName  + "'");
       if (this.initialCmdPath != null)
-         filename = this.initialCmdPath + File.pathSeparator + shortFilename;
+         filename = this.initialCmdPath + File.separator + shortFilename;
       else
          filename = shortFilename;
       File file = new File(filename);
@@ -526,7 +526,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       String filename = null;
       if (completeFilename == null) {
          filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
-         completeFilename = this.initialCmdPath + File.pathSeparator + filename;
+         completeFilename = this.initialCmdPath + File.separator + filename;
       }
       if (this.initialCmd == null)
          log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
