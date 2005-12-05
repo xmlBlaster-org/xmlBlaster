@@ -303,7 +303,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          return new ArrayList();
 
       if (entries.size() > 0) {
-         for (int i=entries.size()-1; i > -1; i++) {
+         for (int i=entries.size()-1; i > -1; i--) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
