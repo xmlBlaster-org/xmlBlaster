@@ -12,7 +12,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
- * This is a dumb client, it does almos nothing.
+ * This is a dumb client, it does almost nothing.
  * It initializes the xmlBlaster client library
  * and the email callback server but does not connect to xmlBlaster. This is useful
  * when the client can't reach the xmlBlaster server because of a firewall or the like.
