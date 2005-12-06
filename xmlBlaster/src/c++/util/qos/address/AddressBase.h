@@ -97,7 +97,7 @@ protected:
     * callback queue and deliver to the client in one bulk. 
     * Defaults to all available of highest priority
     */
-   int burstModeMaxEntries_; //  = -1
+   int burstModeMaxEntries_; //  = 1
 
    /**
     * How many bytes maximum shall the callback thread take in one bulk out of the
@@ -308,6 +308,7 @@ public:
    /**
     * How many messages maximum shall the callback thread take in one bulk out of the
     * callback queue and deliver to the client in one bulk. 
+    * -1 is unlimited (all of the available messages with same priority are send)
     */
    int getBurstModeMaxEntries() const;
 
@@ -315,7 +316,7 @@ public:
     * How many messages maximum shall the callback thread take in one bulk out of the
     * callback queue and deliver to the client in one bulk. 
     * @param -1 takes all available messages from highest priority in a bulk (default)
-    *        only limited by burstModeMaxBytes
+    *        only limited by burstModeMaxBytes; Defaults to 1
     */
    void setBurstModeMaxEntries(int burstModeMaxEntries);
 

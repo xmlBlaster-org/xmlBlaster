@@ -28,7 +28,7 @@ const int    DEFAULT_port               = 3412;
 const string DEFAULT_type               = Global::getDefaultProtocol(); //"IOR";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
-const int    DEFAULT_burstModeMaxEntries= -1;
+const int    DEFAULT_burstModeMaxEntries= 1;
 const long   DEFAULT_burstModeMaxBytes  = -1L;
 const bool   DEFAULT_oneway             = false;
 const bool   DEFAULT_dispatcherActive   = true;
@@ -312,7 +312,7 @@ int AddressBase::getBurstModeMaxEntries() const
 void AddressBase::setBurstModeMaxEntries(int burstModeMaxEntries)
 {
    if (burstModeMaxEntries < -1) {
-      burstModeMaxEntries_ = -1;
+      burstModeMaxEntries_ = 1;
    }
    else if (burstModeMaxEntries == 0) {
       log_.warn(ME, string("<burstMode maxEntries='") + lexical_cast<std::string>(burstModeMaxEntries) + string("'> is not supported and may cause strange behavior"));
