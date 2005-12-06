@@ -40,7 +40,15 @@ attachement {
    content:  [the binary xmlBlaster format similar to that used with SOCKET]
 }
  * </pre>
+ * <p>
+ * Note on max. header length from RFC 2822:
+ * <p>
+ * "There are two limits that this standard places on the number of
+   characters in a line. Each line of characters MUST be no more than
+   998 characters, and SHOULD be no more than 78 characters, excluding
+   the CRLF."
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @see http://www.faqs.org/rfcs/rfc2822.html
  */
 public class EmailData {
    private static Logger log = Logger.getLogger(EmailData.class.getName());
@@ -659,7 +667,14 @@ public class EmailData {
    }
 
    /**
-    * Check if an email can be deleted. 
+    * Check if an email can be deleted.
+    * <p /> 
+    * RFC 2822 defines:
+    * The header field "Date:" must exist in an email
+    * exactly once, example: "Fri, 21 Nov 1997 09:55:06 -0600"
+    * "The origination date specifies the date and time at which the creator
+    * of the message indicated that the message was complete and ready to
+    * enter the mail delivery system."
     * @param emailData email to check
     * @return true if is expired
     */
