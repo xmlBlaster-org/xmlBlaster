@@ -36,6 +36,7 @@ public interface ReplicationConstants {
    public final static String STATEMENT_ATTR = "statement";
    public final static String MAX_ENTRIES_ATTR = "maxEntries";
    public final static String DUMP_FILENAME = "dumpName";
+   public final static String ALREADY_PROCESSED_ATTR = "alreadyProcessed"; // Used to mark a message which has already been processed and which has been sent twice.
    
    // commands
    public final static String REPLICATION_CMD = "REPLICATION";

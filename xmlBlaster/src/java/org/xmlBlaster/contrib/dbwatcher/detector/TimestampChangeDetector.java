@@ -201,6 +201,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
 
       try {
          conn = this.dbPool.reserve(); // This has been added 2005-08-27 (Michele Laghi)
+         // FIXME this !!!!!
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // TOO RESTRICTIVE IN MOST CASES !!!
          
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {

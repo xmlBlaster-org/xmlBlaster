@@ -100,6 +100,28 @@ CREATE TABLE ${replPrefix}items (repl_key INTEGER,
 
 
 -- ---------------------------------------------------------------------------- 
+-- ${replPrefix}fill_blob_char                                                  
+-- must be invoked as:                                                          
+-- repl_fill_blob_char(newCont, :new.SRWY_RWY_ID, 'SRWY_RWY_ID');               
+-- ---------------------------------------------------------------------------- 
+
+
+CREATE OR REPLACE FUNCTION ${replPrefix}fill_blob_char(
+                           val VARCHAR, nameOfParam VARCHAR) RETURN CLOB AS
+   tmpCont CLOB;
+BEGIN
+   tmpCont := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmpCont, TRUE);
+   dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);
+   dbms_lob.writeappend(tmpCont, LENGTH(val), val);
+   dbms_lob.close(tmpCont);
+   -- dbms_lob.append(completeCont, ${replPrefix}col2xml(nameOfParam, tmpCont));
+   RETURN ${replPrefix}col2xml(nameOfParam, tmpCont);
+END ${replPrefix}fill_blob_char;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
 -- ${replPrefix}col2xml_cdata converts a column into a simple xml notation and  
 -- wraps the content into a _cdata object.                                      
 --   name: the name of the column                                               

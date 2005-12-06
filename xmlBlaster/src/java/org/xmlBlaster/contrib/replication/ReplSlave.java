@@ -314,6 +314,19 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          }      
       }
       
+      // check if already processed ...
+      for (int i=entries.size()-1; i > -1; i--) {
+         ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+         MsgUnit msgUnit = entry.getMsgUnit();
+         ClientProperty alreadyProcessed = msgUnit.getQosData().getClientProperty(ReplicationConstants.ALREADY_PROCESSED_ATTR);
+         if (alreadyProcessed != null) {
+            log.info("Received entry which was already processed. Will remove it");
+            queue.removeRandom(entry);
+            entries.remove(i);
+         }
+      }
+      
+      
       // check if one of the messages is the transition end tag            
       for (int i=0; i < entries.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);

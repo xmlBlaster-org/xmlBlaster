@@ -30,6 +30,7 @@ public class SpecificOracle extends SpecificDefault {
    private String ownSchema;
    
    private boolean debug;
+   private String debugFunction;
    
    /**
     * Not doing anything.
@@ -41,7 +42,8 @@ public class SpecificOracle extends SpecificDefault {
    public void init(I_Info info) throws Exception {
       super.init(info);
       this.ownSchema = this.info.get("db.user", null);
-      this.debug = this.info.getBoolean("replication.plsql.debug", true); // TODO make this false once removed.
+      this.debug = this.info.getBoolean("replication.plsql.debug", false);
+      this.debugFunction = this.info.get("replication.plsql.debugFunction", null);
    }
    
    /**
@@ -108,7 +110,9 @@ public class SpecificOracle extends SpecificDefault {
          
          if (this.debug) {
             buf.append("       IF debug != 0 THEN\n");
-            buf.append("          ").append(this.replPrefix).append("debug('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
+            if (this.debugFunction != null)
+               buf.append("          ").append(this.debugFunction).append("('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
+            // buf.append("          ").append(this.replPrefix).append("debug('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
             buf.append("       END IF;\n");
             // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
             // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
@@ -158,9 +162,6 @@ public class SpecificOracle extends SpecificDefault {
                   "col2xml('").append(colName).append("', tmpCont));\n");
          }
          else {
-            buf.append("             tmpCont := EMPTY_CLOB;\n");
-            buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
@@ -168,10 +169,15 @@ public class SpecificOracle extends SpecificDefault {
             else {
                buf.append("             tmpNum := ").append(varName).append(";\n");
             }
-            buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("             dbms_lob.close(tmpCont);\n");
-            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
-                  "col2xml('").append(colName).append("', tmpCont));\n");
+            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(tmpNum, '").append(colName).append("'));\n");
+            
+            // buf.append("             tmpCont := EMPTY_CLOB;\n");
+            // buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
+            // buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+            // buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            // buf.append("             dbms_lob.close(tmpCont);\n");
+            // buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
+            //       "col2xml('").append(colName).append("', tmpCont));\n");
          }
          
          if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
@@ -254,7 +260,9 @@ public class SpecificOracle extends SpecificDefault {
       if (this.debug) {
          buf.append("    debug := ").append(this.replPrefix).append("debug_trigger('").append(schemaName).append("','").append(tableName).append("');\n");
          buf.append("    IF debug != 0 THEN\n");
-         buf.append("       ").append(this.replPrefix).append("debug('TRIGGER ON ").append(completeTableName).append(" invoked');\n");
+         if (this.debugFunction != null)
+            buf.append("       ").append(this.debugFunction).append("('TRIGGER ON ").append(completeTableName).append(" invoked');\n");
+         // buf.append("       ").append(this.replPrefix).append("debug('TRIGGER ON ").append(completeTableName).append(" invoked');\n");
          buf.append("    END IF;\n");
          // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
          // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");

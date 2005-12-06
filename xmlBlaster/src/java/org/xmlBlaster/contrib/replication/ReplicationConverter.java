@@ -38,6 +38,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private I_AttributeTransformer transformer;
    private OutputStream out;
    private boolean sendInitialTableContent = true;
+   private long oldReplKey = -1L;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -126,6 +127,13 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 11 but was " + numberOfColumns);
       
       int replKey = rs.getInt(1);
+      boolean markProcessed = false;
+      if (replKey <= this.oldReplKey) {
+         log.warning("the replication key '" + replKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
+         markProcessed = true;
+      }
+      this.oldReplKey = replKey;
+      
       String transKey = rs.getString(2);
       String dbId = rs.getString(3);
       String tableName = rs.getString(4);
@@ -186,6 +194,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          completeAttrs.put(SCHEMA_ATTR, schema);
          completeAttrs.put(VERSION_ATTR, version);
          completeAttrs.put(ACTION_ATTR, action);
+         if (markProcessed)
+            completeAttrs.put(ALREADY_PROCESSED_ATTR, "true");
          
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             try {
