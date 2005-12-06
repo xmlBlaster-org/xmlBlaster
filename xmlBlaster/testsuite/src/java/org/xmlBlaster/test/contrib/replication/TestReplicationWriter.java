@@ -62,6 +62,7 @@ public class TestReplicationWriter extends XMLTestCase {
     private I_DbSpecific dbSpecific;
     private I_Writer replicationWriter;
     private String tableName;
+    private long sleepDelay;
     
     /**
      * Start the test. 
@@ -169,6 +170,7 @@ public class TestReplicationWriter extends XMLTestCase {
    }
    
    public void init(I_Info info) throws Exception {
+      this.sleepDelay = info.getLong("test.sleepDelay", 0L);
    }
 
    /**
@@ -561,6 +563,7 @@ public class TestReplicationWriter extends XMLTestCase {
                      throw ex;
                   }
                }
+               Thread.sleep(this.sleepDelay);
                conn.commit();
             }
             catch (Exception ex) {
