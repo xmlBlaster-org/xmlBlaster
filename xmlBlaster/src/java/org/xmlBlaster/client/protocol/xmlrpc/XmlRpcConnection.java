@@ -19,8 +19,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
@@ -125,10 +123,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       catch (java.net.MalformedURLException e) {
          log.error(ME+".constructor", "Malformed URL: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Malformed URL for XmlRpc connection", e.toString());
-      }
-      catch (IOException e1) {
-         log.error(ME+".constructor", "IO Exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "IO Exception", e1);
       }
    }
 
