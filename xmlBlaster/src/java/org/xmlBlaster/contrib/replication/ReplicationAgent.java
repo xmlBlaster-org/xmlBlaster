@@ -77,7 +77,7 @@ public class ReplicationAgent {
          else {
             while (true) {
                try {
-                  Thread.sleep(500L);
+                  Thread.sleep(5000L);
                }
                catch (Exception ex) {
                   
@@ -87,7 +87,8 @@ public class ReplicationAgent {
          agent.shutdown();
 
       } 
-      catch (Exception ex) {
+      catch (Throwable ex) {
+         log.severe("An exception occured when starting '" + ex.getMessage() + "'");
          ex.printStackTrace();
       }
    }

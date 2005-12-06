@@ -625,6 +625,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          
          if (sendInitialContents) {
             this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
+            if (schema != null)
+               table = schema + "." + table;
             String sql = new String("SELECT * FROM " + table);
             this.dbPool.select(conn, sql, false, this);
          }
@@ -663,8 +665,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          int msgCount = 1; // since 0 was the create, the first must be 1
          int internalCount = 0;
          while (rs != null && rs.next()) {
-            this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
+            // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
+            this.dbUpdateInfo.fillOneRowWithObjects(rs, null);
             internalCount++;
+            log.info("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
             if (internalCount == this.rowsPerMessage) {
                internalCount = 0;
                // publish

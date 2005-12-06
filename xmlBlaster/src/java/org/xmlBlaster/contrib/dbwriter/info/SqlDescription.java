@@ -252,6 +252,10 @@ public class SqlDescription {
          ClientProperty colContent = row.getColumn(colNames[i]);
          if (colContent != null && colContent.getStringValue() != null) {
             SqlColumn sqlCol = getColumn(colNames[i]);
+            if (sqlCol == null) {
+               log.info("column '" + colNames[i] + "' not found, will ignore it");
+               continue;
+            }
             if (sqlCol.isPrimaryKey() || !hasPk()) {
                searchEntries.add(colContent);
                if (firstHit)
