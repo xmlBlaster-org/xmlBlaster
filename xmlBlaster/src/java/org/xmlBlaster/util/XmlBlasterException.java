@@ -56,6 +56,7 @@ import org.jutils.JUtilsException;
  */
 public class XmlBlasterException extends Exception implements java.io.Serializable
 {
+   private static final long serialVersionUID = -973794183539996697L;
    transient private final Global glob;
    transient private ErrorCode errorCodeEnum;
    private String errorCodeStr;
@@ -82,7 +83,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private final String logFormatResource;
    private final String logFormatCommunication;
    private final String logFormatUser;
-   private final String logFormatTransaction;
+   //private final String logFormatTransaction;
    private final String logFormatLegacy;
    private final String logFormat;
 
@@ -125,7 +126,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       this.logFormatResource = this.glob.getProperty().get("XmlBlasterException.logFormat.resource", this.logFormat);
       this.logFormatCommunication = this.glob.getProperty().get("XmlBlasterException.logFormat.communication", this.logFormat);
       this.logFormatUser = this.glob.getProperty().get("XmlBlasterException.logFormat.user", this.logFormat);
-      this.logFormatTransaction = this.glob.getProperty().get("XmlBlasterException.logFormat.transaction", this.logFormat);
+      //this.logFormatTransaction = this.glob.getProperty().get("XmlBlasterException.logFormat.transaction", this.logFormat);
       this.logFormatLegacy = this.glob.getProperty().get("XmlBlasterException.logFormat.legacy", this.logFormat);
 
       this.errorCodeEnum = (errorCodeEnum == null) ? ErrorCode.INTERNAL_UNKNOWN : errorCodeEnum;
@@ -255,22 +256,22 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                    " as described in http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html: " + e.toString() +
                    "\nOriginal exception is: errorCode=" + errorCodeStr + " message=" + getRawMessage());
          if (isInternal() || handleAsInternal) {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT_INTERNAL, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT_INTERNAL, arguments);
          }
          else if (isResource()) {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT, arguments);
          }
          else if (isCommunication()) {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT, arguments);
          }
          else if (isUser()) {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT, arguments);
          }
          else if (errorCodeEnum == ErrorCode.LEGACY) {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT, arguments);
          }
          else {
-            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+            return MessageFormat.format(DEFAULT_LOGFORMAT, arguments);
          }
       }
    }
