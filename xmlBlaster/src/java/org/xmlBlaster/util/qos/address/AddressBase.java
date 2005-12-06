@@ -112,7 +112,7 @@ public abstract class AddressBase
    public static final long DEFAULT_minSize = 0L;
    protected PropLong minSize = new PropLong("minSize", DEFAULT_minSize);
 
-   public static final int DEFAULT_burstModeMaxEntries = -1;
+   public static final int DEFAULT_burstModeMaxEntries = 1;
    protected PropInt burstModeMaxEntries = new PropInt(DEFAULT_burstModeMaxEntries);
 
    public static final long DEFAULT_burstModeMaxBytes = -1L;
