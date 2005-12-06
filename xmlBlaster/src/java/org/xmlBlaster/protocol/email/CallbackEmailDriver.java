@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -157,6 +158,10 @@ public class CallbackEmailDriver extends EmailExecutor implements
       }
       catch (XmlBlasterException e) {
          throw XmlBlasterException.tranformCallbackException(e);
+      }
+      catch (Throwable e) {
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+               "Email oneway callback of message to client [" + callbackAddress.getSecretSessionId() + "] failed", e);
       }
    }
 

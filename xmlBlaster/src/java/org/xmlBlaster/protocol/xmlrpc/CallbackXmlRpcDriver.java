@@ -141,7 +141,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          // The remote client is only allowed to throw USER* errors!
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
+         throw XmlBlasterException.tranformCallbackException(e);
+         //throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) { // e.g. IOException
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed: " + e.toString();

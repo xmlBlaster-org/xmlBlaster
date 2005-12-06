@@ -109,7 +109,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
       if (msgArr == null || msgArr.length < 1 || msgArr[0] == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
 
@@ -122,7 +122,8 @@ public class CallbackCorbaDriver implements I_CallbackDriver
          return this.cb.update(callbackAddress.getSecretSessionId(), updateArr);
       } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException ex) {
          XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, ex);
-
+         throw XmlBlasterException.tranformCallbackException(xmlBlasterException);
+         /*
          // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
          if (xmlBlasterException.isUser())
             throw xmlBlasterException;
@@ -137,6 +138,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
                    "CORBA Callback of " + msgArr.length + " messages to client [" +
                    callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
          }
+         */
       } catch (Throwable e) {
          if (callbackAddress == null)
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,

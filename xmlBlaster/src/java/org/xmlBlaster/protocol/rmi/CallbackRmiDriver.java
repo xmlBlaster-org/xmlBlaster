@@ -148,7 +148,8 @@ public class CallbackRmiDriver implements I_CallbackDriver
          Throwable nested = remote.detail;
          if (nested != null && nested instanceof XmlBlasterException) {
             XmlBlasterException xmlBlasterException = (XmlBlasterException)nested;
-
+            throw XmlBlasterException.tranformCallbackException(xmlBlasterException);
+            /*
             // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
             if (xmlBlasterException.isUser())
                throw xmlBlasterException;
@@ -156,6 +157,7 @@ public class CallbackRmiDriver implements I_CallbackDriver
             throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
                    "RMI Callback of " + msgArr.length +
                    " messages to client [" + callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
+            */
          }
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                      "RMI Callback of " + msgArr.length + " messages to client [" + callbackAddress.getSecretSessionId() + "] failed", remote);

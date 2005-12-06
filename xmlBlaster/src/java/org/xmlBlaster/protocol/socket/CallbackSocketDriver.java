@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.socket;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -32,7 +33,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    private String loginName;
    private HandleClient handler;
    private CallbackAddress callbackAddress;
-   private boolean isFirstPing_hack = true;
+   //private boolean isFirstPing_hack = true;
    private PluginInfo pluginInfo;
 
    /**
@@ -148,6 +149,15 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
     * @exception XmlBlasterException If client not reachable
     */
    public final String ping(String qos) throws XmlBlasterException {
+      // "<qos><state info='INITIAL'/></qos>"
+      // Send from CbDispatchConnection.java on connect 
+      if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
+         if (log.TRACE) log.trace(ME,
+               "Socket callback ping is suppressed as doing it before connect() may" +
+               " block the clients connect() if the callback is not functional");
+         return Constants.RET_OK;
+      }
+      /*
       if (this.isFirstPing_hack) {
          // Ingore first ping (which is triggered by dispatch framework after plugin creation
          // It leads to a deadlock since we are working on a connec() and should first return the ConnectReturnQos
@@ -155,6 +165,8 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
          this.isFirstPing_hack = false;
          return "";
       }
+      */
+      
       if (this.handler == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                   "SOCKET callback ping failed");

@@ -137,13 +137,8 @@ public class CallbackLocalDriver implements I_CallbackDriver {
       try {
          return getCallback().update(callbackAddress.getSecretSessionId(), msgArr);
       } 
-      catch (XmlBlasterException xmlBlasterException) {
-         // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
-         if (xmlBlasterException.isUser())
-            throw xmlBlasterException;
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
-                   "Local Callback of " + msgArr.length +
-                                       " messages to client [" + callbackAddress.getSecretSessionId() + "] failed.", xmlBlasterException);
+      catch (XmlBlasterException e) { // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
+         throw XmlBlasterException.tranformCallbackException(e);
       }
    }
    
@@ -161,9 +156,12 @@ public class CallbackLocalDriver implements I_CallbackDriver {
       try {
          getCallback().updateOneway(callbackAddress.getSecretSessionId(), msgArr);
       } 
+      catch (XmlBlasterException e) {
+         throw XmlBlasterException.tranformCallbackException(e);
+      }
       catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-            "Local oneway callback of message to client [" + callbackAddress.getSecretSessionId() + "] failed", e);
+               "Local oneway callback of message to client [" + callbackAddress.getSecretSessionId() + "] failed", e);
       }
    }
    
