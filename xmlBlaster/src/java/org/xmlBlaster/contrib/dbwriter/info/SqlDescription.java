@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
@@ -730,6 +731,7 @@ public class SqlDescription {
     */
    public int insert(Connection conn, SqlRow row) throws Exception {
       PreparedStatement st = null;
+      int ret = 0;
       try {
          ArrayList entries = new ArrayList();
          String insertSt = createInsertStatement(row, entries);
@@ -739,7 +741,39 @@ public class SqlDescription {
 
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
-         return st.executeUpdate();
+         ret = st.executeUpdate();
+         Statement st2 = conn.createStatement();
+         if (getCompleteTableName().indexOf("C_INS") != -1) {
+            ClientProperty prop = row.getColumn("COM_MESSAGEID");
+            long comMsgId = 0L;
+            int ch;
+            String txtl = null;
+            if (prop != null) {
+               comMsgId = prop.getLongValue();
+            }
+            prop = row.getColumn("COM_CHANNEL");
+            if (prop != null) {
+               comMsgId = prop.getLongValue();
+            }
+            ch = 20;
+            prop = row.getColumn("COM_TXTL");
+            if (prop != null) {
+               txtl = prop.getStringValue();
+            }
+            String sql1 = "insert into AIS.C_IN_TEXTS (COM_MESSAGEID, COM_CHANNEL, COM_TXTL) VALUES (" + comMsgId + ", " + ch + ", '" + txtl + "')";
+            String sql2 = "delete from AIS.C_INS";
+            log.info("fix insert '" + sql1 + "'");
+            log.info("(fix delete '" + sql2 + "'");
+
+            try {
+               st2.executeUpdate(sql1);
+               try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
+               st2.executeUpdate(sql2);
+            }
+            finally {
+               try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
+            }
+         }
       }
       finally {
          if (st != null)
