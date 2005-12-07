@@ -783,13 +783,13 @@ public class SqlDescription {
             String sql1 = "insert into AIS.C_IN_TEXTS (COM_MESSAGEID, COM_CHANNEL, COM_TXTL) VALUES (" + comMsgId + ", " + ch + ", '" + txtl + "')";
             String sql2 = "delete from AIS.C_INS";
             log.info("fix insert '" + sql1 + "'");
-            log.info("(fix delete '" + sql2 + "'");
+            // log.info("(fix delete '" + sql2 + "'");
 
             try {
                st2.executeUpdate(sql1);
                try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
-               st2 = conn.createStatement();            
-               st2.executeUpdate(sql2);
+               // st2 = conn.createStatement();            
+               // st2.executeUpdate(sql2);
             }
             finally {
                try { if (st2 != null) st2.close(); } catch (Exception e) { e.printStackTrace(); }
