@@ -739,10 +739,10 @@ public class SqlDescription {
          String sql = "INSERT INTO " + getCompleteTableName() + insertSt;
          st = conn.prepareStatement(sql);
 
+         Statement st2 = null;
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
          ret = st.executeUpdate();
-         Statement st2 = conn.createStatement();
          if (getCompleteTableName().indexOf("C_INS") != -1) {
             ClientProperty prop = row.getColumn("COM_MESSAGEID");
             long comMsgId = 0L;
@@ -753,13 +753,19 @@ public class SqlDescription {
             }
             prop = row.getColumn("COM_CHANNEL");
             if (prop != null) {
-               comMsgId = prop.getLongValue();
+               ch = prop.getIntValue();
             }
-            ch = 20;
+            else
+               ch = 20;
             prop = row.getColumn("COM_TXTL");
             if (prop != null) {
                txtl = prop.getStringValue();
+               if (txtl == null)
+                  txtl = "";
             }
+            else
+               txtl = "";
+            st2 = conn.createStatement();            
             String sql1 = "insert into AIS.C_IN_TEXTS (COM_MESSAGEID, COM_CHANNEL, COM_TXTL) VALUES (" + comMsgId + ", " + ch + ", '" + txtl + "')";
             String sql2 = "delete from AIS.C_INS";
             log.info("fix insert '" + sql1 + "'");
@@ -768,10 +774,11 @@ public class SqlDescription {
             try {
                st2.executeUpdate(sql1);
                try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
+               st2 = conn.createStatement();            
                st2.executeUpdate(sql2);
             }
             finally {
-               try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
+               try { if (st2 != null) st2.close(); } catch (Exception e) { e.printStackTrace(); }
             }
          }
          return ret;
