@@ -774,6 +774,7 @@ public class SqlDescription {
                try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
             }
          }
+         return ret;
       }
       finally {
          if (st != null)
