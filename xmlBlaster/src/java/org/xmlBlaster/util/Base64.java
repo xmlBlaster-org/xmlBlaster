@@ -139,6 +139,25 @@ public class Base64 {
         }
         return bos.toByteArray ();
     }
+
+   /**
+    * java org.xmlBlaster.util.Base64 HelloWorld
+    * java org.xmlBlaster.util.Base64 -decode Q2lBOGEyVjVJRzlwWkQwblNHVnNiRzhuSUdOdmJuUmxiblJOYVcxbFBTZDBaWGgwTDNodGJDY2dZMjl1ZEdWdWRFMXBiV1ZGZUhSbGJtUmxaRDBuTVM0d0p6NEtJQ0E4YjNKbkxuaHRiRUpzWVhOMFpYSStQR1JsYlc4dE16NDhMMlJsYlc4dE16NDhMMjl5Wnk1NGJXeENiR0Z6ZEdWeVBnb2dQQzlyWlhrKw==
+    */
+   public static void main(String[] args) {
+      if (args.length == 2) {
+         String base64 = args[1];
+         byte[] back = Base64.decode(base64);
+         System.out.println("Decoded to '" + new String(back) + "'");
+         return;
+      }
+      {
+         String hello = args.length > 0 ? args[0] : "Hello World";
+         String base64 = Base64.encode(hello.getBytes());
+         byte[] back = Base64.decode(base64);
+         System.out.println("Before Base64 '" + hello + "' base64='" + (new String(base64)) + "' after '" + new String(back) + "'");
+      }
+   }
 }
 
 
