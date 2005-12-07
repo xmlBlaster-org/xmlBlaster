@@ -298,7 +298,8 @@ private final static String ME = "ReplicationWriter";
                      else {
                         throw new Exception(ME + ".store: row with unknown action '" + action + "' invoked '" + row.toXml(""));
                      }
-                     this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
+                     if (this.prePostStatement != null)
+                        this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
                   }
                }
             }
