@@ -85,8 +85,8 @@ CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 #CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
 CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
-                             mail.user=xmlBlaster,\
-                             mail.password=xmlBlaster,\
+CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+                             mail.smtp.from=xmlBlaster@localhost,\
                              compress/type=zlib,\
                              compress/minSize=200,\
                              mail.subject=Server generated email,\
