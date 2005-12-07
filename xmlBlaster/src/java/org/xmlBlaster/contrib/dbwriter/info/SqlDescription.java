@@ -740,9 +740,17 @@ public class SqlDescription {
          st = conn.prepareStatement(sql);
 
          Statement st2 = null;
+         // Hack 1
+         if (getCompleteTableName().indexOf("C_INS") != -1) {
+            ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, "20");
+            row.setColumn(tmpCh);
+         }
+         
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
          ret = st.executeUpdate();
+         
+         // hack 2
          if (getCompleteTableName().indexOf("C_INS") != -1) {
             ClientProperty prop = row.getColumn("COM_MESSAGEID");
             long comMsgId = 0L;
