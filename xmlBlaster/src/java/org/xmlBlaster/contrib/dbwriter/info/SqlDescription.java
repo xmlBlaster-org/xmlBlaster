@@ -736,7 +736,7 @@ public class SqlDescription {
          ArrayList entries = new ArrayList();
 
          // Hack 1
-         if (getCompleteTableName().indexOf("C_INS") != -1 || getCompleteTableName().indexOf("C_INS") != -1) {
+         if (getCompleteTableName().indexOf("C_INS") != -1 || getCompleteTableName().indexOf("C_OUTS") != -1) {
             try {
                ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, "20");
                row.setColumn(tmpCh);
