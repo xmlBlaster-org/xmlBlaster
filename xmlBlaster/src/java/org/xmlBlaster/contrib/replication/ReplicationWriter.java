@@ -28,6 +28,7 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
+import org.xmlBlaster.contrib.dbwriter.info.I_PrePostStatement;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -57,6 +58,7 @@ private final static String ME = "ReplicationWriter";
    private boolean doStatement;
    private String sqlTopic;
    private String schemaToWipeout;
+   private I_PrePostStatement prePostStatement;
    
    public ReplicationWriter() {
       this.tableMap = new HashMap();
@@ -118,10 +120,20 @@ private final static String ME = "ReplicationWriter";
       
       if (this.doStatement)
          this.sqlTopic = this.info.get("replication.sqlTopic", null);
+      String prePostStatementClass = this.info.get("dbWriter.prePostStatement.class", "");
+      if (prePostStatementClass.length() > 0) {
+         ClassLoader cl = ReplicationConverter.class.getClassLoader();
+         this.prePostStatement = (I_PrePostStatement)cl.loadClass(mapperClass).newInstance();
+         this.prePostStatement.init(info);
+         if (log.isLoggable(Level.FINE)) 
+            log.fine(prePostStatementClass + " created and initialized");
+      }
       
    }
 
    public void shutdown() throws Exception {
+      if (this.prePostStatement != null)
+         this.prePostStatement.shutdown();
    }
 
    /**
@@ -189,9 +201,33 @@ private final static String ME = "ReplicationWriter";
       }
       return colsToChange.size();
    }
+
+   /**
+    * Checks wether an entry has already been processed, in which case it will not be processed anymore
+    * @param dbInfo
+    * @return
+    */
+   private boolean checkIfAlreadyProcessed(SqlInfo dbInfo) {
+      ClientProperty prop = dbInfo.getDescription().getAttribute(ReplicationConstants.ALREADY_PROCESSED_ATTR);
+      if (prop != null)
+         return true;
+      List rows = dbInfo.getRows();
+      for (int i=0; i < rows.size(); i++) {
+         SqlRow row = (SqlRow)rows.get(i);
+         prop = row.getAttribute(ReplicationConstants.ALREADY_PROCESSED_ATTR);
+         if (prop != null)
+            return true;
+      }
+      return false;
+   }
+   
    
    public void store(SqlInfo dbInfo) throws Exception {
       
+      if (checkIfAlreadyProcessed(dbInfo)) {
+         log.info("Entry '" + dbInfo.toXml("") + "' already processed, will ignore it");
+         return;
+      }
       SqlDescription description = dbInfo.getDescription();
       if (description == null) {
          log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
@@ -246,17 +282,23 @@ private final static String ME = "ReplicationWriter";
                   log.info("modified '" + count  + "' entries");
                   log.fine("store: " + row.toXml(""));
                   SqlDescription desc = getTableDescription(schema, table, conn);
-                  if (action.equalsIgnoreCase(INSERT_ACTION)) {
-                     desc.insert(conn, row);
-                  }
-                  else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-                     desc.update(conn, row);
-                  }
-                  else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-                     desc.delete(conn, row);
-                  }
-                  else {
-                     throw new Exception(ME + ".store: row with unknown action '" + action + "' invoked '" + row.toXml(""));
+                  boolean process = true;
+                  if (this.prePostStatement != null)
+                     process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, row);
+                  if (process) {
+                     if (action.equalsIgnoreCase(INSERT_ACTION)) {
+                        desc.insert(conn, row);
+                     }
+                     else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
+                        desc.update(conn, row);
+                     }
+                     else if (action.equalsIgnoreCase(DELETE_ACTION)) {
+                        desc.delete(conn, row);
+                     }
+                     else {
+                        throw new Exception(ME + ".store: row with unknown action '" + action + "' invoked '" + row.toXml(""));
+                     }
+                     this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
                   }
                }
             }

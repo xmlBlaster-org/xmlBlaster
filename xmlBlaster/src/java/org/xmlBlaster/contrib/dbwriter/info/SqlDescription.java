@@ -28,7 +28,6 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
-import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
