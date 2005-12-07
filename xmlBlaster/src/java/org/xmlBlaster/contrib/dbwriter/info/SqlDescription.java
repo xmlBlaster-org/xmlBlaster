@@ -734,14 +734,9 @@ public class SqlDescription {
       int ret = 0;
       try {
          ArrayList entries = new ArrayList();
-         String insertSt = createInsertStatement(row, entries);
 
-         String sql = "INSERT INTO " + getCompleteTableName() + insertSt;
-         st = conn.prepareStatement(sql);
-
-         Statement st2 = null;
          // Hack 1
-         if (getCompleteTableName().indexOf("C_INS") != -1) {
+         if (getCompleteTableName().indexOf("C_INS") != -1 || getCompleteTableName().indexOf("C_INS") != -1) {
             try {
                ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, "20");
                row.setColumn(tmpCh);
@@ -751,6 +746,13 @@ public class SqlDescription {
                e1.printStackTrace();
             }
          }
+         
+         String insertSt = createInsertStatement(row, entries);
+
+         String sql = "INSERT INTO " + getCompleteTableName() + insertSt;
+         st = conn.prepareStatement(sql);
+
+         Statement st2 = null;
          
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
