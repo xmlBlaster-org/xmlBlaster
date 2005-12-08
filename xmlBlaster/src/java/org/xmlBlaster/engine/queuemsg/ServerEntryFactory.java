@@ -6,6 +6,8 @@ Comment:   Implementation for the I_EntryFactory
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import org.xmlBlaster.util.PersistentEntry;
+import org.xmlBlaster.util.PersistentMap;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SessionName;
@@ -57,6 +59,7 @@ public class ServerEntryFactory implements I_EntryFactory
    public static final String ENTRY_TYPE_TOPIC_XML = "TOPIC_XML";
    public static final String ENTRY_TYPE_SESSION = "SESSION";
    public static final String ENTRY_TYPE_SUBSCRIBE = "SUBSCRIBE";
+   public static final String ENTRY_TYPE_PROPERTY = "PROPERTY";
    public static final String ENTRY_TYPE_DUMMY = DummyEntry.ENTRY_TYPE;
 
    /**
@@ -274,6 +277,26 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
+      else if (ENTRY_TYPE_PROPERTY.equals(type)) {
+         try {
+            ObjectInputStream objStream = new ObjectInputStream(is);
+            Object[] obj = (Object[])objStream.readObject();
+            Object key = obj[0];
+            Object val = obj[1];
+            if (obj.length < 2) {
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+                         "Expected 2 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+            }
+            PersistentEntry persistentEntry = new PersistentEntry(timestamp, key, val);
+            return persistentEntry;
+         }
+         catch (Exception ex) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
+         }
+      }
+
+      
+      
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
          //entry.setUniqueId(timestamp);
