@@ -2324,4 +2324,18 @@ public class Global implements Cloneable
       return "\n\nUsage Details:"
             + "\n" + getJavadocUrl(className, methodName);
    }
+
+   /**
+    * Returns a persistent map.
+    * @param id The id identifying the map. Normally this would be the sessionId. If you pass null or an empty String, then a default map is returned.
+    * @return the persistent map.
+    * @throws XmlBlasterException
+    */
+   public Map getPersistentMap(String id) throws XmlBlasterException {
+      if (id == null | id.trim().length() < 1)
+         id = "defaultPersistentMap";
+      Map map = new PersistentMap(this, id, 0L, 0L);
+      return map;
+   }
+   
 }
