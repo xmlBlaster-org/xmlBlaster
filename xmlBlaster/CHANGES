@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14291 added a persistent java.util.Map as org.xmlBlaster.util.PersistentMap. Instances can also be
+   retrieved with java.util.Global.getPersistentMap(String) or with new PersistentMap(String).
+
  o #14264,#14268 Java/C++: Changed default setting of /burstMode/maxEntries from unlimited to 1
    Like this each message in the callback queue is send seperately if not
    otherwise configured.
