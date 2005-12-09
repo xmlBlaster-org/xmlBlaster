@@ -123,13 +123,15 @@ public class CallbackEmailDriver extends EmailExecutor implements
       else
          log.trace(ME, "No emailSessionId set, our callback sessionName is null");
       
-      String tmp = callbackAddress.getEnv("__ContextNode", (String)null).getValueString();
-      if (tmp != null) {
-         ContextNode parent = ContextNode.valueOf(tmp);
-         // For JMX instanceName may not contain ","
-         super.contextNode = new ContextNode(ContextNode.PROTOCOL_MARKER_TAG,
-               "CallbackEmailDriver", parent);
-         super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
+      if (super.mbeanHandle == null) {
+         String tmp = callbackAddress.getEnv("__ContextNode", (String)null).getValueString();
+         if (tmp != null) {
+            ContextNode parent = ContextNode.valueOf(tmp);
+            // For JMX instanceName may not contain ","
+            super.contextNode = new ContextNode(ContextNode.PROTOCOL_MARKER_TAG,
+                  "CallbackEmailDriver", parent);
+            super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
+         }
       }
    }
 
