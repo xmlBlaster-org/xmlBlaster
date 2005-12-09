@@ -29,6 +29,23 @@
      </p>
      <br /><a NAME="emailOverview"></a>
       <img src="protocol.email.overview.png" border="0" title="Email overview" alt="Email overview" />
+     
+     <p>In the above picture you see on the left side a client and on the right side a server.</p>
+     <p>The client needs to connect with SMTP to its MTA (mail transfer agent) to be able to send outgoing messages
+     and needs to connect with POP3 to its MTA to poll for incoming mails.</p>
+     <p>The same setup applies for the xmlBlaster server.</p>
+     <p>For testing purposes all can reuse the same MTA on your <code>localhost</code> or you can
+     even have four different MTAs one for client-SMTP, client-POP3, server-SMTP and server-POP3.
+     </p>
+     <p>To find the MTAs you need to configure the properties <code>mail.smtp.url</code> and <code>mail.pop3.url</code>.
+     The POP3 syntax is of the form <code>pop3://user:password@host:port/INBOX</code>. Only 'INBOX' is
+     supported for pop3. <br />
+     For SMTP use <code>smtp://user:password@host:port</code>.<br />
+     Finally you need to configure what is your email address.
+     </p>
+     <p>
+     For fine-tuning there are many more parameters available.
+     </p>
 <!--
      <p>
      To simplify the usage, it is permitted to send any number of commands in a single email. It is 
@@ -88,6 +105,12 @@
        </pre>
 -->
 <p class="celltitel">Supported formats</p>
+<p>The message needs to be serialized to be send in an email attachment.
+This formatting is configurable,
+currently we provide two variants. First the raw XBF (XmlBlasterFormat) format which is very
+dense and used in the SOCKET protocol as well, second the human readable XmlScript format
+which is used in the XML scripting framework of xmlBlaster already:
+</p>
 <pre>
 XfbParser:
   mimeType="application/xmlBlaster-xbfz; name=xmlBlasterMessage.xbfz"
@@ -171,16 +194,19 @@ Content-Disposition: attachment; filename=attachment2
    
     <configuration where="server">
     <h2 class="celltitel">Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
-    <p>The fastest way for a test environment is to use the James MTA http://james.apache.org
-    Here are the steps for a running test environment (runs fine on Windows or on Unix/Linux):
+    <p>The fastest way for a test environment is to use the James MTA http://james.apache.org. 
+    Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
     </p>
+    <p>Download james, unpack it and start it:</p>
 <pre>
 tar xzvf /opt/download/james-2.2.0.tar.gz
 cd james-2.2.0/bin
 # Change to be 'root' to have access to ports 25 (SMTP) and 110 (POP3)
 ./run.sh
+</pre>
 
-##### Configure some users:
+    <p>Configure some users, here we use <code>xmlBlaster</code> for the server and <code>demo</code> for the client:</p>
+<pre>
 telnet localhost 4555
 
 # Login as 'root' with password 'root'
@@ -383,6 +409,9 @@ The requestId is requested to be strictly increasing
 to detect email duplicates and assure sequency
 -->
       </table>
+      <h2>TODO: Add the other properties (currently see javadoc)</h2>
+      <p>Note: You can easily re-configure the POP3 and SMTP behavior on a running xmlBlaster
+      with JMX</p>
    </configuration>
    <todo type="HTML">
 Make last requestId persistent to have loop and sequence protection after a restart
