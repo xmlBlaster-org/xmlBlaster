@@ -12,13 +12,10 @@ import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 
-import java.io.*;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.ArrayList;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.xml.sax.Attributes;
 
 
 /**
@@ -57,12 +54,12 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
    private QueryKeyData queryKeyData;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
-   private transient int inKey = 0;
-   private transient boolean inFilter = false;
-   private transient AccessFilterQos tmpFilter = null;
+   private transient int inKey;
+   //private transient boolean inFilter;
+   private transient AccessFilterQos tmpFilter;
 
    private StringBuffer innerTags;
-   private boolean inCdata = false;
+   private boolean inCdata;
 
    private Set nameSpaceSet;
 
@@ -84,8 +81,15 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       if (xmlKey == null) {
          xmlKey = "<key/>";
       }
+      
+      this.inKey = 0;
+      //this.inFilter = false;
+      this.tmpFilter = null;
+      this.innerTags = null;
+      this.inCdata = false;
+      this.nameSpaceSet = null;
 
-      queryKeyData = new QueryKeyData(glob, this, xmlKey);
+      this.queryKeyData = new QueryKeyData(glob, this, xmlKey);
 
       init(xmlKey);  // use SAX parser to parse it (is slow)
 
@@ -123,7 +127,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       }
 
       if (inKey == 1 && name.equalsIgnoreCase("filter")) {
-         inFilter = true;
+         //this.inFilter = true;
 
          if (character.length() > 0) {
             if (innerTags == null) innerTags = new StringBuffer();
@@ -210,7 +214,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       }
 
       if (inKey == 1 && name.equalsIgnoreCase("filter")) {
-         inFilter = false;
+         //this.inFilter = false;
          if (tmpFilter != null)
             tmpFilter.endElement(uri, localName, name, character);
          return;

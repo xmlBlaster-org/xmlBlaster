@@ -105,10 +105,10 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private ConnectQosData connectQosData;
 
    // helper flags for SAX parsing
-   private boolean inServerRef;
+   //private boolean inServerRef;
    private boolean inQueue;
    private boolean inSecurityService;
-   private boolean inSession;
+   //private boolean inSession;
    private boolean inCallback;
    private boolean inAddress;
    
@@ -120,7 +120,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private Address tmpAddr;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
-   private boolean inIsPersistent = false;
+   //private boolean inIsPersistent = false;
 
    /**
     */
@@ -141,6 +141,20 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          xmlQos = "<qos/>";
       }
 
+      this.inQueue = false;
+      this.inSecurityService = false;
+      //this.inSession = false;
+      this.inCallback = false;
+      this.inAddress = false;
+      this.tmpServerRef = null;
+      this.tmpCbProp = null;
+      this.tmpCbAddr = null;
+      this.tmpProp = null;
+      this.tmpAddr = null;
+      this.tmpSecurityPluginType = null;
+      this.tmpSecurityPluginVersion = null;
+      //this.inIsPersistent = false;
+      
       this.connectQosData = new ConnectQosData(glob, this, xmlQos, null);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
@@ -182,7 +196,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       //if (log.TRACE) log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
-         inServerRef = true;
+         //this.inServerRef = true;
          String tmp = character.toString().trim(); // The address (if before inner tags)
          String type = null;
          if (attrs != null) {
@@ -254,7 +268,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          if (Constants.RELATING_CLIENT.equalsIgnoreCase(related)) {
             tmpProp = new ClientQueueProperty(glob, null);
             tmpProp.startElement(uri, localName, name, attrs);
-            boolean accepted = this.connectQosData.addClientQueueProperty(tmpProp);
+            /*boolean accepted = */this.connectQosData.addClientQueueProperty(tmpProp);
          }
          else if (Constants.RELATING_CALLBACK.equalsIgnoreCase(related)) {
             tmpCbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, null);
@@ -298,7 +312,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       }
 
       if (name.equalsIgnoreCase("session")) {
-         inSession = true;
+         //this.inSession = true;
          if (attrs != null) {
             int len = attrs.getLength();
             int ii=0;
@@ -364,7 +378,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("persistent")) {
          if (!inQos)
             return;
-         inIsPersistent = true;
+         //this.inIsPersistent = true;
          character.setLength(0);
          connectQosData.setPersistent(true);
          return;
@@ -413,7 +427,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       //if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
-         inServerRef = false;
+         //this.inServerRef = false;
          String tmp = character.toString().trim(); // The address (if after inner tags)
          if (tmpServerRef != null) {
             if (tmp.length() > 0) tmpServerRef.setAddress(tmp);
@@ -517,7 +531,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       }
 
       if(name.equalsIgnoreCase("persistent")) {
-         inIsPersistent = false;
+         //this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             connectQosData.setPersistent(new Boolean(tmp).booleanValue());
@@ -527,7 +541,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       }
 
       if (name.equalsIgnoreCase("session")) {
-         inSession = false;
+         //this.inSession = false;
       }
 
       if (inSecurityService) {

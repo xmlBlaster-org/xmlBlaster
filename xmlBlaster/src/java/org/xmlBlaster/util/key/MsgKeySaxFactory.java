@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.key;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -54,9 +53,7 @@ import org.xml.sax.*;
  */
 public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFactory
 {
-   private String ME = "MsgKeySaxFactory";
    private final Global glob;
-   private final LogChannel log;
 
    private  MsgKeyData msgKeyData;
 
@@ -69,7 +66,6 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
    public MsgKeySaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
    }
 
    /**
@@ -81,6 +77,8 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
       if (xmlKey == null) {
          xmlKey = "<key/>";
       }
+      
+      this.inKey = 0; // Reset in case last parse had an exception
 
       this.msgKeyData = new MsgKeyData(glob, this, xmlKey);
 

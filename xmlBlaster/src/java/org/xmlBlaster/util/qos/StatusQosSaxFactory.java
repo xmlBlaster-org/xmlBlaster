@@ -46,10 +46,12 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
    private  StatusQosData statusQosData;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
-   private boolean inState = false;
-   private boolean inSubscribe = false;
-   private boolean inKey = false;
-   private boolean inRcvTimestamp = false;
+   /*
+   private boolean inState;
+   private boolean inSubscribe;
+   private boolean inKey;
+   private boolean inRcvTimestamp;
+   */
 
    /**
     * Can be used as singleton. 
@@ -70,6 +72,11 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          xmlQos = "<qos/>";
       }
 
+      //this.inState = false;
+      //this.inSubscribe = false;
+      //this.inKey = false;
+      //this.inRcvTimestamp = false;
+      
       statusQosData = new StatusQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
@@ -91,7 +98,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       if (name.equalsIgnoreCase("state")) {
          if (!inQos)
             return;
-         inState = true;
+         //this.inState = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -109,7 +116,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       if (name.equalsIgnoreCase("subscribe")) {
          if (!inQos)
             return;
-         inSubscribe = true;
+//       this.inSubscribe = true;
          if (attrs != null) {
             statusQosData.setSubscriptionId(attrs.getValue("id"));
          }
@@ -119,7 +126,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       if (name.equalsIgnoreCase("key")) {
          if (!inQos)
             return;
-         inKey = true;
+//       this.inKey = true;
          if (attrs != null) {
             statusQosData.setKeyOid(attrs.getValue("oid"));
          }
@@ -138,7 +145,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
               }
            }
         }
-        inRcvTimestamp = true;
+//      this.inRcvTimestamp = true;
         return;
      }
 
@@ -185,25 +192,25 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          return;
 
       if (name.equalsIgnoreCase("state")) {
-         inState = false;
+//       this.inState = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("subscribe")) {
-         inSubscribe = false;
+//       this.inSubscribe = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("key")) {
-         inKey = false;
+//       this.inKey = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("rcvTimestamp")) {
-         inRcvTimestamp = false;
+//       this.inRcvTimestamp = false;
          character.setLength(0);
          return;
       }

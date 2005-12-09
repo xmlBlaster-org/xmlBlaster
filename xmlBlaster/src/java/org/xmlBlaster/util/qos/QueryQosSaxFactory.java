@@ -45,6 +45,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private  QueryQosData queryQosData;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
+   /*
    private boolean inSubscribe = false;
    private boolean inErase = false;
    private boolean inMeta = false;
@@ -58,7 +59,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    private boolean inQuerySpec = false;
    private boolean inHistory = false;
    private boolean inIsPersistent = false;
-
+   */
    private AccessFilterQos tmpFilter = null;
    private QuerySpecQos tmpQuerySpec = null;
    private HistoryQos tmpHistory = null;
@@ -82,6 +83,10 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          xmlQos = "<qos/>";
       }
 
+      this.tmpFilter = null;
+      this.tmpQuerySpec = null;
+      this.tmpHistory = null;
+      
       queryQosData = new QueryQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
@@ -103,7 +108,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("subscribe")) {
          if (!inQos)
             return;
-         inSubscribe = true;
+         //this.inSubscribe = true;
          if (attrs != null) {
             queryQosData.setSubscriptionId(attrs.getValue("id"));
          }
@@ -113,7 +118,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("erase")) {
          if (!inQos)
             return;
-         inErase = true;
+//       this.inErase = true;
          if (attrs != null) {
             queryQosData.setForceDestroy(new Boolean(attrs.getValue("forceDestroy")).booleanValue());
          }
@@ -123,7 +128,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("meta")) {
          if (!inQos)
             return;
-         inMeta = true;
+//       this.inMeta = true;
          queryQosData.setWantMeta(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -137,7 +142,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("content")) {
          if (!inQos)
             return;
-         inContent = true;
+//       this.inContent = true;
          queryQosData.setWantContent(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -151,7 +156,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("multiSubscribe")) {
          if (!inQos)
             return;
-         inMultiSubscribe = true;
+//       this.inMultiSubscribe = true;
          queryQosData.setMultiSubscribe(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -165,7 +170,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("local")) {
          if (!inQos)
             return;
-         inLocal = true;
+//       this.inLocal = true;
          queryQosData.setWantLocal(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -179,7 +184,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("initialUpdate")) {
          if (!inQos)
             return;
-         inInitialUpdate = true;
+//       this.inInitialUpdate = true;
          queryQosData.setWantInitialUpdate(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -193,7 +198,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("updateOneway")) {
          if (!inQos)
             return;
-         inUpdateOneway = true;
+//       this.inUpdateOneway = true;
          queryQosData.setWantUpdateOneway(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -207,7 +212,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("notify")) {
          if (!inQos)
             return;
-         inNotify = true;
+//       this.inNotify = true;
          queryQosData.setWantNotify(true);
          if (attrs != null) {
             int len = attrs.getLength();
@@ -219,7 +224,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("filter")) {
-         inFilter = true;
+//       this.inFilter = true;
          tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
@@ -231,7 +236,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("querySpec")) {
-         this.inQuerySpec = true;
+//       this.this.inQuerySpec = true;
          this.tmpQuerySpec = new QuerySpecQos(glob);
          boolean ok = this.tmpQuerySpec.startElement(uri, localName, name, character, attrs);
          if (ok) {
@@ -243,7 +248,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("history")) {
-         inHistory = true;
+//       this.inHistory = true;
          tmpHistory = new HistoryQos(glob);
          boolean ok = tmpHistory.startElement(uri, localName, name, character, attrs);
          if (ok) {
@@ -283,7 +288,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (name.equalsIgnoreCase("persistent")) {
          if (!inQos)
             return;
-         inIsPersistent = true;
+//       this.inIsPersistent = true;
          character.setLength(0);
          queryQosData.setPersistent(true);
          return;
@@ -305,19 +310,19 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("subscribe")) {
-         inSubscribe = false;
+//       this.inSubscribe = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("erase")) {
-         inErase = false;
+//       this.inErase = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("meta")) {
-         inMeta = false;
+//       this.inMeta = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantMeta(new Boolean(tmp).booleanValue());
@@ -326,7 +331,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("content")) {
-         inContent = false;
+//       this.inContent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantContent(new Boolean(tmp).booleanValue());
@@ -335,7 +340,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("multiSubscribe")) {
-         inMultiSubscribe = false;
+//       this.inMultiSubscribe = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setMultiSubscribe(new Boolean(tmp).booleanValue());
@@ -344,7 +349,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("local")) {
-         inLocal = false;
+//       this.inLocal = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantLocal(new Boolean(tmp).booleanValue());
@@ -353,7 +358,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("initialUpdate")) {
-         inInitialUpdate = false;
+//       this.inInitialUpdate = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantInitialUpdate(new Boolean(tmp).booleanValue());
@@ -362,7 +367,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("updateOneway")) {
-         inUpdateOneway = false;
+//       this.inUpdateOneway = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantUpdateOneway(new Boolean(tmp).booleanValue());
@@ -371,7 +376,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("notify")) {
-         inNotify = false;
+//       this.inNotify = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setWantNotify(new Boolean(tmp).booleanValue());
@@ -380,21 +385,21 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if (name.equalsIgnoreCase("filter")) {
-         inFilter = false;
+//       this.inFilter = false;
          if (tmpFilter != null)
             tmpFilter.endElement(uri, localName, name, character);
          return;
       }
 
       if (name.equalsIgnoreCase("querySpec")) {
-         this.inQuerySpec = false;
+//       this.this.inQuerySpec = false;
          if (this.tmpQuerySpec != null)
             this.tmpQuerySpec.endElement(uri, localName, name, character);
          return;
       }
 
       if (name.equalsIgnoreCase("history")) {
-         inHistory = false;
+//       this.inHistory = false;
          if (tmpHistory != null)
             tmpHistory.endElement(uri, localName, name, character);
          return;
@@ -418,7 +423,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       }
 
       if(name.equalsIgnoreCase("persistent")) {
-         inIsPersistent = false;
+//       this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setPersistent(new Boolean(tmp).booleanValue());

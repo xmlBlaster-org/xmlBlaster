@@ -111,24 +111,24 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private  MsgQosData msgQosData;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
-   private boolean inState = false;
-   private boolean inSubscribe = false;
-   private boolean inRedeliver = false;
-   private boolean inTopic = false;
-   private boolean inQueue = false;
-   private boolean inPersistence = false;
-   private boolean inSubscribable = false;
-   private boolean inDestination = false;
-   private boolean inSender = false;
-   private boolean inPriority = false;
-   private boolean inExpiration = false;
-   private boolean inRcvTimestamp = false;
-   private boolean inIsVolatile = false;
-   private boolean inAdministrative = false;
-   private boolean inIsPersistent = false;
-   private boolean inForceUpdate = false;
-   private boolean inReadonly = false;
-   private boolean inRoute = false;
+   //private boolean inState;
+   //private boolean inSubscribe;
+   //private boolean inRedeliver;
+   private boolean inTopic;
+   //private boolean inQueue;
+   //private boolean inPersistence;
+   //private boolean inSubscribable;
+   private boolean inDestination;
+   //private boolean inSender;
+   //private boolean inPriority;
+   //private boolean inExpiration;
+   //private boolean inRcvTimestamp;
+   //private boolean inIsVolatile;
+   //private boolean inAdministrative;
+   //private boolean inIsPersistent;
+   //private boolean inForceUpdate;
+   //private boolean inReadonly;
+   private boolean inRoute;
 
    private  Destination destination;
    private  RouteInfo routeInfo;
@@ -154,7 +154,31 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          xmlQos = "<qos/>";
       }
 
-      msgQosData = new MsgQosData(glob, this, xmlQos, MethodName.UNKNOWN);
+      //this.inState = false;
+      //this.inSubscribe = false;
+      //this.inRedeliver = false;
+      this.inTopic = false;
+      //this.inQueue = false;
+      //this.inPersistence = false;
+      //this.inSubscribable = false;
+      this.inDestination = false;
+      //this.inSender = false;
+      //this.inPriority = false;
+      //this.inExpiration = false;
+      //this.inRcvTimestamp = false;
+      //this.inIsVolatile = false;
+      //this.inAdministrative = false;
+      //this.inIsPersistent = false;
+      //this.inForceUpdate = false;
+      //this.inReadonly = false;
+      this.inRoute = false;
+
+      this.destination = null;
+      this.routeInfo = null;
+
+      this.sendRemainingLife = true;
+      
+      this.msgQosData = new MsgQosData(glob, this, xmlQos, MethodName.UNKNOWN);
 
       if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
          init(xmlQos);      // use SAX parser to parse it (is slow)
@@ -175,7 +199,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("state")) {
          if (!inQos)
             return;
-         inState = true;
+         //this.inState = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -194,7 +218,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("subscribable")) {
          if (!inQos)
             return;
-         inSubscribable = true;
+//       this.inSubscribable = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -244,7 +268,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("sender")) {
          if (!inQos)
             return;
-         inSender = true;
+//       this.inSender = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -258,7 +282,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("priority")) {
          if (!inQos)
             return;
-         inPriority = true;
+//       this.inPriority = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -272,9 +296,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("expiration")) {
          if (!inQos)
             return;
-         inExpiration = true;
+//       this.inExpiration = true;
          if (attrs != null) {
-            int len = attrs.getLength();
             String tmp = attrs.getValue("lifeTime");
             if (tmp != null) {
                try { msgQosData.setLifeTime(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid lifeTime - millis =" + tmp); };
@@ -327,7 +350,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("queue")) {
          if (!inQos)
             return;
-         inQueue = true;
+//       this.inQueue = true;
          if (attrs != null) {
             String indexVal = attrs.getValue("index");
 
@@ -368,7 +391,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("persistence")) {
          if (!inQos)
             return;
-         inPersistence = true;
+//       this.inPersistence = true;
          if (attrs != null) {
             if (inTopic) {
                MsgUnitStoreProperty tmpProp = new MsgUnitStoreProperty(glob, glob.getId());
@@ -394,14 +417,14 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                }
             }
          }
-         inRcvTimestamp = true;
+//       this.inRcvTimestamp = true;
          return;
       }
 
       if (name.equalsIgnoreCase("redeliver")) {
          if (!inQos)
             return;
-         inRedeliver = true;
+//       this.inRedeliver = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -476,7 +499,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("subscribe")) {
          if (!inQos)
             return;
-         inSubscribe = true;
+//       this.inSubscribe = true;
          if (attrs != null) {
             msgQosData.setSubscriptionId(attrs.getValue("id"));
          }
@@ -486,7 +509,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("isVolatile")) { // deprecated
          if (!inQos)
             return;
-         inIsVolatile = true;
+//       this.inIsVolatile = true;
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
@@ -500,7 +523,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("administrative")) {
          if (!inQos)
             return;
-         inAdministrative = true;
+//       this.inAdministrative = true;
          msgQosData.setAdministrative(true);
          return;
       }
@@ -508,7 +531,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("persistent")) {
          if (!inQos)
             return;
-         inIsPersistent = true;
+//       this.inIsPersistent = true;
          msgQosData.setPersistent(true);
          return;
       }
@@ -516,7 +539,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("forceUpdate")) {
          if (!inQos)
             return;
-         inForceUpdate = true;
+//       this.inForceUpdate = true;
          msgQosData.setForceUpdate(true);
          return;
       }
@@ -524,7 +547,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("readonly")) {
          if (!inQos)
             return;
-         inReadonly = true;
+//       this.inReadonly = true;
          msgQosData.setReadonly(true);
          log.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
          return;
@@ -572,13 +595,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("state")) {
-         inState = false;
+         //this.inState = false;
          character.setLength(0);
          return;
       }
 
       if(name.equalsIgnoreCase("subscribable")) {
-         inSubscribable = false;
+//       this.inSubscribable = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
             msgQosData.setSubscribable(new Boolean(tmp).booleanValue());
@@ -599,7 +622,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("sender")) {
-         inSender = false;
+//       this.inSender = false;
          msgQosData.setSender(new SessionName(glob, character.toString().trim()));
          // if (log.TRACE) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
          character.setLength(0);
@@ -607,7 +630,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("priority")) {
-         inPriority = false;
+//       this.inPriority = false;
          try {
             msgQosData.setPriority(PriorityEnum.parsePriority(character.toString()));
          }
@@ -621,7 +644,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("expiration")) {
-         inExpiration = false;
+//       this.inExpiration = false;
          character.setLength(0);
          return;
       }
@@ -633,31 +656,31 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("queue")) {
-         inQueue = false;
+//       this.inQueue = false;
          character.setLength(0);
          return;
       }
 
       if(name.equalsIgnoreCase("persistence")) {
-         inPersistence = false;
+//       this.inPersistence = false;
          character.setLength(0);
          return;
       }
 
       if(name.equalsIgnoreCase("rcvTimestamp")) {
-         inRcvTimestamp = false;
+//       this.inRcvTimestamp = false;
          character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("subscribe")) {
-         inSubscribe = false;
+//       this.inSubscribe = false;
          character.setLength(0);
          return;
       }
 
       if(name.equalsIgnoreCase("isVolatile")) { // deprecated
-         inIsVolatile = false;
+//       this.inIsVolatile = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
             msgQosData.setVolatile(new Boolean(tmp).booleanValue());
@@ -670,7 +693,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("administrative")) {
-         inAdministrative = false;
+//       this.inAdministrative = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setAdministrative(new Boolean(tmp).booleanValue());
@@ -680,7 +703,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("persistent")) {
-         inIsPersistent = false;
+//       this.inIsPersistent = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setPersistent(new Boolean(tmp).booleanValue());
@@ -690,7 +713,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("forceUpdate")) {
-         inForceUpdate = false;
+//       this.inForceUpdate = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
@@ -700,7 +723,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("readonly")) {
-         inReadonly = false;
+//       this.inReadonly = false;
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setReadonly(new Boolean(tmp).booleanValue());
@@ -710,7 +733,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if(name.equalsIgnoreCase("redeliver")) {
-         inRedeliver = false;
+//       this.inRedeliver = false;
          String tmp = character.toString().trim();
          try { msgQosData.setRedeliver(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid redeliver =" + tmp); };
          character.setLength(0);
