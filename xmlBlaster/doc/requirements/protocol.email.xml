@@ -6,14 +6,17 @@
    <description>
      <p>
      It is possible for a client to send/receive messages to xmlBlaster via email. This way the
-     user can publish messages or receive updates via a common email client. In such cases there is
-     no need of a client (besides the email client).
+     user can publish messages or receive updates via a common emails.
+     Our java client library supports this automatically, you can switch to email just by setting
+     <code>-protocol email</code> on startup (having configured the SMTP and POP3 beforhand).<br />
+     It is possible to send such messages from a normal email software like pine, outlook or thunderbird
+     as well, but you need to now how to format the mail to have success.
      </p>
      <p>
-     There may be another usage of this protocol: in some cases it makes sense to write a client which
+     In some cases it makes sense to write a client which
      uses the email protocol (transparently to the user) because the combination 
-     harware, platform and implementation language does not offer a better communication alternative 
-     or for example to bypass firewalls etc.
+     hardware, platform and implementation language does not offer a better communication alternative 
+     or for example to bypass fire walls etc.
      </p>
      <p>
      A further usage would be to send / receive messages from a cellular phone via sms.
