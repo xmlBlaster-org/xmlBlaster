@@ -32,14 +32,9 @@ import java.util.logging.Logger;
 /**
  * Email driver class to invoke the xmlBlaster server over ordinary emails. 
  * <p />
- * This "email:" driver needs to be registered in xmlBlaster.properties
- * and will be started on xmlBlaster startup, for example:
- * <pre>
- * ProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.EmailDriver
- *
- * CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
- * </pre>
- *
+ * This "email:" driver needs to be registered in xmlBlasterPlugins.xml
+ * and will be started on xmlBlaster startup by the runlevel manager as configured.
+ * <p />
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * <p />
