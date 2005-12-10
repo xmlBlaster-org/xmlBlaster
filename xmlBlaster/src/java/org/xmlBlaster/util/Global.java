@@ -2332,10 +2332,14 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     */
    public Map getPersistentMap(String id) throws XmlBlasterException {
+      log.error(ME, "Not yet implemented");
+      return null;
+      /*
       if (id == null | id.trim().length() < 1)
          id = "defaultPersistentMap";
       Map map = new PersistentMap(this, id, 0L, 0L);
       return map;
+      */
    }
    
 }
