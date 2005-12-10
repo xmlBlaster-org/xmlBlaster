@@ -87,6 +87,12 @@ public class EmailData {
 
    public static final String EXPIRES_TAG = "expires";
 
+   /**
+    * The value has the format <code>yyyy-mm-dd hh:mm:ss.fffffffff</code>,
+    * the .f* are optional
+    */
+   public static final String EXPIRES_HEADER = "X-xmlBlaster-ExpiryDate";
+
    /** Holding the relevant email meta info like a request identifier */
    public static final String MESSAGEID_EXTENSION = ".mid";
 
@@ -612,7 +618,11 @@ public class EmailData {
    }
    
    public String toString() {
-      return "from: " + this.from + " to: " + getRecipientsList() + " subject:" + this.subject + " attachments:" + getFileNameList();
+      return "from: " + this.from 
+            + " to: " + getRecipientsList() 
+            + " subject:" + this.subject
+            + ((this.expiryTime != null) ? (" " + EXPIRES_HEADER + ":" + this.expiryTime.toString()) : "")
+            + " attachments:" + getFileNameList();
    }
 
    public void setContent(String content) {
@@ -679,6 +689,18 @@ public class EmailData {
     * @return true if is expired
     */
    public boolean isExpired() {
+      // TODO: Currently we have two approaches to transport expiryDate:
+      // first as an email-Header: "X-xmlBlaster-ExpiryDate"
+      // second in our messageId XML markup: <expires>2005-12-24 16:45:12</expires>
+      if (this.expiryTime != null) {
+         Date now = new Date();
+         if (now.getTime() > this.expiryTime.getTime()) {
+            if (log.isLoggable(Level.FINE)) log.fine("Email is epxired, we discard it: " + toString());
+            return true;
+         }
+         return false;
+      }
+      
       String expires = extractMessageId(EmailData.EXPIRES_TAG);
       if (expires != null) {
          try {
@@ -697,6 +719,7 @@ public class EmailData {
    }
    
    /**
+    * Is transported in the email header "X-xmlBlaster-ExpiryDate:yyyy-mm-dd hh:mm:ss"
     * @return Returns the expiryTime or null if none is defined
     */
    public Timestamp getExpiryTime() {

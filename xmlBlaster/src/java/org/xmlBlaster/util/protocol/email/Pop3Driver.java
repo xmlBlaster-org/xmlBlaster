@@ -22,7 +22,6 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -742,6 +741,20 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
             //String content = retrieveContent(msg); // Would sometimes deliver an attachment
             String content = "";
             datas[i] = new EmailData(recips, from, msg.getSubject(), content);
+            
+            String[] expires = msg.getHeader(EmailData.EXPIRES_HEADER);
+            // "X-xmlBlaster-ExpiryDate: 2005-12-24 16:45:55.322"
+            if (expires != null && expires.length > 0) {
+               // expires[0]="2005-12-24 16:45:55.322"
+               String value = expires[0].trim();
+               try {
+                  datas[i].setExpiryTime(java.sql.Timestamp.valueOf(value));
+               }
+               catch (Throwable e) {
+                  System.err.println("xmlBlaster Pop3Driver.java: Ignoring illegal email header '" + expires[0] + "'");
+                  e.printStackTrace();
+               }
+            }
 
             datas[i].setAttachments(MailUtil.accessAttachments(msg));
          }

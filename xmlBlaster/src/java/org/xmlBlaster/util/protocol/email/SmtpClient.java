@@ -307,10 +307,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.isInitialized = true;
       
       if (this.mbeanHandle == null) {
-	      // For JMX instanceName may not contain ","
-	      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG, "SmtpClient", 
-	                          glob.getScopeContextNode());
-	      this.mbeanHandle = glob.registerMBean(this.contextNode, this);
+              // For JMX instanceName may not contain ","
+              this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG, "SmtpClient", 
+                                  glob.getScopeContextNode());
+              this.mbeanHandle = glob.registerMBean(this.contextNode, this);
       }
 
       log.info("SMTP client to '" + this.xbUri.getUrlWithoutPassword() + "' is ready");
@@ -517,7 +517,13 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          message.setContent(multi);
 
          // set the Date: header
-         message.setSentDate(new Date());
+         Date date = new Date();
+         message.setSentDate(date);
+
+         // Set the xmlBlaster specific expiry header field "X-xmlBlaster-ExpiryDate"
+         // This could be evaluated by MTA plugins
+         if (emailData.getExpiryTime() != null) 
+            message.setHeader(EmailData.EXPIRES_HEADER, emailData.getExpiryTime().toString());
 
          //log.severe("DEBUG ONLY: Trying to send email" + emailData.toXml(true));
          send(message);
@@ -583,7 +589,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    }
 
    public String getSmtpUrl() {
-   	return this.xbUri.toString();
+        return this.xbUri.toString();
    }
    
    public void setSmtpUrl(String uri) {

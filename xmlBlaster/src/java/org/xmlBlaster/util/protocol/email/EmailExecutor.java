@@ -27,6 +27,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import java.util.logging.Level;
@@ -437,9 +438,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       String subject = this.subjectTemplate;
       // messageId="<messageId><sessionId>sessionId:4423c443</sessionId><requestId>3</requestId><methodName>subscribe</methodName></messageId>"
       String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
+      Timestamp expiryTimestamp = getExpiryTimestamp(methodName);
       if (messageId == null)
          messageId = EmailData.createMessageId(getEmailSessionId(),
-            requestId, methodName, getExpiryTimestamp(methodName));
+            requestId, methodName, expiryTimestamp);
 
       if (subject != null && subject.length() > 0) {
          // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:
@@ -498,6 +500,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
       emailData.setCc(this.cc);
       emailData.setBcc(this.bcc);
+      emailData.setExpiryTime(expiryTimestamp);
       String payloadMimetype = msgInfo.getMsgInfoParser(getMsgInfoParserClassName(), pluginConfig).getMimetype(isCompressed);
       emailData.addAttachment(new AttachmentHolder(payloadFileName, payloadMimetype, payload));
       emailData.addAttachment(new AttachmentHolder(this.messageIdFileName, messageId));
