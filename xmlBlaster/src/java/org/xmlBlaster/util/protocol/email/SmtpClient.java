@@ -45,6 +45,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
+ * @see <a href="http://java.sun.com/developer/onlineTraining/JavaMail/contents.html">Javamail tutorial</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
@@ -243,46 +244,32 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
                "Please configure a mail.smtp.url to access the SMTP MTA, for example 'mail.smtp.url=smtp://joe:password@smtp.xmlBlaster.org:25'");
       }
-      if (props.getProperty("mail.smtp.url") == null)
-         props.put("mail.smtp.url", uri);
       try {
-         this.xbUri = new XbUri(props.getProperty("mail.smtp.url").trim());
+         this.xbUri = new XbUri(uri.trim());
       } catch (URISyntaxException e) {
          throw new XmlBlasterException(glob,
                ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
-               "Your URI '" + props.getProperty("mail.smtp.url").trim() +
+               "Your URI '" + uri +
                "' is illegal", e);
       }
+      if (this.xbUri.getHost() == null) {
+         throw new XmlBlasterException(glob,
+               ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
+               "Your URI '" + this.xbUri.toString() +
+               "' is illegal, expecting something like 'smtp://user:password@host:port'");
+      }
+      
+      props.put("mail.user", this.xbUri.getUser());
+      if (this.xbUri.getPassword() != null) {
+         //props.put("mail.password", this.xbUri.getPassword()); // I don't think "mail.password" is ever used, remove again?
+         props.setProperty("mail.smtp.auth", "true"); //Indicate that authentication is required at smtp server
+      }
+      props.put("mail.transport.protocol", this.xbUri.getScheme());
+      props.put("mail.smtp.host", this.xbUri.getHost());
+      if (this.xbUri.getPort() > 0)
+         props.put("mail.smtp.port", ""+this.xbUri.getPort());
       
       String p;
-      /*
-      if (props.getProperty("mail.user") == null)
-         props.put("mail.user", glob.get("mail.user", System
-               .getProperty("user.name"), null, pluginConfig));
-      this.user = props.getProperty("mail.user").trim();
-
-      if (props.getProperty("mail.password") == null)
-         props.put("mail.password", glob.get("mail.password", user, null,
-               pluginConfig));
-      this.password = props.getProperty("mail.password").trim();
-
-      if (props.getProperty("mail.transport.protocol") == null)
-         props.put("mail.transport.protocol", glob.get(
-               "mail.transport.protocol", "smtp", null, pluginConfig));
-      String shema = props.getProperty("mail.transport.protocol");
-
-      if (props.getProperty("mail.smtp.host") == null)
-         props.put("mail.smtp.host", glob.get("mail.smtp.host", "127.0.0.1",
-               null, pluginConfig));
-      this.host = props.getProperty("mail.smtp.host");
-
-      if (props.getProperty("mail.smtp.port") == null)
-         props.put("mail.smtp.port", glob.get("mail.smtp.port", "25", null,
-               pluginConfig));
-      p = props.getProperty("mail.smtp.port");
-      this.port = new Integer(p).intValue();
-      */
-      
       if (props.getProperty("messageIdForceBase64") == null)
          props.put("messageIdForceBase64", ""+glob.get("messageIdForceBase64", false, null,
                pluginConfig));
@@ -298,12 +285,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       if (props.getProperty("inlineExtension") == null)
          props.put("inlineExtension", ""+glob.get("inlineExtension", "", null,
                pluginConfig));
-      this.inlineExtension = props.getProperty("inlineExtension");
+      this.inlineExtension = props.getProperty("inlineExtension"); // like ".txt,.xml"
       
       // Pass "this" for SMTP authentication with Authenticator
       // For only sending mails we can pass null
-      this.session = Session.getDefaultInstance(props, this);
       this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());
+      this.session = Session.getDefaultInstance(props, this);
       this.isInitialized = true;
       
       if (this.mbeanHandle == null) {
@@ -476,7 +463,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             MimeBodyPart mbp = new MimeBodyPart();
             mbp.setFileName("content.txt");
             mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
-            //mbp.setDisposition(MimeBodyPart.INLINE);
+            mbp.setDisposition(MimeBodyPart.INLINE);
             multi.addBodyPart(mbp);
          }
 
@@ -551,43 +538,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       }
    }
 
-   /**
-    * java -Dmail.user=marcel -Dmail.password=marcel
-    * org.xmlBlaster.util.protocol.email.SmtpClient -from joe@localhost -to
-    * jack@localhost java -Dmail.smtp.port=6025 -Dmail.debug=true ...
-    * <p>
-    * 
-    * @see #setSessionProperties(Properties) for other properties
-    */
-   public static void main(String[] args) {
-      Global glob = new Global(args);
-
-      SmtpClient mail = null;
-      try {
-         mail = SmtpClient.getSmtpClient(glob, null);
-
-         final boolean debug = false;
-
-         // Here we create the mail Session manually without a JNDI lookup
-         Properties props = System.getProperties();
-         props.put("mail.debug", "" + debug);
-         mail.setSessionProperties(props, glob, null);
-         String from = glob.getProperty().get("from", "blue@localhost");
-         String to = glob.getProperty().get("to", "blue@localhost");
-
-         EmailData msg = new EmailData(to, from, "Hi from java",
-               "Some body text");
-         mail.sendEmail(msg);
-         System.out.println("Sent a message from '" + from + "' to '" + to
-               + "'");
-      } catch (Exception e) {
-         System.out.println("Mail failed: " + e.toString());
-      } finally {
-         if (mail != null)
-            mail.shutdown();
-      }
-   }
-
    public String getSmtpUrl() {
         return this.xbUri.toString();
    }
@@ -646,5 +596,42 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     */
    public void setMessageIdForceBase64(boolean messageIdForceBase64) {
       this.messageIdForceBase64 = messageIdForceBase64;
+   }
+
+   /**
+    * Standalone usage example:
+    * <code>
+    * java -Dmail.debug=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+    * </code>
+    * @see #setSessionProperties(Properties) for other properties
+    */
+   public static void main(String[] args) {
+      Global glob = new Global(args);
+
+      SmtpClient mail = null;
+      try {
+         mail = SmtpClient.getSmtpClient(glob, null);
+
+         final boolean debug = false;
+
+         // Here we create the mail Session manually without a JNDI lookup
+         Properties props = System.getProperties();
+         props.put("mail.debug", "" + debug);
+         mail.setSessionProperties(props, glob, null);
+         String from = glob.getProperty().get("from", "blue@localhost");
+         String to = glob.getProperty().get("to", "blue@localhost");
+
+         EmailData msg = new EmailData(to, from, "Hi from java",
+               "Some body text");
+         mail.sendEmail(msg);
+         System.out.println("Sent a message from '" + from + "' to '" + to
+               + "'");
+      } catch (Exception e) {
+         e.printStackTrace();
+         System.out.println("Mail failed: " + e.toString());
+      } finally {
+         if (mail != null)
+            mail.shutdown();
+      }
    }
 }
