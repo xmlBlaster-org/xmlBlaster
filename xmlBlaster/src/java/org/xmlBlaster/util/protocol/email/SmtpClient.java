@@ -188,7 +188,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    }
 
    /**
-    * For receiving only, used by Authenticator.
+    * Used by Authenticator to access user name and password
     */
    public PasswordAuthentication getPasswordAuthentication() {
       if (log.isLoggable(Level.FINE))
@@ -288,7 +288,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.inlineExtension = props.getProperty("inlineExtension"); // like ".txt,.xml"
       
       // Pass "this" for SMTP authentication with Authenticator
-      // For only sending mails we can pass null
       this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());
       this.session = Session.getDefaultInstance(props, this);
       this.isInitialized = true;
