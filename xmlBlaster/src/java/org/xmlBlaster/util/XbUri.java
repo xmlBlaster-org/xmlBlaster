@@ -61,11 +61,10 @@ public class XbUri
       this.uri = new URI(uriStr);
 
       this.user = "";
-      this.password = "";
+      this.password = null;
       if (this.uri.getUserInfo() != null) {
          int i = this.uri.getUserInfo().indexOf(":");
          this.user = this.uri.getUserInfo();
-         this.password = "";
          if (i != -1) {
             this.user = this.uri.getUserInfo().substring(0,i);
             this.password = this.uri.getUserInfo().substring(i+1);
@@ -82,7 +81,7 @@ public class XbUri
    }
 
    /**
-    * @return Returns the password.
+    * @return Returns the password, IS NULL if no password was given
     */
    public String getPassword() {
       return this.password;
