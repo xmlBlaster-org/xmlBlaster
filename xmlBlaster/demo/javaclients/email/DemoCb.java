@@ -22,7 +22,8 @@ import java.util.logging.Logger;
  * <p />
  * Invoke:
  * <pre>
- *   java javaclients.email.DemoCb -protocol EMAIL -mail.from demo@localhost
+ *   java org.xmlBlaster.Main
+ *   java javaclients.email.DemoCb -protocol email -mail.from demo@localhost
  * </pre>
  * 
  * @see <a

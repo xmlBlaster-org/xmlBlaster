@@ -44,11 +44,11 @@ public class DelegateDemo {
          if (receiver == null) {
             System.out.println("Usage:");
             System.out
-                  .println("  java javaclients.email.DelegateDemo -protocol EMAIL -emailDestination blue@localhost");
+                  .println("  java javaclients.email.DelegateDemo -protocol email -emailDestination blue@localhost");
             System.exit(1);
          }
 
-         CallbackAddress cbAddr = new CallbackAddress(this.glob, "EMAIL");
+         CallbackAddress cbAddr = new CallbackAddress(this.glob, "email");
          cbAddr.setRawAddress(receiver);
          cbAddr.setOneway(true);
          qos.addCallbackAddress(cbAddr);
