@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 
 /**
  * Interface which hides specific JDBC ResultSet to XML converters. 
@@ -70,10 +71,12 @@ public interface I_DataConverter
     * or  {@link #addInfo(ResultSet, int)} call.  
     * @param out The stream to dump the converted data to
     * @param command An optional command string or null
-    * @param ident An optional identifier or null
+    * @param ident the identity or optionally null.
+    * @param event The ChangeEvent associated to this invocation. Is never null. 
+    * 
     * @throws Exception of any type
     */
-   void setOutputStream(OutputStream out, String command, String ident) throws Exception;
+   void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception;
 
    /**
     * Add a map with attributes to the XML string. 
@@ -107,5 +110,17 @@ public interface I_DataConverter
     * @throws Exception of any type 
     */
    void shutdown() throws Exception;
+
+   /**
+    * Gets the statement (if any) to be executed after processing one message.In case of the DbWatcher to 
+    * be used to send/publish messages on detected changes, this can be used to delete entries in a queue.
+    * In such cases, after having sent the message, this post statement is executed by the DbWatcher. If the
+    * message could not be sent, this post statement is not invoked.
+    * 
+    * @return the String containing an sql statement to be executed shortly after the processed message
+    * has been finished. In normal cases this means after having published the change message. 
+    */
+   String getPostStatement();
+   
 }
 

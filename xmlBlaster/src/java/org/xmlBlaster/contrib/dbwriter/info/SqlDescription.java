@@ -494,7 +494,7 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         log.info("Handling insert column=" + colName + " as binary (type=" + sqlType + ", count=" + pos + ")");
+         log.fine("Handling insert column=" + colName + " as binary (type=" + sqlType + ", count=" + pos + ")");
          ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
          st.setBinaryStream(pos, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
       }
@@ -503,7 +503,7 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         log.info("Handling insert column=" + colName + " as Date (type=" + sqlType + ", count=" + pos + ")");
+         log.fine("Handling insert column=" + colName + " as Date (type=" + sqlType + ", count=" + pos + ")");
          
          String dateTxt = prop.getStringValue();
          Timestamp ts = Timestamp.valueOf(dateTxt);
@@ -515,46 +515,12 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         log.info("Handling insert column=" + colName + " (type=" + sqlType + ", count=" + pos + ")");
+         log.fine("Handling insert column=" + colName + " (type=" + sqlType + ", count=" + pos + ")");
          st.setObject(pos, prop.getObjectValue(), sqlType);
       }
    }
    
    
-   /**
-    * TODO remove this
-    * 
-    * @param conn
-    * @param row
-    * @return
-    * @throws Exception
-    * @deprecated
-    */
-   public int insertOLD(Connection conn, SqlRow row) throws Exception {
-      addPreparedStatements();
-      PreparedStatement st = null;
-      try {
-         st = conn.prepareStatement(this.insertStatementTxt);
-         for (int i=0; i < this.columnList.size(); i++) {
-            SqlColumn col = (SqlColumn)this.columnList.get(i); 
-            String colName = col.getColName();
-            ClientProperty prop = row.getColumn(colName);
-            if (prop == null) 
-               throw new Exception(ME + ".insert '" + this.identity + "' column '" + colName + "' not found in xml message:" + row.toXml(""));
-            insertIntoStatement(st, i+1, prop);
-         }
-         return st.executeUpdate();
-      }
-      catch (SQLException ex) {
-         log.info("inserting '" + this.insertStatementTxt + "' went wrong");
-         throw ex;
-      }
-      finally {
-         if (st != null)
-            st.close();
-      }
-   }
-
    private boolean isBinaryType(int type) {
       return ( type == Types.BINARY ||
             type == Types.BLOB ||
@@ -567,39 +533,6 @@ public class SqlDescription {
             type == Types.VARBINARY);
    }
 
-   /**
-    * TODO remove this
-    * @param conn
-    * @param row
-    * @return
-    * @throws Exception
-    * @deprecated
-    */
-   public int deleteOLD(Connection conn, SqlRow row) throws Exception {
-      addPreparedStatements();
-      PreparedStatement st = null;
-      try {
-         st = conn.prepareStatement(this.deleteStatementTxt);
-         int count = 1;
-         for (int i=0; i < this.columnList.size(); i++) {
-            SqlColumn col = (SqlColumn)this.columnList.get(i);
-            if (col.isPrimaryKey() || !hasPk()) {
-               String colName = col.getColName();
-               ClientProperty prop = row.getColumn(colName);
-               if (prop == null) 
-                  throw new Exception(ME + ".delete '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-               st.setObject(count++, prop.getObjectValue(), col.getSqlType());
-            }
-         }
-         return st.executeUpdate();
-      }
-      finally {
-         if (st != null)
-            st.close();
-      }
-   }
-
-   
    /**
     * Returns the number of entries updated
     * @param conn

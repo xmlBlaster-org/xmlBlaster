@@ -15,8 +15,12 @@ public interface ReplicationConstants {
    public final static String REPL_MANAGER_UNREGISTER = "UNREGISTER";
    public final static String REPL_PREFIX_KEY = "replication.prefix";
    public final static String REPL_REQUEST_UPDATE = "REQUEST_UPDATE";
+   public final static String CONTRIB_PERSISTENT_MAP = "contribPersistentMap";
+   
    /** invoked to cancel an ongoing initial update */
    public final static String REPL_REQUEST_CANCEL_UPDATE = "REQUEST_CANCEL_UPDATE";
+   /** invoked to recreate the triggers for the specified DbWatcher. */
+   public final static String REPL_REQUEST_RECREATE_TRIGGERS = "REQUEST_RECREATE_TRIGGERS";
 
    public final static String SLAVE_NAME = "_slaveName";
    

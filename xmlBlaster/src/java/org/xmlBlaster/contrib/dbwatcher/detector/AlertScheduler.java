@@ -91,7 +91,7 @@ public class AlertScheduler extends TimerTask implements I_AlertProducer
       try {
          this.changeDetector.checkAgain(null);
       }
-      catch (Exception e) {
+      catch (Throwable e) {
          log.severe("Don't know how to handle error: " + e.toString()); 
       }
    }

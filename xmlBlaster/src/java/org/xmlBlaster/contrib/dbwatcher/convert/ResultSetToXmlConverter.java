@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -130,7 +131,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
     * This should be called before the first #addInfo(ResultSet) call.
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#setOutputStream(OutputStream, String, String)
     */
-   public void setOutputStream(OutputStream out, String command, String ident) throws Exception {
+   public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
       if (this.out != null) {
          try { this.out.close(); } catch (java.io.IOException e) { /* Ignore */ }
       }
@@ -334,4 +335,10 @@ public class ResultSetToXmlConverter implements I_DataConverter
          this.transformer = null;
       }
    }
+
+   public String getPostStatement() {
+      return null;
+   }
+   
+   
 }

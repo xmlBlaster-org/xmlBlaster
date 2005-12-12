@@ -17,11 +17,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.util.PersistentMap;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -39,6 +41,13 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private OutputStream out;
    private boolean sendInitialTableContent = true;
    private long oldReplKey = -1L;
+   private int consecutiveReplKeyErrors = 0; // used to detect serious problems in sequences
+   private int maxConsecutiveReplKeyErrors = 10;
+   private Map persistentMap;
+   private String oldReplKeyPropertyName;
+   private ChangeEvent event;
+   private String transactionId;
+   private String replPrefix;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -92,9 +101,19 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          this.transformer.init(info);
          log.info("Loaded transformer pluging '" + transformerClassName + "'");
       }
+      this.replPrefix = this.info.get("replication.prefix", "repl_");
       this.dbSpecific = getDbSpecific(info);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
-      
+      this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
+      this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
+      Long tmp = (Long)this.persistentMap.get(this.oldReplKeyPropertyName);
+      if (tmp != null) {
+         this.oldReplKey = tmp.longValue();
+         log.info("One entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.oldReplKey + "'");
+      }
+      else {
+         log.info("No entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
+      }
    }
    
    /**
@@ -126,14 +145,28 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (numberOfColumns != 11)
          throw new Exception("ReplicationConverter.addInfo: wrong number of columns: should be 11 but was " + numberOfColumns);
       
+      /*
+       * Note that this test implies that the replKeys come in a growing sequence. If this is not the case, this test is useless.
+       */
       int replKey = rs.getInt(1);
       boolean markProcessed = false;
       if (replKey <= this.oldReplKey) {
          log.warning("the replication key '" + replKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
          markProcessed = true;
+         this.consecutiveReplKeyErrors++;
+         if (this.consecutiveReplKeyErrors > this.maxConsecutiveReplKeyErrors) {
+            log.severe("'" + this.consecutiveReplKeyErrors + "' consecutive errors on replKey occured now. HINT: Could it be that you have cleaned up the replKey counter but not the persistent Map ? (check the previous warnings)");
+            this.consecutiveReplKeyErrors = 0; // to avoid too many errors
+         }
       }
-      this.oldReplKey = replKey;
-      
+      else { // TODO move this after the sending of the message since this could still fail.
+         this.consecutiveReplKeyErrors = 0;
+         this.persistentMap.put(this.oldReplKeyPropertyName, new Long(this.oldReplKey));
+         this.oldReplKey = replKey;
+      }
+      // puts this in the metadata attributes of the message to be sent over the mom
+      this.event.getAttributeMap().put(REPL_KEY_ATTR, "" + replKey);
+
       String transKey = rs.getString(2);
       String dbId = rs.getString(3);
       String tableName = rs.getString(4);
@@ -141,6 +174,20 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       String action = rs.getString(6);
       String catalog = rs.getString(7);
       String schema = rs.getString(8);
+      
+      // TODO remove this after testing.
+      // puts this in the metadata attributes of the message to be sent over the mom
+      this.event.getAttributeMap().put("_tableName__", tableName);
+
+      log.fine("sequence number '" + replKey + "' processing now for table '" + tableName + "'");
+      if (this.transactionId == null)
+         this.transactionId = transKey;
+      else {
+         if (!this.transactionId.equals(transKey)) {
+            log.severe("the entry with replKey='" + replKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' but was expected '" + this.transactionId + "'");
+         }
+      }
+      
       // String newContent = rs.getString(9); // could be null
       String newContent = null;
       Clob clob = rs.getClob(9);
@@ -246,14 +293,29 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       return ret;
    }
 
-   public void setOutputStream(OutputStream out, String command, String ident) throws Exception {
+   public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
       this.out = out;
+      this.transactionId = null;
       this.dbUpdateInfo = new SqlInfo(this.info);
       SqlDescription description = new SqlDescription(this.info);
       description.setCommand(REPLICATION_CMD);
       if (ident != null)
          description.setIdentity(ident);
       this.dbUpdateInfo.setDescription(description);
+      this.event = event;
    }
 
+   public String getPostStatement() {
+      if (this.transactionId == null) {
+         if (this.dbUpdateInfo != null)
+            log.severe("No transaction id has been found for " + this.dbUpdateInfo.toXml(""));
+         return null;
+      }
+      // TODO REMOVE THIS AFTER TESTING
+      log.info("sending '" + this.event.getAttributeMap().get(REPL_KEY_ATTR) + "' for table '" + this.event.getAttributeMap().get("_tableName__") + "'");
+      String statement = "DELETE FROM " + this.replPrefix + "ITEMS WHERE TRANS_KEY='" + this.transactionId + "'";
+      return statement;
+   }
+   
+   
 }

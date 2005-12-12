@@ -202,7 +202,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
       try {
          conn = this.dbPool.reserve(); // This has been added 2005-08-27 (Michele Laghi)
          // FIXME this !!!!!
-         conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // TOO RESTRICTIVE IN MOST CASES !!!
+         // conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // TOO RESTRICTIVE IN MOST CASES !!!
          
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
             public void result(ResultSet rs) throws Exception {
@@ -255,7 +255,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
                 tableExists = true;
 
             if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand);
+                ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand, null);
                 String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
                 try {
                    changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
@@ -268,23 +268,26 @@ public class TimestampChangeDetector implements I_ChangeDetector
             }
             else { // send message without meat ...
                String resultXml = "";
+               ChangeEvent changeEvent = new ChangeEvent(groupColName, null, resultXml, this.changeCommand, null);
                if (dataConverter != null) { // add some basic meta info ...
                   ByteArrayOutputStream bout = new ByteArrayOutputStream();
                   BufferedOutputStream out = new BufferedOutputStream(bout);
-                  dataConverter.setOutputStream(out, this.changeCommand, groupColName);
+                  dataConverter.setOutputStream(out, this.changeCommand, groupColName, changeEvent);
                   dataConverter.done();
                   resultXml = bout.toString();
+                  changeEvent.setXml(resultXml);
                }
-               changeListener.hasChanged(new ChangeEvent(groupColName, null,
-                                         resultXml, this.changeCommand));
+               changeListener.hasChanged(changeEvent);
                changeCount++;
             }
             oldTimestamp = newTimestamp;
             
             // TODO rollback in case of an exception and distributed transactions ...
-            if (this.postUpdateStatement != null) {
+            /*
+             if (this.postUpdateStatement != null) {
                this.dbPool.update(conn, this.postUpdateStatement);
             }
+            */
          }
       }
       catch (Exception e) {

@@ -240,26 +240,51 @@ public class DbWatcher implements I_ChangeListener {
     * @see org.xmlBlaster.contrib.dbwatcher.I_ChangeListener#hasChanged(ChangeEvent)
     */
    public void hasChanged(final ChangeEvent changeEvent) {
-          hasChanged(changeEvent, false);
+      hasChanged(changeEvent, false);
    }
     
    /**
     * @param changeEvent The event data
     * @param recursion To detect recursion
+    * @return true if the message has been published, false otherwise.
     */
-   private void hasChanged(final ChangeEvent changeEvent, boolean recursion) {
+   private boolean hasChanged(final ChangeEvent changeEvent, boolean recursion) {
       try {
          if (log.isLoggable(Level.FINE)) log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
          this.publisher.publish(changeEvent.getGroupColValue(),
                changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
+         return true;
       }
       catch(Exception e) {
          e.printStackTrace();
          log.severe("Can't publish change event " + e.toString() +
-                     " Event was: " + changeEvent.toString()); 
+                     " Event was: " + changeEvent.toString());
+         return false;
       }
    }         
-         
+   
+   /**
+    * Convenience Method which executes a post statement if needed.
+    *
+    */
+   private final void doPostStatement() {
+      String postStatement = this.dataConverter.getPostStatement();
+      if (this.dataConverter != null && postStatement != null) {
+         try {
+            log.fine("executing the post statement '" + postStatement + "'");
+            this.dbPool.update(postStatement);
+         }
+         catch (Exception ex) {
+            log.severe("An exception occured when cleaning up invocation with post statement '" + postStatement + ": " + ex.getMessage());
+            ex.printStackTrace();
+         }
+      }
+      else {
+         log.warning("No post statement defined after having published ");
+      }
+   }
+   
+   
    /**
     * @see I_ChangeListener#publishMessagesFromStmt
     */
@@ -274,10 +299,12 @@ public class DbWatcher implements I_ChangeListener {
       if ("DROP".equals(command) && dataConverter != null) {
          ByteArrayOutputStream bout = new ByteArrayOutputStream();
          BufferedOutputStream out = new BufferedOutputStream(bout);
-         dataConverter.setOutputStream(out, command, changeEvent.getGroupColValue());
+         dataConverter.setOutputStream(out, command, changeEvent.getGroupColValue(), changeEvent);
          dataConverter.done();
          String resultXml = bout.toString();
-         hasChanged(new ChangeEvent(changeEvent.getGroupColName(), changeEvent.getGroupColValue(), resultXml, command), true);
+         boolean published = hasChanged(new ChangeEvent(changeEvent.getGroupColName(), changeEvent.getGroupColValue(), resultXml, command, changeEvent.getAttributeMap()), true);
+         if (published)
+            doPostStatement();
          return 1;
       }
 
@@ -314,7 +341,9 @@ public class DbWatcher implements I_ChangeListener {
                             dataConverter.done();
                             resultXml = bout.toString();
                          }
-                         hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                         boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                         if (published)
+                            doPostStatement();
                          changeCount++;
                          bout = null;
                       }
@@ -324,7 +353,7 @@ public class DbWatcher implements I_ChangeListener {
                       if (bout == null && dataConverter != null) {
                          bout = new ByteArrayOutputStream();
                          out = new BufferedOutputStream(bout);
-                         dataConverter.setOutputStream(out, command, newGroupColValue);
+                         dataConverter.setOutputStream(out, command, newGroupColValue, changeEvent);
                       }
                       
                       if (dataConverter != null) dataConverter.addInfo(rs, I_DataConverter.ALL); // collect data
@@ -335,14 +364,17 @@ public class DbWatcher implements I_ChangeListener {
                    if (bout == null && dataConverter != null) {
                       bout = new ByteArrayOutputStream();
                       out = new BufferedOutputStream(bout);
-                      dataConverter.setOutputStream(out, command, groupColValue);
+                      dataConverter.setOutputStream(out, command, groupColValue, changeEvent);
                    }
                    String resultXml = "";
                    if (dataConverter != null) {
                       dataConverter.done();
                       resultXml = bout.toString();
                    }
-                   hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command), true);
+                   
+                   boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                   if (published)
+                      doPostStatement();
                    changeCount++;
                 }
                 catch (Exception e) {

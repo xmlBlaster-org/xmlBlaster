@@ -34,17 +34,28 @@ public final class ChangeEvent extends EventObject {
    * @param xml The result xml from a query
    * @param command The command which probably caused the event, like <tt>INSERT</tt>
    */
-   public ChangeEvent(String groupColName, String groupColValue, String xml, String command) {
+   public ChangeEvent(String groupColName, String groupColValue, String xml, String command, Map map) {
       super("ChangeEvent");
+      if (map != null)
+         this.attrMap = map;
       this.groupColName = groupColName;
       this.groupColValue = (groupColValue==null) ? "${"+groupColName+"}" : groupColValue;
       this.xml = xml;
-      if (command != null) {
-         this.attrMap = new HashMap();
-         this.attrMap.put("_command", command);
-      }
+      setCommand(command);
    }
 
+   public void setCommand(String command) {
+      if (command != null) {
+         if (this.attrMap == null)
+            this.attrMap = new HashMap();
+         this.attrMap.put("_command", command);
+      }
+      else {
+         if (this.attrMap != null)
+            this.attrMap.remove("_command");
+      }
+   }
+   
    /**
     * The DB columns name. 
     * Each change of the value triggers a new event
@@ -89,7 +100,15 @@ public final class ChangeEvent extends EventObject {
    public String getXml() {
       return this.xml;
    }
-    
+
+   /**
+    * Sets the data to transfer.
+    * @param xml
+    */
+   public void setXml(String xml) {
+      this.xml = xml;
+   }
+   
   /**
    * For informative logging. 
    * @return dump 

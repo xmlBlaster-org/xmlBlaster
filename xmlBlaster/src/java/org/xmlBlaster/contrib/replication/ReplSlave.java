@@ -8,6 +8,7 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -23,6 +24,7 @@ import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.PersistentMap;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -65,6 +67,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String sqlResponse;
    private String managerInstanceName;
    private boolean forceSending; // temporary Hack to be removed TODO
+   private Map persistentMap;
+   private String oldReplKeyPropertyName;
    
    public String getTopic() {
       return this.dataTopic;
@@ -126,9 +130,19 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
             this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
+      
+      this.persistentMap = new PersistentMap(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
+      this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
+      Long tmp = (Long)this.persistentMap.get(this.oldReplKeyPropertyName);
+      if (tmp != null) {
+         this.maxReplKey = tmp.longValue();
+         log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
+      }
+      else {
+         log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
+      }
       this.initialized = true;
    }
-   
    
    private final void setStatus(int status) {
       this.status = status;
@@ -151,6 +165,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    private final void setMaxReplKey(long replKey) {
       this.maxReplKey = replKey;
+      this.persistentMap.put(this.oldReplKeyPropertyName, new Long(replKey));
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -298,7 +313,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * FIXME TODO HERE
     */
    public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
-      log.info("check invoked with status '" + getStatus() + "'");
+      log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' ");
       if (this.status == STATUS_INITIAL && !this.forceSending) // should not happen since Dispatcher is set to false
          return new ArrayList();
 
@@ -320,7 +335,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          ClientProperty alreadyProcessed = msgUnit.getQosData().getClientProperty(ReplicationConstants.ALREADY_PROCESSED_ATTR);
          if (alreadyProcessed != null) {
-            log.info("Received entry which was already processed. Will remove it");
+            log.info("Received entry for client '" + this.slaveSessionId + "' which was already processed. Will remove it");
             queue.removeRandom(entry);
             entries.remove(i);
          }
@@ -333,7 +348,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
          if (endMsg != null) {
-            log.info("Received msg marking the end of the initial update: '" + this.name + "' going into NORMAL operations");
+            log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
             setStatus(STATUS_NORMAL);
             queue.removeRandom(entry);
             entries.remove(i);
@@ -356,27 +371,27 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          if (replKey > -1L) {
             setMaxReplKey(replKey);
          }
-         log.info("check: processing '" + replKey + "'");
+         log.info("check: processing '" + replKey + "' for client '" + this.slaveSessionId + "' ");
          if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
             ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
             if (endMsg == null) {
-               log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "' has no 'replKey' Attribute defined.");
+               log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "'  for client '" + this.slaveSessionId + "' has no 'replKey' Attribute defined.");
                ret.add(entry);
                continue;
             }
         }
-         log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "]");
+         log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "] for client '" + this.slaveSessionId + "' ");
          if (replKey >= this.minReplKey || this.forceSending) {
-            log.info("repl adding the entry");
+            log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
             ret.add(entry);
             
             if (replKey > this.maxReplKey || this.forceSending) {
-               log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again");
+               log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");
                setStatus(STATUS_NORMAL);
             }
          }
          else { // such messages have been already from the initial update. (obsolete messages are removed)
-            log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "'");
+            log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "' for client '" + this.slaveSessionId + "' ");
             queue.removeRandom(entry);
             
          }

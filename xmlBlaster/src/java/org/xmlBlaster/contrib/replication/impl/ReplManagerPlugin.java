@@ -54,6 +54,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 
 import java.util.ArrayList;
@@ -782,6 +783,31 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (engineGlobal != null)
          engineGlobal.getProperty().getProperties().setProperty(key, val);
    }
+
    
+   public final String recreateTriggers(String replPrefix) throws Exception {
+      // sending the cancel op to the DbWatcher
+      log.info("'will recreate triggers for source '" + replPrefix + "'");
+      
+      I_Info individualInfo = (I_Info)this.replications.get(replPrefix);
+      if (individualInfo != null) {
+         String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+         if (dbWatcherSessionId == null)
+            throw new Exception("The replication source with replication.prefix='" +  replPrefix + "' had no '_senderSession' attribute set in its configuration");
+
+         I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+         // no oid for this ptp message 
+         PublishKey pubKey = new PublishKey(this.global);
+         Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
+         destination.forceQueuing(true);
+         PublishQos pubQos = new PublishQos(this.global, destination);
+         pubQos.setPersistent(false);
+         MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.getBytes(), pubQos);
+         conn.publish(msg);
+         return "Recreate Triggers for '" + replPrefix + "' is ongoing now";
+      }
+      else
+         throw new Exception("Could not find a replication source with replication.prefix='" + replPrefix + "'");
+   }
    
 }

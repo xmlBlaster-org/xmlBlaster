@@ -56,9 +56,9 @@ public class ReplicationAgent {
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
    public static void main(String[] args) {
-      I_Info cfgInfo = new PropertiesInfo(new Properties());
-      cfgInfo.putObject("usedPropsMap", new HashMap());
       try {
+         I_Info cfgInfo = new PropertiesInfo(new Properties());
+         cfgInfo.putObject("usedPropsMap", new HashMap());
          if (displayHelpAndCheck(args, cfgInfo)) {
             System.exit(-1);
          }

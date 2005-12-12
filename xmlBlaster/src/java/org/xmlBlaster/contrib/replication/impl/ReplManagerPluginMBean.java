@@ -26,11 +26,21 @@ public interface ReplManagerPluginMBean {
     * Intiates the replication for the given slave.
     * 
     * @param slaveSessionName
-    * @param replicationKey
+    * @param replPrefix this is the same as specified in the configuration as 'replication.prefix' and it 
+    * identifies  a replication source.
     * @throws Exception
     */
-   String initiateReplication(String slaveSessionName, String replicationKey) throws Exception;
+   String initiateReplication(String slaveSessionName, String replPrefix) throws Exception;
    
+   /**
+    * Recreates the triggers for the given replication source.
+    * 
+    * @param replPrefix this is the same as specified in the configuration as 'replication.prefix' and it 
+    * identifies  a replication source.
+    * @throws Exception
+    */
+   String recreateTriggers(String replPrefix) throws Exception;
+
    /**
     * Executes either a query or an update. Responses will come back asynchronously.
     * 

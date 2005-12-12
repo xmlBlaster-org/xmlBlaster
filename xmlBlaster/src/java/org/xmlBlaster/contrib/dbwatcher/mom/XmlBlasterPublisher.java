@@ -44,6 +44,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.MsgUnit;
@@ -286,7 +287,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
    }
 
-   private void addStringPropToQos(Map attrMap, PublishQos qos) {
+   private void addStringPropToQos(Map attrMap, MsgQosData qos) {
       synchronized (attrMap) {
          String[] keys = (String[])attrMap.keySet().toArray(new String[attrMap.size()]);
          for (int i=0; i < keys.length; i++) {
@@ -311,6 +312,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          command = (String)attrMap.get("_command");
       else
          command = "";
+
       // this is used to register the owner of this object (typically the DbWatcher)
       if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command)) {
          
@@ -331,7 +333,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          // to force to fill the client properties map !!
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          new ClientPropertiesInfo(qos.getData().getClientProperties(), tmpInfo);
-         addStringPropToQos(attrMap, qos);
+         addStringPropToQos(attrMap, qos.getData());
 
          PublishKey key = null;
          if (changeKey != null && changeKey.length() > 0)
@@ -363,6 +365,13 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       if (log.isLoggable(Level.FINER)) log.finer("Topic '" + pk + "' is published: " + out);
       try {
          MsgUnit msgUnit = new MsgUnit(pk, out, this.publishQos);
+         
+         // to force to fill the client properties map !!
+         ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
+         new ClientPropertiesInfo(msgUnit.getQosData().getClientProperties(), tmpInfo);
+         addStringPropToQos(attrMap, (MsgQosData)msgUnit.getQosData());
+         
+         // msgUnit.getQosData().
          PublishReturnQos prq = this.con.publish(msgUnit);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
          if (log.isLoggable(Level.FINE)) log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");

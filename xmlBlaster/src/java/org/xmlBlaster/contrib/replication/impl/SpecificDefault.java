@@ -427,6 +427,14 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
    }
 
    /**
+    * Returns a name identifying this SpecificDefault. This is the replication.prefix.
+    * @return
+    */
+   public final String getName() {
+      return this.replPrefix;
+   }
+   
+   /**
     * @see I_DbSpecific#init(I_Info)
     * 
     */
@@ -772,7 +780,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
    public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         String replFlags, String triggerName) throws Exception {
+         String replFlags, String triggerName, boolean force) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -792,7 +800,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
          }
-         if (isTableRegistered(conn, catalog, schema, tableName)) {
+         if (isTableRegistered(conn, catalog, schema, tableName) && !force) {
             log.info("table '" + tableName + "' is already registered, will not add it");
             return false;
          }
@@ -885,7 +893,16 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       return buf.toString();
    }
 
-   private final void addTriggersIfNeeded() throws Exception {
+   public final void addTriggersIfNeeded(boolean force) throws Exception {
+      if (force) {
+         try {
+            this.dbPool.update("DELETE FROM " + this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"));
+         }
+         catch (Exception ex) {
+            log.warning("Could not delete tables configuration before adding triggers with 'force' true");
+            ex.printStackTrace();
+         }
+      }
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
       log.info("there are '" + tablesToWatch.length + "' tables to watch");
       for (int i=0; i < tablesToWatch.length; i++) {
@@ -894,7 +911,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          String table = tablesToWatch[i].getTable();
          String replFlags = tablesToWatch[i].getFlags();
          String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, replFlags, trigger);
+         addTableToWatch(catalog, schema, table, replFlags, trigger, force);
       }
    }
 
@@ -923,8 +940,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
           *  polling of the DbWatcher. So we need to add the tables to watch, the DbWatcher needs to send a message to
           *  us to notify us when he finished the job and then we could continue with phase2 of the initial Update
           */
-         
-         addTriggersIfNeeded();
+         boolean doNotForce = false;
+         addTriggersIfNeeded(doNotForce);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
          String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo);

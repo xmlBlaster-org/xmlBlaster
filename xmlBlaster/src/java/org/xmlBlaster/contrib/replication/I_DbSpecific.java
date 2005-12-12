@@ -124,12 +124,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * You normally will pass IDU' here.
     * @param triggerName is the name which will be given to the trigger to add to the table. Can be null. If null
     * is passed, then a name is choosed by the application. It is good practice to provide with a unique name.
+    * @param force if true, then the trigger is added even if it exists already.
     * @return true if the table was added, false otherwise. If the table already was registered (added), then
     * it will not add it anymore.
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName) throws Exception;
+   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName, boolean force) throws Exception;
    
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
@@ -213,5 +214,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
     */
    String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception;
    
+   String getName();
+
+   /**
+    * Creates the necessary triggers if needed, i.e. if the triggers are not existing already.
+    * @param force to force recreation of triggers even if they exist already.
+    * @throws Exception
+    */
+   void addTriggersIfNeeded(boolean force) throws Exception;
    
 }

@@ -228,19 +228,19 @@ public class MD5ChangeDetector implements I_ChangeDetector
                         String key = (String)it.next();
                         String resultXml = "";
                         if (queryMeatStatement != null) { // delegate processing of message meat ...
-                           ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, "DROP");
+                           ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, "DROP", null);
                            changeCount = changeListener.publishMessagesFromStmt(queryMeatStatement, useGroupCol, changeEvent, conn);
                         }
                         else {
                            if (dataConverter != null) {
                               ByteArrayOutputStream bout = new ByteArrayOutputStream();
                               BufferedOutputStream out = new BufferedOutputStream(bout);
-                              dataConverter.setOutputStream(out, "DROP", key);
+                              dataConverter.setOutputStream(out, "DROP", key, null);
                               dataConverter.done();
                               resultXml = bout.toString();
                            }
                            changeListener.hasChanged(
-                                 new ChangeEvent(groupColName, key, resultXml, "DROP"));
+                                 new ChangeEvent(groupColName, key, resultXml, "DROP", null));
                            changeCount++;
                         }
                      }
@@ -297,7 +297,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                bout = new ByteArrayOutputStream();
                out = new BufferedOutputStream(bout);
                String command = "UPDATE"; // (md5Map.size() == 0) ? "INSERT" : "UPDATE";
-               dataConverter.setOutputStream(out, command, this.groupColName);
+               dataConverter.setOutputStream(out, command, this.groupColName, null);
             }
             dataConverter.addInfo(rs, I_DataConverter.ALL);
          }
@@ -312,7 +312,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
          this.tableExists = true;
 
          if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-            ChangeEvent changeEvent = new ChangeEvent(this.groupColName, null, null, command);
+            ChangeEvent changeEvent = new ChangeEvent(this.groupColName, null, null, command, null);
             String stmt = this.queryMeatStatement;
             count = changeListener.publishMessagesFromStmt(stmt, false, changeEvent, this.conn);
          }
@@ -321,7 +321,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                if (bout == null) {
                   bout = new ByteArrayOutputStream();
                   out = new BufferedOutputStream(bout);
-                  dataConverter.setOutputStream(out, command, this.groupColName);
+                  dataConverter.setOutputStream(out, command, this.groupColName, null);
                   dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
                }
                dataConverter.done();
@@ -329,7 +329,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
             }
             
             changeListener.hasChanged(
-               new ChangeEvent(this.groupColName, this.groupColName, resultXml, command));
+               new ChangeEvent(this.groupColName, this.groupColName, resultXml, command, null));
             count++;
          }
       }
@@ -381,7 +381,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                if (!this.tableExists) {
                   command = "CREATE";
                   if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
+                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command, null);
                       String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
                       count = changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
                   }
@@ -389,14 +389,14 @@ public class MD5ChangeDetector implements I_ChangeDetector
                      if (dataConverter != null && bout == null) {
                         bout = new ByteArrayOutputStream();
                         out = new BufferedOutputStream(bout);
-                        dataConverter.setOutputStream(out, command, groupColValue);
+                        dataConverter.setOutputStream(out, command, groupColValue, null);
                         dataConverter.done();
                         resultXml = bout.toString();
                         bout = null;
                      }
                      changeListener.hasChanged(
                            new ChangeEvent(groupColName, groupColValue,
-                                             resultXml, command));
+                                             resultXml, command, null));
                   }
                   this.tableExists = true;
                }
@@ -409,7 +409,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
             if (dataConverter != null && bout == null) {
                bout = new ByteArrayOutputStream();
                out = new BufferedOutputStream(bout);
-               dataConverter.setOutputStream(out, command, newGroupColValue);
+               dataConverter.setOutputStream(out, command, newGroupColValue, null);
             }
 
             if (!first && !groupColValue.equals(newGroupColValue)) {
@@ -420,7 +420,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                String old = (String)md5Map.get(groupColValue);
                if (old == null || !old.equals(newMD5)) {
                   if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
+                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command, null);
                       String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
                       count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
                   }
@@ -431,7 +431,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                      }
                      changeListener.hasChanged(
                            new ChangeEvent(groupColName, groupColValue,
-                                             resultXml, command));
+                                             resultXml, command, null));
                      count++;
                   }
                }
@@ -440,7 +440,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                if (dataConverter != null) {
                   bout = new ByteArrayOutputStream();
                   out = new BufferedOutputStream(bout);
-                  dataConverter.setOutputStream(out, command, newGroupColValue);
+                  dataConverter.setOutputStream(out, command, newGroupColValue, null);
                }
                md5Map.put(groupColValue, newMD5);
             }
@@ -474,7 +474,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                command = "UPDATE";
             
             if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-               ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
+               ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command, null);
                String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
                count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
             }
@@ -483,14 +483,14 @@ public class MD5ChangeDetector implements I_ChangeDetector
                    if (bout == null) {
                       bout = new ByteArrayOutputStream();
                       out = new BufferedOutputStream(bout);
-                      dataConverter.setOutputStream(out, command, newGroupColValue);
+                      dataConverter.setOutputStream(out, command, newGroupColValue, null);
                       dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
                    }
                    dataConverter.done();
                    resultXml = bout.toString();
                 }
                 changeListener.hasChanged(
-                   new ChangeEvent(groupColName, groupColValue, resultXml, command));
+                   new ChangeEvent(groupColName, groupColValue, resultXml, command, null));
                 count++;
             }
          }
@@ -506,7 +506,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                md5Map.remove(key);
                command = "DELETE";
                if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                  ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, command);
+                  ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, command, null);
                   String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, key);
                   count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
                }
@@ -514,13 +514,13 @@ public class MD5ChangeDetector implements I_ChangeDetector
                   if (dataConverter != null) {
                      bout = new ByteArrayOutputStream();
                      out = new BufferedOutputStream(bout);
-                     dataConverter.setOutputStream(out, command, key);
+                     dataConverter.setOutputStream(out, command, key, null);
                      dataConverter.done();
                      resultXml = bout.toString();
                   }
                   changeListener.hasChanged(
                      new ChangeEvent(groupColName, key,
-                                    resultXml, command));
+                                    resultXml, command, null));
                }
                count++;
             }

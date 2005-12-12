@@ -165,11 +165,12 @@ public class SpecificOracle extends SpecificDefault {
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
+               buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(tmpNum, '").append(colName).append("'));\n");
             }
             else {
-               buf.append("             tmpNum := ").append(varName).append(";\n");
+               // buf.append("             tmpNum := ").append(varName).append(";\n");
+               buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(").append(varName).append(", '").append(colName).append("'));\n");
             }
-            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(tmpNum, '").append(colName).append("'));\n");
             
             // buf.append("             tmpCont := EMPTY_CLOB;\n");
             // buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
@@ -246,12 +247,12 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   oldCont CLOB; \n");
       buf.append("   newCont CLOB;\n");
       buf.append("   tmpCont CLOB;\n");
-      buf.append("   tmpNum  VARCHAR(100);\n");
-      buf.append("   oid     VARCHAR(30);\n");
+      buf.append("   tmpNum  VARCHAR(255);\n");
+      buf.append("   oid     VARCHAR(50);\n");
       buf.append("   replKey INTEGER;\n");
       buf.append("   ret     VARCHAR(10);\n");
-      buf.append("   transId VARCHAR2(30);\n");
-      buf.append("   op      VARCHAR(10);\n");
+      buf.append("   transId VARCHAR2(50);\n");
+      buf.append("   op      VARCHAR(15);\n");
       buf.append("   longKey INTEGER;\n");
       buf.append("   debug   INTEGER;\n");
       

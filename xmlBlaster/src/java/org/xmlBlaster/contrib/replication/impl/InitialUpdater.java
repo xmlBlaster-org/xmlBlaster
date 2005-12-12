@@ -391,6 +391,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                exec.stop();
          }
       }
+      else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
+         boolean force = true;
+         this.dbSpecific.addTriggersIfNeeded(force);
+      }
       else {
          log.warning("update from '" + topic + "' with request '" + msg + "'");
       }
