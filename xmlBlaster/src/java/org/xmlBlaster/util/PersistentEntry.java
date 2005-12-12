@@ -38,8 +38,7 @@ public class PersistentEntry implements I_MapEntry {
       this.size = 1;
       if (uniqueId < 1L) 
          uniqueId = new Timestamp().getTimestamp();  
-      else
-         this.uniqueId = uniqueId;
+      this.uniqueId = uniqueId;
       this.uniqueIdStr = "" + this.uniqueId;
       this.key = key;
       this.val = val;

@@ -144,8 +144,10 @@ public class PersistentMap implements Map {
          if (id == null)
             return null;
          PersistentEntry entry = (PersistentEntry)this.cache.get(id.longValue());
-         if (entry == null) // could have been deleted by somebody else on another instance.
+         if (entry == null) { // could have been deleted by somebody else on another instance.
+            this.keyMap.remove(key);
             return null; 
+         }
          return entry.getValue();
       }
       catch (XmlBlasterException ex) {
@@ -163,7 +165,13 @@ public class PersistentMap implements Map {
          PersistentEntry entry = null;
          if (id != null) {
             entry = (PersistentEntry)this.cache.get(id.longValue());
-            entry.assign(key, value);
+            if (entry == null) {
+               entry = new PersistentEntry(id.longValue(), key, value);
+            }
+            else {
+               entry.assign(key, value);
+               this.cache.remove(id.longValue()); // must first be removed
+            }
          }
          else {
             entry = new PersistentEntry(key, value);
