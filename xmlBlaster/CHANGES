@@ -3,6 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+
+ o #14307 Bugfix email protocol: Fixed authentication, host/port setting and inline content of SmtpClient.java
+
+ o #14302 Email protocol: Introduced email expiry header 'X-xmlBlaster-ExpiryDate:2005-12-24 16:45:12'
+ 
  o #14295 BUGFIX: Fixed resetting of SaxParser state, could lead to buggy parsing if previous parse threw an exception
    Had no impact when accessing the server from our Java and C++ client library.
    Thanks to Cyrille for finding this bug
