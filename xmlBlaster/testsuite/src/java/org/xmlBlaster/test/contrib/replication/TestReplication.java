@@ -266,7 +266,8 @@ public class TestReplication extends XMLTestCase {
          }
          
          try {
-            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null);
+            boolean force = false;
+            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -328,7 +329,8 @@ public class TestReplication extends XMLTestCase {
          conn.setAutoCommit(true);
          String sql = null;
          try {
-            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null);
+            boolean force = false;
+            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
          }
          catch (Exception ex) {
             ex.printStackTrace();
