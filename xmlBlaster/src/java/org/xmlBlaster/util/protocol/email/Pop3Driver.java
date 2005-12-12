@@ -7,6 +7,7 @@
 package org.xmlBlaster.util.protocol.email;
 
 import javax.mail.NoSuchProviderException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Message;
 import javax.mail.Store;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +36,7 @@ import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XbUri;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -68,12 +71,24 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * <pre>
  * handlers = org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler.level = FINEST
  * </pre>
+ * <p />
+ * Standalone test:
+ * <pre>
+ *  1. Start a command line poller for user 'xmlBlaster':
+ *
+ *  java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
+ *
+ * 2. Send from command line an email:
+ *
+ * java -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+ * </pre>
  * 
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
  * @see <a href="http://java.sun.com/products/javamail/javadocs/index.html">Java
  *      Mail API</a>
+ * @see <a href="http://java.sun.com/developer/onlineTraining/JavaMail/contents.html">Javamail tutorial</a>
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The
  *      protocol.email requirement</a>
@@ -108,6 +123,10 @@ implements I_Plugin, I_Timeout,
 
    // Avoid too many logging output lines
    private boolean isConnected;
+
+   private PasswordAuthentication authentication;
+
+   protected XbUri xbUri;
 
    /** My JMX registration */
    private Object mbeanHandle;
@@ -153,6 +172,17 @@ implements I_Plugin, I_Timeout,
          }
          return pop3Driver;
       }
+   }
+
+   /**
+    * Used by Authenticator to access user name and password
+    */
+   public PasswordAuthentication getPasswordAuthentication() {
+      if (this.authentication == null) return null;
+      if (log.isLoggable(Level.FINE))
+         log.fine("Entering getPasswordAuthentication: "
+               + this.authentication.toString());
+      return this.authentication;
    }
 
    /**
@@ -441,7 +471,7 @@ implements I_Plugin, I_Timeout,
     * <pre>
     * Properties props = System.getProperties();
     * props.put(&quot;mail.pop3.url&quot;, &quot;pop3://joe:secret@localhost/INBOX&quot;);
-    * props.put(&quot;mail.pop3.debug&quot;, &quot;false&quot;);
+    * props.put(&quot;mail.debug&quot;, &quot;false&quot;);
     * </pre>
     * 
     * <p>
@@ -463,38 +493,32 @@ implements I_Plugin, I_Timeout,
       if (this.props == null)
          this.props = new Properties();
 
-      if (this.props.getProperty("mail.pop3.debug") == null)
-         this.props.put("mail.pop3.debug", glob.get("mail.pop3.debug", System
-               .getProperty("mail.pop3.debug", "false"), null, pluginConfig));
-
-      if (this.props.getProperty("mail.pop3.user") == null)
-         this.props.put("mail.pop3.user", glob.get("mail.pop3.user", System
-               .getProperty("user.name"), null, pluginConfig));
-      String user = this.props.getProperty("mail.pop3.user").trim();
-
-      if (this.props.getProperty("mail.pop3.password") == null)
-         this.props.put("mail.pop3.password", glob.get("mail.pop3.password",
-               user, null, pluginConfig));
-      String password = this.props.getProperty("mail.pop3.password").trim();
-
-      if (this.props.getProperty("mail.store.protocol") == null)
-         this.props.put("mail.store.protocol", glob.get("mail.store.protocol",
-               "pop3", null, pluginConfig));
-      if (this.props.getProperty("mail.pop3.host") == null)
-         this.props.put("mail.pop3.host", glob.get("mail.pop3.host",
-               "127.0.0.1", null, pluginConfig));
-      String host = this.props.getProperty("mail.pop3.host").trim();
-      if (this.props.getProperty("mail.pop3.port") == null)
-         this.props.put("mail.pop3.port", glob.get("mail.pop3.port", "110",
-               null, pluginConfig));
-      String port = this.props.getProperty("mail.pop3.port").trim();
+      if (this.props.getProperty("mail.debug") == null)
+         this.props.put("mail.debug", glob.get("mail.debug", System
+               .getProperty("mail.debug", "false"), null, pluginConfig));
 
       // "pop3://user:password@host:port/INBOX"
-      this.pop3Url = glob.get("mail.pop3.url", "pop3://" + user + ":"
-            + password + "@" + host + ":" + port + "/INBOX ", null,
-            pluginConfig);
+      this.pop3Url = glob.get("mail.pop3.url",
+            System.getProperty("mail.pop3.url",
+                  "pop3://" + System.getProperty("user.name") + ":" + System.getProperty("user.name") + "@127.0.0.1:110/INBOX "
+                  //"pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX ",
+                  ), null, pluginConfig);
 
-      this.session = Session.getInstance(this.props);
+      try {
+         this.xbUri = new XbUri(this.pop3Url);
+         if (this.xbUri.getPassword() != null) {
+            this.props.setProperty("mail.smtp.auth", "true"); //Indicate that authentication is required at pop3 server
+            this.authentication = new PasswordAuthentication(this.xbUri.getUser(), this.xbUri.getPassword());
+         }
+      } catch (URISyntaxException e) {
+         throw new XmlBlasterException(glob,
+               ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Pop3Driver",
+               "Your URI '" + this.pop3Url +
+               "' is illegal", e);
+      }
+      
+      // Pass "this" for SMTP authentication with Authenticator
+      this.session = Session.getInstance(this.props, this);
 
       try { // Produces a success logging output
          getStore();
@@ -613,8 +637,14 @@ implements I_Plugin, I_Timeout,
    public Session getSession() {
       if (this.session == null) { // after a previous shutdown()
          synchronized (this) {
-            if (this.session == null)
-               this.session = Session.getInstance(this.props);
+            if (this.session == null) { // In such a case we should better throw an exception (the session should be initialized?!)
+               Thread.dumpStack();
+               if (this.xbUri != null && this.xbUri.getPassword() != null) {
+                  this.props.setProperty("mail.smtp.auth", "true"); //Indicate that authentication is required at pop3 server
+                  this.authentication = new PasswordAuthentication(this.xbUri.getUser(), this.xbUri.getPassword());
+               }
+               this.session = Session.getInstance(this.props, this);
+            }
          }
       }
       return this.session;
@@ -764,13 +794,6 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
                ErrorCode.RESOURCE_CONFIGURATION, Pop3Driver.class.getName(),
                "Problems to read POP3 email from '" + getUrlWithoutPassword()
                      + "'", e);
-      /*
-      } catch (IOException e) {
-         throw new XmlBlasterException(this.glob,
-               ErrorCode.RESOURCE_CONFIGURATION, Pop3Driver.class.getName(),
-               "Problems to read POP3 email from '" + getUrlWithoutPassword()
-                     + "'", e);
-      */
       } finally {
          try {
             if (inbox != null)
@@ -875,8 +898,10 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
     */
    public void deActivate() {
       log.fine("Entering deActivate()");
-      this.timeout.removeTimeoutListener(this.timeoutHandle);
-      this.timeoutHandle = null;
+      if (this.timeout != null) {
+         this.timeout.removeTimeoutListener(this.timeoutHandle);
+         this.timeoutHandle = null;
+      }
    }
 
    /**
@@ -889,7 +914,8 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
          synchronized (this.listeners) {
             this.listeners.clear();
          }
-         this.glob.unregisterMBean(this.mbeanHandle);
+         if (this.glob != null)
+            this.glob.unregisterMBean(this.mbeanHandle);
          this.session = null;
       }
    }
@@ -916,6 +942,24 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
 
    /* dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {
+   }
+
+   /**
+    * @return Returns the holdbackExpireTimeout.
+    */
+   public long getHoldbackExpireTimeout() {
+      return this.holdbackExpireTimeout;
+   }
+
+   /**
+    * @param holdbackExpireTimeout The holdbackExpireTimeout to set.
+    */
+   public void setHoldbackExpireTimeout(long holdbackExpireTimeout) {
+      this.holdbackExpireTimeout = holdbackExpireTimeout;
+   }
+   
+   public int getNumberOfHoldbackEmails() {
+      return this.holdbackMap.size();
    }
 
    /**
@@ -963,29 +1007,12 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
                break;
          }
       } catch (Exception e) {
+         e.printStackTrace();
          System.out.println(pop3Client.getPop3Url() + ": pop3Client failed: "
                + e.toString());
       } finally {
          if (pop3Client != null)
             pop3Client.shutdown();
       }
-   }
-
-   /**
-    * @return Returns the holdbackExpireTimeout.
-    */
-   public long getHoldbackExpireTimeout() {
-      return this.holdbackExpireTimeout;
-   }
-
-   /**
-    * @param holdbackExpireTimeout The holdbackExpireTimeout to set.
-    */
-   public void setHoldbackExpireTimeout(long holdbackExpireTimeout) {
-      this.holdbackExpireTimeout = holdbackExpireTimeout;
-   }
-   
-   public int getNumberOfHoldbackEmails() {
-      return this.holdbackMap.size();
    }
 }
