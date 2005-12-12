@@ -129,6 +129,27 @@ XmlScriptParser:
 </description>
 
 <example type="HTML">
+<p class="celltitel">Simple command line example to test your MTA</p>
+<p>To test access to your MTA you can invoke our SMTP and POP3 implementation standalone on the command line.
+This can be usefull to test if your connection URL (user name, password etc) is correct:
+</p>
+<p>
+1. Start a command line poller for user 'xmlBlaster':
+</p>
+<code>
+   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
+</code>
+
+<p>
+2. Send from command line an email:
+</p>
+
+<code>
+  java -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+</code>
+</example>
+
+<example type="HTML">
 <p class="celltitel">Example of the email structure</p>
 <h3>This example shows the structure of an email transporting xmlBlaster messages:</h3>
 <pre>
@@ -306,8 +327,8 @@ ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConne
                                  holdbackExpireTimeout=20000,\
                                  compress/type=zlib,\
                                  compress/minSize=200,\
-                                 parserClass=org.xmlBlaster.util.xbformat.XbfParser
-#                                 parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+                                 parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+# parserClass=org.xmlBlaster.util.xbformat.XbfParser
 
 # Register the client side callback server plugin (to listen on update() or publishReturnQos)
 ClientCbServerProtocolPlugin[email][1.0]=
@@ -322,13 +343,13 @@ ClientCbServerProtocolPlugin[email][1.0]=
          messageIdForceBase64=false,\
          contentForceBase64=false,\
          parserClass=org.xmlBlaster.util.xbformat.XbfParser
-#         schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd',\
-#         xmlDeclaration=&lt;?xml version='1.0' encoding='UTF-8'?>,\
-#         mail.subject=Generated email,\
-#         sendResponseSessionId=false,\
-#         sendResponseRequestId=false,\
-#         sendSimpleExceptionFormat=true,\
-#         parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+#schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd',\
+#xmlDeclaration=&lt;?xml version='1.0' encoding='UTF-8'?>,\
+#mail.subject=Generated email,\
+#sendResponseSessionId=false,\
+#sendResponseRequestId=false,\
+#sendSimpleExceptionFormat=true,\
+#parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 </pre>
 <p>The above client has chosen to don't compress the outgoing mails.
 Further it sends the UpdateReturnQos in clear XML text instead
