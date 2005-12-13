@@ -695,13 +695,15 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    public static XmlBlasterException tranformCallbackException(XmlBlasterException e) {
       // TODO: Marcel: For the time being the client has the chance
-      // to force requeueing by sending a USER_HOLDBACK which will lead
+      // to force requeueing by sending a USER_UPDATE_HOLDBACK which will lead
       // to a COMMUNICATION exception behaviour
-      if (ErrorCode.USER_HOLDBACK.toString().equals(e.getErrorCode().toString())) {
+      if (ErrorCode.USER_UPDATE_HOLDBACK.toString().equals(e.getErrorCode().toString())) {
          // Will set dispatcherActive==false
-         return new XmlBlasterException(e.getGlobal(),
+         XmlBlasterException ret = new XmlBlasterException(e.getGlobal(),
               ErrorCode.COMMUNICATION_USER_HOLDBACK,
               e.getEmbeddedMessage());
+         ret.isServerSide(e.isServerSide());
+         return ret;
       }
    
       // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
