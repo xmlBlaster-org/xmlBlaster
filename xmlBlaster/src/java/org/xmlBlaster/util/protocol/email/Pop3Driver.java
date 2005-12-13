@@ -963,7 +963,7 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
    }
 
    /**
-    * java -Dmail.pop3.url=pop3://blue:blue@localhost/INBOX
+    * java -Dmail.pop3.url=pop3://blue:blue@localhost:110/INBOX
     * org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
     * <p>
     * 
