@@ -133,6 +133,13 @@ public final class ConnectQosServer
       return this.connectQosData.getSessionQos().getSessionTimeout();
    }
 
+   /**
+    * Timeout until session expires if no communication happens
+    */
+   public void setSessionTimeout(long timeout) {
+      this.connectQosData.getSessionQos().setSessionTimeout(timeout);
+   }
+
    public boolean hasPublicSessionId() {
       if (getSessionName() != null) {
          return getSessionName().isSession();
