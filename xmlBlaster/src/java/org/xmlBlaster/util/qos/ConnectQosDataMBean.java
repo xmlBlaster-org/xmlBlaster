@@ -19,6 +19,8 @@ public interface ConnectQosDataMBean {
    public long getMaxSessions();
    /** The configured session live span in milli seconds */
    public long getSessionTimeout();
+   /** The configured session live span in milli seconds */
+   public void setSessionTimeout(long timeout);
    /** Does the client accept PtP messages? */
    public boolean isPtpAllowed();
    /** If this flag is set, the session will persist a server crash. */

@@ -190,7 +190,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
          if (log.TRACE) log.trace(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
-         timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
+         this.timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else {
          if (log.TRACE) log.trace(ME, "Session lasts forever, requested expiry timer was 0");
@@ -288,11 +288,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public void finalize() {
-      if (timerKey != null) {
-         this.expiryTimer.removeTimeoutListener(timerKey);
-         timerKey = null;
-      }
-
+      removeExpiryTimer();
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSecretSessionId());
    }
 
@@ -306,16 +302,22 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
    }
 
+   public void removeExpiryTimer() {
+      synchronized (this.EXPIRY_TIMER_MONITOR) {
+         if (this.timerKey != null) {
+            this.expiryTimer.removeTimeoutListener(this.timerKey);
+            this.timerKey = null;
+         }
+      }
+   }
+   
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
       this.glob.unregisterMBean(this.mbeanHandle);
       this.lock.lock();
       try {
          this.isShutdown = true;
-         if (timerKey != null) {
-            this.expiryTimer.removeTimeoutListener(timerKey);
-            timerKey = null;
-         }
+         removeExpiryTimer();
          if (this.sessionQueue != null) {
             this.sessionQueue.shutdown();
             //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
@@ -367,6 +369,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
             this.timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, this.timerKey);
          }
       }
+      else {
+         removeExpiryTimer();
+      }
    }
 
    /**
@@ -377,7 +382,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public final void timeout(Object userData) {
       this.lock.lock();
       try {
-         timerKey = null;
+         this.timerKey = null;
          log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
          DisconnectQosServer qos = new DisconnectQosServer(glob);
          qos.deleteSubjectQueue(true);
@@ -923,6 +928,17 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
       return this.queueQueryPlugin.query(this.sessionQueue, keyData, qosData);
    }
+   
+   /** JMX Enforced by ConnectQosDataMBean interface. */
+   public final void setSessionTimeout(long timeout) {
+      getConnectQos().setSessionTimeout(timeout);
+      try {
+         refreshSession();
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+      }
+   }
+
    
    /** JMX */
    public java.lang.String usage() {

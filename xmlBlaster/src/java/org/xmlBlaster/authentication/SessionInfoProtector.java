@@ -229,6 +229,10 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getConnectQos().getSessionTimeout();
    }
    /** Enforced by ConnectQosDataMBean interface. */
+   public final void setSessionTimeout(long timeout) {
+      this.sessionInfo.setSessionTimeout(timeout);
+   }
+   /** Enforced by ConnectQosDataMBean interface. */
    public final boolean isPtpAllowed() {
       return this.sessionInfo.getConnectQos().isPtpAllowed();
    }
