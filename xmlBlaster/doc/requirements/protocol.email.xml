@@ -159,6 +159,26 @@ and send manually emails to xmlBlaster.</p>
 email client sending a connect mail:</p>
      <br /><a NAME="emailOverview"></a>
       <img src="protocol.email.gui.png" border="0" title="Sending message with thunderbird" alt="Sending message with thunderbird" />
+
+<p>Server side configuration:</p>
+<pre>
+xmlBlasterPlugins.xml:
+   &lt;plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='7' sequence='10' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='7' sequence='10'/>
+      &lt;attribute id='mail.smtp.from'>xmlBlaster@localhost&lt;/attribute>   
+      &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
+   &lt;/plugin>
+</pre>
+
+<pre>
+xmlBlaster.properties:
+CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
+                             mail.smtp.from=xmlBlaster@localhost,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+</pre>
+
 <p>1. Connect to xmlBlaster</p>
 <pre>
 SUBJECT:
