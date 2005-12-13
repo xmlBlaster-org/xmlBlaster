@@ -59,7 +59,8 @@ private final static String ME = "ReplicationWriter";
    private String sqlTopic;
    private String schemaToWipeout;
    private I_PrePostStatement prePostStatement;
-   
+   private boolean hasInitialCmd;
+      
    public ReplicationWriter() {
       this.tableMap = new HashMap();
    }
@@ -128,7 +129,8 @@ private final static String ME = "ReplicationWriter";
          if (log.isLoggable(Level.FINE)) 
             log.fine(prePostStatementClass + " created and initialized");
       }
-      
+      String tmp = info.get("replication.initialCmd", null);
+      this.hasInitialCmd = (tmp == null);
    }
 
    public void shutdown() throws Exception {
@@ -548,25 +550,29 @@ private final static String ME = "ReplicationWriter";
       }
       
       if (isEof && !isException) {
-         String completeFilename = this.importLocation + File.separator + filename;
-         
-         if (this.schemaToWipeout != null) {
-            log.info("Going to clean up the schema '" + this.schemaToWipeout);
-            try {
-               this.dbSpecific.wipeoutSchema(null, this.schemaToWipeout);
+         if (this.hasInitialCmd) {
+            String completeFilename = this.importLocation + File.separator + filename;
+            
+            if (this.schemaToWipeout != null) {
+               log.info("Going to clean up the schema '" + this.schemaToWipeout);
+               try {
+                  this.dbSpecific.wipeoutSchema(null, this.schemaToWipeout);
+               }
+               catch (Exception ex) {
+                  log.severe("Could not clean up completely the schema");
+                  ex.printStackTrace();
+               }
             }
-            catch (Exception ex) {
-               log.severe("Could not clean up completely the schema");
-               ex.printStackTrace();
+            this.dbSpecific.initialCommand(null, completeFilename);
+            if (!this.keepDumpFiles) {
+               File fileToDelete = new File(completeFilename);
+               boolean del = fileToDelete.delete();
+               if (!del)
+                  log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
             }
          }
-         this.dbSpecific.initialCommand(null, completeFilename);
-         if (!this.keepDumpFiles) {
-            File fileToDelete = new File(completeFilename);
-            boolean del = fileToDelete.delete();
-            if (!del)
-               log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
-         }
+         else
+            log.info("since no 'replication.initialCmd' property defined, the initial command will not be executed (not either the wipeout of the schema)");
       }
    }
    

@@ -247,11 +247,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             }
          }
       }
-      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
-      this.initialCmd = this.info.get("replication.initialCmd", null);
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
-      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
    }
    
    /**
@@ -275,6 +270,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       subscriptionMap.put("ptp", "true");
       if (this.publisher != null)
          this.publisher.registerAlertListener(this, subscriptionMap);
+      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
+      this.initialCmd = this.info.get("replication.initialCmd", null);
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
+      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
       sendRegistrationMessage();
    }
 
@@ -427,23 +427,15 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    
    /**
     * Sends/publishes the initial file as a high priority message.
-    * @param filename
+    * @param filename the name of the file to publish. Can be null, if null, no file is sent, only the status change message is sent.
     * @throws FileNotFoundException
     * @throws IOException
     */
    private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
-      // now read the file which has been generated
-      String filename = null;
-      log.info("sending initial file '" + shortFilename + "' for user '" + slaveSessionName  + "'");
-      if (this.initialCmdPath != null)
-         filename = this.initialCmdPath + File.separator + shortFilename;
-      else
-         filename = shortFilename;
-      File file = new File(filename);
-      
-      FileInputStream fis = new FileInputStream(file);
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
+         if (shortFilename == null)
+            shortFilename = "no file (since no initial data)";
          log.warning("The publisher has not been initialized, can not publish message for '" + shortFilename + "'");
          return;
       }
@@ -453,20 +445,38 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(null, slaveSessionName));
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      XBStreamingMessage msg = session.createStreamingMessage();
-      msg.setStringProperty("_filename", shortFilename);
-      msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
-      msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
-      msg.setInputStream(fis);
-      producer.send(msg);
-      if (!this.keepDumpFiles) {
-         if (file.exists()) { 
-            boolean ret = file.delete();
-            if (!ret)
-               log.warning("could not delete the file '" + filename + "'");
+      
+      // now read the file which has been generated
+      String filename = null;
+      if (shortFilename != null) {
+         log.info("sending initial file '" + shortFilename + "' for user '" + slaveSessionName  + "'");
+         if (this.initialCmdPath != null)
+            filename = this.initialCmdPath + File.separator + shortFilename;
+         else
+            filename = shortFilename;
+         File file = new File(filename);
+         
+         FileInputStream fis = new FileInputStream(file);
+         
+         XBStreamingMessage msg = session.createStreamingMessage();
+         msg.setStringProperty("_filename", shortFilename);
+         msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
+         msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
+         msg.setInputStream(fis);
+         producer.send(msg);
+         if (!this.keepDumpFiles) {
+            if (file.exists()) { 
+               boolean ret = file.delete();
+               if (!ret)
+                  log.warning("could not delete the file '" + filename + "'");
+            }
          }
+         fis.close();
       }
-      fis.close();
+      else
+         log.info("initial update requested with no real initial data for '" + slaveSessionName + "' and for replication '" + this.replPrefix + "'");
+
+      // send the message for the status change
       TextMessage  endMsg = session.createTextMessage();
       endMsg.setText("INITIAL UPDATE ENDS HERE");
       endMsg.setBooleanProperty(ReplicationConstants.END_OF_TRANSITION , true);
@@ -517,7 +527,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    /**
     * This is the intial command which is invoked on the OS. It is basically used for the
     * import and export of the DB. Could also be used for other operations on the OS.
-    * It is a helper method.
+    * It is a helper method. If the initialCmd (the 'replication.initialCmd' property) is null,
+    * then it silently returns null as the filename.
     * 
     * @param argument the argument to execute. It is normally the absolute file name to be
     * exported/imported. Can be null, if null, one is generated by using the current timestamp.
@@ -527,19 +538,16 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws Exception
     */
    public final String initialCommand(String invoker, String completeFilename, ConnectionInfo connInfo) throws Exception {
+      if (this.initialCmd == null)
+         return null;
       String filename = null;
       if (completeFilename == null) {
          filename = "" + (new Timestamp()).getTimestamp() + ".dmp";
          completeFilename = this.initialCmdPath + File.separator + filename;
       }
-      if (this.initialCmd == null)
-         log.warning("no initial command has been defined ('initialCmd'). I will ignore it");
-      else {
-         // String cmd = this.initialCmd + " \"" + completeFilename + "\"";
-         String cmd = this.initialCmd + " " + completeFilename;
-         osExecute(invoker, cmd, connInfo);
-         
-      }
+      // String cmd = this.initialCmd + " \"" + completeFilename + "\"";
+      String cmd = this.initialCmd + " " + completeFilename;
+      osExecute(invoker, cmd, connInfo);
       return filename;
    }
 
