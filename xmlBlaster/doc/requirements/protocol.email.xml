@@ -149,6 +149,103 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 </code>
 </example>
 
+
+
+<example type="HTML">
+<p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc)</p>
+<p>After having a configured james MTA you can play with your email client software
+and send manually emails to xmlBlaster.</p>
+<p>The following sequence shows a connect, subscribe and disconnect, first you see the mozilla/thunderbird
+email client sending a connect mail:</p>
+     <br /><a NAME="emailOverview"></a>
+      <img src="protocol.email.gui.png" border="0" title="Sending message with thunderbird" alt="Sending message with thunderbird" />
+<p>1. Connect to xmlBlaster</p>
+<pre>
+SUBJECT:
+&lt;messageId>&lt;requestId>1&lt;/requestId>&lt;/messageId>
+CONTENT:
+&lt;xmlBlaster>
+  &lt;connect>
+    &lt;qos>
+      &lt;securityService type="htpasswd" version="1.0">
+        &lt;user>tester&lt;/user>
+        &lt;passwd>tester&lt;/passwd>
+      &lt;/securityService>
+      &lt;session name='emailTester/1' timeout='-1'/>
+      &lt;queue relating='connection'>
+         &lt;address type="email" />
+      &lt;/queue>
+      &lt;queue relating='callback' maxEntries='5' maxEntriesCache='2'>
+         &lt;callback type="email" pingInterval='0' retries='-1'>
+           blue8@localhost
+         &lt;/callback>
+      &lt;/queue>
+    &lt;/qos>
+ &lt;/connect>
+&lt;/xmlBlaster>
+</pre>
+<p>No wait in your email GUI until the ConnectReturnQos mail arrives from xmlBlaster, from this
+take the private session id and use it for further communication (see 'sessionId:127.0.0.2-null-1134492824506--1769759418-3'
+below). We have set <code>pingInterval='0'</code> to not receive unwanted pings, and set <code>retries='-1'</code>
+so that the server never deletes us. Further we have set with <code>timeout='-1'</code> the session expiry to unlimited.</p> 
+
+<p>2. Subscribe to a topic</p>
+<p>Copy the above sessionId into the subject and increment the requestId, the requestId must be ascending otherwise
+xmlBlaster rejects it.</p>
+<pre>
+SUBJECT:
+&lt;messageId>&lt;sessionId>sessionId:127.0.0.2-null-1134492824506--1769759418-3&lt;/sessionId>&lt;requestId>2&lt;/requestId>&lt;/messageId>
+CONTENT:
+&lt;xmlBlaster>
+  &lt;subscribe>
+    &lt;key oid="__sys__Login"/>
+    &lt;qos>&lt;updateOneway>true&lt;/updateOneway>&lt;/qos>
+  &lt;/subscribe>
+&lt;/xmlBlaster>
+</pre>
+<p>Now the SubscribeReturnQos email should arrive and a callback mail (update()) containing the last logged in client,
+as we have subscribed on this topic. Note that we have set <code>updateOneway=true</code> otherwise
+we would need to acknowledge each received update message.</p>
+<p>Here is the update mail:</p>
+<pre>
+&lt;updateOneway sessionId='unknown' requestId='1134497298063000000' type='I'>
+ 
+ &lt;qos>
+  &lt;sender>/node/heron/client/__RequestBroker_internal[heron]/1&lt;/sender>
+  &lt;subscribe id='__subId:heron-1134497297978000000'/>
+  &lt;expiration lifeTime='-1'/>
+  &lt;rcvTimestamp nanos='1134497257820000000'/>
+  &lt;queue index='0' size='1'/>
+  &lt;forceUpdate/>
+  &lt;isPublish/>
+  &lt;clientProperty name='__sessionId' type='long'>1&lt;/clientProperty>
+  &lt;clientProperty name='__publicSessionId' type='long'>1&lt;/clientProperty>
+  &lt;clientProperty name='__absoluteName'>/node/heron/client/emailTester/1&lt;/clientProperty>
+ &lt;/qos>
+ 
+ &lt;key oid='__sys__Login'/>
+  &lt;content type='String'>emailTester&lt;/content>
+&lt;/updateOneway>
+</pre>
+<p>You can login some other java clients and you will receive further update emails.</p>
+
+
+<p>3. Disconnect</p>
+<p>And finally we disconnect again, to release all server side resources:</p>
+<pre>
+SUBJECT:
+&lt;messageId>&lt;sessionId>sessionId:127.0.0.2-null-1134492824506--1769759418-3&lt;/sessionId>&lt;requestId>2&lt;/requestId>&lt;/messageId>
+CONTENT:
+&lt;xmlBlaster>
+  &lt;disconnect/>
+&lt;/xmlBlaster>
+</pre>
+
+
+</example>
+
+
+
 <example type="HTML">
 <p class="celltitel">Example of the email structure</p>
 <h3>This example shows the structure of an email transporting xmlBlaster messages:</h3>
@@ -247,6 +344,17 @@ listusers
 quit
 </pre>
   <p>Now our MTA is ready for testing.</p>
+
+  <p><b>Hint:</b> On UNIX and Linux you can avoid starting james as root.</p>
+  <p>
+  Just change the ports to be above 1000, you could change the SMTP port from 25 -> 8025
+  and the POP3 port from 110 -> 8110.<br />
+  Edit <code>james-2.2.0/apps/james-plus/SAR-INF/config.xml</code>
+  to do this and remove the nntp service.
+  Additionally add those ports to <code>xmlBlasterPlugins.xml</code>
+  and <code>xmlBlaster.properties</code>, here is an example for SMTP <code>smtp://xmlBlaster:xmlBlaster@localhost:8025</code>
+  and for POP3 <code>pop3://xmlBlaster:xmlBlaster@localhost:8110/INBOX</code>
+  </p>
 
   <h2 class="celltitel">Debugging</h2>
 <pre>
@@ -433,6 +541,9 @@ to detect email duplicates and assure sequency
       <h2>TODO: Add the other properties (currently see javadoc)</h2>
       <p>Note: You can easily re-configure the POP3 and SMTP behavior on a running xmlBlaster
       with JMX</p>
+      <p>Note: The current email callback implementation can handle max one connection per email account
+       (like 'joe' on the POP3 server) if you don't supply a positive sessionId</p>
+
    </configuration>
    <todo type="HTML">
 Make last requestId persistent to have loop and sequence protection after a restart
