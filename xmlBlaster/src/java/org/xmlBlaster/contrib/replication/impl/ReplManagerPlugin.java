@@ -429,7 +429,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       catch (Throwable ex) {
          ex.printStackTrace();
          log.severe("Throwable occured in the update method of ReplManagerPlugin");
-         throw new XmlBlasterException(this.global, ErrorCode.USER_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
+         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
       }
    }
    

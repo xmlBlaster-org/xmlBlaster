@@ -500,12 +500,12 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          catch (Exception ex) {
             ex.printStackTrace();
             log.severe("Exception occured in the update method for key='" + s + "'");
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
          }
          catch (Throwable ex) {
             ex.printStackTrace();
             log.severe("Throwable occured in the update method for key='" + s + "'");
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_HOLDBACK, "XmlBlasterPublisher.update", "user exception", ex);
          }
 
       }

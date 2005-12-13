@@ -752,7 +752,8 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
             if (type == MsgInfo.EXCEPTION_BYTE && this.sendSimpleExceptionFormat) {
                // This must be parsable on the other side similar to XmlBlasterException.parseByteArr()
                // See code in MsgInfo.java
-               ErrorCode errorCode = ErrorCode.getCategory(msgUnits[0].getQos()); 
+               //ErrorCode errorCode = ErrorCode.getCategory(msgUnits[0].getQos()); -> toplevel only, like 'user' 
+               ErrorCode errorCode = ErrorCode.toErrorCode(msgUnits[0].getQos()); 
                StringBuffer buf = new StringBuffer(1024);
                buf.append("<qos><state id='ERROR' info='").append(errorCode.getErrorCode());
                buf.append("'/></qos>");

@@ -204,11 +204,11 @@ public class Receiver implements I_Plugin, I_Callback {
       }
       catch (Exception ex) {
          ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_HOLDBACK, "Receiver.update", "user exception", ex);
+         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "Receiver.update", "user exception", ex);
       }
       catch (Throwable ex) {
          ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_HOLDBACK, "Receiver.update", "user throwable", ex);
+         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "Receiver.update", "user throwable", ex);
       }
    }
 }

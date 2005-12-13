@@ -22,7 +22,7 @@ import java.util.Iterator;
 public final class ErrorCode implements java.io.Serializable
 {
    private static final long serialVersionUID = 6926365721931493917L;
-   private final static TreeMap hash = new TreeMap(); // The key is the 'errorCode' String and the value is an 'ErrorCode' instance
+   private final static TreeMap errorCodeMap = new TreeMap(); // The key is the 'errorCode' String and the value is an 'ErrorCode' instance
    private final String errorCode;
    private final String description;
    private final ResourceInfo[] resourceInfos;
@@ -364,7 +364,7 @@ public final class ErrorCode implements java.io.Serializable
 
    // The dispatch framework reacts specific for communication exceptions
    public static final ErrorCode COMMUNICATION_USER_HOLDBACK = new ErrorCode("communication.user.holdback",
-         "See USER_HOLDBACK.",
+         "See USER_UPDATE_HOLDBACK.",
          new ResourceInfo[] {
          }
       );
@@ -376,8 +376,8 @@ public final class ErrorCode implements java.io.Serializable
       );
 
    // TODO: Replace by finer adjusting possibilities (like retry timeouts etc.)
-   public static final ErrorCode USER_HOLDBACK = new ErrorCode("user",
-         "You can throw this on client side in your update() method: Like this the server queues the message and sets the dispatcActive to false. You need to manually activate the dispatcher again. Will be changed again, use with care.",
+   public static final ErrorCode USER_UPDATE_HOLDBACK = new ErrorCode("user.update.holdback",
+         "You can throw this on client side in your update() method: Like this the server queues the message and sets the dispatcActive to false. You need to manually activate the dispatcher again.",
          new ResourceInfo[] {
          }
       );
@@ -606,7 +606,7 @@ public final class ErrorCode implements java.io.Serializable
       this.errorCode = errorCode;
       this.description = (description == null) ? "" : description;
       this.resourceInfos = (resourceInfos == null) ? new ResourceInfo[0] : resourceInfos;
-      hash.put(errorCode, this);
+      errorCodeMap.put(errorCode, this);
    }
 
    /**
@@ -690,22 +690,45 @@ public final class ErrorCode implements java.io.Serializable
       if (errorCode == null) {
          throw new IllegalArgumentException("ErrorCode: The given errorCode=" + errorCode + " is null");
       }
-      Object entry = hash.get(errorCode);
+      Object entry = errorCodeMap.get(errorCode);
       if (entry == null)
          throw new IllegalArgumentException("ErrorCode: The given errorCode=" + errorCode + " is unknown");
       return (ErrorCode)entry;
    }
 
+   /**
+    * Dump a plain list of all errorCodes. 
+    * @return The list with each errorCode in a new line
+    */
+   public static String toPlainList() {
+      StringBuffer sb = new StringBuffer(2560);
+      String offset = "\n";
+      java.util.Date date = new java.util.Date();
+      String d = new java.sql.Timestamp(date.getTime()).toString();
+      sb.append("# XmlBlaster ErrorCode listing " + d);
+      Iterator it = errorCodeMap.keySet().iterator();
+      while (it.hasNext()) {
+         String code = (String)it.next();
+         ErrorCode errorCode = (ErrorCode)errorCodeMap.get(code);
+         sb.append(offset).append(errorCode.getErrorCode());
+      }
+      return sb.toString();
+   }
+
+   /**
+    * Generate a HTML table listing of all error codes. 
+    * @return The HTML markup
+    */
    public static String toHtmlTable() {
       StringBuffer sb = new StringBuffer(2560);
       String offset = "\n ";
       sb.append(offset).append("<table border='1'>");
-      Iterator it = hash.keySet().iterator();
+      Iterator it = errorCodeMap.keySet().iterator();
       sb.append(offset).append("<tr><th>Error Code</th><th>Description</th><th>See</th></tr>");
       while (it.hasNext()) {
          sb.append(offset).append("<tr>");
          String code = (String)it.next();
-         ErrorCode errorCode = (ErrorCode)hash.get(code);
+         ErrorCode errorCode = (ErrorCode)errorCodeMap.get(code);
 
          sb.append(offset).append(" <td><a name='").append(errorCode.getErrorCode()).append("'></a>");
          sb.append(errorCode.getErrorCode()).append("</td>");
@@ -774,10 +797,10 @@ public final class ErrorCode implements java.io.Serializable
       offset += extraOffset;
 
       sb.append(offset).append("<ErrorCodes>");
-      Iterator it = hash.keySet().iterator();
+      Iterator it = errorCodeMap.keySet().iterator();
       while (it.hasNext()) {
          String code = (String)it.next();
-         ErrorCode errorCode = (ErrorCode)hash.get(code);
+         ErrorCode errorCode = (ErrorCode)errorCodeMap.get(code);
          sb.append(errorCode.toXml(" "));
       }
       sb.append(offset).append("</ErrorCodes>");
@@ -827,8 +850,11 @@ public final class ErrorCode implements java.io.Serializable
 
    /**
     * Generate a requirement file for all error codes. 
+    * Used by build.xml, change with care!
     * <pre>
-    *  java org.xmlBlaster.util.def.ErrorCode
+    *  java org.xmlBlaster.util.def.ErrorCode <HtmlFileName>
+    *  java org.xmlBlaster.util.def.ErrorCode verifySerialization
+    *  java org.xmlBlaster.util.def.ErrorCode toPlainList  
     * </pre>
     */
    public static void main(String [] args) {
@@ -836,15 +862,22 @@ public final class ErrorCode implements java.io.Serializable
       if (args.length > 0) {
          file = args[0];
       }
-      String req = toRequirement();
-      try {
-         org.jutils.io.FileUtil.writeFile(file, req);
-         System.out.println("Created requirement file '" + file + "'");
+      if ("verifySerialization".equals(file)) {
+         verifySerialization();
       }
-      catch (Exception e) {
-         System.out.println("Writing file '" + file + "' failed: " + e.toString());
+      else if ("toPlainList".equals(file)) {
+         System.out.println(toPlainList());
       }
-      verifySerialization();
+      else {
+         String req = toRequirement();
+         try {
+            org.jutils.io.FileUtil.writeFile(file, req);
+            System.out.println("Created requirement file '" + file + "'");
+         }
+         catch (Exception e) {
+            System.out.println("Writing file '" + file + "' failed: " + e.toString());
+         }
+      }
    }
 
    private static void verifySerialization() {

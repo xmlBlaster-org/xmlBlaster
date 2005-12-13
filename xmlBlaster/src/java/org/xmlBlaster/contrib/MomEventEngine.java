@@ -170,11 +170,11 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       }
       catch (Exception ex) {
          ex.printStackTrace();
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_HOLDBACK, "MomEventEngine.update", "user exception", ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_HOLDBACK, "MomEventEngine.update", "user exception", ex);
       }
       catch (Throwable ex) {
          ex.printStackTrace();
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_HOLDBACK, "MomEventEngine.update", "user throwable", ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_HOLDBACK, "MomEventEngine.update", "user throwable", ex);
       }
    }
 
