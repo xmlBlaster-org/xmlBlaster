@@ -683,7 +683,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * Send a one way response message back to the other side
     */
    protected final void executeResponse(MsgInfo receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
+      
+      // Take a clone:
       MsgInfo returner = receiver.createReturner(MsgInfo.RESPONSE_BYTE);
+      
       if (response instanceof String)
          returner.addMessage((String)response);
       else if (response instanceof String[])
@@ -723,6 +726,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       return this.compressZlib;
    }
    
+   public void setCompressZlib(boolean compress) {
+      this.compressZlib = compress;
+   }
+   
    /**
     * Compressing too small messages won't reduce the size
     * @return The number of bytes, only compress if bigger
@@ -733,6 +740,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
    public boolean isCompressZlibStream() {
       return this.compressZlibStream;
+   }
+
+   public void setCompressZlibStream(boolean compress) {
+      this.compressZlibStream = compress;
    }
 
    /**

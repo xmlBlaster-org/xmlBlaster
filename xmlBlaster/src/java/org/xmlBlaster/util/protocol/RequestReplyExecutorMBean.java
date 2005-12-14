@@ -51,6 +51,7 @@ public interface RequestReplyExecutorMBean extends I_AdminPlugin {
 
 
    public boolean isCompressZlib();
+   public void setCompressZlib(boolean compress);
    
    /**
     * Compressing too small messages won't reduce the size
@@ -62,6 +63,8 @@ public interface RequestReplyExecutorMBean extends I_AdminPlugin {
 
    public boolean isCompressZlibStream();
 
+   public void setCompressZlibStream(boolean compress);
+   
    /**
     * @return Returns the updateResponseTimeout.
     */
