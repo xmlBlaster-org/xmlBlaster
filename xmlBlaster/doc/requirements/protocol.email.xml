@@ -150,19 +150,15 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 </example>
 
 
-
 <example type="HTML">
 <p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc)</p>
 <p>After having a configured james MTA you can play with your email client software
 and send manually emails to xmlBlaster.</p>
-<p>The following sequence shows a connect, subscribe and disconnect, first you see the mozilla/thunderbird
-email client sending a connect mail:</p>
-     <br /><a NAME="emailOverview"></a>
-      <img src="protocol.email.gui.png" border="0" title="Sending message with thunderbird" alt="Sending message with thunderbird" />
 
-<p>Server side configuration:</p>
+<p>The first step is to setup the server side configuration:</p>
 <pre>
 xmlBlasterPlugins.xml:
+   &lt;!-- You need an acticated Pop3Driver and SnmpClient and additionally: -->
    &lt;plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
       &lt;action do='LOAD' onStartupRunlevel='7' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
@@ -179,11 +175,10 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 </pre>
 
-<p>1. Connect to xmlBlaster</p>
+<p>Now we are ready to send an XmlScript to xmlBlaster,
+the following sequence shows a connect, two publishes, one subscribe and a disconnect:
+</p> 
 <pre>
-SUBJECT:
-&lt;messageId>&lt;requestId>1&lt;/requestId>&lt;/messageId>
-CONTENT:
 &lt;xmlBlaster>
   &lt;connect>
     &lt;qos>
@@ -202,68 +197,81 @@ CONTENT:
       &lt;/queue>
     &lt;/qos>
  &lt;/connect>
-&lt;/xmlBlaster>
-</pre>
-<p>No wait in your email GUI until the ConnectReturnQos mail arrives from xmlBlaster, from this
-take the private session id and use it for further communication (see 'sessionId:127.0.0.2-null-1134492824506--1769759418-3'
-below). We have set <code>pingInterval='0'</code> to not receive unwanted pings, and set <code>retries='-1'</code>
-so that the server never deletes us. Further we have set with <code>timeout='-1'</code> the session expiry to unlimited.</p> 
 
-<p>2. Subscribe to a topic</p>
-<p>Copy the above sessionId into the subject and increment the requestId, the requestId must be ascending otherwise
-xmlBlaster rejects it.</p>
-<pre>
-SUBJECT:
-&lt;messageId>&lt;sessionId>sessionId:127.0.0.2-null-1134492824506--1769759418-3&lt;/sessionId>&lt;requestId>2&lt;/requestId>&lt;/messageId>
-CONTENT:
-&lt;xmlBlaster>
-  &lt;subscribe>
-    &lt;key oid="__sys__Login"/>
-    &lt;qos>&lt;updateOneway>true&lt;/updateOneway>&lt;/qos>
-  &lt;/subscribe>
+ &lt;publish>
+   &lt;key oid="Hello">&lt;airport />&lt;/key>
+   &lt;content>Hi world&lt;/content>
+ &lt;/publish>
+
+ &lt;publish>
+   &lt;key oid="Hello"/>
+   &lt;content>Hi again&lt;/content>
+ &lt;/publish>
+
+ &lt;subscribe>
+   &lt;key oid="__sys__Login">&lt;/key>
+   &lt;qos>&lt;updateOneway>true&lt;/updateOneway>&lt;/qos>
+ &lt;/subscribe>
+
+ &lt;disconnect/>
 &lt;/xmlBlaster>
 </pre>
-<p>Now the SubscribeReturnQos email should arrive and a callback mail (update()) containing the last logged in client,
-as we have subscribed on this topic. Note that we have set <code>updateOneway=true</code> otherwise
+
+<p>Usually you need to take the private session id from the returned ConnectReturnQos email
+and use it for further communication
+(like 'sessionId:127.0.0.2-null-1134492824506--1769759418-3'). As we do all communication
+in one mail and diconnect at the end we don't need to bother about this.<br />
+We have set <code>pingInterval='0'</code> to not receive unwanted pings, and set <code>retries='-1'</code>
+so that the server never deletes us until our disconnect arrives.
+Further we have set with <code>timeout='-1'</code> the session expiry to unlimited.</p> 
+
+<p>See our above subscribe(). Note that we have set <code>updateOneway=true</code> otherwise
 we would need to acknowledge each received update message.</p>
-<p>Here is the update mail:</p>
-<pre>
-&lt;updateOneway sessionId='unknown' requestId='1134497298063000000' type='I'>
- 
- &lt;qos>
-  &lt;sender>/node/heron/client/__RequestBroker_internal[heron]/1&lt;/sender>
-  &lt;subscribe id='__subId:heron-1134497297978000000'/>
-  &lt;expiration lifeTime='-1'/>
-  &lt;rcvTimestamp nanos='1134497257820000000'/>
-  &lt;queue index='0' size='1'/>
-  &lt;forceUpdate/>
-  &lt;isPublish/>
-  &lt;clientProperty name='__sessionId' type='long'>1&lt;/clientProperty>
-  &lt;clientProperty name='__publicSessionId' type='long'>1&lt;/clientProperty>
-  &lt;clientProperty name='__absoluteName'>/node/heron/client/emailTester/1&lt;/clientProperty>
- &lt;/qos>
- 
- &lt;key oid='__sys__Login'/>
-  &lt;content type='String'>emailTester&lt;/content>
-&lt;/updateOneway>
-</pre>
-<p>You can login some other java clients and you will receive further update emails.</p>
 
+<p>This screen dump shows the setup just before sending with mozilla/thunderbird,
+the subject line is ignored:</p>
+     <br /><a NAME="protocol.email.gui.multiple"></a>
+      <img src="protocol.email.gui.multiple.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
 
-<p>3. Disconnect</p>
-<p>And finally we disconnect again, to release all server side resources:</p>
-<pre>
-SUBJECT:
-&lt;messageId>&lt;sessionId>sessionId:127.0.0.2-null-1134492824506--1769759418-3&lt;/sessionId>&lt;requestId>2&lt;/requestId>&lt;/messageId>
-CONTENT:
-&lt;xmlBlaster>
-  &lt;disconnect/>
-&lt;/xmlBlaster>
-</pre>
+<p>As a response you will receive multiple of emails, one acknowledge for each request
+and one update() message for the subscribe, this screen dump shows the received update() only:</p>
+     <br /><a NAME="protocol.email.gui.updateOneway"></a>
+      <img src="protocol.email.gui.updateOneway.png" border="0" title="Receiving update with thunderbird" alt="Receiving update with thunderbird" />
 
+<p/>
+<p class="celltitel">Sending requests in separate emails</p>
 
+<p>You can send the above connect() in a single first email.</p>
+     <br /><a NAME="protocol.email.gui.connect"></a>
+      <img src="protocol.email.gui.connect.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
+<p>You will receive an email with the ConnectReturnQos in the email-body and your secret sessionId
+in the email-subject. Just press your reply button to keep the subject and send the
+next publish() request email. The publish is authenticated by the secret sessionId
+in the subject.</p>
+     <br /><a NAME="protocol.email.gui.publish"></a>
+      <img src="protocol.email.gui.publish.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
+
+<p> </p>
+<h2>Limitation</h2>
+<p>Each email needs a unique and ascending <code>requestId</code>.
+As we haven't supplied one in our above examples the <code>sent-date</code> of the
+email header is chosen as a fallback. As this date is based on seconds you may
+manually not send more than one email per second.
+</p>
+<p>You can send such a <code>requestId</code> in the subject as well, but now you have to take
+care yourself to increment it manually for each follow up email:<br />
+<code>&lt;messageId>
+        &lt;sessionId>sessionId:127.0.0.2-null-1134491480448--1073813090-3&lt;/sessionId>
+        &lt;requestId>1136486974900000000&lt;/requestId>
+        &lt;methodName>subscribe&lt;/methodName>
+        &lt;expires>2005-12-13 19:17:53.148&lt;/expires>
+      &lt;/messageId></code>
+</p>
+<p>Optionally you can send an expire date, when this is elapsed the email is discarded by the xmlBlaster server.</p>
+<p>If you use our embedded java client protocol plugin for <code>email</code>
+this limitation does not exist, here we correctly send a unique and ascending timestamp.
+</p>
 </example>
-
 
 
 <example type="HTML">
@@ -332,6 +340,7 @@ Content-Disposition: attachment; filename=attachment2
    
     <configuration where="server">
     <h2 class="celltitel">Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
+    <a NAME="jamesSetup"></a>
     <p>The fastest way for a test environment is to use the James MTA http://james.apache.org. 
     Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
     </p>
