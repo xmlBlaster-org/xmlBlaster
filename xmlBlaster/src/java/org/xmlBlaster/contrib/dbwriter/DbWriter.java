@@ -57,7 +57,7 @@ public class DbWriter implements I_Update {
     * @param info Configuration
     * @throws Exception Can be of any type
     */
-   public void init(I_Info info) throws Exception {
+   public synchronized void init(I_Info info) throws Exception {
       if (info == null) throw new IllegalArgumentException("Missing configuration, info is null");
       this.info = info;
       this.info.putObject("org.xmlBlaster.contrib.dbwriter.DbWriter", this);
@@ -111,6 +111,10 @@ public class DbWriter implements I_Update {
       if (log.isLoggable(Level.FINE)) log.fine("DbWriter created");
    }
    
+   public I_Info getInfo() {
+      return this.info;
+   }
+
    private void shutdown(I_ContribPlugin plugin) {
       try { 
          if (plugin != null) 
@@ -128,8 +132,8 @@ public class DbWriter implements I_Update {
     */
    public synchronized void shutdown() {
       try {
+         shutdown(this.eventEngine);
          this.isAlive = false;
-         // shutdown(this.eventEngine);
          shutdown(this.parser);
          shutdown(this.writer);
          if (this.poolOwner && this.dbPool != null) {
@@ -148,7 +152,7 @@ public class DbWriter implements I_Update {
     * Determines wether the message is a database dump or not. If it is a database dump it stores the content to a file,
     * otherwise it processes the message according to the normal processing flow.
     */
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public synchronized void update(String topic, byte[] content, Map attrMap) throws Exception {
       if (!this.isAlive) {
          throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
       }

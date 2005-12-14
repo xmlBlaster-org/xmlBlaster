@@ -449,6 +449,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       this.replPrefix = this.info.get("replication.prefix", "repl_");
       Map map = new HashMap();
       map.put("replPrefix", this.replPrefix);
+      map.put("charWidth", this.info.get("replication.charWidth", "50"));
+      map.put("charWidthSmall", this.info.get("replication.charWidthSmall", "10"));
       this.replacer = new Replacer(this.info, map);
 
       this.initialUpdater = new InitialUpdater(this);
@@ -527,6 +529,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          log.info("going to shutdown: cleaning up resources");
          // registering this instance to the Replication Manager
          this.initialUpdater.shutdown();
+         this.initialUpdater = null;
       } catch (Throwable e) {
          e.printStackTrace();
          log.warning(e.toString());
@@ -1017,7 +1020,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          }
 
          I_Info info = new PropertiesInfo(System.getProperties());
-         I_DbSpecific specific = ReplicationConverter.getDbSpecific(info);
+         boolean forceCreationAndInit = true;
+         I_DbSpecific specific = ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
          pool = (I_DbPool) info.getObject("db.pool");
          conn = pool.reserve();
          String schema = info.get("wipeout.schema", null);

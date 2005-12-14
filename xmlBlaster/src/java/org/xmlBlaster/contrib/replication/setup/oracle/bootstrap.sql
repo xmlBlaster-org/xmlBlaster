@@ -62,10 +62,11 @@ CREATE TABLE ${replPrefix}longs_table(repl_key INTEGER,
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname VARCHAR(30),
-                         tablename VARCHAR(30), repl_flags CHAR(3),
-			 status VARCHAR(10), repl_key INTEGER, 
-			 trigger_name VARCHAR(30), debug INTEGER, 
+CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(${charWidth}), 
+                         schemaname VARCHAR(${charWidth}),
+                         tablename VARCHAR(${charWidth}), repl_flags CHAR(3),
+			 status VARCHAR(${charWidthSmall}), repl_key INTEGER, 
+			 trigger_name VARCHAR(${charWidth}), debug INTEGER, 
 			 PRIMARY KEY(catalogname, schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -92,10 +93,11 @@ CREATE SEQUENCE ${replPrefix}seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
 -- EOC (end of command: needed as a separator for our script parser)            
 
 CREATE TABLE ${replPrefix}items (repl_key INTEGER, 
-             trans_key VARCHAR(30), dbId VARCHAR(30), tablename VARCHAR(30), 
-	     guid VARCHAR(30), db_action VARCHAR(15), db_catalog VARCHAR(30),
-	     db_schema VARCHAR(30), content CLOB, oldContent CLOB, 
-	     version VARCHAR(10), PRIMARY KEY (repl_key))
+             trans_key VARCHAR(${charWidth}), dbId VARCHAR(${charWidth}), 
+	     tablename VARCHAR(${charWidth}), guid VARCHAR(${charWidth}), 
+	     db_action VARCHAR(${charWidth}), db_catalog VARCHAR(${charWidth}),
+	     db_schema VARCHAR(${charWidth}), content CLOB, oldContent CLOB, 
+	     version VARCHAR(${charWidthSmall}), PRIMARY KEY (repl_key))
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -132,7 +134,7 @@ END ${replPrefix}fill_blob_char;
 CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_cdata(name VARCHAR, 
                            content CLOB) RETURN CLOB AS
   tmp CLOB;
-  ch  VARCHAR(40);
+  ch  VARCHAR(${charWidth});
 BEGIN
    tmp := EMPTY_CLOB;
    dbms_lob.createtemporary(tmp, TRUE);
@@ -341,7 +343,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW)
      source     RAW(32766); 
      zeros      SMALLINT;
      ch         CHAR(10);
-     tmp        VARCHAR(10);
+     tmp        VARCHAR(${charWidthSmall});
 BEGIN
    source := msg;
    res := EMPTY_CLOB;
@@ -440,7 +442,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2,
    tmp CLOB;
    res CLOB;
    needsProt INTEGER;
-   answer VARCHAR(20);
+   answer VARCHAR(${charWidth});
 BEGIN
    ${replPrefix}debug('TEST CLOB INVOKED');
    tmp := EMPTY_CLOB;
@@ -497,7 +499,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_varchar2(msg VARCHAR2)
      source VARCHAR2(32766); 
      zeros SMALLINT;
      ch    CHAR(2);
-     tmp   VARCHAR(10);
+     tmp   VARCHAR(${charWidthSmall});
 BEGIN
    source := msg;
    res := EMPTY_CLOB;
@@ -717,8 +719,8 @@ END ${replPrefix}debug_trigger;
 CREATE OR REPLACE FUNCTION ${replPrefix}check_tables(dbName VARCHAR, schName 
                                           VARCHAR, tblName VARCHAR, op VARCHAR)
    RETURN VARCHAR AS
-   transId    VARCHAR(30);
-   res        VARCHAR(10);
+   transId    VARCHAR(${charWidth});
+   res        VARCHAR(${charWidthSmall});
    tmp        INTEGER;
    replKey    INTEGER;
 BEGIN
@@ -731,7 +733,7 @@ BEGIN
    SELECT count(*) INTO tmp FROM sys.all_tables WHERE table_name=tblName AND owner=schName;
 
    ${replPrefix}debug('CHECK_TABLES count=' || TO_CHAR(tmp));
-   tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
+   -- tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
              -- even if it exists (this hack makes the assumption the table exists)
    IF tmp = 0 THEN 
       res := 'FALSE';
@@ -759,12 +761,12 @@ CREATE TRIGGER ${replPrefix}tables_trigger AFTER UPDATE OR DELETE OR INSERT
 ON ${replPrefix}tables
 FOR EACH ROW
    DECLARE
-      op         VARCHAR(30);
-      tableName  VARCHAR(30);
-      ret        VARCHAR(10);
+      op         VARCHAR(${charWidth});
+      tableName  VARCHAR(${charWidth});
+      ret        VARCHAR(${charWidthSmall});
       -- these need to be replaced later on !!!!
-      schemaName VARCHAR(30);
-      dbName     VARCHAR(30);
+      schemaName VARCHAR(${charWidth});
+      dbName     VARCHAR(${charWidth});
 BEGIN
    ${replPrefix}debug('TABLES TRIGGER ENTERING');
    schemaName := '';
@@ -818,17 +820,23 @@ CREATE OR REPLACE FUNCTION ${replPrefix}add_table(dbName VARCHAR, schName
                                VARCHAR, tblName VARCHAR, op VARCHAR)
    RETURN VARCHAR AS
    replKey INTEGER;
-   transId VARCHAR2(30);
+   transId VARCHAR(${charWidth});
    tmp     NUMBER;
-   res     VARCHAR(10);
+   res     VARCHAR(${charWidthSmall});
 BEGIN
+
+
+   ${replPrefix}debug('ADD_TABLE ' || schName || '.' || tblName);
+
    SELECT count(*) INTO tmp FROM ${replPrefix}tables WHERE (tablename=tblName 
                    OR tablename=UPPER(tblName) OR tablename=LOWER(tblName))
 		   AND (schemaname=schName OR schemaname=UPPER(schName) OR 
 		   schemaname=LOWER(schName));
+   ${replPrefix}debug('ADD_TABLE count=' || TO_CHAR(tmp));
    IF tmp = 0 THEN
       res := 'FALSE';
    ELSE
+      ${replPrefix}debug('ADD_TABLE inserting entry into items table');
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 

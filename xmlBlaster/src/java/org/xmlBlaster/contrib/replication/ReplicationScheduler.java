@@ -49,7 +49,8 @@ public class ReplicationScheduler extends AlertScheduler {
    public synchronized void init(I_Info info, I_ChangeDetector changeDetector) throws Exception {
       if (this.isInit)
          return;
-      this.dbSpecific = ReplicationConverter.getDbSpecific(info);
+      boolean forceCreationAndInit = true;
+      this.dbSpecific = ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
       super.init(info, changeDetector);
       this.isInit = true;
    }

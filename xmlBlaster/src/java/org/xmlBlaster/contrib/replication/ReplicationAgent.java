@@ -93,6 +93,14 @@ public class ReplicationAgent {
       }
    }
 
+   public DbWatcher getDbWatcher() {
+      return this.dbWatcher;
+   }
+
+   public DbWriter getDbWriter() {
+      return this.dbWriter;
+   }
+
    /**
     * Default ctor.
     */
@@ -272,7 +280,8 @@ public class ReplicationAgent {
             if (this.readerInfo != null) {
                if (this.readerInfo.getBoolean("replication.doBootstrap", false)) {
                   boolean needsPublisher = readerInfo.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
-                  dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo); // done only on master !!!
+                  boolean forceCreationAndInitNo = false;
+                  dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo, forceCreationAndInitNo); // done only on master !!!
                   readerInfo.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "" + needsPublisher); // back to original
                   I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
                   if (pool == null)
@@ -322,7 +331,7 @@ public class ReplicationAgent {
             e = ex;
          }
       }
-      if (this.readerInfo != null) {
+      if (this.writerInfo != null) {
          this.dbWriter.shutdown();
          this.dbWriter = null;
       }

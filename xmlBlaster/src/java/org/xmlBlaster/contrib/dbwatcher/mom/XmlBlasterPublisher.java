@@ -187,6 +187,11 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       else
          log.warning("The connection status listener for this info has already been defined, ignoring this new request");
+
+      // TODO REMOVE THIS AFTER TESTING
+      log.info("INIT " + this.initCount);
+      Thread.dumpStack();
+      
       if (this.initCount > 0) {
          this.initCount++;
          return;
@@ -276,6 +281,10 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#shutdown
     */
    public synchronized void shutdown() {
+      // TODO REMOVE THIS AFTER TESTING
+      log.info("SHUTDOWN " + this.initCount);
+      Thread.dumpStack();
+      
       this.initCount--;
       if (this.initCount > 0)
          return;
@@ -538,23 +547,29 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedAlive(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (this.connectionStateListener != null)
+      if (this.connectionStateListener != null) {
+         log.info("reached alive for user '" + this.con.getId() + "'");
          this.connectionStateListener.reachedAlive(oldState, connection);
+      }
    }
 
    /**
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedDead(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (this.connectionStateListener != null)
+      if (this.connectionStateListener != null) {
+         log.info("reached dead for user '" + this.con.getId() + "'");
          this.connectionStateListener.reachedDead(oldState, connection);
+      }
    }
 
    /**
     * @see org.xmlBlaster.client.I_ConnectionStateListener#reachedPolling(org.xmlBlaster.util.dispatch.ConnectionStateEnum, org.xmlBlaster.client.I_XmlBlasterAccess)
     */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (this.connectionStateListener != null)
+      if (this.connectionStateListener != null) {
+         log.info("reached polling for user '" + this.con.getId() + "'");
          this.connectionStateListener.reachedPolling(oldState, connection);
+      }
    }
 }

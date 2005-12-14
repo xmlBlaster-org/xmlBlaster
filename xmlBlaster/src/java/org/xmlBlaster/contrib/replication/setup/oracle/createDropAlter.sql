@@ -14,16 +14,16 @@
 CREATE OR REPLACE TRIGGER ${replPrefix}crtg_${schemaName}
    AFTER CREATE ON ${schemaName}.SCHEMA
 DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
+   dbName     VARCHAR(${charWidth});
+   tableName  VARCHAR(${charWidth});
+   schemaName VARCHAR(${charWidth});
+   dummy      VARCHAR(${charWidthSmall});
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
    dbms_output.put_line('CREATE TRIGGER INVOKED FOR ' || schemaName || 
-                        '.' || tableName);
+                       '.' || tableName);
    dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'CREATE');
 END ${replPrefix}crtg_${schemaName};
 
@@ -38,16 +38,16 @@ END ${replPrefix}crtg_${schemaName};
 CREATE OR REPLACE TRIGGER ${replPrefix}drtg_${schemaName}
    BEFORE DROP ON ${schemaName}.SCHEMA
 DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
+   dbName     VARCHAR(${charWidth});
+   tableName  VARCHAR(${charWidth});
+   schemaName VARCHAR(${charWidth});
+   dummy      VARCHAR(${charWidthSmall});
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
    dbms_output.put_line('DROP TRIGGER INVOKED FOR ' || schemaName || 
-                        '.' || tableName);
+                       '.' || tableName);
    dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'DROP');
 END ${replPrefix}drtg_${schemaName};
 -- EOC (end of command: needed as a separator for our script parser)            
@@ -61,16 +61,16 @@ END ${replPrefix}drtg_${schemaName};
 CREATE OR REPLACE TRIGGER ${replPrefix}altg_${schemaName}
    AFTER ALTER ON ${schemaName}.SCHEMA
 DECLARE
-   dbName     VARCHAR(30);
-   tableName  VARCHAR(30);
-   schemaName VARCHAR(30);
-   dummy      VARCHAR(10);
+   dbName     VARCHAR(${charWidth});
+   tableName  VARCHAR(${charWidth});
+   schemaName VARCHAR(${charWidth});
+   dummy      VARCHAR(${charWidthSmall});
 BEGIN
    dbName     := DATABASE_NAME;
    tableName  := DICTIONARY_OBJ_NAME;
    schemaName := DICTIONARY_OBJ_OWNER;
    dbms_output.put_line('ALTER TRIGGER INVOKED FOR ' || schemaName || 
-                        '.' || tableName);
+                       '.' || tableName);
    dummy := ${replPrefix}add_table(dbName, schemaName, tableName, 'ALTER');
 END ${replPrefix}altg_${schemaName};
 -- EOC (end of command: needed as a separator for our script parser)            

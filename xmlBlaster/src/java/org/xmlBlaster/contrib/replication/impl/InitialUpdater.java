@@ -224,15 +224,14 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    
    
    private synchronized void sendRegistrationMessage() throws Exception {
-      log.info("Sending registration message for '" + this.replPrefix + "'");
-      // fill the info to be sent with the own info objects
-      HashMap msgMap = new HashMap();
-      new ClientPropertiesInfo(msgMap, this.info);
-      msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-      msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
-
-      log.info("going to initialize publisher for replication '" + this.replPrefix + "'");
       if (this.publisher != null) {
+         log.info("Sending registration message for '" + this.replPrefix + "'");
+         // fill the info to be sent with the own info objects
+         HashMap msgMap = new HashMap();
+         new ClientPropertiesInfo(msgMap, this.info);
+         msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
+         msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
+         log.info("going to initialize publisher for replication '" + this.replPrefix + "'");
          synchronized(this.info) {
             boolean isRegistered = this.info.getBoolean("_InitialUpdaterRegistered", false);
             log.info("replication '" + this.replPrefix + "' registered='" + isRegistered + "'");
@@ -559,7 +558,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
-         log.info("connection is going in ALIVE from '" + oldState + "'");
+         log.info("connection is going from '" + oldState + " to 'ALIVE'");
          sendRegistrationMessage();
       }
       catch (Exception ex) {

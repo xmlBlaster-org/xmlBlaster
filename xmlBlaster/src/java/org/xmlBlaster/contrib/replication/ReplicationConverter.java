@@ -68,12 +68,16 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    /**
     * This method creates every time a new instance
     * @param info
+    * @param forceNewIfNeeded if true and the entry is not found in the registry, a new object is created, initialized and added
+    * to the registry, otherwise it only returns entries found in the registry (without initializing the object) or null if none is found.
     * @return
     * @throws Exception
     */
-   public static I_DbSpecific getDbSpecific(I_Info info) throws Exception {
+   public static I_DbSpecific getDbSpecific(I_Info info, boolean forceNewIfNeeded) throws Exception {
       String dbSpecificClass = info.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle");
       I_DbSpecific dbSpecific = (I_DbSpecific)info.getObject(dbSpecificClass + ".object");
+      if (!forceNewIfNeeded)
+         return dbSpecific;
       if (dbSpecific == null) {
          if (dbSpecificClass.length() > 0) {
             ClassLoader cl = ReplicationConverter.class.getClassLoader();
@@ -102,7 +106,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          log.info("Loaded transformer pluging '" + transformerClassName + "'");
       }
       this.replPrefix = this.info.get("replication.prefix", "repl_");
-      this.dbSpecific = getDbSpecific(info);
+      boolean forceCreationAndInit = true;
+      this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
