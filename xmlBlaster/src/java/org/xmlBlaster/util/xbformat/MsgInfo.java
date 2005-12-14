@@ -74,6 +74,9 @@ public class MsgInfo {
    private int version;
 
    private String requestId;
+   
+   /** Remember if we got an explicit requestId or if we extracted it from the email-sentDate */
+   protected boolean requestIdGuessed;
 
    private MethodName methodName;
 
@@ -155,6 +158,7 @@ public class MsgInfo {
       MsgInfo returner = new MsgInfo(glob, type, getRequestId(),
             getMethodName(), getSecretSessionId(), getProgressListener());
       returner.setBounceObjects(getBounceObjects());
+      returner.setRequestIdGuessed(isRequestIdGuessed());
       return returner;
    }
 
@@ -1166,5 +1170,20 @@ public class MsgInfo {
          e.printStackTrace();
          System.err.println(e.toString());
       }
+   }
+
+   /**
+    * Check if we got an explicit requestId or if we extracted it for example from the email-sentDate. 
+    * @return Returns the requestIdGuessed.
+    */
+   public boolean isRequestIdGuessed() {
+      return this.requestIdGuessed;
+   }
+
+   /**
+    * @param requestIdGuessed The requestIdGuessed to set.
+    */
+   public void setRequestIdGuessed(boolean requestIdGuessed) {
+      this.requestIdGuessed = requestIdGuessed;
    }
 }
