@@ -410,6 +410,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          XDoclet http://mx4j.sourceforge.net/docs/ch07s15.html#N11001</li>
       <li>Add email notification, e.g. with MX4J http://mx4j.sourceforge.net/docs/ch06s10.html</li>
       <li>Add ManageEngine example, connected over MX4J RMI connector</li>
+      <li>Consider to use http://jakarta.apache.org/commons/modeler/ to avoid MBean base interfaces</li>
     </ol>
    </todo>
 
