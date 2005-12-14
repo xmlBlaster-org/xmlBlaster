@@ -16,13 +16,18 @@ public interface EmailExecutorMBean extends RequestReplyExecutorMBean {
    public String getCc();
 
    /**
-    * @param cc The cc to set.
+    * A comma separated list of email addresses, e.g. "joe@localhost,jack@localhost"
+    * @param cc The carbon copy addresses
     */
    public void setCc(String cc);
 
    public String getTo();
 
+   public void setTo(String to);
+   
    public String getFrom();
+
+   public void setFrom(String from);
 
    /**
     * @return Returns the bcc.
@@ -30,7 +35,8 @@ public interface EmailExecutorMBean extends RequestReplyExecutorMBean {
    public String getBcc();
 
    /**
-    * @param bcc The bcc to set.
+    * A comma separated list of email addresses, e.g. "joe@localhost,jack@localhost"
+    * @param bcc The blind cc to set.
     */
    public void setBcc(String bcc);
 }

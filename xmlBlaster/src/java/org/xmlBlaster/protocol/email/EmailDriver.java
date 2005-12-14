@@ -217,6 +217,19 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       EmailData messageData = (EmailData) response;
    }
     */
+
+   /**
+    * Overwrites EmailExecutor as we are a singleton handling different clients.  
+    * @param msgInfo
+    * @return
+    */
+   public String getEmailSessionId(MsgInfo msgInfo) {
+      if (msgInfo.getSecretSessionId() != null && msgInfo.getSecretSessionId().length() > 0) {
+         // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
+         return msgInfo.getSecretSessionId();
+      }
+      return getEmailSessionId();
+   }
    
    /**
     * Handle connect/disconnect
@@ -296,10 +309,6 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
     * Command line usage.
     * <p />
     * <ul>
-    *  <li><i>-plugin/email/port</i>        The EMAIL web server port [7607]</li>
-    *  <li><i>-plugin/email/hostname</i>    Specify a hostname where the EMAIL web server runs
-    *                                          Default is the localhost.</li>
-    *  <li><i>-plugin/email/backlog</i>     Queue size for incoming connection request [50]</li>
     *  <li><i>-dump[email]</i>       true switches on detailed 'email' debugging [false]</li>
     * </ul>
     * <p />

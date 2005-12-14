@@ -28,6 +28,8 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import java.util.logging.Level;
@@ -76,12 +78,21 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    /** Which message format parser to use */
    protected String msgInfoParserClassName;
    
-   // Use to protect against looping messages
-   //protected String lastSessionId;
-   /** Use to protect against looping messages, is a monotonous ascending timestamp */
-   protected long lastRequestId=-1;
-   /** Ping runs in another thread, we need to protect seperately (an update can legally overtake a ping and vice versa) */
-   protected long lastPingRequestId=-1;
+   protected Map senderLoopProtectionMap = new TreeMap();
+   /**
+    * Use to protect against looping messages
+    */
+   private class LoopProtection {
+      LoopProtection(long lastRequestId, long lastPingRequestId) {
+         this.lastRequestId = lastRequestId;
+         this.lastPingRequestId = lastPingRequestId;
+      }
+      //protected String lastSessionId;
+      /** Use to protect against looping messages, is a monotonous ascending timestamp */
+      public long lastRequestId=-1;
+      /** Ping runs in another thread, we need to protect seperately (an update can legally overtake a ping and vice versa) */
+      public long lastPingRequestId=-1;
+   }
    
    protected final String BOUNCE_MESSAGEID_KEY = "bounce:messageId";
    protected final String BOUNCE_MAILTO_KEY = "mail.to";
@@ -345,6 +356,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          }
          String parserClassName = MsgInfoParserFactory.instance().guessParserName(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType());
          msgInfo = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName);
+         msgInfo.setRequestIdGuessed(emailData.isRequestIdFromSentDate());
          msgInfo.setBounceObject(BOUNCE_MAILFROM_KEY, emailData.getFrom());
          // The messageId could be in the subject and not in the attachment
          msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId());
@@ -380,41 +392,80 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
 
       try {
          if (msgInfo.isInvoke()) {
+            //############# LOOP CHECK ###########
             // Some weak looping protection
             // Assume requestId to be strictly increasing
             // to detect email duplicates (which can be produced by MTAs)
             try {
+               LoopProtection loopProtection = null;
+               synchronized (this.senderLoopProtectionMap) {
+                  loopProtection = (LoopProtection)this.senderLoopProtectionMap.get(emailData.getFrom());
+                  if (loopProtection == null) {
+                     loopProtection = new LoopProtection(-1, -1);
+                     this.senderLoopProtectionMap.put(emailData.getFrom(), loopProtection);
+                  }
+               }
                long currRequestId = new Long(msgInfo.getRequestId()).longValue();
                if (MethodName.PING.equals(msgInfo.getMethodName())) {
-                  if (this.lastPingRequestId >= 0 && currRequestId <= this.lastPingRequestId) {
+                  if (loopProtection.lastPingRequestId >= 0 && currRequestId <= loopProtection.lastPingRequestId) {
                      log.warning("Can't process email data from "
                            + getPop3Driver().getPop3Url()
-                           + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastPingRequestId+") has been processed already"
+                           + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastPingRequestId+") has been processed already"
                            + ": " + emailData.toXml(true));
                      return;
                   }
                   //this.lastSessionId = msgInfo.getSecretSessionId();
-                  this.lastPingRequestId = currRequestId;
+                  loopProtection.lastPingRequestId = currRequestId;
                }
                else {
-                  if (this.lastRequestId >= 0 && currRequestId <= this.lastRequestId) {
+                  if (loopProtection.lastRequestId >= 0 && currRequestId <= loopProtection.lastRequestId) {
                      log.warning("Can't process email data from "
                            + getPop3Driver().getPop3Url()
-                           + ", it seems to be looping as requestId="+currRequestId+" (last="+this.lastRequestId+") has been processed already"
+                           + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastRequestId+") has been processed already"
                            + ": " + emailData.toXml(true));
                      return;
                   }
                   //this.lastSessionId = msgInfo.getSecretSessionId();
-                  this.lastRequestId = currRequestId;
+                  loopProtection.lastRequestId = currRequestId;
                }
             }
             catch (Throwable e) {
                log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
             }
+            //############# LOOP CHECK END ###########
+
+            // TODO: Memory leak if session dies without a disconnect() call
+            // We should delete the entry if older than session timeout or better we need to add a
+            // session removed event listener to cleanup!!!
+            /*
+            LoopProtection[] arr = getLoopProtections();
+            for (int i=0; i<arr.length; i++) {
+               if (arr[i].isTimeout()) {
+                  synchronized (this.senderLoopProtectionMap) {
+                     this.senderLoopProtectionMap.remove(arr[i].getFrom());
+                  }
+               }
+            }
+            */
+            if (MethodName.DISCONNECT.equals(msgInfo.getMethodName())) {
+               LoopProtection loopProtection = null;
+               synchronized (this.senderLoopProtectionMap) {
+                  loopProtection = (LoopProtection)this.senderLoopProtectionMap.remove(emailData.getFrom());
+                  if (loopProtection == null) {
+                     log.warning("No loopProtection entry found for sender " + emailData.getFrom());
+                  }
+               }
+            }
          }
+         //else if (msgInfo.isResponse()) {
+         //   if (MethodName.CONNECT.equals(msgInfo.getMethodName())) {
+         //      setEmailSessionId(msgInfo.getSecretSessionId());
+         //   }
+         //}
          
          // This wakes up the blocking thread of sendEmail() and returns the
          // returnQos or the received invocation
+         // On server side it typically invokes the core connect() or publish() etc.
          if (receiveReply(msgInfo, false) == false) {
             log.warning("Error parsing email data from "
                   + getPop3Driver().getPop3Url()
@@ -428,6 +479,43 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
    }
 
+   protected LoopProtection[] getLoopProtections() {
+      synchronized (this.senderLoopProtectionMap) {
+         return (LoopProtection[])this.senderLoopProtectionMap.entrySet().toArray(new LoopProtection[this.senderLoopProtectionMap.size()]);
+      }
+   }
+
+   /**
+    * @return messageId="<messageId><sessionId>sessionId:4423c443</sessionId><requestId>3</requestId><methodName>subscribe</methodName></messageId>"
+    */
+   protected String createMessageId(MsgInfo msgInfo, String requestId, MethodName methodName, Timestamp expiryTimestamp) {
+      String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
+      if (messageId == null) {
+         String sessionId = getEmailSessionId(msgInfo);
+         {
+            // Hardcoded simplification of email subject for messages send manually from a normal email client
+            // like this the GUI user can simply push the reply button to send further publish() etc.
+            // RE: <messageId><sessionId>sessionId:127.0.0.2-null-1134497522115--102159664-3</sessionId></messageId>
+            //if (methodName.equals(MethodName.CONNECT)) {
+               // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
+               //sessionId = msgInfo.getSecretSessionId();
+            //}
+   
+            if (!msgInfo.isInvoke()) // Responses and exceptions should never expire
+               expiryTimestamp = null;
+            
+            if (msgInfo.isRequestIdGuessed()) {
+               requestId = null;
+               methodName = null;
+            }
+         }
+         
+         messageId = EmailData.createMessageId(sessionId,
+            requestId, methodName, expiryTimestamp);
+      }
+      return messageId;
+   }
+   
    /**
     * Extends RequestReplyExecutor.sendMessage
     */
@@ -436,12 +524,42 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          IOException {
 
       String subject = this.subjectTemplate;
+      
+      Timestamp expiryTimestamp = getExpiryTimestamp(methodName);
+      String messageId = createMessageId(msgInfo, requestId, methodName, expiryTimestamp);
+      /*
       // messageId="<messageId><sessionId>sessionId:4423c443</sessionId><requestId>3</requestId><methodName>subscribe</methodName></messageId>"
       String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
       Timestamp expiryTimestamp = getExpiryTimestamp(methodName);
-      if (messageId == null)
-         messageId = EmailData.createMessageId(getEmailSessionId(),
+      if (messageId == null) {
+         String sessionId = getEmailSessionId();
+         {
+            // Hardcoded simplification of email subject for messages send manually from a normal email client
+            // like this the GUI user can simply push the reply button to send further publish() etc.
+            // RE: <messageId><sessionId>sessionId:127.0.0.2-null-1134497522115--102159664-3</sessionId></messageId>
+            //if (methodName.equals(MethodName.CONNECT)) {
+               // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
+               //sessionId = msgInfo.getSecretSessionId();
+            //}
+            if (msgInfo.getSecretSessionId() != null && msgInfo.getSecretSessionId().length() > 0) {
+               // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
+               // In case of the singleton EmailDriver.java we always need to do this:
+               sessionId = msgInfo.getSecretSessionId();
+            }
+
+            if (!msgInfo.isInvoke()) // Responses and exceptions should never expire
+               expiryTimestamp = null;
+            
+            if (msgInfo.isRequestIdGuessed()) {
+               requestId = null;
+               methodName = null;
+            }
+         }
+         
+         messageId = EmailData.createMessageId(sessionId,
             requestId, methodName, expiryTimestamp);
+      }
+      */
 
       if (subject != null && subject.length() > 0) {
          // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:
@@ -598,6 +716,15 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       return (this.emailSessionId == null) ? "" : this.emailSessionId;
    }
 
+   /**
+    * Is overwritten for example by EmailDriver.java singleton. 
+    * @param msgInfo
+    * @return
+    */
+   public String getEmailSessionId(MsgInfo msgInfo) {
+      return getEmailSessionId();
+   }
+
    public void setEmailSessionId(String emailSessionId) {
       this.emailSessionId = emailSessionId;
    }
@@ -630,18 +757,21 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    }
 
    /**
-    * @param cc The cc to set.
+    * Send all emails additionally to the given CC addresses. 
+    * You can pass a comma separated list of addresses.
+    * @param cc The copy addresses, for example "joe@localhost,jack@localhost"
     */
    public void setCc(String cc) {
       this.cc = cc;
    }
 
-   public void setTo(String to) throws XmlBlasterException {
+   /** JMX */
+   public void setTo(String to) throws IllegalArgumentException {
       try {
          this.toAddress = new InternetAddress(to);
       } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'to' address '" + to + "'");
+         throw new IllegalArgumentException(
+               ME + " Illegal 'to' address '" + to + "'");
       }
    }
 
@@ -652,12 +782,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       return (this.toAddress == null) ? "" : this.toAddress.toString();
    }
 
-   public void setFrom(String from) throws XmlBlasterException {
+   /** JMX */
+   public void setFrom(String from) throws IllegalArgumentException {
       try {
          this.fromAddress = new InternetAddress(from);
       } catch (AddressException e) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT,
-               ME, "Illegal 'from' address '" + from + "'");
+         throw new IllegalArgumentException(
+               ME + " Illegal 'from' address '" + from + "'");
       }
    }
 
@@ -669,14 +800,16 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    }
 
    /**
-    * @return Returns the bcc.
+    * @return Returns the blind copy email addresses or null
     */
    public String getBcc() {
       return this.bcc;
    }
 
    /**
-    * @param bcc The bcc to set.
+    * Send all emails additionally to the given bcc. 
+    * You can pass a comma separated list of addresses.
+    * @param bcc The blind copy addresses, for example "joe@localhost,jack@localhost"
     */
    public void setBcc(String bcc) {
       this.bcc = bcc;

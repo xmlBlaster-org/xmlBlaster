@@ -118,10 +118,8 @@ public class CallbackEmailDriver extends EmailExecutor implements
       this.log = glob.getLog("email");
       this.callbackAddress = callbackAddress;
       super.setSecretSessionId(callbackAddress.getSecretSessionId());
-      if (callbackAddress.getSessionName() != null)
-         super.setEmailSessionId(callbackAddress.getSessionName());
-      else
-         log.trace(ME, "No emailSessionId set, our callback sessionName is null");
+      // This is a contract with client side EmailCallbackImpl.java:
+      super.setEmailSessionId(callbackAddress.getSecretSessionId());
       
       if (super.mbeanHandle == null) {
          String tmp = callbackAddress.getEnv("__ContextNode", (String)null).getValueString();

@@ -146,7 +146,9 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
 
       try {
          // sessionId is usually null on login, on reconnect != null
-         return (String)super.sendEmail(connectQos, MethodName.CONNECT, SocketExecutor.WAIT_ON_RESPONSE);
+         String ret = (String)super.sendEmail(connectQos, MethodName.CONNECT, SocketExecutor.WAIT_ON_RESPONSE);
+         //super.setEmailSessionId(super.getSecretSessionId());
+         return ret;
 /*
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId);
          parser.addQos(connectQos);

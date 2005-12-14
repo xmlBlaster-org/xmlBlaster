@@ -77,10 +77,21 @@ public class EmailData {
    protected String requestId;
    
    protected Timestamp expiryTime;
+   
+   /** The origination date from the email header, this field exists always for incoming emails */
+   protected Date sentDate;
+   
+   /** Remember if we got an explicit requestId or if we extracted it from the sentDate */
+   protected boolean requestIdFromSentDate;
+   
+   //Currently not supported
+   protected InternetAddress[] replyTo;
 
    /** The root tag &lt;messageId> */
    public static final String MESSAGEID_TAG = "messageId";
 
+   public static final String METHODNAME_TAG = "methodName";
+   
    public static final String REQUESTID_TAG = "requestId";
 
    public static final String SESSIONID_TAG = "sessionId";
@@ -446,11 +457,22 @@ public class EmailData {
    }
 
    /**
+    * The requestId from the &lt;messageId>&lt;requestId>123456&lt;/requestId>&lt;/messageId> markup. 
+    * 
+    * If not found the sent-date from the email header is used,
+    * note that this is not unique if more than one emails per seconds are send.
+    * It is more safe to explicitely use our requestId markup.
     * @return Returns the requestId, never null
     */
    public String getRequestId() {
       if (this.requestId == null) {
          this.requestId = extractMessageId(REQUESTID_TAG);
+         if (this.requestId == null) {
+            if (this.sentDate != null) {
+               this.requestIdFromSentDate = true;
+               this.requestId = ""+this.sentDate.getTime();
+            }
+         }
       }
       return (this.requestId == null) ? "" : this.requestId;
    }
@@ -592,29 +614,28 @@ public class EmailData {
    }
    
    /**
-    * 
+    * If any of the params is null no markup for this param is added. 
+    * If any of the param is empty "", an empty markup is added 
     * @param methodName Can be null
     * @param expiryTimestamp Can be null
     * @return A well formatted XML, the timestamp follows the ASCII ISO notation
     * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName><expires>2005-11-30 12:42:24.200</expires></messageId>
     */
    public static String createMessageId(String sessionId, String requestId, MethodName methodName, Timestamp expiryTimestamp) {
-      String timestamp = "";
-      if (expiryTimestamp!=null)   
-         timestamp = "<expires>" + expiryTimestamp.toString() + "</expires>";
-      if (methodName == null)
-         return "<messageId><sessionId>" + sessionId
-               + "</sessionId><requestId>" + requestId
-               + "</requestId>"
-               + timestamp
-               + "</messageId>";
-      else
-         return "<messageId><sessionId>" + sessionId
-               + "</sessionId><requestId>" + requestId
-               + "</requestId><methodName>" + methodName.toString()
-               + "</methodName>"
-               + timestamp
-               + "</messageId>";
+      if (sessionId == null && requestId == null && methodName == null && expiryTimestamp == null)
+         return "";
+      StringBuffer sb = new StringBuffer(512);
+      sb.append("<").append(MESSAGEID_TAG).append(">");
+      if (sessionId != null)
+         sb.append("<").append(SESSIONID_TAG).append(">").append(sessionId).append("</").append(SESSIONID_TAG).append(">");
+      if (requestId != null)
+         sb.append("<").append(REQUESTID_TAG).append(">").append(requestId).append("</").append(REQUESTID_TAG).append(">");
+      if (methodName != null)
+         sb.append("<").append(METHODNAME_TAG).append(">").append(methodName).append("</").append(METHODNAME_TAG).append(">");
+      if (expiryTimestamp != null)
+         sb.append("<").append(EXPIRES_TAG).append(">").append(expiryTimestamp).append("</").append(EXPIRES_TAG).append(">");
+      sb.append("</").append(MESSAGEID_TAG).append(">");
+      return sb.toString();
    }
    
    public String toString() {
@@ -732,5 +753,45 @@ public class EmailData {
     */
    public void setExpiryTime(Timestamp expiryTime) {
       this.expiryTime = expiryTime;
+   }
+
+   /**
+    * Returns the value of the RFC 822 "Date" field. This is the date 
+    * on which this message was sent. Returns null if this field is 
+    * unavailable or its value is absent. <p>
+    * According to RC 822 this field exists always for incoming emails.
+    * @return Returns the sentDate.
+    */
+   public Date getSentDate() {
+      return this.sentDate;
+   }
+
+   /**
+    * @param sentDate The sentDate to set.
+    */
+   public void setSentDate(Date sentDate) {
+      this.sentDate = sentDate;
+   }
+
+   /**
+    * Currenlty not supported!
+    * @param replyTo The address to set.
+    */
+   public void setReplyTo(InternetAddress[] replyTo) {
+      this.replyTo = replyTo;
+   }
+
+   /**
+    * @return Returns the requestIdFromSentDate.
+    */
+   public boolean isRequestIdFromSentDate() {
+      return this.requestIdFromSentDate;
+   }
+
+   /**
+    * @param requestIdFromSentDate The requestIdFromSentDate to set.
+    */
+   public void setRequestIdFromSentDate(boolean requestIdFromSentDate) {
+      this.requestIdFromSentDate = requestIdFromSentDate;
    }
 }

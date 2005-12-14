@@ -83,7 +83,10 @@ public class EmailCallbackImpl extends EmailExecutor implements
 
       // Now we can do super.init() for smtpClient and pop3Driver setup
       super.init(glob, callbackAddress, this.pluginInfo);
-      super.setEmailSessionId(callbackAddress.getSessionName());
+      
+      // This is a contract with server side CallbackEmailDriver.java:
+      // as we use it to register at Pop3Poller to listen for incoming updates
+      super.setEmailSessionId(callbackAddress.getSecretSessionId());
       
       // Who are we?
       // We need to correct the mail addresses from EmailExecutor
