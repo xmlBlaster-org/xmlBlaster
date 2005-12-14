@@ -3,6 +3,7 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14334 Email protocol: Ported to support multiple requests in one email
 
  o #14329 Email protocol: Fixed multiple connection loop protection, added simple use case for manual GUI usage
 

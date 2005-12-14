@@ -220,7 +220,7 @@ the following sequence shows a connect, two publishes, one subscribe and a disco
 <p>Usually you need to take the private session id from the returned ConnectReturnQos email
 and use it for further communication
 (like 'sessionId:127.0.0.2-null-1134492824506--1769759418-3'). As we do all communication
-in one mail and diconnect at the end we don't need to bother about this.<br />
+in one mail and disconnect at the end we don't need to bother about this.<br />
 We have set <code>pingInterval='0'</code> to not receive unwanted pings, and set <code>retries='-1'</code>
 so that the server never deletes us until our disconnect arrives.
 Further we have set with <code>timeout='-1'</code> the session expiry to unlimited.</p> 
