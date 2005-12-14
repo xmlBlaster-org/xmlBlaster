@@ -203,7 +203,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
 
          try {
             // This method blocks until a message arrives
-            MsgInfo receiver = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName());
+            MsgInfo[] msgInfos = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName());
+            MsgInfo receiver = msgInfos[0];
 
             if (log.DUMP) log.dump(ME, "Receiving message >" + receiver.toLiteral() + "<\n" + receiver.dump());
 

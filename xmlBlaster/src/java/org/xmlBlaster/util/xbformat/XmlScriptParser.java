@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +80,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
     */
    private I_ProgressListener progressListener;
 
-   private MsgInfo msgInfoParsed;
+   private ArrayList msgInfoParsed;
 
    public XmlScriptParser() {
    }
@@ -121,19 +122,24 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
     * <p />
     * This method blocks until a message arrives
     */
-   public final MsgInfo parse(InputStream in) {
+   public final MsgInfo[] parse(InputStream in) {
       if (log.isLoggable(Level.FINER))
          log.finer("Entering parse()");
-      this.msgInfoParsed = new MsgInfo(this.glob);
-      this.msgInfoParsed.setMsgInfoParser(this);
+      this.msgInfoParsed = new ArrayList();
 
+      MsgInfo[] msgInfos = new MsgInfo[0];
       try {
+         
          Reader reader = new InputStreamReader(in);
          super.parse(reader);
+         msgInfos = (MsgInfo[])this.msgInfoParsed.toArray(new MsgInfo[this.msgInfoParsed.size()]);
+         
          if (this.progressListener != null) {
-            long size = this.msgInfoParsed.getUserDataLen();
-            this.progressListener.progressRead(this.msgInfoParsed
-                  .getMethodNameStr(), size, size);
+            long size = 0;
+            String text = (msgInfos.length > 0) ? msgInfos[0].getMethodNameStr() : "XmlScript";
+            for (int i=0; i<msgInfos.length; i++)
+               size += msgInfos[i].getUserDataLen();
+            this.progressListener.progressRead(text, size, size);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -142,7 +148,8 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
 
       if (log.isLoggable(Level.FINE))
          log.fine("Leaving parse(), message successfully parsed");
-      return this.msgInfoParsed;
+      this.msgInfoParsed = null;
+      return msgInfos;
    }
 
    /**
@@ -151,8 +158,10 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    public boolean fireMethod(MethodName methodName,
          String sessionId, String requestId, byte type)
          throws XmlBlasterException {
-      if (this.msgInfoParsed.getNumMessages() > 0) {
-         log.severe("Multiple method invocation in one message is not yet supported, we ignore "
+      MsgInfo msgInfo = new MsgInfo(this.glob);
+      msgInfo.setMsgInfoParser(this);
+      if (msgInfo.getNumMessages() > 0) {
+         log.severe("Multiple method invocation in one message is not supported, we ignore "
                      + methodName.toString());
          return false;
       }
@@ -165,11 +174,12 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       
       MsgUnitRaw msgUnitRaw = new MsgUnitRaw(super.key.toString(),
             super.contentData, super.qos.toString());
-      this.msgInfoParsed.setMethodName(methodName);
-      this.msgInfoParsed.setSecretSessionId(sessionId);
-      this.msgInfoParsed.setRequestId(requestId);
-      this.msgInfoParsed.setType(type);
-      this.msgInfoParsed.addMessage(msgUnitRaw);
+      msgInfo.setMethodName(methodName);
+      msgInfo.setSecretSessionId(sessionId);
+      msgInfo.setRequestId(requestId);
+      msgInfo.setType(type);
+      msgInfo.addMessage(msgUnitRaw);
+      this.msgInfoParsed.add(msgInfo);
       return true;
    }
 
@@ -257,7 +267,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
             out.write(raw);
             out.flush();
             out.close();
-            MsgInfo msgInfoNew = parser.parse(in);
+            MsgInfo msgInfoNew = parser.parse(in)[0];
             byte[] rawNew = parser.createRawMsg(msgInfoNew);
             System.out.println("Parsed and dumped again:" + parser.toLiteral(rawNew));
          }
@@ -278,7 +288,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
             out.write(raw);
             out.flush();
             out.close();
-            MsgInfo msgInfoNew = parser.parse(in);
+            MsgInfo msgInfoNew = parser.parse(in)[0];
             byte[] rawNew = parser.createRawMsg(msgInfoNew);
             System.out.println("Parsed and dumped again:" + parser.toLiteral(rawNew));
          }
@@ -298,7 +308,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
             out.write(raw);
             out.flush();
             out.close();
-            MsgInfo msgInfoNew = parser.parse(in);
+            MsgInfo msgInfoNew = parser.parse(in)[0];
             byte[] rawNew = parser.createRawMsg(msgInfoNew);
             System.out.println("Parsed and dumped again:" + parser.toLiteral(rawNew));
          }

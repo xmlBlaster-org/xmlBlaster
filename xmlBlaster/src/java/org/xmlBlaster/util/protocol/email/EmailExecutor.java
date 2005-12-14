@@ -337,7 +337,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
 
       byte[] encodedMsgUnit = msgUnitAttachmentHolder.getContent();
-      MsgInfo msgInfo = null;
+      MsgInfo[] msgInfos = null;
       try {
          if (MsgInfo.isCompressed(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType())) {
             // Decompress the bytes
@@ -355,18 +355,26 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             if (log.isLoggable(Level.FINE)) log.fine("Decompressed message from " + length + " to " + encodedMsgUnit.length + " bytes");
          }
          String parserClassName = MsgInfoParserFactory.instance().guessParserName(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType());
-         msgInfo = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName);
-         msgInfo.setRequestIdGuessed(emailData.isRequestIdFromSentDate());
-         msgInfo.setBounceObject(BOUNCE_MAILFROM_KEY, emailData.getFrom());
-         // The messageId could be in the subject and not in the attachment
-         msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId());
-         AttachmentHolder[] attachments = emailData.getAttachments();
-         for (int i=0; i<attachments.length; i++) {
-            AttachmentHolder a = attachments[i];
-            if (a == msgUnitAttachmentHolder)
-               continue;
-            // TODO: Determine which attachments to bounce
-            msgInfo.setBounceObject(a.getFileName(), a);
+         msgInfos = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName);
+         if (msgInfos.length < 1) {
+            log.severe("Unexpected msgInfo with length==0");
+            Thread.dumpStack();
+            return;
+         }
+         for (int j=0; j<msgInfos.length; j++) {
+            MsgInfo msgInfo = msgInfos[j];
+            msgInfo.setRequestIdGuessed(emailData.isRequestIdFromSentDate());
+            msgInfo.setBounceObject(BOUNCE_MAILFROM_KEY, emailData.getFrom());
+            // The messageId could be in the subject and not in the attachment
+            msgInfo.setBounceObject(BOUNCE_MESSAGEID_KEY, emailData.getMessageId());
+            AttachmentHolder[] attachments = emailData.getAttachments();
+            for (int i=0; i<attachments.length; i++) {
+               AttachmentHolder a = attachments[i];
+               if (a == msgUnitAttachmentHolder)
+                  continue;
+               // TODO: Determine which attachments to bounce
+               msgInfo.setBounceObject(a.getFileName(), a);
+            }
          }
 
       } catch (Throwable e) {
@@ -379,61 +387,66 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
 
       // Response and Exception messages should NEVER expire
-      if (emailData.isExpired() && msgInfo.isInvoke()) {
+      if (emailData.isExpired() && msgInfos[0].isInvoke()) {
          log.warning("Message is expired, we discard it: " + emailData.toString());
          return;
       }
-      
-      // If counterside has stripped information we add it again from the messageId attachment
-      if (msgInfo.getRequestId().length() == 0)
-         msgInfo.setRequestId(emailData.getRequestId());
-      if (msgInfo.getSecretSessionId().length() == 0)
-         msgInfo.setSecretSessionId(emailData.getSessionId());
 
-      try {
-         if (msgInfo.isInvoke()) {
-            //############# LOOP CHECK ###########
-            // Some weak looping protection
-            // Assume requestId to be strictly increasing
-            // to detect email duplicates (which can be produced by MTAs)
-            try {
-               LoopProtection loopProtection = null;
-               synchronized (this.senderLoopProtectionMap) {
-                  loopProtection = (LoopProtection)this.senderLoopProtectionMap.get(emailData.getFrom());
-                  if (loopProtection == null) {
-                     loopProtection = new LoopProtection(-1, -1);
-                     this.senderLoopProtectionMap.put(emailData.getFrom(), loopProtection);
+      // For XmlScript && INVOKE we could have multiple message bundled
+      // else length is always 1!
+      for (int i=0; i<msgInfos.length; i++) {
+         MsgInfo msgInfo = msgInfos[i];
+         // If counterside has stripped information we add it again from the messageId attachment
+         if (msgInfo.getRequestId().length() == 0)
+            msgInfo.setRequestId(emailData.getRequestId());
+         if (msgInfo.getSecretSessionId().length() == 0)
+            msgInfo.setSecretSessionId(emailData.getSessionId());
+   
+         try {
+            if (i==0 && msgInfo.isInvoke()) {
+               //############# LOOP CHECK ###########
+               // Some weak looping protection
+               // Assume requestId to be strictly increasing
+               // to detect email duplicates (which can be produced by MTAs)
+               try {
+                  LoopProtection loopProtection = null;
+                  synchronized (this.senderLoopProtectionMap) {
+                     loopProtection = (LoopProtection)this.senderLoopProtectionMap.get(emailData.getFrom());
+                     if (loopProtection == null) {
+                        loopProtection = new LoopProtection(-1, -1);
+                        this.senderLoopProtectionMap.put(emailData.getFrom(), loopProtection);
+                     }
+                  }
+                  long currRequestId = new Long(msgInfo.getRequestId()).longValue();
+                  if (MethodName.PING.equals(msgInfo.getMethodName())) {
+                     if (loopProtection.lastPingRequestId >= 0 && currRequestId <= loopProtection.lastPingRequestId) {
+                        log.warning("Can't process email data from "
+                              + getPop3Driver().getPop3Url()
+                              + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastPingRequestId+") has been processed already"
+                              + ": " + emailData.toXml(true));
+                        return;
+                     }
+                     //this.lastSessionId = msgInfo.getSecretSessionId();
+                     loopProtection.lastPingRequestId = currRequestId;
+                  }
+                  else {
+                     if (loopProtection.lastRequestId >= 0 && currRequestId <= loopProtection.lastRequestId) {
+                        log.warning("Can't process email data from "
+                              + getPop3Driver().getPop3Url()
+                              + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastRequestId+") has been processed already"
+                              + ": " + emailData.toXml(true));
+                        return;
+                     }
+                     //this.lastSessionId = msgInfo.getSecretSessionId();
+                     loopProtection.lastRequestId = currRequestId;
                   }
                }
-               long currRequestId = new Long(msgInfo.getRequestId()).longValue();
-               if (MethodName.PING.equals(msgInfo.getMethodName())) {
-                  if (loopProtection.lastPingRequestId >= 0 && currRequestId <= loopProtection.lastPingRequestId) {
-                     log.warning("Can't process email data from "
-                           + getPop3Driver().getPop3Url()
-                           + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastPingRequestId+") has been processed already"
-                           + ": " + emailData.toXml(true));
-                     return;
-                  }
-                  //this.lastSessionId = msgInfo.getSecretSessionId();
-                  loopProtection.lastPingRequestId = currRequestId;
+               catch (Throwable e) {
+                  log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
                }
-               else {
-                  if (loopProtection.lastRequestId >= 0 && currRequestId <= loopProtection.lastRequestId) {
-                     log.warning("Can't process email data from "
-                           + getPop3Driver().getPop3Url()
-                           + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastRequestId+") has been processed already"
-                           + ": " + emailData.toXml(true));
-                     return;
-                  }
-                  //this.lastSessionId = msgInfo.getSecretSessionId();
-                  loopProtection.lastRequestId = currRequestId;
-               }
+               //############# LOOP CHECK END ###########
             }
-            catch (Throwable e) {
-               log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
-            }
-            //############# LOOP CHECK END ###########
-
+   
             // TODO: Memory leak if session dies without a disconnect() call
             // We should delete the entry if older than session timeout or better we need to add a
             // session removed event listener to cleanup!!!
@@ -452,30 +465,40 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                synchronized (this.senderLoopProtectionMap) {
                   loopProtection = (LoopProtection)this.senderLoopProtectionMap.remove(emailData.getFrom());
                   if (loopProtection == null) {
-                     log.warning("No loopProtection entry found for sender " + emailData.getFrom());
+                     // Is OK for a client which never received an update (no INVOKE)
+                     if (this.glob.isServerSide()) {
+                        Thread.dumpStack();
+                        log.warning("No loopProtection entry found for sender " + emailData.toXml(true));
+                     }
                   }
                }
             }
+
+            //if (msgInfo.isResponse()) {
+            //   if (MethodName.CONNECT.equals(msgInfo.getMethodName())) {
+            //      setEmailSessionId(msgInfo.getSecretSessionId());
+            //   }
+            //}
+            
+            // This wakes up the blocking thread of sendEmail() and returns the
+            // returnQos or the received invocation
+            // On server side it typically invokes the core connect() or publish() etc.
+            if (receiveReply(msgInfo, false) == false) {
+               log.warning("Error parsing email data from "
+                     + getPop3Driver().getPop3Url()
+                     + ", CONNECT etc is not yet implemented");
+            }
+            
+            if (i==0 && msgInfos.length > 1 && MethodName.CONNECT.equals(msgInfo.getMethodName())) {
+               // If multiple requests where bundled pass the others the secret session id
+               for (int k=1; k<msgInfos.length; k++)
+                  msgInfos[k].setSecretSessionId(msgInfo.getSecretSessionId());
+            }
+         } catch (Throwable e) {
+            log.warning("Can't process email data from "
+                  + pop3Url + ": " + e.toString());
+            return;
          }
-         //else if (msgInfo.isResponse()) {
-         //   if (MethodName.CONNECT.equals(msgInfo.getMethodName())) {
-         //      setEmailSessionId(msgInfo.getSecretSessionId());
-         //   }
-         //}
-         
-         // This wakes up the blocking thread of sendEmail() and returns the
-         // returnQos or the received invocation
-         // On server side it typically invokes the core connect() or publish() etc.
-         if (receiveReply(msgInfo, false) == false) {
-            log.warning("Error parsing email data from "
-                  + getPop3Driver().getPop3Url()
-                  + ", CONNECT etc is not yet implemented");
-         }
-         return;
-      } catch (Throwable e) {
-         log.warning("Can't process email data from "
-               + pop3Url + ": " + e.toString());
-         return;
       }
    }
 

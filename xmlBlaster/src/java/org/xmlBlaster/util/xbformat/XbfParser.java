@@ -255,8 +255,9 @@ public class XbfParser implements I_MsgInfoParser
     * Use the get...() methods to access the data.
     * <p />
     * This method blocks until a message arrives
+    * @return Guaranteed to be always an array of length=1
     */
-   public final MsgInfo parse(InputStream in) throws  IOException, IllegalArgumentException {
+   public final MsgInfo[] parse(InputStream in) throws  IOException, IllegalArgumentException {
       if (log.CALL) log.call(ME, "Entering parse()");
       MsgInfo msgInfo = new MsgInfo(this.glob);
       msgInfo.setMsgInfoParser(this);
@@ -266,7 +267,7 @@ public class XbfParser implements I_MsgInfoParser
 
       if (buf == null) {
          msgInfo.setMethodName(MethodName.PING);
-         return msgInfo; // The shortest ping ever
+         return new MsgInfo[] { msgInfo }; // The shortest ping ever
       }
 
       if (log.DUMP) log.dump(ME, "Raw message of length " + buf.buf.length + " received >" + toLiteral(buf.buf) + "<");
@@ -332,7 +333,7 @@ public class XbfParser implements I_MsgInfoParser
       }
 
       if (log.TRACE) log.trace(ME, "Leaving parse(), message successfully parsed");
-      return msgInfo;
+      return new MsgInfo[] { msgInfo };
    }
 
    /**

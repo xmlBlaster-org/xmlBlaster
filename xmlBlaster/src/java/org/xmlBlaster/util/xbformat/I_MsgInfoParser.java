@@ -34,11 +34,11 @@ public interface I_MsgInfoParser {
    /**
     * Parses a serialized message from input stream
     * @param in The raw, serialized data
-    * @return The message read
+    * @return The messages read, usually only one but for XmlScript multiple could be bundled, is never null
     * @throws IOException
     * @throws IllegalArgumentException
     */
-   MsgInfo parse(InputStream in) throws  IOException, IllegalArgumentException, XmlBlasterException;
+   MsgInfo[] parse(InputStream in) throws  IOException, IllegalArgumentException, XmlBlasterException;
    
    /**
     * Dumps the given MsgInfo to a byte array

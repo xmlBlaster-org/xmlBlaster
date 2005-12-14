@@ -13,6 +13,8 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.authentication.ClientEvent;
+import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
@@ -44,7 +46,7 @@ import java.util.logging.Logger;
  * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The protocol.email requirement</a>
  */
-public class EmailDriver extends EmailExecutor implements I_Driver /* which extends I_Plugin */
+public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientListener /* which extends I_Plugin */
 {
    private static Logger log = Logger.getLogger(EmailDriver.class.getName());
    private String ME = "";
@@ -111,6 +113,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
       super.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "EmailDriver", glob.getContextNode());
       super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
+      
+      engineGlob.getRequestBroker().getAuthenticate(null).addClientListener(this);
 
       try {
          this.authenticate = engineGlob.getAuthenticate();
@@ -342,4 +346,15 @@ public class EmailDriver extends EmailExecutor implements I_Driver /* which exte
    public String getName() {
       return "EmailDriver";
    }
+   
+   /**
+    * Implements I_ClientListener
+    */
+   public void sessionAdded(ClientEvent e) {}
+   public void subjectAdded(ClientEvent e) {}
+   public void sessionPreRemoved(ClientEvent e) {
+      // TODO:
+   }
+   public void sessionRemoved(ClientEvent e) {}
+   public void subjectRemoved(ClientEvent e) {}
 }

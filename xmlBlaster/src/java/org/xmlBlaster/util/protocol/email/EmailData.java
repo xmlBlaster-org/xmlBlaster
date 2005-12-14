@@ -297,7 +297,7 @@ public class EmailData {
     * @return The from of the message, never null
     */
    public String getFrom() {
-      return (this.from == null) ? "" : this.from.toString();
+      return (this.from == null) ? "" : this.from.getAddress();
    }
 
    /**

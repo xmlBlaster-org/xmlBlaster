@@ -350,10 +350,9 @@ public class HandleClient extends SocketExecutor implements Runnable
          if (log.TRACE)
             log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
          while (running) {
-            MsgInfo msgInfo = null;
             try {
                // blocks until a message arrives
-               msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName());
+               MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName())[0];
                handleMessage(msgInfo, false);
             }
             catch (Throwable e) {
