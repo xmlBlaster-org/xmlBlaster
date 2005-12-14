@@ -17,6 +17,7 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationAgent;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
@@ -40,7 +41,6 @@ public class TestReplication extends XMLTestCase {
    private I_Info readerInfo;
    private I_Info writerInfo;
    private ReplicationAgent agent;
-   private I_DbSpecific dbSpecific;
    private SpecificHelper specificHelper;
    private DbMetaHelper dbHelper;
    private String tableName = "TEST_REPLICATION";
@@ -58,11 +58,10 @@ public class TestReplication extends XMLTestCase {
       // junit.swingui.TestRunner.run(TestReplication.class);
       TestReplication test = new TestReplication();
       try {
-         /*
          test.setUp();
          test.testCreateAndInsert();
          test.tearDown();
-         */
+
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
@@ -111,40 +110,61 @@ public class TestReplication extends XMLTestCase {
     * @param readerInfo The info object for the reader (the dbWatcher).
     * @param writerInfo The info object for the writer (the DbWriter).
     */
-   private void setupProperties(I_Info readerInfo, I_Info writerInfo) {
-      this.replPrefix = readerInfo.get("replication.prefix", "repl_");
-      setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1", true);
-      setProp(readerInfo, "mom.topicName", "testRepl", true);
-      setProp(readerInfo, "changeDetector.groupColName", "repl_key", true);
-      setProp(readerInfo, "alertScheduler.pollInterval", "1000", false);
-      setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector", false);
-      setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + this.replPrefix + "items", false);
-      setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM " + this.replPrefix + "items ORDER BY repl_key", false);
-      setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items", false);
-      setProp(readerInfo, "converter.addMeta", "false", false);
-      setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter", false);
-      setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler", false);
-      setProp(readerInfo, "replication.doBootstrap", "true", false);
-      
-      // and here for the dbWriter ...
-      // ---- Database settings -----
-      setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
-      setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
+   private String setupProperties(I_Info readerInfo, I_Info writerInfo, boolean extraUser) {
+      String ret = null;
+      if (readerInfo != null) {
+         ret = readerInfo.get("replication.prefix", "repl_");
+         setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1", true);
+         setProp(readerInfo, "mom.topicName", "testRepl", true);
+         setProp(readerInfo, "changeDetector.groupColName", "repl_key", true);
+         setProp(readerInfo, "alertScheduler.pollInterval", "1000", false);
+         setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector", false);
+         setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + this.replPrefix + "items", false);
+         setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM " + this.replPrefix + "items ORDER BY repl_key", false);
+         setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items", false);
+         setProp(readerInfo, "converter.addMeta", "false", false);
+         setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter", false);
+         setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler", false);
+         setProp(readerInfo, "replication.doBootstrap", "true", false);
+      }
+      if (writerInfo != null) {  // and here for the dbWriter ...
+         // ---- Database settings -----
+         if (extraUser)
+            setProp(writerInfo, "mom.loginName", "DbWriterExtra/1", true);
+         else
+            setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
+         setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
-      setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
-      setProp(writerInfo, "replication.mapper.table.test1", "test1_replica", false);
-      setProp(writerInfo, "replication.mapper.table.test2", "test2_replica", false);
-      setProp(writerInfo, "replication.mapper.table.test3", "test3_replica", false);
-      String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='testRepl'/>");
-      setProp(writerInfo, "mom.subscribeKey", subscribeKey, true);
-      setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>", false);
-      setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter", false);
-      // these are pure xmlBlaster specific properties
-      setProp(writerInfo, "dispatch/callback/retries", "-1", true);
-      setProp(writerInfo, "dispatch/callback/delay", "10000", true);
-      setProp(writerInfo, "queue/callback/maxEntries", "10000", true);
+         setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
+         setProp(writerInfo, "replication.mapper.table.test1", "test1_replica", false);
+         setProp(writerInfo, "replication.mapper.table.test2", "test2_replica", false);
+         setProp(writerInfo, "replication.mapper.table.test3", "test3_replica", false);
+         String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='testRepl'/>");
+         setProp(writerInfo, "mom.subscribeKey", subscribeKey, true);
+         setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>", false);
+         setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter", false);
+         // these are pure xmlBlaster specific properties
+         setProp(writerInfo, "dispatch/callback/retries", "-1", true);
+         setProp(writerInfo, "dispatch/callback/delay", "10000", true);
+         setProp(writerInfo, "queue/callback/maxEntries", "10000", true);
+      }
+      return ret;
    }
 
+   private I_DbSpecific getDbSpecific() {
+      assertTrue("The agent must not be null", this.agent != null);
+      DbWriter writer = this.agent.getDbWriter();
+      assertTrue("The writer must not be null", writer != null);
+      I_Info tmpInfo = writer.getInfo();
+      assertTrue("The writer info must not be null", tmpInfo != null);
+
+      String dbSpecificClass = tmpInfo.get("replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle");
+      I_DbSpecific dbSpecific = (I_DbSpecific)tmpInfo.getObject(dbSpecificClass + ".object");
+      assertTrue("The dbSpecific for the writer must not be null", dbSpecific != null);
+      return dbSpecific;
+   }
+   
+   
    /**
     * Configure database access.
     * @see TestCase#setUp()
@@ -154,11 +174,16 @@ public class TestReplication extends XMLTestCase {
       this.specificHelper = new SpecificHelper(System.getProperties());
       this.readerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       this.writerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
-      setupProperties(this.readerInfo, this.writerInfo);
-
+      boolean extraUser = false;
+      this.replPrefix = setupProperties(this.readerInfo, this.writerInfo, extraUser);
+      extraUser = true; // to make it easy to recognize by the session name
+      
       // we use the writerInfo since this will not instantiate an publisher
-      this.dbSpecific = ReplicationConverter.getDbSpecific(this.writerInfo);
-      I_DbPool pool = (I_DbPool)this.writerInfo.getObject("db.pool");
+      I_Info tmpInfo =  new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
+      setupProperties(null, tmpInfo, extraUser);
+      boolean forceCreationAndInit = true;
+      I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(tmpInfo, forceCreationAndInit);
+      I_DbPool pool = (I_DbPool)tmpInfo.getObject("db.pool");
       Connection conn = null;
       try {
          this.dbHelper = new DbMetaHelper(pool);
@@ -173,7 +198,7 @@ public class TestReplication extends XMLTestCase {
          long tmp = this.readerInfo.getLong("alertScheduler.pollInterval", 10000000L);
          if (this.sleepDelay <= (tmp-500L))
             assertTrue("The sleep delay '" + this.sleepDelay + "' is too short since the polling interval for the dbWatcher is '" + tmp + "'", false);
-         this.dbSpecific.cleanup(conn, doWarn);
+         dbSpecific.cleanup(conn, doWarn);
          try {
             pool.update("DROP TABLE " + this.tableName);
          }
@@ -193,10 +218,15 @@ public class TestReplication extends XMLTestCase {
          }
          log.info("setUp: cleanup done, going to bootstrap now ...");
          boolean force = true;
-         this.dbSpecific.bootstrap(conn, doWarn, force);
+         dbSpecific.bootstrap(conn, doWarn, force);
+         dbSpecific.shutdown();
+         pool.shutdown();
+         pool = null;
+         dbSpecific = null;
+         tmpInfo = null;
       }
       catch (Exception ex) {
-         if (conn != null)
+         if (conn != null && pool != null)
             pool.release(conn);
       }
       
@@ -228,7 +258,6 @@ public class TestReplication extends XMLTestCase {
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
-      assertNotNull("the dbSpecific shall not be null. Probably problems in configuration of this test.", this.dbSpecific);
       try {
          conn  = pool.reserve();
          try {
@@ -267,7 +296,7 @@ public class TestReplication extends XMLTestCase {
          
          try {
             boolean force = false;
-            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -330,7 +359,7 @@ public class TestReplication extends XMLTestCase {
          String sql = null;
          try {
             boolean force = false;
-            this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
          }
          catch (Exception ex) {
             ex.printStackTrace();

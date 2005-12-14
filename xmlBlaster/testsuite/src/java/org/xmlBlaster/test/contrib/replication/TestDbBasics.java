@@ -127,7 +127,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       this.replPrefix = this.info.get("replication.prefix", "repl_");
       this.pool = DbWatcher.getDbPool(this.info);
       assertNotNull("pool must be instantiated", this.pool);
-      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
+      boolean forceCreationAndInit = true;
+      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info, forceCreationAndInit);
       assertNotNull("the dbSpecific shall not be null", dbSpecific);
       Connection conn = this.pool.reserve();
       try {
@@ -1066,6 +1067,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    public final void testAddToReplTablesThenCreate() throws Exception {
       log.info("Start testAddToReplTablesThenCreate");
 
+      try { // make sure you have deleted all entries
+         this.pool.update("DELETE FROM " + this.replPrefix + "ITEMS");
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
       Connection conn = this.pool.reserve();
       // this.dbSpecific.bootstrap(conn);
       try {

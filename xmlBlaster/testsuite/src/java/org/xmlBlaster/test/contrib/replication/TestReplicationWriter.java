@@ -148,7 +148,8 @@ public class TestReplicationWriter extends XMLTestCase {
       this.specificHelper = new SpecificHelper(System.getProperties());
       this.info = new PropertiesInfo(specificHelper.getProperties());
       this.dbPool = setUpDbPool(this.info);
-      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
+      boolean forceCreationAndInit = true;
+      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info, forceCreationAndInit);
       Connection conn = null;
       try {
          conn = dbPool.reserve();

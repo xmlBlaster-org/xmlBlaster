@@ -118,7 +118,8 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       this.info.put(SpecificDefault.NEEDS_PUBLISHER_KEY, "false"); // needed to avoid publishing when reading the table
       this.pool = DbWatcher.getDbPool(this.info);
       assertNotNull("pool must be instantiated", this.pool);
-      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info);
+      boolean forceCreationAndInit = true;
+      this.dbSpecific = ReplicationConverter.getDbSpecific(this.info, forceCreationAndInit);
       assertNotNull("the dbSpecific shall not be null", dbSpecific);
       Connection conn = this.pool.reserve();
       try {
@@ -169,7 +170,6 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
    public final void testPerformAllOperationsOnTable() {
       
       log.info("Start testPerformAllOperationsOnTable");
-      long ref = 0;
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -186,8 +186,6 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
-               ref = replKey;
                
                String transKey = rs.getString(2);
                // String dbId = rs.getString(3);
@@ -231,7 +229,6 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing insertion into table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
@@ -266,7 +263,6 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing UPDATE of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
@@ -306,7 +302,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing DELETE of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
+               // long replKey = rs.getLong(1);
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
@@ -342,7 +338,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing ALTER of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
+               // long replKey = rs.getLong(1);
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
@@ -370,7 +366,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing DROP table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               long replKey = rs.getLong(1);
+               // long replKey = rs.getLong(1);
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
