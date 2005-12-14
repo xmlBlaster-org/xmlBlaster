@@ -17,6 +17,7 @@ import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.MessagingException;
 import javax.mail.URLName;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -434,7 +435,9 @@ implements I_Plugin, I_Timeout,
          Timestamp timestamp = new Timestamp();
          this.holdbackMap.put(new Long(timestamp.getTimestamp()), emailData);
          log.warning("None of our registered listeners '" + getListeners()
-               + "' matches for key=" + key + ", email is holdback in RAM, we try later again");
+               + "' matches for key=" + key + ", email '" 
+               + emailData.extractMessageId(EmailData.METHODNAME_TAG)
+               + "' is holdback in RAM, we try later again");
       }
       else {
          log.warning("None of our registered listeners '" + getListeners()
@@ -771,6 +774,9 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
             //String content = retrieveContent(msg); // Would sometimes deliver an attachment
             String content = "";
             datas[i] = new EmailData(recips, from, msg.getSubject(), content);
+            
+            datas[i].setSentDate(msg.getSentDate());
+            datas[i].setReplyTo((InternetAddress[])msg.getReplyTo());
             
             String[] expires = msg.getHeader(EmailData.EXPIRES_HEADER);
             // "X-xmlBlaster-ExpiryDate: 2005-12-24 16:45:55.322"
