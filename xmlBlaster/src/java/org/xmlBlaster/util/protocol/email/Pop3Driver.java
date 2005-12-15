@@ -208,7 +208,7 @@ implements I_Plugin, I_Timeout,
                   .getScopeContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
-      this.pollingInterval = glob.get("pop3PollingInterval", 5000L, null,
+      this.pollingInterval = glob.get("pop3PollingInterval", 2000L, null,
             this.pluginConfig);
 
       boolean activate = glob.get("activate", true, null, this.pluginConfig);
