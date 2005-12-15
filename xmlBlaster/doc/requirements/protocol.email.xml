@@ -78,31 +78,6 @@
      the acknowledge telling you your session id and the result is a faster protocol and less 
      messages are needed.
      </p>      
-     <p>
-     Before a publish or a subscribe can be done, connect must be invoked. This can be done on the
-     same email (in which case you don't need to specify your sessionId for the further commands).
-     </p>
-      <p/>
-
-       <pre>
-
-&lt;xmlBlaster>
-   &lt;connect>
-      &lt;securityPlugin type='simple' version='1.0'>
-         &lt;xmlBlaster:user>fritz&lt;/xmlBlaster:user>
-         &lt;passwd>&lt;![CDATA[secret    ]]&gt;&lt;/passwd>
-      &lt;/securityPlugin>
-   &lt;/connect>
-   &lt;publish>
-      &lt;key>xxxx&lt;/key>
-      &lt;content xlink='sss.jpg'/>
-      &lt;qos>&lt;/qos>
-   &lt;/publish>
-   &lt;subscribe/>
-   &lt;disconnect/>
-&lt;/xmlBlaster>
-
-       </pre>
 -->
 <p class="celltitel">Supported formats</p>
 <p>The message needs to be serialized to be send in an email attachment.
@@ -111,7 +86,7 @@ currently we provide two variants. First the raw XBF (XmlBlasterFormat) format w
 dense and used in the SOCKET protocol as well, second the human readable XmlScript format
 which is used in the XML scripting framework of xmlBlaster already:
 </p>
-<pre>
+<pre class="BORDER">
 XfbParser:
   mimeType="application/xmlBlaster-xbfz; name=xmlBlasterMessage.xbfz"
   fileName=xmlBlasterMessage.xbf
@@ -122,10 +97,8 @@ XmlScriptParser:
   fileName = "xmlBlasterMessage.xml"      
 
   messageId = "xmlBlaster.mid"
-
-
 </pre>
-
+<p>The format and compression of received emails is auto-detected depending on the file name extension or mime type.</p>
 </description>
 
 <example type="HTML">
@@ -156,7 +129,7 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 and send manually emails to xmlBlaster.</p>
 
 <p>The first step is to setup the server side configuration:</p>
-<pre>
+<pre class="BORDER">
 xmlBlasterPlugins.xml:
    &lt;!-- You need an acticated Pop3Driver and SnmpClient and additionally: -->
    &lt;plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
@@ -168,7 +141,7 @@ xmlBlasterPlugins.xml:
    &lt;/plugin>
 </pre>
 
-<pre>
+<pre class="BORDER">
 xmlBlaster.properties:
 CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.smtp.from=xmlBlaster@localhost,\
@@ -178,7 +151,7 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
 <p>Now we are ready to send an XmlScript to xmlBlaster,
 the following sequence shows a connect, two publishes, one subscribe and a disconnect:
 </p> 
-<pre>
+<pre class="BORDER">
 &lt;xmlBlaster>
   &lt;connect>
     &lt;qos>
@@ -277,20 +250,21 @@ this limitation does not exist, here we correctly send a unique and ascending ti
 <example type="HTML">
 <p class="celltitel">Example of the email structure</p>
 <h3>This example shows the structure of an email transporting xmlBlaster messages:</h3>
-<pre>
+<pre class="BORDER">
 &lt;message>
   &lt;from>demo@localhost&lt;/from>
   &lt;to>xmlBlaster@localhost&lt;/to>
   &lt;subject>XmlBlaster Generated Email&lt;/subject>
   &lt;content>javax.mail.internet.MimeMultipart@16614e7&lt;/content>
+
   &lt;attachment>
     &lt;filename>xmlBlasterMessage.xml&lt;/filename>
     &lt;contenttype>text/plain; name=xmlBlasterMessage.xml; charset=UTF-8&lt;/contenttype>
-    &lt;content><![CDATA[
-<ping sessionId='unknown' requestId='1' type='I'>
-</ping>
-]]>&lt;/content>
+    &lt;content>
+      &lt;ping sessionId='unknown' requestId='1' type='I'/>
+    &lt;/content>
   &lt;/attachment>
+
   &lt;attachment>
     &lt;filename>messageId.mid&lt;/filename>
     &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
@@ -302,7 +276,7 @@ this limitation does not exist, here we correctly send a unique and ascending ti
 &lt;/message>
 </pre>
 <h3>The raw email content looks more like this</h3>
-<pre>
+<pre class="BORDER">
 Return-Path: &lt;demo@localhost>
 Received: from localhost ([127.0.0.1])
           by linux (JAMES SMTP Server 2.2.0) with SMTP ID 248
@@ -345,7 +319,7 @@ Content-Disposition: attachment; filename=attachment2
     Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
     </p>
     <p>Download james, unpack it and start it:</p>
-<pre>
+<pre class="BORDER">
 tar xzvf /opt/download/james-2.2.0.tar.gz
 cd james-2.2.0/bin
 # Change to be 'root' to have access to ports 25 (SMTP) and 110 (POP3)
@@ -353,7 +327,7 @@ cd james-2.2.0/bin
 </pre>
 
     <p>Configure some users, here we use <code>xmlBlaster</code> for the server and <code>demo</code> for the client:</p>
-<pre>
+<pre class="BORDER">
 telnet localhost 4555
 
 # Login as 'root' with password 'root'
@@ -386,7 +360,7 @@ quit
   </p>
 
   <h2 class="celltitel">Debugging</h2>
-<pre>
+<pre class="BORDER">
 call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
 call[org.xmlBlaster.util.protocol.email.SmtpClient] true
 call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
@@ -395,7 +369,7 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
   <h2 class="celltitel">Example configuration server side</h2>
 <p>The email driver plugin listening on incoming emails is configured in <code>xmlBlasterPlugins.xml</code>
  (for example listening on connect(), subscribe() and publish() requests)</p>
-<pre>
+<pre class="BORDER">
    &lt;!-- General EMAIL SMTP client service -->
    &lt;!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
    &lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
@@ -430,7 +404,7 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
 
 <p>The format of the returned messages from the xmlBlaster server to email clients
 is configured in <code>xmlBlaster.properties</code> (for example PublishReturnQos, Update messages, ConnectReturnQos etc.)</p>
-<pre>
+<pre class="BORDER">
 CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.user=xmlBlaster,\
                              mail.password=xmlBlaster,\
@@ -455,7 +429,7 @@ instead of XbfParser.
 <p>The format of send messages from the client to the xmlBlaster server
 or to listen on server messages
 is configured in <code>xmlBlaster.properties</code> (for example sending publish() or receiving update() etc.)</p>
-<pre>
+<pre class="BORDER">
 ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConnection,\
                                  mail.smtp.url=smtp://demo:demo@localhost,\
                                  mail.smtp.from=demo@localhost,\
@@ -488,11 +462,73 @@ ClientCbServerProtocolPlugin[email][1.0]=
 #sendSimpleExceptionFormat=true,\
 #parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 </pre>
-<p>The above client has chosen to don't compress the outgoing mails.
+<p>The above client has chosen to not compress the outgoing mails.
 Further it sends the UpdateReturnQos in clear XML text instead
 of using our native XfbParser protocol.
 </p>
 
+<p class="celltitel">Configuration of SmtpClient.java</p>
+<p>This plugin is responsible to send away emails with SMTP, it is used
+on server side and on java client side.</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>mail.smtp.url</td>
+            <td>smtp://user:password@host:port</td>
+            <td>The SMTP connection URL, the port is optional.
+             For example "smtp://demo:demo@localhost:25".
+             If you leave the password away we try to connect
+             to the MTA (mail transfer agent)
+             with switched off authentication.
+             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>messageIdForceBase64</td>
+            <td>false</td>
+            <td>If the messageId markup contains illegal characters it is 
+            automatically base64 encoded. By setting this to true you
+            can enforce everything to base64, even it is not necessary.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>contentForceBase64</td>
+            <td>false</td>
+            <td>If the email payload (the message content) contains illegal characters it is 
+            automatically base64 encoded, typically this happens for binary data like
+            gif images. By setting this to true you
+            can enforce every content email attachment to base64, even it is not necessary.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>inlineExtension</td>
+            <td>.txt,.xml</td>
+            <td>A comma separated list of attachment file name extensions which should be
+            handled as inline. Such attachments are readable in your email body
+            in your GUI (outlook,thunderbird)
+            so you are not forced to open the attachment to see it.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>mail.debug</td>
+            <td>false</td>
+            <td>Switches on/off the javamail lowlevel debugging.
+            Use as JVM setting like 'java -Dmail.debug=true ...'.<br />
+            Further debugging can be switch on with
+            <code>call[org.xmlBlaster.util.protocol.email.SmtpClient] true</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+
+<p class="celltitel">Configuration of Pop3Driver.java</p>
+<p>This plugin is responsible to poll for incoming emails with POP3, it is used
+on server side and on java client side.</p>
       <table border="1">
          <tr>
             <th>Property</th>
@@ -502,17 +538,187 @@ of using our native XfbParser protocol.
          </tr>
 
          <tr>
-            <td>mail.smtp.url</td>
-            <td>smtp://demo:demo@localhost:25</td>
-            <td>The SMTP connection URL, the port is optional</td>
+            <td>mail.pop3.url</td>
+            <td>pop3://user:password@host:port/INBOX</td>
+            <td>The POP3 connection URL, the port is optional.
+             For example "pop3://demo:demo@localhost:110/INBOX".
+             If you leave the password away we try to connect
+             to the MTA (mail transfer agent)
+             with switched off authentication.
+             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>pop3PollingInterval</td>
+            <td>500</td>
+            <td>The polling interval in milli seconds to poll for incoming messages.
+            Defaults to 2000 (2 seconds) but reducing it to 500 milli seconds shouldn't
+            eat too much CPU time.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>holdbackExpireTimeout</td>
+            <td>20000</td>
+            <td>How many mill seconds do we keep emails for which no java bean is interested.
+            This is solving the chicken/egg problem on xmlBlaster startup when the Pop3Poller
+            is retrieving already emails but the email drivers are not yet ready.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>activate</td>
+            <td>true</td>
+            <td>If true the driver start polling for emails on startup immediately.
+            If set to false you need to somehow activate the poller, for example
+            manually using the JMX console.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>mail.debug</td>
+            <td>false</td>
+            <td>Switches on/off the javamail lowlevel debugging.
+            Use as JVM setting like 'java -Dmail.debug=true ...'.<br />
+            Further debugging can be switch on with
+            <code>call[org.xmlBlaster.util.protocol.email.Pop3Driver] true</code> and
+            <code>call[org.xmlBlaster.util.protocol.email.EmailExecutor] true</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+
+
+<p class="celltitel">Other general configurations</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>parserClass</td>
+            <td>org.xmlBlaster.util.xbformat.XmlScriptParser</td>
+            <td>Specifies how to format the message inside the email:
+            The <code>XmlScriptParser</code> use the simple XML markup of the
+            <a href="client.script.html"
+             target="others">client.script framework</a>
+            where as the <code>org.xmlBlaster.util.xbformat.XbfParser</code>
+            uses the more dense format of our
+            <a href="protocol.socket.html"
+             target="others">protocol.socket framework</a>.
+            </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
-            <td>mail.pop3.url</td>
-            <td>pop3://demo:demo@localhost:110/INBOX</td>
-            <td>The POP3 connection URL, the port is optional</td>
+            <td>compress/type</td>
+            <td>zlib</td>
+            <td>If you want to compress the attachment set this property to <code>zlib</code>.
+            It default to '', that is no compression is used.
+            </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>compress/minSize</td>
+            <td>200</td>
+            <td>If <code>compress/type</code> is set to <code>zlib</code> you can
+            control the minimum size in bytes to switch on compression.
+            For too small messages compression makes no sense as it would increase the size.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.subject</td>
+            <td>XmlBlaster Generated Email $_{xmlBlaster/email/messageId}</td>
+            <td>
+            The subject to use. If the above $_{...} is added the &lt;messageId> markup
+            is added to the subject.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>xmlDeclaration</td>
+            <td>&lt;?xml version='1.0' encoding='UTF-8'?></td>
+            <td>
+            The header to add to the attachment if formatted with XmlScriptParser.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>schemaDeclaration</td>
+            <td>xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd'</td>
+            <td>This allows to add a schema declaration to the XmlScriptParser.
+            The attachment root tag is complemented with the given string.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>responseTimeout</td>
+            <td>300000</td>
+            <td>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>pingResponseTimeout</td>
+            <td>300000</td>
+            <td>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>updateResponseTimeout</td>
+            <td>300000</td>
+            <td>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+
+<p class="celltitel">Other configurations server side only</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>CbProtocolPlugin[email][1.0]</td>
+            <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</pre></td>
+            <td>You need to activate EMAIL support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.smtp.from</td>
+            <td>xmlBlaster@localhost</td>
+            <td>The email address used by the xmlBlaster server.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+
+<p class="celltitel">Other configurations client side only</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
          </tr>
 
          <tr>
@@ -530,44 +736,38 @@ of using our native XfbParser protocol.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
-<!-- TODO:
-plugin/email/schemaDeclaration=xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='avitech.xsd'
-plugin/email/xmlDeclaration=<?xml version='1.0' encoding='UTF-8'?>
-plugin/email/mail.subject=Generated Email
-                                         sendResponseSessionId=false,\
-                                         sendResponseRequestId=false,\
-                                         sendSimpleExceptionFormat=true
-call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
-call[org.xmlBlaster.util.protocol.email.SmtpClient] true
-call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
 
-plugin/email/responseTimeout=60000
-plugin/email/pingResponseTimeout=30000
+         <tr>
+            <td>sendResponseSessionId</td>
+            <td>true</td>
+            <td>
+            Add the &lt;sessionId> tag to the &lt;messageId> markup?
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
 
-   /** 
-    * Setting this to true we can force the messageId attachment to
-    * always be base64 encoded.
-    * <br />
-    * Javamail does base64 encoding automatically if need so
-    * the default of this variable is false.
-    */
-   private boolean messageIdForceBase64;
+         <tr>
+            <td>sendResponseRequestId</td>
+            <td>true</td>
+            <td>
+            Add the &lt;requestId> tag to the &lt;messageId> markup?
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
 
-   /** 
-    * Setting this to true we can force the MsgUnit attachment to
-    * always be base64 encoded.
-    * <br />
-    * Javamail does base64 encoding automatically if need so
-    * the default of this variable is false.
-    */
-   private boolean contentForceBase64;
+         <tr>
+            <td>sendSimpleExceptionFormat</td>
+            <td>false</td>
+            <td>
+            If set to true and used with XmlScriptParser the UpdateReturnQos
+            has a simple format (even for exceptions) which satisfies the XML-schema
+            <a href="http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/util/protocol/email/simpleReturnQos.xsd">simpleReturnQos.xsd</a>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
 
-
-The requestId is requested to be strictly increasing
-to detect email duplicates and assure sequency
--->
       </table>
-      <h2>TODO: Add the other properties (currently see javadoc)</h2>
+
       <p>Note: You can easily re-configure the POP3 and SMTP behavior on a running xmlBlaster
       with JMX</p>
       <p>Note: The current email callback implementation can handle max one connection per email account
@@ -581,6 +781,8 @@ Make last requestId persistent to have loop and sequence protection after a rest
    <see type="API">org.xmlBlaster.util.protocol.email.Pop3Driver</see>
    <see type="API">org.xmlBlaster.util.protocol.email.SmtpClient</see>
    <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
+   <see type="API">org.xmlBlaster.util.xbformat.XbfParser</see>
+   <see type="API">org.xmlBlaster.util.xbformat.XmlScriptParser</see>
    <author>mr@marcelruff.info</author>
    <date>2005 11 23</date>
    <testcase status="OPEN">
