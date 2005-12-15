@@ -204,7 +204,7 @@ implements I_Plugin, I_Timeout,
 
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
-            "Pop3Driver", this.glob
+            "Pop3Driver[" + getType() + "]", this.glob
                   .getScopeContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
@@ -931,6 +931,7 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
    }
 
    /**
+    * JMX
     * @return a human readable usage help string
     */
    public java.lang.String usage() {

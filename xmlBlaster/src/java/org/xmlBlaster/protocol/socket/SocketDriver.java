@@ -284,8 +284,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
       // For JMX instanceName may not contain ","
+      String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
-            "SocketDriver", glob.getContextNode());
+            "SocketDriver[" + getType() + vers + "]", glob.getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       try {
