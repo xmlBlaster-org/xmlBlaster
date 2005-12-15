@@ -39,4 +39,11 @@ public interface EmailExecutorMBean extends RequestReplyExecutorMBean {
     * @param bcc The blind cc to set.
     */
    public void setBcc(String bcc);
+
+   /**
+    * Returns a comma seperated list of all 'from email addresses'.
+    * Used for JMX. 
+    * @return For example "joe@localhost,blue@localhost", never null
+    */
+   public String getLoopProtectionList();
 }

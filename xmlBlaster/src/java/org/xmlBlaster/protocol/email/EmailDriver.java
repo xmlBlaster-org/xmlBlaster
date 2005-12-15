@@ -24,6 +24,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 
 import java.io.IOException;
@@ -111,7 +112,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
 
       // For JMX instanceName may not contain ","
       super.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
-            "EmailDriver", glob.getContextNode());
+            "EmailDriver[" + getType() + "]",
+            glob.getContextNode());
       super.mbeanHandle = this.glob.registerMBean(super.contextNode, this);
       
       engineGlob.getRequestBroker().getAuthenticate(null).addClientListener(this);
@@ -353,7 +355,12 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
    public void sessionAdded(ClientEvent e) {}
    public void subjectAdded(ClientEvent e) {}
    public void sessionPreRemoved(ClientEvent e) {
-      // TODO:
+      CallbackAddress[] cba = e.getConnectQos().getSessionCbQueueProperty().getCallbackAddresses();
+      for (int i=0; i<cba.length; i++) {
+         EmailExecutor.LoopProtection l = removeFromLoopProtection(cba[i].getRawAddress());
+         if (l != null)
+            log.severe("DEBUG ONLY: " + l.key);
+      }
    }
    public void sessionRemoved(ClientEvent e) {}
    public void subjectRemoved(ClientEvent e) {}

@@ -82,11 +82,13 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    /**
     * Use to protect against looping messages
     */
-   private class LoopProtection {
-      LoopProtection(long lastRequestId, long lastPingRequestId) {
+   protected class LoopProtection {
+      LoopProtection(String key, long lastRequestId, long lastPingRequestId) {
+         this.key = key;
          this.lastRequestId = lastRequestId;
          this.lastPingRequestId = lastPingRequestId;
       }
+      public String key; // email.from address
       //protected String lastSessionId;
       /** Use to protect against looping messages, is a monotonous ascending timestamp */
       public long lastRequestId=-1;
@@ -332,7 +334,6 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
 
       if (msgUnitAttachmentHolder == null) {
          log.warning("Got email from POP3 but there was no MsgUnit attachment, we ignore it: " + emailData.toXml(true));
-         //log.fine("DUMP:" + emailData.toXml());
          return;
       }
 
@@ -382,7 +383,6 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
                            + pop3Url
                            + ", check if client and server have identical compression settings: "
                            + e.toString() + ": " + emailData.toXml(true));
-         //shutdown();
          return;
       }
 
@@ -404,81 +404,16 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    
          try {
             if (i==0 && msgInfo.isInvoke()) {
-               //############# LOOP CHECK ###########
-               // Some weak looping protection
-               // Assume requestId to be strictly increasing
-               // to detect email duplicates (which can be produced by MTAs)
-               try {
-                  LoopProtection loopProtection = null;
-                  synchronized (this.senderLoopProtectionMap) {
-                     loopProtection = (LoopProtection)this.senderLoopProtectionMap.get(emailData.getFrom());
-                     if (loopProtection == null) {
-                        loopProtection = new LoopProtection(-1, -1);
-                        this.senderLoopProtectionMap.put(emailData.getFrom(), loopProtection);
-                     }
-                  }
-                  long currRequestId = new Long(msgInfo.getRequestId()).longValue();
-                  if (MethodName.PING.equals(msgInfo.getMethodName())) {
-                     if (loopProtection.lastPingRequestId >= 0 && currRequestId <= loopProtection.lastPingRequestId) {
-                        log.warning("Can't process email data from "
-                              + getPop3Driver().getPop3Url()
-                              + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastPingRequestId+") has been processed already"
-                              + ": " + emailData.toXml(true));
-                        return;
-                     }
-                     //this.lastSessionId = msgInfo.getSecretSessionId();
-                     loopProtection.lastPingRequestId = currRequestId;
-                  }
-                  else {
-                     if (loopProtection.lastRequestId >= 0 && currRequestId <= loopProtection.lastRequestId) {
-                        log.warning("Can't process email data from "
-                              + getPop3Driver().getPop3Url()
-                              + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastRequestId+") has been processed already"
-                              + ": " + emailData.toXml(true));
-                        return;
-                     }
-                     //this.lastSessionId = msgInfo.getSecretSessionId();
-                     loopProtection.lastRequestId = currRequestId;
-                  }
-               }
-               catch (Throwable e) {
-                  log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
-               }
-               //############# LOOP CHECK END ###########
+               if (isLoopingMail(msgInfo, emailData))
+                  return;
             }
    
-            // TODO: Memory leak if session dies without a disconnect() call
-            // We should delete the entry if older than session timeout or better we need to add a
-            // session removed event listener to cleanup!!!
             /*
-            LoopProtection[] arr = getLoopProtections();
-            for (int i=0; i<arr.length; i++) {
-               if (arr[i].isTimeout()) {
-                  synchronized (this.senderLoopProtectionMap) {
-                     this.senderLoopProtectionMap.remove(arr[i].getFrom());
-                  }
-               }
-            }
+              Memory leak cleanup is handled by EmailDriver.java on LogoutEvent
+              if (MethodName.DISCONNECT.equals(msgInfo.getMethodName())) {
+                removeFromLoopProtection(emailData.getFrom());
+              }
             */
-            if (MethodName.DISCONNECT.equals(msgInfo.getMethodName())) {
-               LoopProtection loopProtection = null;
-               synchronized (this.senderLoopProtectionMap) {
-                  loopProtection = (LoopProtection)this.senderLoopProtectionMap.remove(emailData.getFrom());
-                  if (loopProtection == null) {
-                     // Is OK for a client which never received an update (no INVOKE)
-                     if (this.glob.isServerSide()) {
-                        Thread.dumpStack();
-                        log.warning("No loopProtection entry found for sender " + emailData.toXml(true));
-                     }
-                  }
-               }
-            }
-
-            //if (msgInfo.isResponse()) {
-            //   if (MethodName.CONNECT.equals(msgInfo.getMethodName())) {
-            //      setEmailSessionId(msgInfo.getSecretSessionId());
-            //   }
-            //}
             
             // This wakes up the blocking thread of sendEmail() and returns the
             // returnQos or the received invocation
@@ -501,7 +436,85 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          }
       }
    }
+   
+   /**
+    * Some weak looping protection. 
+    * Assume requestId to be strictly increasing
+    * to detect email duplicates (which can be produced by MTAs)
+    */
+   protected boolean isLoopingMail(MsgInfo msgInfo, EmailData emailData) {
+      try {
+         LoopProtection loopProtection = null;
+         synchronized (this.senderLoopProtectionMap) {
+            loopProtection = (LoopProtection)this.senderLoopProtectionMap.get(emailData.getFrom());
+            if (loopProtection == null) {
+               loopProtection = new LoopProtection(emailData.getFrom(), -1, -1);
+               this.senderLoopProtectionMap.put(loopProtection.key, loopProtection);
+            }
+         }
+         long currRequestId = new Long(msgInfo.getRequestId()).longValue();
+         if (MethodName.PING.equals(msgInfo.getMethodName())) {
+            if (loopProtection.lastPingRequestId >= 0 && currRequestId <= loopProtection.lastPingRequestId) {
+               log.warning("Can't process email data from "
+                     + getPop3Driver().getPop3Url()
+                     + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastPingRequestId+") has been processed already"
+                     + ": " + emailData.toXml(true));
+               return true;
+            }
+            loopProtection.lastPingRequestId = currRequestId;
+         }
+         else {
+            if (loopProtection.lastRequestId >= 0 && currRequestId <= loopProtection.lastRequestId) {
+               log.warning("Can't process email data from "
+                     + getPop3Driver().getPop3Url()
+                     + ", it seems to be looping as requestId="+currRequestId+" (last="+loopProtection.lastRequestId+") has been processed already"
+                     + ": " + emailData.toXml(true));
+               return true;
+            }
+            loopProtection.lastRequestId = currRequestId;
+         }
+      }
+      catch (Throwable e) {
+         log.warning("Cant handle requestId '"+msgInfo.getRequestId()+"' to be of type long");
+      }
+      return false;
+   }
 
+   /**
+    * Cleanup
+    * @param key this is the sender email address, for example "xmlBlaster@localhost" for a client
+    *         or "demo@localhost" on server side (emailData.getFrom())
+    * @return The removed entry or null if not found
+    */
+   protected LoopProtection removeFromLoopProtection(String key) {
+      LoopProtection loopProtection = null;
+      synchronized (this.senderLoopProtectionMap) {
+         loopProtection = (LoopProtection)this.senderLoopProtectionMap.remove(key);
+         if (loopProtection == null) {
+            // Is OK for email plugins which only invokes
+            log.fine("No loopProtection entry found for sender " + key 
+                  + " which is OK in most cases, current known are: "
+                  + getLoopProtectionList());
+         }
+      }
+      return loopProtection;
+   }
+
+   /**
+    * Returns a comma seperated list of all 'from email addresses'.
+    * Used for JMX. 
+    * @return For example "joe@localhost,blue@localhost", never null
+    */
+   public String getLoopProtectionList() {
+      LoopProtection[] arr = getLoopProtections();
+      StringBuffer sb = new StringBuffer(512);
+      for (int i=0; i<arr.length; i++) {
+         if (i>0) sb.append(",");
+         sb.append(arr[i].key);
+      }
+      return sb.toString();
+   }
+   
    protected LoopProtection[] getLoopProtections() {
       synchronized (this.senderLoopProtectionMap) {
          return (LoopProtection[])this.senderLoopProtectionMap.entrySet().toArray(new LoopProtection[this.senderLoopProtectionMap.size()]);
@@ -697,6 +710,9 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     */
    public void shutdown() {
       this.isShutdown = true;
+      synchronized (this.senderLoopProtectionMap) {
+         this.senderLoopProtectionMap.clear();
+      }
       try {
          getPop3Driver().deregisterForEmail(this);
       } catch (XmlBlasterException e) {
