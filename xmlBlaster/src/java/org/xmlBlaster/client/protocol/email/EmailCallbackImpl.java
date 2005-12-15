@@ -19,10 +19,9 @@ import org.xmlBlaster.util.protocol.email.EmailExecutor;
  * <p />
  * 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
- * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a
- *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The
- *      protocol.socket requirement</a>
+ *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.email.html">The
+ *      protocol.email requirement</a>
  */
 public class EmailCallbackImpl extends EmailExecutor implements
       I_CallbackServer {

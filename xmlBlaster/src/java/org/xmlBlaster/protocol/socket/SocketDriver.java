@@ -3,7 +3,6 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 

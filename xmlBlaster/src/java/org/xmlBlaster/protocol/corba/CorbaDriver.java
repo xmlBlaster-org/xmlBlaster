@@ -48,6 +48,8 @@ import org.omg.CosNaming.NameComponent;
  * JacORB CORBA socket:<br />
  *  org.jacorb.util.Environment.getProperty("OAIAddr");<br />
  *  org.jacorb.util.Environment.getProperty("OAPort");
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.corba.JacORB.html">The protocol.corba.JacORB requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.corba.NameService.html">The protocol.corba.NameService requirement</a>
  */
 public class CorbaDriver implements I_Driver, CorbaDriverMBean
 {

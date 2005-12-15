@@ -15,7 +15,7 @@ import java.net.InetAddress;
 
 /**
  * This knows how to parse the URL notation of our XMLRPC protocol. 
- * It holds the hostname and the port.
+ * It holds the hostname and the port in the form "http://myServer.com:8080/".
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.xmlrpc.html">The protocol.xmlrpc requirement</a>
  * @see org.xmlBlaster.test.classtest.XmlRpcUrlTest
  */
@@ -73,7 +73,7 @@ public class XmlRpcUrl
 
    /**
     * Extract hostname and port from environment, if not found use the local host
-    * for hostname and the given default port (usually XmlRpcDriver.DEFAULT_HTTP_PORT=7607). 
+    * for hostname and the given default port (usually XmlRpcDriver.DEFAULT_HTTP_PORT=8080). 
     * <br />
     * Updates the raw address from AddressBase if isLocal==false
     * <br />

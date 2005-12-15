@@ -197,8 +197,6 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       // POP3 poller, SMTP access etc
       super.setXmlBlasterCore(xmlBlasterImpl);
       super.init(glob, this.addressServer, this.pluginInfo);
-      
-      // TODO: Handle CONNECT and DISCONNECT separately
    }
 
    /**
@@ -209,20 +207,8 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       // Register under my cluster node id 'heron'
       String key = this.glob.getId();
       getPop3Driver().registerForEmail(key, null, this);
-      // Usually the pop3Driver is set to <attribute id='activate'>false</attribute> on
-      // startup to not loose any messages until we have registered
-      //try { getPop3Driver().activate(); } catch (Exception e) { throw (XmlBlasterException)e; }
-      // this is now solved by holdbackExpireTimeout
       log.info("Initialized email listener with key '" + key + "' and email address '" + super.fromAddress.toString() + "'");
    }
-
-   /*
-    * Notification by Pop3Driver when a (response) message arrives. Enforced by
-    * I_ResponseListener
-   public void responseEvent(String requestId, Object response) {
-      EmailData messageData = (EmailData) response;
-   }
-    */
 
    /**
     * Overwrites EmailExecutor as we are a singleton handling different clients.  
@@ -245,15 +231,13 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
          if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
          receiver.setBounceObject(BOUNCE_MAILTO_KEY, receiver.getBounceObject(BOUNCE_MAILFROM_KEY));
          
-         // super.receive() processes all invocations, only connect()/disconnect() we do locally ...
+         // super.receiveReply() processes all invocations, only connect()/disconnect() we do locally ...
          if (super.receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(this.glob, receiver.getQos());
                conQos.setAddressServer(getAddressServer());
-               //setLoginName(conQos.getUserId());
                ConnectReturnQosServer retQos = this.authenticate.connect(getAddressServer(), conQos);
                //As we are a singleton there is no need to remember the secretSessionId of this client
-               //super.setSecretSessionId(retQos.getSecretSessionId());
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
              }
@@ -286,8 +270,6 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       }
       return true;
    }
-
-   
 
    /**
     * Deactivate xmlBlaster access (standby), no clients can connect.

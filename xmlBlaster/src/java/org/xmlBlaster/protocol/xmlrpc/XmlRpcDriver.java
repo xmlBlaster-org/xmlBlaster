@@ -39,6 +39,7 @@ import java.io.IOException;
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.xmlrpc.html">The protocol.xmlrpc requirement</a>
  * @see <a href="http://marc.theaimsgroup.com/?l=rpc-user&m=102009663407418&w=2">Configuring SSL with XmlRpc</a>
  * @author xmlBlaster@marcelruff.info
  */
