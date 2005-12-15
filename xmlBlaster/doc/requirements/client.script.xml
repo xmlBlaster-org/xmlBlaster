@@ -74,7 +74,7 @@
      (${} values which contain further ${}).
      </p>
      <p>To switch this feature on you need to add following flags to the beginning of your script</p>
-     <pre>
+<pre class="BORDER">
 &lt;!-- replace e.g. ${ICAO} with command line setting '-ICAO EDDI' -->
 &lt;replaceQosTokens/>
 &lt;replaceKeyTokens/>
@@ -85,7 +85,7 @@
    <example lang="any" type="HTML">
       <p>
       The following is a simple session which can be invoked the as:<br/>
-      <pre>
+<pre class="BORDER">
 java javaclients.script.XmlScript \
      -requestFile simpleSession.xml \
      -responseFile out.xml
@@ -94,11 +94,16 @@ java javaclients.script.XmlScript \
       from xmlBlaster are collected in out.xml. If you want the output on the standard 
       output stream omit to specify a responseFile. If you want to read from the standard
       input stream omit the requestFile.        
-      <pre>
+<pre class="BORDER">
 <![CDATA[
 <xmlBlaster>
   <!-- note that if you omit the qos it will take an empty one (default) -->
+
+  <echo message="Starting now ..."/>
+
   <connect/>
+
+  <input message="Hit a key to continue # "/>
 
   <subscribe><key oid="test"></key><qos/></subscribe>
 
@@ -140,7 +145,7 @@ java javaclients.script.XmlScript \
       </pre>
       </p>
       <p>And as the response to the upper request:<br/>
-      <pre>
+<pre class="BORDER">
 <![CDATA[   
 <xmlBlasterResponse>
 
@@ -369,7 +374,7 @@ java javaclients.script.XmlScript \
 
    <example lang="any" type="HTML">
       <h2>Exception example</h2>
-      <pre>
+<pre class="BORDER">
 <![CDATA[
 <xmlBlasterResponse>
   <exception errorCode='user.illegalArgument'>
