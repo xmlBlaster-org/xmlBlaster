@@ -3,6 +3,13 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+ o #14338 Email protocol: Fixed memory leak for loop detection code
+
+ o #14337 Changed to have unique JMX name to avoid conflict if multiple plugins are started
+   for SocketDriver, SmtpClient and Pop3Driver
+
+ o #14336 Added JMX control for CorbaDriver and XmlRpcDriver
+
  o #14334 Email protocol: Ported to support multiple requests in one email
 
  o #14329 Email protocol: Fixed multiple connection loop protection, added simple use case for manual GUI usage
