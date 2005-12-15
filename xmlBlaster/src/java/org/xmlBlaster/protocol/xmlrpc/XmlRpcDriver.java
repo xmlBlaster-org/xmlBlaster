@@ -10,13 +10,12 @@ package org.xmlBlaster.protocol.xmlrpc;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 import org.apache.xmlrpc.*;
 import java.io.IOException;
@@ -43,7 +42,7 @@ import java.io.IOException;
  * @see <a href="http://marc.theaimsgroup.com/?l=rpc-user&m=102009663407418&w=2">Configuring SSL with XmlRpc</a>
  * @author xmlBlaster@marcelruff.info
  */
-public class XmlRpcDriver implements I_Driver
+public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
 {
    private String ME = "XmlRpcDriver";
    private Global glob;
@@ -59,6 +58,10 @@ public class XmlRpcDriver implements I_Driver
    private XmlRpcUrl xmlRpcUrl;
    /** Our configuration */
    private AddressServer addressServer;
+   /** My JMX registration, can be done optionally by implementing classes */
+   protected Object mbeanHandle;
+   protected ContextNode contextNode;
+   protected boolean isActive;
 
 
    /**
@@ -94,19 +97,27 @@ public class XmlRpcDriver implements I_Driver
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) 
       throws XmlBlasterException {
+      this.glob = glob;
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
-      try {
-         this.authenticate = engineGlob.getAuthenticate();
-         if (this.authenticate == null) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
-         }
-         I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
-         if (xmlBlasterImpl == null) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
-         }
 
+      this.authenticate = engineGlob.getAuthenticate();
+      if (this.authenticate == null) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
+      }
+      I_XmlBlaster xmlBlasterImpl = this.authenticate.getXmlBlaster();
+      if (xmlBlasterImpl == null) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
+      }
+
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "XmlRpcDriver[" + getType() + "]",
+            glob.getContextNode());
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+         
+      try {
          init(glob, new AddressServer(glob, getType(), glob.getId(), pluginInfo.getParameters()), this.authenticate, xmlBlasterImpl);
 
          activate();
@@ -179,13 +190,15 @@ public class XmlRpcDriver implements I_Driver
          log.error(ME, "Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
          //e.printStackTrace();
       }
+      this.isActive = true;
    }
 
    /**
     * Deactivate xmlBlaster access (standby), no clients can connect. 
     */
-   public synchronized void deActivate() throws XmlBlasterException {
+   public synchronized void deActivate() {
       if (log.CALL) log.call(ME, "Entering deActivate");
+      this.isActive = false;
       if (webServer != null) {
          try {
             webServer.removeHandler("authenticate");
@@ -208,11 +221,8 @@ public class XmlRpcDriver implements I_Driver
     * Enforced by interface I_Driver.
     */
    public void shutdown() throws XmlBlasterException {
-      try {
-         deActivate();
-      } catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
-      }
+      deActivate();
+      this.glob.unregisterMBean(this.mbeanHandle);
    }
 
    /**
@@ -231,7 +241,34 @@ public class XmlRpcDriver implements I_Driver
       text += "                       Default is the localhost.\n";
       text += "   -plugin/xmlrpc/debug\n";
       text += "                       true switches on detailed XMLRPC debugging [false].\n";
+      text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
       text += "\n";
       return text;
+   }
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
+   }
+
+   /**
+    * JMX
+    * @see org.xmlBlaster.util.admin.I_AdminService#isActive()
+    */
+   public boolean isActive() {
+      return this.isActive;
+   }
+
+   /**
+    * JMX
+    * @see org.xmlBlaster.util.admin.I_AdminPlugin#isShutdown()
+    */
+   public boolean isShutdown() {
+      return isActive();
    }
 }

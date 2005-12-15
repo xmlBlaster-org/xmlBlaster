@@ -11,6 +11,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -48,7 +49,7 @@ import org.omg.CosNaming.NameComponent;
  *  org.jacorb.util.Environment.getProperty("OAIAddr");<br />
  *  org.jacorb.util.Environment.getProperty("OAPort");
  */
-public class CorbaDriver implements I_Driver
+public class CorbaDriver implements I_Driver, CorbaDriverMBean
 {
    private String ME = "CorbaDriver";
    private org.omg.CORBA.ORB orb;
@@ -69,6 +70,10 @@ public class CorbaDriver implements I_Driver
    /** The URL path over which the IOR can be accessed (via our http bootstrap server) */
    private final String urlPath = "/AuthenticationService.ior";
    private AddressServer addressServer;
+   /** My JMX registration, can be done optionally by implementing classes */
+   protected Object mbeanHandle;
+   protected ContextNode contextNode;
+   protected boolean isActive;
 
    /** Get a human readable name of this driver */
    public String getName() {
@@ -117,6 +122,11 @@ public class CorbaDriver implements I_Driver
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
 
+         // For JMX instanceName may not contain ","
+         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+               "CorbaDriver[" + getType() + "]",
+               glob.getContextNode());
+         this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
          init(glob, new AddressServer(glob, getType(), glob.getId(), pluginInfo.getParameters()), this.authenticate, xmlBlasterImpl);
          
          activate();
@@ -340,15 +350,22 @@ public class CorbaDriver implements I_Driver
       }
       // orbacus needs this
       if (orb.work_pending()) orb.perform_work();
+      this.isActive = true;
    }
 
    /**
+    * JMX
     * Deactivate xmlBlaster access (standby), no clients can connect. 
     */
-   public synchronized void deActivate() throws XmlBlasterException {
+   public synchronized void deActivate() {
       if (log.CALL) log.call(ME, "Entering deActivate");
+      this.isActive = false;
 
-      glob.getHttpServer().removeRequest(urlPath);
+      try {
+         glob.getHttpServer().removeRequest(urlPath);
+      } catch(XmlBlasterException e) {
+         log.error(ME, e.getMessage());
+      }
 
       try {
          if (namingContextExt != null && nameXmlBlaster != null) {
@@ -380,7 +397,6 @@ public class CorbaDriver implements I_Driver
       }
 
       this.authRef._release();
-
    }
 
    /**
@@ -418,11 +434,9 @@ public class CorbaDriver implements I_Driver
     */
    public void shutdown() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Shutting down ...");
-      try {
-         deActivate();
-      } catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
-      }
+      deActivate();
+
+      this.glob.unregisterMBean(this.mbeanHandle);
 
       if (this.authServer != null) {
          this.authServer.shutdown();
@@ -477,6 +491,9 @@ public class CorbaDriver implements I_Driver
       log.info(ME, "POA and ORB are down, CORBA resources released.");
    }
 
+   public boolean isShutdown() {
+      return this.orb == null;
+   }
 
    /**
     * Locate the CORBA Naming Service.
@@ -622,6 +639,7 @@ public class CorbaDriver implements I_Driver
       text += "   -plugin/ior/hostname\n";
       text += "                       Allows to force the corba server IP address for multi-homed hosts.\n";
       text += "   -plugin/ior/port    Allows to force the corba server port number.\n";
+      text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
       text += " For JacORB only:\n";
       text += "   java -DOAIAddr=<ip> Use '-plugin/ior/hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-plugin/ior/port'\n";
@@ -629,5 +647,24 @@ public class CorbaDriver implements I_Driver
       text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";
       return text;
+   }
+
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
+   }
+
+   /**
+    * JMX
+    * @see org.xmlBlaster.util.admin.I_AdminService#isActive()
+    */
+   public boolean isActive() {
+      return this.isActive;
    }
 }
