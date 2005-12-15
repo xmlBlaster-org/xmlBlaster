@@ -118,7 +118,7 @@ code.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #E
 
 pre {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:9pt; }
 
-table.BORDER, pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:80%;
+p.BORDER, table.BORDER, pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #ffffcc; font-size:80%;
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 
 # DOES KILL netscape, works fine in mozilla, so we should avoid it
