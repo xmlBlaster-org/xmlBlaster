@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The schema for UpdateReturnQos and callback pingReturnQos when used with
+  'email' protocol and activated:
+
+ClientCbServerProtocolPlugin[email][1.0]=...,\
+  sendSimpleExceptionFormat=true,\
+  parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+-->
+<xsd:schema id="NewDataSet" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="ping">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="qos" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="state" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="id">
+                    <xsd:simpleType>
+                     <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="OK"/>
+                        <xsd:enumeration value="ERROR"/>
+                    </xsd:restriction>
+                   </xsd:simpleType>
+                  </xsd:attribute>
+                  <xsd:attribute name="info">
+                    <xsd:simpleType>
+                     <xsd:restriction base="xsd:string">
+                      <xsd:enumeration value="legacy"/>
+                      <xsd:enumeration value="internal"/>
+                      <xsd:enumeration value="resource"/>
+                      <xsd:enumeration value="communication"/>
+                      <xsd:enumeration value="user"/>
+                      <xsd:enumeration value="user.update.error"/>
+                      <xsd:enumeration value="user.update.holdback"/>
+                      <xsd:enumeration value="user.update.illegalArgument"/>
+                      <xsd:enumeration value="user.update.internalError"/>
+                      <xsd:enumeration value="user.update.security.authentication.accessDenied"/>
+                      <xsd:enumeration value="user.wrongApiUsage"/>
+                    </xsd:restriction>
+                   </xsd:simpleType>
+                  </xsd:attribute>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="type">
+         <xsd:simpleType>
+         <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="I"/>
+            <xsd:enumeration value="R"/>
+            <xsd:enumeration value="E"/>
+         </xsd:restriction>
+         </xsd:simpleType>
+      </xsd:attribute>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="update">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="qos" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="state" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="id">
+                    <xsd:simpleType>
+                     <xsd:restriction base="xsd:string">
+                      <xsd:enumeration value="OK"/>
+                      <xsd:enumeration value="ERROR"/>
+                    </xsd:restriction>
+                   </xsd:simpleType>
+                  </xsd:attribute>
+                  <xsd:attribute name="info">
+                    <xsd:simpleType>
+                     <xsd:restriction base="xsd:string">
+                      <xsd:enumeration value="legacy"/>
+                      <xsd:enumeration value="internal"/>
+                      <xsd:enumeration value="resource"/>
+                      <xsd:enumeration value="communication"/>
+                      <xsd:enumeration value="user"/>
+                      <xsd:enumeration value="user.admin.invalid"/>
+                      <xsd:enumeration value="user.clientCode"/>
+                      <xsd:enumeration value="user.configuration"/>
+                      <xsd:enumeration value="user.configuration.identicalClient"/>
+                      <xsd:enumeration value="user.configuration.maxSession"/>
+                      <xsd:enumeration value="user.connect"/>
+                      <xsd:enumeration value="user.connect.multiple"/>
+                      <xsd:enumeration value="user.illegalArgument"/>
+                      <xsd:enumeration value="user.jdbc.invalid"/>
+                      <xsd:enumeration value="user.message.invalid"/>
+                      <xsd:enumeration value="user.notConnected"/>
+                      <xsd:enumeration value="user.oid.unknown"/>
+                      <xsd:enumeration value="user.ptp.denied"/>
+                      <xsd:enumeration value="user.ptp.unknownDestination"/>
+                      <xsd:enumeration value="user.ptp.unknownDestinationSession"/>
+                      <xsd:enumeration value="user.ptp.unknownSession"/>
+                      <xsd:enumeration value="user.publish"/>
+                      <xsd:enumeration value="user.publish.readonly"/>
+                      <xsd:enumeration value="user.query.invalid"/>
+                      <xsd:enumeration value="user.query.type.invalid"/>
+                      <xsd:enumeration value="user.security.authentication.accessDenied"/>
+                      <xsd:enumeration value="user.security.authentication.illegalArgument"/>
+                      <xsd:enumeration value="user.security.authorization.notAuthorized"/>
+                      <xsd:enumeration value="user.subscribe.noCallback"/>
+                      <xsd:enumeration value="user.update.error"/>
+                      <xsd:enumeration value="user.update.holdback"/>
+                      <xsd:enumeration value="user.update.illegalArgument"/>
+                      <xsd:enumeration value="user.update.internalError"/>
+                      <xsd:enumeration value="user.update.security.authentication.accessDenied"/>
+                      <xsd:enumeration value="user.wrongApiUsage"/>
+                    </xsd:restriction>
+                   </xsd:simpleType>
+                  </xsd:attribute>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="type">
+         <xsd:simpleType>
+         <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="I"/>
+            <xsd:enumeration value="R"/>
+            <xsd:enumeration value="E"/>
+         </xsd:restriction>
+         </xsd:simpleType>
+      </xsd:attribute>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>
