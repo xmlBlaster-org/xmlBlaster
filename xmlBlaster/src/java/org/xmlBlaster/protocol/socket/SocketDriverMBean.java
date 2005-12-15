@@ -11,5 +11,5 @@ import org.xmlBlaster.util.admin.I_AdminService;
  *
  */
 public interface SocketDriverMBean extends I_AdminService { //SocketExecutorMBean {
-
+   public String getRawAddress();
 }

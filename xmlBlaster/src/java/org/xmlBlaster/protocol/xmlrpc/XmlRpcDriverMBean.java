@@ -8,5 +8,5 @@ import org.xmlBlaster.util.admin.I_AdminService;
  *
  */
 public interface XmlRpcDriverMBean extends I_AdminService {
-
+   public String getRawAddress();
 }

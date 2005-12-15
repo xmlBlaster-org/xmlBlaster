@@ -8,5 +8,5 @@ import org.xmlBlaster.util.admin.I_AdminService;
  *
  */
 public interface CorbaDriverMBean extends I_AdminService {
-
+   public String getRawAddress();
 }

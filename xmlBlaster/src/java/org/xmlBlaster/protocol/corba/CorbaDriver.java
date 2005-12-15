@@ -640,6 +640,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
       text += "                       Allows to force the corba server IP address for multi-homed hosts.\n";
       text += "   -plugin/ior/port    Allows to force the corba server port number.\n";
       text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      text += "\n";
       text += " For JacORB only:\n";
       text += "   java -DOAIAddr=<ip> Use '-plugin/ior/hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-plugin/ior/port'\n";
