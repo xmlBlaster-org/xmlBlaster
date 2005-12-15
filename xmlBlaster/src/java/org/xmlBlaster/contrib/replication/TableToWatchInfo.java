@@ -12,9 +12,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.util.StringPairTokenizer;
 
 
 /**
@@ -27,6 +29,10 @@ import org.xmlBlaster.contrib.I_Info;
  */
 public class TableToWatchInfo {
 
+   public final static String ACTION_KEY = "actions";
+   public final static String TRIGGER_KEY = "trigger";
+   public final static String SEQUENCE_KEY = "sequence";
+
    private String catalog;
    private String schema;
    private String table;
@@ -36,10 +42,10 @@ public class TableToWatchInfo {
    private long debug;
    
    /**
-    * flags which are set mean the replication does not happen for these flags.
-    * For example 'IDU' means nothing will be replicated, no (I)nserts, no (D)eletes nor (U)pdates
+    * flags which are set mean the replication does happen for these flags.
+    * For example 'IDU' means everything will be replicated: (I)nserts, (D)eletes, and (U)pdates.
     */
-   private String replFlags = "";
+   private String actions = "";
    
    public final static String TABLE_PREFIX = "table";
    public final static String KEY_SEP = ".";
@@ -162,8 +168,8 @@ public class TableToWatchInfo {
    /**
     * Parses the value and fills the object appropriately. The 
     * syntax to be parsed is of the kind: <br/>
-    * [${replicateTxt}.][${triggerName}.]${sequenceNr}<br/>
-    * Defaults are replicateTxt=IDU, triggerName=null (will be 
+    * action=IDU,trigger=TRIGGER_NAME,sequence=100
+    * Defaults are action=IDU, triggerName=null (will be 
     * assigned by the application, sequenceNr=-1, will be assigned
     * by the application.
     * @param val
@@ -171,7 +177,50 @@ public class TableToWatchInfo {
     */
    private final void parseValue(String val) throws Exception {
       if (val == null || val.trim().length() < 1) {
-         this.replFlags = "";
+         this.actions = "IDU";
+         this.trigger = null;
+         this.replKey = -1L;
+         return;
+      }
+      
+      Map map = StringPairTokenizer.parseToStringStringPairs(val.trim(), ",", "=");
+      this.actions = (String)map.get(ACTION_KEY);
+      if (this.actions == null) {
+         if (map.containsKey(ACTION_KEY))
+            this.actions = "";
+         else
+            this.actions = "IDU";
+      }
+      this.trigger = (String)map.get(TRIGGER_KEY);
+      
+      String tmp = (String)map.get(SEQUENCE_KEY);
+      if (tmp == null || tmp.trim().length() < 1)
+         this.replKey = -1;
+      else {
+         try {
+            this.replKey = Long.parseLong(tmp.trim());
+         }
+         catch (Throwable ex) {
+            String txt = "The string '" +tmp + "' could not be parsed as a long for 'sequence'. The complete value was '" + val;
+            throw new Exception(txt);
+         }
+      }
+   }
+   
+   /**
+    * Parses the value and fills the object appropriately. The 
+    * syntax to be parsed is of the kind: <br/>
+    * [${replicateTxt}.][${triggerName}.]${sequenceNr}<br/>
+    * Defaults are replicateTxt=IDU, triggerName=null (will be 
+    * assigned by the application, sequenceNr=-1, will be assigned
+    * by the application.
+    * @param val
+    * @throws Exception
+    * @deprecated
+    */
+   private final void parseValueOLD(String val) throws Exception {
+      if (val == null || val.trim().length() < 1) {
+         this.actions = "";
          this.trigger = null;
          this.replKey = -1L;
          return;
@@ -201,9 +250,9 @@ public class TableToWatchInfo {
       }
       try {
          if (tmp1 != null && tmp1.trim().length() > 0)
-            this.replFlags = tmp1.trim().toUpperCase();
+            this.actions = tmp1.trim().toUpperCase();
          else
-            this.replFlags = "";
+            this.actions = "";
       }
       catch (Throwable ex) {
          throw new Exception("Can not parse the value '" + tmp1 + "' as a boolean inside the value '" + val + "' must either be true or false");
@@ -252,20 +301,20 @@ public class TableToWatchInfo {
     * @return Returns the replicate.
     */
    public boolean isReplicate() {
-      if (this.replFlags == null)
+      if (this.actions == null)
          return false;
-      return this.replFlags.length() > 0;
+      return this.actions.length() > 0;
    }
 
    /**
     * @param replicate The replicate to set.
     */
-   public void setReplFlags(String replFlags) {
-      if (replFlags != null) {
-         this.replFlags = replFlags.trim().toUpperCase();
+   public void setActions(String actions) {
+      if (actions != null) {
+         this.actions = actions.trim().toUpperCase();
       }
       else
-         this.replFlags = "";
+         this.actions = "";
    }
 
    /**
@@ -347,13 +396,13 @@ public class TableToWatchInfo {
       String catalog = rs.getString(1);
       String schema = rs.getString(2);
       String table = rs.getString(3);
-      String replFlags = rs.getString(4);
+      String actions = rs.getString(4);
       String status = rs.getString(5);
       long replKey = rs.getLong(6);
       String triggerName  = rs.getString(7);
       long debug = rs.getInt(8);
       TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, table);
-      tableToWatch.setReplFlags(replFlags);
+      tableToWatch.setActions(actions);
       tableToWatch.setStatus(status);
       tableToWatch.setReplKey(replKey);
       tableToWatch.setTrigger(triggerName);
@@ -424,10 +473,10 @@ public class TableToWatchInfo {
       }
    }
    
-   public String getFlags() {
-      if (this.replFlags == null)
-         return "";
-      return this.replFlags;
+   public String getActions() {
+      if (this.actions == null)
+         return "IDU";
+      return this.actions;
    }
 
    public String toXml() {
@@ -444,8 +493,8 @@ public class TableToWatchInfo {
       buf.append(" replKey='" + this.replKey + "'");
       if (this.trigger  != null)
          buf.append(" trigger='" + this.trigger + "'");
-      if (this.replFlags  != null)
-         buf.append(" flags='" + this.replFlags + "'");
+      if (this.actions  != null)
+         buf.append(" actions='" + this.actions + "'");
       if (this.debug  >  0)
          buf.append(" debug='" + this.debug + "'");
       buf.append(" doReplicate='" + isReplicate() + "' />");

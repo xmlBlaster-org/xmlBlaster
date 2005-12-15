@@ -46,9 +46,6 @@ END;
 -- ---------------------------------------------------------------------------- 
 -- This is only for old LONG datas                                              
 -- ---------------------------------------------------------------------------- 
---CREATE GLOBAL TEMPORARY TABLE ${replPrefix}longs_table(repl_key INTEGER, 
---                              content CLOB, PRIMARY KEY (repl_key)) 
---			      ON COMMIT DELETE ROWS 
 
 CREATE TABLE ${replPrefix}longs_table(repl_key INTEGER, 
                               content CLOB, PRIMARY KEY (repl_key)) 
@@ -58,13 +55,14 @@ CREATE TABLE ${replPrefix}longs_table(repl_key INTEGER,
 -- ---------------------------------------------------------------------------- 
 -- This table contains the list of tables to watch.                             
 -- tablename is the name of the table to watch                                  
---- replicate is the flag indicating 't' will replicate, 'f' will not replicate,
+-- actions is the flag being a combination of I (indicating it acts on inserts),
+-- D (for deletes) and U (for updates).                                         
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
 CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(${charWidth}), 
                          schemaname VARCHAR(${charWidth}),
-                         tablename VARCHAR(${charWidth}), repl_flags CHAR(3),
+                         tablename VARCHAR(${charWidth}), actions CHAR(3),
 			 status VARCHAR(${charWidthSmall}), repl_key INTEGER, 
 			 trigger_name VARCHAR(${charWidth}), debug INTEGER, 
 			 PRIMARY KEY(catalogname, schemaname, tablename))

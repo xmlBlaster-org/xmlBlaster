@@ -612,7 +612,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             boolean addTrigger = tableToWatch.isReplicate();
             Statement st = null;
             if (addTrigger) { // create the function and trigger here
-               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName, tableToWatch.getFlags());
+               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName, tableToWatch.getActions());
                if (createString != null && createString.length() > 1) {
                   log.info("adding triggers to '" + table + "':\n\n" + createString);
                   st = conn.createStatement();
@@ -783,7 +783,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
    public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         String replFlags, String triggerName, boolean force) throws Exception {
+         String actions, String triggerName, boolean force) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -812,7 +812,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
          long debug = 0;
          String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
-               + schema + "','" + tableName + "','" + replFlags
+               + schema + "','" + tableName + "','" + actions
                + "', 'CREATING'," + tmp + ",'" + triggerName + "'," + debug + ")";
          log.info("Inserting the statement '" + sql + "'");
          this.dbPool.update(conn, sql);
@@ -912,9 +912,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          String catalog = tablesToWatch[i].getCatalog();
          String schema = tablesToWatch[i].getSchema();
          String table = tablesToWatch[i].getTable();
-         String replFlags = tablesToWatch[i].getFlags();
+         String actions = tablesToWatch[i].getActions();
          String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, replFlags, trigger, force);
+         addTableToWatch(catalog, schema, table, actions, trigger, force);
       }
    }
 

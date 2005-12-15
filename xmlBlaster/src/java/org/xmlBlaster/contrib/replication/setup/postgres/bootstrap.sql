@@ -52,13 +52,14 @@ DROP TABLE ${replPrefix}items CASCADE;
 -- ---------------------------------------------------------------------------- 
 -- This table contains the list of tables to watch.                             
 -- tablename is the name of the table to watch                                  
---- replicate is the flag indicating 't' will replicate, 'f' will not replicate,
+-- actions is the flag being a combination of I (indicating it acts on inserts),
+-- D (for deletes) and U (for updates).                                         
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
 CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(30), schemaname 
                          VARCHAR(30), tablename VARCHAR(30), 
-			 repl_flags CHAR(3), status VARCHAR(10), 
+			 actions CHAR(3), status VARCHAR(10), 
 			 repl_key INTEGER, trigger_name VARCHAR(30), 
 			 debug INTEGER, 
 			 PRIMARY KEY(catalogname, schemaname, tablename));

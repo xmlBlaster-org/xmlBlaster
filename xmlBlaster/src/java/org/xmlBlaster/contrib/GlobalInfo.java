@@ -286,4 +286,15 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       return this.objects.keySet();
    }
    
+   public static String dump(I_Info info) {
+      StringBuffer buf = new StringBuffer();
+      Iterator iter = info.getKeys().iterator();
+      while (iter.hasNext()) {
+         String key = (String)iter.next();
+         String val = info.get(key, "");
+         buf.append(key).append("=").append(val).append("\n");
+      }
+      return buf.toString();
+   }
+   
 }

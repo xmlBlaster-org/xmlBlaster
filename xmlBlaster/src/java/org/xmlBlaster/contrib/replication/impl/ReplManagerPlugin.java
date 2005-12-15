@@ -362,6 +362,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String request = updateQos.getClientProperty("_command", "");
          log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
 
+         // 1. This is a response from an sql statement which has been previously sent to the slaves.
          if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
             String sender = updateQos.getSender().getRelativeName();
             
@@ -380,11 +381,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                log.info("Update data from SQL request came from user '" + sender + "'");
                slave.setSqlResponse(new String(content));
             }
-            
-                  
-                  
-                  
          }
+         // 2. This is the response coming from a DbWatcher on a request for initial update which one of the ReplSlaves has previously requested.
          else if ("INITIAL_DATA_RESPONSE".equals(request)) {
             long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
             long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
@@ -407,6 +405,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
             }
          }
+         // 3. then it must be a register or unregister requests coming from a DbWatcher (when they connect or reconnect)
          else { // PtP Messages from DbWatcher (Register/Unregister)
             String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
             if (replId == null || replId.length() < 1)

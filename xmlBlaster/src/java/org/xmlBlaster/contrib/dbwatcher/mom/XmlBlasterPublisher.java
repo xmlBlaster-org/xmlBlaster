@@ -188,10 +188,6 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       else
          log.warning("The connection status listener for this info has already been defined, ignoring this new request");
 
-      // TODO REMOVE THIS AFTER TESTING
-      log.info("INIT " + this.initCount);
-      Thread.dumpStack();
-      
       if (this.initCount > 0) {
          this.initCount++;
          return;
@@ -281,10 +277,6 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#shutdown
     */
    public synchronized void shutdown() {
-      // TODO REMOVE THIS AFTER TESTING
-      log.info("SHUTDOWN " + this.initCount);
-      Thread.dumpStack();
-      
       this.initCount--;
       if (this.initCount > 0)
          return;

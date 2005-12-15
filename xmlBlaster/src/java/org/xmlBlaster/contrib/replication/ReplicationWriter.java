@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
@@ -131,7 +132,13 @@ private final static String ME = "ReplicationWriter";
             log.fine(prePostStatementClass + " created and initialized");
       }
       String tmp = info.get("replication.initialCmd", null);
-      this.hasInitialCmd = (tmp == null);
+      this.hasInitialCmd = (tmp != null);
+      // log.info(GlobalInfo.dump(info));
+      
+      if (tmp == null)
+         log.info("The property 'replication.initialCmd' was not found in the configuration");
+      else
+         log.info("The property 'replication.initialCmd' is '" + tmp + "' and hasInitialCmd is '" + this.hasInitialCmd + "'");
    }
 
    public void shutdown() throws Exception {
