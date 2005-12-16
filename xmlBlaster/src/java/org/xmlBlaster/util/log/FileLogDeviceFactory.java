@@ -74,7 +74,12 @@ public class FileLogDeviceFactory implements I_LogDeviceFactory {
       String strFilename = null;
       if (key != null) strFilename = glob.getProperty().get("logFile[" + key + "]", logFile);
       if (strFilename != null) {
-         return new LogDeviceFile(channel, strFilename);
+         LogDeviceFile ldf = new LogDeviceFile(channel, strFilename);
+         int max = glob.getProperty().get("maxLogFileLines", -1);
+         if (max > 0) {
+            ldf.setMaxLogFileLines(max);
+         }
+         return ldf;
       } else {
          // How do we log in loghandling
          return null;

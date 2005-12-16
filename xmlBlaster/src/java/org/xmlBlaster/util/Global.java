@@ -558,6 +558,10 @@ public class Global implements Cloneable
          if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
          if (strFilename != null) {
             LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
+            int max = getProperty().get("maxLogFileLines", -1);
+            if (max > 0) {
+               ldf.setMaxLogFileLines(max);
+            }
             lc.addLogDevice(ldf);
             System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
          }
@@ -1962,6 +1966,7 @@ public class Global implements Cloneable
       sb.append("   -call  true         Show important method entries\n");
       sb.append("   -time true          Display some performance data.\n");
       sb.append("   -logFile <fileName> Log to given file.\n");
+      sb.append("   -maxLogFileLines <50000> Create a backup log file after reaching given number of lines.\n");
       sb.append("   -logDevice file,console  Log to console and above file.\n");
       sb.append("   Example:  -logFile /tmp/test.log -logDevice file,console -call true -trace[corba] true.\n");
       sb.append("\n");
