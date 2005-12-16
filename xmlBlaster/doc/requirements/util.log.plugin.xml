@@ -26,7 +26,7 @@ logDevice=console
 <pre>
 logDevice[cb]=console,file
 </pre>
-<p>If there are no logging plugins specifyed or no plugins referenced in a logDevice property the old logging style setup will be used. This will also be used if there is some failour in loading through the plugin framework. To guard agains cirucular dependacies - i.e when a logging plugin or any used classes them self tries to set up logging - any calls to initLog in Global from a thread that is setting up logging already will result in a LogDeviceConsole beeing added to the LogChannel in question. This for example means the the logging in PluginInfo will be run directly through a LogDeviceConsole whenever used in the pluggalble logging stuff.</p>
+<p>If there are no logging plugins specifyed or no plugins referenced in a logDevice property the old logging style setup will be used. This will also be used if there is some failour in loading through the plugin framework. To guard against circular dependencies - i.e when a logging plugin or any used classes them self tries to set up logging - any calls to initLog in Global from a thread that is setting up logging already will result in a LogDeviceConsole beeing added to the LogChannel in question. This for example means the the logging in PluginInfo will be run directly through a LogDeviceConsole whenever used in the pluggable logging stuff.</p>
    </description>
    <example lang="Java" type="HTML">
      
@@ -155,12 +155,20 @@ logDevice=jdk14logging
    </configuration>
 
    <configuration where="server">
+      <a NAME="jutils"></a>
+      <p class="celltitel">XmlBlaster native logging with jutils</p>
       <p>
-       Command line example:
+       Here is a command line example for the native xmlBlaster logging framework (based on jutils):
       </p>
        <pre>
- java org.xmlBlaster.Main -logFile test.log -logDevice file,console
+java org.xmlBlaster.Main -logFile xmlBlaster.log -logDevice file,console -maxLogFileLines 1000 -maxLogFileCounter 5
        </pre>
+       <p>This will output all logging to the console and additionally to the file <code>xmlBlaster.log</code>.
+       When <code>xmlBlaster.log</code> contains 1000 (default is 5000) lines backups named <code>xmlBlaster.log.backup1</code>,
+       <code>xmlBlaster.log.backup2</code> etc. will be created.
+       As we have set <code>'-maxLogFileCounter 5'</code> after five backups we start with <code>xmlBlaster.log.backup1</code> again
+       (defaults to 9).
+       </p>
    </configuration>
    <see type="API">org.xmlBlaster.util.log.LogDevicePluginManager</see>
    <see type="API">org.xmlBlaster.util.log.I_LogDeviceFactory</see>
