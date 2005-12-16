@@ -157,6 +157,9 @@ logDevice=jdk14logging
    <configuration where="server">
       <a NAME="jutils"></a>
       <p class="celltitel">XmlBlaster native logging with jutils</p>
+      <p>The standard logging framework of xmlBlaster logs to console only.
+      You can switch on logging to a file using a rotating (rolling) backup file approach.
+      </p>
       <p>
        Here is a command line example for the native xmlBlaster logging framework (based on jutils):
       </p>
@@ -164,8 +167,15 @@ logDevice=jdk14logging
 java org.xmlBlaster.Main -logFile xmlBlaster.log -logDevice file,console -maxLogFileLines 1000 -maxLogFileCounter 5
        </pre>
        <p>This will output all logging to the console and additionally to the file <code>xmlBlaster.log</code>.
-       When <code>xmlBlaster.log</code> contains 1000 (default is 5000) lines backups named <code>xmlBlaster.log.backup1</code>,
-       <code>xmlBlaster.log.backup2</code> etc. will be created.
+       When <code>xmlBlaster.log</code> contains 1000 (default is 5000) lines backups named
+ <pre>
+ xmlBlaster.log
+ xmlBlaster.log.backup1
+ xmlBlaster.log.backup2
+ xmlBlaster.log.backup3
+ xmlBlaster.log.backup4
+ xmlBlaster.log.backup5
+ </pre> will be created.
        As we have set <code>'-maxLogFileCounter 5'</code> after five backups we start with <code>xmlBlaster.log.backup1</code> again
        (defaults to 9).
        </p>
