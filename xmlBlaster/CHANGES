@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current subversion
 ==================
+
+ o #14354 XmlBlaster native (jutils #14357) logging:
+   Added '-maxLogFileLines 50000 -maxLogFileCounter 9' configuration
+
  o #14338 Email protocol: Fixed memory leak for loop detection code
 
  o #14337 Changed to have unique JMX name to avoid conflict if multiple plugins are started
