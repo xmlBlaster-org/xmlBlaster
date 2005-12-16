@@ -79,6 +79,10 @@ public class FileLogDeviceFactory implements I_LogDeviceFactory {
          if (max > 0) {
             ldf.setMaxLogFileLines(max);
          }
+         max = glob.getProperty().get("maxLogFileCounter", -1);
+         if (max > 0) {
+            ldf.setMaxLogFileCounter(max);
+         }
          return ldf;
       } else {
          // How do we log in loghandling

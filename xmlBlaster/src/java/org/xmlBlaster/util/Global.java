@@ -562,6 +562,10 @@ public class Global implements Cloneable
             if (max > 0) {
                ldf.setMaxLogFileLines(max);
             }
+            max = getProperty().get("maxLogFileCounter", -1);
+            if (max > 0) {
+               ldf.setMaxLogFileCounter(max);
+            }
             lc.addLogDevice(ldf);
             System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
          }
@@ -1967,8 +1971,9 @@ public class Global implements Cloneable
       sb.append("   -time true          Display some performance data.\n");
       sb.append("   -logFile <fileName> Log to given file.\n");
       sb.append("   -maxLogFileLines <50000> Create a backup log file after reaching given number of lines.\n");
+      sb.append("   -maxLogFileCounter <9> Maximum number of rolling backup files.\n");
       sb.append("   -logDevice file,console  Log to console and above file.\n");
-      sb.append("   Example:  -logFile /tmp/test.log -logDevice file,console -call true -trace[corba] true.\n");
+      sb.append("   Example:  -logFile /tmp/xmlBlaster.log -logDevice file,console -call true -trace[corba] true.\n");
       sb.append("\n");
       sb.append("Control properties framework:\n");
       sb.append("   -propertyFile <file> Specify an xmlBlaster.properties file to load.\n");
