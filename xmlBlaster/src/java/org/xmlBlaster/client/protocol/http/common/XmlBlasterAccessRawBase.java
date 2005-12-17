@@ -416,7 +416,6 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
          String line;
          Object returnObject = null;
-         StringBuffer ret = new StringBuffer(1024);
          while ((line = dataInput.readLine()) != null){
             log("DEBUG", new StringBuffer("Return value for '").append(request).append("' = '").append(line).append("'").toString());
             if (line == null || line.length() < 1)
