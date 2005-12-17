@@ -193,7 +193,8 @@
    <p>
    Finally we need to embed the applet into a html page:
    </p>
-   <pre bgcolor="#ffffff" text="#000000"><![CDATA[
+   <pre class="BORDER">
+   <![CDATA[
 <html>
  <head>
  </head>
@@ -216,6 +217,28 @@
  </body>
 </html>]]>
    </pre>
+   <br />
+   <h2>Specifying ConnectQos</h2>
+   <p>You can specify the ConnectQos as the first parameter of the connect() method, here is an example
+   for a persistent login session called <code>eduardo/1</code>. Each applet restart will connect
+   to this same session and queued messages will be delivered when the applet comes to live again.
+   Even on xmlBlaster server restart no persistent messages will be lost:</p>
+<pre class="BORDER">
+<![CDATA[
+   try {
+      xb = new XmlBlasterAccessRaw(applet);
+      String connectQos =
+            "<qos>" +
+            "   <securityService type='htpasswd' version='1.0'>" +
+            "     <user>eduardo</user>" +
+            "     <passwd>secret</passwd>" +
+            "   </securityService>" +
+            "   <session name='eduardo/1' timeout='-1'/>" +
+            "   <persistent>true</persistent>" +
+            "</qos>";
+      xb.connect(connectQos, applet); // registers applet.update() callback method
+      ...
+]]></pre>
    </example>
 
    <example type="HTML">
@@ -227,7 +250,7 @@ i had tomcat 3.2.4, 4.1.29, 5.0.14 and 5.5 to test it, others should work as wel
 <h3>
 1. Create a war file:
 </h3>
-<pre>
+<pre class="BORDER">
   cd xmlBlaster
 
   build  -DTOMCAT_HOME=/opt/jakarta_tomcat   deploy_war
@@ -239,12 +262,12 @@ Set TOMCAT_HOME to point to your installation and the <code>xmlBlaster.war</code
 <h3>
 2. Start it (keep port 8080 free for tomcat)
 </h3>
-<pre>
+<pre class="BORDER">
   java org.xmlBlaster.Main -plugin/xmlrpc/port 8081   
   
   java  http.dhtml.systemInfo.SystemInfoPublisher
 
- cd $TOMCAT_HOME
+ cd $TOMCAT_HOME/bin
  startup.sh
 </pre>
 
@@ -271,6 +294,34 @@ http://localhost:8080/xmlBlaster/SystemInfoApplet.html
       The servlet configuration, like logging and setting xmlBlaster-queue or connection parameters is done in
       <code>xmlBlaster/demo/http/WEB-INF/web.xml</code>.
       </p>
+      <p>Note for developers:
+       <table class="BORDER" border="1">
+       <tr>
+         <td>
+         xmlBlaster/src/java/org/xmlBlaster/protocol/http/appletproxy
+         </td>
+         <td>
+         The server side code which handles applet requests.
+         </td>
+       </tr>
+       <tr>
+         <td>
+         xmlBlaster/src/java/org/xmlBlaster/client/protocol/http/applet
+         </td>
+         <td>
+         The tiny applet library to ease xmlBlaster access (used by your applets).
+         </td>
+       </tr>
+       <tr>
+         <td>
+         xmlBlaster/demo/http/applet
+         </td>
+         <td>
+         Demo applets to get you started.
+         </td>
+       </tr>
+       </table>
+      </p>
    </configuration>
 
    <todo type='HTML'>
@@ -290,7 +341,7 @@ http://localhost:8080/xmlBlaster/SystemInfoApplet.html
       </p>
    </todo>
 
-   <see type="API">org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw</see>
+   <see type="API">org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw</see>
    <see type="REQ">interface</see>
    <see type="REQ">client.browser</see>
    <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/http/index.html</see>
