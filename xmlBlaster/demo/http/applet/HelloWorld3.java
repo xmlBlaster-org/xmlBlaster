@@ -52,7 +52,19 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
          public void run() {
             try {
                xb = new XmlBlasterAccessRaw(applet);
-               xb.connect(null, applet); // registers applet.update() callback method
+               String connectQos = null;
+               /*
+               String connectQos =
+                   "<qos>" +
+                   "   <securityService type='htpasswd' version='1.0'>" +
+                   "     <user>eduardo</user>" +
+                   "     <passwd>secret</passwd>" +
+                   "   </securityService>" +
+                   "   <session name='eduardo/1' timeout='-1'/>" +
+                   "   <persistent>true</persistent>" +
+                   "</qos>";
+               */
+               xb.connect(connectQos, applet); // registers applet.update() callback method
                print("Connected to xmlBlaster");
 
                Hashtable pingReturnQos = xb.ping("<qos/>");
@@ -105,7 +117,7 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
       print("Applet destroy ...");
       if (this.xb != null) {
          this.xb.disconnect("<qos/>");
-         this.xb = null;
+         //this.xb = null; Could result in NPE in start()
          print("Disconnected from xmlBlaster");
       }
    }
