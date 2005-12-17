@@ -305,7 +305,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
    public String usage()
    {
       String text = "\n";
-      text += "EmailDriver options:\n";
+      text += "EmailDriver options (more options see protocol.email requirement):\n";
       text += "   -"+getEnvPrefix()+"mail.pop3.url\n";
       text += "                       The EMAIL POP3 connection URL 'pop3://user:password@host:port/INBOX' [-].\n";
       text += "   -"+getEnvPrefix()+"pop3PollingInterval\n";
@@ -314,12 +314,12 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       text += "                       Max wait for the method return value/exception in msec.\n";
       text += "                       The default is " +getDefaultResponseTimeout() + ".\n";
       text += "   -"+getEnvPrefix()+"compress/type\n";
-      text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB_STREAM+"', '"+Constants.COMPRESS_ZLIB+"' [].\n";
-      text += "                       '' disables compression, '"+Constants.COMPRESS_ZLIB_STREAM+"' compresses whole stream.\n";
+      text += "                       Valid values are: '', '"+Constants.COMPRESS_ZLIB+"' [].\n";
+      text += "                       '' disables compression,\n";
       text += "                       '"+Constants.COMPRESS_ZLIB+"' only compresses flushed chunks bigger than 'compress/minSize' bytes.\n";
       text += "   -"+getEnvPrefix()+"compress/minSize\n";
       text += "                       Compress message bigger than given bytes, see above.\n";
-      text += "   -dump[email]       true switches on detailed "+getType()+" debugging [false].\n";
+      text += "   " + Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
       text += "\n";
       return text;
    }
