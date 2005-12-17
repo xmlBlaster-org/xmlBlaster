@@ -791,10 +791,23 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
          </tr>
 
          <tr>
-            <td>plugin/socket/responseTimeout</td>
+            <td>plugin/socket/updateResponseTimeout</td>
             <td>forever</td>
-            <td>When a method is invoked we wait the given time [milli-seconds] on a response, the value must be
-            bigger than zero, there is no unlimited setting possible.<br />
+            <td>When the <code>update()</code> callback method is invoked we wait the given time [milli-seconds] on a response, the value must be
+            bigger than zero, use Integer.MAX_VALUE for an unlimited setting.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/pingResponseTimeout</td>
+            <td>60000</td>
+            <td>When the <code>ping()</code> method is invoked we wait the given time [milli-seconds] on a response, 
+            the value must be bigger than zero, it defaults to one minute.<br />
             The response is the return value or an exception for method invocations which
             are not marked oneway.<br />
             On timeout an exception is thrown which leads on server side to a dead message
@@ -978,6 +991,19 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
             <td>dispatch/callback/plugin/<br />socket/threadPrio</td>
             <td>NORM_PRIORITY = 5</td>
             <td>The priority 1=min - 10=max of the client side callback server listener thread
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/responseTimeout</td>
+            <td>forever</td>
+            <td>When methods like <code>connect()</code>, <code>publish</code>, <code>subscribe</code> etc.
+            is invoked we wait the given time [milli-seconds] on a response, the value must be
+            bigger than zero, use Integer.MAX_VALUE for an unlimited setting.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which is forwarded to your client code.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>

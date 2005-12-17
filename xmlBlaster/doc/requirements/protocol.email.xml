@@ -661,25 +661,14 @@ on server side and on java client side.</p>
          </tr>
 
          <tr>
-            <td>responseTimeout</td>
-            <td>300000</td>
-            <td>
-            </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-
-         <tr>
             <td>pingResponseTimeout</td>
-            <td>300000</td>
-            <td>
-            </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-
-         <tr>
-            <td>updateResponseTimeout</td>
-            <td>300000</td>
-            <td>
+            <td>60000</td>
+            <td>When the <code>ping()</code> method is invoked we wait the given time [milli-seconds] on a response, 
+            the value must be bigger than zero, it defaults to one minute.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -710,6 +699,20 @@ on server side and on java client side.</p>
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>updateResponseTimeout</td>
+            <td>86400000</td>
+            <td>When the <code>update()</code> callback method is invoked we wait the given time [milli-seconds] on a response, the value must be
+            bigger than zero, use Integer.MAX_VALUE for an unlimited setting, the default is to wait for one day.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which leads on server side to a dead message
+            (depending on the installed error handler).
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
 
 <p class="celltitel">Other configurations client side only</p>
@@ -733,6 +736,19 @@ on server side and on java client side.</p>
             <td>CbProtocolPlugin[email][1.0]</td>
             <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</pre></td>
             <td>You need to activate EMAIL support in your xmlBlaster.properties file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>responseTimeout</td>
+            <td>86400000</td>
+            <td>When methods like <code>connect()</code>, <code>publish</code>, <code>subscribe</code> etc.
+            is invoked we wait the given time [milli-seconds] on a response, the value must be
+            bigger than zero, use Integer.MAX_VALUE for an unlimited setting, the default is to wait for one day.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.<br />
+            On timeout an exception is thrown which is forwarded to your client code.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
