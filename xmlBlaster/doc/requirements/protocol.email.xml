@@ -617,7 +617,7 @@ on server side and on java client side.</p>
             <td>compress/type</td>
             <td>zlib</td>
             <td>If you want to compress the attachment set this property to <code>zlib</code>.
-            It default to '', that is no compression is used.
+            It defaults to '', that is no compression is used.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
