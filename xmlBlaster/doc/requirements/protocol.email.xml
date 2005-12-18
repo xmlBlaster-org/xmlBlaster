@@ -30,11 +30,13 @@
      <br /><a NAME="emailOverview"></a>
       <img src="protocol.email.overview.png" border="0" title="Email overview" alt="Email overview" />
      
-     <p>In the above picture you see on the left side a client and on the right side a server.</p>
+     <p>In the above picture you see on the left side two client variants and on the right side a server.</p>
+     <p>The pictures shows a java client which uses transparently the <code>email</code> protocol (instead of for example Corba)
+     and an email client application like outlook where a human manually sends messages.</p>
      <p>The client needs to connect with SMTP to its MTA (mail transfer agent) to be able to send outgoing messages
      and needs to connect with POP3 to its MTA to poll for incoming mails.</p>
      <p>The same setup applies for the xmlBlaster server.</p>
-     <p>For testing purposes all can reuse the same MTA on your <code>localhost</code> or you can
+     <p>For testing purposes all can reuse the same MTA on your <code>localhost</code> (or from your internet provider) or you can
      even have four different MTAs one for client-SMTP, client-POP3, server-SMTP and server-POP3.
      </p>
      <p>To find the MTAs you need to configure the properties <code>mail.smtp.url</code> and <code>mail.pop3.url</code>.
@@ -46,6 +48,15 @@
      <p>
      For fine-tuning there are many more parameters available.
      </p>
+     <p>When the email specific configuration is done you can switch any java client to use the <code>email</code> protocol
+     on the fly:</p>
+<pre class="BORDER">
+  java org.xmlBlaster.Main
+
+  java HelloWorld3 -protocol email
+</pre>
+<p>Like this the HelloWorld3 client uses transparently emails for communication to the server instead
+of CORBA or SOCKET.</p>
 <!--
      <p>
      To simplify the usage, it is permitted to send any number of commands in a single email. It is 
