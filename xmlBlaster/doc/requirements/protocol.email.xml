@@ -13,7 +13,7 @@
      as well, but you need to now how to format the mail to have success.
      </p>
      <p>
-     In some cases it makes sense to write a client which
+     In some cases it makes sense to use a client which
      uses the email protocol (transparently to the user) because the combination 
      hardware, platform and implementation language does not offer a better communication alternative 
      or for example to bypass fire walls etc.
@@ -27,7 +27,7 @@
      abstraction paradigm. So before any publishing or subscription can be done, the user must 
      connect to get a session id.
      </p>
-     <br /><a NAME="emailOverview"></a>
+     <br /><a name="emailOverview"></a>
       <img src="protocol.email.overview.png" border="0" title="Email overview" alt="Email overview" />
      
      <p>In the above picture you see on the left side two client variants and on the right side a server.</p>
@@ -91,6 +91,7 @@ of CORBA or SOCKET.</p>
      </p>      
 -->
 <p class="celltitel">Supported formats</p>
+<a name="formats"/>
 <p>The message needs to be serialized to be send in an email attachment.
 This formatting is configurable,
 currently we provide two variants. First the raw XBF (XmlBlasterFormat) format which is very
@@ -110,7 +111,31 @@ XmlScriptParser:
   messageId = "xmlBlaster.mid"
 </pre>
 <p>The format and compression of received emails is auto-detected depending on the file name extension or mime type.</p>
+
+
+<p class="celltitel">Email expiry</p>
+<a name="expires"/>
+<p>Each email send by xmlBlaster has an expiry date set on two places.
+We add a header field to the email:</p>
+<pre class="BORDER">
+X-xmlBlaster-ExpiryDate: 2005-12-15 21:45:01.634
+</pre>
+<p>and additionally we add an expires markup tag to the send messageId attachment (or subject line if configured with <code>mail.subject</code>):</p>
+<pre class="BORDER">
+&lt;messageId>...&lt;expires>2005-12-15 21:44:56.296&lt;/expires>&lt;/messageId>
+</pre>
+<p>The expire date follows the java.sql.Timestamp format, and its value is determined
+by the currently configured <code>responseTimeout</code>, <code>pingResponseTimeout</code> or <code>updateResponseTimeout</code>
+(corresponding to the type of message send).</p>
+<p>It is up to the used mail agent (MTA) if you can find a way to destroy expired emails.
+This may be very useful if you have a high ping frequency configured and the xmlBlaster client
+or xmlBlaster server is offline. The ping emails will fill up your mail box until the counter
+part comes online again.
+</p>
+<p>If an expired email arrives at the destination, xmlBlaster throws it away.</p>
+
 </description>
+
 
 <example type="HTML">
 <p class="celltitel">Simple command line example to test your MTA</p>
@@ -134,7 +159,7 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 </example>
 
 
-<example type="HTML">
+<example type="HTML" lang="any">
 <p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc)</p>
 <p>After having a configured james MTA you can play with your email client software
 and send manually emails to xmlBlaster.</p>
@@ -214,25 +239,25 @@ we would need to acknowledge each received update message.</p>
 
 <p>This screen dump shows the setup just before sending with mozilla/thunderbird,
 the subject line is ignored:</p>
-     <br /><a NAME="protocol.email.gui.multiple"></a>
+     <br /><a name="protocol.email.gui.multiple"></a>
       <img src="protocol.email.gui.multiple.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
 
 <p>As a response you will receive multiple of emails, one acknowledge for each request
 and one update() message for the subscribe, this screen dump shows the received update() only:</p>
-     <br /><a NAME="protocol.email.gui.updateOneway"></a>
+     <br /><a name="protocol.email.gui.updateOneway"></a>
       <img src="protocol.email.gui.updateOneway.png" border="0" title="Receiving update with thunderbird" alt="Receiving update with thunderbird" />
 
 <p/>
 <p class="celltitel">Sending requests in separate emails</p>
 
 <p>You can send the above connect() in a single first email.</p>
-     <br /><a NAME="protocol.email.gui.connect"></a>
+     <br /><a name="protocol.email.gui.connect"></a>
       <img src="protocol.email.gui.connect.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
 <p>You will receive an email with the ConnectReturnQos in the email-body and your secret sessionId
 in the email-subject. Just press your reply button to keep the subject and send the
 next publish() request email. The publish is authenticated by the secret sessionId
 in the subject.</p>
-     <br /><a NAME="protocol.email.gui.publish"></a>
+     <br /><a name="protocol.email.gui.publish"></a>
       <img src="protocol.email.gui.publish.png" border="0" title="Sending messages with thunderbird" alt="Sending messages with thunderbird" />
 
 <p> </p>
@@ -260,6 +285,7 @@ this limitation does not exist, here we correctly send a unique and ascending ti
 
 <example type="HTML">
 <p class="celltitel">Example of the email structure</p>
+<a name="structure"/>
 <h3>This example shows the structure of an email transporting xmlBlaster messages:</h3>
 <pre class="BORDER">
 &lt;message>
@@ -277,7 +303,7 @@ this limitation does not exist, here we correctly send a unique and ascending ti
   &lt;/attachment>
 
   &lt;attachment>
-    &lt;filename>messageId.mid&lt;/filename>
+    &lt;filename>xmlBlasterMessage.xml&lt;/filename>
     &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
     &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>
                 &lt;requestId>1132965149890000000&lt;/requestId>
@@ -301,12 +327,13 @@ Subject: XmlBlaster Generated Email
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
    boundary="----=_Part_3_23776721.1132242312553"
+X-xmlBlaster-ExpiryDate: 2005-12-15 21:45:01.634
 Delivered-To: xmlBlaster@localhost
 
 ------=_Part_3_23776721.1132242312553
-Content-Type: text/plain; name=attachment1.xml; charset=UTF-8
+Content-Type: text/plain; name=xmlBlasterMessage.xml; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=attachment1.xml
+Content-Disposition: attachment; filename=xmlBlasterMessage.xml
 
 
 &lt;update sessionId='unknown' requestId='5' type='R'>
@@ -314,9 +341,9 @@ Content-Disposition: attachment; filename=attachment1.xml
 &lt;/update>
 
 ------=_Part_3_23776721.1132242312553
-Content-Type: text/plain; name=attachment2; charset=UTF-8
+Content-Type: text/plain; name=messageId.mid; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=attachment2
+Content-Disposition: attachment; filename=messageId.mid
 
 &lt;messageId>&lt;sessionId>xmlblast&lt;/sessionId>&lt;requestId>5&lt;/requestId>&lt;methodName>update&lt;/methodName>&lt;/messageId>
 ------=_Part_3_23776721.1132242312553--
@@ -325,7 +352,7 @@ Content-Disposition: attachment; filename=attachment2
    
     <configuration where="server">
     <h2 class="celltitel">Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
-    <a NAME="jamesSetup"></a>
+    <a name="jamesSetup"></a>
     <p>The fastest way for a test environment is to use the James MTA http://james.apache.org. 
     Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
     </p>
@@ -378,6 +405,7 @@ call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
 </pre>
 
   <h2 class="celltitel">Example configuration server side</h2>
+<a name="configure"/>
 <p>The email driver plugin listening on incoming emails is configured in <code>xmlBlasterPlugins.xml</code>
  (for example listening on connect(), subscribe() and publish() requests)</p>
 <pre class="BORDER">
@@ -647,8 +675,8 @@ on server side and on java client side.</p>
             <td>mail.subject</td>
             <td>XmlBlaster Generated Email $_{xmlBlaster/email/messageId}</td>
             <td>
-            The subject to use. If the above $_{...} is added the &lt;messageId> markup
-            is added to the subject.
+            The subject to use. If your subject line contains a <code>$_{xmlBlaster/email/messageId}</code> token,
+            a complete &lt;messageId> markup is added to the subject by xmlBlaster.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -664,7 +692,7 @@ on server side and on java client side.</p>
 
          <tr>
             <td>schemaDeclaration</td>
-            <td>xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='mySchema.xsd'</td>
+            <td>xmlns:xsi= 'http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation= 'mySchema.xsd'</td>
             <td>This allows to add a schema declaration to the XmlScriptParser.
             The attachment root tag is complemented with the given string.
             </td>
