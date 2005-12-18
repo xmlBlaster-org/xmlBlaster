@@ -50,7 +50,7 @@ public interface I_AdminPop3Driver extends I_AdminService {
 
    /**
     * Configure how long a not yet dispatched message shall live in the Pop3Driver map.
-    * Note that the map is transient, after restart such mails are lost (but resend be the server). 
+    * Note that the map is transient, after restart such mails are lost (but resend by the server). 
     * @param holdbackExpireTimeout In milli seconds, set to zero to switch holback off
     */
    public void setHoldbackExpireTimeout(long holdbackExpireTimeout);
