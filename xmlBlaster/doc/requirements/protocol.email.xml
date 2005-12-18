@@ -115,6 +115,7 @@ XmlScriptParser:
 
   messageId = "xmlBlaster.mid"
 </pre>
+<p>If you have other formatting needs you can simply add your own Parser plugin.</p>
 <p>The format and compression of received emails is auto-detected depending on the file name extension or mime type.</p>
 
 
