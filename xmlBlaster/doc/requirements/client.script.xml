@@ -404,7 +404,57 @@ java javaclients.script.XmlScript \
 
    <configuration where="client">
       <p>
+      You can control the extend of the generated XML markup (the returned QoS) by setting following configuration parameters.
       </p>
+      <table border="1">
+         <tr>
+            <td>xmlDeclaration</td>
+            <td>&lt;?xml version='1.0' encoding='UTF-8'?></td>
+            <td>
+            The header to add to the script if formatted with XmlScriptParser.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>schemaDeclaration</td>
+            <td>xmlns:xsi= 'http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation= 'mySchema.xsd'</td>
+            <td>This allows to add a schema declaration to the generated XML.
+            The method name root tag (for example <code>&lt;update xmlns:xsi=...</code>) is complemented with the given string.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>sendResponseSessionId</td>
+            <td>true</td>
+            <td>
+            Add the <code>sessionId="..."</code> xml-attribute to the XmlScript markup?
+            For example <code>&lt;update sessionId='fgg694' ...</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>sendResponseRequestId</td>
+            <td>true</td>
+            <td>
+            Add the <code>requestId="..."</code> xml-attribute to the XmlScript markup?
+            For example <code>&lt;update requestId='17743005' ...</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>sendSimpleExceptionFormat</td>
+            <td>false</td>
+            <td>
+            If set to true and used with XmlScriptParser the UpdateReturnQos
+            has a simple format (even for exceptions) which satisfies the XML-schema
+            <a href="http://www.xmlblaster.org/xmlBlaster/src/java/org/xmlBlaster/util/protocol/email/simpleReturnQos.xsd">simpleReturnQos.xsd</a>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
    </configuration>
 
    <see type="API">org.xmlBlaster.client.script.XmlScriptInterpreter</see>

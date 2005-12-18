@@ -4,13 +4,16 @@
 <requirement id='protocol.email' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster has a protocol plugin to support access via email</topic>
    <description>
+<p class="celltitel">Introduction</p>
      <p>
      It is possible for a client to send/receive messages to xmlBlaster via email. This way the
-     user can publish messages or receive updates via a common emails.
+     user can publish messages or receive updates via common emails.
+     </p>
+     <p>
      Our java client library supports this automatically, you can switch to email just by setting
      <code>-protocol email</code> on startup (having configured the SMTP and POP3 beforhand).<br />
      It is possible to send such messages from a normal email software like pine, outlook or thunderbird
-     as well, but you need to now how to format the mail to have success.
+     as well, but you need to now how to format the mail to have success (examples follow in this document).
      </p>
      <p>
      In some cases it makes sense to use a client which
@@ -27,13 +30,15 @@
      abstraction paradigm. So before any publishing or subscription can be done, the user must 
      connect to get a session id.
      </p>
+<p class="celltitel">The big picture</p>
      <br /><a name="emailOverview"></a>
       <img src="protocol.email.overview.png" border="0" title="Email overview" alt="Email overview" />
      
-     <p>In the above picture you see on the left side two client variants and on the right side a server.</p>
+     <p>In the above overview you see on the left side two client variants and on the right side a server.</p>
      <p>The pictures shows a java client which uses transparently the <code>email</code> protocol (instead of for example Corba)
      and an email client application like outlook where a human manually sends messages.</p>
-     <p>The client needs to connect with SMTP to its MTA (mail transfer agent) to be able to send outgoing messages
+     <p>The client needs to connect with SMTP to its MTA (mail transfer agent, for example <code>sendmail</code> or <code>postfix</code>)
+     to be able to send outgoing messages
      and needs to connect with POP3 to its MTA to poll for incoming mails.</p>
      <p>The same setup applies for the xmlBlaster server.</p>
      <p>For testing purposes all can reuse the same MTA on your <code>localhost</code> (or from your internet provider) or you can
@@ -796,7 +801,8 @@ on server side and on java client side.</p>
             <td>sendResponseSessionId</td>
             <td>true</td>
             <td>
-            Add the &lt;sessionId> tag to the &lt;messageId> markup?
+            Add the <code>sessionId="..."</code> xml-attribute to the XmlScript markup?
+            For example <code>&lt;update sessionId='fgg694' ...</code>.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -805,7 +811,8 @@ on server side and on java client side.</p>
             <td>sendResponseRequestId</td>
             <td>true</td>
             <td>
-            Add the &lt;requestId> tag to the &lt;messageId> markup?
+            Add the <code>requestId="..."</code> xml-attribute to the XmlScript markup?
+            For example <code>&lt;update requestId='17743005' ...</code>.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
