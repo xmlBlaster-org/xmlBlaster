@@ -40,8 +40,13 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
-import javax.servlet.*;
-import javax.servlet.http.*;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -72,6 +77,7 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class AppletServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
+   private static final long serialVersionUID = 1L;
    private Global initialGlobal;
    private Timeout timeout;
    public final static String ENCODING = "UTF-8";
@@ -197,7 +203,6 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    public void doGetFake(String ME, HttpServletRequest req, HttpServletResponse res, String actionType, MsgHolder msgHolder) 
       throws ServletException, IOException {
       res.setContentType("text/plain");
-      String errorText="";
       LogChannel log = this.initialGlobal.getLog("servlet");
       if (log.CALL) log.call(this.getClass().getName(), "Entering doGet() ... " + Memory.getStatistic());
 
@@ -241,7 +246,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
       if (sessionId == null) {
          String str = "Sorry, your sessionId is invalid";
-         XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
+         //XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, str);
          return;
       }
@@ -347,10 +352,10 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          //System.out.println("BinaryProtocol=" + tmp);
          if (tmp == null || tmp.equalsIgnoreCase("false")) return null; // then it was not set ...
 
-         String actionType = req.getHeader("ActionType");
+         //String actionType = req.getHeader("ActionType");
 
-         ServletInputStream in = req.getInputStream();
-         int length = req.getContentLength();
+         //ServletInputStream in = req.getInputStream();
+         //int length = req.getContentLength();
       
          //System.out.println("Content-Length=" + length);
          MsgHolder msg = ObjectInputStreamMicro.readMessage(contentAsBytes);
@@ -459,7 +464,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          ME  = this.getClass().getName() + "-" + req.getRemoteAddr() + "-#" + appletInstanceCount + "req" + requestCounter + "-" + actionType;
       }
       
-      String appletInstanceCount = getParameter(req, "appletInstanceCount", "0");
+      //String appletInstanceCount = getParameter(req, "appletInstanceCount", "0");
 
       if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || 
           actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME) ||
@@ -470,7 +475,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
 
       res.setContentType("text/plain");
-      HttpSession session = req.getSession(false);
+      //HttpSession session = req.getSession(false);
       String sessionId = req.getRequestedSessionId();
       LogChannel log = this.initialGlobal.getLog("servlet");
       ME  += "-" + sessionId;
