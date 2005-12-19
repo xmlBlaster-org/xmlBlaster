@@ -139,6 +139,7 @@ or xmlBlaster server is offline. The ping emails will fill up your mail box unti
 part comes online again.
 </p>
 <p>If an expired email arrives at the destination, xmlBlaster throws it away.</p>
+<p>You can prevent sending expire information by setting <code>useEmailExpiryTimestamp=false</code></p>
 
 </description>
 
@@ -673,6 +674,17 @@ on server side and on java client side.</p>
             <td>If <code>compress/type</code> is set to <code>zlib</code> you can
             control the minimum size in bytes to switch on compression.
             For too small messages compression makes no sense as it would increase the size.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>useEmailExpiryTimestamp</td>
+            <td>true</td>
+            <td>Adds an email header of type <code>X-xmlBlaster-ExpiryDate: 2005-12-24 16:45:55.322</code>.
+            If you have an intelligent MTA
+            you can configure it to drop the mail if expired. The xmlBlaster library
+            will discard expired mails if such arrives.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
