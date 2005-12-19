@@ -121,10 +121,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          this.compressZlib = false;
       }
       
-      // TODO: Is still experimental:
       // 1. Response should never expire
       // 2. Otherwise the Pop3Driver must be changed to nevertheless return it to wake up the blocking latch
-      setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", false).getValue());
+      setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", true).getValue());
       
       setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
