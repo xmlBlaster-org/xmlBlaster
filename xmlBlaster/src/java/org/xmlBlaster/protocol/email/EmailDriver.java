@@ -341,7 +341,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       for (int i=0; i<cba.length; i++) {
          EmailExecutor.LoopProtection l = removeFromLoopProtection(cba[i].getRawAddress());
          if (l != null)
-            log.severe("DEBUG ONLY: " + l.key);
+            log.fine("sessionPreRemoved removed loop protection key " + l.key);
       }
    }
    public void sessionRemoved(ClientEvent e) {}
