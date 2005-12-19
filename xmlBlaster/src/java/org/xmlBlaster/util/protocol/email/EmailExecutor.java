@@ -563,39 +563,6 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       
       Timestamp expiryTimestamp = getExpiryTimestamp(methodName);
       String messageId = createMessageId(msgInfo, requestId, methodName, expiryTimestamp);
-      /*
-      // messageId="<messageId><sessionId>sessionId:4423c443</sessionId><requestId>3</requestId><methodName>subscribe</methodName></messageId>"
-      String messageId = (String)msgInfo.getBounceObject(BOUNCE_MESSAGEID_KEY);
-      Timestamp expiryTimestamp = getExpiryTimestamp(methodName);
-      if (messageId == null) {
-         String sessionId = getEmailSessionId();
-         {
-            // Hardcoded simplification of email subject for messages send manually from a normal email client
-            // like this the GUI user can simply push the reply button to send further publish() etc.
-            // RE: <messageId><sessionId>sessionId:127.0.0.2-null-1134497522115--102159664-3</sessionId></messageId>
-            //if (methodName.equals(MethodName.CONNECT)) {
-               // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
-               //sessionId = msgInfo.getSecretSessionId();
-            //}
-            if (msgInfo.getSecretSessionId() != null && msgInfo.getSecretSessionId().length() > 0) {
-               // We send the secretSessionId in the SUBJECT of a ConnectReturnQos
-               // In case of the singleton EmailDriver.java we always need to do this:
-               sessionId = msgInfo.getSecretSessionId();
-            }
-
-            if (!msgInfo.isInvoke()) // Responses and exceptions should never expire
-               expiryTimestamp = null;
-            
-            if (msgInfo.isRequestIdGuessed()) {
-               requestId = null;
-               methodName = null;
-            }
-         }
-         
-         messageId = EmailData.createMessageId(sessionId,
-            requestId, methodName, expiryTimestamp);
-      }
-      */
 
       if (subject != null && subject.length() > 0) {
          // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:

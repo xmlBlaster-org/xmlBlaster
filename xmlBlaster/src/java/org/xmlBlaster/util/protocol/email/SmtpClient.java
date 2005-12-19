@@ -452,10 +452,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
          
-         // TODO: Set a expiry flag: do some MTA support some email expiry handling??
-         //if (emailData.getExpiryTime() != null)
-         //   message.setHeader("x-xmlBlaster/expires", emailData.getExpiryTime().toString()); // "2005-11-30 12:45:01.5444"
-
          // create the Multipart and add its parts to it
          Multipart multi = new MimeMultipart();
          
