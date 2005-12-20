@@ -9,7 +9,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.Info;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -140,7 +140,7 @@ public class TestRecordParsing extends XMLTestCase {
       "</sql>      \n";
 
       
-      DbUpdateParser parser = new DbUpdateParser(this.info);
+      SqlInfoParser parser = new SqlInfoParser(this.info);
       SqlInfo record = parser.readObject(xml);
 
       SqlDescription description = record.getDescription();

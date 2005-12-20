@@ -18,7 +18,7 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
@@ -205,7 +205,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          if (doCheck) {
             checked = true;
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
-            DbUpdateParser parser = new DbUpdateParser(info);
+            SqlInfoParser parser = new SqlInfoParser(info);
             SqlInfo dbUpdateInfo = parser.readObject(msg);
             String createStatement = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
             log.fine("=============================================");

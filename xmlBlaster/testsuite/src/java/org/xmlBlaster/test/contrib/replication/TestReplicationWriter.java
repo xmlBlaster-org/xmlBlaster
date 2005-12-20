@@ -22,7 +22,7 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -213,7 +213,7 @@ public class TestReplicationWriter extends XMLTestCase {
          }
          
          // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
-         DbUpdateParser parser = new DbUpdateParser(info);
+         SqlInfoParser parser = new SqlInfoParser(info);
 
          SqlInfo dbUpdateInfo = parser.readObject(message);
          String sql = this.dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);

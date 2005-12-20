@@ -15,7 +15,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -325,7 +325,7 @@ public class TestHelperClasses extends XMLTestCase {
          try {
             String oldName = "COM_RECORDID";
             String newName = "COM_MESSAGEID";
-            DbUpdateParser  parser = new DbUpdateParser();
+            SqlInfoParser  parser = new SqlInfoParser();
             parser.init(info);
             SqlInfo sqlInfo = parser.parse(xmlTxt);
             List rows = sqlInfo.getRows();

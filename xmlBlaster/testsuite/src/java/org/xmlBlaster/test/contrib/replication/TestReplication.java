@@ -121,7 +121,7 @@ public class TestReplication extends XMLTestCase {
          setProp(readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector", false);
          setProp(readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + this.replPrefix + "items", false);
          setProp(readerInfo, "db.queryMeatStatement", "SELECT * FROM " + this.replPrefix + "items ORDER BY repl_key", false);
-         setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items", false);
+         // setProp(readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + this.replPrefix + "items", false);
          setProp(readerInfo, "converter.addMeta", "false", false);
          setProp(readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter", false);
          setProp(readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler", false);
@@ -133,7 +133,7 @@ public class TestReplication extends XMLTestCase {
             setProp(writerInfo, "mom.loginName", "DbWriterExtra/1", true);
          else
             setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
-         setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
+         // setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
          setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
          setProp(writerInfo, "replication.mapper.table.test1", "test1_replica", false);
