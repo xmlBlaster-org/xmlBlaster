@@ -25,18 +25,20 @@ public class SqlColumn {
    public final static String NULLABLE_ATTR = "nullable";
    public final static String SIGNED_ATTR = "signed";
    public final static String RO_ATTR = "readOnly";
+   public final static String DATA_TYPE = "datatype";
+   
    // new attributes
    public final static String PK_ATTR = "pk"; // primary key
    public final static String PK_NAME_ATTR = "pkName"; // primary key
  
-   public final static String PKTABLE_CAT_ATTR = "fkCatalog";
-   public final static String PKTABLE_SCHEM_ATTR = "fkSchema";
-   public final static String PKTABLE_NAME_ATTR = "fkTable";
-   public final static String PKCOLUMN_NAME_ATTR = "fkCol";
-   public final static String KEY_SEQ_ATTR = "fkSeq";
-   public final static String UPDATE_RULE_ATTR = "fkUpdRule";
-   public final static String DELETE_RULE_ATTR = "fkDelRule";
-   public final static String DEFERRABILITY_ATTR = "fkDef";
+   public final static String FK_TABLE_CAT_ATTR = "fkCatalog";
+   public final static String FK_TABLE_SCHEM_ATTR = "fkSchema";
+   public final static String FK_TABLE_NAME_ATTR = "fkTable";
+   public final static String FK_COLUMN_NAME_ATTR = "fkCol";
+   public final static String FK_KEY_SEQ_ATTR = "fkSeq";
+   public final static String FK_UPDATE_RULE_ATTR = "fkUpdRule";
+   public final static String FK_DELETE_RULE_ATTR = "fkDelRule";
+   public final static String FK_DEFERRABILITY_ATTR = "fkDef";
 
    public final static String DATA_TYPE_ATTR = "sqlType";            // position(05)
    public final static String COLUMN_SIZE_ATTR = "colSize";          // position(07)
@@ -371,26 +373,25 @@ public class SqlColumn {
          }
       }
       if (isFk()) {
-         buf.append(" ").append(PK_ATTR).append("='").append(this.primaryKey).append("'");
          if (this.fkCatalog != null)
-            buf.append(" ").append(PKTABLE_CAT_ATTR).append("='").append(this.fkCatalog).append("'");
+            buf.append(" ").append(FK_TABLE_CAT_ATTR).append("='").append(this.fkCatalog).append("'");
          if (this.fkSchema != null)
-            buf.append(" ").append(PKTABLE_SCHEM_ATTR).append("='").append(this.fkSchema).append("'");
+            buf.append(" ").append(FK_TABLE_SCHEM_ATTR).append("='").append(this.fkSchema).append("'");
          if (this.fkTable != null)
-            buf.append(" ").append(PKTABLE_NAME_ATTR).append("='").append(this.fkTable).append("'");
+            buf.append(" ").append(FK_TABLE_NAME_ATTR).append("='").append(this.fkTable).append("'");
          if (this.fkCol != null)
-            buf.append(" ").append(PKCOLUMN_NAME_ATTR).append("='").append(this.fkCol).append("'");
+            buf.append(" ").append(FK_COLUMN_NAME_ATTR).append("='").append(this.fkCol).append("'");
          if (this.fkSeq != null)
-            buf.append(" ").append(KEY_SEQ_ATTR).append("='").append(this.fkSeq).append("'");
+            buf.append(" ").append(FK_KEY_SEQ_ATTR).append("='").append(this.fkSeq).append("'");
          if (this.fkUpdRule != null)
-            buf.append(" ").append(UPDATE_RULE_ATTR).append("='").append(this.fkUpdRule).append("'");
+            buf.append(" ").append(FK_UPDATE_RULE_ATTR).append("='").append(this.fkUpdRule).append("'");
          if (this.fkDelRule != null)
-            buf.append(" ").append(DELETE_RULE_ATTR).append("='").append(this.fkDelRule).append("'");
+            buf.append(" ").append(FK_DELETE_RULE_ATTR).append("='").append(this.fkDelRule).append("'");
          if (this.fkDef != null)
-            buf.append(" ").append(DEFERRABILITY_ATTR).append("='").append(this.fkDef).append("'");
+            buf.append(" ").append(FK_DEFERRABILITY_ATTR).append("='").append(this.fkDef).append("'");
       }
-      
-      buf.append(" dataType='").append(getSqlTypeAsText(this.getSqlType())).append("'");
+      // this will not be parsed.
+      buf.append(" ").append(DATA_TYPE).append("='").append(getSqlTypeAsText(this.getSqlType())).append("'");
 
       buf.append(">");
       buf.append(this.colName);

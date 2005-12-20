@@ -130,6 +130,8 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
          int maxSessions = info.getInt("mom.maxSessions", 100);
          this.connectQos.setMaxSessions(maxSessions);
+         this.connectQos.getAddress().setRetries(-1);
+         this.connectQos.setSessionTimeout(0L);
          CallbackAddress cbAddr = new CallbackAddress(this.glob);
          cbAddr.setRetries(-1);
          String dispatcherPlugin = info.get("mom.dispatcherPlugin", null);

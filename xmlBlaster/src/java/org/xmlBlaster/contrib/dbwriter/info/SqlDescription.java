@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -143,7 +143,7 @@ public class SqlDescription {
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
       try {
-         this.parser = new DbUpdateParser();
+         this.parser = new SqlInfoParser();
          this.parser.init(info);
       }
       catch (Exception ex) {
@@ -334,66 +334,6 @@ public class SqlDescription {
       return buf.toString();
    }
    
-   /**
-    * TODO remove this
-    * 
-    * @throws SQLException
-    * @deprecated
-    */
-   public synchronized final void addPreparedStatements() throws SQLException {
-      if (this.hasAddedStatements)
-         return;
-      String table = getIdentity();
-      StringBuffer buf1 = new StringBuffer();
-      StringBuffer buf2 = new StringBuffer();
-      StringBuffer bufUpd1 = new StringBuffer();
-      StringBuffer bufUpd2 = new StringBuffer();
-
-      boolean firstPK = true;
-      String schema = null;
-      for (int i=0; i < this.columnList.size(); i++) {
-         SqlColumn col = (SqlColumn)this.columnList.get(i); 
-         String colName = col.getColName();
-         if (schema == null)
-            schema = col.getSchema();
-         if (i > 0) {
-            buf1.append(" , ");
-            buf2.append(" , ");
-            bufUpd1.append(" , ");
-         }
-         if (col.isPrimaryKey() || !hasPk()) {
-            if (!firstPK) {
-               bufUpd2.append(" AND ");
-            }
-            firstPK = false;
-         }
-         buf1.append(colName);
-         buf2.append(" ? ");
-         bufUpd1.append(colName).append("= ? ");
-         if (col.isPrimaryKey() || !hasPk()) {
-            bufUpd2.append(colName).append(" = ? ");
-         }
-      }
-      
-      String wherePart = bufUpd2.toString().trim();
-      if (wherePart.length() > 0)
-         wherePart = " WHERE " + wherePart;
-      
-      String completeTable = null;
-      if (schema == null || schema.trim().length() < 1)
-         completeTable = table;
-      else
-         completeTable = schema + "." + table;
-      this.insertStatementTxt = "INSERT INTO " + completeTable + " (" + buf1.toString() + ") VALUES (" + buf2.toString() + ")";
-      this.updateStatementTxt = "UPDATE " + completeTable + " SET " + bufUpd1.toString() + wherePart;
-      this.deleteStatementTxt = "DELETE FROM " + completeTable + wherePart;
-      this.hasAddedStatements = true;
-      log.info("statement for insert: \"" + this.insertStatementTxt + "\"");
-      log.info("statement for update: \"" + this.updateStatementTxt + "\"");
-      log.info("statement for delete: \"" + this.deleteStatementTxt + "\"");
-   }
-   
-//   private final void insertIntoStatement(String colName, PreparedStatement st, int pos, ClientProperty prop, int sqlType) throws SQLException, IOException  {
    private final void insertIntoStatement(PreparedStatement st, int pos, ClientProperty prop) throws SQLException, IOException, ParseException  {
       String colName = prop.getName();
       SqlColumn col = getColumn(colName);
@@ -731,76 +671,20 @@ public class SqlDescription {
          }
          return ret;
       }
-      finally {
-         if (st != null)
-            st.close();
-      }
-   }
-
-   /**
-    * TODO remove this
-    * 
-    * Returns the number of entries updated
-    * @param conn
-    * @param row
-    * @return
-    * @throws Exception
-    * @deprecated
-    */
-   public int updateOLD(Connection conn, SqlRow row) throws Exception {
-      addPreparedStatements();
-      PreparedStatement st = null;
-      try {
-         st = conn.prepareStatement(this.updateStatementTxt);
-         for (int i=0; i < this.columnList.size(); i++) {
-            SqlColumn col = (SqlColumn)this.columnList.get(i); 
-            String colName = col.getColName();
-            ClientProperty prop = row.getColumn(colName);
-            if (prop == null) 
-               throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-            insertIntoStatement(st, i+1, prop);
+      catch (SQLException ex) {
+         // unique constraint for Oracle: TODO implement also for other DB
+         if (ex.getMessage().indexOf("ORA-00001") > -1) {
+            log.severe("Entry '" + row.toXml("") + "' exists already. Will ignore it an continue");
+            return 0;
          }
-         
-         int count = this.columnList.size() +1;
-         
-         if (hasPk()) {
-            for (int i=0; i < this.columnList.size(); i++) {
-               SqlColumn col = (SqlColumn)this.columnList.get(i);
-               if (col.isPrimaryKey()) {
-                  String colName = col.getColName();
-                  ClientProperty prop = row.getColumn(colName);
-                  if (prop == null) 
-                     throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + row.toXml(""));
-                  insertIntoStatement(st, count++, prop);
-               }
-            }
-         }
-         else { // no PK, then we need the old content for 'almost' uniqueness
-            ClientProperty oldRowProp = row.getAttribute(ReplicationConstants.OLD_CONTENT_ATTR);
-            if (oldRowProp != null) {
-               StringBuffer buf = new StringBuffer("<sql><desc></desc><row num='0'>").append(oldRowProp.getStringValue()).append("</row></sql>");
-               SqlInfo oldRowDbUpdateInfo = this.parser.parse(buf.toString());
-               if (oldRowDbUpdateInfo.getRows().size() < 1)
-                  throw new Exception("no old rows retrieved for the entry on update when no PK is defined for the table");
-               SqlRow oldRow = (SqlRow)oldRowDbUpdateInfo.getRows().get(0);
-               for (int i=0; i < this.columnList.size(); i++) {
-                  SqlColumn col = (SqlColumn)this.columnList.get(i);
-                  String colName = col.getColName();
-                  ClientProperty prop = oldRow.getColumn(colName);
-                  if (prop == null) 
-                     throw new Exception(ME + ".update '" + this.identity + "' column '" + colName + "' not found " + oldRow.toXml(""));
-                  insertIntoStatement(st, count++, prop);
-               }
-            }
-         }
-         return st.executeUpdate();
+         else
+            throw ex;
       }
       finally {
          if (st != null)
             st.close();
       }
    }
-   
 
    public String getCommand() {
       return this.command;
@@ -899,7 +783,7 @@ public class SqlDescription {
       while (iter.hasNext()) {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
-         sb.append(prop.toXml(extraOffset + "  ", DbUpdateParser.ATTR_TAG));
+         sb.append(prop.toXml(extraOffset + "  ", SqlInfoParser.ATTR_TAG));
       }
       sb.append(offset).append("</").append(DESC_TAG).append(">");
       return sb.toString();

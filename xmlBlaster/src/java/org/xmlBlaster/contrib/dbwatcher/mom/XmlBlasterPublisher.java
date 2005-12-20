@@ -242,6 +242,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          int maxSessions = info.getInt("mom.maxSessions", 100);
          this.connectQos.setMaxSessions(maxSessions);
          this.connectQos.getAddress().setRetries(-1);
+         this.connectQos.setSessionTimeout(0L);
          CallbackAddress cb = this.connectQos.getData().getCurrentCallbackAddress();
          cb.setRetries(-1);
          /*

@@ -595,7 +595,6 @@ public class SqlInfo implements ReplicationConstants {
    
    
    public static void main(String[] args) {
-      new SqlInfo(null);
    }
    
 }

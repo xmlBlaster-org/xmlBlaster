@@ -10,6 +10,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +21,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
@@ -289,7 +289,8 @@ private final static String ME = "ReplicationWriter";
                   if (action == null)
                      throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
                   int count = modifyColumnsIfNecessary(originalCatalog, originalSchema, originalTable, row);
-                  log.info("modified '" + count  + "' entries");
+                  if (count != 0)
+                     log.fine("modified '" + count  + "' entries");
                   log.fine("store: " + row.toXml(""));
                   SqlDescription desc = getTableDescription(schema, table, conn);
                   boolean process = true;
@@ -351,6 +352,13 @@ private final static String ME = "ReplicationWriter";
                      Statement st = conn.createStatement();
                      try {
                         st.executeUpdate(sql);
+                     }
+                     catch (SQLException e) {
+                        // this is currently only working on oracle: TODO make it work for other DB too.
+                        if (e.getMessage().indexOf("does not exist") > -1)
+                           log.warning("table '" + completeTableName + "' was not found and could therefore not be dropped. Continuing anyway");
+                        else
+                           throw e;
                      }
                      finally {
                         st.close();

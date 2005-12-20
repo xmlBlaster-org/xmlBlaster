@@ -458,7 +458,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
 
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
-      this.rowsPerMessage = this.info.getInt("maxRowsOnCreate", 10);
+      this.rowsPerMessage = this.info.getInt("replication.maxRowsOnCreate", 250);
       try { // just to check that the configuration  is OK (better soon than later)
          TableToWatchInfo.getTablesToWatch(this.info);
       }
@@ -679,20 +679,17 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
             this.dbUpdateInfo.fillOneRowWithObjects(rs, null);
             internalCount++;
-            log.info("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
+            log.fine("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
             if (internalCount == this.rowsPerMessage) {
                internalCount = 0;
                // publish
-               log.info("result: going to publish msg '" + msgCount
-                     + "' and internal count '" + internalCount + "'");
+               log.fine("result: going to publish msg '" + msgCount + "' and internal count '" + internalCount + "'");
                this.initialUpdater.publishCreate(msgCount++, this.dbUpdateInfo, this.newReplKey);
-               this.dbUpdateInfo.getRows().clear(); // clear since re-using
-                                                      // the same dbUpdateInfo
+               this.dbUpdateInfo.getRows().clear(); // clear since re-using the same dbUpdateInfo
             }
          } // end while
          if (this.dbUpdateInfo.getRows().size() > 0) {
-            log.info("result: going to publish last msg '" + msgCount
-                  + "' and internal count '" + internalCount + "'");
+            log.fine("result: going to publish last msg '" + msgCount + "' and internal count '" + internalCount + "'");
             this.initialUpdater.publishCreate(msgCount, this.dbUpdateInfo, this.newReplKey);
          }
       } catch (Exception e) {
@@ -744,10 +741,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          return rs.next();
       }
       finally {
-         if (rs == null) {
+         if (rs != null) {
             try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
-         if (st == null) {
+         if (st != null) {
             try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
       }
@@ -770,10 +767,10 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          return rs.next();
       }
       finally {
-         if (rs == null) {
+         if (rs != null) {
             try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
-         if (st == null) {
+         if (st != null) {
             try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
       }
@@ -873,10 +870,22 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       SqlColumn[] cols = infoDescription
             .getColumns();
       StringBuffer buf = new StringBuffer(1024);
-      String tableName = infoDescription.getIdentity();
-      if (mapper != null)
-         tableName = mapper.getMappedTable(null, null, tableName, null);
-      buf.append("CREATE TABLE ").append(tableName).append(" (");
+      String originalTableName = infoDescription.getIdentity();
+      String originalSchema = infoDescription.getSchema();
+      String originalCatalog = infoDescription.getCatalog();
+      String completeTableName = null;
+      if (mapper != null) {
+         String tableName = mapper.getMappedTable(originalCatalog, originalSchema, originalTableName, null);
+         String schema = null;
+         if (originalSchema != null)
+            schema = mapper.getMappedSchema(originalCatalog, originalSchema, originalTableName, null);
+         if (schema != null)
+            completeTableName = schema + "." + tableName;
+         else
+            completeTableName = tableName;
+      }
+      
+      buf.append("CREATE TABLE ").append(completeTableName).append(" (");
       StringBuffer pkBuf = new StringBuffer();
       boolean hasPkAlready = false;
       for (int i = 0; i < cols.length; i++) {

@@ -359,6 +359,7 @@ public class ReplicationAgent {
    private static boolean displayHelpAndCheck(String[] args, I_Info cfgInfo) {
       String masterFilename = null;
       String slaveFilename = null;
+      String isInteractiveTxt = "false";
       
       boolean needsHelp = false;
       if(args.length == 0)
@@ -386,6 +387,10 @@ public class ReplicationAgent {
                }
                else
                   slaveFilename = args[i+1];
+            }
+            if (args[i].equalsIgnoreCase("-interactive")) {
+               if (i < (args.length-1))
+                  isInteractiveTxt = args[i+1];
             }
          }
       }
@@ -424,6 +429,7 @@ public class ReplicationAgent {
       }
       cfgInfo.put("masterFilename", masterFilename);
       cfgInfo.put("slaveFilename", slaveFilename);
+      cfgInfo.put("interactive", isInteractiveTxt);
       return ret;
    }
    
@@ -452,6 +458,10 @@ public class ReplicationAgent {
          System.out.print(prompt);
          String line = null;
          while ( (line = br.readLine()) != null) {
+            if (line.trim().length() < 1) {
+               System.out.print(prompt);
+               continue;
+            }
             line = line.trim();
             if (line.equalsIgnoreCase("q") || 
                   line.equalsIgnoreCase("quit") ||

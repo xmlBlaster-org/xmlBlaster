@@ -477,6 +477,21 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException {
+
+      if (!this.initialized) {
+         synchronized(this) {
+            if (!this.initialized) {
+               log.warning("too early to get messages since not initialized yet");
+               try {
+                  Thread.sleep(500L);
+               }
+               catch (Throwable ex) {
+                  ex.printStackTrace();
+               }
+            }
+         }
+      }
+      
       if (pushEntries != null) {
          log.warning("got " + pushEntries.size() + " entries in Dispatcher Sync mode (happens on communication Exceptions. Will ignore this");
          // return pushEntries;
@@ -632,6 +647,30 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       
    }
 
+   /**
+    * Convenience method to determine if a connect Qos is for us, i.e. if they have
+    * defined us as the DispatchPlugin in their connect qos.
+    * 
+    * @param connQos
+    * @return
+    */
+   private final boolean hasUsAsDispatchPlugin(ConnectQosServer connQos) {
+      if (connQos == null)
+         return false;
+      CallbackAddress cbAddr = connQos.getData().getCurrentCallbackAddress();
+      if (cbAddr == null) {
+         log.info("entry '" + connQos.toXml() + "' has no callback address defined");
+         return false;
+      }
+      String dispatchPluginName = cbAddr.getDispatchPlugin();
+      if (dispatchPluginName == null)
+         return false;
+      String ownName = getType() + "," + getVersion();
+      if (ownName.equals(dispatchPluginName))
+         return true;
+      return false;
+   }
+   
    // For I_ClientListener ...
 
    /**
@@ -644,30 +683,15 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (e == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
       ConnectQosServer connQos = e.getConnectQos();
-      if (connQos == null)
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with empty connenctQos event object");
-      log.info("Connecting with qos : " + connQos.toXml());
-      CallbackAddress cbAddr = connQos.getData().getCurrentCallbackAddress();
-      if (cbAddr == null) {
-         log.info("entry '" + connQos.toXml() + "' has no callback address defined");
+      if (!hasUsAsDispatchPlugin(connQos))
          return;
-      }
-      
-      String dispatchPluginName = cbAddr.getDispatchPlugin();
-      if (dispatchPluginName != null) {
-         String ownName = getType() + "," + getVersion();
-         if (ownName.equals(dispatchPluginName)) {
-            log.info("Connecting with qos : " + connQos.toXml());
-            String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
-            log.info("addition of session for '" + sessionName +"' occured");
-            synchronized (this.replSlaveMap) {
-               if (!this.replSlaveMap.containsKey(sessionName)) {
-                  I_ReplSlave slave = new ReplSlave(this.global, this.instanceName, sessionName);
-                  this.replSlaveMap.put(sessionName, slave);
-               }
-//               else
-//                  log.warning("The slave '" + sessionName + "' is already registered.");
-            }
+      log.info("Connecting with qos : " + connQos.toXml());
+      String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+      log.info("addition of session for '" + sessionName +"' occured");
+      synchronized (this.replSlaveMap) {
+         if (!this.replSlaveMap.containsKey(sessionName)) {
+            I_ReplSlave slave = new ReplSlave(this.global, this.instanceName, sessionName);
+            this.replSlaveMap.put(sessionName, slave);
          }
       }
    }
@@ -679,27 +703,15 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (e == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
       ConnectQosServer connQos = e.getConnectQos();
-      if (connQos == null)
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with empty connenctQos event object");
-      CallbackAddress cbAddr = connQos.getData().getCurrentCallbackAddress();
-      if (cbAddr == null) {
-         log.info("entry '" + connQos.toXml() + "' has no callback address defined");
+      if (!hasUsAsDispatchPlugin(connQos))
          return;
-      }
-      
-      String dispatchPluginName = cbAddr.getDispatchPlugin();
-      if (dispatchPluginName != null) {
-         String ownName = getType() + "," + getVersion();
-         if (ownName.equals(dispatchPluginName)) {
-            String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
-            log.info("removal of session for '" + sessionName +"' occured");
-            synchronized (this.replSlaveMap) {
-               if (!this.replSlaveMap.containsKey(sessionName))
-                  log.warning("The slave '" + sessionName + "' is not registered.");
-               else {
-                  this.replSlaveMap.remove(sessionName);
-               }
-            }
+      String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
+      log.info("removal of session for '" + sessionName +"' occured");
+      synchronized (this.replSlaveMap) {
+         if (!this.replSlaveMap.containsKey(sessionName))
+            log.warning("The slave '" + sessionName + "' is not registered.");
+         else {
+            this.replSlaveMap.remove(sessionName);
          }
       }
    }
@@ -731,20 +743,27 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    }
 
    /**
-    * TODO put the code addDispatchManager here and remove I_ClientListener.
+    * To make it simpler one could think to put this method together with sessionAdded. 
+    * This is however not possible since at the time the initiateReplication is invoked,
+    * the subcription is done for the first time. However if sessionAdded was not invoked
+    * previously, there would no be any chance to know that this is wanting to subscribe.
     * 
     * It checks if the event is for one of our guys and dispatches the call to them
-    * 
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionAdd(org.xmlBlaster.engine.SubscriptionEvent)
     */
    public synchronized void subscriptionAdd(SubscriptionEvent e) throws XmlBlasterException {
-      String relativeName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
-      log.info("addition of subscription for '" + relativeName +"' occured");
+      ConnectQosServer connQos = e.getSubscriptionInfo().getSessionInfo().getConnectQos();
+      if (!hasUsAsDispatchPlugin(connQos))
+         return;
+      
+      String relativeSessionName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
+      log.info("addition of subscription for '" + relativeSessionName +"' occured");
       
       I_ReplSlave slave = null;
       synchronized (this.replSlaveMap) {
-         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
+          slave = (I_ReplSlave)this.replSlaveMap.get(relativeSessionName);
       }
+      
       if (slave != null) {
          Map clientProperties = e.getSubscriptionInfo().getSubscribeQosServer().getData().getClientProperties();
          try {
@@ -754,25 +773,26 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.subscriptionAdd", "", ex);
          }
       }
+      else
+         log.severe("Could not find nor create slave '" + relativeSessionName + "'");
    }
 
    /**
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionRemove(org.xmlBlaster.engine.SubscriptionEvent)
     */
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
-      String relativeName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
-      log.info("removal of subscription for '" + relativeName +"' occured");
-      I_ReplSlave slave = null;
+      if (e == null)
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
+      ConnectQosServer connQos = e.getSubscriptionInfo().getSessionInfo().getConnectQos();
+      if (!hasUsAsDispatchPlugin(connQos))
+         return;
+      String sessionName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
+      log.info("removal of session for '" + sessionName +"' occured");
       synchronized (this.replSlaveMap) {
-         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
-      }
-      if (slave != null) {
-         try {
-            slave.shutdown();
-         }
-         catch (Exception ex) {
-            ex.printStackTrace();
-            log.severe("Exception occured when shutting down slave '" + relativeName + "'");
+         if (!this.replSlaveMap.containsKey(sessionName))
+            log.warning("The slave '" + sessionName + "' is not registered.");
+         else {
+            this.replSlaveMap.remove(sessionName);
          }
       }
    }

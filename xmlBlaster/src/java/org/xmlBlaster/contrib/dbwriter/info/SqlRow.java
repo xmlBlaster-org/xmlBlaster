@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwriter.DbUpdateParser;
+import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -286,7 +286,7 @@ public class SqlRow {
       while (iter.hasNext()) {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
-         sb.append(prop.toXml(extraOffset + "  ", DbUpdateParser.ATTR_TAG));
+         sb.append(prop.toXml(extraOffset + "  ", SqlInfoParser.ATTR_TAG));
       }
       if (withRowTag)
          sb.append(offset).append("</").append(ROW_TAG).append(">");

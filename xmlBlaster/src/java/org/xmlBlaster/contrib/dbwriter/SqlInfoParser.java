@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      DbUpdateParser.java
+Name:      SqlInfoParser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -7,9 +7,11 @@ package org.xmlBlaster.contrib.dbwriter;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+
 import org.xml.sax.Attributes;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -20,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 /**
  * @author laghi@swissinfo.org
  */
-public class DbUpdateParser extends XmlParserBase implements I_Parser {
+public class SqlInfoParser extends XmlParserBase implements I_Parser {
    
    public final static String ATTR_TAG = "attr";
    
@@ -30,24 +32,23 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
    private boolean inRow = false;
    private SqlRow recordRow;
    private SqlDescription recordDescription;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MomEventEngine.class.getName());
    private SqlColumn colDescription;
    private I_Info info; 
    boolean caseSensitive;
    
    
-   public DbUpdateParser() throws Exception {
+   public SqlInfoParser() throws Exception {
       this(null);
    }
 
    /**
     * Can be used as singleton.
     */
-   public DbUpdateParser(I_Info info) throws Exception {
+   public SqlInfoParser(I_Info info) throws Exception {
       super(null,  SqlInfo.SQL_TAG);
       super.addAllowedTag(SqlRow.COL_TAG);
       super.addAllowedTag(ATTR_TAG);
-      this.log = glob.getLog("contrib");
       init(info);
    }
    
@@ -90,7 +91,7 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
          return this.updateRecord;
       }
       catch (XmlBlasterException ex) {
-         log.error("SqlInfo", " readObject: could not parse string '" + xmlQos + "'");
+         log.severe("SqlInfoParser.readObject: could not parse string '" + xmlQos + "'");
          throw ex;
       }
    }
@@ -226,28 +227,28 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
             if (tmp != null)
                colDescription.setTypeName(tmp.trim());
 
-            tmp = attrs.getValue(SqlColumn.PKTABLE_CAT_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_TABLE_CAT_ATTR);
             if (tmp != null)
                colDescription.setFkCatalog(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.PKTABLE_SCHEM_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_TABLE_SCHEM_ATTR);
             if (tmp != null)
                colDescription.setFkSchema(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.PKTABLE_NAME_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_TABLE_NAME_ATTR);
             if (tmp != null)
                colDescription.setFkTable(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.PKCOLUMN_NAME_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_COLUMN_NAME_ATTR);
             if (tmp != null)
                colDescription.setFkCol(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.KEY_SEQ_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_KEY_SEQ_ATTR);
             if (tmp != null)
                colDescription.setFkSeq(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.UPDATE_RULE_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_UPDATE_RULE_ATTR);
             if (tmp != null)
                colDescription.setFkUpdRule(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.DELETE_RULE_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_DELETE_RULE_ATTR);
             if (tmp != null)
                colDescription.setFkDelRule(tmp.trim());
-            tmp = attrs.getValue(SqlColumn.DEFERRABILITY_ATTR);
+            tmp = attrs.getValue(SqlColumn.FK_DEFERRABILITY_ATTR);
             if (tmp != null)
                colDescription.setFkDef(tmp.trim());
          }
@@ -276,7 +277,7 @@ public class DbUpdateParser extends XmlParserBase implements I_Parser {
                this.recordDescription.setAttribute(this.clientProperty);
             }
             else {
-               log.warn("DbUpdateParser", "the attr is wether in description nor row, something is fishy, will ignore it.");
+               log.warning("the attr is wether in description nor row, something is fishy, will ignore it.");
             }
          }
          return;

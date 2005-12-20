@@ -79,7 +79,7 @@ public class DbWriter implements I_Update {
 
       // Now we load all plugins to do the job
       String momClass = this.info.get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
-      String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.DbUpdateParser").trim();
+      String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.SqlInfoParser").trim();
       String writerClass = this.info.get("dbWriter.writer.class", "org.xmlBlaster.contrib.dbwriter.Writer").trim();
    
       if (parserClass.length() > 0) {
