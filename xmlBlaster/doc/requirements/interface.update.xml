@@ -39,7 +39,8 @@
 
       <p>
       As default messages are sent acknowledged, if a client chooses to receive
-      oneway messages it has to be configured with the connect QoS during login.
+      oneway messages it has to be configured with the connect QoS
+      during <code>connect()</code> or during <code>subscribe()</code>.
       </p>
 
       <p>
@@ -82,9 +83,18 @@
       <p>If the <code>update()</code> methods throws an exception of type <code>ErrorCode.USER_UPDATE_...</code>
       the server forwards the rejected message to its error handler. The current
       error handler is implemented to publish this message as a 'dead letter', that
-      is a message with the <code>key oid='__sys__deadMessage'</code>.
+      is a message with the <code>key oid='__sys__deadMessage'</code>.<br />
       You can write a client which subscribes to such dead messages and handles
-      them appropriate.<br />
+      them appropriate, or at least activate the DeadMessageDumper in <code>xmlBlasterPlugins.xml</code>
+      as described in the <a href="admin.errorHandling.html" target="others">requirement admin.errorHandling</a>.</p>
+      
+      <p>If your client throws a <code>USER_UPDATE_HOLDBACK="user.update.holdback"</code>
+      exception the server keeps the message in its callback queue and sets the <code>dispatcherActive=false</code>, that
+      means that the xmlBlaster server goes to sleep for this client and won't deliver further update messages.
+      It is now up to an administrative command to activate the callback dispatcher again to try to
+      redeliver the last message.
+      </p>
+      <p>
       Please note that in the Java client library all other exception types thrown in your
       <code>update()</code> method are
       converted to an <code>ErrorCode.USER_UPDATE_INTERNALERROR</code> before
@@ -111,11 +121,11 @@
 
       <h3>Note for XML-RPC Clients</h3>
       <p>
-      The update interface change a little bit with actual XML-RPC implementation.<br/>
+      The update interface differs a little bit with the actual XMLRPC implementation.<br/>
       The update method signature looks like:
       </p>
       <pre>
-      	string update( string cbSessionId, string key, byte[] content, string qos )
+        string update( string cbSessionId, string key, byte[] content, string qos )
       </pre>
       <p>
       The XmlRpcCallbackImpl.java:update() does not allow to send an array of messages.
@@ -139,7 +149,7 @@
     </p>
    <table border="1"><tr><td>
    <pre>
-      return "";
+      return "<qos><state id='OK'/></qos>";
    </pre>
    </td></tr></table>
    </example>
