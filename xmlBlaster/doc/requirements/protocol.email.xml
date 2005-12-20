@@ -310,7 +310,7 @@ this limitation does not exist, here we correctly send a unique and ascending ti
   &lt;/attachment>
 
   &lt;attachment>
-    &lt;filename>xmlBlasterMessage.xml&lt;/filename>
+    &lt;filename>messageId.mid&lt;/filename>
     &lt;contenttype>text/plain; name=messageId.mid; charset=UTF-8&lt;/contenttype>
     &lt;content><![CDATA[&lt;messageId>&lt;sessionId>1132061265263000000&lt;/sessionId>
                 &lt;requestId>1132965149890000000&lt;/requestId>
