@@ -335,6 +335,7 @@ private final static String ME = "ReplicationWriter";
                      }
                      
                      String sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
+                     log.info("CREATE STATEMENT: '" + sql + "'");
                      Statement st = conn.createStatement();
                      try {
                         st.executeUpdate(sql);
