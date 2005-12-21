@@ -202,7 +202,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          // String registryName = "mom.publisher";
          synchronized (ReplManagerPlugin.class) {
             debugInstanceNum++;
-            this.instanceName = "replication" + debugInstanceNum;
+            // this.instanceName = "replication" + debugInstanceNum;
+            this.instanceName = "replication";
          }
          
          ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
