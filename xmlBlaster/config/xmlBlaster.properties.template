@@ -159,7 +159,6 @@ dispatch/connection/DispatchPlugin/defaultPlugin=undef
 dispatch/callback/DispatchPlugin/defaultPlugin=undef
 #DispatchPlugin/defaultPlugin=undef
 
-
 #dispatch/callback/DispatchPlugin/defaultPlugin=Priority,1.0
 #dispatch/callback/DispatchPlugin/defaultPlugin=undef
 
@@ -173,6 +172,11 @@ PriorizedDispatchPlugin/config=<msgDispatch defaultStatus='64k' defaultAction='s
      <action do='send'  ifPriority='0-9'/> \
    </onStatus> \
  </msgDispatch>
+
+#
+# This is used for the replication
+#
+DispatchPlugin[ReplManager][1.0]=org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin
 
 #------------------------------------------------------------------------------
 
