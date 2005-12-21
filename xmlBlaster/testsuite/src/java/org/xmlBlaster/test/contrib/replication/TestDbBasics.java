@@ -31,7 +31,6 @@ import org.xmlBlaster.jms.XBSession;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -70,8 +69,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       TestDbBasics test = new TestDbBasics();
       try {
 
-         test.testInfo();
-         
          test.setUp();
          test.testInternalFunctions();
          test.tearDown();
@@ -843,45 +840,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
-      log.info("SUCCESS");
-   }
-
-   /**
-    * Test the replacement of variables in the info object.
-    */
-   public final void testInfo() {
-      log.info("Start testInfo");
-      Properties props = new Properties();
-      props.put("one", "value1");
-      props.put("two", "value2");
-      props.put("three", "${one}");
-      props.put("value1", "value43");
-      
-      PropertiesInfo propInfo = new PropertiesInfo(props);
-      String key = "one";
-      String val = propInfo.get(key, null);
-      assertEquals("testing key '" + key + "'", "value1", val);
-      
-      key = "three";
-      val = propInfo.get(key, null);
-      assertEquals("testing key '" + key + "'", "value1", val);
-      
-      key = "four";
-      val = propInfo.get(key, "default");
-      assertEquals("testing key '" + key + "'", "default", val);
-      
-      key = "four";
-      val = propInfo.get(key, "${one}");
-      assertEquals("testing key '" + key + "'", "value1", val);
-      
-      key = "${one}";
-      val = propInfo.get(key, null);
-      assertEquals("testing key '" + key + "'", "value43", val);
-      
-      key = "four";
-      val = propInfo.get(key, "${five}");
-      assertEquals("testing key '" + key + "'", "${five}", val);
-      
       log.info("SUCCESS");
    }
 

@@ -5,9 +5,11 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -61,6 +63,10 @@ public class TestHelperClasses extends XMLTestCase {
 
          test.setUp();
          test.testTableToWatchInfoStatic();
+         test.tearDown();
+
+         test.setUp();
+         test.testInfo();
          test.tearDown();
 
       } 
@@ -358,136 +364,6 @@ public class TestHelperClasses extends XMLTestCase {
    /**
     * 
     */
-   public final void oldTestTableToWatchInfoValues() {
-      log.info("Start testTableToWatchInfoValues");
-      
-      String key = "table.catalog.schema.table";
-
-      try {
-         
-         String val1 = null;
-         TableToWatchInfo tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val1);
-         assertEquals("replicate for val1", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val1", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val1", -1L, tableToWatchInfo.getReplKey());
-
-         String val2 = "";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val2);
-         assertEquals("replicate for val2", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val2", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val2", -1L, tableToWatchInfo.getReplKey());
-         
-         String val3 = ",,";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val3);
-         assertEquals("replicate for val3", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val3", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val3", -1L, tableToWatchInfo.getReplKey());
-
-         String val4 = " , , ";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val4);
-         assertEquals("replicate for val4", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val4", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val4", -1L, tableToWatchInfo.getReplKey());
-
-         String val5 = "IDU,trigger,10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val5);
-         assertEquals("replicate for val5", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val5", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val5", 10L, tableToWatchInfo.getReplKey());
-
-         String val6 = " IDU , trigger , 10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val6);
-         assertEquals("replicate for val6", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val6", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val6", 10L, tableToWatchInfo.getReplKey());
-
-         String val7 = ",trigger,10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val7);
-         assertEquals("replicate for val7", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val7", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val7", 10L, tableToWatchInfo.getReplKey());
-
-         String val8 = "  , trigger , 10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val8);
-         assertEquals("replicate for val8", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val8", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val8", 10L, tableToWatchInfo.getReplKey());
-
-         String val9 = "IDU,,10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val9);
-         assertEquals("replicate for val9", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val9", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val9", 10L, tableToWatchInfo.getReplKey());
-
-         String val10 = " IDU , , 10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val10);
-         assertEquals("replicate for val10", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val10", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val10", 10L, tableToWatchInfo.getReplKey());
-
-         String val11 = "IDU,trigger,";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val11);
-         assertEquals("replicate for val11", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val11", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val11", -1L, tableToWatchInfo.getReplKey());
-
-         String val12 = " IDU , trigger , ";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val12);
-         assertEquals("replicate for val12", true, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val12", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val12", -1L, tableToWatchInfo.getReplKey());
-
-         String val13 = ",,10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val13);
-         assertEquals("replicate for val13", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val13", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val13", 10L, tableToWatchInfo.getReplKey());
-
-         String val14 = "  ,  , 10";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val14);
-         assertEquals("replicate for val14", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val14", (String)null, tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val14", 10L, tableToWatchInfo.getReplKey());
-
-         String val15 = ",trigger,";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val15);
-         assertEquals("replicate for val15", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val15", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val15", -1L, tableToWatchInfo.getReplKey());
-
-         String val16 = "  , trigger , ";
-         tableToWatchInfo = new TableToWatchInfo();
-         tableToWatchInfo.assignFromInfoPair(key, val16);
-         assertEquals("replicate for val16", false, tableToWatchInfo.isReplicate());
-         assertEquals("trigger for val16", "trigger", tableToWatchInfo.getTrigger());
-         assertEquals("replKey for val16", -1L, tableToWatchInfo.getReplKey());
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-      }
-
-      log.info("SUCCESS");
-   }
-
-
-   /**
-    * 
-    */
    public final void testTableToWatchInfoValues() {
       log.info("Start testTableToWatchInfoValues");
       
@@ -625,6 +501,53 @@ public class TestHelperClasses extends XMLTestCase {
    }
 
    /**
+    * Test the replacement of variables in the info object.
+    */
+   public final void testInfo() {
+      log.info("Start testInfo");
+      Properties props = new Properties();
+      props.put("one", "value1");
+      props.put("two", "value2");
+      props.put("three", "${one}");
+      props.put("value1", "value43");
+      
+      PropertiesInfo propInfo = new PropertiesInfo(props);
+      String key = "one";
+      String val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "three";
+      val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "four";
+      val = propInfo.get(key, "default");
+      assertEquals("testing key '" + key + "'", "default", val);
+      
+      key = "four";
+      val = propInfo.get(key, "${one}");
+      assertEquals("testing key '" + key + "'", "value1", val);
+      
+      key = "${one}";
+      val = propInfo.get(key, null);
+      assertEquals("testing key '" + key + "'", "value43", val);
+      
+      key = "four";
+      val = propInfo.get(key, "${five}");
+      assertEquals("testing key '" + key + "'", "${five}", val);
+      
+      
+      props.put("test.${one}", "testOne");
+      props.put("test.${two}", "test_${two}");
+      InfoHelper helper = new InfoHelper(propInfo);
+      helper.replaceAllEntries(propInfo, null);
+      Map testProps = InfoHelper.getPropertiesStartingWith("test.", propInfo, null);
+      assertEquals("wrong number of properties starting with *" + testProps + "'", 2, testProps.size());
+      
+      log.info("SUCCESS");
+   }
+
+   /**
     * 
     */
    public final void testTableToWatchInfoStatic() {
@@ -632,11 +555,11 @@ public class TestHelperClasses extends XMLTestCase {
       
       I_Info info = new PropertiesInfo(new Properties());
       // info.put("table.schema1.table1", null); does not work since info will no add this
-      info.put("table.schema1.table1", "IDU");
-      info.put("table.schema1.table2", "IDU,trigger2,10");
-      info.put("table.schema1.table3", "IDU,trigger3,155");
-      info.put("table.schema1.table4", "IDU,trigger4,6");
-      info.put("table.schema1.table5", "IDU,trigger5,13");
+      info.put("table.schema1.table1", "actions=IDU");
+      info.put("table.schema1.table2", "actions=IDU,trigger=trigger2,sequence=10");
+      info.put("table.schema1.table3", "actions=IDU,trigger=trigger3,sequence=155");
+      info.put("table.schema1.table4", "actions=IDU,trigger=trigger4,sequence=6");
+      info.put("table.schema1.table5", "actions=IDU,trigger=trigger5,sequence=13");
       info.put("tablesomethingother", "should be ignored");
       info.put("somethingother", "should be ignored");
       try {
