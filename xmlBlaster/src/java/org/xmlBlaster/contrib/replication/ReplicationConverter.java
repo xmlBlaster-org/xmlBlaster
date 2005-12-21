@@ -18,12 +18,13 @@ import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
+import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
-import org.xmlBlaster.util.PersistentMap;
+// import org.xmlBlaster.util.PersistentMap;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -43,7 +44,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long oldReplKey = -1L;
    private int consecutiveReplKeyErrors = 0; // used to detect serious problems in sequences
    private int maxConsecutiveReplKeyErrors = 10;
-   private Map persistentMap;
+   // private Map persistentMap;
+   private I_Info persistentMap;
    private String oldReplKeyPropertyName;
    private ChangeEvent event;
    private String transactionId;
@@ -109,15 +111,17 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       boolean forceCreationAndInit = true;
       this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
-      this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
+      // this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
+      this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
-      Long tmp = (Long)this.persistentMap.get(this.oldReplKeyPropertyName);
-      if (tmp != null) {
-         this.oldReplKey = tmp.longValue();
+      long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
+      if (tmp > -1L) {
+         this.oldReplKey = tmp;
          log.info("One entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.oldReplKey + "'");
       }
       else {
          log.info("No entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
+         this.oldReplKey = 0L;
       }
    }
    
@@ -166,7 +170,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       else { // TODO move this after the sending of the message since this could still fail.
          this.consecutiveReplKeyErrors = 0;
-         this.persistentMap.put(this.oldReplKeyPropertyName, new Long(this.oldReplKey));
+         this.persistentMap.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
          this.oldReplKey = replKey;
       }
       // puts this in the metadata attributes of the message to be sent over the mom
