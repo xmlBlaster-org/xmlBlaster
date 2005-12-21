@@ -39,6 +39,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
@@ -123,7 +124,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
          Enumeration enm = this.getClass().getClassLoader().getResources(filename);
          if(enm.hasMoreElements()) {
             URL url = (URL)enm.nextElement();
-            log.fine(method + ": : loading file '" + url.getFile() + "'");
+            log.info(method + ": : loading file '" + url.getFile() + "'");
             try {
                StringBuffer buf = new StringBuffer();
                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -933,7 +934,7 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     */
    public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
       
-      log.info("initial replication for destination=*" + destination + "' and slave='" + slaveName + "'");
+      log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "'");
       Connection conn = null;
       // int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
@@ -1005,11 +1006,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       I_DbPool pool = null;
       Connection conn = null;
       try {
+         
          System.setProperty("java.util.logging.config.file",
                "testlog.properties");
          LogManager.getLogManager().readConfiguration();
 
          Preferences prefs = Preferences.userRoot();
+         prefs.node(ReplicationConstants.CONTRIB_PERSISTENT_MAP).clear();
          prefs.clear();
 
          // ---- Database settings -----
