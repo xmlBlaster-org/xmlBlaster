@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='contrib.replication' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='contrib.replication' type='NEW' prio='HIGH' status="OPEN">
    <topic>
       Replication is a plugin framework used to replicate data between sources and sinks.
    </topic>
