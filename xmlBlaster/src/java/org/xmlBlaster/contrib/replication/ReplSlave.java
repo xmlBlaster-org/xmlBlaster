@@ -8,7 +8,7 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-// import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -18,14 +18,13 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.dbwatcher.Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.MsgUnit;
-// import org.xmlBlaster.util.PersistentMap;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -68,7 +67,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String sqlResponse;
    private String managerInstanceName;
    private boolean forceSending; // temporary Hack to be removed TODO
-   // private Map persistentMap;
    private I_Info persistentMap;
    private String oldReplKeyPropertyName;
    
@@ -134,7 +132,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
       
       // this.persistentMap = new PersistentMap(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
-      this.persistentMap = new Info(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
+      // this.persistentMap = new Info(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
+      this.persistentMap = new PropertiesInfo(new Properties());
       this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
       long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {

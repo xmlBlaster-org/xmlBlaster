@@ -11,20 +11,20 @@ import java.util.logging.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.io.OutputStream;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
-import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
-// import org.xmlBlaster.util.PersistentMap;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -44,7 +44,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long oldReplKey = -1L;
    private int consecutiveReplKeyErrors = 0; // used to detect serious problems in sequences
    private int maxConsecutiveReplKeyErrors = 10;
-   // private Map persistentMap;
    private I_Info persistentMap;
    private String oldReplKeyPropertyName;
    private ChangeEvent event;
@@ -112,7 +111,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       // this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
-      this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
+      // this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
+      this.persistentMap = new PropertiesInfo(new Properties());
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
