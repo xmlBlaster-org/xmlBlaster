@@ -8,7 +8,7 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
+// import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -18,13 +18,14 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.PersistentMap;
+// import org.xmlBlaster.util.PersistentMap;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -67,7 +68,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String sqlResponse;
    private String managerInstanceName;
    private boolean forceSending; // temporary Hack to be removed TODO
-   private Map persistentMap;
+   // private Map persistentMap;
+   private I_Info persistentMap;
    private String oldReplKeyPropertyName;
    
    public String getTopic() {
@@ -131,15 +133,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
       
-      this.persistentMap = new PersistentMap(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
+      // this.persistentMap = new PersistentMap(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
+      this.persistentMap = new Info(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
       this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
-      Long tmp = (Long)this.persistentMap.get(this.oldReplKeyPropertyName);
-      if (tmp != null) {
-         this.maxReplKey = tmp.longValue();
+      long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
+      if (tmp > -1L) {
+         this.maxReplKey = tmp;
          log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
       }
       else {
          log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
+         this.maxReplKey = 0L;
       }
       this.initialized = true;
    }
@@ -165,7 +169,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    private final void setMaxReplKey(long replKey) {
       this.maxReplKey = replKey;
-      this.persistentMap.put(this.oldReplKeyPropertyName, new Long(replKey));
+      this.persistentMap.put(this.oldReplKeyPropertyName, "" + replKey);
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
