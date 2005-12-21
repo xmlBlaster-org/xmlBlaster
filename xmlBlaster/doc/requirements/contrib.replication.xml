@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='contrib.replication' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>
+      Replication is a plugin framework used to replicate data between sources and sinks.
+   </topic>
+
+   <description>
+     <p>
+     <h2>Replication Overview</h2>
+       The Replication framework makes use of the DbWatcher- and the DbWriter frameworks. Its goal is to offer the xmlBlaster user a way to
+       replicate data from one or several source databases to one or more sink databases. The framework has been designed for a singlemaster
+       multislave approach. What does that mean ? It means that it does not offer any conflict resolution mechanism. In other words it is safe
+       for cases where you have one master database, also called the source for the replication, and one or more slaves, also called the 
+       sinks of the replication or replicas. It will not be safe where you have more than one master. There are situations where this 
+       framework is currently used with more than one source for one sink, but there are limitations, for example you must ensure that the 
+       same data (at least on a row granularity) always comes from one single source.
+    </p>
+    <p>Which features does this framework offer ? <br />
+      <ul>
+        <li>Single Master / Multi Slave approach</li>
+        <li>Conventional one to one Replication</li>
+        <li>Replication with Data Manipulation</li>
+        <li>Replication with Data Filtration</li>
+        <li>Use of all Communication Protocols offered by XmlBlaster (even the most fancy ones)</li>
+        <li>Persistence of Messages, Failover and guaranteed sequence of messages</li>
+        <li>Transactions are handled atomically and sent in a single Message</li>
+        <li>Possibility to interchange this with other sources/sinks for for example Meta-Databases</li>
+        <li>Plugin approach to allow business-specific functionality</li>
+        <li>Possibility to intermix different database vendors</li>
+        <li>Performance tuning for specific vendors (for example for initial update)</li>
+        <li>...</li>
+      </ul>
+    </p>
+    <p>
+    Why yet another replication solution when there are so many out there already ?<br/>
+    Because it is difficult (or impossible) to find a replication software which can offer all of the following:
+    <ul>
+      <li>Replicate between different databases (different versions or different vendors)</li>
+      <li>Allow individual (specific for every sink) business specific manipulation or filtering</li>
+      <li>pass complex and high secure gateways or firewalls</li>
+      <li>open source</li>
+      <li>replicated is xml based and can be used directly on an application level</li>
+      <li>...</li>
+    </ul>
+    </p>
+    <p>
+      Since the framework is highly flexible, it is also quite complex. Probably the simplest way to describe it is with an easy 
+      tutorial. I will start with a very simple use case. Parallely a description of what is going on behind the scenes will also be given.
+      <b>Prerequisistes for this tutorial is that you have an oracle database up and running.</b>
+    </p>
+    <p>
+    <h2>Prepare, build and start the server</h2><br/>
+       <ul>
+         <li>To avoid messy and strange behaviours make sure you don't have any old configuration around. Consider that as cleaning up the
+	 kitchen before starting to cook a good meal, and believe me, this meal is really good! <br/>
+	 You can clean up by changing to your home directory and delete <tt>xmlBlaster.properties</tt> and <tt>xmlBlasterPlugins.xml</tt>
+	 </li>
+	 <li>Delete old peristent queues. These normally reside in your <tt>${HOME}/tmp</tt> directory. It normally suffices to 
+	     delete all <tt>xmlBlaster*</tt> and <tt>client*</tt> files.
+	 </li>
+	 <li>Go to your ${XMLBLASTER_HOME} Directory and set the environment (in unixes with <tt>. .bashrc</tt>).</li>
+	 <li>Start the xmlBlaster with JMX enabled: 
+	     <pre>
+
+      java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
+
+	     </pre>
+            The jvm option is in case you have a jdk1.5 or higher, in which case you can use <b>jconsole</b> to monitor the application, for jdk1.4 you
+	    the application options will allow you to monitor via the <b>html adapter</b>. Verify that the server is up and running correctly.
+	 </li>
+       </ul>
+    </p>
+
+    <p><h2>Start the Demo Client for the Replication</h2>
+    <ul>
+      <li>Go to your ${XMLBLASTER_HOME} Directory and set the environment (in unixes with <tt>. .bashrc</tt>).</li>
+      <li>Go to the directory where the demo resides: <tt>${XMLBLASTER_HOME}/demo/javaclients/contrib/replication</tt>.</li>
+      <li>Put in this directory the jdbc driver you want to use. Currently we only have tested with Oracle, so copy the latest driver
+          (we used <tt>ojdbc14.jar</tt>) and put it in this directory. </li>
+      <li>Add this directory and the jar file to the CLASSPATH (unixes: <tt>export CLASSPATH=.:ojdbc14.jar:${CLASSPATH}</tt>).</li>
+      <li>Edit the first three lines of the files in the current directory <tt>readerDemo1.properties</tt> and <tt>writerDemo1.properties</tt>
+          to make them correspond to your database. The settings are currently pointing to an oracle database on the localhost on the default
+	  port with a SID=TEST, and a user (or schema) XMLBLASTER</li>
+      <li>Now you will start the client. The client is composed by a master (the reader of the database or source), and a slave (which is the
+          destination of the Replication). Internally xmlBlaster uses here a DbWatcher and a DbWriter. Invoke:
+	  <pre>
+
+ java javaclients.contrib.replication.ReplDemo -master readerDemo1.properties -slave writerDemo1.properties -interactive true
+
+	  </pre>
+	  You will see the client starts and both the reader and the writer connect to the xmlBlaster. At the end you will see the
+	  text <b>REPLICATION AGENT IS NOW READY</b> and a prompt appears. If you press <tt>ENTER</tt>, then a new line appears.
+	  On the line you could now execute SQL Statements. The prompt tells you on which Database instance the SQL Statement will be executed.
+	  Here you see <b>master</b> telling you the statements will be executed on the master and therefore will be replicated. If you would 
+	  have started only the slave, the prompt <b>slave</b> would have appeared. Of course for the sake of simplicity we are using one single
+	  database here.
+       </li>
+       <li>In the configuration file you defined two tables to be replicated:
+          <pre>
+
+  table.${db.user}.DEMO_USERS=trigger=DEMO_USERS_TRG
+  table.${db.user}.DEMO_ACCOUNTS=trigger=actions=IDU,DEMO_ACCOUNTS_TRG,sequence=10
+
+	  </pre>
+       	  Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. In the first of both lines you also
+	  can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything here would
+	  let the application decide a name for it. In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
+	  actions on which the trigger will fire. Here IDU stands for <tt>I(nsert), D(elete) and U(pdate)</tt>. These are the only three actions allowed.
+	  IDU is the default. <b>sequence</b> is the sequence number on which the Table will be replicated. This is important if you have foreign keys,
+	  then the referenced tables must be replicated first. Unspecified sequences will be processed before any specified. Internally, the
+	  sequence among all unspecified ones is determined by the application (this is currently undefined but plugins will allow control). 
+	</li>
+        <li>Now you can add the table <b>DEMO_USERS</b> by typing on the command line of the started client:
+	<pre>
+
+  create table demo_users (account varchar2(100), name varchar2(100), firstname varchar2(100), primary key(account))
+	
+	</pre>
+	   When completed press <tt>ENTER</tt>.
+	</li>
+	<li>Once the table has been created it is time to populate it with some data:
+	   <pre>
+
+  insert into demo_users values ('account1', 'Topo', 'Gigio')
+  insert into demo_users values ('account2', 'Mister', 'Bean')
+
+	   </pre>
+	</li>
+
+    </ul>
+    </p>
+    <p><h2>Start the JMX Monitor to initiate the Replication</h2>
+      If you have jdk1.4 start an html browser of your choice and point it to <a href="http://localhost:8082">http://localhost:8082</a>. You
+      will see the following <center><img src="./contrib.replication.jmxHtml.png"/></center>.<br/>
+      If you have jdk1.5 or higher you can use the jconsole. You can start it by invoking <b>jconsole</b>. There you connect and after
+      connection you select the <b>MBeans</b> Tab. In the tree on the left you choose 
+      <tt>org.xmlBlaster/node/xmlBlaster_${yourIPAndPort}/contrib/replication</tt>. On the left panel you choose the <b>Attributes</b> Tab.
+      You will see a list of key/value pairs. If you double click on the values you will see the content of them. In the image below we clicked
+      on the values for the <b>Slaves</b>. You will get a list of the relative session names of all the slaves connected, wether they are 
+      currently available or not. In this case we only have one slave connected: <b>client/DemoWriter/1</b><br/>.
+      <center><img src="./contrib.replication.jconsole1.png"/></center>
+    </p>
+    <p>To initiate the replication you must tell xmlBlaster via the jmx monitor which data you want to be replicated to which
+       slave. The list of available sets of data to be replicated are listed in the attribute <b>replications</b>. Even if in special cases these
+       could be constituted by data collected by several masters (several DbWatchers) you will generally have a one to one relation between a
+       replication (or replication set) and a master (or DbWatcher). The identifier for these replications is the <b>replication.prefix</b> 
+       attribute specified in the DbWatcher configuration. In our case the only replication is identified by <b>DEMO_</b>, which has been
+       configured in <tt>readerDemo1.properties</tt>.<br/>
+       The slaves are identified by the relative session name of the DbWriter which has been configured in the <tt>writerDemo1.properties</tt> and
+       which is in our case <b>client/DemoWriter/1</b>.
+    </p>
+    <p>Click now on the <b>Operations</b> Tab. On the <b>initiateReplication</b> you have two parameters to pass. In the first you pass the
+       identifier of the Slave (<tt>client/DemoWriter/1</tt>), and in the second you pass the identifier of the replication (<tt>DEMO_</tt>) and
+       press on <tt>initiateReplication</tt>.<br/>
+       <center><img src="./contrib.replication.jconsole2.png"/></center>
+    </p>
+    <p>On the jconsole you will get a dialog indicating that the start command has been sent to the XmlBlaster. On the server logs you will see
+    that the initial command has been executed and on the client logs you will see the PL/SQL Code of the trigger followed by a sequence of two
+    XmlBlaster Messages each in xml format. The first of them is the <b>CREATE</b> statement itself and the second is the message containing
+    all initial data of the replicated table.
+    </p>
+    <p>You can now verify that the new table <b>DEMO_USERS_REPLICA</b> really has been created and that it contains the same entries as the
+    source by invoking on the prompt:
+      <pre>
+
+   select * from demo_users_replica
+
+      </pre>
+      This way you replicated data from one table to another.
+    </p>
+    </description>
+
+<!--
+   <example lang="any" type="HTML">
+     <h2 id="exampleTimestamp">Timestamp based polling example</h2>
+     <p>Lets create a database table <tt>TEST_POLL</tt> which contains a <tt>TIMESTAMP</tt> column <tt>TS</tt> (tested on Oracle):</p>
+   </example>
+
+   <example lang="any" type="HTML">
+     <h2 id="exampleMD5">MD5 based polling example</h2>
+   </example>
+-->
+
+   <configuration where="server"> 
+   </configuration>
+
+   <see type="API">org.xmlBlaster.contrib.dbwriter.DbWriter</see>
+   <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
+   <see type="API">org.xmlBlaster.contrib.replication.ReplicationAgent</see>
+   <see type="API">org.xmlBlaster.contrib.replication.ReplSlave</see>
+   <see type="API">org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin</see>
+   <see type="REQ">contrib.dbwatcher</see>
+   <see type="REQ">contrib.dbwriter</see>
+   <author>laghi@swissinfo.org</author>
+   <hacker>laghi@swissinfo.org</hacker>
+   <date>2005 12 19</date>
+   <revision>$Revision$</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.dbwriter.TestRecordParsing</test>
+   </testcase>
+</requirement>
+
