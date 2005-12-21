@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.xmlBlaster.util.I_ReplaceVariable;
-import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -33,24 +31,8 @@ public class ClientPropertiesInfo implements I_Info {
         
    Map clientPropertyMap;
    Map objects;
+   private InfoHelper helper;
    
-   class Replacer implements I_ReplaceVariable {
-      public String get(String key) {
-         if (key == null)
-            return null;
-         ClientProperty prop = (ClientProperty)clientPropertyMap.get(key);
-         if (prop != null) {
-            String repl = prop.getStringValue();
-            if (repl != null)
-               return repl.trim();
-         }
-         return null;
-      }
-   }
-   
-   private Replacer replacer;
-   private ReplaceVariable replaceVariable;
-
    /**
     * @param clientPropertyMap Can be null
     */
@@ -63,12 +45,11 @@ public class ClientPropertiesInfo implements I_Info {
     * @param extraInfo Can be null
     */
    public ClientPropertiesInfo(Map clientPropertyMap, I_Info extraInfo) {
+      this.helper = new InfoHelper(this);
       this.clientPropertyMap = clientPropertyMap;
       if (this.clientPropertyMap == null)
          this.clientPropertyMap = new HashMap();
       this.objects = new HashMap();
-      this.replacer = new Replacer();
-      this.replaceVariable = new ReplaceVariable();
       
       if (extraInfo != null) {
          synchronized (extraInfo) {
@@ -81,22 +62,24 @@ public class ClientPropertiesInfo implements I_Info {
             }
          }
       }
+      this.helper.replaceAllEntries(this, null);
    }
-
-/*   
-   HashMap pubMap = new HashMap();
-   synchronized (this.info) {
-      Iterator iter = this.info.getKeys().iterator();
-      while (iter.hasNext()) {
-         String key = (String)iter.next();
-         String obj = this.info.get(key, null);
-         if (obj != null)
-            pubMap.put(key, obj);
-      }
+   
+   /**
+    * 
+    * @param txt
+    * @return
+    */
+   public String getRaw(String key) {
+      Object obj = this.clientPropertyMap.get(key);
+      if (obj == null)
+         return null;
+      if (!(obj instanceof ClientProperty))
+         return null;
+      
+      ClientProperty prop = (ClientProperty)obj;
+      return prop.getStringValue();
    }
-*/   
-   
-   
    
    
    /**
@@ -104,10 +87,6 @@ public class ClientPropertiesInfo implements I_Info {
     * @param txt
     * @return
     */
-   protected final String replace(String txt) {
-      return this.replaceVariable.replace(txt, this.replacer);
-   }
-
    protected String getPropAsString(String key) {
       Object obj = this.clientPropertyMap.get(key);
       if (obj == null)
@@ -118,11 +97,11 @@ public class ClientPropertiesInfo implements I_Info {
       ClientProperty prop = (ClientProperty)obj;
       String ret = prop.getStringValue();
       if (ret != null) {
-         return replace(ret);
+         return this.helper.replace(ret);
       }
       return null;
    }
-
+   
    /**
     * @param key
     * @return null if not of type ClientProperty or of not found
@@ -142,13 +121,13 @@ public class ClientPropertiesInfo implements I_Info {
     */
    public synchronized String get(String key, String def) {
       if (def != null)
-         def = replace(def);
+         def = this.helper.replace(def);
       if (key == null)
          return def;
-      key = replace(key);
+      key = this.helper.replace(key);
       String ret = getPropAsString(key);
       if (ret != null) {
-         return replace(ret);
+         return this.helper.replace(ret);
       }
       return null;
    }
@@ -157,14 +136,29 @@ public class ClientPropertiesInfo implements I_Info {
     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
     */
     public synchronized void put(String key, String value) {
+       if (key != null)
+          key = this.helper.replace(key);
+       if (value != null)
+          value = this.helper.replace(value);
        if (value == null)
          this.clientPropertyMap.remove(key);
        else {
-          // ClientProperty prop = new ClientProperty(key, null, null, null, value);
           ClientProperty prop = new ClientProperty(key, null, null, value);
           this.clientPropertyMap.put(key, prop);
        }
     }
+
+    /**
+     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+     */
+     public synchronized void putRaw(String key, String value) {
+        if (value == null)
+          this.clientPropertyMap.remove(key);
+        else {
+           ClientProperty prop = new ClientProperty(key, null, null, value);
+           this.clientPropertyMap.put(key, prop);
+        }
+     }
 
     /**
      * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)

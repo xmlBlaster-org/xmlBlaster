@@ -5,16 +5,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
-
-import org.xmlBlaster.util.I_ReplaceVariable;
-import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * 
@@ -27,19 +22,7 @@ public class PropertiesInfo implements I_Info {
    Properties props;
    Map objects;
    
-   class Replacer implements I_ReplaceVariable {
-      public String get(String key) {
-         if (key == null)
-            return null;
-         String repl = props.getProperty(key, null);
-         if (repl != null)
-            return repl.trim();
-         return null;
-      }
-   }
-   
-   private Replacer replacer;
-   private ReplaceVariable replaceVariable;
+   private InfoHelper helper;
    
    
    /**
@@ -52,17 +35,12 @@ public class PropertiesInfo implements I_Info {
    public PropertiesInfo(Properties props) {
       this.props = props;
       this.objects = new HashMap();
-      this.replacer = new Replacer();
-      this.replaceVariable = new ReplaceVariable();
+      this.helper = new InfoHelper(this);
+      this.helper.replaceAllEntries(this, null);
    }
    
-   /**
-    * 
-    * @param txt
-    * @return
-    */
-   protected final String replace(String txt) {
-      return this.replaceVariable.replace(txt, this.replacer);
+   public String getRaw(String key) {
+      return this.props.getProperty(key);
    }
    
    /**
@@ -70,13 +48,13 @@ public class PropertiesInfo implements I_Info {
    */
    public String get(String key, String def) {
       if (def != null)
-         def = replace(def);
+         def = this.helper.replace(def);
       if (key == null)
          return def;
-      key = replace(key);
-      String ret = this.props.getProperty(key);
+      key = this.helper.replace(key);
+      String ret = getRaw(key);
       if (ret != null) {
-         return replace(ret);
+         return this.helper.replace(ret);
       }
       return def;
    }
@@ -84,12 +62,26 @@ public class PropertiesInfo implements I_Info {
    /**
     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
     */
-    public void put(String key, String value) {
+    public void putRaw(String key, String value) {
        if (value == null)
          this.props.remove(key);
        else
           this.props.put(key, value);
     }
+
+    /**
+     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+     */
+     public void put(String key, String value) {
+        if (key != null)
+           key = this.helper.replace(key);
+        if (value != null)
+           value = this.helper.replace(value);
+        if (value == null)
+          this.props.remove(key);
+        else
+           this.props.put(key, value);
+     }
 
    /**
    * @see org.xmlBlaster.contrib.I_Info#getLong(java.lang.String, long)
@@ -97,7 +89,7 @@ public class PropertiesInfo implements I_Info {
    public long getLong(String key, long def) {
       if (key == null)
          return def;
-      String ret = this.props.getProperty(key);
+      String ret = get(key, null);
       if (ret != null) {
          try {
             return Long.parseLong(ret);
@@ -116,7 +108,7 @@ public class PropertiesInfo implements I_Info {
    public int getInt(String key, int def) {
       if (key == null)
          return def;
-      String ret = this.props.getProperty(key);
+      String ret = get(key, null);
       if (ret != null) {
          try {
             return Integer.parseInt(ret);
@@ -135,7 +127,7 @@ public class PropertiesInfo implements I_Info {
     public boolean getBoolean(String key, boolean def) {
        if (key == null)
           return def;
-       String ret = this.props.getProperty(key);
+       String ret = get(key, null);
        if (ret != null) {
           try {
              Boolean bool = new Boolean(ret);
@@ -186,21 +178,6 @@ public class PropertiesInfo implements I_Info {
          dest.add(key);
       }
       
-   }
-   
-   public static void main(String[] args) {
-      try {
-         PropertiesInfo info = new PropertiesInfo(System.getProperties());
-         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-         String line = null;
-         while ( (line=reader.readLine())!= null) {
-            System.out.println(info.replace(line));
-         }
-         reader.close();
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-      }
    }
    
 }

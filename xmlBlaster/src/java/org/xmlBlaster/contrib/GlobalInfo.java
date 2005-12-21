@@ -41,7 +41,8 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    protected PluginInfo pluginInfo;
    private Map objects = new HashMap();
    private Set propsOfOwnInterest;
-
+   private InfoHelper helper;
+   
    /**
     * Checks in the registry if such an object exitsts and if not it
     * creates one for you and intializes it.
@@ -83,6 +84,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       this.propsOfOwnInterest = propsOfOwnInterest;
       if (this.propsOfOwnInterest == null)
          this.propsOfOwnInterest = new HashSet();
+      this.helper = new InfoHelper(this);
    }
    
    /**
@@ -90,10 +92,11 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     */
    public GlobalInfo(String[] propKeysAsString) {
       this.propsOfOwnInterest = new HashSet();
-      if (propsOfOwnInterest != null) {
+      if (propKeysAsString != null) {
          for (int i=0; i < propKeysAsString.length; i++)
             this.propsOfOwnInterest.add(propKeysAsString[i]);
       }
+      this.helper = new InfoHelper(this);
    }
 
    protected abstract void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException;
@@ -135,6 +138,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
       putObject("org.xmlBlaster.engine.Global", this.global);
       doInit(global_, pluginInfo);
+      this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
    }
 
    /**
@@ -160,16 +164,41 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    }
    
    /**
+    */
+   public String getRaw(String key) {
+      if (key == null) return null;
+      try {
+         if (this.propsOfOwnInterest.contains(key)) {
+            String ret = (this.pluginInfo == null) ? null : this.pluginInfo.getParameters().getProperty(key, null);
+            String prefix = (this.pluginInfo == null) ? "" : this.pluginInfo.getPrefix(); 
+            return this.global.getProperty().get(prefix + key, ret);
+         }
+         
+         String value = this.global.get(key, null, null, this.pluginInfo);
+         if ("jdbc.drivers".equals(key) && (value == null || value.length() < 1))
+            return this.global.getProperty().get("JdbcDriver.drivers", ""); // ask xmlBlaster.properties
+         log.fine("Resolving " + key + " to '" + value + "'");
+         return value;
+      }
+      catch (XmlBlasterException e) {
+         log.warning(e.toString());
+         return null;
+      }
+   }
+
+   /**
     * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
     */
    public String get(String key, String def) {
-      if (key == null) return def;
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       
+      // hack: if in topic name is a ${..} our global tries to replace it and
+      // throws an exception, but we need it without replacement:
+      // $_{...} resolves this issue, but nicer would be:
+      //       <attribute id='db.queryMeatStatement' replace='false'>...</attribute>
       try {
-         // hack: if in topic name is a ${..} our global tries to replace it and
-         // throws an exception, but we need it without replacement:
-         // $_{...} resolves this issue, but nicer would be:
-         //       <attribute id='db.queryMeatStatement' replace='false'>...</attribute>
          if (this.propsOfOwnInterest.contains(key)) {
             String ret = (this.pluginInfo == null) ? def : this.pluginInfo.getParameters().getProperty(key, def);
             String prefix = (this.pluginInfo == null) ? "" : this.pluginInfo.getPrefix(); 
@@ -192,6 +221,10 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
     */
     public void put(String key, String value) {
+       if (key != null)
+          key = this.helper.replace(key);
+       if (value != null)
+          value = this.helper.replace(value);
        if (value == null)
           this.global.getProperty().removeProperty(key);
        else {
@@ -205,11 +238,30 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
        }
     }
 
+    /**
+     * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+     */
+     public void putRaw(String key, String value) {
+        if (value == null)
+           this.global.getProperty().removeProperty(key);
+        else {
+           try {
+              String prefix = (this.pluginInfo == null) ? "" : pluginInfo.getPrefix();  // "plugin/" + getType() + "/"
+              this.global.getProperty().set(prefix + key, value);
+           }
+           catch (Exception e) {
+              log.warning(e.toString());
+           }
+        }
+     }
+
    /**
     * @see org.xmlBlaster.contrib.I_Info#getLong(java.lang.String, long)
     */
    public long getLong(String key, long def) {
-      if (key == null) return def;
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       try {
         return this.global.get(key, def, null, this.pluginInfo);
       }
@@ -223,7 +275,9 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.contrib.I_Info#getInt(java.lang.String, int)
     */
    public int getInt(String key, int def) {
-      if (key == null) return def;
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       try {
         return this.global.get(key, def, null, this.pluginInfo);
       }
@@ -237,7 +291,9 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.contrib.I_Info#getBoolean(java.lang.String, boolean)
     */
    public boolean getBoolean(String key, boolean def) {
-      if (key == null) return def;
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       try {
         return this.global.get(key, def, null, this.pluginInfo);
       }

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.InfoHelper;
 
 /**
  * Simple container for environment settings. 
@@ -25,6 +26,7 @@ public class Info implements I_Info {
         
    Preferences prefs;
    Map objects;
+   InfoHelper helper;
    
    /**
     * Creates a simple implementation based on java's Preferences
@@ -33,29 +35,74 @@ public class Info implements I_Info {
    public Info(Preferences prefs) {
       this.prefs = prefs;
       this.objects = new HashMap();
+      this.helper = new InfoHelper(this);
+      this.helper.replaceAllEntries(this, null);
+   }
+
+   public Info(String id) {
+      if (id == null)
+         this.prefs = Preferences.userRoot();
+      else
+         this.prefs = Preferences.userRoot().node(id);
+      this.objects = new HashMap();
+      this.helper = new InfoHelper(this);
+      this.helper.replaceAllEntries(this, null);
    }
    
    /**
-   * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
-   */
-   public String get(String key, String def) {
-      return this.prefs.get(key, def);
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+    * @see org.xmlBlaster.contrib.I_Info#get(java.lang.String, java.lang.String)
     */
-    public void put(String key, String value) {
-       if (value == null)
-         this.prefs.remove(key);
-       else
-          this.prefs.put(key, value);
+    public String get(String key, String def) {
+       if (def != null)
+          def = this.helper.replace(def);
+       if (key == null)
+          return def;
+       key = this.helper.replace(key);
+       String ret = this.prefs.get(key, def);
+       if (ret != null) {
+          return this.helper.replace(ret);
+       }
+       return def;
     }
+
+    /**
+     * @see org.xmlBlaster.contrib.I_Info#getRaw(java.lang.String)
+     */
+     public String getRaw(String key) {
+        return this.prefs.get(key, null);
+     }
+
+     /**
+      * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+      */
+      public void put(String key, String value) {
+         if (key != null)
+            key = this.helper.replace(key);
+         if (value != null)
+            value = this.helper.replace(value);
+         if (value == null)
+           this.prefs.remove(key);
+         else
+            this.prefs.put(key, value);
+      }
+
+      /**
+       * @see org.xmlBlaster.contrib.I_Info#put(java.lang.String, java.lang.String)
+       */
+       public void putRaw(String key, String value) {
+          if (value == null)
+            this.prefs.remove(key);
+          else
+             this.prefs.put(key, value);
+       }
 
    /**
    * @see org.xmlBlaster.contrib.I_Info#getLong(java.lang.String, long)
    */
    public long getLong(String key, long def) {
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       return this.prefs.getLong(key, def);
    }
 
@@ -63,6 +110,9 @@ public class Info implements I_Info {
    * @see org.xmlBlaster.contrib.I_Info#getInt(java.lang.String, int)
    */
    public int getInt(String key, int def) {
+      if (key == null)
+         return def;
+      key = this.helper.replace(key);
       return this.prefs.getInt(key, def);
    }
 
@@ -70,6 +120,9 @@ public class Info implements I_Info {
     * @see org.xmlBlaster.contrib.I_Info#getBoolean(java.lang.String, boolean)
     */
     public boolean getBoolean(String key, boolean def) {
+       if (key == null)
+          return def;
+       key = this.helper.replace(key);
        return this.prefs.getBoolean(key, def);
     }
 

@@ -19,6 +19,13 @@ import java.util.Set;
 public interface I_Info {
    
    /**
+    * Returns the value associated to this key.
+    * @param key
+    * @return
+    */
+   String getRaw(String key);
+   
+   /**
     * Access a string environment setting. 
     * @param key The parameter key
     * @param def The default used if key is not found
@@ -26,6 +33,14 @@ public interface I_Info {
     */
    String get(String key, String def);
    
+   /**
+    * Put key/value to environment. This put does not modify (replace) the key, nor the value.  
+    * @param key The parameter key
+    * @param value The parameter value, if null the parameter is removed.
+    * @throws NullPointerException if <tt>key</tt> is <tt>null</tt>.
+    */
+   void putRaw(String key, String value);
+        
    /**
     * Put key/value to environment.  
     * @param key The parameter key

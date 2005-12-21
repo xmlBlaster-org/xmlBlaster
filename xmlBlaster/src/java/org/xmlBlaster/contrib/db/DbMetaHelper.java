@@ -68,6 +68,8 @@ public class DbMetaHelper {
     * @return
     */
    public String getIdentifier(String proposedName) {
+      if (proposedName == null)
+         return null;
       switch (this.caseSense) {
       case CASE_MIXED : return proposedName;
       case CASE_UPPER : return proposedName.toUpperCase();
