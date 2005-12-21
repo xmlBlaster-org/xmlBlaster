@@ -268,19 +268,21 @@ public class DbWatcher implements I_ChangeListener {
     *
     */
    private final void doPostStatement() {
-      String postStatement = this.dataConverter.getPostStatement();
-      if (this.dataConverter != null && postStatement != null) {
-         try {
-            log.fine("executing the post statement '" + postStatement + "'");
-            this.dbPool.update(postStatement);
+      if (this.dataConverter != null) {
+         String postStatement = this.dataConverter.getPostStatement();
+         if (postStatement != null) {
+            try {
+               log.fine("executing the post statement '" + postStatement + "'");
+               this.dbPool.update(postStatement);
+            }
+            catch (Exception ex) {
+               log.severe("An exception occured when cleaning up invocation with post statement '" + postStatement + ": " + ex.getMessage());
+               ex.printStackTrace();
+            }
          }
-         catch (Exception ex) {
-            log.severe("An exception occured when cleaning up invocation with post statement '" + postStatement + ": " + ex.getMessage());
-            ex.printStackTrace();
+         else {
+            log.warning("No post statement defined after having published ");
          }
-      }
-      else {
-         log.warning("No post statement defined after having published ");
       }
    }
    
