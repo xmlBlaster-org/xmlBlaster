@@ -32,7 +32,6 @@ public class DirectoryManager {
    private String ME = "DirectoryManager";
    private Global global;
    private LogChannel log;
-   private long maximumFileSize;
    private long delaySinceLastFileChange;
 
    private File directory;
@@ -53,13 +52,12 @@ public class DirectoryManager {
    
    private boolean copyOnMove;
    
-   public DirectoryManager(Global global, String name, String directoryName, long maximumFileSize, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex, boolean copyOnMove) throws XmlBlasterException {
+   public DirectoryManager(Global global, String name, String directoryName, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex, boolean copyOnMove) throws XmlBlasterException {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
          this.fileFilter = new FilenameFilter(this.global, filter, trueRegex);
       this.log = this.global.getLog("filepoller");
-      this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
       this.directory = initDirectory(null, "directoryName", directoryName);

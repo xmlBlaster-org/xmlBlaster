@@ -51,14 +51,14 @@ public class Publisher implements I_Timeout {
    /** only used as a default login name and logging */
    private String name;
    
-   private I_PluginConfig pluginConfig;
+   // private I_PluginConfig pluginConfig;
    
    public Publisher(Global globOrig, String name, I_PluginConfig pluginConfig) throws XmlBlasterException {
       ME += "-" + name;
       this.name = name;
       this.isShutdown = false;
       this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
-      this.pluginConfig = pluginConfig;
+      // this.pluginConfig = pluginConfig;
       this.log = this.global.getLog("filepoller");
       if (this.log.CALL) 
          this.log.call(ME, "constructor");
@@ -106,13 +106,12 @@ public class Publisher implements I_Timeout {
       String lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
      
       // this would throw an exception and act as a validation if something is not OK in configuration
-      MsgUnit msgUnit = new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
+      new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
       String filterType = this.global.get("filterType", "simple", null, pluginConfig);
       boolean isTrueRegex = "regex".equalsIgnoreCase(filterType);
       boolean copyOnMove = this.global.get("copyOnMove", false, null, pluginConfig);
-      this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, 
+      this.directoryManager = new DirectoryManager(this.global, name, directoryName, delaySinceLastFileChange, 
                                                    fileFilter, sent, discarded, lockExtention, isTrueRegex, copyOnMove);
-      
    }
    
    /**
