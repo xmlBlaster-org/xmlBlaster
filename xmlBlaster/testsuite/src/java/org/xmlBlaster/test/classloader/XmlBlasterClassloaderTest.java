@@ -39,6 +39,7 @@ public class XmlBlasterClassloaderTest extends TestCase {
       String path = "";
       for( int i = 0; i < urls.length; i++ ) {
          String file = urls[i].getFile();
+         // TODO: parser.jar is not used anymore, remove code below
          if( file.endsWith("parser.jar") ) {
             int pos = file.indexOf("parser.jar");
             path = urls[i].getProtocol()+"://"+file.substring(0,pos);

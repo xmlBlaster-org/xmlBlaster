@@ -149,7 +149,6 @@ Config files setup:
 
       servlets.default.initArgs=org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
       servlets.default.initArgs=org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-      servlets.default.initArgs=org.xml.sax.parser=com.sun.xml.parser.Parser
 
 
    Edit /etc/httpd/conf/jserv/jserv.properties
@@ -158,7 +157,6 @@ Config files setup:
 
       wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
       wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-      wrapper.bin.parameters=-Dorg.xml.sax.parser=com.sun.xml.parser.Parser
 
       wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb/jacorb.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb/logkit-1.2.jar
@@ -170,8 +168,6 @@ Config files setup:
       wrapper.classpath=/home/ruff/xmlBlaster/lib/junit.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/omquery.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/xtdash.jar
-      wrapper.classpath=/home/ruff/xmlBlaster/lib/parser.jar
-      wrapper.classpath=/home/ruff/xmlBlaster/lib/jaxp.jar
 
       log.file=/var/log/httpd/jserv.log
 

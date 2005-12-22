@@ -42,19 +42,6 @@ only the SNMP subagent module jax.jar is GPL only!
    com/jclark/xsl/dom/SunXMLProcessorImpl.java is changed to use jaxp
 
 
-3) jaxp.jar and parser.jar
-==========================
-   jaxp-1.1ea2 from SUN, DOM2 SAX2:
-      jaxp.jar and crimson.jar (renamed to parser.jar)
-
-   (Migrated:
-    XML parser from Sun jaxp-1.2_01 from summer 2002
-    com.sun.xml.tree.XmlDocument  ->  org.apache.crimson.tree.XmlDocument
-   )
-
-   Download http://java.sun.com/xml
-
-
 4) junit.jar
 ============
    JUNIT 3.8.1 testsuite from Kent Beck and Erich Gamma
@@ -68,15 +55,6 @@ only the SNMP subagent module jax.jar is GPL only!
           junit/runner/excluded.properties
    Added line
      excluded.9=org.apache.crimson.*
-
-
-5) collections.jar
-==================
-   Corresponds to Collections of Java2 API, for use in JDK 1.1x
-   This jar is not used, but should be included for JDK 1.1x based
-   Java clients.
-
-   Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
 
 6) jacorb.jar, idl.jar, logkit-1.2.jar and avalon-framework-4.1.5.jar

@@ -132,8 +132,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
    # JNDI, only needed for JDK 1.2, not for JDK 1.3
    CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
-   CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
    # this stuff is only needed for the demo javaclients.svg.batik
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/js.jar:${CLASSPATH}
@@ -251,7 +249,6 @@ if [ "${JAVA_HOME}" != "" ] ; then
          # JDK 1.1.x
          JDK_1_1=true
          export JDK_1_1
-         CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
       #else
          ## JDK 1.2
          #ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
@@ -287,7 +284,6 @@ fi
 
 # tinySQL, a simple DBase JDBC driver.
 # Conflicts with JacORBs idl.jar because both use java_cup
-# (tinySQL has modified parser.java)
 #CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
 
 

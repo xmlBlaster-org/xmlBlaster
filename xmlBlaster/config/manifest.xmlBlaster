@@ -3,7 +3,7 @@ Main-Class: org.xmlBlaster.Main
 Class-Path: xmlrpc.jar junit.jar omquery.jar 
  jacorb/jacorb.jar jacorb/idl.jar jacorb/logkit-1.2.jar 
  jacorb/avalon-framework-4.1.5.jar 
- xtdash.jar jaxp.jar parser.jar servlet.jar connector.jar 
+ xtdash.jar servlet.jar connector.jar 
  concurrent.jar 
  gnu-regexp.jar jzlib.jar 
  remotecons.jar 

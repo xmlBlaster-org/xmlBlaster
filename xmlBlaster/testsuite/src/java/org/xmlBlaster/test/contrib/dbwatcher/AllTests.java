@@ -5,8 +5,9 @@ import junit.framework.*;
 /**
  * TestSuite that runs all the sample tests. 
  * <pre>
+ * java ${LOG} -Ddb.url=${DB_URL} -Ddb.user=${DB_USER} -Ddb.password=${DB_PWD} -Dtest.sleepDelay=${TEST_SLEEP} ${APPL} ...
  * java -Ddb.password=secret -Djava.compiler= org.xmlBlaster.test.contrib.dbwatcher.AllTests
- * java -Ddb.password=secret -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.AllTests
+ * java -Ddb.password=secret -Ddb.url=jdbc:oracle:thin:@localhost:1521:xmlb -Ddb.user=xmlblaster -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.contrib.dbwatcher.AllTests
  * </pre>
  */
 public class AllTests {

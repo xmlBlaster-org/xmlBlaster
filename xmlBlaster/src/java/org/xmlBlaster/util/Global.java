@@ -1523,8 +1523,7 @@ public class Global implements Cloneable
     * The implementation of the SAXParser factory is decided
     * by the property <code>javax.xml.parsers.SAXParserFactory</code>
     * if available in Global, otherwise the JDK1.4 default
-    * <code>org.apache.crimson.jaxp.SAXParserFactoryImpl</code>is returned<br />
-    * For JDK < 1.4 we use this as well and deliver it in xmlBlaster/lib/jaxp.jar and parser.jar
+    * <code>org.apache.crimson.jaxp.SAXParserFactoryImpl</code>is returned.
     * </p>
     * <p>The JDK 1.5 default would be
     *    <code>com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl</code>

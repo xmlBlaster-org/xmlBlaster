@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14406 Removed parser.jar and jaxp.jar as we dropped support for JDK 1.3
+   Removed collections.jar (needed for JDK 1.1)
+
  o #14379 added DbWriter: see http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwriter.html
 
  o #14354 XmlBlaster native (jutils #14357) logging:
