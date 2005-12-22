@@ -111,8 +111,9 @@ public class AuthenticateImpl
     * @see org.xmlBlaster.engine.qos.ConnectQosServer
     * @see org.xmlBlaster.engine.qos.ConnectReturnQosServer
     */
-   public String connect(String qos_literal) throws XmlBlasterException
+   public String connect(String qos_literal) throws org.apache.xmlrpc.XmlRpcException
    {
+      try {
       String returnValue = null, returnValueStripped = null;
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
@@ -128,6 +129,10 @@ public class AuthenticateImpl
       if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
 
       return returnValueStripped;
+      }
+      catch (XmlBlasterException e) {
+         throw new org.apache.xmlrpc.XmlRpcException(99, e.getMessage());
+      }
    }
 
    public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
