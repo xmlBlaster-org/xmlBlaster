@@ -253,7 +253,7 @@ public class XmlNotPortable
          Class clazz_LSOutput = java.lang.Class.forName("org.w3c.dom.ls.LSOutput");
          Object output = method_createLSOutput.invoke(implls, params);
 
-         paramCls = new Class[] { java.io.ByteArrayOutputStream.class };
+         paramCls = new Class[] { java.io.OutputStream.class };
          params = new Object[] { out };
          java.lang.reflect.Method method_setByteStream = clazz_LSOutput.getMethod("setByteStream", paramCls);
          method_setByteStream.invoke(output, params);
@@ -263,9 +263,9 @@ public class XmlNotPortable
          java.lang.reflect.Method method_setEncoding = clazz_LSOutput.getMethod("setEncoding", paramCls);
          method_setEncoding.invoke(output, params);
 
-         paramCls = new Class[] { org.w3c.dom.Document.class, clazz_LSOutput };
+         paramCls = new Class[] { org.w3c.dom.Node.class, clazz_LSOutput };
          params = new Object[] { document, output };
-         java.lang.reflect.Method method_write = clazz_LSOutput.getMethod("write", paramCls);
+         java.lang.reflect.Method method_write = domWriter.getClass().getMethod("write", paramCls);
          method_write.invoke(domWriter, params);
       }
       catch(Exception e) {
