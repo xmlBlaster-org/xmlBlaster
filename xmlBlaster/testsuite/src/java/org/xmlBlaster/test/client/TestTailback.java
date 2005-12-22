@@ -217,7 +217,7 @@ public class TestTailback extends TestCase implements I_ConnectionStateListener
       pub.con.disconnect(null);
 
       log.info(ME, "STEP2: Start xmlBlaster server");
-      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
 
       log.info(ME, "STEP3: Start subscriber and subscribe");
       Client sub1 = doConnect("subscribe/1", null);

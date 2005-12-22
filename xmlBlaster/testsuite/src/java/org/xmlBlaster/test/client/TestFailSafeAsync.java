@@ -269,7 +269,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          }
 
          if (ii==reconnectMsg) {
-            serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+            serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
             while (true) {
                if (reconnected == true)
                   break;
