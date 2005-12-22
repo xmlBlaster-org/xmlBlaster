@@ -54,6 +54,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    private MsgInterceptor updateInterceptor;
 
    private class PluginProperties extends Properties implements I_PluginConfig {
+      private final static long serialVersionUID = 1L;
       
       public PluginProperties() {
          super();
@@ -184,7 +185,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", this.dirNameSent);
       prop.put("discarded", this.dirNameDiscarded);
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -199,7 +200,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", this.dirNameSent);
       prop.put("discarded", this.dirNameDiscarded);
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -215,7 +216,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -229,7 +230,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -255,7 +256,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
          assertTrue("an exception should occur since '" + this.dirName + "' is a file and should be a directory", false);
       }
       catch (XmlBlasterException ex) {
@@ -280,7 +281,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("sent", "Sent");
       prop.put("discarded", "Discarded");
       try {
-         Publisher publisher = new Publisher(this.global, "test", prop);
+         new Publisher(this.global, "test", prop);
          assertTrue("an exception should occur since '" + this.dirName + "' is a file and should be a directory", false);
       }
       catch (XmlBlasterException ex) {
@@ -502,7 +503,9 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
             int upd = this.updateInterceptor.waitOnUpdate(timeToWait);
             assertEquals("when writing lock file should not update", 0, upd);
          }
-         
+         else
+            this.updateInterceptor.waitOnUpdate(timeToWait);
+
          byte[] buf = new byte[size];
          for (int i=0; i < size; i++) {
             buf[i] = (byte)i;
@@ -517,7 +520,8 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
             File tmp = new File(filename);
             assertTrue("file '" + filename + "' should still exist since lock file exists", tmp.exists());
          }
-         
+         else
+            this.updateInterceptor.waitOnUpdate(timeToWait);
          if (lock != null) {
             boolean ret = lock.delete();
             assertTrue("could not remove lock file '" + filename + lockExt.substring(1) + "'", ret);
