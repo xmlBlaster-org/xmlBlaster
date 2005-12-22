@@ -711,7 +711,8 @@ cluster.node[heron]=\
       These parameters allow to configure the cluster behavior.
       </p>
       <p>The cluster manager is activated in the <code>xmlBlasterPlugins.xml</code> file,
-      take care to have activated the protocol plugins you want to use for clustering in an earlier run-level.
+      take care to have activated the protocol plugins you want to use
+      for inter-cluster communication in an earlier run-level.
       </p>
 <pre class="BORDER">
    &lt;plugin id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
