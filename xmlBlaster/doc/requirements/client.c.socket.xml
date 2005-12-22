@@ -1095,7 +1095,7 @@ Solaris:
 
          <tr>
             <td>-dispatch/connection/plugin/socket/responseTimeout</td>
-            <td>60000 (in milliseconds, defaults to one minute)</td>
+            <td>60000 (in milliseconds, defaults to 'forever')</td>
             <td>How long to block on method invocation. Throws a "resource.exhaust" exception on timeout.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
