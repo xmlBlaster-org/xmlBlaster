@@ -12,36 +12,36 @@
 
    <!-- REPLICATION MANAGER PLUGIN  -->
    <plugin id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='5' onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='65'/>
+      <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
    </plugin>
 
    <!--========== SubscriptionPersistencePlugin =============-->
    <plugin id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='10' />
-      <action do='STOP' onShutdownRunlevel='2' sequence='60'/>
+      <action do='LOAD' onStartupRunlevel='4' sequence='10' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='60'/>
    </plugin>
 
    <!--============= PROTOCOL PLUGINS ================-->
    <!-- Current implicit constraint:
         The protocol plugins must be started in
-        run level <= 3 to support the ClusterManager
+        run level <= 4 to support the ClusterManager
         See ClusterManager.java:runlevelChange() -> postInit()
     -->
 
    <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='20' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='50'/>   
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
       <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
    </plugin>
 
    <!-- Example to start a second SOCKET plugin with different listener port -->
 <!--
    <plugin id='SOCKET_UDP' className='org.xmlBlaster.protocol.socket.SocketDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='20' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='50'/>   
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
       <attribute id='startUdpListener'>true</attribute>
       <attribute id='useUdpForOneway'>true</attribute>
       <attribute id='port'>7608</attribute>
@@ -53,9 +53,9 @@
    <!-- Example to start a SOCKET plugin with compression support on different listener port -->
 <!--
    <plugin id='socket_z' className='org.xmlBlaster.protocol.socket.SocketDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='20' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='50'/>   
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
       <attribute id='port'>7606</attribute>
       <attribute id='compress/type'>zlib:stream</attribute>
    </plugin>
@@ -65,9 +65,9 @@
    <!-- Read: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL -->
 <!--
    <plugin id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='20' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='50'/>   
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
       <attribute id='SSL'>true</attribute>
       <attribute id='trustStore'>testStore</attribute>
       <attribute id='trustStorePassword'>testtest</attribute>
@@ -83,22 +83,22 @@
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='30'
+      <action do='LOAD' onStartupRunlevel='4' sequence='30'
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='2' sequence='40'/>   
+      <action do='STOP' onShutdownRunlevel='3' sequence='40'/>   
    </plugin>
 
    <!-- ProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver -->
    <plugin id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='40'/> 
-      <action do='STOP' onShutdownRunlevel='2' sequence='30'/>   
+      <action do='LOAD' onStartupRunlevel='4' sequence='40'/> 
+      <action do='STOP' onShutdownRunlevel='3' sequence='30'/>   
    </plugin>
 
    <!-- ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver -->
 <!--
    <plugin id='RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
-      <action do='LOAD' onStartupRunlevel='3' sequence='50' />
-      <action do='STOP' onShutdownRunlevel='2' sequence='20'/>   
+      <action do='LOAD' onStartupRunlevel='4' sequence='50' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='20'/>   
    </plugin>
 -->
 
@@ -128,7 +128,7 @@
    <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
 <!--
    <plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
-      <action do='LOAD' onStartupRunlevel='7' sequence='10' 
+      <action do='LOAD' onStartupRunlevel='4' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
       <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
@@ -138,6 +138,12 @@
       <attribute id='mail.subject'>XmlBlaster generated mail</attribute>
    </plugin>
 -->
+
+   <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
+   <plugin id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
+      <action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='4' sequence='5'/>   
+   </plugin>
 
    <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative.java -->
 <!--

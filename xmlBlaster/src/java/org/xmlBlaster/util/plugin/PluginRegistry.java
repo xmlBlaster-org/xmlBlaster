@@ -7,10 +7,12 @@ Comment:   Baseclass to load plugins.
 package org.xmlBlaster.util.plugin;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -107,12 +109,13 @@ public class PluginRegistry {
 
    /**
     * Returns the plugins which are implementing the interface I_Driver. 
+    * Depending on the current run level not all drivers my be visible. 
     * @return Vector with matching I_Driver entries
     */
-   public Vector getPluginsOfInterfaceI_Driver() {
+   public I_Driver[] getPluginsOfInterfaceI_Driver() {
       if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Driver()");
-      Vector ret = new Vector();
       synchronized(this) {
+         ArrayList ret = new ArrayList();
          Enumeration enumer = this.plugins.elements();
          while (enumer.hasMoreElements()) {
             Object next = enumer.nextElement();
@@ -122,8 +125,8 @@ public class PluginRegistry {
                ret.add(next);
             }
          }
+         return (I_Driver[])ret.toArray(new I_Driver[ret.size()]);
       }
-      return ret;
    }
 
    /**

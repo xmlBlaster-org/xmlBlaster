@@ -12,6 +12,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
@@ -58,7 +59,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private Timeout topicTimer;
    private Timeout telnetSessionTimer;
 
-   private boolean useCluster = true; // default
+   private boolean useCluster;
    private boolean firstUseCluster = true; // to allow caching
 
    private CbProtocolManager cbProtocolManager;
@@ -77,6 +78,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private MsgDistributorPluginManager msgDistributorPluginManager;
 
    private SubjectEntryShuffler subjectEntryShuffler;
+   
+   private SessionInfo internalSessionInfo;
 
    public void finalize() {
       if (log.TRACE) log.trace(ME, "Entering finalize");
@@ -228,6 +231,19 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
       }
       return this.runlevelManager;
+   }
+
+   public void setUseCluster(boolean useCluster) {
+      this.useCluster = useCluster;
+   }
+
+   /**
+    * Implicitely sets useCluster to true
+    * @param clusterManager
+    */
+   public void setClusterManager(ClusterManager clusterManager) {
+      this.clusterManager = clusterManager;
+      this.useCluster = (this.clusterManager != null);
    }
 
    /**
@@ -791,5 +807,18 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append("    Supported is [core], [auth], [dispatch], [mime], [corba], [xmlrpc] [admin]\n");
       return sb.toString();
    }
+
+   public SessionInfo getInternalSessionInfo() {
+      return internalSessionInfo;
+   }
+
+   /**
+    * Filled by RequestBroker.java
+    * @param internalSessionInfo
+    */
+   public void setInternalSessionInfo(SessionInfo internalSessionInfo) {
+      this.internalSessionInfo = internalSessionInfo;
+   }
+
 }
 

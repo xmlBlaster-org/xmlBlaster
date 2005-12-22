@@ -10,6 +10,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
@@ -20,6 +22,7 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
@@ -60,7 +63,7 @@ import java.util.Comparator;
  * @author xmlBlaster@marcelruff.info
  * @since 0.79e
  */
-public final class ClusterManager implements I_RunlevelListener
+public final class ClusterManager implements I_RunlevelListener, I_Plugin, ClusterManagerMBean
 {
    private String ME;
 
@@ -75,6 +78,11 @@ public final class ClusterManager implements I_RunlevelListener
 
    public String pluginLoadBalancerType;
    public String pluginLoadBalancerVersion;
+
+   private PluginInfo pluginInfo;
+   private ContextNode contextNode;
+   /** My JMX registration */
+   private Object mbeanHandle;
 
    /**
     * Map containing ClusterNode objects, the key is a 'node Id'
@@ -99,7 +107,14 @@ public final class ClusterManager implements I_RunlevelListener
    private boolean lazyConnect = false;
 
    /**
-    * You need to call postInit() after all drivers are loaded.
+    * If loaded by RunlevelManager. 
+    */
+   public ClusterManager() {
+   }
+
+   /**
+    * You need to call postInit() after all drivers are loaded. 
+    * Loaded by RequestBroker.java (hard coded)
     *
     * @param sessionInfo Internal handle to be used directly with RequestBroker
     *                    NOTE: We (the cluster code) are responsible for security checks
@@ -111,8 +126,64 @@ public final class ClusterManager implements I_RunlevelListener
       this.log = this.glob.getLog("cluster");
       this.ME = "ClusterManager" + this.glob.getLogPrefixDashed();
       this.glob.getRunlevelManager().addRunlevelListener(this);
+      this.glob.setUseCluster(true);
    }
 
+   /**
+    * Enforced by I_Plugin
+    * @return The configured type in xmlBlaster.properties, defaults to "SOCKET"
+    */
+   public String getType() {
+      return (this.pluginInfo == null) ? "cluster" : this.pluginInfo.getType();
+   }
+
+   /*
+    * The command line key prefix
+    * @return The configured type in xmlBlasterPlugins.xml, defaults to "plugin/cluster"
+   public String getEnvPrefix() {
+      return (addressServer != null) ? addressServer.getEnvPrefix() : "plugin/"+getType().toLowerCase();
+   }
+    */
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
+   }
+ 
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin).
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global globUtil, PluginInfo pluginInfo)
+      throws XmlBlasterException {
+      this.pluginInfo = pluginInfo;
+      this.ME = "ClusterManager";
+      this.glob = (org.xmlBlaster.engine.Global)globUtil.getObjectEntry("ServerNodeScope");
+      if (this.glob == null)
+         throw new XmlBlasterException(globUtil, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
+      this.log = this.glob.getLog("cluster");
+      this.sessionInfo = this.glob.getInternalSessionInfo();
+      this.glob.getRunlevelManager().addRunlevelListener(this);
+      this.glob.setClusterManager(this);
+      
+      // For JMX instanceName may not contain ","
+      String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "ClusterManager[" + getType() + vers + "]", this.glob.getContextNode());
+      this.ME = this.contextNode.getRelativeName();
+      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+
+      try {
+         postInit();
+      }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize ClusterManager.", ex);
+      }
+   }
+   
    /**
     * To initialize ClusterNode we need the addresses from the protocol drivers.
     */
@@ -237,9 +308,9 @@ public final class ClusterManager implements I_RunlevelListener
       }
 */
       //java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfGroup("protocol");
-      java.util.Vector drivers = this.glob.getPluginRegistry().getPluginsOfInterfaceI_Driver();
-      for (int i=0; i < drivers.size(); i++) {
-         I_Driver driver = (I_Driver)drivers.get(i);
+      I_Driver[] drivers = this.glob.getPluginRegistry().getPluginsOfInterfaceI_Driver();
+      for (int i=0; i < drivers.length; i++) {
+         I_Driver driver = drivers[i];
          String rawAddr = driver.getRawAddress();
          if (rawAddr != null) {
             Address addr = new Address(this.glob, driver.getProtocolId(), this.glob.getId());
@@ -247,8 +318,8 @@ public final class ClusterManager implements I_RunlevelListener
             this.myClusterNode.getNodeInfo().addAddress(addr);
          }
       }
-      if (drivers.size() > 0) {
-         if (log.TRACE) log.trace(ME, "Setting " + drivers.size() + " addresses for cluster node '" + getId() + "'");
+      if (drivers.length > 0) {
+         if (log.TRACE) log.trace(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
       }
       else {
          log.error(ME, "ClusterNode is not properly initialized, no protocol pluging - no local xmlBlaster (node=" + getId() + ") address available");
@@ -773,6 +844,8 @@ public final class ClusterManager implements I_RunlevelListener
          this.clusterNodesCache = null;
          this.clusterNodeMap.clear();
       }
+      if (this.glob != null)
+         this.glob.unregisterMBean(this.mbeanHandle);
    }
 
    /**
@@ -874,21 +947,46 @@ public final class ClusterManager implements I_RunlevelListener
       if (to == from)
          return;
 
-      if (glob.useCluster() == false)
+      if (this.glob.useCluster() == false)
          return;
 
       if (to > from) { // startup
          if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) {
-            postInit(); // Assuming the protocol drivers are initialized to deliver their addresses, currently they are started at run level 3
+            if (this.pluginInfo == null) { // Old style: Instantiate hard coded by RequestBroker.java
+               postInit(); // Assuming the protocol drivers are initialized to deliver their addresses, currently they are started at run level 3
+            }
          }
       }
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            shutdown();
+            if (this.pluginInfo == null) { // Old style: Instantiate hard coded by RequestBroker.java
+               shutdown();
+            }
          }
       }
    }
 
+   /**
+    * @return A link for JMX usage
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+
+   /* dummy to have a copy/paste functionality in jconsole */
+   public void setUsageUrl(java.lang.String url) {
+   }
+
+   /**
+    * @return For JMX usage
+    */
+   public String usage() {
+      return staticUsage();
+   }
+
+   public boolean isShutdown() {
+      return this.clusterNodeMap.size() == 0;
+   }
 
    /**
     * Command line usage.
@@ -905,11 +1003,10 @@ public final class ClusterManager implements I_RunlevelListener
     * java org.xmlBlaster.Main -property.verbose 2
     * </pre>
     */
-   public static String usage()
+   public static String staticUsage()
    {
       StringBuffer sb = new StringBuffer(512);
-      sb.append("Cluster support:\n");
-      sb.append("   -cluster            Switch cluster support to true or false [true].\n");
+      sb.append("Cluster support (activated in xmlBlasterPlugins.xml):\n");
       sb.append("   -cluster.node.id    A unique name for this xmlBlaster instance, e.g. 'com.myCompany.myHost'.\n");
       sb.append("                       If not specified a unique name is chosen and displayed on command line.\n");
       sb.append("   ...                 See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html\n");

@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current subversion
 ==================
 
+ o #14422 Changed ClusterManager to be configured in xmlBlasterPlugins.xml
+   Please update xmlBlasterPlugins.xml
+   Removed the now obsolete '-cluster true' parameter.
+   Changed protocol plugins to startup in runlevel 4 instead of 3
+
  o #14419 Fixed reflection code for JDK 1.5 in XML dom.write()
 
  o #14412 C client library: Changed responseTimeout from one minute to unlimited

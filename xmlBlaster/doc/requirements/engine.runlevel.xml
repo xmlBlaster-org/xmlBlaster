@@ -39,21 +39,24 @@
          <tr>
             <td><b>STANDBY</b></td>
             <td><b>3</b></td>
-            <td>All configured protocol plugins (for example IOR and SOCKET) are alive
-                but only administrative access from outside is possible</td>
-            <td>XmlBlaster has sync'd all databases and just waits, it is ready to be killed or reactivated</td>
+            <td>Only administrative access from outside is possible</td>
+            <td>XmlBlaster has sync'd all databases and just waits, it is ready to be killed or reactivated.
+            You can access xmlBlaster with JMX or telnet.</td>
          </tr>
          <tr>
             <td>STANDBY_POST</td>
             <td>4</td>
-            <td>The cluster manager is ready</td>
-            <td>The cluster manager needs the protocol plugins from run level 3 to configure itself</td>
+            <td>All configured protocol plugins (for example IOR and SOCKET) are alive
+                but only administrative access from outside is possible</td>
+            <td>The Availability checker prohibits operational client access.</td>
          </tr>
          <tr>
             <td>CLEANUP_PRE</td>
             <td>5</td>
-            <td>Delivered services and your native service plugins are activated</td>
-            <td>If you register your own native plugins this runlevel is a good place to do</td>
+            <td>The cluster manager is ready.<br />Delivered services and your native service plugins are activated.
+            </td>
+            <td>The cluster manager needs the protocol plugins from run level 4 to configure itself.<br />
+            If you register your own native plugins this runlevel is a good place to do</td>
          </tr>
          <tr>
             <td><b>CLEANUP</b></td>
