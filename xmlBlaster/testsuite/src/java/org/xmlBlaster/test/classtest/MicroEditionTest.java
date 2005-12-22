@@ -291,12 +291,18 @@ public class MicroEditionTest extends TestCase {
          BufferedInputStreamMicro bism = new BufferedInputStreamMicro(new ByteArrayInputStream(buf));
          BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buf1)));
          while (true) {
-            String line1 = br.readLine();
-            if (line1 == null) break;
-            String line2 = bism.readLine();
-            if (line2 == null) assertTrue("second line is unexpectedly null", false);
-            assertEquals("wrong content", line1, line2);
+            String referenceLine = br.readLine(); // of the normal reader
+            if (referenceLine == null) 
+               break;
+            String lineToCheck = bism.readLine(); // must be the same as the corresponding reference since we expect same behaviour
+            if (lineToCheck == null) 
+               assertTrue("the line to be checked is unexpectedly null", false);
+            assertEquals("wrong content", referenceLine, lineToCheck);
          }
+         
+         String lineToCheck = bism.readLine(); // must be the same as the corresponding reference since we expect same behaviour
+         assertTrue("The line to check must also be null", lineToCheck == null);
+         
          this.log.info(ME, "testReadLine successfully completed");
       }
       catch (Exception ex) {
