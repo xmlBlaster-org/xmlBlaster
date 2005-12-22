@@ -11,7 +11,6 @@ import org.jutils.log.LogChannel;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
-import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -83,7 +82,7 @@ public class JmxLogLevel implements DynamicMBean {
                                                 "Cannot invoke a getter of " + dClassName + " with null attribute name");
       }
 
-      attribute_name = this.glob.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      attribute_name = Global.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
 
       try {
          return new Boolean(this.glob.getLogLevel(attribute_name));
@@ -111,7 +110,7 @@ public class JmxLogLevel implements DynamicMBean {
                                              "Cannot invoke the setter of " + dClassName + " with null attribute name");
       }
 
-      name = this.glob.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      name = Global.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
 
       Boolean value = (Boolean)attribute.getValue();
       if (log.TRACE) log.trace(ME, "Setting log level of name=" + name + " to '" + value + "'");
@@ -141,7 +140,7 @@ public class JmxLogLevel implements DynamicMBean {
       
       for (int i=0 ; i<attributeNames.length ; i++){
          try {        
-            Object value = getAttribute((String) attributeNames[i]);     
+            Object value = getAttribute(attributeNames[i]);     
             resultList.add(new Attribute(attributeNames[i],value));
          } catch (Exception e) {
             e.printStackTrace();

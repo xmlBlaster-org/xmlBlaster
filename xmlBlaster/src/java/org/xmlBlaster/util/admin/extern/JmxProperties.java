@@ -80,7 +80,7 @@ public class JmxProperties implements DynamicMBean {
          throw new RuntimeOperationsException(new IllegalArgumentException("Attribute name cannot be null"), 
                                                 "Cannot invoke a getter of " + dClassName + " with null attribute name");
       }
-      attribute_name = this.glob.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      attribute_name = Global.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
       String value = this.glob.getProperty().get(attribute_name, (String)null);
       if (value != null) {
          return value;
@@ -105,7 +105,7 @@ public class JmxProperties implements DynamicMBean {
          throw new RuntimeOperationsException(new IllegalArgumentException("Attribute name cannot be null"), 
                                              "Cannot invoke the setter of " + dClassName + " with null attribute name");
       }
-      name = this.glob.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      name = Global.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
 
       if (isReadOnly(name)) {
          throw(new AttributeNotFoundException("Cannot set attribute "+ name +" because it is read-only"));
@@ -150,7 +150,7 @@ public class JmxProperties implements DynamicMBean {
       
       for (int i=0 ; i<attributeNames.length ; i++){
          try {        
-            Object value = getAttribute((String) attributeNames[i]);     
+            Object value = getAttribute(attributeNames[i]);     
             resultList.add(new Attribute(attributeNames[i],value));
          } catch (Exception e) {
             e.printStackTrace();
@@ -257,7 +257,6 @@ public class JmxProperties implements DynamicMBean {
 
       ArrayList tmp = new ArrayList(props.size());
 
-      int i=0;
       for (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
          String name = (String) e.nextElement();
          boolean isWritable = !isReadOnly(name);
