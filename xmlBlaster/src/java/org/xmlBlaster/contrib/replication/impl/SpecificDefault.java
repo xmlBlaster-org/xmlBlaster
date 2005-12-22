@@ -1011,9 +1011,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
                "testlog.properties");
          LogManager.getLogManager().readConfiguration();
 
-         Preferences prefs = Preferences.userRoot();
-         prefs.node(ReplicationConstants.CONTRIB_PERSISTENT_MAP).clear();
-         prefs.clear();
+         // Preferences prefs = Preferences.userRoot();
+         // prefs.node(ReplicationConstants.CONTRIB_PERSISTENT_MAP).clear();
+         // prefs.clear();
 
          // ---- Database settings -----
          if (System.getProperty("jdbc.drivers", null) == null) {
