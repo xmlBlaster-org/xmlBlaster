@@ -26,7 +26,7 @@ ConnectQosFactory::ConnectQosFactory(Global& global)
      queuePropertyFactory_(global),
      addressFactory_(global),
 //     securityQos_(global),
-//     serverRef_(Global::getDefaultProtocol()), //"IOR"),
+//     serverRef_(Global::getDefaultProtocol()), //"SOCKET"),
      clientProperty_(0),
      connectQos_((ConnectQos*)0)
 {

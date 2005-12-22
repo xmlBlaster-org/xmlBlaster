@@ -410,7 +410,7 @@ void SocketDriver::initialize(const string& name, I_Callback &client)
 
 string SocketDriver::getCbProtocol()
 {
-    return "SOCKET";
+    return Constants::SOCKET; // "SOCKET";
 }                             
 
 string SocketDriver::getCbAddress()
@@ -490,7 +490,7 @@ bool SocketDriver::disconnect(const DisconnectQos& qos)
 
 string SocketDriver::getProtocol()
 {
-   return "SOCKET";
+   return Constants::SOCKET; // "SOCKET";
 }
 
 /** Called when going to POLLING mode */

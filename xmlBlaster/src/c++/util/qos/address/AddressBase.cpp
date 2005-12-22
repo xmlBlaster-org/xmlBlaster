@@ -25,7 +25,7 @@ using namespace org::xmlBlaster::util;
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 const int    DEFAULT_port               = 3412;
-const string DEFAULT_type               = Global::getDefaultProtocol(); //"IOR";
+const string DEFAULT_type               = Global::getDefaultProtocol(); //"SOCKET";
 const string DEFAULT_version            = "1.0";
 const long   DEFAULT_collectTime        = 0;
 const int    DEFAULT_burstModeMaxEntries= 1;

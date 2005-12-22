@@ -80,12 +80,12 @@ I_XmlBlasterConnection& DispatchManager::getPlugin(const string& instanceName, c
    if (log_.trace())
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    
-   if (type == "IOR") {
+   if (type == Constants::IOR) {
 #     ifdef COMPILE_CORBA_PLUGIN
       return org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(&global_);
 #     endif
    }
-   else if (type == "SOCKET") {
+   else if (type == Constants::SOCKET) {
 #     ifdef COMPILE_SOCKET_PLUGIN
       return org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).getDriverInstance(&global_);
 #     endif

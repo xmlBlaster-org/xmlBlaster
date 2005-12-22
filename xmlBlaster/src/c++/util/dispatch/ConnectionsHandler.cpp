@@ -67,7 +67,7 @@ ConnectionsHandler::~ConnectionsHandler()
    }
    */
    Lock lock(connectMutex_);
-   string type = (connectQos_.isNull()) ? "SOCKET" : connectQos_->getAddress()->getType();
+   string type = (connectQos_.isNull()) ? Global::getDefaultProtocol() : connectQos_->getAddress()->getType(); // "SOCKET"
    string version = "1.0"; // currently hardcoded
    if (connection_) {
       global_.getDispatchManager().releasePlugin(instanceName_, type, version);

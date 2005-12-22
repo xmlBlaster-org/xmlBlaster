@@ -392,6 +392,9 @@ string& Global::getCompiler()
 }
 
 
+/**
+ * Is overwritten be environment, for example  "-protocol IOR"
+ */
 string& Global::getDefaultProtocol()
 {
 #  if COMPILE_SOCKET_PLUGIN

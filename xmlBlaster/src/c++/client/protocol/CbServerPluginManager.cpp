@@ -88,13 +88,13 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
    if (log_.call()) log_.call(ME, "::releasePlugin");
    if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
-   if (type == "IOR") {
+   if (type == Constants::IOR) {
 #     ifdef COMPILE_CORBA_PLUGIN
       org::xmlBlaster::client::protocol::corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(&global_);
       return;
 #     endif
    }
-   else if (type == "SOCKET") {
+   else if (type == Constants::SOCKET) {
 #     ifdef COMPILE_SOCKET_PLUGIN
       org::xmlBlaster::client::protocol::socket::SocketDriverFactory::getFactory(global_).killDriverInstance(&global_);
       return;
@@ -132,7 +132,7 @@ int main(int args, char* argv[])
     glob.initialize(args, argv);
     CbServerPluginManager manager = glob.getCbServerPluginManager();
     try {
-       I_CallbackServer& cbServer = manager.getPlugin("IOR", "1.0");
+       I_CallbackServer& cbServer = manager.getPlugin(Constants::IOR, "1.0");
     }
     catch (XmlBlasterException &ex) {
        cout << ex.toXml() << endl;
@@ -140,7 +140,7 @@ int main(int args, char* argv[])
        assert(0);
     }
     try {
-       I_CallbackServer& cbServer = manager.getPlugin("SOCKET", "1.0");
+       I_CallbackServer& cbServer = manager.getPlugin(Constants::SOCKET, "1.0");
        cout << "The socket protocol is not implemented yet" << endl;
        assert(0);
     }

@@ -138,7 +138,7 @@ namespace org {
        * @return "IOR"
        * @enforcedBy I_Plugin
        */
-      std::string getType() { static std::string type = "IOR"; return type; }
+      std::string getType() { static std::string type = org::xmlBlaster::util::Constants::IOR; return type; }
 
       /**
        * Get the version of the plugin. 

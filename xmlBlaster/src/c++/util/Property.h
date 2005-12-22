@@ -124,7 +124,7 @@ namespace util {
        * Initialize with the given key/value std::map. 
        * NOTE: You have to call loadPropertyFile() separately
        * @param propertyMap A std::map which contains key and values pairs,
-            *                    for example key="protocol" and value="SOCKET"
+       *                    for example key="protocol" and value="SOCKET"
        */
       Property(MapType propMap);
 
