@@ -50,7 +50,7 @@ public class TestPtPPersistent extends TestCase  {
    private Global glob;
    private LogChannel log;
 
-   private int serverPort = 7604;
+   private int serverPort = 7674;
    private EmbeddedXmlBlaster serverThread;
 
    private MsgInterceptor updateInterceptor;
@@ -256,7 +256,7 @@ public class TestPtPPersistent extends TestCase  {
 
       // stop and restart the server
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+      this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(this.serverPort));
 
       // reconnect to server (for the destination, the publisher never left) 
       this.destination = new PtPDestination(this.glob, "joe/1");
