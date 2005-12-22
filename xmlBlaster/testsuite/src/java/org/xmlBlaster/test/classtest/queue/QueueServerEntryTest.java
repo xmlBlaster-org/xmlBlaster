@@ -1,39 +1,31 @@
 package org.xmlBlaster.test.classtest.queue;
 
 import org.jutils.log.LogChannel;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.PublishKey;
 
-import org.xmlBlaster.util.queuemsg.DummyEntry;
-
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.util.queue.I_Queue;
-import java.lang.reflect.Constructor;
-import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
-import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -53,11 +45,6 @@ public class QueueServerEntryTest extends TestCase {
    private String ME = "QueueServerEntryTest";
    protected Global glob;
    protected LogChannel log;
-   private StopWatch stopWatch = new StopWatch();
-
-   private int numOfQueues = 10;
-   private int numOfMsg = 10000;
-   private int sizeOfMsg = 100;
 
    private I_Queue queue = null;
 
@@ -76,9 +63,6 @@ public class QueueServerEntryTest extends TestCase {
       this.glob        = glob;
       ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
       log = glob.getLog("test");
-      this.numOfQueues = glob.getProperty().get("queues", 2);
-      this.numOfMsg    = glob.getProperty().get("entries", 100);
-      this.sizeOfMsg   = glob.getProperty().get("sizes", 10);
       this.count       = currImpl;
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
@@ -146,15 +130,10 @@ public class QueueServerEntryTest extends TestCase {
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "************ Starting updateEntry Test");
-      long t0 = System.currentTimeMillis();
 
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
       this.queue.initialize(queueId, prop);
       this.queue.clear();
-
-      long t1 = System.currentTimeMillis() - t0;
-
-      t0 = System.currentTimeMillis();
 
       try {
 
@@ -234,8 +213,6 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
          assertEquals("The content of the message unit is different ", new String(retMsgUnit.getContent()), new String(content));
          //assertEquals("The qos of the message unit is different ", retMsgUnit.getQosData().isPersistent(), publishQosServer.isPersistent());
-         String oldXml = publishQosServer.toXml().trim();
-         String newXml = retMsgUnit.getQosData().toXml().trim();
          //assertEquals("The qos of the message unit is different OLD="+oldXml+" NEW="+newXml, oldXml, newXml);
 
          assertEquals("msgQosData check failure: getSubscriptionId      ", msgQosData.getSubscriptionId(), retMsgQosData.getSubscriptionId());
@@ -284,14 +261,9 @@ public class QueueServerEntryTest extends TestCase {
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       this.log.info(ME, "********* Starting historyEntry Test");
-      long t0 = System.currentTimeMillis();
-
       StorageId queueId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
       this.queue.initialize(queueId, prop);
       this.queue.clear();
-
-      long t1 = System.currentTimeMillis() - t0;
-      t0 = System.currentTimeMillis();
 
       try {
 
@@ -358,7 +330,6 @@ public class QueueServerEntryTest extends TestCase {
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
          assertEquals("The content of the message unit is different ", new String(retMsgUnit.getContent()), new String(content));
-         String oldXml = publishQosServer.toXml().trim();
          //oldXml = oldXml.substring(oldXml.indexOf("remainingLife=");
          //String newXml = retMsgUnit.getQosData().toXml().trim();  TODO: strip remaining life first
          //assertEquals("The qos of the message unit is different OLD="+oldXml+" NEW="+newXml, oldXml, newXml); TODO
