@@ -23,6 +23,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * and the receiver responds with an ACK message.
  * <p />
  * Invoke: java HelloWorld5
+ * <p />
+ * Note: This does not work with our 'email' protocol unless we configure
+ *       two separate email accounts for each client connection.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld5

@@ -20,14 +20,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * Another 'delegate' client, for example started as a native xmlBlaster plugin,
  * logs in with the same name and does for example all subscribes - as a delegate.
  * It then just disappears without disconnecting - thus leaving the session alive.
- * Arriving messages will then be routed to our dump HelloWorld7.
+ * Arriving messages will then be routed to our dumb HelloWorld7.
  * <p />
  * Invoke:
  * <pre>
  * # 1. Start the server and setup an email MTA as described in the protocol.email requirement
  * ...
  *  
- * # 2. Start our dump email client, it will wait for messages 
+ * # 2. Start our dumb email client, it will wait for messages 
  * java HelloWorld7 -protocol email -session.name joe/1 -dispatch/connection/pingInterval 0
  *  
  * # 3.Start a delegate, hit enter to subscribe and than kill it with Ctrl-C (to not disconnect):
