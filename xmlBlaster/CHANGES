@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Current subversion
-==================
+Changes for 1.1 [2005-12-22] #14429 "Xmas release"
+==================================================
 
  o #14422 Changed ClusterManager to be configured in xmlBlasterPlugins.xml
    Please update xmlBlasterPlugins.xml
