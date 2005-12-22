@@ -22,6 +22,8 @@ package org.xmlBlaster.util.def;
  */
 public final class PriorityEnum implements java.io.Serializable
 {
+   private static final long serialVersionUID = -7570828192018997712L;
+
    private final int priority;
 
    private PriorityEnum(int priority) {
@@ -212,6 +214,7 @@ public final class PriorityEnum implements java.io.Serializable
       return new SerializedForm(this.getInt());
    }
    private static class SerializedForm implements java.io.Serializable {
+      private static final long serialVersionUID = -2592650624578504586L;
       int prio;
       SerializedForm(int prio) { this.prio = prio; }
       Object readResolve() throws java.io.ObjectStreamException {
