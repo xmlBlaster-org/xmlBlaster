@@ -85,13 +85,12 @@ CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
 #CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver,classpath=soap/jdom.jar:soap/log4j-core.jar:soap/log4j.jar:soap/saw.jar:soap/soap.jar:soap/xerces.jar
 CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
-CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              mail.smtp.from=xmlBlaster@localhost,\
                              compress/type=zlib,\
-                             compress/minSize=200,\
-                             mail.subject=Server generated email,\
-                             parserClass=org.xmlBlaster.util.xbformat.XbfParser
-#                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+                             compress/minSize=1200,\
+                             mail.subject=Server generated callback,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+#                             parserClass=org.xmlBlaster.util.xbformat.XbfParser
 #plugin/email/responseTimeout=300000
 #plugin/email/pingResponseTimeout=60000
 #plugin/email/updateResponseTimeout=30000000

@@ -23,12 +23,6 @@
    </plugin>
 
    <!--============= PROTOCOL PLUGINS ================-->
-   <!-- Current implicit constraint:
-        The protocol plugins must be started in
-        run level <= 4 to support the ClusterManager
-        See ClusterManager.java:runlevelChange() -> postInit()
-    -->
-
    <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
@@ -109,7 +103,7 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='7' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
-      <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost</attribute>
+      <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25</attribute>
    </plugin>
 -->
 
@@ -128,13 +122,13 @@
    <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
 <!--
    <plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
-      <action do='LOAD' onStartupRunlevel='4' sequence='10' 
+      <action do='LOAD' onStartupRunlevel='7' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
       <attribute id='mail.smtp.from'>xmlBlaster@localhost</attribute>   
       <attribute id='compress/type'>zlib</attribute>
-      <attribute id='compress/minSize'>200</attribute>
-      <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XbfParser</attribute>
+      <attribute id='compress/minSize'>2000</attribute>
+      <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser</attribute>
       <attribute id='mail.subject'>XmlBlaster generated mail</attribute>
    </plugin>
 -->

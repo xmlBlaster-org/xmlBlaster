@@ -213,8 +213,8 @@ implements I_Plugin, I_Timeout,
 
       boolean activate = glob.get("activate", true, null, this.pluginConfig);
 
-      // Default is 0 which is off
-      this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 0, null,
+      // Default is 20 sec, use 0 to switch off
+      this.holdbackExpireTimeout = glob.get("holdbackExpireTimeout", 20000, null,
             this.pluginConfig);
 
       setSessionProperties(null, glob, this.pluginConfig);
@@ -1000,16 +1000,21 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
             EmailData[] msgs = pop3Client.readInbox(Pop3Driver.CLEAR_MESSAGES);
             long diff = System.currentTimeMillis() - start;
 
-            for (int i = 0; i < msgs.length; i++)
+            for (int i = 0; i < msgs.length; i++) {
                System.out.println(msgs[i].toXml(true));
+            }
             if (msgs.length == 0) {
                System.out.println("[" + pop3Client.getPop3Url()
-                     + "] No mails over POP3 found");
+                     + "] No mails over POP3 found (" + diff + " millis)");
+            }
+            else {
+               System.out.println("[" + pop3Client.getPop3Url()
+                     + "] (" + diff + " millis)");
             }
             if (!receivePolling)
                break;
             int ch = Global.waitOnKeyboardHit("[" + pop3Client.getPop3Url()
-                  + "] Hit a key for next polling (" + diff + " millis) >");
+                  + "] Hit a key for next polling ('q' to quit) >");
             if (ch == 'q')
                break;
          }

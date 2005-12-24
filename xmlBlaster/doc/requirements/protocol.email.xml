@@ -145,6 +145,60 @@ part comes online again.
 
 
 <example type="HTML">
+<p>To get you going quickly we provide a step by step example:</p>
+<ol>
+<li>Setup a mail transfer agent (MTA) or use an existing on your network</li>
+<li>Setup your preferred email application GUI to reach the MTA</li>
+<li>Configure xmlBlaster and start it</li>
+<li>Use your email application to send messages to xmlBlaster</li>
+</ol>
+
+    <h2 class="celltitel">Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
+    <a name="jamesSetup"></a>
+    <p>The fastest way for a test environment is to use the James MTA http://james.apache.org. 
+    Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
+    </p>
+    <p>Download james, unpack it and start it:</p>
+<pre class="BORDER">
+tar xzvf /opt/download/james-2.2.0.tar.gz
+cd james-2.2.0/bin
+# Change to be 'root' to have access to ports 25 (SMTP) and 110 (POP3)
+./run.sh
+</pre>
+
+    <p>Configure some users, here we use <code>xmlBlaster</code> for the server and <code>demo</code> for the client:</p>
+<pre class="BORDER">
+telnet localhost 4555
+
+# Login as 'root' with password 'root'
+
+# Add users demo and xmlBlaster:
+adduser xmlBlaster xmlBlaster
+ User xmlBlaster added
+
+adduser demo demo
+ User demo added
+
+listusers
+ Existing accounts 2
+ user: demo
+ user: xmlBlaster
+
+quit
+</pre>
+  <p>Now our MTA is ready for testing.</p>
+
+  <p><b>Hint:</b> On UNIX and Linux you can avoid starting james as root.</p>
+  <p>
+  Just change the ports to be above 1000, you could change the SMTP port from 25 -> 8025
+  and the POP3 port from 110 -> 8110.<br />
+  Edit <code>james-2.2.0/apps/james-plus/SAR-INF/config.xml</code>
+  to do this and remove the nntp service.
+  Additionally add those ports to <code>xmlBlasterPlugins.xml</code>
+  and <code>xmlBlaster.properties</code>, here is an example for SMTP <code>smtp://xmlBlaster:xmlBlaster@localhost:8025</code>
+  and for POP3 <code>pop3://xmlBlaster:xmlBlaster@localhost:8110/INBOX</code>
+  </p>
+
 <p class="celltitel">Simple command line example to test your MTA</p>
 <p>To test access to your MTA you can invoke our SMTP and POP3 implementation standalone on the command line.
 This can be usefull to test if your connection URL (user name, password etc) is correct:
@@ -153,7 +207,7 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 1. Start a command line poller for user 'xmlBlaster':
 </p>
 <code>
-   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
+   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
 </code>
 
 <p>
@@ -161,12 +215,14 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 </p>
 
 <code>
-  java -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+  java -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost:25 org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
 </code>
-</example>
+<p>
+
+Check in directory <code>james-2.2.0/apps/james/var/mail/inboxes/xmlBlaster</code>
+</p>
 
 
-<example type="HTML" lang="any">
 <p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc)</p>
 <p>After having a configured james MTA you can play with your email client software
 and send manually emails to xmlBlaster.</p>
@@ -174,13 +230,35 @@ and send manually emails to xmlBlaster.</p>
 <p>The first step is to setup the server side configuration:</p>
 <pre class="BORDER">
 xmlBlasterPlugins.xml:
-   &lt;!-- You need an acticated Pop3Driver and SnmpClient and additionally: -->
+   &lt;!-- General EMAIL SMTP client service -->
+   &lt;!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   &lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+      &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+      &lt;attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25&lt;/attribute>
+   &lt;/plugin>
+
+   &lt;!-- General EMAIL POP3 polling service -->
+   &lt;!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   &lt;plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+      &lt;action do='LOAD' onStartupRunlevel='4' sequence='9' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
+      &lt;attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX&lt;/attribute>
+      &lt;attribute id='pop3PollingInterval'>500&lt;/attribute>
+   &lt;/plugin>
+
+   &lt;!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
    &lt;plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
       &lt;action do='LOAD' onStartupRunlevel='7' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
       &lt;action do='STOP' onShutdownRunlevel='7' sequence='10'/>
       &lt;attribute id='mail.smtp.from'>xmlBlaster@localhost&lt;/attribute>   
+      &lt;attribute id='compress/type'>zlib&lt;/attribute>
+      &lt;attribute id='compress/minSize'>2000&lt;/attribute>
       &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
+      &lt;attribute id='mail.subject'>XmlBlaster generated mail&lt;/attribute>
    &lt;/plugin>
 </pre>
 
@@ -191,9 +269,23 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
                              parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 </pre>
 
+<pre class="BORDER">
+Start xmlBlaster:
+
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron
+</pre>
+
 <p>Now we are ready to send an XmlScript to xmlBlaster,
-the following sequence shows a connect, two publishes, one subscribe and a disconnect:
+the following sequence shows a connect, two publishes, one subscribe and a disconnect.
+Please take it with your mouse and paste it into your email application window.
+Use as TO: destination <code>xmlBlaster@localhost</code>, you can
+leave the SUBJECT: empty.
 </p> 
+<p>Note: If using james configured as described above you need to setup
+your email GUI application with a new account <code>demo</code>
+with password <code>demo</code>. Setup the outgoing SMTP to the above james <code>localhost:25</code>
+and configure to poll on james for incoming mails with POP3 on <code>localhost:110</code>.
+Take care to send the email as plain text only (not with HTML markup!).</p>
 <pre class="BORDER">
 &lt;xmlBlaster>
   &lt;connect>
@@ -208,7 +300,7 @@ the following sequence shows a connect, two publishes, one subscribe and a disco
       &lt;/queue>
       &lt;queue relating='callback' maxEntries='5' maxEntriesCache='2'>
          &lt;callback type="email" pingInterval='0' retries='-1'>
-           blue8@localhost
+           demo@localhost
          &lt;/callback>
       &lt;/queue>
     &lt;/qos>
@@ -358,51 +450,6 @@ Content-Disposition: attachment; filename=messageId.mid
 </example>
    
     <configuration where="server">
-    <h2 class="celltitel">Setup a POP3 and SMTP mail transfer agent (MTA)</h2>
-    <a name="jamesSetup"></a>
-    <p>The fastest way for a test environment is to use the James MTA http://james.apache.org. 
-    Here are the steps for a running test environment (runs fine on Windows, Unix and Linux):
-    </p>
-    <p>Download james, unpack it and start it:</p>
-<pre class="BORDER">
-tar xzvf /opt/download/james-2.2.0.tar.gz
-cd james-2.2.0/bin
-# Change to be 'root' to have access to ports 25 (SMTP) and 110 (POP3)
-./run.sh
-</pre>
-
-    <p>Configure some users, here we use <code>xmlBlaster</code> for the server and <code>demo</code> for the client:</p>
-<pre class="BORDER">
-telnet localhost 4555
-
-# Login as 'root' with password 'root'
-
-# Add users demo and xmlBlaster:
-adduser xmlBlaster xmlBlaster
- User xmlBlaster added
-
-adduser demo demo
- User demo added
-
-listusers
- Existing accounts 2
- user: demo
- user: xmlBlaster
-
-quit
-</pre>
-  <p>Now our MTA is ready for testing.</p>
-
-  <p><b>Hint:</b> On UNIX and Linux you can avoid starting james as root.</p>
-  <p>
-  Just change the ports to be above 1000, you could change the SMTP port from 25 -> 8025
-  and the POP3 port from 110 -> 8110.<br />
-  Edit <code>james-2.2.0/apps/james-plus/SAR-INF/config.xml</code>
-  to do this and remove the nntp service.
-  Additionally add those ports to <code>xmlBlasterPlugins.xml</code>
-  and <code>xmlBlaster.properties</code>, here is an example for SMTP <code>smtp://xmlBlaster:xmlBlaster@localhost:8025</code>
-  and for POP3 <code>pop3://xmlBlaster:xmlBlaster@localhost:8110/INBOX</code>
-  </p>
 
   <h2 class="celltitel">Debugging</h2>
 <pre class="BORDER">

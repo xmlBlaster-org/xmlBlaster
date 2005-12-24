@@ -1,6 +1,15 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for current svn
+=======================
+
+ o #14429 Email protocol
+   Bugfix for loop protection
+   Changed configuration defaults to be human readable
+   Changed holdbackExpireTimeout default to 20000 milli seconds
+
+
 Changes for 1.1 [2005-12-22] #14429 "Xmas release"
 ==================================================
 

@@ -517,7 +517,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    
    protected LoopProtection[] getLoopProtections() {
       synchronized (this.senderLoopProtectionMap) {
-         return (LoopProtection[])this.senderLoopProtectionMap.entrySet().toArray(new LoopProtection[this.senderLoopProtectionMap.size()]);
+         return (LoopProtection[])this.senderLoopProtectionMap.values().toArray(new LoopProtection[this.senderLoopProtectionMap.size()]);
       }
    }
 
