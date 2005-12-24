@@ -219,12 +219,13 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 </code>
 <p>
 
-Check in directory <code>james-2.2.0/apps/james/var/mail/inboxes/xmlBlaster</code>
+For debugging, check in directory <code>james-2.2.0/apps/james/var/mail/inboxes/xmlBlaster</code>
+for any pending and not yet delivered emails.
 </p>
 
 
-<p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc)</p>
-<p>After having a configured james MTA you can play with your email client software
+<p class="celltitel">Sending mails manually from your email client (outlook, thunderbird etc.)</p>
+<p>After having a configured james MTA you can play with your email client software (outlook, thunderbird etc.)
 and send manually emails to xmlBlaster.</p>
 
 <p>The first step is to setup the server side configuration:</p>
