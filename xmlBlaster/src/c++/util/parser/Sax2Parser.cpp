@@ -96,7 +96,7 @@ void Sax2Parser::parse(const string &xmlData)
       const string &xmlData1 = xmlData;
       //log_.info(ME, "Parsing now: " + xmlData1);
       
-      MemBufInputSource inSource((const XMLByte*)xmlData1.c_str(), xmlData1.size(), "xmlBlaster", false);
+      MemBufInputSource inSource((const XMLByte*)xmlData1.c_str(), (unsigned int)(xmlData1.size()), "xmlBlaster", false);
       
       XMLCh tempStr[100];
       XMLString::transcode(encoding_.c_str(), tempStr, 99);
@@ -258,8 +258,8 @@ string Sax2Parser::getLocationString(const SAXParseException &ex)
   string systemId = getStringValue(ex.getSystemId());
   string str;
   if (systemId != "") {
-    int index = systemId.find_last_of('/');
-    if (index != -1) systemId = systemId.substr(index + 1);
+    string::size_type index = systemId.find_last_of('/');
+    if (index != string::npos) systemId = systemId.substr(index + 1);
     str = systemId + ":";
   }
   string message = Sax2Parser::getStringValue(ex.getMessage(), true);
