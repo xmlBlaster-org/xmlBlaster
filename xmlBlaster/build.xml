@@ -303,6 +303,7 @@ TODO
    <!-- Compile Intel C++ -->
    <compiler id="icc" name="icc" if="use-icc">
       <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="-fPIC" />
       <compilerarg value="-Wall" />
       <compilerarg value="-wd810" />
       <compilerarg value="-wd981" />
