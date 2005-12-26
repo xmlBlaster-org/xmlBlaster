@@ -161,7 +161,7 @@ bool KeyData::isDomain() const
 
 int KeyData::size() const
 {
-   return toXml().length();
+   return (int)toXml().length();
 }
 
 KeyData* KeyData::getClone() const

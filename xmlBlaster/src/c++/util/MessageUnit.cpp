@@ -191,7 +191,7 @@ std::string MessageUnit::getContentStr() const {
    if (len_ < 1) {
       return "";
    }
-   return std::string(reinterpret_cast<const char *>(content_), static_cast<unsigned int>(len_));
+   return std::string(reinterpret_cast<const char *>(content_), static_cast<std::string::size_type>(len_));
 }
 
 const QosData& MessageUnit::getQos() const

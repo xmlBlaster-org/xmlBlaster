@@ -236,7 +236,7 @@ void QosData::clearRoutes()
 
 int QosData::size() const
 {
-   return toXml().size();
+   return (int)toXml().size();
 }
 
 /**

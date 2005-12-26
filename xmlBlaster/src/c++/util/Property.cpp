@@ -309,7 +309,7 @@ Property::getIntProperty(const string &name, int def, bool env)
    string value = getProperty(name, env);
    if (value.length() == 0) return def;
    char *test = (char*)0;
-   int ret = strtol(value.c_str(), &test, 10);
+   int ret = (int)strtol(value.c_str(), &test, 10);
    if (test == value.c_str()) return def;
 //   int ret = lexical_cast<int>(value);
    return ret;

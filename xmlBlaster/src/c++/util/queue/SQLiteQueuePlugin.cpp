@@ -88,7 +88,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    strncpy0(queueProperties.dbName, url.c_str(), QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.queueName, queueName.c_str(), QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, tableNamePrefix.c_str(), QUEUE_PREFIX_MAX);
-   queueProperties.maxNumOfEntries = property.getMaxEntries();
+   queueProperties.maxNumOfEntries = (int32_t)property.getMaxEntries();
    queueProperties.maxNumOfBytes = property.getMaxBytes();
    queueProperties.logFp = myLogger;
    queueProperties.logLevel = (log_.call() || log_.trace()) ? XMLBLASTER_LOG_TRACE : XMLBLASTER_LOG_INFO;
@@ -187,7 +187,7 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
    if (log_.call()) log_.call(ME, "peekWithSamePriority maxNumOfEntries=" + lexical_cast<std::string>(maxNumOfEntries) + " maxNumOfBytes=" + lexical_cast<std::string>(maxNumOfBytes));
 
    ::ExceptionStruct exception;
-   ::QueueEntryArr *entriesC = queueP_->peekWithSamePriority(queueP_, maxNumOfEntries, maxNumOfBytes, &exception);
+   ::QueueEntryArr *entriesC = queueP_->peekWithSamePriority(queueP_, (int32_t)maxNumOfEntries, maxNumOfBytes, &exception);
    if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 
    // Now we need to copy the C results into C++ classes ...

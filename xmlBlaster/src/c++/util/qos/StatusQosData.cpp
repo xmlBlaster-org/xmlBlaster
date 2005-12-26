@@ -125,7 +125,7 @@ void StatusQosData::setKeyOid(const string& oid)
 
 int StatusQosData::size() const
 {
-   return toXml().length();
+   return (int)toXml().length();
 }
 
 string StatusQosData::toXml(const string& extraOffset) const

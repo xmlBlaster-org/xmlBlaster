@@ -49,7 +49,7 @@ Dll_Export std::string waitOnKeyboardHit(const std::string &str);
  * </pre>
  */
 typedef struct ArgsStruct {
-   int argc;
+   size_t argc;
    char **argv;
 } ArgsStruct_T;
 

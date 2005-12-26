@@ -59,7 +59,7 @@ void NodeId::setId(const string& id)
 
    if (id_.find_first_of("/node/") == 0)
       id_ = id_.substr(string("/node/").length()); // strip leading "/node/"
-   int index = id_.find_first_of("/");   // strip tailing tokens, e.g. from "heron/client/joe" make a "heron"
+   string::size_type index = id_.find_first_of("/");   // strip tailing tokens, e.g. from "heron/client/joe" make a "heron"
    if (index == 0) {
       throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "setId: The given cluster node ID '" + lexical_cast<std::string>(id_) + "' may not start with a '/'");
    }

@@ -396,8 +396,8 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       ::time(&theTime);
       string timeStr = ctime(&theTime), ret;
       // eliminate new lines (if any)
-      int pos = timeStr.find("\n");
-      if (pos < 0) return timeStr;
+      string::size_type pos = timeStr.find("\n");
+      if (pos == string::npos) return timeStr;
       ret.assign(timeStr, 0, pos);
       return ret;
    }

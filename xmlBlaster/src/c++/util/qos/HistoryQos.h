@@ -45,7 +45,7 @@ private:
    org::xmlBlaster::util::Global&      global_;
    org::xmlBlaster::util::I_Log&         log_;
 
-   int numEntries_; // = DEFAULT_numEntries;
+   long numEntries_; // = DEFAULT_numEntries;
    bool newestFirst_; // = DEFAULT_newestFirst;
 
 public:

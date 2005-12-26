@@ -97,7 +97,7 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
             address_->setPingInterval(XmlHandlerBase::getLongValue(tmpValue));
          }
          else if (tmpName.compare("retries") == 0) {
-            address_->setRetries(XmlHandlerBase::getLongValue(tmpValue));
+            address_->setRetries(XmlHandlerBase::getIntValue(tmpValue));
          }
          else if (tmpName.compare("delay") == 0) {
             address_->setDelay(XmlHandlerBase::getLongValue(tmpValue));

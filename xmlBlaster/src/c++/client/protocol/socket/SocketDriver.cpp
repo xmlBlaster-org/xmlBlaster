@@ -251,7 +251,7 @@ SocketDriver::SocketDriver(Global& global, const string instanceName)
 
    global_.fillArgs(*argsStructP_);
    try {
-      connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
+      connection_ = getXmlBlasterAccessUnparsed((int)argsStructP_->argc, argsStructP_->argv);
       if (connection_) {
          connection_->userObject = this; // Transports us to the myUpdate() method
          connection_->log = myLogger;    // Register our own logging function
@@ -289,7 +289,7 @@ void SocketDriver::reconnectOnIpLevel(void)
    ::ExceptionStruct socketException;
 
    try {
-      connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
+      connection_ = getXmlBlasterAccessUnparsed((int)argsStructP_->argc, argsStructP_->argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
       connection_->log = myLogger;    // Register our own logging function
       connection_->logUserP = this;   // Pass ourself to myLogger()

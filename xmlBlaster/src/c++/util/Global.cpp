@@ -343,7 +343,7 @@ void Global::fillArgs(ArgsStruct_T &args)
 
 void Global::freeArgs(ArgsStruct_T &args)
 {
-   for (int i=0; i<args.argc; i++)
+   for (size_t i=0; i<args.argc; i++)
       delete [] args.argv[i];
    delete [] args.argv;
    args.argc = 0;
@@ -641,7 +641,7 @@ std::string waitOnKeyboardHit(const std::string &str)
    // Flush input stream
    while (true) {
       cout.flush();
-      int ret = std::cin.rdbuf()->in_avail();
+      size_t ret = std::cin.rdbuf()->in_avail();
       if (ret == 0) break;
       std::cin.getline(ptr,255,'\n');
    }
@@ -663,7 +663,7 @@ std::string waitOnKeyboardHit(const std::string &str)
       }
       first = false;
 
-      int ret = std::cin.rdbuf()->in_avail();
+      size_t ret = std::cin.rdbuf()->in_avail();
       if (ret == 0 && retStr != "") {
          return retStr;
       }

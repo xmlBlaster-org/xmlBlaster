@@ -116,7 +116,7 @@ long RamQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &start
    while (iter != end) {
       long entrySize = (*iter)->getSizeInBytes();
       if (storage_.empty()) return 0;
-      int help = storage_.erase(*iter);
+      string::size_type help = storage_.erase(*iter);
       if (help > 0) {
          count += help;
          numOfBytes_ -= help * entrySize;
