@@ -147,25 +147,27 @@ static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue
 
 #ifdef PropertiesMain /* compile a standalone test program */
 
+Dll_Export bool strToInt64(int64_t *val, const char * const str) {
+   if (str == 0 || val == 0) return false;
+   return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+}
+
 /**
+ * icc -DPropertiesMain -Wall -g -I.. -o PropertiesMain Properties.c
  * Invoke:
  * export MY_SETTING="Hello World"
  * PropertiesMain -logLevel TRACE  -numTests 10  -timeout -999 -isPersistent true -isDurable false
  */
 int main(int argc, char** argv)
 {
-   Properties *props = createProperties(argc, argv);
+   Properties *props = createProperties(argc, (const char* const*)argv);
    printf("MY_SETTING=%s\n", props->getString(props, "MY_SETTING", "DUMMY"));
    printf("logLevel=%s\n", props->getString(props, "logLevel", "DUMMY"));
    printf("isPersistent=%d\n", props->getBool(props, "isPersistent", false));
    printf("isDurable=%d\n", props->getBool(props, "isDurable", true));
    printf("numTests=%d\n", props->getInt(props, "numTests", -1));
    printf("timeout=%ld\n", props->getLong(props, "timeout", -1l));
-#  if defined(_WINDOWS)
-   printf("timeout=%I64d\n", props->getInt64(props, "lonLong", -1LL));
-#  else
-   printf("timeout=%lld\n", props->getInt64(props, "lonLong", -1LL));
-#  endif
+   printf("timeout="PRINTF_PREFIX_INT64_T"\n", props->getInt64(props, "lonLong", -1LL)); /* "%I64d", "%ld", "%lld" */
    freeProperties(props);
    return 0;
 }

@@ -50,13 +50,13 @@ static void dumpZlib(const char *p, XmlBlasterZlibReadBuffers *zlibReadBufP, Xml
    printf("[%s:%d] %s\n", __FILE__, __LINE__, p);
    printf("{\n");
         if (zlibReadBufP!=0) {
-           printf("  compBufferP     =%d\n", (int)zlibReadBufP->compBuffer);
-           printf("  currCompBufferP =%d\n", (int)zlibReadBufP->currCompBufferP);
+           //printf("  compBufferP     ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->compBuffer);
+           printf("  currCompBufferP ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->currCompBufferP);
            printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
         }
-   printf("  zlibP->next_in  =%d\n", (int)zlibP->next_in);
-   printf("  zlibP->avail_in =%u\n", zlibP->avail_in);
-   printf("  zlibP->next_out =%d\n", (int)zlibP->next_out);
+   printf("  zlibP->next_in  ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibP->next_in);
+   printf("  zlibP->avail_in =%d\n", (int)zlibP->avail_in);
+   printf("  zlibP->next_out ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibP->next_out);
    printf("  zlibP->avail_out=%u\n", zlibP->avail_out);
    printf("}\n");
 }
@@ -102,7 +102,7 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
 
       /* Initialize zlib buffer pointers */
       zlibP->next_in  = (Bytef*)ptr;
-      zlibP->avail_in = nbytes;
+      zlibP->avail_in = (uInt)nbytes;
       zlibP->next_out = zlibWriteBufP->compBuffer;
       zlibP->avail_out = XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN;
 
@@ -205,7 +205,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
 
       /* Initialize zlib buffer pointers */
       zlibP->next_out = (Bytef*)ptr;
-      zlibP->avail_out = nbytes;
+      zlibP->avail_out = (uInt)nbytes;
 
       if (zlibReadBufP->currCompBytes == 0)
          zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
@@ -229,7 +229,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
 
          if (zlibReadBufP->currCompBytes == 0 && readBytes != nbytes) {
             const int flag = 0;
-            int nCompRead;
+            size_t nCompRead;
             if (zlibReadBufP->debug) printf("[%s:%d] recv() readBytes=%u, nbytes=%u, currCompBytes=%u\n", __FILE__, __LINE__, readBytes, (unsigned int)nbytes, zlibReadBufP->currCompBytes);
             zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
             nCompRead = recv(fd, zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
@@ -237,7 +237,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
                if (zlibReadBufP->debug) printf("[%s:%d] EOF during reading of %u bytes\n", __FILE__, __LINE__, (unsigned int)(nbytes-readBytes));
                return -1;
             }
-            zlibReadBufP->currCompBytes += nCompRead;
+            zlibReadBufP->currCompBytes += (uInt)nCompRead;
             zlibP->next_in  = zlibReadBufP->currCompBufferP;
             zlibP->avail_in = zlibReadBufP->currCompBytes;
             if (zlibReadBufP->debug) dumpZlib("readn(): recv() returned", zlibReadBufP, 0);

@@ -31,7 +31,7 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #    define true 1
 #    define false 0
 #  endif
-#	define XMLBLASTER_C_bool bool
+#       define XMLBLASTER_C_bool bool
 #else
 #if defined(_WINDOWS)
 #define XMLBLASTER_C_bool int
@@ -51,6 +51,7 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #if defined(_WINDOWS)
   typedef __int64 int64_t;
 # define PRINTF_PREFIX_INT64_T "%I64d"
+# define PRINTF_PREFIX_UINT64_T "%I64u"
   /*typedef long long int64_t;*/
   typedef __int32 int32_t;
   typedef __int16 int16_t;
@@ -74,9 +75,11 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 # if __LP64__
    /* For example a Xeon processor with UNIX */
 #  define PRINTF_PREFIX_INT64_T "%ld"
+#  define PRINTF_PREFIX_UINT64_T "%lu"
    /*#elif __ILP64__ __LLP64__ */
 # else
 #  define PRINTF_PREFIX_INT64_T "%lld"
+#  define PRINTF_PREFIX_UINT64_T "%llu"
 # endif
 
 #endif

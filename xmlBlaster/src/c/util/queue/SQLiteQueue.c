@@ -100,7 +100,7 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
  */
 typedef struct DbInfoStruct {
    QueueProperties prop;         /** Meta information */
-   int32_t numOfEntries;         /** Cache for current number of entries */
+   size_t numOfEntries;          /** Cache for current number of entries */
    int64_t numOfBytes;           /** Cache for current number of bytes */
    sqlite *db;                   /** Database handle for SQLite */
    sqlite_vm *pVm_put;           /** SQLite virtual machine to hold a prepared query */
@@ -486,7 +486,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
       if (rc == SQLITE_OK) rc = sqlite_bind(dbInfo->pVm_put, ++index, intStr, len, true);
       if (rc == SQLITE_OK) {
          /* As SQLite does only store strings we encode our blob to a string */
-         int estimatedSize = 2 +(257 * queueEntry->embeddedBlob.dataLen )/254;
+         size_t estimatedSize = 2 +(257 * queueEntry->embeddedBlob.dataLen )/254;
          unsigned char *out = (unsigned char *)malloc(estimatedSize*sizeof(char));
          int encodedSize = sqlite_encode_binary((const unsigned char *)queueEntry->embeddedBlob.data,
                               (int)queueEntry->embeddedBlob.dataLen, out);
@@ -859,7 +859,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, const QueueEntryArr 
 
    {
       size_t i;
-      const int qLen = 128 + 2*ID_MAX + queueEntryArr->len*(INT64_STRLEN_MAX+6);
+      const size_t qLen = 128 + 2*ID_MAX + queueEntryArr->len*(INT64_STRLEN_MAX+6);
       char *queryString = (char *)calloc(qLen, sizeof(char));
       /*  DELETE FROM xb_entries WHERE queueName = 'connection_clientJoe' AND dataId in ( 1081492136876000000, 1081492136856000000 ); */
       SNPRINTF(queryString, qLen, 
@@ -1034,7 +1034,7 @@ static int32_t getNumOfEntries(I_Queue *queueP)
    if (dbInfo->numOfEntries == -1) {
       stateOk = fillCache(queueP, &exception);
    }
-   return (stateOk) ? dbInfo->numOfEntries : -1;
+   return (stateOk) ? (int32_t)dbInfo->numOfEntries : -1;
 }
 
 static int32_t getMaxNumOfEntries(I_Queue *queueP)

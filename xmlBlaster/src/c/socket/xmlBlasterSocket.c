@@ -466,7 +466,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
 void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug)
 {
    size_t currpos = 0;
-   int len;
+   size_t len;
    /* initializeXmlBlasterException(exception); */
    exception->remote = true;
    strncpy0(exception->errorCode, blob->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
