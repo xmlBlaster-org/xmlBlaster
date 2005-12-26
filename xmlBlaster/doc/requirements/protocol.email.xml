@@ -898,7 +898,10 @@ on server side and on java client side.</p>
 
    </configuration>
    <todo type="HTML">
-Make last requestId persistent to have loop and sequence protection after a restart
+      <ol>
+      <li>Make last requestId persistent to have loop and sequence protection after a restart</li>
+      <li>Currently you can't publish from within an update (will dead lock)</li>
+      </ol>
    </todo>
    <see type="REQ">protocol</see>
    <see type="API">org.xmlBlaster.util.protocol.email.Pop3Driver</see>
