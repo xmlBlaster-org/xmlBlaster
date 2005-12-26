@@ -22,7 +22,7 @@ static char errorString[ERRORSTR_LEN+1];
 static char updateContent[256];
 static void *updateUserData;
 static const char *CONTENT = "Some message payload";
-static int updateCounter = 0;
+static size_t updateCounter = 0;
 
 /**
  * Here we receive the callback messages from xmlBlaster
@@ -151,7 +151,7 @@ static const char * test_stress()
    }
 
    for (iWait=0; iWait<10; iWait++) {
-      printf("[client] Publish of %d messages success, received %d updates\n", numPublish, updateCounter);
+      printf("[client] Publish of %d messages success, received %d updates\n", numPublish, (int32_t)updateCounter);
       if (updateCounter >= numPublish)
          break;
       sleepMillis(500);
@@ -163,7 +163,7 @@ static const char * test_stress()
       mu_assert("Missing updates", updateCounter == numPublish);
    }
    else if (updateCounter > numPublish) {
-      printf("[client] WARN: Publish of %d messages but received %d updates\n", numPublish, updateCounter);
+      printf("[client] WARN: Publish of %d messages but received %d updates\n", numPublish, (int32_t)updateCounter);
    }
    printf("[client] updateContent = %s, CONTENT = %s\n", updateContent, CONTENT);
    mu_assert("Received wrong message in update()", strstr(updateContent, CONTENT) != 0);
@@ -173,11 +173,11 @@ static const char * test_stress()
 
 
    {  /* erase ... */
-      QosArr* response;
+      QosArr* responseArrP;
       const char *key = "<key oid='TestStress'/>";
       const char *qos = "<qos/>";
       printf("[client] Erasing message 'TestStress' ...\n");
-      response = xa->erase(xa, key, qos, &xmlBlasterException);
+      responseArrP = xa->erase(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != '\0') {
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
@@ -185,7 +185,7 @@ static const char * test_stress()
          mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
-      freeQosArr(response);
+      freeQosArr(responseArrP);
    }
 
    retBool = xa->disconnect(xa, 0, &xmlBlasterException);

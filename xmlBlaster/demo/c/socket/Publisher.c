@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 
       for (iPublish=0; iPublish<numPublish || numPublish==-1; iPublish++) {
          char msg[20];
-         char *pp = strstr(key, "%counter");
+         const char *pp = strstr(key, "%counter");
          MsgUnit msgUnit;
          memset(&msgUnit, 0, sizeof(MsgUnit));
 
@@ -216,11 +216,11 @@ int main(int argc, char** argv)
             msgUnit.contentLen = contentSize;
          }
          else {
-            const char *pp = strstr(content, "%counter");
-            if (pp) { /* Replace '%counter' token by current index */
+            const char *pc = strstr(content, "%counter");
+            if (pc) { /* Replace '%counter' token by current index */
                char *p = (char *)malloc(strlen(content)+10);
-               strncpy(p, content, pp-content);
-               sprintf(p+(pp-content), "%d%s", iPublish, pp+strlen("%counter"));
+               strncpy(p, content, pc-content);
+               sprintf(p+(pc-content), "%d%s", iPublish, pc+strlen("%counter"));
                msgUnit.content = p;
                msgUnit.contentLen = strlen(msgUnit.content);
             }

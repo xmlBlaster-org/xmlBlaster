@@ -174,11 +174,11 @@ static const char * test_methods()
 
 
    {  /* unSubscribe ... */
-      QosArr* response;
+      QosArr* responseArrP;
       const char *key = "<key oid='HelloWorld'/>";
       const char *qos = "<qos/>";
       printf("[client] UnSubscribe message 'HelloWorld' ...\n");
-      response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
+      responseArrP = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != '\0') {
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in unSubscribe errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
@@ -186,7 +186,7 @@ static const char * test_methods()
          mu_assert(errorString, false);
       }
       printf("[client] Unsubscribe success\n");
-      freeQosArr(response);
+      freeQosArr(responseArrP);
    }
 
    {  /* get synchronous ... */
@@ -221,11 +221,11 @@ static const char * test_methods()
 
 
    {  /* erase ... */
-      QosArr* response;
+      QosArr* responseArrP;
       const char *key = "<key oid='HelloWorld'/>";
       const char *qos = "<qos/>";
       printf("[client] Erasing message 'HelloWorld' ...\n");
-      response = xa->erase(xa, key, qos, &xmlBlasterException);
+      responseArrP = xa->erase(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != '\0') {
          SNPRINTF(errorString, ERRORSTR_LEN, "[TEST FAIL] Caught exception in erase() errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
@@ -233,7 +233,7 @@ static const char * test_methods()
          mu_assert(errorString, false);
       }
       printf("[client] Erase success\n");
-      freeQosArr(response);
+      freeQosArr(responseArrP);
    }
 
    sleepMillis(1000);

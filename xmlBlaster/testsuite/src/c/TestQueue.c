@@ -212,7 +212,7 @@ static const char * test_overflow()
 
    {  /* Test entry overflow */
       size_t i;
-      int lenPut = 0;
+      size_t lenPut = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
          memset(&queueEntry, 0, sizeof(QueueEntry));
@@ -243,7 +243,7 @@ static const char * test_overflow()
 
    {  /* Test byte overflow */
       size_t i;
-      int lenPut = 0;
+      size_t lenPut = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
          memset(&queueEntry, 0, sizeof(QueueEntry));
@@ -274,7 +274,7 @@ static const char * test_overflow()
 
    {  /* Test byte overflow with preset entry size */
       size_t i;
-      int lenPut = 0;
+      size_t lenPut = 0;
       for (i=0; i<numPut; i++) {
          QueueEntry queueEntry;
          memset(&queueEntry, 0, sizeof(QueueEntry));
@@ -324,7 +324,7 @@ static const char * test_queue()
    const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
    const char *data[] =      { "1. Hello"           , "2. World"           , "3. High Prio 1"     , "4. High Prio 2"     , "5. done"};
    const size_t numPut = sizeof(idArr)/sizeof(int64_t);
-   int lenPut = 0;
+   size_t lenPut = 0;
 
    printf("\n---------test_queue----------------------\n");
    destroy(dbName); /* Delete old db file */
@@ -422,7 +422,7 @@ static const char * test_queue()
          printf("testRun after peekWithSamePriority() dump %lu entries:\n", (unsigned long)entries->len);
          for (i=0; i<entries->len; i++) {
             char *tmp;
-            int expectedIndex = i+2;
+            size_t expectedIndex = i+2;
             QueueEntry *queueEntry = &entries->queueEntryArr[i];
             char *dump = queueEntryToXml(queueEntry, 200);
             printf("%s\n", dump);
