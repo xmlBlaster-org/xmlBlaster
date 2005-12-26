@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14436 Removed obsolete jndi-jdk1_3_1.jar
+
  o #14429 Email protocol
    Bugfix for loop protection
    Changed configuration defaults to be human readable

@@ -139,7 +139,7 @@ TODO
    <!-- property name="report.htmlfile" value="${report.absolutdir}/junit-noframes.html"/ -->
    <property name="report.htmlfile" value="${report.absolutdir}/index.html"/>
 
-   <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
+   <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
    <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/jutils.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.0.jar"/>

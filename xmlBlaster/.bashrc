@@ -130,8 +130,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/javax.jms.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
-   # JNDI, only needed for JDK 1.2, not for JDK 1.3
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
    # this stuff is only needed for the demo javaclients.svg.batik
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/batik.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/batik/js.jar:${CLASSPATH}
@@ -238,106 +236,19 @@ fi
 
 
 #-------- Checking JDK version -
-if [ "${JAVA_HOME}" = "" ] ; then
-   # xmlBlaster release < 0.78 used JDK_HOME, try this variable:
-   JAVA_HOME=$JDK_HOME
-   export JAVA_HOME
-fi
 if [ "${JAVA_HOME}" != "" ] ; then
-   if [ -d ${JAVA_HOME} ] ; then
-      if [ -f ${JAVA_HOME}/lib/classes.zip ]; then
-         # JDK 1.1.x
-         JDK_1_1=true
-         export JDK_1_1
-      #else
-         ## JDK 1.2
-         #ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
-         #if [ ! -f ${ORB_PROPS} ]; then
-         #   cp ${XMLBLASTER_HOME}/config/orb.properties ${ORB_PROPS}
-         #      RESULT=$?
-         #      if [ ${RESULT} = "0" ]; then
-         #      ${ECHO} "$BLACK_YELLOW   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
-         #      else
-         #      ${ECHO} "$BLACK_RED   Could not copy ${XMLBLASTER_HOME}/config/orb.properties to ${ORB_PROPS} (to switch off default JDK-ORB). Missing permissions?$ESC"
-         #      fi
-         #fi
-         ## If copy failed (missing permissions?)
-         ## if [ $? -ne 0 ] ;  then
-         #if [ ! -f ${ORB_PROPS} ]; then
-         #   CLASSPATH=${JAVA_HOME}/jre/lib/rt.jar:${CLASSPATH}
-         #   export CLASSPATH
-         #fi
-      fi
-      PATH=${JAVA_HOME}/bin:${PATH}
+   if [ -d "${JAVA_HOME}" ] ; then
+      PATH="${JAVA_HOME}/bin":${PATH}
       export PATH
    else
       ${ECHO} "$BLACK_RED   The directory JAVA_HOME=$JAVA_HOME doesn't exist   $ESC"
    fi
 else
-   ${ECHO} "$BLACK_RED      NOTE: You need JDK 1.2 or 1.3 to compile xmlBlaster      $ESC"
-   ${ECHO} "$BLACK_RED            and your CLASSPATH setting needs at least          $ESC"
-   ${ECHO} "$BLACK_RED               export CLASSPATH=\${JAVA_HOME}/jre/lib/rt.jar    $ESC"
-   ${ECHO} "$BLACK_RED            Or set JAVA_HOME, and we will do the rest for you  $ESC"
-   ${ECHO} "$BLACK_RED               Example: 'export JAVA_HOME=/opt/local/jdk'      $ESC"
+   ${ECHO} "$BLACK_RED      NOTE: You need JDK 1.4 or higher to compile xmlBlaster   $ESC"
+   ${ECHO} "$BLACK_RED            Please set JAVA_HOME                               $ESC"
+   ${ECHO} "$BLACK_RED            Example: 'export JAVA_HOME=/opt/local/jdk'         $ESC"
    return 1
 fi
-
-# tinySQL, a simple DBase JDBC driver.
-# Conflicts with JacORBs idl.jar because both use java_cup
-#CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
-
-
-#-------- Checking jikes version -
-# use jikes 1.06 or better
-if [ "${JIKES_HOME}" != "" ] ; then
-   if [ -d ${JIKES_HOME} ] ; then
-      PATH=${PATH}:${JIKES_HOME}
-      export PATH
-      if [ "${JDK_1_1}" != "" ] ; then
-         JIKESPATH=${CLASSPATH}
-         export JIKESPATH
-      else
-         JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
-         export JIKESPATH
-      fi
-      ${ECHO} "$BLACK_LTGREEN   JIKES_HOME     =${JIKES_HOME}  $ESC"
-      ${ECHO} "$BLACK_LTGREEN   Enhance \$JIKESPATH if you enhance your CLASSPATH$ESC"
-   else
-      ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
-   fi
-fi
-
-
-#-------- Running with TowerJ native compiler -
-# See xmlBlaster/bin/Project.tj
-# Replace xtdash.jar and jacorb.jar with the original ones.
-# Invoke:
-#   cd $XMLBLASTER_HOME/bin
-#   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
-#  Run testsuite, invoke again
-#   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
-#  until Main-xy.tjp shows no Java classes anymore.
-#  Other 'final' options (increase 4%):
-#   tj -b-jdk 2  -nofeedback -mode optimize -O-omit-checks
-#   tj -b-jdk 2  -nofeedback -b-disable-tjlib -mode optimize -O-omit-checks
-#   ( -O-inline-threshold 100 fails to compile)
-#   tj -b-jdk 2  -O-closed
-TOWERJ=/opt/TowerJ
-export TOWERJ
-if [ "${TOWERJ}" != "" ] ; then
-   if [ -d ${TOWERJ} ] ; then
-      TOWERJ_JAVA_HOME=${JAVA_HOME}
-      export TOWERJ_JAVA_HOME
-      PATH=${PATH}:${TOWERJ}/bin/x86-linux
-      export PATH
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TOWERJ}/lib/x86-linux
-      export LD_LIBRARY_PATH
-      #TOWERJ_TJLIB_PATH= ???
-      #export TOWERJ_TJLIB_PATH
-      ${ECHO} "$BLACK_LTGREEN      Using TOWERJ=${TOWERJ}  $ESC"
-   fi
-fi
-
 
 return 0
 

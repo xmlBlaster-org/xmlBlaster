@@ -135,7 +135,6 @@ only the SNMP subagent module jax.jar is GPL only!
   jta-spec1_0_1.jar  javax.transaction package
   jms.jar            javax.jms
   ejb2.0.jar         javax.ejb
-  jndi-jdk1_3_1.jar  javax.naming (only required for JDK 1.2, not for JDK1.3)
 
 
 14) xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/jcrypt.java
