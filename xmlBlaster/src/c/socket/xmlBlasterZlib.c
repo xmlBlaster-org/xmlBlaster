@@ -50,7 +50,7 @@ static void dumpZlib(const char *p, XmlBlasterZlibReadBuffers *zlibReadBufP, Xml
    printf("[%s:%d] %s\n", __FILE__, __LINE__, p);
    printf("{\n");
         if (zlibReadBufP!=0) {
-           //printf("  compBufferP     ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->compBuffer);
+           /*printf("  compBufferP     ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->compBuffer);*/
            printf("  currCompBufferP ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->currCompBufferP);
            printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
         }
