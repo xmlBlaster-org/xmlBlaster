@@ -317,7 +317,7 @@ public:
       ClientQueueProperty prop(global_, "");
       ConnectQos *connQos = new ConnectQos(global_);
       ConnectQueueEntry entry(global_, connQos);
-      int maxBytes = 10 * entry.getSizeInBytes();
+      size_t maxBytes = 10 * entry.getSizeInBytes();
       prop.setMaxBytes(maxBytes);
       queue_ = &QueueFactory::getFactory().getPlugin(global_, prop);
 
@@ -326,9 +326,9 @@ public:
       int i=0;
       try {
          for (i=0; i < 10; i++) {
-            ConnectQueueEntry entry(global_, connQos);
-            log_.trace(me, "Putting entry " + lexical_cast<string>(i) + " to queue, size=" + lexical_cast<string>(entry.getSizeInBytes()));
-            queue_->put(entry);
+            ConnectQueueEntry ent(global_, connQos);
+            log_.trace(me, "Putting entry " + lexical_cast<string>(i) + " to queue, size=" + lexical_cast<string>(ent.getSizeInBytes()));
+            queue_->put(ent);
          }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
@@ -341,8 +341,8 @@ public:
          assert(0);
       }
       try {
-         ConnectQueueEntry entry(global_, connQos);
-         queue_->put(entry);
+         ConnectQueueEntry ent(global_, connQos);
+         queue_->put(ent);
          log_.error(me, string("2. putting entries inside the queue: FAILED should have thrown an exception currQueueByte=") + 
                       lexical_cast<string>(queue_->getNumOfBytes()) +
                       " maxNumOfBytes=" + lexical_cast<string>(queue_->getMaxNumOfBytes()));
