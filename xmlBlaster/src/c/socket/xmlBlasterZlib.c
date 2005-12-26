@@ -51,12 +51,13 @@ static void dumpZlib(const char *p, XmlBlasterZlibReadBuffers *zlibReadBufP, Xml
    printf("{\n");
         if (zlibReadBufP!=0) {
            /*printf("  compBufferP     ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->compBuffer);*/
-           printf("  currCompBufferP ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibReadBufP->currCompBufferP);
+           printf("  compBufferP     =%p\n", zlibReadBufP->compBuffer);
+           printf("  currCompBufferP =%p\n", zlibReadBufP->currCompBufferP);
            printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
         }
-   printf("  zlibP->next_in  ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibP->next_in);
+   printf("  zlibP->next_in  =%p\n", zlibP->next_in);
    printf("  zlibP->avail_in =%d\n", (int)zlibP->avail_in);
-   printf("  zlibP->next_out ="PRINTF_PREFIX_UINT64_T"\n", (uint64_t)zlibP->next_out);
+   printf("  zlibP->next_out =%p\n", zlibP->next_out);
    printf("  zlibP->avail_out=%u\n", zlibP->avail_out);
    printf("}\n");
 }
