@@ -10,24 +10,41 @@ package org.xmlBlaster.contrib.replication.impl;
 public interface ReplManagerPluginMBean {
    
    /**
-    * Never returns null. It returns a list of keys identifying the ongoing replications.
+    * Never returns null. It returns a comma separated list of keys identifying the ongoing replications.
     * @return
     */
-   String[] getReplications();
+   String getReplications();
    
    /**
-    * Never returns null. It returns a list of keys identifying the slaves using the replication 
+    * Never returns null. It returns a comma separated list of keys identifying the slaves using the replication 
     * manager.
     * @return
     */
-   String[] getSlaves();
+   String getSlaves();
 
    /**
     * Intiates the replication for the given slave.
+    * TODO Specify that the replicationKey (dbmasterid) must be short and DB conform.
+    * Usually called by Human being via JMX Console.
+    * 
+    * The cascaded replication is the replication which will be automatically started once the initial update of the first replication is finished. This is 
+    * used to concatenate replications. A typical usecase is in two way replication, then the initial update of the back replication can be automatically triggered
+    * once the initial update of the main replication is finished.
     * 
     * @param slaveSessionName
-    * @param replPrefix this is the same as specified in the configuration as 'replication.prefix' and it 
-    * identifies  a replication source.
+    * @param replicationKey This is the dbWatcher replication.prefix attribute.
+    * @param cascadeSlaveSessionName The Name of the session of the dbWriter to be used for the cascaded replication. Can be null.
+    * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
+    * @throws Exception
+    */
+   String initiateReplication(String slaveSessionName, String replPrefix, String cascadeSlaveSessionName, String cascadeReplPrefix) throws Exception;
+
+   /**
+    * @deprecated you should use the four arguments alternative.
+    * 
+    * @param slaveSessionName
+    * @param replPrefix
+    * @return
     * @throws Exception
     */
    String initiateReplication(String slaveSessionName, String replPrefix) throws Exception;

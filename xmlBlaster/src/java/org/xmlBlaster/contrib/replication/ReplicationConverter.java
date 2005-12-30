@@ -11,15 +11,16 @@ import java.util.logging.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.io.OutputStream;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.DbInfo;
+import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -44,11 +45,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long oldReplKey = -1L;
    private int consecutiveReplKeyErrors = 0; // used to detect serious problems in sequences
    private int maxConsecutiveReplKeyErrors = 10;
-   private I_Info persistentMap;
+   private I_Info persistentInfo;
    private String oldReplKeyPropertyName;
    private ChangeEvent event;
    private String transactionId;
    private String replPrefix;
+   private I_DbPool dbPool;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -112,9 +114,10 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       // this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
       // this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
-      this.persistentMap = new PropertiesInfo(new Properties());
+      this.dbPool = DbWatcher.getDbPool(this.info);
+      this.persistentInfo = new DbInfo(this.dbPool, "replication");
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
-      long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
+      long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
          this.oldReplKey = tmp;
          log.info("One entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.oldReplKey + "'");
@@ -134,6 +137,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             this.dbSpecific.shutdown();
       }
       finally {
+         this.dbPool.shutdown();
          this.dbSpecific = null;
       }
    }
@@ -170,7 +174,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       else { // TODO move this after the sending of the message since this could still fail.
          this.consecutiveReplKeyErrors = 0;
-         this.persistentMap.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
          this.oldReplKey = replKey;
       }
       // puts this in the metadata attributes of the message to be sent over the mom

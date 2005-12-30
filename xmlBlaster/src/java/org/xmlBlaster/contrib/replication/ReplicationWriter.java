@@ -8,7 +8,6 @@ package org.xmlBlaster.contrib.replication;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -25,12 +24,10 @@ import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
-import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.I_PrePostStatement;
-import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
@@ -42,13 +39,11 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
 
 private final static String ME = "ReplicationWriter";
    private static Logger log = Logger.getLogger(ReplicationWriter.class.getName());
-   private Map tableMap;
    private I_DbPool pool;
    private I_Info info;
    private I_DbSpecific dbSpecific;
    I_Mapper mapper;
    private boolean overwriteTables;
-   private DbMetaHelper dbMetaHelper;
    private String importLocation;
    private I_Update callback;
    private boolean keepDumpFiles;
@@ -63,7 +58,6 @@ private final static String ME = "ReplicationWriter";
    private boolean hasInitialCmd;
       
    public ReplicationWriter() {
-      this.tableMap = new HashMap();
    }
    
    /**
@@ -75,6 +69,7 @@ private final static String ME = "ReplicationWriter";
       set.add("replication.mapper.class");
       set.add("replication.overwriteTables");
       set.add("replication.importLocation");
+      set.add("dbWriter.prePostStatement.class");
       PropertiesInfo.addSet(set, this.mapper.getUsedPropertyKeys());
       PropertiesInfo.addSet(set, this.pool.getUsedPropertyKeys());
       PropertiesInfo.addSet(set, this.dbSpecific.getUsedPropertyKeys());
@@ -93,7 +88,6 @@ private final static String ME = "ReplicationWriter";
       this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
       boolean forceCreationAndInit = true;
       this.dbSpecific = ReplicationConverter.getDbSpecific(this.info, forceCreationAndInit); 
-      this.dbMetaHelper = new DbMetaHelper(this.pool);
       String mapperClass = info.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");
       if (mapperClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
@@ -126,7 +120,7 @@ private final static String ME = "ReplicationWriter";
       String prePostStatementClass = this.info.get("dbWriter.prePostStatement.class", "");
       if (prePostStatementClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
-         this.prePostStatement = (I_PrePostStatement)cl.loadClass(mapperClass).newInstance();
+         this.prePostStatement = (I_PrePostStatement)cl.loadClass(prePostStatementClass).newInstance();
          this.prePostStatement.init(info);
          if (log.isLoggable(Level.FINE)) 
             log.fine(prePostStatementClass + " created and initialized");
@@ -465,76 +459,6 @@ private final static String ME = "ReplicationWriter";
       return sqlInfo.getDescription();
    }
    
-   /**
-    * This retrieves the complete Information about a table description.
-    * @param tableName
-    * @param conn
-    * @deprecated
-    */
-   private synchronized SqlDescription getTableDescriptionDEPRECATED(String schema, String tableName, Connection conn) throws Exception {
-      if (tableName == null)
-         throw new Exception(ME + ".getTableDescription: the table name is null");
-      log.fine("Table Meta info initialization lookup: schema='" + schema + "' tableName='" + tableName + "'");
-      tableName = this.dbMetaHelper.getIdentifier(tableName);
-      schema = this.dbMetaHelper.getIdentifier(schema);
-      
-      SqlDescription description = (SqlDescription)this.tableMap.get(tableName);
-      if (description != null)
-         return description;
-      DatabaseMetaData meta = conn.getMetaData();
-      ResultSet rs = null;
-      log.info("Retrieving table meta information from database: schema='" + schema + "' tableName='" + tableName + "'");
-
-      description = new SqlDescription(this.info);
-      description.setIdentity(tableName);
-      try {
-         rs = meta.getColumns(null, schema, tableName, null);
-         while (rs.next()) {
-            String colName = rs.getString(4);
-            int type = rs.getInt(5);
-            SqlColumn colDescription = new SqlColumn(this.info);
-            colDescription.setSchema(schema);
-            colDescription.setTable(tableName);
-            colDescription.setSqlType(type);
-            colDescription.setColName(colName);
-            description.addColumn(colDescription);
-            log.info("Table Meta info: name='" + tableName + "' colName='" + colName + "' type='" + type + "'");
-         }
-         if (description.getColumns().length == 0) {
-            log.severe("No table meta information for database schema='" + schema + "' tableName='" + tableName + "' found");
-         }
-      }
-      finally {
-         if (rs != null)
-            rs.close();
-      }
-      
-      try {
-         rs = meta.getPrimaryKeys(null, schema, tableName);
-         //List pk = new ArrayList();
-         int count = 0;
-         while (rs.next()) {
-            count++;
-            String colName = rs.getString(4);
-            SqlColumn colDescription = description.getColumn(colName);
-            if (colDescription == null)
-               throw new Exception(ME + ".getTableDescription: the column name '" + colName + "' was among the PK but not in the table meta description");
-            colDescription.setPrimaryKey(true);
-            log.info("Primary key found colName=" + colName);
-         }
-         if (count == 0) {
-            log.info("No primary key found for table '" + tableName + "'");
-         }
-      }
-      finally {
-         if (rs != null)
-            rs.close();
-      }
-      tableName = this.dbMetaHelper.getIdentifier(tableName);
-      this.tableMap.put(tableName, description);
-      return description;
-   }
-
    /**
     * This is invoked for dump files
     */

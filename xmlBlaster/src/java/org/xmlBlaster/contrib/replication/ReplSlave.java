@@ -8,7 +8,6 @@ package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -18,7 +17,9 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.DbInfo;
+import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
@@ -28,6 +29,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -65,11 +67,25 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private int status;
    private Object mbeanHandle;
    private String sqlResponse;
-   private String managerInstanceName;
    private boolean forceSending; // temporary Hack to be removed TODO
-   private I_Info persistentMap;
+   private I_DbPool pool;
+   private I_Info persistentInfo;
    private String oldReplKeyPropertyName;
+   private String dbWatcherSessionName;
+   private ReplManagerPlugin manager;
+   private String replPrefix;
+   private String cascadedReplSlave;
+   private String cascadedReplPrefix;
    
+   public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
+      this.global = global;
+      this.pool = pool;
+      this.manager = manager;
+      this.slaveSessionId = slaveSessionId;
+      // this.status = STATUS_UNUSED;
+      setStatus(STATUS_NORMAL);
+   }
+
    public String getTopic() {
       return this.dataTopic;
    }
@@ -86,19 +102,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       switch (this.status) {
          case STATUS_INITIAL : return "INITIAL";
          case STATUS_TRANSITION : return "TRANSITION";
+         case STATUS_INCONSISTENT : return "INCONSISTENT";
          // case STATUS_UNUSED : return "UNUSED";
          default : return "NORMAL";
       }
    }
    
-   public ReplSlave(Global global, String managerInstanceName, String slaveSessionId) throws XmlBlasterException {
-      this.global = global;
-      this.managerInstanceName = managerInstanceName;
-      this.slaveSessionId = slaveSessionId;
-      // this.status = STATUS_UNUSED;
-      setStatus(STATUS_NORMAL);
-   }
-
    /**
     * The info comes as the client properties of the subscription Qos. Avoids double configuration.
     */
@@ -106,11 +115,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
       // if (this.initialized)
       //    return;
-      String replName = info.get("_replName", null);
-      if (replName == null) 
+      this.replPrefix = info.get("_replName", null);
+      if (this.replPrefix == null) 
          throw new Exception("The replication name '_replName' has not been defined");
-      this.name = "replSlave" + replName + slaveSessionId;
-      this.dataTopic = info.get("mom.topicName", "replication." + replName);
+      this.name = "replSlave" + this.replPrefix + slaveSessionId;
+      this.dataTopic = info.get("mom.topicName", "replication." + this.replPrefix);
       // only send status messages if it has been configured that way
       this.statusTopic = info.get("mom.statusTopicName", null);
       // this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
@@ -126,16 +135,21 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       boolean forceSending = info.getBoolean("replication.forceSending", false);
       if (forceSending)
          this.forceSending = true; 
-      String instanceName = this.managerInstanceName + ContextNode.SEP + this.slaveSessionId;
+      String instanceName = this.manager.getInstanceName() + ContextNode.SEP + this.slaveSessionId;
       ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
             this.global.getContextNode());
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
       
-      // this.persistentMap = new PersistentMap(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
-      // this.persistentMap = new Info(ReplicationConstants.CONTRIB_PERSISTENT_MAP);
-      this.persistentMap = new PropertiesInfo(new Properties());
+      this.dbWatcherSessionName = info.get(DBWATCHER_SESSION_NAME, null);
+      this.cascadedReplPrefix = info.get(CASCADED_REPL_PREFIX, null);
+      this.cascadedReplSlave = info.get(CASCADED_REPL_SLAVE, null);
+      log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
+      this.persistentInfo = new DbInfo(this.pool, "replication");
+      int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
+      if (tmpStatus > -1)
+         setStatus(tmpStatus);
       this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
-      long tmp = this.persistentMap.getLong(this.oldReplKeyPropertyName, -1L);
+      long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
          this.maxReplKey = tmp;
          log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
@@ -149,6 +163,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    private final void setStatus(int status) {
       this.status = status;
+      if (this.persistentInfo != null) // can also be called before init is called.
+         this.persistentInfo.put(this.slaveSessionId + ".status", "" + status);
       // this is a temporary solution for the monitoring
       String client = "client/";
       int pos = this.slaveSessionId.indexOf(client);
@@ -168,7 +184,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    private final void setMaxReplKey(long replKey) {
       this.maxReplKey = replKey;
-      this.persistentMap.put(this.oldReplKeyPropertyName, "" + replKey);
+      this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey);
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -188,10 +204,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
 
    public boolean run(I_Info info, String dbWatcherSessionId) throws Exception {
-      if (this.status != STATUS_NORMAL) {
+      if (this.status != STATUS_NORMAL && this.status != STATUS_INCONSISTENT) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
          return false;
       }
+      info.put(DBWATCHER_SESSION_NAME, dbWatcherSessionId);
       init(info);
       prepareForRequest(info);
       requestInitialData(dbWatcherSessionId);
@@ -212,7 +229,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     *       by passing as a mime access filter an identifier for himself.
     *   </li>
     * </ul>
-    * @see org.xmlBlaster.contrib.replication.I_ReplSlave#prepareForRequest()
+    * @see org.xmlBlaster.contrib.replication.I_ReplSlave#prepareForRequest(I_Info)
     */
    public void prepareForRequest(I_Info individualInfo) throws Exception {
       if (!this.initialized)
@@ -302,7 +319,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       doContinue();
    }
 
-   /* (non-Javadoc)
+   /**
     * @see org.xmlBlaster.contrib.dbwriter.I_ContribPlugin#shutdown()
     */
    public synchronized void shutdown() {
@@ -317,6 +334,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' ");
+      if (!this.initialized) {
+         log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
+         return new ArrayList();
+      }
       if (this.status == STATUS_INITIAL && !this.forceSending) // should not happen since Dispatcher is set to false
          return new ArrayList();
 
@@ -355,6 +376,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             setStatus(STATUS_NORMAL);
             queue.removeRandom(entry);
             entries.remove(i);
+            // initiate a cascaded replication (if so configured)
+            if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null) {
+               log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
+               this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
+            }
+            else {      
+               log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
+            }
             break; // there should only be one such message 
          }
       }
@@ -363,7 +392,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // TODO find a clean solution for this: currently we have the case where several masters send data to one single
       // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
       // is to let everything pass for now.
-      if (this.status == STATUS_NORMAL)
+      if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT)
          return entries;
       
       ArrayList ret = new ArrayList();
@@ -391,6 +420,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             if (replKey > this.maxReplKey || this.forceSending) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");
                setStatus(STATUS_NORMAL);
+               // initiate a cascaded replication (if so configured)
+               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null) {
+                  log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
+                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
+               }
             }
          }
          else { // such messages have been already from the initial update. (obsolete messages are removed)
@@ -457,7 +491,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * several slaves.
     * Cancels an ongoing initialUpdate Request.
     */
-   public void cancelInitialUpdate(String dbWatcherSessionId) throws Exception {
+   public void cancelInitialUpdate() throws Exception {
       if (this.status == STATUS_NORMAL)
          return;
       if (!this.initialized)
@@ -467,11 +501,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       log.info("clearing of callback queue: '" + clearedMsg + "' where removed since a cancel request was done");
 
       // sending the cancel op to the DbWatcher
-      log.info(this.name + " sends now a cancel request to the Master '" + dbWatcherSessionId + "'");
+      if (this.dbWatcherSessionName == null)
+         throw new Exception("The DbWatcher Session Id is null, can not cancel");
+      log.info(this.name + " sends now a cancel request to the Master '" + this.dbWatcherSessionName + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
       PublishKey pubKey = new PublishKey(this.global);
-      Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
+      Destination destination = new Destination(new SessionName(this.global, this.dbWatcherSessionName));
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
       pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
@@ -479,7 +515,65 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.getBytes(), pubQos);
       conn.publish(msg);
       // TODO Check this since it could mess up the current status if one is exaclty finished now
-      setStatus(STATUS_NORMAL);
+      //setStatus(STATUS_NORMAL);
+      setStatus(STATUS_INCONSISTENT);
+   }
+
+   /**
+    * Convenience method enforced by the MBean which returns the number of entries in 
+    * the queue.
+    */
+   public long getQueueEntries() throws Exception {
+      return getSession().getCbQueueNumMsgs();
+   }
+
+   /**
+    * Convenience method enforced by the MBean which returns true if the dispatcher of
+    * the slave session is active, false otherwise.
+    */
+   public boolean isActive() {
+      try {
+         return getSession().getDispatcherActive();
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return false;
+      } 
+   }
+   
+   /**
+    * Convenience method enforced by the MBean which returns true if the real slave is
+    * connected or false otherwise.
+    */
+   public boolean isConnected() {
+      try {
+         return getSession().getConnectionState().equals(ConnectionStateEnum.ALIVE.toString());
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return false;
+      } 
+   }
+
+   public void clearQueue() throws Exception {
+      getSession().clearCallbackQueue();
+   }
+
+   public long removeQueueEntries(long entries) throws Exception {
+      return getSession().removeFromCallbackQueue(entries);
+   }
+   
+
+   public void kill() throws Exception {
+      getSession().killSession();
+   }
+
+   public String getSessionName() throws Exception {
+      return getSession().getLoginName() + "/" + getSession().getPublicSessionId(); 
+   }
+
+   public String reInitiateReplication() throws Exception {
+      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix, null, null);
    }
    
 }

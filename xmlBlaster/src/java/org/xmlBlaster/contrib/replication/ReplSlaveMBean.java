@@ -15,5 +15,13 @@ public interface ReplSlaveMBean {
    void doContinue() throws Exception;
    void doPause() throws Exception;
    boolean toggleActive() throws Exception;
-   void cancelInitialUpdate(String dbWatcherSessionId) throws Exception;
+   void cancelInitialUpdate() throws Exception;
+   boolean isActive();
+   long getQueueEntries() throws Exception;
+   boolean isConnected();
+   void clearQueue() throws Exception;
+   long removeQueueEntries(long entries) throws Exception;
+   void kill() throws Exception;
+   String getSessionName() throws Exception;
+   String reInitiateReplication() throws Exception;
 }

@@ -34,6 +34,8 @@ import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.DbPool;
+import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplSlave;
@@ -56,6 +58,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -97,6 +100,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private long maxSize = 999999L;
    private String sqlTopic;
    private long maxResponseEntries; 
+   private I_DbPool pool;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -106,22 +110,35 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       this.replications = new TreeMap();
       this.replSlaveMap = new TreeMap();
    }
+
+   private String getKeysAsString(Iterator iter) {
+      StringBuffer buf = new StringBuffer();
+      boolean isFirst = true;
+      while (iter.hasNext()) {
+         if (isFirst)
+            isFirst = false;
+         else
+            buf.append(",");
+         buf.append(iter.next());
+      }
+      return buf.toString();
+   }
    
    /**
     * Never returns null. It returns a list of keys identifying the slaves using the replication 
     * manager.
     * @return
     */
-   public String[] getSlaves() {
-      return (String[])this.replSlaveMap.keySet().toArray(new String[this.replSlaveMap.size()]);
+   public String getSlaves() {
+      return getKeysAsString(this.replSlaveMap.keySet().iterator());
    }
    
    /**
     * Never returns null. It returns a list of keys identifying the ongoing replications.
     * @return
     */
-   public String[] getReplications() {
-      return (String[])this.replications.keySet().toArray(new String[this.replications.size()]);
+   public String getReplications() {
+      return getKeysAsString(this.replications.keySet().iterator());
    }
    
    public String getType() {
@@ -131,17 +148,56 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public String getVersion() {
       return "1.0";
    }
+
+   /**
+    * Creates a I_DbPool object out of the JDBC,1.0 Queue Properties and initializes the pool.
+    * @return
+    * @throws Exception
+    */
+   private I_DbPool getDbPool() throws Exception {
+      QueuePluginManager pluginManager = new QueuePluginManager(this.global);
+      PluginInfo queuePluginInfo = new PluginInfo(this.global, pluginManager, "JDBC", "1.0");
+      Properties prop = (Properties)queuePluginInfo.getParameters();
+      String dbUrl = prop.getProperty("url", null);
+      String dbUser = prop.getProperty("user", null);
+      String dbPassword = prop.getProperty("password", null);
+      log.info("db.url='" + dbUrl + "' db.user='" + dbUser + "'");
+      
+      I_Info tmpInfo = new PropertiesInfo(new Properties());
+      if (dbUrl != null)
+         tmpInfo.put("db.url", dbUrl);
+      else
+         log.warning("the property 'url' was not set");
+      if (dbUser != null)
+         tmpInfo.put("db.user", dbUser);
+      else
+         log.warning("the property 'user' was not set");
+      if (dbPassword != null)
+         tmpInfo.put("db.password", dbPassword);
+      else
+         log.warning("the property 'password' was not set");
+      I_DbPool pool = new DbPool();
+      pool.init(tmpInfo);
+      return pool;
+   }
    
    /**
     * Intiates the replication for the given slave.
     * TODO Specify that the replicationKey (dbmasterid) must be short and DB conform.
     * Usually called by Human being via JMX Console.
     * 
+    * The cascaded replication is the replication which will be automatically started once the initial update of the first replication is finished. This is 
+    * used to concatenate replications. A typical usecase is in two way replication, then the initial update of the back replication can be automatically triggered
+    * once the initial update of the main replication is finished.
+    * 
     * @param slaveSessionName
     * @param replicationKey This is the dbWatcher replication.prefix attribute.
+    * @param cascadeSlaveSessionName The Name of the session of the dbWriter to be used for the cascaded replication. Can be null.
+    * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
+    * @param cascadeReplicationPrefix
     * @throws Exception
     */
-   public String initiateReplication(String slaveSessionName, String replicationPrefix) throws Exception {
+   public String initiateReplication(String slaveSessionName, String replicationPrefix, String cascadeSlaveSessionName, String cascadeReplicationPrefix) throws Exception {
       try {
          if (slaveSessionName == null || slaveSessionName.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
@@ -161,28 +217,21 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                String dbWatcherSessionId = individualInfo.get("_senderSession", null);
                if (dbWatcherSessionId == null)
                   throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
+
+               if (cascadeReplicationPrefix != null && cascadeReplicationPrefix.trim().length() > 0)
+                  individualInfo.put(I_ReplSlave.CASCADED_REPL_PREFIX, cascadeReplicationPrefix.trim());
+               if (cascadeSlaveSessionName != null && cascadeSlaveSessionName.trim().length() > 0)
+                  individualInfo.put(I_ReplSlave.CASCADED_REPL_SLAVE, cascadeSlaveSessionName.trim());
+               
                boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId);
                if (isOkToStart == false)
                   ret += " did fail since your status is '" + slave.getStatus() + "'";
             }
-            else {
-               StringBuffer buf = new StringBuffer();
-               String[] slaves = getSlaves();
-               for (int i=0; i < slaves.length; i++) {
-                  if (i > 0)
-                     buf.append(",");
-                  buf.append(slaves);
-               }
-               throw new Exception("the replication slave '" + slaveSessionName + "' was not found among the list of slaves which is '" + buf.toString() + "'");
-            }
+            else
+               throw new Exception("the replication slave '" + slaveSessionName + "' was not found among the list of slaves which is '" + getSlaves() + "'");
          }
-         else {
-            String[] repl = this.getReplications();
-            StringBuffer buf = new StringBuffer();
-            for (int i=0; i < repl.length; i++)
-               buf.append(repl[i]).append(" ");
-            throw new Exception("initiateReplication failed for '" + slaveSessionName + "' with replication key '" + replicationPrefix + "' since not known. Known are '" + buf.toString() + "'");
-         }
+         else
+            throw new Exception("initiateReplication failed for '" + slaveSessionName + "' with replication key '" + replicationPrefix + "' since not known. Known are '" + getReplications() + "'");
          return ret;
       }
       catch (Exception ex) {
@@ -190,7 +239,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          throw ex;
       }
    }
-   
+
+   /**
+    * @deprecated you should use the variant with four arguments.
+    */
+   public String initiateReplication(String slaveSessionName, String replicationPrefix) throws Exception {
+      return initiateReplication(slaveSessionName, replicationPrefix, null, null);
+   }
+
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
@@ -210,6 +266,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
          // this.global.getJmxWrapper().registerMBean(contextNode, this);
+         
+         this.pool = getDbPool();
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);
@@ -289,6 +347,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          this.replSlaveMap.clear();
          
          getEngineGlobal(this.global).getPluginRegistry().unRegister(getType() + "," + getVersion());
+         this.pool.shutdown();
       }
       catch (Throwable e) {
          log.warning("Ignoring shutdown problem: " + e.toString());
@@ -368,16 +427,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             String sender = updateQos.getSender().getRelativeName();
             
             I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(sender);
-            if (slave == null) {
-               StringBuffer buf = new StringBuffer();
-               String[] slaves = getSlaves();
-               for (int i=0; i < slaves.length; i++) {
-                  if (i > 0)
-                     buf.append(",");
-                  buf.append(slaves);
-               }
-               log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + buf.toString());
-            }
+            if (slave == null)
+               log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + getSlaves());
             else {
                log.info("Update data from SQL request came from user '" + sender + "'");
                slave.setSqlResponse(new String(content));
@@ -451,7 +502,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          else {
             log.info("Adding dispatch Manager for '" + sessionName + "'");
             String relativeSessionName = sessionName.getRelativeName();
-            I_ReplSlave slave = new ReplSlave(this.global, this.instanceName, relativeSessionName);
+            I_ReplSlave slave = new ReplSlave(this.global, this.pool, this, relativeSessionName);
             synchronized (this.replSlaveMap) {
                this.replSlaveMap.put(relativeSessionName, slave);
             }
@@ -462,6 +513,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
    }
 
+   public String getInstanceName() {
+      return this.instanceName;
+   }
+   
    /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#doActivate(org.xmlBlaster.util.dispatch.DispatchManager)
     */
@@ -604,13 +659,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          throw new Exception("executeSql: the sql statement to perform on  '" + repl + "' is null. Can not perform it.");
       
       I_Info dbWatcherInfo = (I_Info)this.replications.get(repl);
-      if (dbWatcherInfo == null) {
-         StringBuffer buf = new StringBuffer();
-         String[] repls = getReplications();
-         for (int i=0; i < repls.length; i++)
-            buf.append(repls[i]).append(" ");
-         throw new Exception("executeSql: the replication with Id='" + repl + "' was not found (has not been registered). Allowed ones are : " + buf.toString());
-      }
+      if (dbWatcherInfo == null)
+         throw new Exception("executeSql: the replication with Id='" + repl + "' was not found (has not been registered). Allowed ones are : " + getReplications());
       
       String oid = dbWatcherInfo.get("mom.topicName", null);
       if (oid == null) {
@@ -637,9 +687,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
       // reset all responses ....
       synchronized (this.replSlaveMap) {
-         String[] slaves = getSlaves();
-         for (int i=0; i < slaves.length; i++) {
-            I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(slaves[i]);
+         Iterator iter = this.replSlaveMap.values().iterator();
+         while (iter.hasNext()) {
+            I_ReplSlave slave = (I_ReplSlave)iter.next();
             slave.setSqlResponse("");
          }
       }
@@ -686,12 +736,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       ConnectQosServer connQos = e.getConnectQos();
       if (!hasUsAsDispatchPlugin(connQos))
          return;
-      log.info("Connecting with qos : " + connQos.toXml());
+      log.fine("Connecting with qos : " + connQos.toXml());
       String sessionName = e.getSessionInfo().getSessionName().getRelativeName();
       log.info("addition of session for '" + sessionName +"' occured");
       synchronized (this.replSlaveMap) {
          if (!this.replSlaveMap.containsKey(sessionName)) {
-            I_ReplSlave slave = new ReplSlave(this.global, this.instanceName, sessionName);
+            I_ReplSlave slave = new ReplSlave(this.global, this.pool, this, sessionName);
             this.replSlaveMap.put(sessionName, slave);
          }
       }
@@ -712,7 +762,16 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          if (!this.replSlaveMap.containsKey(sessionName))
             log.warning("The slave '" + sessionName + "' is not registered.");
          else {
-            this.replSlaveMap.remove(sessionName);
+            I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.remove(sessionName);
+            if (slave != null) {
+               try {
+                  slave.shutdown();
+               }
+               catch (Exception ex) {
+                  log.severe("Could not shut down the slave '" + sessionName + "' properly");
+                  ex.printStackTrace();
+               }
+            }
          }
       }
    }

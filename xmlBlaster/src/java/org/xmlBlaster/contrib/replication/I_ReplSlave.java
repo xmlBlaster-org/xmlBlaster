@@ -21,6 +21,11 @@ public interface I_ReplSlave extends I_ContribPlugin {
    public final static int STATUS_INITIAL = 1;
    public final static int STATUS_TRANSITION = 2;
    public final static int STATUS_NORMAL = 3;
+   public final static int STATUS_INCONSISTENT = 4;
+   
+   public final static String DBWATCHER_SESSION_NAME = "_dbWatcherSessionName";
+   public final static String CASCADED_REPL_SLAVE = "_cascadedReplSlave";
+   public final static String CASCADED_REPL_PREFIX = "_cascadedReplPrefix";
 
    /**
     * Starts the whole initial update

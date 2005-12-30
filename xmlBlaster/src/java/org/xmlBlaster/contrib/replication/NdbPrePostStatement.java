@@ -26,12 +26,32 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class NdbPrePostStatement implements I_PrePostStatement {
    
    private static Logger log = Logger.getLogger(NdbPrePostStatement.class.getName());
-   private int comChannel;
+   private String comChannel;
    
    public NdbPrePostStatement() {
       
    }
 
+   /**
+    * Transforms the column of C_OUTS.COM_CHANNEL to be C_INS.COM_CHANNEL='20'. Since in the DEE this value is null and the NDB needs to know from whom it comes.
+    */
+   public boolean preStatement(String operation, Connection conn, SqlInfo info, SqlDescription tableDescription, SqlRow currentRow) throws Exception {
+      if (tableDescription.getCompleteTableName().indexOf("C_INS") != -1 /* || tableDescription.getCompleteTableName().indexOf("C_OUTS") != -1*/) {
+         try {
+            ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, this.comChannel);
+            currentRow.setColumn(tmpCh);
+         }
+         catch (Exception e1) {
+            log.warning("error when trying to add a new column to the row");
+            e1.printStackTrace();
+         }
+      }
+      return true; // try it anyway
+   }
+
+   /**
+    * Reads the COM_MESSAGEID, COM_CHANNEL and COM_TXTL columns of C_INS and writes with these values an entry in the C_IN_TEXTS 
+    */
    public void postStatement(String operation, Connection conn, SqlInfo info, SqlDescription tableDescription, SqlRow currentRow) throws Exception {
       if (tableDescription.getCompleteTableName().indexOf("C_INS") != -1) {
          ClientProperty prop = currentRow.getColumn("COM_MESSAGEID");
@@ -73,30 +93,13 @@ public class NdbPrePostStatement implements I_PrePostStatement {
       }
    }
 
-   /**
-    * 
-    */
-   public boolean preStatement(String operation, Connection conn, SqlInfo info, SqlDescription tableDescription, SqlRow currentRow) throws Exception {
-      if (tableDescription.getCompleteTableName().indexOf("C_INS") != -1 || tableDescription.getCompleteTableName().indexOf("C_OUTS") != -1) {
-         try {
-            ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, "20");
-            currentRow.setColumn(tmpCh);
-         }
-         catch (Exception e1) {
-            log.warning("error when trying to add a new column to the row");
-            e1.printStackTrace();
-         }
-      }
-      return true; // try it anyway
-   }
-
    public Set getUsedPropertyKeys() {
       // TODO Auto-generated method stub
       return null;
    }
 
    public void init(I_Info info) throws Exception {
-      this.comChannel = info.getInt("dbWriter.ndbPrePostStatement.comChannel", 20);
+      this.comChannel = info.get("dbWriter.ndbPrePostStatement.comChannel", "20");
    }
 
    public void shutdown() throws Exception {
