@@ -187,11 +187,21 @@ public class JmxWrapper
    /**
     * Create the unique MBeanServer instance. 
     */
-   private MBeanServer getMBeanServer() {
+   public MBeanServer getMBeanServer() {
       if (this.mbeanServer == null) {
          synchronized (this) {
             if (this.mbeanServer == null) {
                try {
+                  
+                  // check if the system property is already set
+                  final String PROP_KEY = "javax.management.builder.initial";
+                  final String PROP_VALUE = "mx4j.server.MX4JMBeanServerBuilder";
+                  String prop = System.getProperty(PROP_KEY, null);
+                  if (prop == null) {
+                     this.log.info(ME, "getMBeanServer: setting the property '" + PROP_KEY + "' to '" + PROP_VALUE + "'");
+                     System.setProperty(PROP_KEY, PROP_VALUE);
+                  }
+                  
                   Class clazz = java.lang.Class.forName("java.lang.management.ManagementFactory");
                   if (clazz != null) {
                      // this.mbeanServer = ManagementFactory.getPlatformMBeanServer(); // new for JDK 1.5
