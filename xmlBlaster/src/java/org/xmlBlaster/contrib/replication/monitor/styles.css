@@ -1,0 +1,223 @@
+body {
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 10pt;
+   font-weight: bold;
+   #background-color: #007524;
+   background-color: #FFFFFF;
+   #color: #F1C101;
+   color: #007524;
+}			    
+
+div.header {
+   background-color: #F0F0F0;
+   border: 0px;
+   width: 650;
+   #height: 200;
+   padding-bottom: 2pt;
+   align: center
+}
+
+div.middle {
+   background-color: #F0F0F0;
+   border: 0px;
+   width: 650;
+}
+
+div.footer {
+   padding-top: 2pt;
+   background-color: #F0F0F0;
+   border: 0px;
+   width: 650;
+   #height: 20;
+   text-align: right
+}
+
+input,select {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+}
+
+table.external {
+   padding-left: 2pt;
+   padding-top: 2pt;
+   padding-right: 2pt;
+   padding-bottom: 2pt;
+   border: 3px ridge #66666;
+   background-color: #F0F0F0;
+}
+
+table.inner {
+   border-width: 5px;
+   border-color: #D0D0D0;
+   border-style: ridge;
+
+}
+
+
+td.title {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   background-color: #F0F0F0;
+   border: 3px outset ;
+   color: #007524;
+}
+
+th.title {
+   color: #007524;
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   background-color: #F0F0F0;
+   border: 3px outset ;
+}
+
+tr.inner:hover {
+   background-color: #ffffff;
+}
+
+td.button {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   background-color: #ffffff;
+   #border: 5px outset;
+   color: #007524;
+}
+
+th.normal {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   color: #007524;
+}
+
+td.normal {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   color: #007524;
+}
+
+td.number {
+    font-family: "Courier New", Courier, mono;
+    font-size: 9pt;
+    background-color: #ffffff;
+    width: 80pt;
+}
+
+td.highalarm {
+    font-family: "Courier New", Courier, mono;
+    font-size: 9pt;
+    background-color: #ffa0a0;
+    width: 80pt;
+}
+
+td.highwarn {
+    font-family: "Courier New", Courier, mono;
+    font-size: 9pt;
+    background-color: #ffffa0;
+    width: 80pt;
+}
+
+h1 {
+   text-align: center;
+   font-size: 18pt;
+}
+
+h2 {
+   font-size: 14pt;
+   color: #990033;
+}
+
+select.values {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   width: 120pt;
+}
+
+button.danger { 
+   color:#000000; 
+   background-color:#FFC0C0;
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   text-decoration:none; 
+   font-weight:normal; 
+   border: 3px outset;
+   width: 90pt;
+}
+
+button.danger:hover { 
+   color:#000000; 
+   background-color:#FF0000;
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   #color:#EE0000; 
+   text-decoration:none; 
+   font-weight:bold; 
+   border: 3px outset;
+   width: 90pt;
+}
+
+button.common { 
+   #color:#EE0000; 
+   text-decoration:none; 
+   font-weight:normal; 
+   border: 3px outset;
+   width: 120pt;
+}
+
+button.common:hover { 
+   #color:#EE0000; 
+   text-decoration:none; 
+   #background-color:#FFFF99; 
+   font-weight:bold; 
+   border: 3px outset;
+   width: 120pt;
+}
+
+button.small { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   #color:#EE0000; 
+   text-decoration:none; 
+   font-weight:normal; 
+   border: 3px outset;
+   width: 90pt;
+}
+
+button.small:hover { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   #color:#EE0000; 
+   text-decoration:none; 
+   #background-color:#FFFF99; 
+   font-weight:bold; 
+   border: 3px outset;
+   width: 90pt;
+}
+
+a { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   #color:#EE0000; 
+   color: #007524;
+   text-decoration:none; 
+   font-weight:bold; 
+}
+
+a:hover { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   #color:#EE0000; 
+   text-decoration:none; 
+   background-color:#FFFF99; 
+   font-weight:bold; 
+}
+
+
+a.image { 
+   text-decoration:none; 
+   font-weight:normal;
+   color:#F0F0F0;
+}
+
+a.image:hover { 
+   text-decoration:none; 
+   font-weight:normal;
+}
