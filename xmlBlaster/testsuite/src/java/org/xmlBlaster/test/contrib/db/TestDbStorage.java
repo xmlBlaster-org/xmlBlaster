@@ -133,8 +133,8 @@ public class TestDbStorage extends XMLTestCase {
          prop1 = this.dbStorage.getProperty(name);
          assertTrue("The property has been removed, it should now be null.", prop1 == null);
          
-         this.dbStorage.addProperty(new ClientProperty("2-two", null, null, "2"));
-         this.dbStorage.addProperty(new ClientProperty("4-four", null, null, "4"));
+         this.dbStorage.put(new ClientProperty("2-two", null, null, "2"));
+         this.dbStorage.put(new ClientProperty("4-four", null, null, "4"));
          this.dbStorage.addProperty(new ClientProperty("5-five", null, null, "5"));
          this.dbStorage.addProperty(new ClientProperty("3-three", null, null, "3"));
 
@@ -145,7 +145,7 @@ public class TestDbStorage extends XMLTestCase {
          assertTrue("Wrong content", set.contains("3-three"));
          assertTrue("Wrong content", set.contains("4-four"));
          assertTrue("Wrong content", set.contains("5-five"));
-
+         
          this.dbStorage.clean();
          set = this.dbStorage.getKeys();
          assertEquals("Wrong number of keys found", 0, set.size());
