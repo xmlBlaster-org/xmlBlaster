@@ -92,7 +92,7 @@ public class MX4JAdaptor extends GlobalInfo {
       if (processorName != null)
          adapter.setProcessorName(processorName);
       adapter.start();
-
+      log.info("The adaptor '" + adaptorName + "' is running. You can access it at 'http://" + host + ":" + port + "'");
    }
 
    private final void stopAdaptor() throws Exception {
