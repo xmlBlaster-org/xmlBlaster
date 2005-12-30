@@ -39,6 +39,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    protected List subscribeQosList;
    protected ConnectQos connectQos;
    protected I_Update eventHandler;
+   protected boolean shutdownMom;
 
    public MomEventEngine() {
       this.subscribeKeyList = new ArrayList();
@@ -59,6 +60,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       set.add("mom.subscribeQos");
       set.add("mom.connectQos");
       set.add("mom.maxSessions");
+      set.add("dbWriter.shutdownMom");
       return set;
    }
 
@@ -85,6 +87,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
       }
 
+      this.shutdownMom = info.getBoolean("dbWriter.shutdownMom", false); // avoid to disconnect (otherwise it looses persistent subscriptions)
       this.loginName = info.get("mom.loginName", "dbWriter/1");
       this.password  = info.get("mom.password", "secret");
 
@@ -206,7 +209,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
 
    public void shutdown() {
       log.fine("Closing xmlBlaster connection");
-      if (this.con != null) {
+      if (this.con != null && this.shutdownMom) {
          this.con.disconnect(null);
          this.con = null;
          this.glob = null;

@@ -99,6 +99,12 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       this.helper = new InfoHelper(this);
    }
 
+   /**
+    * 
+    * @param global The global passed by the RunLevelManager, this is not the object owned by the plugin. It is the original global.
+    * @param pluginInfo
+    * @throws XmlBlasterException
+    */
    protected abstract void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException;
    
    /**

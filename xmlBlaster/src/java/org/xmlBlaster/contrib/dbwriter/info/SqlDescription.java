@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
@@ -28,7 +27,6 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
-import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -607,68 +605,15 @@ public class SqlDescription {
       try {
          ArrayList entries = new ArrayList();
 
-         // Hack 1
-         if (getCompleteTableName().indexOf("C_INS") != -1 || getCompleteTableName().indexOf("C_OUTS") != -1) {
-            try {
-               ClientProperty tmpCh = new ClientProperty("COM_CHANNEL", Constants.TYPE_INT, null, "20");
-               row.setColumn(tmpCh);
-            }
-            catch (Exception e1) {
-               log.warning("error when trying to add a new column to the row");
-               e1.printStackTrace();
-            }
-         }
-         
          String insertSt = createInsertStatement(row, entries);
 
          String sql = "INSERT INTO " + getCompleteTableName() + insertSt;
          st = conn.prepareStatement(sql);
 
-         Statement st2 = null;
-         
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
          ret = st.executeUpdate();
          
-         // hack 2
-         if (getCompleteTableName().indexOf("C_INS") != -1) {
-            ClientProperty prop = row.getColumn("COM_MESSAGEID");
-            long comMsgId = 0L;
-            int ch;
-            String txtl = null;
-            if (prop != null) {
-               comMsgId = prop.getLongValue();
-            }
-            prop = row.getColumn("COM_CHANNEL");
-            if (prop != null) {
-               ch = prop.getIntValue();
-            }
-            else
-               ch = 20;
-            prop = row.getColumn("COM_TXTL");
-            if (prop != null) {
-               txtl = prop.getStringValue();
-               if (txtl == null)
-                  txtl = "";
-            }
-            else
-               txtl = "";
-            st2 = conn.createStatement();            
-            String sql1 = "insert into AIS.C_IN_TEXTS (COM_MESSAGEID, COM_CHANNEL, COM_TXTL) VALUES (" + comMsgId + ", " + ch + ", '" + txtl + "')";
-            String sql2 = "delete from AIS.C_INS";
-            log.info("fix insert '" + sql1 + "'");
-            log.info("(fix delete '" + sql2 + "'");
-
-            try {
-               st2.executeUpdate(sql1);
-               try { st2.close(); } catch (Exception e) { e.printStackTrace(); }
-               st2 = conn.createStatement();            
-               st2.executeUpdate(sql2);
-            }
-            finally {
-               try { if (st2 != null) st2.close(); } catch (Exception e) { e.printStackTrace(); }
-            }
-         }
          return ret;
       }
       catch (SQLException ex) {
@@ -790,7 +735,4 @@ public class SqlDescription {
    }
    
 }
-
-
-
 
