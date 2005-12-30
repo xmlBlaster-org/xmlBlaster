@@ -94,8 +94,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #a2Blaster - authentication and authorisation service
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
-   #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xercesImpl.jar
+   # CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
+   # CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xercesImpl.jar
    # jutils.jar is now included in xmlBlaster.jar
    #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
@@ -162,8 +162,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/saw.jar
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/soap.jar
 
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/parser.jar
+   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jaxp.jar
+
    # jmx reference implementation
-   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar:${XMLBLASTER_HOME}/lib/mx4j-impl.jar:${XMLBLASTER_HOME}/lib/mx4j-tools.jar 
 
    # apache's embedded jndi naming service
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
