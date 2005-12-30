@@ -3,7 +3,7 @@
 
 <requirement id='contrib.replication' type='NEW' prio='HIGH' status="OPEN">
    <topic>
-      Replication is a plugin framework used to replicate data between sources and sinks.
+      Replication is a plugin framework used to replicate data between database (RDBMS) sources and sinks.
    </topic>
 
    <description>
@@ -21,16 +21,19 @@
       <ul>
         <li>Single Master / Multi Slave approach</li>
         <li>Conventional one to one Replication</li>
-        <li>Replication with Data Manipulation</li>
-        <li>Replication with Data Filtration</li>
+        <li>Replication with Data Manipulation on a per sink individual basis with no intervention on the master side</li>
+        <li>Replication with Data Filtration on a per sink individual basis with no intervention on the master side</li>
         <li>Use of all Communication Protocols offered by XmlBlaster (even the most fancy ones)</li>
         <li>Persistence of Messages, Failover and guaranteed sequence of messages</li>
         <li>Transactions are handled atomically and sent in a single Message</li>
         <li>Possibility to interchange this with other sources/sinks for for example Meta-Databases</li>
         <li>Plugin approach to allow business-specific functionality</li>
-        <li>Possibility to intermix different database vendors</li>
+        <li>Possibility to intermix different database versions and vendors</li>
         <li>Performance tuning for specific vendors (for example for initial update)</li>
-        <li>...</li>
+        <li>Highly Compressed communication</li>
+	<li>Encrypted and secure replication</li>
+	<li>Unlimited number of sinks</li>
+	<li>Efficient and reliable even on unreliable networks</li>
       </ul>
     </p>
     <p>
@@ -97,20 +100,23 @@
 	  have started only the slave, the prompt <b>slave</b> would have appeared. Of course for the sake of simplicity we are using one single
 	  database here.
        </li>
-       <li>In the configuration file you defined two tables to be replicated:
+       <li>In the configuration file you defined the tables to be replicated:
           <pre>
 
   table.${db.user}.DEMO_USERS=trigger=DEMO_USERS_TRG
-  table.${db.user}.DEMO_ACCOUNTS=trigger=actions=IDU,DEMO_ACCOUNTS_TRG,sequence=10
 
 	  </pre>
        	  Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. In the first of both lines you also
 	  can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything here would
-	  let the application decide a name for it. In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
+	  let the application decide a name for it. 
+<!--	  
+	  In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
 	  actions on which the trigger will fire. Here IDU stands for <tt>I(nsert), D(elete) and U(pdate)</tt>. These are the only three actions allowed.
 	  IDU is the default. <b>sequence</b> is the sequence number on which the Table will be replicated. This is important if you have foreign keys,
 	  then the referenced tables must be replicated first. Unspecified sequences will be processed before any specified. Internally, the
 	  sequence among all unspecified ones is determined by the application (this is currently undefined but plugins will allow control). 
+-->
+
 	</li>
         <li>Now you can add the table <b>DEMO_USERS</b> by typing on the command line of the started client:
 	<pre>

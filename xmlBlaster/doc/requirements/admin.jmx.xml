@@ -23,7 +23,7 @@
       A JMX Agent enables manageability of these functionalities from local or remote,
       allowing a system administrator to manage the components of the application.
       </p>
-      <img src='jmx-xmlBlaster.gif' border='0' alt='JMX - xmlBlaster integration overview' />
+      <center><img src='jmx-xmlBlaster.gif' border='0' alt='JMX - xmlBlaster integration overview' /></center>
       <p>
 
       <h3>JMX adaptor overview</h3>
@@ -72,6 +72,17 @@
           </td>
       </tr>
       <tr>
+        <td>MX4J HTTP Adaptor Support</td>
+        <td>This support uses the <a href="http://www.mx4j.org">mx4j http jmx adaptor</a> which can be loaded 
+          as a plugin. It is highly configurable.
+        </td>
+        <td>
+          The adaptor itself generates xml code which can be 
+	  processed by an xslt processor. This processor reads your own xsl stylesheets. We use this as a
+	  monitoring tool for Database replication.
+        </td>
+      </tr>
+      <tr>
       <td>SNMP adaptor</td>
       <td>If you need to monitor xmlBlaster from an existing SNMP aware monitoring
           tool you need to install a SNMP adaptor.
@@ -82,6 +93,7 @@
           <a href="http://www.adventnet.com/products/snmpadaptor/index.html" target="others">SNMP Adaptor for JMX</a> (~500 US$)
           or <a href="http://www.koshna.com/sales/purchase.asp?product=KSX" target="others">" target="others">Koshna SNMP Toolkit for JMX</a> (~1200 US$)
       </td>
+
       <td>Any existing SNMP aware monitoring
           tool like <a href="http://www.nagios.org/" target="others">NAGIOS</a>
           or <a href="http://www.managementsoftware.hp.com/" target="others"> HP-OpenView</a>
@@ -133,7 +145,7 @@ in your browser and type in the above credentials.
    </p>
    <h3>HTML adaptor screenshot</h3>
    <p>
-      <img src='jmx-htmlAdaptor.png' border='0' alt='JMX - xmlBlaster HTML adaptor browser screenshot' />
+      <center><img src='jmx-htmlAdaptor.png' border='0' alt='JMX - xmlBlaster HTML adaptor browser screenshot' /></center>
    </p>
    </example>
 
@@ -218,7 +230,7 @@ jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
 
    <h3>Jconsole screenshot</h3>
    <p>
-      <img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' />
+      <center><img src='jmx-jconsole.png' border='0' alt='JMX - xmlBlaster jconsole screenshot' /></center>
       </p>
    </example>
 
@@ -240,7 +252,40 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
 
    <h3>MC4J screenshot</h3>
    <p>
-      <img src='jmx-MC4J.png' border='0' alt='JMX - xmlBlaster MC4J screenshot' />
+      <center><img src='jmx-MC4J.png' border='0' alt='JMX - xmlBlaster MC4J screenshot' /></center>
+      </p>
+   </example>
+
+
+   <example lang="any" type="HTML">
+      <h1 id="mx4j">Monitoring Specific Functionality with the MX4J Plugin</h1>
+      <p>
+        Start the XmlBlaster with the Plugin configured. You do not need any additional command line parameters.
+      </p>
+      <pre>
+<![CDATA[
+      <plugin id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
+      <attribute id="xsltProcessor">XSLTProcessor</attribute>
+      <attribute id="hostname">localhost</localhost>
+      <attribute id="port">9999</attribute>
+      <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
+      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
+      <!-- <attribute id="xsltPathInJar"></attribute>  -->
+      <attribute  id="xsltCache">false</attribute>
+      <!-- <attribute id="xsltLocale"></attribute> -->
+      <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
+   </plugin>
+]]>
+      </pre>  
+      <p>
+        This example would start an instance of an http server listening on the localhost on port 9999. The location for the xsl files to be
+	used is on <tt>${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</tt>. On that location you will find the
+	stylesheets used.
+      </p>
+      <p>
+   <h3>MX4J screenshot (replication example)</h3>
+	 <center><img src="mx4j.png" alt="mx4j"/></center>
       </p>
    </example>
 
