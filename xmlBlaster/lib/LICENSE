@@ -321,3 +321,11 @@ only the SNMP subagent module jax.jar is GPL only!
    javamail-1.3.3_01 from 2005-09-10
    needs activation.jar in CLASSPATH
    http://java.sun.com/products/javamail/
+
+43) mx4j-impl.jar and mx4j-tools.jar
+===================================
+  jmx implementation which offers an HTTP Adaptor which is highly
+  configurable. It generates XML Code which can be transformed
+  with a set of own xsl stylesheets. Added 2005-12-30.
+  http://www.mx4j.org
+
