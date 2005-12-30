@@ -10,6 +10,20 @@
 <xmlBlaster>
 
 
+   <plugin id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
+      <attribute id="xsltProcessor">XSLTProcessor</attribute>
+      <attribute id="hostname">localhost</localhost>
+      <attribute id="port">9999</attribute>
+      <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
+      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
+      <!-- <attribute id="xsltPathInJar"></attribute>  -->
+      <attribute  id="xsltCache">false</attribute>
+      <!-- <attribute id="xsltLocale"></attribute> -->
+      <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
+   </plugin>
+
+
    <!-- REPLICATION MANAGER PLUGIN  -->
    <plugin id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
       <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
