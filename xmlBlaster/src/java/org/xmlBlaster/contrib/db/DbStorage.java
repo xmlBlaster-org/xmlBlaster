@@ -227,12 +227,10 @@ public class DbStorage {
    public void put(ClientProperty prop) throws Exception {
       if (prop == null)
          throw new Exception("The property to put into the table was null");
-      try {
-         this.modifyProperty(prop);
-      }
-      catch (Exception ex) {
+      boolean hasAdded = this.modifyProperty(prop);
+      if (!hasAdded)
          this.addProperty(prop);
-      }
+      
    }
 
    public Set getKeys() throws Exception {
