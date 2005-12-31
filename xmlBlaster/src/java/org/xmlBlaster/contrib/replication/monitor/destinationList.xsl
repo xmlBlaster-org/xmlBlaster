@@ -116,7 +116,7 @@ function refresh() {
 	      </xsl:element>
 	    </td>
   
-            <xsl:param name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
+            <xsl:variable name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
             <xsl:choose>
               <xsl:when test="$queueEntries > $queue.highwarn">
                  <xsl:choose>
@@ -141,7 +141,7 @@ function refresh() {
   
     	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
     	    <td align="center" colspan="1" class="normal">
-	       <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
+	       <xsl:variable name="replStatus" select="Attribute[@name='Status']/@value"/>
 	       <xsl:element name="img">
 	          <xsl:attribute name="height">18</xsl:attribute>
 	          <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>

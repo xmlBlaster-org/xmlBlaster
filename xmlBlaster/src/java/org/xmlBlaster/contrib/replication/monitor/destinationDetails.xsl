@@ -125,7 +125,7 @@ function toggleDispatcher() {
  
  	 <!-- Queue Entries Line -->
     	 <tr class="inner">
-           <xsl:param name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
+           <xsl:variable name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
 
     	   <td colspan="1" class="normal" title="The queue holding the replicated data">Queue</td>
            <xsl:choose>
@@ -168,7 +168,7 @@ function toggleDispatcher() {
     	  <tr class="inner">
     	    <td colspan="1" class="normal" title="Status of initial Update">Status</td>
     	    <td align="center" colspan="1" class="normal">
-	       <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
+	       <xsl:variable name="replStatus" select="Attribute[@name='Status']/@value"/>
 	       <xsl:element name="img">
 	          <xsl:attribute name="height">20</xsl:attribute>
 	          <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>

@@ -27,8 +27,8 @@
 </xsl:template>
 
 <xsl:template name="modifySessionName">
-   <xsl:param name="content" select=""/>
-   <xsl:value-of select="substring-before(substring-after($content, '-'), '/')"/>
+   <xsl:param name="content"/>
+   <xsl:value-of select="substring-before($content, '/')"/>
 </xsl:template>
 
 

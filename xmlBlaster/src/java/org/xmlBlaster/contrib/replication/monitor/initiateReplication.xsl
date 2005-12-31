@@ -94,7 +94,7 @@ http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,contr
 <xsl:include href="customize.xsl"/>
 
 <xsl:template name="replaceString">
-   <xsl:param name="content" select=""/>
+   <xsl:param name="content" />
    <xsl:choose>
      <xsl:when test="contains($content, ',')">
    <option>
