@@ -65,9 +65,10 @@ public class MX4JAdaptor extends GlobalInfo {
          server.createMBean("mx4j.tools.adaptor.http.XSLTProcessor", processorName, null);
          // set it to use a dir
          String xsltPath = get("xsltPath", null); // can be a directory or a jar file
+         String xsltPathInJar = null;
          if (xsltPath != null) {
             server.setAttribute(processorName, new Attribute("File", xsltPath));
-            String xsltPathInJar = get("xsltPathInJar", null);
+            xsltPathInJar = get("xsltPathInJar", null);
             if (xsltPathInJar != null) // set the target dir
                server.setAttribute(processorName, new Attribute("PathInJar", xsltPathInJar));
          }
@@ -81,7 +82,8 @@ public class MX4JAdaptor extends GlobalInfo {
          if (xsltLocale != null)
             server.setAttribute(processorName, new Attribute("LocaleString", xsltLocale));
          // adds a mime type
-         // server.invoke(processorName, "addMimeType", new Object[] {".pdf", "application/pdf"}, new String[] {"java.lang.String", "java.lang.String"});      
+         // server.invoke(processorName, "addMimeType", new Object[] {".pdf", "application/pdf"}, new String[] {"java.lang.String", "java.lang.String"});
+         log.info("Xslt Processor: " + xsltProcessor + "' on xsltPath='" + xsltPath + "' and xsltPathInJar='" + xsltPathInJar + "' and xsltCache='" + xsltCache + "' and xsltLocale='" + xsltLocale + "'");
       }
       
       HttpAdaptor adapter = new HttpAdaptor();
