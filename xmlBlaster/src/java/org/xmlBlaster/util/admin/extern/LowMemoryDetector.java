@@ -101,7 +101,7 @@ public class LowMemoryDetector {
    }
 
    /**
-    * Tester: java -Xms1M -Xmx2M -Dcom.sun.management.jmxremote -DxmlBlaster/jmx/exitOnMemoryThreshold=true org.xmlBlaster.util.admin.extern.LowMemoryDetector
+    * Tester: java -Xms2M -Xmx3M -Dcom.sun.management.jmxremote -DxmlBlaster/jmx/exitOnMemoryThreshold=true org.xmlBlaster.util.admin.extern.LowMemoryDetector
     */
    public static void main(String[] args) throws java.io.IOException {
       
@@ -109,11 +109,12 @@ public class LowMemoryDetector {
       mem.register(new DefaultLowMemoryListener());
 
       ArrayList list = new ArrayList();
-      System.out.println("Hit a key");
+      System.out.println("Hit a key to start");
       System.in.read();
       int chunkSize = 100000;
       try {
          for (int i=0; i<1000; i++) {
+            System.out.println("Hit a key to allocate next " + chunkSize + " bytes");
             System.in.read();
             System.out.println("Adding another junk " + chunkSize);
             byte[] buffer = new byte[chunkSize];
