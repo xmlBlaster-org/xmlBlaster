@@ -162,9 +162,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/saw.jar
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/soap.jar
 
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/parser.jar
-   CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/jaxp.jar
-
    # jmx reference implementation
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar:${XMLBLASTER_HOME}/lib/mx4j-impl.jar:${XMLBLASTER_HOME}/lib/mx4j-tools.jar 
 
