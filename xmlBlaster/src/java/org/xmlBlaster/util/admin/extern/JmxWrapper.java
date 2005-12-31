@@ -231,8 +231,8 @@ public class JmxWrapper
     * Here we replace commas with an underscore.
     * Even if we use quoted ObjectName values the comma is not allowed.
     * <br /> 
-    * Additionally we replace '/' as these would break the admin telent commands
-    * syntax, it it is nice to be able to use those interchangeable
+    * Additionally we replace '/' as these would break the admin telnet commands
+    * syntax, it is nice to be able to use those interchangeable
     * @param value The value to verify
     * @return The beautified value to be usable as a value for JMX properties
     */
@@ -477,7 +477,7 @@ public class JmxWrapper
 
                   float thresholdFactor = glob.getProperty().get("xmlBlaster/jmx/memoryThresholdFactor", (float)0.9);
                   Object[] params = new Object[] { new Float(thresholdFactor) };
-            	  ctor.newInstance(params);
+                  ctor.newInstance(params);
                }
             }
             catch (Exception e) {
