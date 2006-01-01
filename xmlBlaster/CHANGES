@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14481 Added native plugin to trigger xmlBlaster internal events as emails
+   Currently log.error or/and log.warning, see EventPlugin in xmlBlasterPlugins.xml
+
  o #14438,#14439 C++-client library: size_t, int64_t cleanup
 
  o #14437 C-client library: size_t, int64_t cleanup

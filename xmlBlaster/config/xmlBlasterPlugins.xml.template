@@ -9,27 +9,6 @@
 -->
 <xmlBlaster>
 
-
-   <plugin id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
-      <attribute id="xsltProcessor">XSLTProcessor</attribute>
-      <attribute id="hostname">localhost</attribute>
-      <attribute id="port">9999</attribute>
-      <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
-      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
-      <!-- <attribute id="xsltPathInJar"></attribute>  -->
-      <attribute  id="xsltCache">false</attribute>
-      <!-- <attribute id="xsltLocale"></attribute> -->
-      <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
-   </plugin>
-
-
-   <!-- REPLICATION MANAGER PLUGIN  -->
-   <plugin id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
-      <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
-   </plugin>
-
    <!--========== SubscriptionPersistencePlugin =============-->
    <plugin id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
       <action do='LOAD' onStartupRunlevel='4' sequence='10' />
@@ -183,6 +162,31 @@
 
 
    <!--========== NATIVE SERVICE PLUGINS =============-->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#mx4j -->
+   <!--
+   <plugin id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
+      <attribute id="xsltProcessor">XSLTProcessor</attribute>
+      <attribute id="hostname">localhost</attribute>
+      <attribute id="port">9999</attribute>
+      <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
+      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
+      <attribute  id="xsltCache">false</attribute>
+      <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
+   </plugin>
+   -->
+      <!-- <attribute id="xsltPathInJar"></attribute>  -->
+      <!-- <attribute id="xsltLocale"></attribute> -->
+
+   <!-- REPLICATION MANAGER PLUGIN http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.replication.html -->
+   <!--
+   <plugin id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
+   </plugin>
+   -->
+
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
    <plugin id='JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
       <action do='LOAD' onStartupRunlevel='5' sequence='5' />
@@ -198,6 +202,16 @@
       <attribute id='directoryName'>${java.io.tmpdir}${file.separator}xmlBlaster-deadMessages</attribute>
       <attribute id='password'>secret</attribute>
       <attribute id='forceBase64'>false</attribute>
+   </plugin>
+   -->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <!--
+   <plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>log.severe,log.warning</attribute>
+      <attribute id='destination.smtp'>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=demo@localhost,mail.collectMillis=360000</attribute>
    </plugin>
    -->
 
