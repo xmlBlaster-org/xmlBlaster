@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   The schema for UpdateReturnQos and callback pingReturnQos when used with
   'email' protocol and activated:
@@ -7,14 +7,14 @@ ClientCbServerProtocolPlugin[email][1.0]=...,\
   sendSimpleExceptionFormat=true,\
   parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 -->
-<xsd:schema id="NewDataSet" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="NewDataSet">
   <xsd:element name="ping">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element name="qos" minOccurs="0" maxOccurs="unbounded">
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="qos">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element name="state" minOccurs="0" maxOccurs="unbounded">
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="state">
                 <xsd:complexType>
                   <xsd:attribute name="id">
                     <xsd:simpleType>
@@ -61,10 +61,10 @@ ClientCbServerProtocolPlugin[email][1.0]=...,\
   <xsd:element name="update">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element name="qos" minOccurs="0" maxOccurs="unbounded">
+        <xsd:element maxOccurs="unbounded" minOccurs="0" name="qos">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element name="state" minOccurs="0" maxOccurs="unbounded">
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="state">
                 <xsd:complexType>
                   <xsd:attribute name="id">
                     <xsd:simpleType>
