@@ -93,7 +93,7 @@ public class DeadMessageDumper implements I_Plugin {
 
       if (this.log.CALL) this.log.call(ME, "init");
 
-      String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
+      String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
 
       this.directoryName = this.global.get("directoryName", defaultPath, null, this.pluginInfo);
       initDirectory(null, "directoryName", this.directoryName);
