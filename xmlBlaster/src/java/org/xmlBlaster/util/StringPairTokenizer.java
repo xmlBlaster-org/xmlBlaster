@@ -29,6 +29,7 @@ public class StringPairTokenizer {
    public static final char DEFAULT_QUOTE_CHARACTER = '"';
    public static final char ESCAPE_CHARACTER = '\\';
    public static final char DEFAULT_SEPARATOR = ',';
+   public static final char DEFAULT_INNER_SEPARATOR = '=';
 
    /**
     * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
@@ -68,6 +69,10 @@ public class StringPairTokenizer {
     *
     * Thanks to http://opencsv.sourceforge.net/ (under Apache license)
     * 
+    * @param nextLines An array of lines, followup lines will only be parsed if an open quotechar exists
+    * @param separator Defaults to StringPairTokenizer.DEFAULT_SEPARATOR=','
+    * @param quotechar Defaults to StringPairTokenizer.DEFAULT_QUOTE_CHARACTER='"'
+    * @param trimEmpty if true removes silently empy tokens
     * @return Never null, if nextLines is null or empty we return an empty array
     */
    public static String[] parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty) {
@@ -106,6 +111,74 @@ public class StringPairTokenizer {
       return (String[]) tokensOnThisLine.toArray(new String[0]);
    }
    
+   /**
+    * Split string to tokens and respect quotes, then parse key/values into the returned map. 
+    *  
+    * If a value is missing then a null object will be put into the map as value.
+    * The map returns pairs 'String,ClientProperty' if wantClientProperties is true,
+    * otherwise it returns 'String,String' pairs.
+    *   
+    * @param nextLines e.g.
+    * <code>String[] nextLines = { "org.xmlBlaster.protocol.soap.SoapDriver,\"classpath=xerces.jar:soap.jar,all\",MAXSIZE=100,a=10,\"b=", "20\",c=30" };</code>
+    *                  Followup lines will only be parsed if an open quotechar exists
+    * @param innerSeparator is for example StringPairTokenizer.DEFAULT_INNER_SEPARATOR "=" or " "
+    * @param wantClientProperties if set to <code>true</code> returns pairs 'String,ClientProperty', returns 'String,String' pairs otherwise.
+    * @return Never null,
+    * <pre>
+    * classpath=xerces.jar:soap.jar,all
+    * org.xmlBlaster.protocol.soap.SoapDriver=null
+    * MAXSIZE=100
+    * a=10
+    * c=30
+    * b=20
+    * </pre>
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
+    */
+   public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties) {
+      String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty);
+      Map ret = new HashMap();
+      for (int i=0; i<toks.length; i++) {
+         String tok = toks[i];
+         int pos = tok.indexOf(innerSeparator);
+         if (pos < 0) {
+            ret.put(tok.trim(), null);
+         }
+         else {
+            String key = tok.substring(0,pos).trim();
+            String value = tok.substring(pos+1).trim(); 
+            if (wantClientProperties) 
+               ret.put(key, new ClientProperty(key, null, null, value));
+            else
+               ret.put(key, value);
+         }
+      }
+      return ret;
+   }
+
+   /**
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties)
+    */
+   public static Map parseLine(String nextLine, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties) {
+      if (nextLine == null || nextLine.length()==0) return new HashMap();
+      String[] nextLines = new String[1];
+      nextLines[0] = nextLine;
+      return parseLine(nextLines, separator, quotechar, innerSeparator, trimEmpty, wantClientProperties);
+   }
+   
+   /**
+    * Parsing for example >org.xmlBlaster.protocol.soap.SoapDriver,"classpath=xerces.jar:soap.jar,all",MAXSIZE=100,a=10<. 
+    * <p>
+    * Using default separator chars and quote chars:
+    *  <code>return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);</code>
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties)
+    */
+   public static Map parseLineToProperties(String nextLine) {
+      if (nextLine == null || nextLine.length()==0) return new HashMap();
+      String[] nextLines = new String[1];
+      nextLines[0] = nextLine;
+      return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);
+   }
+
    /*
     * Split a string (similar to StringTokenizer) but respect escape quotes. 
     * <br />
@@ -275,6 +348,17 @@ public class StringPairTokenizer {
          String[] result = parseLine(test, separator.charAt(0), quotechar.charAt(0), true);
          for (int i=0; i<result.length; i++)
             System.out.println("'" + result[i] + "'");
+      }
+
+      {
+        System.out.println("\nTesting with quotes:\n");
+        String[] nextLines = { "org.xmlBlaster.protocol.soap.SoapDriver,\"classpath=xerces.jar:soap.jar,all\",MAXSIZE=100,a=10,\"b=", "20\",c=30" };
+        Map map = parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);
+        java.util.Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+           Map.Entry entry = (Map.Entry)it.next();
+           System.out.println(entry.getKey() + "=" + entry.getValue());
+        }
       }
    }
 }
