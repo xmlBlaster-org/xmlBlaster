@@ -38,7 +38,10 @@ import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
- * This class is capable to send emails.
+ * This class sends outgoing emails.
+ * <p>
+ * Developer note: Please don't use log.severe() or log.warning() to avoid
+ * recursion for logging-notification mails.
  * 
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
@@ -293,11 +296,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.isInitialized = true;
       
       if (this.mbeanHandle == null) {
-              // For JMX instanceName may not contain ","
-              this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
-                                  "SmtpClient[" + getType() + "]", 
-                                  glob.getScopeContextNode());
-              this.mbeanHandle = glob.registerMBean(this.contextNode, this);
+        // For JMX instanceName may not contain ","
+        this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+                            "SmtpClient[" + getType() + "]", 
+                            glob.getScopeContextNode());
+        this.mbeanHandle = glob.registerMBean(this.contextNode, this);
       }
 
       log.info("SMTP client to '" + this.xbUri.getUrlWithoutPassword() + "' is ready");
@@ -442,6 +445,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     *        Container holding the message to send
     */
    public void sendEmail(EmailData emailData) throws XmlBlasterException {
+      if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       try {
          MimeMessage message = new MimeMessage(getSession());
          message.setFrom(emailData.getFromAddress());
@@ -517,7 +521,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          if (log.isLoggable(Level.FINER))
             log.finer("Successful send email" + emailData.toXml(true));
       } catch (Exception e) {
-         log.warning("Can't send mail: " + e.toString() + ": " + emailData.toXml(true));
+         log.fine("Can't send mail: " + e.toString() + ": " + emailData.toXml(true));
          throw new XmlBlasterException(Global.instance(),
                ErrorCode.COMMUNICATION_NOCONNECTION, "SmtpClient",
                "Email sending failed, no mail sent from=" + emailData.getFrom() + " to="
