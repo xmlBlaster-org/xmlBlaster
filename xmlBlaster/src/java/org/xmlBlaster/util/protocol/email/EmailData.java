@@ -319,6 +319,13 @@ public class EmailData {
    }
 
    /**
+    * @param subject The subject to set.
+    */
+   public void setSubject(String subject) {
+      this.subject = subject;
+   }
+
+   /**
     * @return The content of the message, never null
     */
    public String getContent() {
