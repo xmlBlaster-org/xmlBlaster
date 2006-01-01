@@ -10,9 +10,9 @@
     <div class="header"><br/>
       <table border="3px outset" width="630" style="background-color: #007524;">
         <tr>
-	  <td>
-	    <center>
-	      <a style="color: #007524;" href="http://www.xmlBlaster.org"><img src="http://www.xmlBlaster.org/images/xmlBlaster/logo.gif" alt="logo" height="80"/></a>
+          <td>
+            <center>
+              <a style="color: #007524;" href="http://www.xmlBlaster.org"><img src="http://www.xmlBlaster.org/images/xmlBlaster/logo.gif" alt="logo" height="80"/></a>
             </center>
           </td>
         </tr>
@@ -38,6 +38,7 @@
 <xsl:param name="request.objectname"/>
 
 
+<!-- 'objectName=' is xmlBlaster specific, rest is MX4J search pattern -->
 <xsl:param name="destinationListUrl" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template=destinationList'"/>
 <xsl:param name="initiateReplicationUrl" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,contrib=%22replication%22,*&amp;template=initiateReplication'"/>
 
