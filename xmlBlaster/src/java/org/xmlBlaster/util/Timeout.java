@@ -117,7 +117,7 @@ public class Timeout extends Thread
       setDaemon(true);
       start();
       while (!ready) { // We block until our timer thread is ready
-         try { Thread.currentThread().sleep(1); } catch (InterruptedException e) {}
+         try { Thread.sleep(1); } catch (InterruptedException e) {}
       }
    }
 
