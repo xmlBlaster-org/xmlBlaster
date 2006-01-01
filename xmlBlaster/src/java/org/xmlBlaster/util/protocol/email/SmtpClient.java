@@ -438,6 +438,22 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                "Email sending failed, no mail sent to " + to.toString(), e);
       }
    }
+   
+   /**
+    * JMX
+    */
+   public String triggerTestEmail(String to, String from) {
+      if (to==null || to.trim().length() < 1 || "String".equalsIgnoreCase(to)) to = "demo@localhost";
+      if (from==null || from.trim().length() < 1 || "String".equalsIgnoreCase(from)) from = "xmlBlaster@localhost";
+      EmailData emailData = new EmailData(to, from, "[xmlBlaster SmtpClient] Test email", "Hello world!");
+      try {
+         sendEmail(emailData);
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+         throw new IllegalArgumentException(e.toString());
+      }
+      return "Send email from '" + from + "' to '" + to + "'";
+   }
 
    /**
     * Send a mail.

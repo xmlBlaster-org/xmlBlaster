@@ -12,5 +12,11 @@ import org.xmlBlaster.util.admin.I_AdminSmtpClient;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public interface SmtpClientMBean extends I_AdminSmtpClient {
-
+   /**
+    * Send a test email. 
+    * @param to For example "demo@localhost"
+    * @param from For example "xmlBlaster@localhost"
+    * @return A success description
+    */
+   public String triggerTestEmail(String to, String from);
 }
