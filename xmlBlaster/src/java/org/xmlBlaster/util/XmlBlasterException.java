@@ -379,7 +379,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return this.errorCodeStr.startsWith("transaction");
    }
 
-   private String createStackTrace() {
+   public String createStackTrace() {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
       if (this.cause != null) {
@@ -389,7 +389,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return sw.toString().trim();
    }
 
-   private String createVersionInfo() {
+   public String createVersionInfo() {
       StringBuffer buf = new StringBuffer(512);
       buf.append("version=").append(this.glob.getVersion()).append(",");
       buf.append("revision=").append(this.glob.getRevisionNumber()).append(",");
