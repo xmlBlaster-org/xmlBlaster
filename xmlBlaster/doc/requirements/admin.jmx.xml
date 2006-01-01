@@ -260,7 +260,10 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
    <example lang="any" type="HTML">
       <h1 id="mx4j">Monitoring Specific Functionality with the MX4J Plugin</h1>
       <p>
-        Start the XmlBlaster with the Plugin configured. You do not need any additional command line parameters.
+        Start the XmlBlaster with the HtmlAdaptor flag enabled and with the plugin configured:
+      <pre>
+ java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
+      </pre>
       </p>
       <pre>
 <![CDATA[
@@ -279,9 +282,18 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
 ]]>
       </pre>  
       <p>
-        This example would start an instance of an http server listening on the localhost on port 9999. The location for the xsl files to be
-	used is on <tt>${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</tt>. On that location you will find the
-	stylesheets used.
+        This example would start an instance of an http server listening on the localhost on port 9999. For each http reuqest, MX4J generates
+	an XML response. Per default this request is processed by the own xslt processing. In our case we have specified an xsltProcessor, that 
+	is we bypass the default behaviour. In other words we will process the generated xml by own xsl stylesheets. The location of these stylesheets
+	is defined by the parameter <tt>xsltPath</tt>. The jmx name to be given to the adaptor is specified by the attribute <tt>adaptorName</tt>.
+	If the location is a jar file, then we have to specify the path inside this jar with the attribute <tt>xsltPathInJar</tt>.
+      </p>
+      <p>
+        For each request the processor must know which stylesheet to use. Per default, if you invoke an mbean request, it will use mbean.xsl, 
+	if you make a server request, it will use server.xsl. You can overwrite the default behaviour as we do by specifying an http attribute
+	in the get request called <tt>template</tt>. If you pass <tt>template=destinationList</tt>, then the xslt processor will look for a file
+	called <tt>destinationList.xsl</tt>. More information you will find on the <a href="http://mx4j.sourceforge.net/docs/ch05.html">
+	http adaptor description for mx4j</a>.
       </p>
       <p>
    <h3>MX4J screenshot (replication example)</h3>
