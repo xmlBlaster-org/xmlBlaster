@@ -104,17 +104,22 @@ dense and used in the SOCKET protocol as well, second the human readable XmlScri
 which is used in the XML scripting framework of xmlBlaster already:
 </p>
 <pre class="BORDER">
-XfbParser:
-  mimeType="application/xmlBlaster-xbfz; name=xmlBlasterMessage.xbfz"
+XfbParser email attachment:
+  Content-Type: "application/xmlBlaster-xbf; name=xmlBlasterMessage.xbf"
   fileName=xmlBlasterMessage.xbf
 
 
-XmlScriptParser:
-  mimeType="text/plain; name=xmlBlasterMessage.xml; charset=UTF-8"
+XmlScriptParser email attachment:
+  Content-Type: "text/plain; name=xmlBlasterMessage.xml; charset=UTF-8"
   fileName = "xmlBlasterMessage.xml"      
 
-  messageId = "xmlBlaster.mid"
+
+Additional meta information attachment:
+  Content-Type: text/plain; name=messageId.mid; charset=UTF-8
+  Content-Disposition: attachment; filename=messageId.mid
 </pre>
+<p>The mime type <code>mimeType="application/xmlBlaster-xbfz; name=xmlBlasterMessage.xbfz"</code>
+is used for zlib compressed messages.</p>
 <p>If you have other formatting needs you can simply add your own Parser plugin.</p>
 <p>The format and compression of received emails is auto-detected depending on the file name extension or mime type.</p>
 
