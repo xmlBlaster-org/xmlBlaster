@@ -326,6 +326,6 @@ only the SNMP subagent module jax.jar is GPL only!
 ===================================
   jmx implementation which offers an HTTP Adaptor which is highly
   configurable. It generates XML Code which can be transformed
-  with a set of own xsl stylesheets. Added 2005-12-30.
+  with a set of own xsl stylesheets. Added 2005-12-30. Version 3.0.1
   http://www.mx4j.org
 
