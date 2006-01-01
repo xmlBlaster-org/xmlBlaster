@@ -187,6 +187,11 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       return this.pop3Driver;
    }
    
+   /**
+    * TODO: Put into engine.Global and util.Global (see EventPlugin.java)
+    * @return
+    * @throws XmlBlasterException
+    */
    public SmtpClient getSmtpClient() throws XmlBlasterException {
       if (this.smtpClient == null) {
          this.smtpClient = (SmtpClient) glob.getObjectEntry(SmtpClient.OBJECTENTRY_KEY);
