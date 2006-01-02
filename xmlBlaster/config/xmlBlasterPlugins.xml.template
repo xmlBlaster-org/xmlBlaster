@@ -191,7 +191,7 @@
       <attribute id="hostname">localhost</attribute>
       <attribute id="port">9999</attribute>
       <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
-      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
+      <attribute id="xsltPath">org/xmlBlaster/contrib/replication/monitor</attribute>
       <attribute  id="xsltCache">false</attribute>
       <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
