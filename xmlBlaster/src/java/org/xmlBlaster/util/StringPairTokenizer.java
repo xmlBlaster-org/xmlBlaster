@@ -123,6 +123,7 @@ public class StringPairTokenizer {
     *                  Followup lines will only be parsed if an open quotechar exists
     * @param innerSeparator is for example StringPairTokenizer.DEFAULT_INNER_SEPARATOR "=" or " "
     * @param wantClientProperties if set to <code>true</code> returns pairs 'String,ClientProperty', returns 'String,String' pairs otherwise.
+    * @param trimValue If true the value is trimmed (removed white spaces in front and back)
     * @return Never null,
     * <pre>
     * classpath=xerces.jar:soap.jar,all
@@ -134,7 +135,7 @@ public class StringPairTokenizer {
     * </pre>
     * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
     */
-   public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties) {
+   public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimValue) {
       String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty);
       Map ret = new HashMap();
       for (int i=0; i<toks.length; i++) {
@@ -145,7 +146,8 @@ public class StringPairTokenizer {
          }
          else {
             String key = tok.substring(0,pos).trim();
-            String value = tok.substring(pos+1).trim(); 
+            String value = tok.substring(pos+1);
+            if (trimValue) value = value.trim(); 
             if (wantClientProperties) 
                ret.put(key, new ClientProperty(key, null, null, value));
             else
@@ -162,7 +164,7 @@ public class StringPairTokenizer {
       if (nextLine == null || nextLine.length()==0) return new HashMap();
       String[] nextLines = new String[1];
       nextLines[0] = nextLine;
-      return parseLine(nextLines, separator, quotechar, innerSeparator, trimEmpty, wantClientProperties);
+      return parseLine(nextLines, separator, quotechar, innerSeparator, trimEmpty, wantClientProperties, true);
    }
    
    /**
@@ -176,7 +178,7 @@ public class StringPairTokenizer {
       if (nextLine == null || nextLine.length()==0) return new HashMap();
       String[] nextLines = new String[1];
       nextLines[0] = nextLine;
-      return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);
+      return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, true);
    }
 
    /*
@@ -353,7 +355,7 @@ public class StringPairTokenizer {
       {
         System.out.println("\nTesting with quotes:\n");
         String[] nextLines = { "org.xmlBlaster.protocol.soap.SoapDriver,\"classpath=xerces.jar:soap.jar,all\",MAXSIZE=100,a=10,\"b=", "20\",c=30" };
-        Map map = parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);
+        Map map = parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, true);
         java.util.Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {
            Map.Entry entry = (Map.Entry)it.next();
