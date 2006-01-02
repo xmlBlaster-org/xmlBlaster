@@ -71,7 +71,7 @@ public class MX4JAdaptor extends GlobalInfo {
             Enumeration enm = this.getClass().getClassLoader().getResources(path);
             if(enm.hasMoreElements()) {
                URL url = (URL)enm.nextElement();
-               log.info("loading file '" + url.getFile() + "'");
+               log.fine("loading file '" + url.getFile() + "'");
                try {
                   ret = url.openStream();
                }
@@ -138,15 +138,10 @@ public class MX4JAdaptor extends GlobalInfo {
          // set it to use a dir
          String xsltPath = get("xsltPath", null); // can be a directory or a jar file
          String xsltPathInJar = null;
-         /*
+
          if (xsltPath != null) {
             processor.setFile(xsltPath);
-            xsltPathInJar = get("xsltPathInJar", null);
-            if (xsltPathInJar != null) { // set the target dir 
-               processor.setPathInJar(xsltPathInJar);
-            }
          }
-         */
          boolean xsltCache = getBoolean("xsltCache", true);
          processor.setUseCache(xsltCache);
          // set not to use cache
