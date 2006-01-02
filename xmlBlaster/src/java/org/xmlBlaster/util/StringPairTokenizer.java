@@ -158,7 +158,7 @@ public class StringPairTokenizer {
    }
 
    /**
-    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties)
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimEmpty)
     */
    public static Map parseLine(String nextLine, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties) {
       if (nextLine == null || nextLine.length()==0) return new HashMap();
@@ -171,14 +171,14 @@ public class StringPairTokenizer {
     * Parsing for example >org.xmlBlaster.protocol.soap.SoapDriver,"classpath=xerces.jar:soap.jar,all",MAXSIZE=100,a=10<. 
     * <p>
     * Using default separator chars and quote chars:
-    *  <code>return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false);</code>
-    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties)
+    *  <code>return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, false);</code>
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimEmpty)
     */
    public static Map parseLineToProperties(String nextLine) {
       if (nextLine == null || nextLine.length()==0) return new HashMap();
       String[] nextLines = new String[1];
       nextLines[0] = nextLine;
-      return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, true);
+      return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, false);
    }
 
    /*
