@@ -37,6 +37,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 /**
  * Registers for events from the xmlBlaster core and forwards them as
@@ -82,6 +83,10 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
  * We use the <tt>LOCAL</tt> protocol driver to talk to xmlBlaster, therefor
  * this plugin works only if the client and server is in the same virtual
  * machine (JVM).
+ * </p>
+ * <p>
+ * All events don't throw any exceptions as this plugin should have
+ * no influence on the regular work-flow of xmlBlaster.
  * </p>
  * 
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
@@ -132,7 +137,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       String destination;
 
-      String to, from, subjectTemplate, cc, bcc, contentTemplate;
+      String to, from, subjectTemplate, cc, bcc, contentTemplate, contentSeparator;
       
       long collectIntervall = Constants.DAY_IN_MILLIS / 2;
 
@@ -162,6 +167,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             this.contentTemplate = (String) map.get("mail.content");
          else
             this.contentTemplate = "$_{nodeId}\n\n$_{summary}\n$_{description}\n\nEventDate:$_{datetime}\n$_{versionInfo}";
+
+         if (map.containsKey("mail.contentSeparator"))
+            this.contentSeparator = (String) map.get("mail.contentSeparator");
+         else
+            this.contentSeparator = "\n\n========== NEXT ============\n\n";
 
          if (map.containsKey("mail.smtp.cc"))
             this.cc = (String) map.get("mail.smtp.cc");
@@ -324,7 +334,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             new java.sql.Timestamp(new java.util.Date().getTime()).toString());
       str = ReplaceVariable.replaceAll(str, "$_{summary}", summary);
       str = ReplaceVariable.replaceAll(str, "$_{description}", description);
-      str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getInstanceId());
+      str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getInstanceId()); // "/xmlBlaster/node/heron/instanceId/1136220586692"
+      str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{eventType}", eventType);
       if (str.indexOf("$_{versionInfo}") != -1) {
          XmlBlasterException e = new XmlBlasterException(this.engineGlob,
@@ -462,7 +473,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          emailData.setSubject(replaceTokens(
                this.smtpDestinationHelper.subjectTemplate, summary, description, eventType));
          String old = (emailData.getContent().length() == 0) ? "" :
-               emailData.getContent() + "\n\n========== NEXT ============\n\n";  
+               emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
          emailData.setContent(old
                + replaceTokens(
                this.smtpDestinationHelper.contentTemplate, summary, description, eventType));
@@ -519,32 +530,35 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.engine.runlevel.I_RunlevelListener#runlevelChange(int,
     *      int, boolean)
     */
-   public void runlevelChange(int from, int to, boolean force)
-         throws XmlBlasterException {
+   public void runlevelChange(int from, int to, boolean force) {
       if (to == from)
          return;
 
-      String summary = null;
-      String description = null;
-      String eventType = null;
-      if (to > from) { // startup
-         if (this.startupRunlevelSet != null && this.startupRunlevelSet.contains(""+to)) {
-            summary = "Startup to " + to;
-            description = "xmlBlaster startup runlevel from " + from + " to " + to;
-            eventType = "startupRunlevel."+to;
+      try {
+         String summary = null;
+         String description = null;
+         String eventType = null;
+         if (to > from) { // startup
+            if (this.startupRunlevelSet != null && this.startupRunlevelSet.contains(""+to)) {
+               summary = "Startup to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
+               description = "xmlBlaster startup runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
+               eventType = "startupRunlevel."+to;
+            }
          }
-      }
-      if (to < from) { // shutdown
-         if (this.shutdownRunlevelSet != null && this.shutdownRunlevelSet.contains(""+to)) {
-            summary = "Shutdown to " + to;
-            description = "xmlBlaster shutdown runlevel from " + from + " to " + to;
-            eventType = "shutdownRunlevel."+to;
+         if (to < from) { // shutdown
+            if (this.shutdownRunlevelSet != null && this.shutdownRunlevelSet.contains(""+to)) {
+               summary = "Shutdown to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
+               description = "xmlBlaster shutdown runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
+               eventType = "shutdownRunlevel."+to;
+            }
          }
+         
+         if (eventType == null) return;
+   
+         sendEmail(summary, description, eventType, true);
+      } catch (Throwable e) {
+         e.printStackTrace();
       }
-      
-      if (eventType == null) return;
-
-      sendEmail(summary, description, eventType, true);
    }
 
    /*
