@@ -95,7 +95,6 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private boolean shutdown;
    private boolean initialized;
    
-   private static int debugInstanceNum;
    private String instanceName;
    private long maxSize = 999999L;
    private String sqlTopic;
@@ -257,15 +256,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          // String momClass = get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
          // String registryName = "mom.publisher";
          synchronized (ReplManagerPlugin.class) {
-            debugInstanceNum++;
-            // this.instanceName = "replication" + debugInstanceNum;
             this.instanceName = "replication";
          }
          
          ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
                this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
-         // this.global.getJmxWrapper().registerMBean(contextNode, this);
          
          this.pool = getDbPool();
          
