@@ -185,7 +185,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (map.containsKey("mail.collectMillis")) {
             String tmp = (String) map.get("mail.collectMillis");
-            this.collectIntervall = Long.valueOf(tmp).longValue();
+            this.collectIntervall = Long.valueOf(tmp.trim()).longValue();
          }
          if (this.collectIntervall < 0) this.collectIntervall = 0;
       }
@@ -237,9 +237,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       // Sending the events with email?
       this.smtpDestinationConfiguration = this.glob.get("destination.smtp", "", null,
             this.pluginConfig);
-      setupSmtpSink(this.smtpDestinationConfiguration);
-      if (this.smtpDestinationConfiguration != null && this.smtpDestinationConfiguration.trim().length() > 0)
-            destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration.trim();
+      if (this.smtpDestinationConfiguration != null && this.smtpDestinationConfiguration.trim().length() > 0) {
+         this.smtpDestinationConfiguration = this.smtpDestinationConfiguration.trim();
+         setupSmtpSink(this.smtpDestinationConfiguration);
+         destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration.trim();
+      }
 
       if (destLogStr.length() < 1) {
          log.warning("Please configure an attribute 'destination.smtp', there is nothing to do for us.");
@@ -324,19 +326,23 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Replace some $_{} tokens.
     * 
     * @param str The string to check and replace
-    * @param summary The value for a $_{summary}
+    * @param summary The value for a $_{summary}, can be null
+    * @param description The value for a $_{description}, can be null
+    * @param eventType The value for a $_{eventType}, can be null
+    * @param errorCode The value for a $_{errorCode}, can be null
     * @return Resolved string
     */
-   private String replaceTokens(String str, String summary, String description, String eventType) {
+   private String replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
       if (str == null || str.indexOf("$") == -1)
          return str;
       str = ReplaceVariable.replaceAll(str, "$_{datetime}",
             new java.sql.Timestamp(new java.util.Date().getTime()).toString());
-      str = ReplaceVariable.replaceAll(str, "$_{summary}", summary);
-      str = ReplaceVariable.replaceAll(str, "$_{description}", description);
+      str = ReplaceVariable.replaceAll(str, "$_{summary}", (summary==null)?"":summary);
+      str = ReplaceVariable.replaceAll(str, "$_{description}", (description==null)?"":description);
       str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getInstanceId()); // "/xmlBlaster/node/heron/instanceId/1136220586692"
       str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
-      str = ReplaceVariable.replaceAll(str, "$_{eventType}", eventType);
+      str = ReplaceVariable.replaceAll(str, "$_{eventType}", (eventType==null)?"":eventType);
+      str = ReplaceVariable.replaceAll(str, "$_{errorCode}", (errorCode==null)?"":errorCode);
       if (str.indexOf("$_{versionInfo}") != -1) {
          XmlBlasterException e = new XmlBlasterException(this.engineGlob,
             ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
@@ -433,7 +439,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                  + " " + source + "]";
 
                String eventType = (LogChannel.LOG_WARN == level) ? "log.warning" : "log.severe";
-               sendEmail(summary, description, eventType, false);
+               
+               // extract errorCode e.g. "... errorCode=communication.noConnection bla bla..."
+               String errorCode=null;
+               try {
+                  int index = str.lastIndexOf("errorCode=");
+                  if (index != -1) {
+                     errorCode = str.substring(index+10);
+                     int end = errorCode.indexOf(" ");
+                     if (end != -1)
+                        errorCode = errorCode.substring(0,end);
+                  }
+               }
+               catch (Throwable e) {}
+               
+               sendEmail(summary, description, eventType, errorCode, false);
             }
          }
       } catch (Throwable e) {
@@ -449,7 +469,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @param forceSending If true send directly and ignore the timeout
     * @see http://www.faqs.org/rfcs/rfc2822.html
     */
-   protected void sendEmail(String summary, String description, String eventType, boolean forceSending) {
+   protected void sendEmail(String summary, String description,
+            String eventType, String errorCode, boolean forceSending) {
       if (summary == null) summary = "";
       if (description == null) description = "";
       
@@ -457,9 +478,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          try {
             EmailData emailData = this.smtpDestinationHelper.createEmailData();
             emailData.setSubject(replaceTokens(
-                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType));
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
             emailData.setContent(replaceTokens(
-                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType));
+                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
             this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
          } catch (Throwable e) {
             throw new IllegalArgumentException(e.toString());
@@ -471,12 +492,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          // Build the email, if timer is active append new logging to the content of the existing mail ...
          EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
          emailData.setSubject(replaceTokens(
-               this.smtpDestinationHelper.subjectTemplate, summary, description, eventType));
+               this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
          String old = (emailData.getContent().length() == 0) ? "" :
                emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
          emailData.setContent(old
                + replaceTokens(
-               this.smtpDestinationHelper.contentTemplate, summary, description, eventType));
+               this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
          
          // If no timer was active send immeditately (usually the first email)
          if (this.smtpTimeoutHandle == null) {
@@ -555,7 +576,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          
          if (eventType == null) return;
    
-         sendEmail(summary, description, eventType, true);
+         sendEmail(summary, description, eventType, null, true);
       } catch (Throwable e) {
          e.printStackTrace();
       }
@@ -653,7 +674,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * JMX
     */
    public String sendTestEmail() {
-      sendEmail("Test email", "Hello world :-)", "testEvent", true);
+      sendEmail("Test email", "Hello world :-)", "testEvent", null, true);
       synchronized(this.smtpDestinationMonitor) {
          if (this.smtpDestinationHelper != null)
             return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
