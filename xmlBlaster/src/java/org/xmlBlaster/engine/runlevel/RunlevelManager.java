@@ -89,7 +89,8 @@ public final class RunlevelManager
    }
 
    /**
-    * Adds the specified runlevel listener to receive runlevel change events. 
+    * Adds the specified runlevel listener to receive runlevel change events.
+    * Multiple registrations fo the same listener will overwrite the old one. 
     */
    public void addRunlevelListener(I_RunlevelListener l) {
       if (l == null) {
