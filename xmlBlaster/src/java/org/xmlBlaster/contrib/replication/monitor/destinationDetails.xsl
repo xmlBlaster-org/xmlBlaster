@@ -127,7 +127,7 @@ function toggleDispatcher() {
     	 <tr class="inner">
            <xsl:variable name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
 
-    	   <td colspan="1" class="normal" title="The queue holding the replicated data">Queue</td>
+    	   <td colspan="1" class="normal" title="The queue holding the replicated data">Holdback Messages</td>
            <xsl:choose>
              <xsl:when test="$queueEntries > $queue.highwarn">
                 <xsl:choose>
@@ -150,10 +150,10 @@ function toggleDispatcher() {
              </xsl:otherwise>
            </xsl:choose>
     	   <td align="center" colspan="1" class="normal">
-                 <button class="small" onClick="clearQueue()" title="Click to clear/delete all entries from the queue">Clear Queue</button>
+                 <button class="small" onClick="clearQueue()" title="Click to clear/delete all entries from the Holdback message queue">Clear Queue</button>
     	   </td>
     	    <td align="center" colspan="1" class="normal">
-                  <button class="small" onClick="removeFirst()" title="Click to remove only the first entry of the queue">Remove First</button>
+                  <button class="small" onClick="removeFirst()" title="Click to remove only the first entry of the holdback message queue">Remove First</button>
     	    </td>
          </tr>
 
@@ -185,13 +185,13 @@ function toggleDispatcher() {
 
  	 <!-- Status Of Active/Inactive Dispatcher Line -->
 	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Status of the dispatcher: active or destactivated">Dispatcher</td>
+    	    <td colspan="1" class="normal" title="Status of the dispatcher: active or destactivated">Active / Standby</td>
             <xsl:choose>
               <xsl:when test="Attribute[@name='Active']/@value = 'true'">
        	    <td align="center" colspan="1" class="normal"><img height="20" src="./active.png" alt="active" title="active" /></td>
     	    <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
     	    <td align="center" colspan="1" class="normal">
-                  <button class="small" onClick="toggleDispatcher()" title="Click to pause: i.e. disactivate the dispatcher">Pause</button>
+                  <button class="small" onClick="toggleDispatcher()" title="Click to pause: i.e. disactivate the dispatcher">Standby</button>
     	    </td>
 	             </xsl:when>
               <xsl:otherwise>
@@ -199,7 +199,7 @@ function toggleDispatcher() {
        	    <td align="center" colspan="1" class="normal"><img height="20" src="./inactive.png" alt="inactive" title="inactive" /></td>
     	    <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
     	    <td align="center" colspan="1" class="normal">
-                  <button class="small" onClick="toggleDispatcher()" title="Click to continue: i.e. activate the dispatcher">Continue</button>
+                  <button class="small" onClick="toggleDispatcher()" title="Click to continue: go from Standby to Active">Activate</button>
     	    </td>
               </xsl:otherwise>
             </xsl:choose>
@@ -207,7 +207,7 @@ function toggleDispatcher() {
 
  	 <!-- Status Of Connection Line -->
     	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Status of the connection: connected or disconnected">Connection</td>
+    	    <td colspan="1" class="normal" title="Status of the connection: connected (online) or disconnected (offline)">Connection</td>
             <xsl:choose>
               <xsl:when test="Attribute[@name='Connected']/@value = 'true'">
        	    <td align="center" colspan="1" class="normal"><img height="20" src="./connected.png" alt="connected" title="connected" /></td>

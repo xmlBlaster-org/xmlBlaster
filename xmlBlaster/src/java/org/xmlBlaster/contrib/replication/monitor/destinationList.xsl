@@ -70,10 +70,10 @@ function refresh() {
             <table class="inner" width="550" align="center" summary="" border="1">
     	  <tr>
     	    <th class="normal" title="Name of the destination of the replication" colspan="3">Destination Name</th>
-    	    <th class="normal" title="Amount of entries in the queue. These entries have not been delivered yet" colspan="1">Queue</th>
+    	    <th class="normal" title="Amount of entries in the queue. These entries have not been delivered yet" colspan="1">Holdback Messages</th>
     	    <th class="normal" title="Current counter for this replication. This is a monoton increasing positive integer" colspan="1">Counter</th>
     	    <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
-    	    <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Dispatcher</th>
+    	    <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
     	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
     	  </tr>
     
