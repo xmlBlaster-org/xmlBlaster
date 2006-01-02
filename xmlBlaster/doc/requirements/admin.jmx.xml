@@ -65,7 +65,7 @@
           </td>
           <td>
             An administration client implemented with SWING is available.
-            It can be found at org.xmlBlaster.jmxgui.<br />
+            It can be found at org.xmlBlaster.jmxgui.<br/>
             The user interface is pluggable and new plugins, handling other MBeans, can be
             added to the system.
             To show the usage, two plugins have already been added.
@@ -259,11 +259,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
 
    <example lang="any" type="HTML">
       <h1 id="mx4j">Monitoring Specific Functionality with the MX4J Plugin</h1>
-      <p>
-        Start the XmlBlaster with the HtmlAdaptor flag enabled and with the plugin configured:
-      <pre>
- java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
-      </pre>
+      <p>Uncomment the plugin in xmlBlasterPlugins.xml to activate this adaptor. 
       </p>
       <pre>
 <![CDATA[
@@ -272,9 +268,10 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
       <attribute id="hostname">localhost</localhost>
       <attribute id="port">9999</attribute>
       <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
-      <attribute id="xsltPath">${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</attribute>
-      <!-- <attribute id="xsltPathInJar"></attribute>  -->
+      <attribute id="xsltPath">org/xmlBlaster/contrib/replication/monitor</attribute>
       <attribute  id="xsltCache">false</attribute>
+      <attribute  id="defaultUrl">serverbydomain</attribute>
+
       <!-- <attribute id="xsltLocale"></attribute> -->
       <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
@@ -282,11 +279,36 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
 ]]>
       </pre>  
       <p>
-        This example would start an instance of an http server listening on the localhost on port 9999. For each http reuqest, MX4J generates
-        an XML response. Per default this request is processed by the own xslt processing. In our case we have specified an xsltProcessor, that 
+        Start the XmlBlaster. You also need to activate one JMX Connector, either the RMI or HTTP would do it:
+      <pre>
+ java -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+   or
+ java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true 
+   or
+ java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true 
+      </pre>
+      </p>
+      <p>
+        This example would start an instance of an http server listening on the localhost on port 9999. For each http request, MX4J generates
+        an XML response. If you don't specify an <b>xsltProcessor</b>, for example if you comment out the line:
+	<pre>
+<![CDATA[
+   <!-- <attribute id="xsltProcessor">XSLTProcessor</attribute> -->
+]]>
+        </pre>
+	the adaptor will return the raw XML string. This is very useful under development to see how to write your own xsl stylesheets. 
+	</p>
+	<p>
+	If you use the xsltProcessor but do not define your own stylesheets (here it would mean you erase the xsl in 
+	<tt>${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</tt>, the default stylesheets of mx4j would be used.<br/>
+	Invoking http://localhost:9999 would take the default invocation which is serverbydomain.<br/>
+	Per default this request is processed by the own xslt processing. In our case we have specified an xsltProcessor, that 
         is we bypass the default behaviour. In other words we will process the generated xml by own xsl stylesheets. The location of these stylesheets
-        is defined by the parameter <tt>xsltPath</tt>. The jmx name to be given to the adaptor is specified by the attribute <tt>adaptorName</tt>.
-        If the location is a jar file, then we have to specify the path inside this jar with the attribute <tt>xsltPathInJar</tt>.
+        is defined by the parameter <b>xsltPath</b>. The searching mechanism for this path is different from the one provided by default by the
+	mx4j implementation. This plugin will search for the path in the CLASSPATH. If more than such path are found in the CLASSPATH are found, 
+	then  the first is taken and a warning is given once listing all other locations found. 
+	<br/>
+	The jmx name to be given to the adaptor is specified by the attribute <tt>adaptorName</tt>.
       </p>
       <p>
         For each request the processor must know which stylesheet to use. Per default, if you invoke an mbean request, it will use mbean.xsl, 
