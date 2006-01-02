@@ -89,7 +89,7 @@
    </plugin>
 -->
 
-   <!-- General EMAIL SMTP client service -->
+   <!-- General EMAIL SMTP client service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
    <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
 <!--
    <plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
@@ -100,27 +100,7 @@
    </plugin>
 -->
 
-   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
-   <!-- Small and only the most important, useful if email is forwarded as SMS -->
-   <!-- Configure the SmtpClient plugin on an earlier run level as well -->
-   <!--
-   <plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
-      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
-      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-      <attribute id='eventTypes'>log.severe,shutdownRunlevel.8</attribute>
-      <attribute id='destination.smtp'>
-         mail.subject=xmlBlaster $_{eventType},
-         mail.content=$_{datetime} $_{id} $_{summary},
-         mail.contentSeparator="\nNEXT:\n",
-         mail.smtp.from=xmlBlaster@somecompany.com,
-         mail.smtp.to=admin@somecompany.com,
-         "mail.smtp.cc=xmlBlaster@et.universe,somebody@somewhere.xx",
-         mail.collectMillis=360000
-      </attribute>
-   </plugin>
-   -->
-
-   <!-- General EMAIL POP3 polling service -->
+   <!-- General EMAIL POP3 polling service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
    <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
 <!--
    <plugin id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
@@ -133,6 +113,7 @@
 -->
 
    <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
 <!--
    <plugin id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
       <action do='LOAD' onStartupRunlevel='7' sequence='10' 
@@ -229,12 +210,32 @@
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <!--
    <plugin id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
-      <action do='LOAD' onStartupRunlevel='8' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>log.severe,log.warning,startupRunlevel.9,shutdownRunlevel.8</attribute>
       <attribute id='destination.smtp'>
          mail.smtp.from=xmlBlaster@localhost,
          mail.smtp.to=demo@localhost,
+         mail.collectMillis=360000
+      </attribute>
+   </plugin>
+   -->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <!-- Small and only the most important. Useful if email is forwarded as SMS -->
+   <!-- Configure the SmtpClient plugin on an earlier run level as well -->
+   <!--
+   <plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='9'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='9'/>
+      <attribute id='eventTypes'>log.severe,shutdownRunlevel.8</attribute>
+      <attribute id='destination.smtp'>
+         mail.subject=xmlBlaster $_{eventType},
+         mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},
+         mail.contentSeparator=${line.separator}${line.separator},
+         mail.smtp.from=xmlBlaster@somecompany.com,
+         mail.smtp.to=admin@somecompany.com,
+         "mail.smtp.cc=xmlBlaster@et.universe,somebody@somewhere.xx",
          mail.collectMillis=360000
       </attribute>
    </plugin>
