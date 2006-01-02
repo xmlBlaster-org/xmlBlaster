@@ -148,7 +148,7 @@ TODO
    <property name="cp.xpath" value="lib/xpath/jaxen-core.jar:lib/xpath/jaxen-dom.jar:lib/xpath/saxpath.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
    <property name="cp.wrapper" value="lib/wrapper.jar"/>
-   <property name="cp.jmx" value="lib/jmxri.jar:lib/jmxtools.jar:lib/jmxremote.jar:lib/mx4j-tools.jar"/>
+   <property name="cp.jmx" value="lib/jmxri.jar:lib/jmxtools.jar:lib/jmxremote.jar:lib/mx4j-tools.jar:lib/mx4j-impl.jar"/>
    <property name="cp.javacup" value="lib/java_cup.jar"/>
 
    <!--
@@ -653,6 +653,10 @@ TODO
                 -->
             </patternset>
          </fileset>
+      </copy>
+      <!-- this is for monitoring -->
+      <copy todir="${build.dest}/org/xmlBlaster/contrib/replication/monitor">
+         <fileset dir="${src.java.dir}/org/xmlBlaster/contrib/replication/monitor"/>
       </copy>
 
       <copy file="${config.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
