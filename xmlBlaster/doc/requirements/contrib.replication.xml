@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='contrib.replication' type='NEW' prio='HIGH' status="OPEN">
+<requirement id='contrib.replication' type='NEW' prio='HIGH' status="INWORK">
    <topic>
       Replication is a plugin framework used to replicate data between database (RDBMS) sources and sinks.
    </topic>
@@ -62,16 +62,16 @@
 	 </li>
 	 <li>Delete old peristent queues. These normally reside in your <tt>${HOME}/tmp</tt> directory. It normally suffices to 
 	     delete all <tt>xmlBlaster*</tt> and <tt>client*</tt> files.
+	 </li>										
+	 <li>open the ${HOME}/xmlBlasterPlugins.xml file and uncomment the <b>MX4JAdaptorPlugin</b>, this way it will become active.
 	 </li>
 	 <li>Go to your ${XMLBLASTER_HOME} Directory and set the environment (in unixes with <tt>. .bashrc</tt>).</li>
 	 <li>Start the xmlBlaster with JMX enabled: 
 	     <pre>
 
-      java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
+      java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
 
 	     </pre>
-            The jvm option is in case you have a jdk1.5 or higher, in which case you can use <b>jconsole</b> to monitor the application, for jdk1.4 you
-	    the application options will allow you to monitor via the <b>html adapter</b>. Verify that the server is up and running correctly.
 	 </li>
        </ul>
     </p>
@@ -106,9 +106,9 @@
   table.${db.user}.DEMO_USERS=trigger=DEMO_USERS_TRG
 
 	  </pre>
-       	  Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. In the first of both lines you also
-	  can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything here would
-	  let the application decide a name for it. 
+       	  Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. You also
+	  can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything 
+	  here would let the application decide a name for it. 
 <!--	  
 	  In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
 	  actions on which the trigger will fire. Here IDU stands for <tt>I(nsert), D(elete) and U(pdate)</tt>. These are the only three actions allowed.
@@ -138,34 +138,42 @@
     </ul>
     </p>
     <p><h2>Start the JMX Monitor to initiate the Replication</h2>
-      If you have jdk1.4 start an html browser of your choice and point it to <a href="http://localhost:8082">http://localhost:8082</a>. You
-      will see the following <center><img src="./contrib.replication.jmxHtml.png"/></center>.<br/>
-      If you have jdk1.5 or higher you can use the jconsole. You can start it by invoking <b>jconsole</b>. There you connect and after
-      connection you select the <b>MBeans</b> Tab. In the tree on the left you choose 
-      <tt>org.xmlBlaster/node/xmlBlaster_${yourIPAndPort}/contrib/replication</tt>. On the left panel you choose the <b>Attributes</b> Tab.
-      You will see a list of key/value pairs. If you double click on the values you will see the content of them. In the image below we clicked
-      on the values for the <b>Slaves</b>. You will get a list of the relative session names of all the slaves connected, wether they are 
-      currently available or not. In this case we only have one slave connected: <b>client/DemoWriter/1</b><br/>.
-      <center><img src="./contrib.replication.jconsole1.png"/></center>
+      Open an html browser of your choice, for example Firefox. Point it to <a href="http://localhost:9999">http://localhost:9999</a>. You 
+      will see something like the following:
     </p>
-    <p>To initiate the replication you must tell xmlBlaster via the jmx monitor which data you want to be replicated to which
-       slave. The list of available sets of data to be replicated are listed in the attribute <b>replications</b>. Even if in special cases these
-       could be constituted by data collected by several masters (several DbWatchers) you will generally have a one to one relation between a
-       replication (or replication set) and a master (or DbWatcher). The identifier for these replications is the <b>replication.prefix</b> 
-       attribute specified in the DbWatcher configuration. In our case the only replication is identified by <b>DEMO_</b>, which has been
-       configured in <tt>readerDemo1.properties</tt>.<br/>
-       The slaves are identified by the relative session name of the DbWriter which has been configured in the <tt>writerDemo1.properties</tt> and
-       which is in our case <b>client/DemoWriter/1</b>.
+    <p>
+      <center>
+        <img src="./contrib.replication.mx4j01.png" alt="start replication"/>
+      </center>
     </p>
-    <p>Click now on the <b>Operations</b> Tab. On the <b>initiateReplication</b> you have two parameters to pass. In the first you pass the
-       identifier of the Slave (<tt>client/DemoWriter/1</tt>), and in the second you pass the identifier of the replication (<tt>DEMO_</tt>) and
-       press on <tt>initiateReplication</tt>.<br/>
-       <center><img src="./contrib.replication.jconsole2.png"/></center>
+    <p>
+      The <b>Source</b> (here DEMO_) is the prefix identifying the source of the replication. The <b>Destination</b> is the name identifying the
+      Destination of the replication. In this demo you only have one possible combination allowed. So click on the <b>Initiate Repl.</b> Button.
+      This way the replication will start. 
     </p>
-    <p>On the jconsole you will get a dialog indicating that the start command has been sent to the XmlBlaster. On the server logs you will see
-    that the initial command has been executed and on the client logs you will see the PL/SQL Code of the trigger followed by a sequence of two
-    XmlBlaster Messages each in xml format. The first of them is the <b>CREATE</b> statement itself and the second is the message containing
-    all initial data of the replicated table.
+    <p>By clicking on the button you will be redirected to another page displaying all initiated and running replications. In this case you only 
+    have one single entry.
+    </p>
+    <p>
+      <center>
+        <img src="./contrib.replication.mx4j02.png" alt="replication list"/>
+      </center>
+    </p>
+    <p>
+     Note that the status is initially switching from blue to yellow. When it is in the blue phase (INITIAL), the source is prepared for the
+     replication. During this phase the Active/Standby Status is in Standby. This means the replication is temporarly hold back, no message
+     is sent to the destination. <br/>
+     After a very short time the status switches to blue (TRANSITION). During this phase the source is ready and the messages are delivered to
+     the destination but the destination is not completely up to date yet. You will see that during this phase the Active/Standby flag is on 
+     <b>Active</b> meaning processed messages are delivered immediately.
+    </p>
+     <p>
+     When all initial messages have been delivered, the status is switching again, this time from yellow to green (RUNNING). From now on the 
+     destination is ready and the initial data have been replicated.
+     </p>
+     <p>On the server logs you will see that the initial command has been executed and on the client logs you will see the PL/SQL Code of 
+        the trigger followed by a sequence of two XmlBlaster Messages each in xml format. The first of them is the <b>CREATE</b> statement 
+        itself and the second is the message containing all initial data of the replicated table.
     </p>
     <p>You can now verify that the new table <b>DEMO_USERS_REPLICA</b> really has been created and that it contains the same entries as the
     source by invoking on the prompt:
