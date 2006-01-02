@@ -6,10 +6,10 @@
 package org.xmlBlaster.engine;
 
 import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.management.NotificationBroadcasterSupport;
 
@@ -17,7 +17,6 @@ import org.jutils.log.LogChannel;
 import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
@@ -29,24 +28,14 @@ import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.protocol.email.AttachmentHolder;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.client.XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 
 /**
@@ -66,14 +55,28 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
  *                        onFail='resource.configuration.pluginFailed'/&gt;
  *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='1'/&gt;
  *   &lt;attribute id='eventTypes'>log.severe,log.warning&lt;/attribute>
- *   &lt;attribute id='destination.smtp'>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=blue8@localhost,mail.collectMillis=10000&lt;/attribute>
+ *   &lt;attribute id='destination.smtp'>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=demo@localhost,mail.collectMillis=10000&lt;/attribute>
  *&lt;/plugin&gt;
  * </pre>
  * 
  * <p>
  * In the above example an email is send if any log.severe (==log.error) or log.warning occurres.
- * Other event sources or event sinks are not yet implemented.
  * </p>
+ * <p>
+ * List of supported event sources:
+ * </p>
+ * <table border="1">
+ * <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
+ * <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
+ * <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ * <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ * </table>
+ * <p>
+ * List of supported event sinks:
+ * </p>
+ * <table border="1">
+ * <tr><td>destination.smtp</td><td>Sends an email about the occurred event, collects multiple events to one mail depending on configuration</td></tr>
+ * </table>
  * 
  * <p>
  * We use the <tt>LOCAL</tt> protocol driver to talk to xmlBlaster, therefor
@@ -106,10 +109,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    private I_XmlBlasterAccess connection;
 
-   private String loginName;
-
-   private String password = "secret";
-
    protected org.xmlBlaster.engine.Global engineGlob;
 
    protected RequestBroker requestBroker;
@@ -119,25 +118,27 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected boolean isActive;
 
    protected boolean isShutdown;
+   
+   protected String eventTypes;
 
+   protected Set startupRunlevelSet;
+   protected Set shutdownRunlevelSet;
+   
    /**
     * Helper class to send emails
     */
-   class SmtpDestination {
+   class SmtpDestinationHelper {
       SmtpClient smtpClient;
 
-      I_PluginConfig pluginConfig;
+      String destination;
 
       String to, from, subjectTemplate, cc, bcc, contentTemplate;
       
       long collectIntervall = Constants.DAY_IN_MILLIS / 2;
 
-      public SmtpDestination(SmtpClient smtpClient, I_PluginConfig pluginConfig)
+      public SmtpDestinationHelper(SmtpClient smtpClient, String destination)
             throws XmlBlasterException {
          this.smtpClient = smtpClient;
-         this.pluginConfig = pluginConfig;
-         String destination = glob.get("destination.smtp", "", null,
-               this.pluginConfig);
          Map map = StringPairTokenizer.parseLineToProperties(destination);
 
          if (map.containsKey("mail.smtp.to"))
@@ -150,15 +151,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             this.from = "xmlBlaster@localhost";
          verifyInternetAddress(this.from);
 
+         // Each line of characters MUST be no more than 998 characters,
+         // and SHOULD be no more than 78 characters, excluding the CRLF
          if (map.containsKey("mail.subject"))
             this.subjectTemplate = (String) map.get("mail.subject");
          else
-            this.subjectTemplate = "[XmlBlaster generated email] $_{nodeId}";
-            //this.subjectTemplate = "[XmlBlaster generated email] $_{nodeId} $_{source}";
+            this.subjectTemplate = "[XmlBlaster event: $_{eventType}] $_{nodeId}";
+            //this.subjectTemplate = "[XmlBlaster generated email] $_{nodeId} $_{summary}";
          if (map.containsKey("mail.content"))
             this.contentTemplate = (String) map.get("mail.content");
          else
-            this.contentTemplate = "$_{nodeId}\n\n$_{source}\n$_{content}\n\n$_{versionInfo}";
+            this.contentTemplate = "$_{nodeId}\n\n$_{summary}\n$_{description}\n\nEventDate:$_{datetime}\n$_{versionInfo}";
 
          if (map.containsKey("mail.smtp.cc"))
             this.cc = (String) map.get("mail.smtp.cc");
@@ -189,7 +192,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    } // end of helper class SmtpDestination
 
-   protected SmtpDestination smtpDestination;
+   protected final Object smtpDestinationMonitor = new Object();
+   protected SmtpDestinationHelper smtpDestinationHelper;
+   protected String smtpDestinationConfiguration;
    protected Timeout smtpTimeout;
    protected Timestamp smtpTimeoutHandle;
    protected EmailData currentEmailData;
@@ -212,11 +217,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.requestBroker = engineGlob.getRequestBroker();
       this.sessionInfo = requestBroker.getInternalSessionInfo();
 
-      this.loginName = this.glob.get("loginName", "_EventType", null,
-            this.pluginConfig);
-      this.password = this.glob.get("password", this.password, null,
-            this.pluginConfig);
-
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "EventPlugin[" + getType() + "]", this.engineGlob.getScopeContextNode());
@@ -225,73 +225,107 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       String destLogStr = "";
 
       // Sending the events with email?
-      String destination = this.glob.get("destination.smtp", "", null,
+      this.smtpDestinationConfiguration = this.glob.get("destination.smtp", "", null,
             this.pluginConfig);
-      if (destination != null && destination.trim().length() > 0) {
-         this.smtpDestination = new SmtpDestination(getSmtpClient(), pluginInfo);
-         destLogStr += "destination.smtp:" + destination;
-         //if (this.smtpDestination.collectIntervall > 0)
-            this.smtpTimeout = new Timeout("EventPlugin-SmtpTimer"); // we need it allways to synchronize
-      }
+      setupSmtpSink(this.smtpDestinationConfiguration);
+      if (this.smtpDestinationConfiguration != null && this.smtpDestinationConfiguration.trim().length() > 0)
+            destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration.trim();
 
       if (destLogStr.length() < 1) {
          log.warning("Please configure an attribute 'destination.smtp', there is nothing to do for us.");
          return;
       }
 
-      String eventTypes = this.glob.get("eventTypes", "", null,
+      this.eventTypes = this.glob.get("eventTypes", "", null,
             this.pluginConfig);
-      if (eventTypes == null || eventTypes.trim().length() == 0) {
-         log
-               .warning("Please configure an attribute 'eventTypes', there is nothing to do for us.");
+      if (this.eventTypes == null || this.eventTypes.trim().length() == 0) {
+         log.warning("Please configure an attribute 'eventTypes', there is nothing to do for us.");
          return;
       }
+      registerEventTypes(this.eventTypes);
+      
+      this.isActive = true;
 
-      // Find out which events to listen
+      log.info("Configured to send core events of type '" + this.eventTypes.trim()
+            + "' to destination '" + destLogStr + "'");
+   } // init()
+
+   /**
+    * Find out which events to listen. 
+    * @param eventTypes A commas seperated list of supported events, e.g. <code>log.severe,log.warning</code>
+    */
+   public void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
       for (int i = 0; i < eventTypeArr.length; i++) {
-         if ("log.severe".equals(eventTypeArr[i])
-               || "log.error".equals(eventTypeArr[i])) {
+         String event = eventTypeArr[i];
+         if ("log.severe".equals(event)
+               || "log.error".equals(event)) {
             // Please use JDK14 notation for configuration
             // We want to be notified if a log.error() is called, this will
             // notify our LogableDevice.log() method
             LogNotifierDeviceFactory lf = this.engineGlob
                   .getLogNotifierDeviceFactory();
             lf.register(LogChannel.LOG_ERROR, this);
-         } else if ("log.warning".equals(eventTypeArr[i])
-               || "log.warn".equals(eventTypeArr[i])) {
+         }
+         else if ("log.warning".equals(event)
+               || "log.warn".equals(event)) {
             LogNotifierDeviceFactory lf = this.engineGlob
                   .getLogNotifierDeviceFactory();
             lf.register(LogChannel.LOG_WARN, this);
-         } else {
+         }
+         else if (event.startsWith("startupRunlevel.")) {
+            String rl = event.substring(event.indexOf(".")+1);
+            log.fine("Register startupRunlevel = " + rl);
+            this.engineGlob.getRunlevelManager().addRunlevelListener(this);
+            if (this.startupRunlevelSet == null) this.startupRunlevelSet = new TreeSet();
+            this.startupRunlevelSet.add(rl);
+         }
+         else if (event.startsWith("shutdownRunlevel.")) {
+            String rl = event.substring(event.indexOf(".")+1);
+            log.fine("Register shutdownRunlevel = " + rl);
+            this.engineGlob.getRunlevelManager().addRunlevelListener(this);
+            if (this.shutdownRunlevelSet == null) this.shutdownRunlevelSet = new TreeSet();
+            this.shutdownRunlevelSet.add(rl);
+         }
+         else {
             log.warning("Ignoring unknown '" + eventTypeArr[i]
                   + "' from eventTypes='" + eventTypes + "'");
          }
       }
-      
-      this.isActive = true;
+   }
 
-      log.info("Configured to send core events of type '" + eventTypes
-            + "' to destination '" + destLogStr + "'");
-   } // init()
+   /**
+    * Initialize email sending. 
+    * @param destination The configuration string, a comma separated list of key/value properties, e.g.
+    * <code>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=demo@localhost,mail.collectMillis=10000</code>
+    * @throws XmlBlasterException
+    */
+   public void setupSmtpSink(String destination) throws XmlBlasterException {
+      if (destination != null && destination.trim().length() > 0) {
+         synchronized(this.smtpDestinationMonitor) {
+            this.smtpDestinationHelper = new SmtpDestinationHelper(getSmtpClient(), destination);
+            //if (this.smtpDestination.collectIntervall > 0)
+            this.smtpTimeout = new Timeout("EventPlugin-SmtpTimer"); // we need it allways to synchronize
+         }
+      }
+   }
 
    /**
     * Replace some $_{} tokens.
     * 
-    * @param str
-    *           The string to check and replace
-    * @param source
-    *           The value for a $_{source}
+    * @param str The string to check and replace
+    * @param summary The value for a $_{summary}
     * @return Resolved string
     */
-   private String replaceTokens(String str, String source, String content) {
+   private String replaceTokens(String str, String summary, String description, String eventType) {
       if (str == null || str.indexOf("$") == -1)
          return str;
       str = ReplaceVariable.replaceAll(str, "$_{datetime}",
             new java.sql.Timestamp(new java.util.Date().getTime()).toString());
-      str = ReplaceVariable.replaceAll(str, "$_{source}", source);
-      str = ReplaceVariable.replaceAll(str, "$_{content}", content);
+      str = ReplaceVariable.replaceAll(str, "$_{summary}", summary);
+      str = ReplaceVariable.replaceAll(str, "$_{description}", description);
       str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getInstanceId());
+      str = ReplaceVariable.replaceAll(str, "$_{eventType}", eventType);
       if (str.indexOf("$_{versionInfo}") != -1) {
          XmlBlasterException e = new XmlBlasterException(this.engineGlob,
             ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
@@ -336,6 +370,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.engineGlob.unregisterMBean(this.mbeanHandle);
       if (connection != null)
          connection.disconnect(null);
+      if (this.engineGlob != null) {
+         this.engineGlob.getRunlevelManager().removeRunlevelListener(this);
+      }
       this.isShutdown = true;
    }
 
@@ -374,23 +411,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
              * "lastError", "java.lang.String", this.lastError, newLog);
              */
 
-            if (this.smtpDestination != null) {
+            if (this.smtpDestinationHelper != null) {
                if (source == null) source = "";
-               String content = (str == null) ? "" : str;
+               String description = (str == null) ? "" : str;
 
-               String subject = 
+               String summary = 
                    "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
                  + " " + LogChannel.bitToLogLevel(level)
                  + " " + Thread.currentThread().getName()
                  + " " + source + "]";
 
-               if (LogChannel.LOG_ERROR == level) {
-                  XmlBlasterException e = new XmlBlasterException(this.engineGlob,
-                        ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
-                  content += "\n" + e.createVersionInfo();
-               }
-               
-               sendEmail(subject, content, false);
+               String eventType = (LogChannel.LOG_WARN == level) ? "log.warning" : "log.severe";
+               sendEmail(summary, description, eventType, false);
             }
          }
       } catch (Throwable e) {
@@ -398,36 +430,47 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
-   protected void sendEmail(String subject, String body, boolean forceSending) {
+   /**
+    * Sending email as configured with <code>destination.smtp</code>. 
+    * @param summary The email summary line to use, it is injected to the template as $_{summary}
+    * @param description The event description to send, it is injected as $_{description}
+    * @param eventType For example "log.severe"
+    * @param forceSending If true send directly and ignore the timeout
+    * @see http://www.faqs.org/rfcs/rfc2822.html
+    */
+   protected void sendEmail(String summary, String description, String eventType, boolean forceSending) {
+      if (summary == null) summary = "";
+      if (description == null) description = "";
+      
       if (forceSending) {
          try {
-            EmailData emailData = this.smtpDestination.createEmailData();
+            EmailData emailData = this.smtpDestinationHelper.createEmailData();
             emailData.setSubject(replaceTokens(
-                  this.smtpDestination.subjectTemplate, subject, body));
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType));
             emailData.setContent(replaceTokens(
-                  this.smtpDestination.contentTemplate, subject, body));
-            this.smtpDestination.smtpClient.sendEmail(emailData);
+                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType));
+            this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
          } catch (Throwable e) {
             throw new IllegalArgumentException(e.toString());
          }
          return;
       }
 
-      synchronized(this.smtpDestination) {
+      synchronized(this.smtpDestinationMonitor) {
          // Build the email, if timer is active append new logging to the content of the existing mail ...
-         EmailData emailData = (this.currentEmailData == null) ? this.smtpDestination.createEmailData() : this.currentEmailData;
+         EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
          emailData.setSubject(replaceTokens(
-               this.smtpDestination.subjectTemplate, subject, body));
+               this.smtpDestinationHelper.subjectTemplate, summary, description, eventType));
          String old = (emailData.getContent().length() == 0) ? "" :
                emailData.getContent() + "\n\n========== NEXT ============\n\n";  
          emailData.setContent(old
                + replaceTokens(
-               this.smtpDestination.contentTemplate, subject, body));
+               this.smtpDestinationHelper.contentTemplate, summary, description, eventType));
          
          // If no timer was active send immeditately (usually the first email)
          if (this.smtpTimeoutHandle == null) {
             try {
-               smtpDestination.smtpClient.sendEmail(emailData);
+               smtpDestinationHelper.smtpClient.sendEmail(emailData);
             } catch (Throwable e) {
                e.printStackTrace();
             }
@@ -442,15 +485,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
          
          // Now span timer, other emails are collected until this timer elapses 
-         if (this.smtpDestination.collectIntervall > 0) {
+         if (this.smtpDestinationHelper.collectIntervall > 0) {
             this.smtpTimeoutHandle = this.smtpTimeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
-                  synchronized(smtpDestination) {
+                  synchronized(smtpDestinationMonitor) {
                      smtpTimeoutHandle = null;
                      //System.out.println("Timeout happened");
                      if (currentEmailData == null) return;
                      try {
-                        smtpDestination.smtpClient.sendEmail(currentEmailData);
+                        smtpDestinationHelper.smtpClient.sendEmail(currentEmailData);
                         // todo: Probably respan timer here to have the same minimal gap again
                      } catch (Throwable e) {
                         e.printStackTrace();
@@ -460,7 +503,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      }
                   }
                }
-            }, this.smtpDestination.collectIntervall, null);
+            }, this.smtpDestinationHelper.collectIntervall, null);
          }
       } // sync
    }
@@ -478,8 +521,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void runlevelChange(int from, int to, boolean force)
          throws XmlBlasterException {
-      // TODO Auto-generated method stub
+      if (to == from)
+         return;
 
+      String summary = null;
+      String description = null;
+      String eventType = null;
+      if (to > from) { // startup
+         if (this.startupRunlevelSet != null && this.startupRunlevelSet.contains(""+to)) {
+            summary = "Startup to " + to;
+            description = "xmlBlaster startup runlevel from " + from + " to " + to;
+            eventType = "startupRunlevel."+to;
+         }
+      }
+      if (to < from) { // shutdown
+         if (this.shutdownRunlevelSet != null && this.shutdownRunlevelSet.contains(""+to)) {
+            summary = "Shutdown to " + to;
+            description = "xmlBlaster shutdown runlevel from " + from + " to " + to;
+            eventType = "shutdownRunlevel."+to;
+         }
+      }
+      
+      if (eventType == null) return;
+
+      sendEmail(summary, description, eventType, true);
    }
 
    /*
@@ -573,16 +638,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * JMX
     */
-   public boolean triggerTestEmail() {
-      sendEmail("Test email", "Hello world :-)", true);
-      return true;
+   public String sendTestEmail() {
+      sendEmail("Test email", "Hello world :-)", "testEvent", true);
+      synchronized(this.smtpDestinationMonitor) {
+         if (this.smtpDestinationHelper != null)
+            return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
+         else
+            return "No sending of emails configured";
+      }
    }
    
    /**
     * JMX
     */
    public String dumpPendingEmails() {
-      synchronized(this.smtpDestination) {
+      synchronized(this.smtpDestinationMonitor) {
          if (this.currentEmailData == null) return "No emails found";
          return this.currentEmailData.toXml(true);
       }
@@ -592,7 +662,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * JMX
     */
    public int clearPendingEmails() {
-      synchronized(this.smtpDestination) {
+      synchronized(this.smtpDestinationMonitor) {
          int ret = (this.currentEmailData == null) ? 0 : 1;
          this.currentEmailData = null;
          return ret;
@@ -609,9 +679,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * JMX
     */
-   public int triggerPendingEmails() {
-      synchronized(this.smtpDestination) {
-         if (this.smtpDestination.collectIntervall > 0) {
+   public String sendPendingEmails() {
+      synchronized(this.smtpDestinationMonitor) {
+         if (this.smtpDestinationHelper != null && this.smtpDestinationHelper.collectIntervall > 0) {
             if (this.currentEmailData != null) {
                try {
                   this.smtpTimeoutHandle = this.smtpTimeout.refreshTimeoutListener(this.smtpTimeoutHandle, 0);
@@ -619,11 +689,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                catch (XmlBlasterException e) {
                   throw new IllegalArgumentException(e.getMessage()); 
                }
-               return 1;
+               return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
             }
          }
       }
-      return 0;
+      return (this.smtpDestinationHelper == null) ? 
+              "No sending of emails configured" :
+                 "Currently there is no pending email to send";
    }
    
    /* (non-Javadoc)
@@ -673,5 +745,51 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.util.admin.I_AdminUsage#setUsageUrl(java.lang.String)
     */
    public void setUsageUrl(String url) {
+   }
+
+   /**
+    * How long to collect outgoing emails?
+    * @return Returns the mailCollectMillis or -1 if no email sink is configured
+    */
+   public long getMailCollectMillis() {
+      if (this.smtpDestinationHelper != null)
+         return this.smtpDestinationHelper.collectIntervall;
+      return -1;
+   }
+
+   /**
+    * @param mailCollectMillis The mailCollectMillis to set.
+    */
+   public void setMailCollectMillis(long mailCollectMillis) {
+      if (this.smtpDestinationHelper != null)
+         this.smtpDestinationHelper.collectIntervall = (mailCollectMillis < 0) ? 0 : mailCollectMillis;
+   }
+
+   /**
+    * @return Returns the eventTypes.
+    */
+   public String getEventTypes() {
+      return this.eventTypes;
+   }
+
+   /**
+    * @param eventTypes The eventTypes to set.
+    */
+   public void setEventTypes(String eventTypes) {
+      this.eventTypes = eventTypes;
+   }
+
+   /**
+    * @return Returns the smtpDestinationConfiguration.
+    */
+   public String getSmtpDestinationConfiguration() {
+      return this.smtpDestinationConfiguration;
+   }
+
+   /**
+    * @param smtpDestinationConfiguration The smtpDestinationConfiguration to set.
+    */
+   public void setSmtpDestinationConfiguration(String smtpDestinationConfiguration) {
+      this.smtpDestinationConfiguration = smtpDestinationConfiguration;
    }
 }
