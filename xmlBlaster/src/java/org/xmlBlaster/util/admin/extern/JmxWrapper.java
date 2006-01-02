@@ -193,15 +193,6 @@ public class JmxWrapper
             if (this.mbeanServer == null) {
                try {
                   
-                  // check if the system property is already set
-                  final String PROP_KEY = "javax.management.builder.initial";
-                  final String PROP_VALUE = "mx4j.server.MX4JMBeanServerBuilder";
-                  String prop = System.getProperty(PROP_KEY, null);
-                  if (prop == null) {
-                     this.log.info(ME, "getMBeanServer: setting the property '" + PROP_KEY + "' to '" + PROP_VALUE + "'");
-                     System.setProperty(PROP_KEY, PROP_VALUE);
-                  }
-                  
                   Class clazz = java.lang.Class.forName("java.lang.management.ManagementFactory");
                   if (clazz != null) {
                      // this.mbeanServer = ManagementFactory.getPlatformMBeanServer(); // new for JDK 1.5
@@ -670,19 +661,23 @@ public class JmxWrapper
            return registerMBean(contextNode, mbean, null);
    }
    
+   public static String getObjectNameLiteral(Global global, ContextNode contextNode) {
+      String hierarchy = (contextNode == null) ? 
+            ("org.xmlBlaster:type=" + global.getId()) :
+            contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
+      return hierarchy;
+   }
+   
    private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle) {
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
       if (contextNode == null) return null; // Remove? code below handles a null
       if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
 
-      String hierarchy = (contextNode == null) ? 
-                            ("org.xmlBlaster:type=" + this.glob.getId()) :
-                            contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
-
+      String hierarchy = getObjectNameLiteral(this.glob, contextNode);
       ObjectName objectName = null;
       try {
-         objectName = new ObjectName(hierarchy);
+         objectName = new ObjectName( getObjectNameLiteral(this.glob, contextNode));
          ObjectInstance objectInstance = this.mbeanServer.registerMBean(mbean, objectName);
          if (mbeanHandle == null) {
             mbeanHandle = new JmxMBeanHandle(objectInstance, contextNode, mbean);
