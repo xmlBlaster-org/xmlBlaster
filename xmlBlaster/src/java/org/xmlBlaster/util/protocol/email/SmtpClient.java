@@ -442,7 +442,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    /**
     * JMX
     */
-   public String triggerTestEmail(String to, String from) {
+   public String sendTestEmail(String to, String from) {
       if (to==null || to.trim().length() < 1 || "String".equalsIgnoreCase(to)) to = "demo@localhost";
       if (from==null || from.trim().length() < 1 || "String".equalsIgnoreCase(from)) from = "xmlBlaster@localhost";
       EmailData emailData = new EmailData(to, from, "[xmlBlaster SmtpClient] Test email", "Hello world!");

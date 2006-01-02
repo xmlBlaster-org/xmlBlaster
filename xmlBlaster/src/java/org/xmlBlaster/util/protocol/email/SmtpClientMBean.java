@@ -18,5 +18,5 @@ public interface SmtpClientMBean extends I_AdminSmtpClient {
     * @param from For example "xmlBlaster@localhost"
     * @return A success description
     */
-   public String triggerTestEmail(String to, String from);
+   public String sendTestEmail(String to, String from);
 }
