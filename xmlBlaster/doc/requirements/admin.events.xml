@@ -67,7 +67,7 @@
  <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
  <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
  <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ <tr><td>shutdownRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
  <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
  </table>
