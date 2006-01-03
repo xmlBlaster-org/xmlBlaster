@@ -113,6 +113,7 @@
 
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.jmx</see>
+   <see type="REQ">admin.events</see>
    <see type="REQ">admin.http</see>
    <see type="REQ">admin.telnet</see>
    <see type="REQ">admin.messages</see>
