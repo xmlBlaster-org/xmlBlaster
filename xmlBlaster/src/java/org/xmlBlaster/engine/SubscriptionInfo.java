@@ -568,7 +568,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return sessionInfo.getId();
    }
    public String getTopicId() {
-      if (this.topicHandler == null) return "";
+      if (this.topicHandler == null) return (getKeyOid()==null)?"":getKeyOid();
       return this.topicHandler.getId();
    }
    public String getParentSubscription() {
