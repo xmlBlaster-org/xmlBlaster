@@ -327,6 +327,7 @@ public class Global implements Cloneable
    public void sendNotification(NotificationBroadcasterSupport source,
           String msg, String attributeName,
           String attributeType, Object oldValue, Object newValue) {
+      // Avoid any log.warning or log.severe to prevent looping alert events
       if (isJmxActivated()) {
          Notification n = new AttributeChangeNotification(source,
             sequenceNumber++,
