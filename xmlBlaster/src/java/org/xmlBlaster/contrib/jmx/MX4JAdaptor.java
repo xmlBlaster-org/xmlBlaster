@@ -94,7 +94,7 @@ public class MX4JAdaptor extends GlobalInfo {
                   for (int i=0; i < urls.length; i++) 
                      buf.append(urls[i].toString()).append("\n");
                }
-               log.warning("no file found with the name '" + path + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
+               log.warning("no file found with the name '" + path + "'" /*+ "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""*/);
             }
          }
          catch(IOException e) {
