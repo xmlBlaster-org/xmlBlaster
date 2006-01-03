@@ -64,12 +64,16 @@
  <p>Those event types can be added to <code>&lt;attribute id='eventTypes'>...&lt;/attribute></code>
  markup as a comma separated list, like this you choose exactly the events you want.</p>
  <table border="1">
- <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
- <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
+ <tr><td>log.severe</td><td>Captures all errors logged, avoid to use this with the publish message sink as this could produce more log.severe and loop</td></tr>
+ <tr><td>log.warning</td><td>Captures all warnings logged, never use this with the publish message sink as this could produce more log.warning and loop</td></tr>
  <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  <tr><td>shutdownRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
- <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
+ <tr><td>client.sessionAdded.*</td><td>Captures event on client login (all clients)</td></tr>
+ <tr><td>client.sessionAdded.[subjectId]</td><td>Captures event on given client login, e.g. "client.sessionAdded.joe"</td></tr>
+ <tr><td>client.sessionAdded.[relativeSessionName]</td><td>Captures event on given client login, e.g. "client.sessionAdded.client/joe/1"</td></tr>
+ <tr><td>client.sessionRemoved.*</td><td>Captures event on client logout (all clients)</td></tr>
+ <tr><td>client.sessionRemoved.[subjectId]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.joe"</td></tr>
+ <tr><td>client.sessionRemoved.[relativeSessionName]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.client/joe/1"</td></tr>
  <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
  <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked, e.g. "subscribe.hello"</td></tr>
  <tr><td>subscribe.[relativeName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
@@ -284,8 +288,9 @@
 
          <tr>
             <td>mail.content</td>
-            <td>$_{nodeId}\n\n$_{summary} \n$_{description}\n\nEventDate:$_{datetime} \n$_{versionInfo}</td>
-            <td>The template to generate the email content of the email.
+            <td>$_{nodeId}\n\n$_{summary}\n $_{description}\n\nEventDate:$_{datetime}\n $_{versionInfo}\n\n--\n http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html</td>
+            <td>The template to generate the email content of the email.<br />
+            Please replace '\n' with ${line.separator} to enforce a new line.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -293,7 +298,8 @@
          <tr>
             <td>mail.contentSeparator</td>
             <td>\n\n========== NEXT ============\n\n</td>
-            <td>The separator to use if many events are collected into one email.
+            <td>The separator to use if many events are collected into one email.<br />
+            Please replace '\n' with ${line.separator} to enforce a new line.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
