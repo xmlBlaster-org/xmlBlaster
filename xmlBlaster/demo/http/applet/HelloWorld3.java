@@ -51,7 +51,9 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
       Thread t = new Thread() { // Start a new thread so that screen display is not blocked
          public void run() {
             try {
-               xb = new XmlBlasterAccessRaw(applet);
+               Hashtable properties = new Hashtable();
+               properties.put("servlet/xyz", "someValue"); // The servlet will see "xyz=someValue"
+               xb = new XmlBlasterAccessRaw(applet, properties);
                String connectQos = null;
                /*
                String connectQos =
