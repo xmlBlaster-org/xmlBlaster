@@ -97,6 +97,12 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  * <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
  * <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
+ * <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
+ * <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
+ * <tr><td>subscribe.[relativeName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
+ * <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
+ * <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
+ * <tr><td>unSubscribe.[relativeName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -143,7 +149,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  */
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
-      LogableDevice {
+      LogableDevice, I_SubscriptionListener {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -171,6 +177,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Set startupRunlevelSet;
    protected Set shutdownRunlevelSet;
    protected Set loginLogoutSet;
+   protected Set subscribeSet;
+   protected Set unSubscribeSet;
+   
+   protected static int staticInstanceCounter;
+   protected int instanceCounter;
    
    /**
     * Helper class to send emails
@@ -325,6 +336,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected JmxDestinationHelper jmxDestinationHelper;
    protected String jmxDestinationConfiguration;
    
+   public EventPlugin() {
+      synchronized (EventPlugin.class) {
+         staticInstanceCounter++;
+         this.instanceCounter = staticInstanceCounter;
+      }
+   }
+   
    /**
     * Initializes the plugin
     * 
@@ -395,7 +413,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.isActive = true;
 
       log.info("Configured to send core events of type '" + this.eventTypes.trim()
-            + "' to destination '" + destLogStr + "'");
+            + "' to '" + destLogStr + "'");
    } // init()
 
    /**
@@ -443,6 +461,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                log.fine("Register login/logout event = " + ev);
                if (this.loginLogoutSet == null) this.loginLogoutSet = new TreeSet();
                this.loginLogoutSet.add(ev);
+            }
+            else if (event.startsWith("subscribe.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register subscribe event = " + ev);
+               this.requestBroker.addSubscriptionListener(this);
+               if (this.subscribeSet == null) this.subscribeSet = new TreeSet();
+               this.subscribeSet.add(ev);
+            }
+            else if (event.startsWith("unSubscribe.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register unSubscribe event = " + ev);
+               this.requestBroker.addSubscriptionListener(this);
+               if (this.unSubscribeSet == null) this.unSubscribeSet = new TreeSet();
+               this.unSubscribeSet.add(ev);
             }
             else {
                log.warning("Ignoring unknown '" + event
@@ -530,6 +562,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.isShutdown) return;
       
       // TODO: Check if we unregister everything!
+      // TODO: Protect each call with catch Throwable
       
       LogNotifierDeviceFactory lf = this.engineGlob
             .getLogNotifierDeviceFactory();
@@ -551,6 +584,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.loginLogoutSet = null;
       if (this.requestBroker != null)
          this.requestBroker.getAuthenticate().removeClientListener(this);
+
+      if (this.subscribeSet != null)
+         this.subscribeSet = null;
+      if (this.unSubscribeSet != null)
+         this.unSubscribeSet = null;
+      this.requestBroker.removeSubscriptionListener(this);
       
       this.isShutdown = true;
    }
@@ -655,7 +694,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (!this.isActive) return;
 
       try {
-         String message = eventType + ": " + description; // Shows up under 'Message' in jconsole
+         String message = eventType + ": " + summary; // Shows up under 'Message' in jconsole
+         //String message = eventType + ": " + description; // Shows up under 'Message' in jconsole
          String attributeName = eventType; // TODO shutdownRunlevel.8 is no allowed attribute
          String oldValue = ""; // TODO what to put here?
          String newValue = eventType + ": " + summary; // Won't work if attributeName is illegal
@@ -1151,5 +1191,183 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void setSmtpDestinationConfiguration(String smtpDestinationConfiguration) {
       this.smtpDestinationConfiguration = smtpDestinationConfiguration;
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#getPriority()
+    */
+   public Integer getPriority() {
+      // Support multiple plugins
+      return new Integer(this.instanceCounter+120);
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionAdd(org.xmlBlaster.engine.SubscriptionEvent)
+    */
+   public void subscriptionAdd(SubscriptionEvent subscriptionEvent) throws XmlBlasterException {
+      if (this.subscribeSet == null) return;
+
+      SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
+      SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
+      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      String oid = subscriptionInfo.getKeyOid();
+      
+      String foundEvent = subscriptionInfo.getSubscriptionId();
+      if (!this.subscribeSet.contains(foundEvent)) {
+         foundEvent = oid;
+         if (!this.subscribeSet.contains(foundEvent)) {
+            foundEvent = relativeName;
+            if (!this.subscribeSet.contains(foundEvent)) {
+               foundEvent = "*";
+               if (!this.subscribeSet.contains(foundEvent)) {
+                  return;
+               }
+            }
+         }
+      }
+      
+      try {
+         String summary = "New subscription of client " 
+             + sessionInfo.getSessionName().getAbsoluteName()
+             + " on topic " + oid;
+         String description = subscriptionInfo.toXml();
+         String eventType = "subscribe." + foundEvent;
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+                    eventType, errorCode);
+               msgUnit.getQosData().addClientProperty("__publicSessionId",
+                     sessionInfo.getPublicSessionId());
+               msgUnit.getQosData().addClientProperty("__subjectId",
+                     sessionInfo.getLoginName());
+               msgUnit.getQosData().addClientProperty("__nodeId",
+                     this.engineGlob.getId());
+               msgUnit.getQosData().addClientProperty("__absoluteName",
+                     sessionInfo.getSessionName().getAbsoluteName());
+               msgUnit.getQosData().addClientProperty("__subscriptionId",
+                     subscriptionInfo.getSubscriptionId());
+               msgUnit.getQosData().addClientProperty("__oid",
+                     oid);
+               msgUnit.getQosData().addClientProperty("__topicId",
+                     subscriptionInfo.getTopicId());
+               this.requestBroker.publish(this.sessionInfo, msgUnit);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionRemove(org.xmlBlaster.engine.SubscriptionEvent)
+    */
+   public void subscriptionRemove(SubscriptionEvent subscriptionEvent) throws XmlBlasterException {
+      if (this.unSubscribeSet == null) return;
+
+      SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
+      SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
+      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      String oid = subscriptionInfo.getKeyOid();
+      
+      String foundEvent = subscriptionInfo.getSubscriptionId();
+      if (!this.unSubscribeSet.contains(foundEvent)) {
+         foundEvent = oid;
+         if (!this.unSubscribeSet.contains(foundEvent)) {
+            foundEvent = relativeName;
+            if (!this.unSubscribeSet.contains(foundEvent)) {
+               foundEvent = "*";
+               if (!this.unSubscribeSet.contains(foundEvent)) {
+                  return;
+               }
+            }
+         }
+      }
+      
+      try {
+         String summary = "unSubscribe of client " 
+             + sessionInfo.getSessionName().getAbsoluteName()
+             + " on topic " + oid;
+         String description = subscriptionInfo.toXml();
+         String eventType = "unSubscribe." + foundEvent;
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+                    eventType, errorCode);
+               msgUnit.getQosData().addClientProperty("__publicSessionId",
+                     sessionInfo.getPublicSessionId());
+               msgUnit.getQosData().addClientProperty("__subjectId",
+                     sessionInfo.getLoginName());
+               msgUnit.getQosData().addClientProperty("__nodeId",
+                     this.engineGlob.getId());
+               msgUnit.getQosData().addClientProperty("__absoluteName",
+                     sessionInfo.getSessionName().getAbsoluteName());
+               msgUnit.getQosData().addClientProperty("__subscriptionId",
+                     subscriptionInfo.getSubscriptionId());
+               msgUnit.getQosData().addClientProperty("__oid",
+                     oid);
+               msgUnit.getQosData().addClientProperty("__topicId",
+                     subscriptionInfo.getTopicId());
+               this.requestBroker.publish(this.sessionInfo, msgUnit);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.EventPluginMBean#triggerTestLogSevere()
+    */
+   public String triggerTestLogSevere() {
+      log.severe("This is a manually invoked logging output for testing purposes only");// TODO Auto-generated method stub
+      return "log.severe invoked";
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.EventPluginMBean#triggerTestLogWarning()
+    */
+   public String triggerTestLogWarning() {
+      log.warning("This is a manually invoked logging output for testing purposes only");// TODO Auto-generated method stub
+      return "log.warning invoked";
    }
 }

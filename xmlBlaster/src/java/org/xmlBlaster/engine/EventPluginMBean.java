@@ -43,6 +43,18 @@ public interface EventPluginMBean extends I_AdminService {
    public String sendTestEmail();
    
    /**
+    * Triggers a log.severe to test the configuration. 
+    * @return A comment about the test
+    */
+   public String triggerTestLogSevere();
+
+   /**
+    * Triggers a log.warning to test the configuration. 
+    * @return A comment about the test
+    */
+   public String triggerTestLogWarning();
+
+   /**
     * Depending on the configuration setting <code>mail.collectMillis</code>
     * emails are collected to not send too many emails in too
     * short period of time. 
