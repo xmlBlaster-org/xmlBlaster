@@ -95,8 +95,12 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
  * <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  * <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- * <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
- * <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
+ * <tr><td>client.sessionAdded.*</td><td>Captures event on client login (all clients)</td></tr>
+ * <tr><td>client.sessionAdded.[subjectId]</td><td>Captures event on given client login, e.g. "client.sessionAdded.joe"</td></tr>
+ * <tr><td>client.sessionAdded.[relativeSessionName]</td><td>Captures event on given client login, e.g. "client.sessionAdded.client/joe/1"</td></tr>
+ * <tr><td>client.sessionRemoved.*</td><td>Captures event on client logout (all clients)</td></tr>
+ * <tr><td>client.sessionRemoved.[subjectId]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.joe"</td></tr>
+ * <tr><td>client.sessionRemoved.[relativeSessionName]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.client/joe/1"</td></tr>
  * <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
  * <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
  * <tr><td>subscribe.[relativeName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
@@ -223,7 +227,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (map.containsKey("mail.content"))
             this.contentTemplate = (String) map.get("mail.content");
          else
-            this.contentTemplate = "$_{nodeId}\n\n$_{summary}\n$_{description}\n\nEventDate:$_{datetime}\n$_{versionInfo}";
+            this.contentTemplate = "$_{nodeId}\n\n$_{summary}\n$_{description}\n\nEventDate:$_{datetime}\n$_{versionInfo}\n\n--\nhttp://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html";
 
          if (map.containsKey("mail.contentSeparator"))
             this.contentSeparator = (String) map.get("mail.contentSeparator");
@@ -373,6 +377,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             "EventPlugin[" + getType() + "]", this.engineGlob.getScopeContextNode());
       this.mbeanHandle = this.engineGlob.registerMBean(this.contextNode, this);
 
+      this.eventTypes = this.glob.get("eventTypes", "", null,
+            this.pluginConfig);
+      if (this.eventTypes == null || this.eventTypes.trim().length() == 0) {
+         log.warning("Please configure an attribute 'eventTypes', there is nothing to do for us.");
+         return;
+      }
+      this.eventTypes = this.eventTypes.trim();
+
       String destLogStr = "";
 
       // Sending the events with email?
@@ -392,6 +404,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.publishDestinationHelper = new PublishDestinationHelper(this.publishDestinationConfiguration);
          this.requestBroker.getAuthenticate().addClientListener(this);
          destLogStr += "destination.publish:" + this.publishDestinationConfiguration;
+         if (this.eventTypes.indexOf("log.severe") != -1 || this.eventTypes.indexOf("log.error") != -1)
+            log.warning("The combination of 'destination.publish' with 'log.severe' is dangerous as it could loop forever, it is supressed");
+         if (this.eventTypes.indexOf("log.warning") != -1 || this.eventTypes.indexOf("log.warn") != -1)
+            log.warning("The combination of 'destination.publish' with 'log.warning' is very dangerous as it could loop forever, it is supressed");
       }
 
       // Sending the events as a JMX notification?
@@ -408,13 +424,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return;
       }
 
-      this.eventTypes = this.glob.get("eventTypes", "", null,
-            this.pluginConfig);
-      if (this.eventTypes == null || this.eventTypes.trim().length() == 0) {
-         log.warning("Please configure an attribute 'eventTypes', there is nothing to do for us.");
-         return;
-      }
-      this.eventTypes = this.eventTypes.trim();
       registerEventTypes(this.eventTypes);
       
       this.isActive = true;
@@ -464,6 +473,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                this.shutdownRunlevelSet.add(rl);
             }
             else if (event.startsWith("client.")) {
+               // client.sessionAdded.*, client.sessionRemoved.*, client.sessionAdded.client/joe/1
                String ev = event.substring(event.indexOf(".")+1);
                log.fine("Register login/logout event = " + ev);
                if (this.loginLogoutSet == null) this.loginLogoutSet = new TreeSet();
@@ -682,13 +692,24 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
    
+         /*
          if (this.publishDestinationHelper != null) {
-            try {
-               sendMessage(summary, description, eventType, errorCode, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
+            if (LogChannel.LOG_WARN == level) {
+               // log.fine("Too dangerous as it could produce looping messages");
+               // e.g. [WARN  XmlBlaster.DispatchWorkerPool.heron-1 RequestBroker] Generating dead message 'callback:/node/heron/client/subscribe/1/NORM/1136329068010000002/__sys__Event' from publisher=/node/heron/client/__RequestBroker_internal[heron]/1 because delivery with queue 'null' failed: XmlBlasterException errorCode=[communication.noConnection.dead] serverSideException=true location=[SOCKET-HandleClient-subscribe/1] message=[#14515:14516M update() invocation ignored, we are shutdown. : Original erroCode=communication.noConnection] [See URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#communication.noConnection.dead]
+            }
+            else {
+               // if (LogChannel.LOG_ERROR == level)
+               // Should suppress as well ?
+               // Lead to looping messages if during publish a log.error is done
+               try {
+                  sendMessage(summary, description, eventType, errorCode, false);
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
             }
          }
+         */
 
          if (this.jmxDestinationHelper != null) {
             try {
@@ -906,18 +927,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void sessionAdded(ClientEvent clientEvent) throws XmlBlasterException {
 
-      if (this.loginLogoutSet == null || !this.loginLogoutSet.contains("sessionAdded")) {
-         return;
+      if (this.loginLogoutSet == null) return;
+      
+      SessionInfo sessionInfo = clientEvent.getSessionInfo();
+      String relativeName = sessionInfo.getSessionName().getRelativeName();
+
+      String event = "sessionAdded.";
+      String foundEvent = event + relativeName;
+      if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.client/joe/1"
+         foundEvent = event + sessionInfo.getSessionName().getLoginName();
+         if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.joe"
+            foundEvent = event + "*";
+            if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.*"
+               return;
+            }
+         }
       }
 
-      SessionInfo sessionInfo = clientEvent.getSessionInfo();
       try {
          //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          // Key '__sys__UserList' for login/logout event
          // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
          String summary = "Login of client " + sessionInfo.getSessionName().getAbsoluteName();
-         String description = summary;
-         String eventType = "client.sessionAdded";
+         String description = sessionInfo.toXml();
+         String eventType = "client." + foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -972,17 +1005,31 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       //PublishKey(glob, Constants.EVENT_OID_LOGOUT/*"__sys__Logout"*/, "text/plain");
       // Key '__sys__UserList' for login/logout event
       // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
-      if (this.loginLogoutSet == null || !this.loginLogoutSet.contains("sessionRemoved")) {
-         return;
-      }
+
+      if (this.loginLogoutSet == null) return;
+      
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
+      String relativeName = sessionInfo.getSessionName().getRelativeName();
+
+      String event = "sessionRemoved.";
+      String foundEvent = event + relativeName;
+      if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.client/joe/1"
+         foundEvent = event + sessionInfo.getSessionName().getLoginName();
+         if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.joe"
+            foundEvent = event + "*";
+            if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.*"
+               return;
+            }
+         }
+      }
+      
       try {
          //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          // Key '__sys__UserList' for login/logout event
          // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
          String summary = "Logout of client " + sessionInfo.getSessionName().getAbsoluteName();
          String description = summary;
-         String eventType = "client.sessionRemoved";
+         String eventType = "client." + foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
