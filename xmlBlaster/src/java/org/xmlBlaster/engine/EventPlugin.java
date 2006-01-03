@@ -17,6 +17,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
@@ -24,18 +25,22 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
@@ -52,37 +57,79 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * 
  * <pre>
  *&lt;plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'&gt;
- *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='1'
+ *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='11'
  *                        onFail='resource.configuration.pluginFailed'/&gt;
- *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='1'/&gt;
- *   &lt;attribute id='eventTypes'>log.severe,log.warning&lt;/attribute>
- *   &lt;attribute id='destination.smtp'>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=demo@localhost,mail.collectMillis=10000&lt;/attribute>
+ *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
+ *   
+ *   &lt;attribute id='eventTypes'>
+ *      log.severe,
+ *      log.warning,
+ *      startupRunlevel.8,
+ *      client.sessionAdded
+ *   &lt;/attribute>
+ *   
+ *   &lt;attribute id='destination.smtp'>
+ *      mail.smtp.from=xmlBlaster@localhost,
+ *      mail.smtp.to=demo@localhost,
+ *      mail.collectMillis=10000
+ *   &lt;/attribute>
+ *   &lt;attribute id='destination.jmx'/>
  *&lt;/plugin&gt;
  * </pre>
  * 
  * <p>
- * In the above example an email is send if any log.severe (==log.error) or log.warning occurres.
+ * In the above example an email is send if any log.severe (==log.error) or log.warning occurs.
+ * Further an event is emitted on xmlBlaster startup in run level 8
+ * and if a new client logs in.
+ * Those events are send as JMX notifications as well.
+ * Adding <code>&lt;attribute id='destination.publish'/></code> would send
+ * the event as a xmlBlaster message as well, but take care to not send logging events
+ * as such messages will most certainly loop (if they log something they will trigger another message and so forth)!
  * </p>
  * <p>
- * List of supported event sources:
+ * List of supported event sources, note that this plugin must be active on
+ * a runlevel early enough depending on the event you want to capture:
  * </p>
  * <table border="1">
  * <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
  * <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
  * <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  * <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ * <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
+ * <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
  * </p>
  * <table border="1">
- * <tr><td>destination.smtp</td><td>Sends an email about the occurred event, collects multiple events to one mail depending on configuration</td></tr>
+ * <tr>
+ *    <td>destination.smtp</td>
+ *    <td>Sends an email about the occurred event.
+ *    Collects multiple events to one mail depending on configuration.
+ *    You need to configure at least the email address parameters
+ *    <code>mail.stmp.from</code> and <code>mail.smtp.to</code> and
+ *    activate the <code>SmtpClient</code> plugin in <code>xmlBlasterPlugins.xml</code>.
+ *    If you have a reasonable email provider you can configure it to 
+ *    forward the mail as an SMS (mine offers this feature).</td>
+ * </tr>
+ * <tr>
+ *    <td>destination.publish</td>
+ *    <td>Publishes an xmlBlaster message which contains the occurred event,
+ *     currently all messages are published into a topic named '__sys__Event'</td>
+ * </tr>
+ * <tr>
+ *    <td>destination.jmx</td>
+ *    <td>Emits an JMX notification for the occurred event.
+ *     Open 'jconsole' and 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]'
+ *     there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
+ *     Now you receive the configured events.</td>
+ * </tr>
  * </table>
  * 
  * <p>
- * We use the <tt>LOCAL</tt> protocol driver to talk to xmlBlaster, therefor
- * this plugin works only if the client and server is in the same virtual
- * machine (JVM).
+ * We access the xmlBlaster core directly to register the supported internal
+ * events, hence this plugin works only if it is in the same virtual
+ * machine (JVM) as the xmlBlaster server.
  * </p>
  * <p>
  * All events don't throw any exceptions as this plugin should have
@@ -99,7 +146,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       LogableDevice {
    private final static String ME = EventPlugin.class.getName();
 
-   private static Logger log = Logger.getLogger(DbWatcher.class.getName());
+   private static Logger log = Logger.getLogger(EventPlugin.class.getName());
 
    /** My JMX registration */
    private Object mbeanHandle;
@@ -109,10 +156,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Global glob;
 
    protected I_PluginConfig pluginConfig;
-
-   protected SmtpClient smtpClient;
-
-   private I_XmlBlasterAccess connection;
 
    protected org.xmlBlaster.engine.Global engineGlob;
 
@@ -125,17 +168,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected boolean isShutdown;
    
    protected String eventTypes;
-
    protected Set startupRunlevelSet;
    protected Set shutdownRunlevelSet;
+   protected Set loginLogoutSet;
    
    /**
     * Helper class to send emails
     */
    class SmtpDestinationHelper {
       SmtpClient smtpClient;
-
-      String destination;
 
       String to, from, subjectTemplate, cc, bcc, contentTemplate, contentSeparator;
       
@@ -202,6 +243,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    } // end of helper class SmtpDestination
 
+   protected SmtpClient smtpClient;
    protected final Object smtpDestinationMonitor = new Object();
    protected SmtpDestinationHelper smtpDestinationHelper;
    protected String smtpDestinationConfiguration;
@@ -209,6 +251,80 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Timestamp smtpTimeoutHandle;
    protected EmailData currentEmailData;
 
+   /**
+    * Helper class to publish messages. 
+    */
+   class PublishDestinationHelper {
+      String destination;
+      String key, qos;
+      public PublishDestinationHelper(String destination) throws XmlBlasterException {
+         Map map = StringPairTokenizer.parseLineToProperties(destination);
+         if (map.containsKey("publish.key"))
+            this.key = (String) map.get("publish.key");
+         if (map.containsKey("publish.qos"))
+            this.qos = (String) map.get("publish.qos");
+      }
+      MsgKeyData getPublishKey(String summary, String description,
+            String eventType, String errorCode) throws XmlBlasterException {
+         if (this.key != null) {
+            return engineGlob.getMsgKeyFactory().readObject(this.key);
+         }
+         //PublishKey publishKey = new PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
+         // TODO: invent an oid depending on the eventType:
+         PublishKey publishKey = new PublishKey(glob, "__sys__Event", "text/plain", "1.0");
+         publishKey.setClientTags("<org.xmlBlaster><event/></org.xmlBlaster>");
+         return publishKey.getData();
+      }
+      MsgQosData getPublishQos(String summary, String description,
+            String eventType, String errorCode) throws XmlBlasterException {
+         MsgQosData msgQosData = null;
+         if (this.qos != null) {
+            msgQosData = engineGlob.getMsgQosFactory().readObject(this.qos);
+         }
+         else {
+            PublishQos publishQos = new PublishQos(glob);
+            publishQos.setLifeTime(-1L);
+            publishQos.setForceUpdate(true);
+            // TODO: Configure history depth to 0 only on first publish
+            TopicProperty topicProperty = new TopicProperty(glob);
+            HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
+            historyQueueProperty.setMaxEntriesCache(2);
+            historyQueueProperty.setMaxEntries(2);
+            topicProperty.setHistoryQueueProperty(historyQueueProperty);
+            publishQos.setTopicProperty(topicProperty);
+            msgQosData = publishQos.getData();
+         }
+         msgQosData.addClientProperty("_summary", summary);
+         msgQosData.addClientProperty("_description", description);
+         msgQosData.addClientProperty("_eventType", eventType);
+         msgQosData.addClientProperty("_errorCode", errorCode);
+         return msgQosData;
+      }
+      MsgUnit getMsgUnit(String summary, String description,
+            String eventType, String errorCode) throws XmlBlasterException {
+         String content = description;
+         return new MsgUnit(
+               getPublishKey(summary, description, eventType, errorCode),
+               content.getBytes(),
+               getPublishQos(summary, description, eventType, errorCode));
+         
+      }
+   }
+   protected PublishDestinationHelper publishDestinationHelper;
+   protected String publishDestinationConfiguration;
+
+   /**
+    * Helper class to send a JMX notification.
+    */
+   class JmxDestinationHelper {
+      String destination;
+      public JmxDestinationHelper(String destination) throws XmlBlasterException {
+         //Map map = StringPairTokenizer.parseLineToProperties(destination);
+      }
+   }
+   protected JmxDestinationHelper jmxDestinationHelper;
+   protected String jmxDestinationConfiguration;
+   
    /**
     * Initializes the plugin
     * 
@@ -240,11 +356,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.smtpDestinationConfiguration != null && this.smtpDestinationConfiguration.trim().length() > 0) {
          this.smtpDestinationConfiguration = this.smtpDestinationConfiguration.trim();
          setupSmtpSink(this.smtpDestinationConfiguration);
-         destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration.trim();
+         destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration;
+      }
+
+      // Sending the events with publish()?
+      this.publishDestinationConfiguration = this.glob.get("destination.publish", (String)null, null,
+            this.pluginConfig);
+      if (this.publishDestinationConfiguration != null) {
+         this.publishDestinationConfiguration = this.publishDestinationConfiguration.trim();
+         this.publishDestinationHelper = new PublishDestinationHelper(this.publishDestinationConfiguration);
+         this.requestBroker.getAuthenticate().addClientListener(this);
+         destLogStr += "destination.publish:" + this.publishDestinationConfiguration;
+      }
+
+      // Sending the events as a JMX notification?
+      this.jmxDestinationConfiguration = this.glob.get("destination.jmx", "", null,
+            this.pluginConfig);
+      if (this.jmxDestinationConfiguration != null) {
+         this.jmxDestinationConfiguration = this.jmxDestinationConfiguration.trim();
+         this.jmxDestinationHelper = new JmxDestinationHelper(this.jmxDestinationConfiguration);
+         destLogStr += "destination.jmx:" + this.jmxDestinationConfiguration;
       }
 
       if (destLogStr.length() < 1) {
-         log.warning("Please configure an attribute 'destination.smtp', there is nothing to do for us.");
+         log.warning("Please configure a data sink attribute 'destination.*', there is nothing to do for us.");
          return;
       }
 
@@ -254,6 +389,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          log.warning("Please configure an attribute 'eventTypes', there is nothing to do for us.");
          return;
       }
+      this.eventTypes = this.eventTypes.trim();
       registerEventTypes(this.eventTypes);
       
       this.isActive = true;
@@ -269,39 +405,53 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
       for (int i = 0; i < eventTypeArr.length; i++) {
-         String event = eventTypeArr[i];
-         if ("log.severe".equals(event)
-               || "log.error".equals(event)) {
-            // Please use JDK14 notation for configuration
-            // We want to be notified if a log.error() is called, this will
-            // notify our LogableDevice.log() method
-            LogNotifierDeviceFactory lf = this.engineGlob
-                  .getLogNotifierDeviceFactory();
-            lf.register(LogChannel.LOG_ERROR, this);
+         String event = eventTypeArr[i].trim();
+         try {
+            if ("log.severe".equals(event)
+                  || "log.error".equals(event)) {
+               // Please use JDK14 notation for configuration
+               // We want to be notified if a log.error() is called, this will
+               // notify our LogableDevice.log() method
+               log.fine("Register logging status " + event);
+               LogNotifierDeviceFactory lf = this.engineGlob
+                     .getLogNotifierDeviceFactory();
+               lf.register(LogChannel.LOG_ERROR, this);
+            }
+            else if ("log.warning".equals(event)
+                  || "log.warn".equals(event)) {
+               log.fine("Register logging status " + event);
+               LogNotifierDeviceFactory lf = this.engineGlob
+                     .getLogNotifierDeviceFactory();
+               lf.register(LogChannel.LOG_WARN, this);
+            }
+            else if (event.startsWith("startupRunlevel.")) {
+               String rl = event.substring(event.indexOf(".")+1);
+               log.fine("Register startupRunlevel = " + rl);
+               this.engineGlob.getRunlevelManager().addRunlevelListener(this);
+               if (this.startupRunlevelSet == null) this.startupRunlevelSet = new TreeSet();
+               this.startupRunlevelSet.add(rl);
+            }
+            else if (event.startsWith("shutdownRunlevel.")) {
+               String rl = event.substring(event.indexOf(".")+1);
+               log.fine("Register shutdownRunlevel = " + rl);
+               this.engineGlob.getRunlevelManager().addRunlevelListener(this);
+               if (this.shutdownRunlevelSet == null) this.shutdownRunlevelSet = new TreeSet();
+               this.shutdownRunlevelSet.add(rl);
+            }
+            else if (event.startsWith("client.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register login/logout event = " + ev);
+               if (this.loginLogoutSet == null) this.loginLogoutSet = new TreeSet();
+               this.loginLogoutSet.add(ev);
+            }
+            else {
+               log.warning("Ignoring unknown '" + event
+                     + "' from eventTypes='" + eventTypes + "'");
+            }
          }
-         else if ("log.warning".equals(event)
-               || "log.warn".equals(event)) {
-            LogNotifierDeviceFactory lf = this.engineGlob
-                  .getLogNotifierDeviceFactory();
-            lf.register(LogChannel.LOG_WARN, this);
-         }
-         else if (event.startsWith("startupRunlevel.")) {
-            String rl = event.substring(event.indexOf(".")+1);
-            log.fine("Register startupRunlevel = " + rl);
-            this.engineGlob.getRunlevelManager().addRunlevelListener(this);
-            if (this.startupRunlevelSet == null) this.startupRunlevelSet = new TreeSet();
-            this.startupRunlevelSet.add(rl);
-         }
-         else if (event.startsWith("shutdownRunlevel.")) {
-            String rl = event.substring(event.indexOf(".")+1);
-            log.fine("Register shutdownRunlevel = " + rl);
-            this.engineGlob.getRunlevelManager().addRunlevelListener(this);
-            if (this.shutdownRunlevelSet == null) this.shutdownRunlevelSet = new TreeSet();
-            this.shutdownRunlevelSet.add(rl);
-         }
-         else {
-            log.warning("Ignoring unknown '" + eventTypeArr[i]
-                  + "' from eventTypes='" + eventTypes + "'");
+         catch (Throwable e) {
+            log.warning("Ignoring '" + event
+                     + "' from eventTypes='" + eventTypes + "' because of " + e.toString());
          }
       }
    }
@@ -378,18 +528,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void shutdown() throws XmlBlasterException {
       if (this.isShutdown) return;
-      // TODO: Unregister everything!
+      
+      // TODO: Check if we unregister everything!
+      
       LogNotifierDeviceFactory lf = this.engineGlob
             .getLogNotifierDeviceFactory();
       lf.unregister(LogChannel.LOG_WARN, this);
       lf.unregister(LogChannel.LOG_ERROR, this);
+      
       if (this.engineGlob != null && this.mbeanHandle != null)
          this.engineGlob.unregisterMBean(this.mbeanHandle);
-      if (connection != null)
-         connection.disconnect(null);
+
+      if (this.shutdownRunlevelSet != null)
+         this.shutdownRunlevelSet = null;
+      if (this.startupRunlevelSet != null)
+         this.startupRunlevelSet = null;
       if (this.engineGlob != null) {
          this.engineGlob.getRunlevelManager().removeRunlevelListener(this);
       }
+      
+      if (this.loginLogoutSet != null)
+         this.loginLogoutSet = null;
+      if (this.requestBroker != null)
+         this.requestBroker.getAuthenticate().removeClientListener(this);
+      
       this.isShutdown = true;
    }
 
@@ -420,44 +582,111 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void log(int level, String source, String str) {
       // We may not do any log.xxx() call here because of recursion!!
+      if (LogChannel.LOG_WARN != level && LogChannel.LOG_ERROR != level)
+         return;
+
       try {
-         if (LogChannel.LOG_WARN == level || LogChannel.LOG_ERROR == level) {
-            /*
-             * // Emit JMX notification this.glob.sendNotification(this, "New " +
-             * LogChannel.bitToLogLevel(level) + " logging occurred",
-             * "lastError", "java.lang.String", this.lastError, newLog);
-             */
+         if (source == null) source = "";
+         String description = (str == null) ? "" : str;
 
-            if (this.smtpDestinationHelper != null) {
-               if (source == null) source = "";
-               String description = (str == null) ? "" : str;
+         String summary = 
+             "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
+           + " " + LogChannel.bitToLogLevel(level)
+           + " " + Thread.currentThread().getName()
+           + " " + source + "]";
 
-               String summary = 
-                   "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
-                 + " " + LogChannel.bitToLogLevel(level)
-                 + " " + Thread.currentThread().getName()
-                 + " " + source + "]";
+         String eventType = (LogChannel.LOG_WARN == level) ? "log.warning" : "log.severe";
+         
+         // extract errorCode e.g. "... errorCode=communication.noConnection bla bla..."
+         String errorCode=null;
+         try {
+            int index = str.lastIndexOf("errorCode=");
+            if (index != -1) {
+               errorCode = str.substring(index+10);
+               int end = errorCode.indexOf(" ");
+               if (end != -1)
+                  errorCode = errorCode.substring(0,end);
+            }
+         }
+         catch (Throwable e) {}
 
-               String eventType = (LogChannel.LOG_WARN == level) ? "log.warning" : "log.severe";
-               
-               // extract errorCode e.g. "... errorCode=communication.noConnection bla bla..."
-               String errorCode=null;
-               try {
-                  int index = str.lastIndexOf("errorCode=");
-                  if (index != -1) {
-                     errorCode = str.substring(index+10);
-                     int end = errorCode.indexOf(" ");
-                     if (end != -1)
-                        errorCode = errorCode.substring(0,end);
-                  }
-               }
-               catch (Throwable e) {}
-               
+         if (this.smtpDestinationHelper != null) {
+            try {
                sendEmail(summary, description, eventType, errorCode, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               sendMessage(summary, description, eventType, errorCode, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, errorCode, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
             }
          }
       } catch (Throwable e) {
          e.printStackTrace();
+      }
+   }
+
+   /**
+    * The xmlBlaster-JMX notification data sink. 
+    * Sends a JMX notification with the current event occurred. 
+    * <p>
+    * Open <code>jconsole</code> and from the menue
+    * 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]',
+    * there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
+    * Now you receive the configured events.
+    * </p>
+    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+    */
+   protected void sendJmxNotification(String summary, String description,
+         String eventType, String errorCode, boolean forceSending) {
+      if (this.jmxDestinationHelper == null) return;
+      if (!this.isActive) return;
+
+      try {
+         String message = eventType + ": " + description; // Shows up under 'Message' in jconsole
+         String attributeName = eventType; // TODO shutdownRunlevel.8 is no allowed attribute
+         String oldValue = ""; // TODO what to put here?
+         String newValue = eventType + ": " + summary; // Won't work if attributeName is illegal
+         this.engineGlob.sendNotification(this, message,
+               attributeName, "java.lang.String", oldValue, newValue);
+      } catch (Throwable e) {
+         throw new IllegalArgumentException(e.toString());
+      }
+   }
+
+   /**
+    * The xmlBlaster-message data sink. 
+    * Publishes a message with the current event occurred. 
+    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+    */
+   protected void sendMessage(String summary, String description,
+         String eventType, String errorCode, boolean forceSending) {
+      if (this.publishDestinationHelper == null) return;
+      if (!this.isActive) return;
+
+      try {
+         MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+              eventType, errorCode);
+         // Done already in getMsgUnit() above
+         //msgUnit.getQosData().addClientProperty("_summary", summary);
+         //msgUnit.getQosData().addClientProperty("_description", description);
+         //msgUnit.getQosData().addClientProperty("_eventType", eventType);
+         //msgUnit.getQosData().addClientProperty("_errorCode", errorCode);
+         this.requestBroker.publish(this.sessionInfo, msgUnit);
+      } catch (Throwable e) {
+         throw new IllegalArgumentException(e.toString());
       }
    }
 
@@ -471,6 +700,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    protected void sendEmail(String summary, String description,
             String eventType, String errorCode, boolean forceSending) {
+      if (this.smtpDestinationHelper == null) return;
+      if (!this.isActive) return;
+
       if (summary == null) summary = "";
       if (description == null) description = "";
       
@@ -576,65 +808,159 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          
          if (eventType == null) return;
    
-         sendEmail(summary, description, eventType, null, true);
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               sendMessage(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
       } catch (Throwable e) {
          e.printStackTrace();
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * 
+   /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionAdded(ClientEvent e) throws XmlBlasterException {
-      // TODO Auto-generated method stub
-      /*
-       * SessionInfo sessionInfo = e.getSessionInfo(); if (log.TRACE)
-       * log.trace(ME, "Login event for client " + sessionInfo.toString());
-       * 
-       * this.glob.sendNotification(this, "Client '" +
-       * sessionInfo.getSessionName().getAbsoluteName() + "' logged in",
-       * "clientNew", "java.lang.String", "",
-       * sessionInfo.getSessionName().getAbsoluteName());
-       * 
-       * if (this.publishLoginEvent) { this.publishQosLoginEvent.clearRoutes();
-       * MsgQosData msgQosData =
-       * (MsgQosData)this.publishQosLoginEvent.getData().clone(); // __sessionId
-       * is deprecated, please use __publicSessionId
-       * msgQosData.addClientProperty("__sessionId",
-       * sessionInfo.getPublicSessionId());
-       * msgQosData.addClientProperty("__publicSessionId",
-       * sessionInfo.getPublicSessionId());
-       * msgQosData.addClientProperty("__absoluteName",
-       * sessionInfo.getSessionName().getAbsoluteName());
-       * 
-       * MsgUnit msgUnit = new MsgUnit(this.xmlKeyLoginEvent,
-       * sessionInfo.getLoginName().getBytes(), msgQosData);
-       * publish(this.unsecureSessionInfo, msgUnit); // publish that this client
-       * has logged in
-       * this.publishQosLoginEvent.getData().setTopicProperty(null); // only the
-       * first publish needs to configure the topic }
-       * 
-       * if (log.TRACE) log.trace(ME, " client
-       * added:"+sessionInfo.getLoginName());
-       */
+   public void sessionAdded(ClientEvent clientEvent) throws XmlBlasterException {
+
+      if (this.loginLogoutSet == null || !this.loginLogoutSet.contains("sessionAdded")) {
+         return;
+      }
+
+      SessionInfo sessionInfo = clientEvent.getSessionInfo();
+      try {
+         //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
+         // Key '__sys__UserList' for login/logout event
+         // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
+         String summary = "Login of client " + sessionInfo.getSessionName().getAbsoluteName();
+         String description = summary;
+         String eventType = "client.sessionAdded";
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+                    eventType, errorCode);
+               // To be backwards compatible with loginEvent=true setting:
+               msgUnit.getQosData().addClientProperty("__publicSessionId",
+                     sessionInfo.getPublicSessionId());
+               msgUnit.getQosData().addClientProperty("__subjectId",
+                     sessionInfo.getLoginName());
+               msgUnit.getQosData().addClientProperty("__nodeId",
+                     this.engineGlob.getId());
+               msgUnit.getQosData().addClientProperty("__absoluteName",
+                     sessionInfo.getSessionName().getAbsoluteName());
+               // TODO: backwards compatible?
+               //msgUnit.setContent(sessionInfo.getLoginName().getBytes());
+               this.requestBroker.publish(this.sessionInfo, msgUnit);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionPreRemoved(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
-      // TODO Auto-generated method stub
-
-   }
+   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {}
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionRemoved(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionRemoved(ClientEvent e) throws XmlBlasterException {
+   public void sessionRemoved(ClientEvent clientEvent) throws XmlBlasterException {
       // TODO Auto-generated method stub
+      //PublishKey(glob, Constants.EVENT_OID_LOGOUT/*"__sys__Logout"*/, "text/plain");
+      // Key '__sys__UserList' for login/logout event
+      // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
+      if (this.loginLogoutSet == null || !this.loginLogoutSet.contains("sessionRemoved")) {
+         return;
+      }
+      SessionInfo sessionInfo = clientEvent.getSessionInfo();
+      try {
+         //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
+         // Key '__sys__UserList' for login/logout event
+         // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
+         String summary = "Logout of client " + sessionInfo.getSessionName().getAbsoluteName();
+         String description = summary;
+         String eventType = "client.sessionRemoved";
+         String errorCode = null;
 
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+                    eventType, errorCode);
+               // To be backwards compatible with loginEvent=true setting:
+               msgUnit.getQosData().addClientProperty("__publicSessionId",
+                     sessionInfo.getPublicSessionId());
+               msgUnit.getQosData().addClientProperty("__subjectId",
+                     sessionInfo.getLoginName());
+               msgUnit.getQosData().addClientProperty("__nodeId",
+                     this.engineGlob.getId());
+               msgUnit.getQosData().addClientProperty("__absoluteName",
+                     sessionInfo.getSessionName().getAbsoluteName());
+               // TODO: backwards compatible?
+               //msgUnit.setContent(sessionInfo.getLoginName().getBytes());
+               this.requestBroker.publish(this.sessionInfo, msgUnit);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    /* (non-Javadoc)
@@ -649,7 +975,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void subjectRemoved(ClientEvent e) throws XmlBlasterException {
       // TODO Auto-generated method stub
-
    }
 
    /**
@@ -737,14 +1062,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.util.admin.I_AdminService#activate()
     */
    public void activate() throws Exception {
-      // TODO Auto-generated method stub
+      this.isActive = true;
    }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.admin.I_AdminService#deActivate()
     */
    public void deActivate() {
-      // TODO Auto-generated method stub
+      this.isActive = false;
    }
 
    /* (non-Javadoc)
