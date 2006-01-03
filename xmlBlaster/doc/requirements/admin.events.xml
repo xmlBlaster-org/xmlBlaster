@@ -288,7 +288,7 @@
 
          <tr>
             <td>mail.content</td>
-            <td>$_{nodeId}\n\n$_{summary}\n $_{description}\n\nEventDate:$_{datetime}\n $_{versionInfo}\n\n--\n http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html</td>
+            <td>$_{nodeId}\n\n$_{summary}\n $_{description}\n\nEventDate:$_{datetime}\n $_{versionInfo}\n\n--\n http://www.xmlblaster.org/ xmlBlaster/doc/requirements/admin.events.html</td>
             <td>The template to generate the email content of the email.<br />
             Please replace '\n' with ${line.separator} to enforce a new line.
             </td>
