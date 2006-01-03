@@ -147,12 +147,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private Timeout destroyTimer;
    private Timestamp timerKey = null;
 
-   private final static int UNDEF = -1;
-   private final static int UNCONFIGURED = 0;
-   private final static int ALIVE = 1;
-   private final static int UNREFERENCED = 2;
-   private final static int SOFT_ERASED = 3;
-   private final static int DEAD = 4;
+   public final static int UNDEF = -1;
+   public final static int UNCONFIGURED = 0;
+   public final static int ALIVE = 1;
+   public final static int UNREFERENCED = 2;
+   public final static int SOFT_ERASED = 3;
+   public final static int DEAD = 4;
    private int state = UNDEF;
 
    private final Object ADMIN_MONITOR = new Object();
@@ -2088,7 +2088,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private void removeFromBigMessageMap() {
       try {
-         requestBroker.messageErase(this);
+         requestBroker.topicErase(this);
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Received exception on message erase, we ignore it: " + e.getMessage());

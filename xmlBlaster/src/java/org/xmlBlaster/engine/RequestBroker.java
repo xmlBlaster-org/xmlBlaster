@@ -109,7 +109,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * key   = oid value from <key oid="..."> (== topicHandler.getUniqueKey())
     * value = TopicHandler object
     */
-   private final Map messageContainerMap = new HashMap(); //Collections.synchronizedMap(new HashMap());
+   private final Map topicHandlerMap = new HashMap(); //Collections.synchronizedMap(new HashMap());
+   /**
+    * For listeners who want to be informed about topic creation / deletion events.
+    */
+   private final Set topicListenerSet = Collections.synchronizedSet(new TreeSet());
 
    /**
     * Store configuration of all topics in xmlBlaster for recovery
@@ -1194,8 +1198,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * @return null if not found
     */
    public final TopicHandler getMessageHandlerFromOid(String oid) {
-      synchronized(this.messageContainerMap) {
-         Object obj = this.messageContainerMap.get(oid);
+      synchronized(this.topicHandlerMap) {
+         Object obj = this.topicHandlerMap.get(oid);
          if (obj == null) {
             if (log.TRACE) log.trace(ME, "getMessageHandlerFromOid(): key oid " + oid + " is unknown, topicHandler == null");
             return null;
@@ -1208,17 +1212,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * @return A current snapshot of all topics (never null)
     */
    public final TopicHandler[] getTopicHandlerArr() {
-      synchronized(this.messageContainerMap) {
-         return (TopicHandler[])this.messageContainerMap.values().toArray(new TopicHandler[this.messageContainerMap.size()]);
-         /*
-         TopicHandler[] arr = new TopicHandler[this.messageContainerMap.size()];
-         Iterator it = this.messageContainerMap.values().iterator();
-         int i=0;
-         while (it.hasNext()) {
-            arr[i++] = (TopicHandler)it.next();
-         }
-         return arr;
-         */
+      synchronized(this.topicHandlerMap) {
+         return (TopicHandler[])this.topicHandlerMap.values().toArray(new TopicHandler[this.topicHandlerMap.size()]);
       }
    }
 
@@ -1250,26 +1245,29 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * @return The previous topic handler (there should never be any in our context).
     */
    public final TopicHandler addTopicHandler(TopicHandler topicHandler) {
-      synchronized(messageContainerMap) {
-         return (TopicHandler)messageContainerMap.put(topicHandler.getUniqueKey(), topicHandler); // ram lookup
+      synchronized(topicHandlerMap) {
+         TopicHandler old = (TopicHandler)topicHandlerMap.put(topicHandler.getUniqueKey(), topicHandler); // ram lookup
+         fireTopicEvent(topicHandler);
+         return old;
       }
    }
 
    /**
     * Event invoked on message erase() invocation.
     */
-   void messageErase(TopicHandler topicHandler) throws XmlBlasterException {
+   void topicErase(TopicHandler topicHandler) throws XmlBlasterException {
       if (topicHandler.hasExactSubscribers()) {
          log.warn(ME, "Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
       }
       String uniqueKey = topicHandler.getUniqueKey();
       if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
-      synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.remove(uniqueKey);
+      synchronized(topicHandlerMap) {
+         Object obj = topicHandlerMap.remove(uniqueKey);
          if (obj == null) {
             log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
             throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
          }
+         fireTopicEvent(topicHandler);
       }
    }
 
@@ -1285,11 +1283,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       if (log.CALL) log.call(ME, "Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       TopicHandler topicHandler = null;
-      synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.get(uniqueKey);
+      synchronized(topicHandlerMap) {
+         Object obj = topicHandlerMap.get(uniqueKey);
          if (obj == null) {
             // This is a new Message, yet unknown ...
-            topicHandler = new TopicHandler(this, uniqueKey); // adds itself to messageContainerMap
+            topicHandler = new TopicHandler(this, uniqueKey); // adds itself to topicHandlerMap
          }
          else {
             // This message was known before ...
@@ -1660,10 +1658,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
          // Find or create the topic
          TopicHandler topicHandler = null;
-         synchronized(messageContainerMap) {
-            Object obj = messageContainerMap.get(msgKeyData.getOid());
+         synchronized(topicHandlerMap) {
+            Object obj = topicHandlerMap.get(msgKeyData.getOid());
             if (obj == null) {
-               topicHandler = new TopicHandler(this, sessionInfo, msgUnit.getKeyOid()); // adds itself to messageContainerMap
+               topicHandler = new TopicHandler(this, sessionInfo, msgUnit.getKeyOid()); // adds itself to topicHandlerMap
             }
             else {
                topicHandler = (TopicHandler)obj;
@@ -1982,7 +1980,52 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    {
       log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
+   
+   /**
+    * Adds the specified Topic listener to receive creation/destruction events of Topics. 
+    */
+   public void addTopicListener(I_TopicListener l) {
+      if (l == null) {
+         throw new IllegalArgumentException(ME + ".addTopicListener: the listener is null");
+      }
+      synchronized (this.topicListenerSet) {
+         this.topicListenerSet.add(l);
+      }
+   }
 
+   /**
+    * Removes the specified listener.
+    */
+   public void removeTopicListener(I_TopicListener l) {
+      if (l == null) {
+         throw new IllegalArgumentException(ME + ".removeTopicListener: the listener is null");
+      }
+      synchronized (this.topicListenerSet) {
+         this.topicListenerSet.remove(l);
+      }
+   }
+
+   /**
+    * Is fired on topic creation or destruction. 
+    */
+   private final void fireTopicEvent(TopicHandler topicHandler)
+   {
+      if (log.TRACE) log.trace(ME, "Going to fire fireTopicEvent() ...");
+
+      synchronized (this.topicListenerSet) {
+         Iterator it = this.topicListenerSet.iterator();
+         while (it.hasNext()) {
+            try {
+               I_TopicListener l = (I_TopicListener)it.next();
+               TopicEvent event = new TopicEvent(topicHandler);
+               l.changed(event);
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      }
+   }
 
    /**
     * Adds the specified subscription listener to receive subscribe/unSubscribe events.
@@ -2006,7 +2049,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          subscriptionListenerMap.put(prio, l);
       }
    }
-
 
    /**
     * Removes the specified listener.
@@ -2304,8 +2346,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       return sb.toString();
    }
    public int getNumTopics() {
-      synchronized (this.messageContainerMap) {
-         return this.messageContainerMap.size();
+      synchronized (this.topicHandlerMap) {
+         return this.topicHandlerMap.size();
       }
    }
    public String getTopicList() {

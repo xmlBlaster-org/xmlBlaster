@@ -103,6 +103,10 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
  * <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
  * <tr><td>unSubscribe.[relativeName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
+ * <tr><td>topic.alive.*</td><td>Captures if a topic is created (on all topics)</td></tr>
+ * <tr><td>topic.alive.hello</td><td>Captures event if the topic 'hello' is created</td></tr>
+ * <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
+ * <tr><td>topic.dead.hello</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -149,7 +153,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  */
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
-      LogableDevice, I_SubscriptionListener {
+      LogableDevice, I_SubscriptionListener, I_TopicListener, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -179,6 +183,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Set loginLogoutSet;
    protected Set subscribeSet;
    protected Set unSubscribeSet;
+   protected Set topicSet;
    
    protected static int staticInstanceCounter;
    protected int instanceCounter;
@@ -309,6 +314,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          msgQosData.addClientProperty("_description", description);
          msgQosData.addClientProperty("_eventType", eventType);
          msgQosData.addClientProperty("_errorCode", errorCode);
+         msgQosData.addClientProperty("__nodeId", engineGlob.getId());
+
          return msgQosData;
       }
       MsgUnit getMsgUnit(String summary, String description,
@@ -476,6 +483,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (this.unSubscribeSet == null) this.unSubscribeSet = new TreeSet();
                this.unSubscribeSet.add(ev);
             }
+            else if (event.startsWith("topic.alive.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register topic event = " + ev);
+               this.requestBroker.addTopicListener(this);
+               if (this.topicSet == null) this.topicSet = new TreeSet();
+               this.topicSet.add(ev);
+            }
+            else if (event.startsWith("topic.dead.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register topic event = " + ev);
+               this.requestBroker.addTopicListener(this);
+               if (this.topicSet == null) this.topicSet = new TreeSet();
+               this.topicSet.add(ev);
+            }
             else {
                log.warning("Ignoring unknown '" + event
                      + "' from eventTypes='" + eventTypes + "'");
@@ -591,6 +612,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.unSubscribeSet = null;
       this.requestBroker.removeSubscriptionListener(this);
       
+      if (this.topicSet != null)
+         this.topicSet = null;
+      this.requestBroker.removeTopicListener(this);
+      
       this.isShutdown = true;
    }
 
@@ -702,7 +727,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.engineGlob.sendNotification(this, message,
                attributeName, "java.lang.String", oldValue, newValue);
       } catch (Throwable e) {
-         throw new IllegalArgumentException(e.toString());
+         e.printStackTrace();
       }
    }
 
@@ -912,8 +937,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      sessionInfo.getPublicSessionId());
                msgUnit.getQosData().addClientProperty("__subjectId",
                      sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__nodeId",
-                     this.engineGlob.getId());
                msgUnit.getQosData().addClientProperty("__absoluteName",
                      sessionInfo.getSessionName().getAbsoluteName());
                // TODO: backwards compatible?
@@ -979,8 +1002,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      sessionInfo.getPublicSessionId());
                msgUnit.getQosData().addClientProperty("__subjectId",
                      sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__nodeId",
-                     this.engineGlob.getId());
                msgUnit.getQosData().addClientProperty("__absoluteName",
                      sessionInfo.getSessionName().getAbsoluteName());
                // TODO: backwards compatible?
@@ -1250,8 +1271,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      sessionInfo.getPublicSessionId());
                msgUnit.getQosData().addClientProperty("__subjectId",
                      sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__nodeId",
-                     this.engineGlob.getId());
                msgUnit.getQosData().addClientProperty("__absoluteName",
                      sessionInfo.getSessionName().getAbsoluteName());
                msgUnit.getQosData().addClientProperty("__subscriptionId",
@@ -1327,8 +1346,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      sessionInfo.getPublicSessionId());
                msgUnit.getQosData().addClientProperty("__subjectId",
                      sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__nodeId",
-                     this.engineGlob.getId());
                msgUnit.getQosData().addClientProperty("__absoluteName",
                      sessionInfo.getSessionName().getAbsoluteName());
                msgUnit.getQosData().addClientProperty("__subscriptionId",
@@ -1369,5 +1386,86 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public String triggerTestLogWarning() {
       log.warning("This is a manually invoked logging output for testing purposes only");// TODO Auto-generated method stub
       return "log.warning invoked";
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.I_TopicListener#changed(org.xmlBlaster.engine.TopicEvent)
+    */
+   public void changed(TopicEvent topicEvent) throws XmlBlasterException {
+      if (this.topicSet == null) return;
+
+      TopicHandler topicHandler = topicEvent.getTopicHandler();
+      
+      boolean newTopic = !topicHandler.isDead(); // UNCONFIGURED is treated as alive 
+      String event = (newTopic) ? "alive." : "dead.";
+      
+      String foundEvent = event + topicHandler.getId();
+      if (!this.topicSet.contains(foundEvent)) { // "alive.hello"
+         foundEvent = event + "*";
+         if (!this.topicSet.contains(foundEvent)) { // "dead.*"
+            return;
+         }
+      }
+      
+      try {
+         String summary = (newTopic) ? ("Creating new topic " + topicHandler.getId())
+                          : ("Destroying topic " + topicHandler.getId());
+         String description = topicHandler.toXml();
+         String eventType = "topic." + foundEvent;
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            try {
+               sendEmail(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
+                    eventType, errorCode);
+               msgUnit.getQosData().addClientProperty("__topicId",
+                     topicHandler.getId());
+               this.requestBroker.publish(this.sessionInfo, msgUnit);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            try {
+               sendJmxNotification(summary, description, eventType, null, false);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+
+   /* (non-Javadoc)
+    * Needed so we can put this instance into a Set (to register for TopicListener). 
+    * @see java.lang.Comparable#compareTo(java.lang.Object)
+    */
+   public int compareTo(Object obj) {
+        int thisVal = this.instanceCounter;
+        int anotherVal = ((EventPlugin)obj).getInstanceCounter();
+        return (thisVal<anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1));
+   }
+   public boolean equals(Object obj) {
+      if (obj instanceof EventPlugin) {
+          return this.instanceCounter == ((EventPlugin)obj).getInstanceCounter();
+      }
+      return false;
+   }
+
+   /**
+    * @return Returns the instanceCounter.
+    */
+   public int getInstanceCounter() {
+      return this.instanceCounter;
    }
 }
