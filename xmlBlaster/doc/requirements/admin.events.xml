@@ -1,0 +1,356 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.events' type='NEW' prio='LOW' status='CLOSED'>
+   <topic>A event plugin which catches for example logging errors and dispatches them to a given email address or another sink.</topic>
+   <description>
+      <h2>Event capture and forwarding overview</h2>
+      <p>
+      This is a configurable event capture plugin which has for example the characteristics of sending an email to a given 
+      address when an error is logged. But this plugins offers many more xmlBlaster internal events to capture and offers
+      to send the events to other destinations like JMX notifications are send them as ordinary xmlBlaster messages.
+      </p>
+    <p>
+    This is useful for clients or administrators to be notified on certain core events.
+    </p>
+
+      <p class="celltitel">Example setup</p>
+      <p>Here is an example setup configured in <code>xmlBlasterPlugins.xml</code>
+      to give you a first idea about what you can do.</p>
+<pre class="BORDER">
+&lt;plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'&gt;
+   &lt;action do='LOAD' onStartupRunlevel='7' sequence='11'
+                        onFail='resource.configuration.pluginFailed'/&gt;
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
+   
+   &lt;attribute id='eventTypes'>
+      log.severe,
+      log.warning,
+      startupRunlevel.8,
+      client.sessionAdded
+   &lt;/attribute>
+   
+   &lt;attribute id='destination.smtp'>
+      mail.smtp.from=xmlBlaster@localhost,
+      mail.smtp.to=demo@localhost,
+      mail.collectMillis=10000
+   &lt;/attribute>
+
+   &lt;attribute id='destination.jmx'/>
+&lt;/plugin&gt;
+ </pre>
+ 
+ <p>
+ The first two &lt;action> tags just configure the plugin itself to be loaded by xmlBlaster on startup
+ and to be removed again on shutdown</p>
+ <p>
+ In the above example an email is send if any log.severe (==log.error) or log.warning occurs.
+ Further an event is emitted on xmlBlaster startup in run level 8
+ and if a new client logs in.
+ Those events are send as JMX notifications as well.
+ Adding <code>&lt;attribute id='destination.publish'/></code> would send
+ the event as a xmlBlaster message as well, but take care to not send logging events
+ as such messages will most certainly loop (if they log something they will trigger another message and so forth)!
+ </p>
+
+
+      <p class="celltitel">List of supported event sources</p>
+ <p>
+ Note that this plugin must be active on
+ a runlevel early enough depending on the event you want to capture.
+ </p>
+ <p>Those event types can be added to <code>&lt;attribute id='eventTypes'>...&lt;/attribute></code>
+ markup as a comma separated list, like this you choose exactly the events you want.</p>
+ <table border="1">
+ <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
+ <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
+ <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ <tr><td>client.sessionAdded</td><td>Captures event on client login</td></tr>
+ <tr><td>client.sessionRemoved</td><td>Captures event on client logout</td></tr>
+ </table>
+
+
+      <p class="celltitel">List of supported event sinks</p>
+      <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table.</p>
+ <table border="1">
+ <tr>
+    <td>destination.smtp</td>
+    <td>Sends an email about the occurred event.
+    Collects multiple events to one mail depending on configuration.
+    You need to configure at least the email address parameters
+    <code>mail.stmp.from</code> and <code>mail.smtp.to</code> and
+    activate the <code>SmtpClient</code> plugin in <code>xmlBlasterPlugins.xml</code>.
+    If you have a reasonable email provider you can configure it to 
+    forward the mail as an SMS (mine offers this feature).
+    </td>
+ </tr>
+ <tr>
+    <td>destination.publish</td>
+    <td>Publishes an xmlBlaster message which contains the occurred event,
+     currently all messages are published into a topic named '__sys__Event'</td>
+ </tr>
+ <tr>
+    <td>destination.jmx</td>
+    <td>Emits an JMX notification for the occurred event.
+     Open 'jconsole' and 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]'
+     there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
+     Now you receive the configured events.</td>
+ </tr>
+ </table>
+ 
+      <p class="celltitel">Additional notes</p>
+ <p>
+ We access the xmlBlaster core directly to register the supported internal
+ events, hence this plugin works only if it is in the same virtual
+ machine (JVM) as the xmlBlaster server.
+ </p>
+ <p>
+ All events don't throw any exceptions as this plugin should have
+ no influence on the regular work-flow of xmlBlaster.
+ </p>
+
+      <p class="celltitel">Email sink features</p>
+      <p>
+      A delay can be defined to let the dispatcher wait between sent messages, this way, in case of many
+      errors, several errors can be dispatched in the same email, avoiding unnecessary noise. In other
+      words, if an error occurs an email is sent immediately, but after this email until the next email
+      is sent the dispatcher sleeps.
+      </p>
+   </description>
+
+   <example lang="XML" type="HTML">
+      <p class="celltitel">Example sending client login/logout events</p>
+      <p>Here is an example how to setup <code>xmlBlasterPlugins.xml</code>
+      with an JMX and publish data sink. They all will receive
+      events on coming and going clients.
+      </p>
+<pre class="BORDER">
+&lt;plugin id='messageEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+   &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+   &lt;attribute id='eventTypes'>client.sessionAdded,client.sessionRemoved&lt;/attribute>
+   &lt;attribute id='destination.publish'/>
+   &lt;attribute id='destination.jmx'/>
+&lt;/plugin>
+      </pre>
+   <h3>JMX Jconsole screenshot</h3>
+   <p>The following screen shot shows the JMX events received by <code>jconsole</code>
+   when a client logs in and logs out again</p>
+   <p>
+      <center><img src='admin.events.jmx.png' border='0' alt='JMX - xmlBlaster jconsole notification screenshot' /></center>
+      </p>
+   <h3>Received messages</h3>
+   <p>A client subscribing to <code>__sys__Event</code> receives messages similar to the following.
+   Note that the exact markup may change in a future xmlBlaster version.
+   </p>
+<pre class="BORDER">
+ &lt;key oid='__sys__Event' contentMimeExtended='1.0'>
+  &lt;org.xmlBlaster>&lt;event/>&lt;/org.xmlBlaster>
+ &lt;/key>
+ &lt;content size='47'>Login of client /node/heron/client/Publisher/-3&lt;/content>
+ &lt;qos>
+  &lt;sender>/node/heron/client/__RequestBroker_internal[heron]/1&lt;/sender>
+  &lt;subscribe id='__subId:heron-1136288346909000000'/>
+  &lt;expiration lifeTime='-1'/>
+  &lt;rcvTimestamp nanos='1136288380490000000'/>
+  &lt;queue index='0' size='1'/>
+  &lt;forceUpdate/>
+  &lt;isPublish/>
+  &lt;clientProperty name='__nodeId'>heron&lt;/clientProperty>
+  &lt;clientProperty name='__subjectId'>Publisher&lt;/clientProperty>
+  &lt;clientProperty name='_description'>Login of client /node/heron/client/Publisher/-3&lt;/clientProperty>
+  &lt;clientProperty name='_errorCode'/>
+  &lt;clientProperty name='_eventType'>client.sessionAdded&lt;/clientProperty>
+  &lt;clientProperty name='__publicSessionId' type='long'>-3&lt;/clientProperty>
+  &lt;clientProperty name='__absoluteName'>/node/heron/client/Publisher/-3&lt;/clientProperty>
+  &lt;clientProperty name='_summary'>Login of client /node/heron/client/Publisher/-3&lt;/clientProperty>
+ &lt;/qos>
+</pre>
+
+   </example>
+
+   <example lang="XML" type="HTML">
+      <p class="celltitel">Example sending small emails capable for SMS</p>
+      <p>Here is an example how to setup <code>xmlBlasterPlugins.xml</code>
+      to send tiny emails which are useful to be forwarded as SMS on your mobile phone.
+      You will be notified when an error occurs or when xmlBlaster is shutdown.
+      </p>
+      <p>Note that so send email you also need to configure the SmtpClient plugin as shown below,
+      please set the <code>mail.smtp.url</code> variable to find your mail transfer agent (MTA).
+      Additionally please adjust all email addresses to valid ones in your environment.</p>
+<pre class="BORDER">
+&lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+   &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
+            onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+   &lt;attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25&lt;/attribute>
+&lt;/plugin>
+
+&lt;plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   &lt;action do='LOAD' onStartupRunlevel='8' sequence='9'/>
+   &lt;action do='STOP' onShutdownRunlevel='7' sequence='9'/>
+
+   &lt;attribute id='eventTypes'>log.severe,shutdownRunlevel.8&lt;/attribute>
+   &lt;attribute id='destination.smtp'>
+      mail.subject=xmlBlaster $_{eventType},
+      mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},
+      mail.contentSeparator=${line.separator}${line.separator},
+      mail.smtp.from=xmlBlaster@somecompany.com,
+      mail.smtp.to=admin@somecompany.com,
+      "mail.smtp.cc=xmlBlaster@et.universe,somebody@somewhere.xx",
+      mail.collectMillis=360000
+   &lt;/attribute>
+&lt;/plugin>
+      </pre>
+   <h3>Email GUI screenshot</h3>
+   <p>The following screen shot shows the email received
+   when xmlBlaster shuts down:</p>
+   <p>
+      <center><img src='admin.events.sms.png' border='0' alt='JMX - xmlBlaster jconsole notification screenshot' /></center>
+      </p>
+      <p>The mail send is very small and could be forwarded as an SMS to your mobile phone.
+      </p>
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the plugin.
+      </p>
+<p class="celltitel">Email data sink specific settings</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>mail.smtp.from</td>
+            <td>xmlBlaster@localhost</td>
+            <td>The email address used by the xmlBlaster server.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.smtp.to</td>
+            <td>demo@localhost</td>
+            <td>The user to receive the emails.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.smtp.cc</td>
+            <td>"admin@localhost,joe@localhost"</td>
+            <td>Other users to receive the emails.
+            If you use multiple email addresses separate them with a comma and
+            protect it with double quotes.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.smtp.bcc</td>
+            <td>"admin@localhost,joe@localhost"</td>
+            <td>Other users to receive the emails.
+            If you use multiple email addresses separate them with a comma and
+            protect it with double quotes.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.subject</td>
+            <td>[XmlBlaster event: $_{eventType}] $_{nodeId}</td>
+            <td>The template to generate the email subject line.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.content</td>
+            <td>$_{nodeId}\n\n$_{summary} \n$_{description}\n\nEventDate:$_{datetime} \n$_{versionInfo}</td>
+            <td>The template to generate the email content of the email.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.contentSeparator</td>
+            <td>\n\n========== NEXT ============\n\n</td>
+            <td>The separator to use if many events are collected into one email.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.collectMillis</td>
+            <td>86400000</td>
+            <td>If given > 0 the mails after the first one will be collected the given milli seconds.
+            It defaults to 12 hours.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+      <p>Valid variables to be replaced in the above templates are all configuration variables
+      like ${user.home} and additionally the following context specific variables:
+      </p>
+      <code>
+$_{datetime}
+$_{summary}
+$_{description}
+$_{nodeId}
+$_{id}
+$_{eventType}
+$_{errorCode}
+$_{versionInfo}
+      </code>
+
+<p class="celltitel">Publish message specific settings</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>publish.key</td>
+            <td>&lt;key oid='__sys__Event'/></td>
+            <td>You can optionally choose another topic name.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>publish.qos</td>
+            <td>&lt;qos>...&lt;/qos></td>
+            <td>You can optionally choose another publish qos.
+            The default qos is transient and has a history depth of 2.
+            The messages have a unlimited life time and forceUpdate is set to true.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.EventPlugin</see>
+   <see type="API">org.xmlBlaster.util.protocol.email.SmtpClient</see>
+   <see type="REQ">admin</see>
+   <see type="REQ">engine.LoginLogoutEvent</see>
+   <see type="REQ">util.log.plugin</see>
+   <author>xmlblast@marcelruff.info</author>
+   <date>2006 01 03</date>                           
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>TODO</comment>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.log.TestEmailErrorLog</test>
+   </testcase>
+</requirement>
+
