@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14486 Added support for runlevel change emails
+   Example: startupRunlevel.9,shutdownRunlevel.8 where the number
+   is the runlevel you want to observe. See EventPlugin in xmlBlasterPlugins.xml
+
  o #14481 Added native plugin to trigger xmlBlaster internal events as emails
    Currently log.error or/and log.warning, see EventPlugin in xmlBlasterPlugins.xml
 
