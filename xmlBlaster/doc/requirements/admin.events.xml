@@ -14,6 +14,8 @@
     This is useful for clients or administrators to be notified on certain core events.
     </p>
 
+      <center><img src='admin.events.png' border='0' alt='JMX - xmlBlaster core events' /></center>
+
       <p class="celltitel">Example setup</p>
       <p>Here is an example setup configured in <code>xmlBlasterPlugins.xml</code>
       to give you a first idea about what you can do.</p>
