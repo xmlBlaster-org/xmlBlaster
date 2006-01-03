@@ -330,13 +330,13 @@ http://localhost:8080/xmlBlaster/SystemInfoApplet.html
       <ul>
       <li> Port the connect() return XML string to a JXPath Map</li>
 
-      <li> Passing the getHtmlProperties() properties to the servlet to configure the Global there</li>
-
       <li> Probably port the remaining URLEncode to Base64</li>
 
       <li> Check the code POST versus GET</li>
 
-      <li> Verify with other browsers and proxies, currently only mozilla with squid is tested</li>
+      <li> Verify with other browsers and proxies, currently only mozilla and firefox with squid is tested</li>
+
+      <li> Port to apache httpClient to have proxy support outside the browser (as native java and not as applet)</li>
       </ul>
       </p>
    </todo>
