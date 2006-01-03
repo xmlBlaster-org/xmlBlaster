@@ -76,6 +76,10 @@
  <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
  <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked, e.g. "unSubscribe.hello"</td></tr>
  <tr><td>unSubscribe.[relativeName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
+ <tr><td>topic.alive.*</td><td>Captures if a topic is created (on all topics)</td></tr>
+ <tr><td>topic.alive.[topicId]</td><td>Captures event if the given topic is created, e.g. "topic.alive.hello"</td></tr>
+ <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
+ <tr><td>topic.dead.[topicId]</td><td>Captures event if the given topic is destroyed, e.g. "topic.dead.hello"</td></tr>
  </table>
 
 
