@@ -116,7 +116,13 @@ public interface I_XmlBlasterAccessRaw
    public void log(String location, String level, String text);
 
    /**
-    * Get a list of all PARAM in the HTML file following our convention. 
+    * Get a list of all PARAM in the HTML file following our convention.
+    * <p>
+    * All param names starting with "servlet/" are passed to the servlet.
+    * They must start with "servlet/xyz=someValue". The "servlet/" will
+    * be stripped away and in the web-servlet will arrive "xyz=someValue".
+    * The key/values are send in the URL.
+    * </p> 
     * <p>
     * As the applet class has no getAllParameters() method we expect a PARAM <i>deliveredParamKeys</i>
     * which contains a list of all delivered PARAM in the HTML page:
@@ -129,6 +135,9 @@ public interface I_XmlBlasterAccessRaw
     *     &lt;param name="Key3" value="xxx">
     *  &lt;/applet>
     * </pre>
+    * <p>
+    * It may contain additional customized properties from the applet programmer.
+    * </p>
     * @return The found parameters
     */
    public Hashtable getHtmlProperties();

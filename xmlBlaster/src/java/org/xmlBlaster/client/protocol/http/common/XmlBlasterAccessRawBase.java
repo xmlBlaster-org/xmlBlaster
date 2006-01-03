@@ -3,6 +3,7 @@ package org.xmlBlaster.client.protocol.http.common;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -39,6 +40,11 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    /**
     * Provides access to xmlBlaster server. 
     * @see #parseAppletParameter
+    * @param properties "xmlBlaster/servletUrl", "xmlBlaster/logLevels" (locally used)
+    * and additional properties which are send to the servlet.<br />
+    * The addtional properties must start with "servlet/xyz=someValue". The "servlet/" will
+    * be stripped away and in the web-servlet will arrive "xyz=someValue".
+    * The key/values are send in the URL. 
     */
    public XmlBlasterAccessRawBase(Hashtable properties) {
       synchronized (XmlBlasterAccessRawBase.class) {
@@ -71,20 +77,9 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       this.logListener = logListener;
 
    }
+   
    /**
-    * Get a list of all PARAM in the HTML file following our convention. 
-    * <p>
-    * As the applet class has no getAllParameters() method we expect a PARAM <i>deliveredParamKeys</i>
-    * which contains a list of all delivered PARAM in the HTML page:
-    * </p>
-    * <pre>
-    *  &lt;applet ...>
-    *     &lt;param name="deliveredParamKeys" value="protocol,anotherKey,Key3">
-    *     &lt;param name="protocol" value="SOCKET">
-    *     &lt;param name="anotherKey" value="someValue">
-    *     &lt;param name="Key3" value="xxx">
-    *  &lt;/applet>
-    * </pre>
+    * @see I_XmlBlasterAccessRaw#getHtmlProperties
     */
    public Hashtable getHtmlProperties() {
       return this.properties;
@@ -119,6 +114,19 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
             tmp.append(url).append("&appletInstanceCount=").append(this.instanceCount);
          else
             tmp.append(url).append("?appletInstanceCount=").append(this.instanceCount);
+         
+         // Add additional paramaters and send to the servlet
+         Hashtable props = getHtmlProperties();
+         Iterator it = props.keySet().iterator();
+         while (it.hasNext()) {
+            String key = (String)it.next();
+            String value = (String)props.get(key);
+            if (key.startsWith("servlet/")) {
+               key = key.substring("servlet/".length());
+               tmp.append("&").append(key).append("=").append(value);
+            }
+         }
+         
          url = tmp.toString();
       }
       log("DEBUG", new StringBuffer("URL=").append(url).toString());
@@ -164,7 +172,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    public String connect(String qos, I_CallbackRaw callback) throws Exception {
       this.callback = callback;
 
-      // TODO!!!: pass getHtmlProperties() to the servlet to be used to initialize Global
+      // We pass getHtmlProperties() to the servlet to be used to initialize Global
+      // currently this is attached to the URL (not very nice)
       
       if (qos == null) {
          String loginName = (String)this.properties.get("xmlBlaster/loginName");

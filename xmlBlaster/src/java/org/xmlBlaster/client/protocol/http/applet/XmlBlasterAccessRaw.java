@@ -25,18 +25,26 @@ import org.xmlBlaster.client.protocol.http.common.*;
  */
 public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
 {
-   
-   private boolean runsAsApplet;
-   private Hashtable cookie;
-   
    /**
     * Provides access to xmlBlaster server. 
     * @param applet My environment
     * @see #parseAppletParameter
     */
    public XmlBlasterAccessRaw(Applet applet) {
-      super(parseAppletParameter(applet));
-      this.runsAsApplet = true;
+      super(parseAppletParameter(applet, null));
+   }
+
+   /**
+    * Provides access to xmlBlaster server. 
+    * @param applet My environment
+    * @param properties Additional properties to send to the servlet
+    * They must start with "servlet/xyz=someValue". The "servlet/" will
+    * be stripped away and in the web-servlet will arrive "xyz=someValue".
+    * The key/values are send in the URL. 
+    * @see #parseAppletParameter
+    */
+   public XmlBlasterAccessRaw(Applet applet, Hashtable properties) {
+      super(parseAppletParameter(applet, properties));
    }
 
    /**
@@ -55,7 +63,7 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
     * </p>
     * @see #getHtmlProperties
     */
-   private static Hashtable parseAppletParameter(Applet applet) {
+   private static Hashtable parseAppletParameter(Applet applet, Hashtable additionalProperties) {
       String deliveredParamKeys = applet.getParameter("deliveredParamKeys"); // a comma seperated list of all param from html page
       Hashtable properties = new Hashtable();
       //log("DEBUG", "Reading HTML PARAM deliveredParamKeys=" + deliveredParamKeys);
@@ -72,8 +80,8 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
             }
          }
       }
-      String loginName = applet.getParameter("xmlBlaster/loginName");
-      String passwd = applet.getParameter("xmlBlaster/passwd");
+      //String loginName = applet.getParameter("xmlBlaster/loginName");
+      //String passwd = applet.getParameter("xmlBlaster/passwd");
       String xmlBlasterServletUrl = applet.getParameter("xmlBlaster/servletUrl"); //param from html page
       if (xmlBlasterServletUrl == null) {
          // getCodeBase() == http://localhost:8080/xmlBlaster/
@@ -86,6 +94,8 @@ public class XmlBlasterAccessRaw extends XmlBlasterAccessRawBase
       if (applet.getParameter("xmlBlaster/invalidate") != null) // never used yet, useful?
          properties.put("xmlBlaster/invalidate", applet.getParameter("xmlBlaster/invalidate"));
 
+      if (additionalProperties != null)
+         properties.putAll(additionalProperties);
       return properties;
    }
 

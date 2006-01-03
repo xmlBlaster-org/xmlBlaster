@@ -219,7 +219,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       String oldSessionId = (oldSession == null) ? "no-session-id" : oldSession.getId();
 
       HttpSession session = req.getSession(true);
-      if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME) ||
+      if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME) || // Initial dummy request to create a http-sessionId and bounce it back to the applet/browser
           actionType.equals(I_XmlBlasterAccessRaw.CONNECT_NAME)) { // "connect" TODO: !!! Reconnect to old session
          boolean invalidate = getParameter(req, "xmlBlaster/invalidate", false);
          if (invalidate == true) {
