@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14486 Runlevel manager: Added create attribute <plugin id='SOCKET' create='true' ...>
+   The new create attribute allows to suppress loading a plugin from xmlBlasterPlugins.xml
+
  o #14486,#14500,#14501 Added extended support to send internal core events.
    Example: startupRunlevel.9,shutdownRunlevel.8 where the number
    is the runlevel you want to observe.
