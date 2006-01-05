@@ -29,7 +29,7 @@
       log.severe,
       log.warning,
       startupRunlevel.8,
-      client.sessionAdded
+      client.sessionAdded.*
    &lt;/attribute>
    
    &lt;attribute id='destination.smtp'>
@@ -63,7 +63,11 @@
  </p>
  <p>Those event types can be added to <code>&lt;attribute id='eventTypes'>...&lt;/attribute></code>
  markup as a comma separated list, like this you choose exactly the events you want.</p>
- <table border="1">
+ <table class="BORDER" border="1">
+      <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      </tr>
  <tr><td>log.severe</td><td>Captures all errors logged, avoid to use this with the publish message sink as this could produce more log.severe and loop</td></tr>
  <tr><td>log.warning</td><td>Captures all warnings logged, never use this with the publish message sink as this could produce more log.warning and loop</td></tr>
  <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
@@ -89,7 +93,11 @@
 
       <p class="celltitel">List of supported event sinks</p>
       <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table.</p>
- <table border="1">
+ <table class="BORDER" border="1">
+      <tr>
+      <th>Sink Name</th>
+      <th>Description</th>
+      </tr>
  <tr>
     <td>destination.smtp</td>
     <td>Sends an email about the occurred event.
@@ -145,7 +153,7 @@
 &lt;plugin id='messageEvents' className='org.xmlBlaster.engine.EventPlugin'>
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-   &lt;attribute id='eventTypes'>client.sessionAdded,client.sessionRemoved&lt;/attribute>
+   &lt;attribute id='eventTypes'>client.sessionAdded.*,client.sessionRemoved.*&lt;/attribute>
    &lt;attribute id='destination.publish'/>
    &lt;attribute id='destination.jmx'/>
 &lt;/plugin>
