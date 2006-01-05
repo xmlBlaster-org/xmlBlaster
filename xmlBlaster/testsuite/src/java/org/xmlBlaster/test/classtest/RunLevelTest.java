@@ -133,7 +133,7 @@ public class RunLevelTest extends TestCase {
       String me = ME + "-testPluginConfig";
       try {
          this.log.info(me, "start");
-         PluginConfig config = new PluginConfig(this.glob, "queueJDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
+         PluginConfig config = new PluginConfig(this.glob, "queueJDBC", true, "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
          config.addAttribute("url", "jdbc:oracle:thin:@localhost:1521:noty");
          config.addAttribute("user", "joe");
          config.addAttribute("password", "secret");
@@ -227,9 +227,9 @@ public class RunLevelTest extends TestCase {
 
          PluginHolder holder = new PluginHolder(this.glob);
          
-         PluginConfig tmp = new PluginConfig(this.glob, "queueJDBC", "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
+         PluginConfig tmp = new PluginConfig(this.glob, "queueJDBC", true, "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
          holder.addDefaultPluginConfig(tmp);
-         tmp = new PluginConfig(this.glob, "queueRAM", "org.xmlBlaster.util.queue.ram.RAMQueuePlugin");
+         tmp = new PluginConfig(this.glob, "queueRAM", true, "org.xmlBlaster.util.queue.ram.RAMQueuePlugin");
          holder.addPluginConfig("avalon", tmp);
 
          tmp = holder.getPluginConfig("avalon", "queueRAM");
@@ -373,13 +373,13 @@ public class RunLevelTest extends TestCase {
       PluginConfigComparator upComparator = new PluginConfigComparator(this.glob, true);
       PluginConfigComparator downComparator = new PluginConfigComparator(this.glob, false);
 
-      PluginConfig config1 = new PluginConfig(this.glob, "test:PLUGIN1", "org.universe.Plugin1");
+      PluginConfig config1 = new PluginConfig(this.glob, "test:PLUGIN1", true, "org.universe.Plugin1");
       RunLevelAction action = new RunLevelAction(this.glob, "LOAD", 3, -1, null, 5);
       config1.addAction(action);
       action = new RunLevelAction(this.glob, "STOP", -1, 2, null, 4);
       config1.addAction(action);
      
-      PluginConfig config2 = new PluginConfig(this.glob, "test:PLUGIN2", "org.universe.Plugin2");
+      PluginConfig config2 = new PluginConfig(this.glob, "test:PLUGIN2", true, "org.universe.Plugin2");
       action = new RunLevelAction(this.glob, "LOAD", 3, -1, null, 5);
       config2.addAction(action);
       action = new RunLevelAction(this.glob, "STOP", -1, 2, null, 4);
@@ -391,7 +391,7 @@ public class RunLevelTest extends TestCase {
       cmp = downComparator.compare(config1, config2);
       assertTrue(me + " number of actions", cmp > 0);
 
-      PluginConfig config3 = new PluginConfig(this.glob, "test:PLUGIN3", "org.universe.Plugin3");
+      PluginConfig config3 = new PluginConfig(this.glob, "test:PLUGIN3", true, "org.universe.Plugin3");
       action = new RunLevelAction(this.glob, "LOAD", 2, -1, null, 3);
       config3.addAction(action);
       action = new RunLevelAction(this.glob, "STOP", -1, 1, null, 3);
@@ -401,7 +401,7 @@ public class RunLevelTest extends TestCase {
       cmp = downComparator.compare(config1, config3);
       assertTrue(me + " number of actions", cmp < 0);
 
-      PluginConfig config4 = new PluginConfig(this.glob, "test:PLUGIN4", "org.universe.Plugin4");
+      PluginConfig config4 = new PluginConfig(this.glob, "test:PLUGIN4", true, "org.universe.Plugin4");
       action = new RunLevelAction(this.glob, "LOAD", 2, -1, null, 4);
       config4.addAction(action);
       action = new RunLevelAction(this.glob, "STOP", -1, 1, null, 4);
