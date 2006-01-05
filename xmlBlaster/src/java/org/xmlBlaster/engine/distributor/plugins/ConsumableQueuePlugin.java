@@ -158,7 +158,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (this.log.CALL) this.log.call(ME, "onRemoveSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
-      if (dispatchManager != null) dispatchManager.removeConnectionStateListener(this);
+      if (dispatchManager != null) dispatchManager.removeConnectionStatusListener(this);
    }
 
    /**

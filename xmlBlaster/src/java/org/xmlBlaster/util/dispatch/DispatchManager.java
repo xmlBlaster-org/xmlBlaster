@@ -28,7 +28,6 @@ import org.xmlBlaster.util.property.PropString;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * Manages the sending of messages and commands and does error recovery
@@ -47,7 +46,6 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDispatchInterceptor msgInterceptor;
-//   private I_ConnectionStatusListener connectionStatusListener;
    private HashSet connectionStatusListeners;
    private final String typeVersion;
    /** If > 0 does burst mode */
@@ -170,13 +168,25 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    /*
     * Register yourself if you want to be informed about the remote connection status. 
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
+    * @return true if we did not already contain the specified element.
     */
-   public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      this.connectionStatusListeners.add(connectionStatusListener);
+   public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      return this.connectionStatusListeners.add(connectionStatusListener);
    }
 
-   public void removeConnectionStateListener(I_ConnectionStatusListener connectionStatusListener) {
-      this.connectionStatusListeners.remove(connectionStatusListener);
+   /**
+    * Remove the given listener
+    * @param connectionStatusListener
+    * @return true if it was removed
+    */
+   public synchronized boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      return this.connectionStatusListeners.remove(connectionStatusListener);
+   }
+   
+   public synchronized I_ConnectionStatusListener[] getConnectionStatusListeners() {
+      if (this.connectionStatusListeners.size() == 0) 
+         return new I_ConnectionStatusListener[0];
+      return (I_ConnectionStatusListener[])this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
    }
 
    /**
@@ -261,11 +271,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
          synchronized (this.ALIVE_TRANSITION_MONITOR) {
             // 1. We allow a client to intercept and for example destroy all entries in the queue
-            if (this.connectionStatusListeners.size() > 0) {
-               Iterator iter = this.connectionStatusListeners.iterator();
-               while (iter.hasNext()) {
-                  ((I_ConnectionStatusListener)iter.next()).toAlive(this, oldState);
-               }
+            I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+            for (int i=0; i<listeners.length; i++) {
+               listeners[i].toAlive(this, oldState);
             }
             // 2. If a dispatch plugin is registered it may do its work
             if (this.msgInterceptor != null)
@@ -292,11 +300,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       switchToASyncMode();
 
       // 1. We allow a client to intercept and for example destroy all entries in the queue
-      if (this.connectionStatusListeners.size() > 0) {
-         Iterator iter = this.connectionStatusListeners.iterator();
-         while (iter.hasNext()) {
-            ((I_ConnectionStatusListener)iter.next()).toPolling(this, oldState);
-         }
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++) {
+         listeners[i].toPolling(this, oldState);
       }
 
       // 2. If a dispatch plugin is registered it may do its work
@@ -318,11 +324,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       }
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
-      if (this.connectionStatusListeners.size() > 0) {
-         Iterator iter = this.connectionStatusListeners.iterator();
-         while (iter.hasNext()) {
-            ((I_ConnectionStatusListener)iter.next()).toDead(this, oldState, ex.getMessage());
-         }
+      I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
+      for (int i=0; i<listeners.length; i++) {
+         listeners[i].toDead(this, oldState, ex.getMessage());
       }
 
       // 2. If a dispatch plugin is registered it may do its work
