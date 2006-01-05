@@ -43,6 +43,10 @@ public class PluginConfig
    /** the complete class name for the plugin to be loaded */
    private String className = "";
 
+   public static boolean DEFAULT_CREATE = true;
+   /** Shall this plugin be instantiated? */
+   private boolean create;
+
    /**the coloumn separated list of jar files on which to look for the class */
    private String jarPath;
 
@@ -67,7 +71,7 @@ public class PluginConfig
    /**
     * This constructor takes all parameters needed
     */
-   public PluginConfig(Global glob, String id, String className, String jar, Properties attributes, Vector actions) {
+   public PluginConfig(Global glob, String id, boolean create, String className, String jar, Properties attributes, Vector actions) {
       this.uniqueTimestamp = new Timestamp();
       this.glob = glob;
       this.log = this.glob.getLog("runlevel");
@@ -75,6 +79,7 @@ public class PluginConfig
       //if (this.log.TRACE) 
       //   this.log.trace(ME, "constructor id='" + id + "', className='" + className + "'");
       this.id = id;
+      this.create = create;
       this.className = className;
       this.jarPath = jar;
 
@@ -89,26 +94,42 @@ public class PluginConfig
    /**
     * Construtor where we can define attributes (no need to define actions)
     */
-   public PluginConfig(Global glob, String id, String className, Properties attributes) {
-      this(glob, id, className, (String)null, attributes, (Vector)null);
+   public PluginConfig(Global glob, String id, boolean create, String className, Properties attributes) {
+      this(glob, id, create, className, (String)null, attributes, (Vector)null);
    }
 
    /**
     * Minimal constructor
     */
-   public PluginConfig(Global glob, String id, String className) {
-      this(glob, id, className, (String)null, (Properties)null, (Vector)null);
+   public PluginConfig(Global glob, String id, boolean create, String className) {
+      this(glob, id, create, className, (String)null, (Properties)null, (Vector)null);
    }
 
    /**
     * Really minimal constructor
     */
    public PluginConfig(Global glob) {
-      this(glob, "", "", (String)null, (Properties)null, (Vector)null);
+      this(glob, "", DEFAULT_CREATE, "", (String)null, (Properties)null, (Vector)null);
    }
 
    public String getId() {
       return this.id;
+   }
+
+   /**
+    * Shall the plugin be created?
+    * @return true if create
+    */
+   public boolean isCreate() {
+      return this.create;
+   }
+
+   /**
+    * Shall the plugin be created?
+    * @param create true/false
+    */
+   public void setCreate(boolean create) {
+      this.create = create;
    }
 
    public String getClassName() {
@@ -187,6 +208,7 @@ public class PluginConfig
 
       sb.append(offset).append("<plugin ");
       sb.append("id='").append(this.id).append("' ");
+      sb.append("create='").append(this.create).append("' ");
       sb.append("className='").append(this.className).append("' ");
       if (this.jarPath !=null) {
          sb.append("jar='").append(this.jarPath).append("' ");

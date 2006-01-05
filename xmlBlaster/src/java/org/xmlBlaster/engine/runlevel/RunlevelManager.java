@@ -233,11 +233,15 @@ public final class RunlevelManager
       Iterator iter = pluginSet.iterator();
       while (iter.hasNext()) {
          PluginConfig pluginConfig = (PluginConfig)iter.next();
-         if (pluginConfig == null) 
+         if (pluginConfig == null) { 
             this.log.warn(ME, "startupPlugins. the pluginConfig object is null");
-         else {
-            if (this.log.DUMP) this.log.dump(ME, "startupPlugins " + pluginConfig.toXml());
+            continue;
          }
+         if (!pluginConfig.isCreate()) {
+            this.log.trace(ME, "startupPlugins. the plugin + " + pluginConfig.getId() + " is ignored, create='false'");
+            continue;
+         }
+         if (this.log.DUMP) this.log.dump(ME, "startupPlugins " + pluginConfig.toXml());
          try {
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
             if (this.log.CALL) {
@@ -271,6 +275,9 @@ public final class RunlevelManager
       Iterator iter = pluginSet.iterator();
       while (iter.hasNext()) {
          PluginConfig pluginConfig = (PluginConfig)iter.next();
+         if (pluginConfig == null || !pluginConfig.isCreate())
+            continue;
+
          try {
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
             I_Plugin plugin = this.glob.getPluginManager().getPluginObject(pluginInfo);

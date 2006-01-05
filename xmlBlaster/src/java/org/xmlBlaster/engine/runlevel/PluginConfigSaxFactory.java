@@ -133,6 +133,10 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
                   this.pluginConfig.setId(value);
                   continue;
                }
+               if ("create".equalsIgnoreCase(key)) {
+                  this.pluginConfig.setCreate(Boolean.valueOf(value).booleanValue());
+                  continue;
+               }
                if ("className".equalsIgnoreCase(key)) {
                   this.pluginConfig.setClassName(value);
                   continue;
