@@ -19,12 +19,16 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -111,6 +115,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>topic.alive.hello</td><td>Captures event if the topic 'hello' is created</td></tr>
  * <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  * <tr><td>topic.dead.hello</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
+ * <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -157,7 +162,8 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  */
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
-      LogableDevice, I_SubscriptionListener, I_TopicListener, Comparable {
+      LogableDevice, I_SubscriptionListener, I_TopicListener,
+      I_ConnectionStatusListener, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -188,6 +194,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Set subscribeSet;
    protected Set unSubscribeSet;
    protected Set topicSet;
+   
+   protected Set pendingCallbackSessionInfoSet;
+   protected Set callbackSessionStateSet;
    
    protected static int staticInstanceCounter;
    protected int instanceCounter;
@@ -296,7 +305,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return publishKey.getData();
       }
       MsgQosData getPublishQos(String summary, String description,
-            String eventType, String errorCode) throws XmlBlasterException {
+            String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
          MsgQosData msgQosData = null;
          if (this.qos != null) {
             msgQosData = engineGlob.getMsgQosFactory().readObject(this.qos);
@@ -314,21 +323,37 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             publishQos.setTopicProperty(topicProperty);
             msgQosData = publishQos.getData();
          }
-         msgQosData.addClientProperty("_summary", summary);
-         msgQosData.addClientProperty("_description", description);
-         msgQosData.addClientProperty("_eventType", eventType);
-         msgQosData.addClientProperty("_errorCode", errorCode);
+         if (summary != null && summary.length() > 0)
+            msgQosData.addClientProperty("_summary", summary);
+         if (description != null && description.length() > 0)
+            msgQosData.addClientProperty("_description", description);
+         if (eventType != null && eventType.length() > 0)
+            msgQosData.addClientProperty("_eventType", eventType);
+         if (errorCode != null && errorCode.length() > 0)
+            msgQosData.addClientProperty("_errorCode", errorCode);
+         if (sessionName != null) {
+            // To be backwards compatible with loginEvent=true setting:
+            msgQosData.addClientProperty("__publicSessionId",
+                  sessionName.getPublicSessionId());
+            msgQosData.addClientProperty("__subjectId",
+                  sessionName.getLoginName());
+            msgQosData.addClientProperty("__absoluteName",
+                  sessionName.getAbsoluteName());
+            // TODO: backwards compatible?
+            //msgUnit.setContent(sessionName.getLoginName().getBytes());
+            // To be backwards compatible with loginEvent=true setting:
+         }
          msgQosData.addClientProperty("__nodeId", engineGlob.getId());
 
          return msgQosData;
       }
       MsgUnit getMsgUnit(String summary, String description,
-            String eventType, String errorCode) throws XmlBlasterException {
+            String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
          String content = description;
          return new MsgUnit(
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
-               getPublishQos(summary, description, eventType, errorCode));
+               getPublishQos(summary, description, eventType, errorCode, sessionName));
          
       }
    }
@@ -402,7 +427,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.publishDestinationConfiguration != null) {
          this.publishDestinationConfiguration = this.publishDestinationConfiguration.trim();
          this.publishDestinationHelper = new PublishDestinationHelper(this.publishDestinationConfiguration);
-         this.requestBroker.getAuthenticate().addClientListener(this);
          destLogStr += "destination.publish:" + this.publishDestinationConfiguration;
          if (this.eventTypes.indexOf("log.severe") != -1 || this.eventTypes.indexOf("log.error") != -1)
             log.warning("The combination of 'destination.publish' with 'log.severe' is dangerous as it could loop forever, it is supressed");
@@ -476,6 +500,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // client.sessionAdded.*, client.sessionRemoved.*, client.sessionAdded.client/joe/1
                String ev = event.substring(event.indexOf(".")+1);
                log.fine("Register login/logout event = " + ev);
+               this.requestBroker.getAuthenticate().addClientListener(this);
                if (this.loginLogoutSet == null) this.loginLogoutSet = new TreeSet();
                this.loginLogoutSet.add(ev);
             }
@@ -506,6 +531,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                this.requestBroker.addTopicListener(this);
                if (this.topicSet == null) this.topicSet = new TreeSet();
                this.topicSet.add(ev);
+            }
+            else if (event.startsWith("callbackSessionState.")) {
+               String ev = event.substring(event.indexOf(".")+1);
+               log.fine("Register callback session state event = " + ev);
+               SessionName sessionName = new SessionName(this.engineGlob, ev);
+               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+               if (sessionInfo != null)
+                  sessionInfo.getDispatchManager().addConnectionStatusListener(this);
+               else {
+                  if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
+                  this.pendingCallbackSessionInfoSet.add(sessionName.getAbsoluteName());
+               }
+               this.requestBroker.getAuthenticate().addClientListener(this);
+               if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
+               this.callbackSessionStateSet.add(sessionName.getAbsoluteName());
             }
             else {
                log.warning("Ignoring unknown '" + event
@@ -685,11 +725,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          catch (Throwable e) {}
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, errorCode, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, errorCode, false);
          }
    
          /*
@@ -702,21 +738,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // if (LogChannel.LOG_ERROR == level)
                // Should suppress as well ?
                // Lead to looping messages if during publish a log.error is done
-               try {
-                  sendMessage(summary, description, eventType, errorCode, false);
-               } catch (Throwable e) {
-                  e.printStackTrace();
-               }
+               sendMessage(summary, description, eventType, errorCode, false);
             }
          }
          */
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, errorCode, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, errorCode, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -758,21 +786,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
     */
    protected void sendMessage(String summary, String description,
-         String eventType, String errorCode, boolean forceSending) {
+         String eventType, String errorCode, SessionName sessionName) {
       if (this.publishDestinationHelper == null) return;
       if (!this.isActive) return;
 
       try {
          MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-              eventType, errorCode);
+              eventType, errorCode, sessionName);
          // Done already in getMsgUnit() above
          //msgUnit.getQosData().addClientProperty("_summary", summary);
-         //msgUnit.getQosData().addClientProperty("_description", description);
-         //msgUnit.getQosData().addClientProperty("_eventType", eventType);
-         //msgUnit.getQosData().addClientProperty("_errorCode", errorCode);
          this.requestBroker.publish(this.sessionInfo, msgUnit);
       } catch (Throwable e) {
-         throw new IllegalArgumentException(e.toString());
+         e.printStackTrace();
       }
    }
 
@@ -786,76 +811,80 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    protected void sendEmail(String summary, String description,
             String eventType, String errorCode, boolean forceSending) {
-      if (this.smtpDestinationHelper == null) return;
-      if (!this.isActive) return;
-
-      if (summary == null) summary = "";
-      if (description == null) description = "";
-      
-      if (forceSending) {
-         try {
-            EmailData emailData = this.smtpDestinationHelper.createEmailData();
-            emailData.setSubject(replaceTokens(
-                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
-            emailData.setContent(replaceTokens(
-                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
-            this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
-         } catch (Throwable e) {
-            throw new IllegalArgumentException(e.toString());
-         }
-         return;
-      }
-
-      synchronized(this.smtpDestinationMonitor) {
-         // Build the email, if timer is active append new logging to the content of the existing mail ...
-         EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
-         emailData.setSubject(replaceTokens(
-               this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
-         String old = (emailData.getContent().length() == 0) ? "" :
-               emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
-         emailData.setContent(old
-               + replaceTokens(
-               this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+      try {
+         if (this.smtpDestinationHelper == null) return;
+         if (!this.isActive) return;
+   
+         if (summary == null) summary = "";
+         if (description == null) description = "";
          
-         // If no timer was active send immeditately (usually the first email)
-         if (this.smtpTimeoutHandle == null) {
+         if (forceSending) {
             try {
-               smtpDestinationHelper.smtpClient.sendEmail(emailData);
+               EmailData emailData = this.smtpDestinationHelper.createEmailData();
+               emailData.setSubject(replaceTokens(
+                     this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
+               emailData.setContent(replaceTokens(
+                     this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+               this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             } catch (Throwable e) {
-               e.printStackTrace();
+               throw new IllegalArgumentException(e.toString());
             }
-            finally {
-               this.currentEmailData = null;
-            }
-         }
-         else {
-            // If a timer is active return, the timout will send the mail
-            this.currentEmailData = emailData;
             return;
          }
-         
-         // Now span timer, other emails are collected until this timer elapses 
-         if (this.smtpDestinationHelper.collectIntervall > 0) {
-            this.smtpTimeoutHandle = this.smtpTimeout.addTimeoutListener(new I_Timeout() {
-               public void timeout(Object userData) {
-                  synchronized(smtpDestinationMonitor) {
-                     smtpTimeoutHandle = null;
-                     //System.out.println("Timeout happened");
-                     if (currentEmailData == null) return;
-                     try {
-                        smtpDestinationHelper.smtpClient.sendEmail(currentEmailData);
-                        // todo: Probably respan timer here to have the same minimal gap again
-                     } catch (Throwable e) {
-                        e.printStackTrace();
-                     }
-                     finally {
-                        currentEmailData = null;
+   
+         synchronized(this.smtpDestinationMonitor) {
+            // Build the email, if timer is active append new logging to the content of the existing mail ...
+            EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
+            emailData.setSubject(replaceTokens(
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
+            String old = (emailData.getContent().length() == 0) ? "" :
+                  emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
+            emailData.setContent(old
+                  + replaceTokens(
+                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+            
+            // If no timer was active send immeditately (usually the first email)
+            if (this.smtpTimeoutHandle == null) {
+               try {
+                  smtpDestinationHelper.smtpClient.sendEmail(emailData);
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
+               finally {
+                  this.currentEmailData = null;
+               }
+            }
+            else {
+               // If a timer is active return, the timout will send the mail
+               this.currentEmailData = emailData;
+               return;
+            }
+            
+            // Now span timer, other emails are collected until this timer elapses 
+            if (this.smtpDestinationHelper.collectIntervall > 0) {
+               this.smtpTimeoutHandle = this.smtpTimeout.addTimeoutListener(new I_Timeout() {
+                  public void timeout(Object userData) {
+                     synchronized(smtpDestinationMonitor) {
+                        smtpTimeoutHandle = null;
+                        //System.out.println("Timeout happened");
+                        if (currentEmailData == null) return;
+                        try {
+                           smtpDestinationHelper.smtpClient.sendEmail(currentEmailData);
+                           // todo: Probably respan timer here to have the same minimal gap again
+                        } catch (Throwable e) {
+                           e.printStackTrace();
+                        }
+                        finally {
+                           currentEmailData = null;
+                        }
                      }
                   }
-               }
-            }, this.smtpDestinationHelper.collectIntervall, null);
-         }
-      } // sync
+               }, this.smtpDestinationHelper.collectIntervall, null);
+            }
+         } // sync
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
    
    /* (non-Javadoc)
@@ -895,27 +924,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (eventType == null) return;
    
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
             try {
-               sendMessage(summary, description, eventType, null, false);
+               sendMessage(summary, description, eventType, null, null);
             } catch (Throwable e) {
                e.printStackTrace();
             }
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -927,15 +948,39 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void sessionAdded(ClientEvent clientEvent) throws XmlBlasterException {
 
+      if (this.pendingCallbackSessionInfoSet != null) {
+         synchronized (this.pendingCallbackSessionInfoSet) {
+            try {
+               String name = clientEvent.getSessionInfo().getSessionName().getAbsoluteName();
+               boolean found = this.pendingCallbackSessionInfoSet.remove(name);
+               if (found) {
+                  SessionName sessionName = new SessionName(this.engineGlob, name);
+                  SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+                  if (sessionInfo != null) {
+                     sessionInfo.getDispatchManager().addConnectionStatusListener(this);
+                     // done already:
+                     //if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
+                     //this.callbackSessionStateSet.add(sessionName.getAbsoluteName());
+                  }
+                  else
+                     System.err.println("EventPlugin.sessionAdded: Unexpected missing of " + name);
+               }
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      }
+      
       if (this.loginLogoutSet == null) return;
       
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
-      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      SessionName sessionName = sessionInfo.getSessionName();
+      String relativeName = sessionName.getRelativeName();
 
       String event = "sessionAdded.";
       String foundEvent = event + relativeName;
       if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.client/joe/1"
-         foundEvent = event + sessionInfo.getSessionName().getLoginName();
+         foundEvent = event + sessionName.getLoginName();
          if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.joe"
             foundEvent = event + "*";
             if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.*"
@@ -948,44 +993,22 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          // Key '__sys__UserList' for login/logout event
          // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
-         String summary = "Login of client " + sessionInfo.getSessionName().getAbsoluteName();
+         String summary = "Login of client " + sessionName.getAbsoluteName();
          String description = sessionInfo.toXml();
          String eventType = "client." + foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
-            try {
-               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode);
-               // To be backwards compatible with loginEvent=true setting:
-               msgUnit.getQosData().addClientProperty("__publicSessionId",
-                     sessionInfo.getPublicSessionId());
-               msgUnit.getQosData().addClientProperty("__subjectId",
-                     sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__absoluteName",
-                     sessionInfo.getSessionName().getAbsoluteName());
-               // TODO: backwards compatible?
-               //msgUnit.setContent(sessionInfo.getLoginName().getBytes());
-               this.requestBroker.publish(this.sessionInfo, msgUnit);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendMessage(summary, description,
+                  eventType, errorCode, sessionName);
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -995,7 +1018,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionPreRemoved(org.xmlBlaster.authentication.ClientEvent)
     */
-   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {}
+   public void sessionPreRemoved(ClientEvent clientEvent) throws XmlBlasterException {
+      // Cleanup callbackDispatcher status listener
+      if (this.pendingCallbackSessionInfoSet != null) {
+         synchronized (this.pendingCallbackSessionInfoSet) {
+            try {
+               // Remember our event registration if client ever comes again
+               String name = clientEvent.getSessionInfo().getSessionName().getAbsoluteName();
+               boolean isNew = this.pendingCallbackSessionInfoSet.add(name);
+               if (!isNew)
+                  System.err.println("EventPlugin.sessionPreRemoved: Unexpected occurrence of " + name);
+               
+               // Remove the listener for now
+               SessionName sessionName = new SessionName(this.engineGlob, name);
+               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+               if (sessionInfo != null) {
+                  sessionInfo.getDispatchManager().removeConnectionStatusListener(this);
+                  // this.callbackSessionStateSet does not change as the client could login again
+               }
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      }
+   }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionRemoved(org.xmlBlaster.authentication.ClientEvent)
@@ -1009,12 +1055,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.loginLogoutSet == null) return;
       
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
-      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      SessionName sessionName = sessionInfo.getSessionName();
 
       String event = "sessionRemoved.";
-      String foundEvent = event + relativeName;
+      String foundEvent = event + sessionName.getRelativeName();
       if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.client/joe/1"
-         foundEvent = event + sessionInfo.getSessionName().getLoginName();
+         foundEvent = event + sessionName.getLoginName();
          if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.joe"
             foundEvent = event + "*";
             if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.*"
@@ -1027,44 +1073,22 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          // Key '__sys__UserList' for login/logout event
          // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
-         String summary = "Logout of client " + sessionInfo.getSessionName().getAbsoluteName();
+         String summary = "Logout of client " + sessionName.getAbsoluteName();
          String description = summary;
          String eventType = "client." + foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
-            try {
-               MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode);
-               // To be backwards compatible with loginEvent=true setting:
-               msgUnit.getQosData().addClientProperty("__publicSessionId",
-                     sessionInfo.getPublicSessionId());
-               msgUnit.getQosData().addClientProperty("__subjectId",
-                     sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__absoluteName",
-                     sessionInfo.getSessionName().getAbsoluteName());
-               // TODO: backwards compatible?
-               //msgUnit.setContent(sessionInfo.getLoginName().getBytes());
-               this.requestBroker.publish(this.sessionInfo, msgUnit);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendMessage(summary, description,
+                    eventType, errorCode, sessionName);
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -1277,14 +1301,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
-      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      SessionName sessionName = sessionInfo.getSessionName();
       String oid = subscriptionInfo.getKeyOid();
       
       String foundEvent = subscriptionInfo.getSubscriptionId();
       if (!this.subscribeSet.contains(foundEvent)) {
          foundEvent = oid;
          if (!this.subscribeSet.contains(foundEvent)) {
-            foundEvent = relativeName;
+            foundEvent = sessionName.getRelativeName();
             if (!this.subscribeSet.contains(foundEvent)) {
                foundEvent = "*";
                if (!this.subscribeSet.contains(foundEvent)) {
@@ -1303,23 +1327,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode);
-               msgUnit.getQosData().addClientProperty("__publicSessionId",
-                     sessionInfo.getPublicSessionId());
-               msgUnit.getQosData().addClientProperty("__subjectId",
-                     sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__absoluteName",
-                     sessionInfo.getSessionName().getAbsoluteName());
+                    eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("__subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("__oid",
@@ -1333,11 +1347,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -1352,14 +1362,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
-      String relativeName = sessionInfo.getSessionName().getRelativeName();
+      SessionName sessionName = sessionInfo.getSessionName();
       String oid = subscriptionInfo.getKeyOid();
       
       String foundEvent = subscriptionInfo.getSubscriptionId();
       if (!this.unSubscribeSet.contains(foundEvent)) {
          foundEvent = oid;
          if (!this.unSubscribeSet.contains(foundEvent)) {
-            foundEvent = relativeName;
+            foundEvent = sessionName.getRelativeName();
             if (!this.unSubscribeSet.contains(foundEvent)) {
                foundEvent = "*";
                if (!this.unSubscribeSet.contains(foundEvent)) {
@@ -1378,23 +1388,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode);
-               msgUnit.getQosData().addClientProperty("__publicSessionId",
-                     sessionInfo.getPublicSessionId());
-               msgUnit.getQosData().addClientProperty("__subjectId",
-                     sessionInfo.getLoginName());
-               msgUnit.getQosData().addClientProperty("__absoluteName",
-                     sessionInfo.getSessionName().getAbsoluteName());
+                     eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("__subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("__oid",
@@ -1408,11 +1408,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -1462,17 +1458,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            try {
-               sendEmail(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode);
+                    eventType, errorCode, null);
                msgUnit.getQosData().addClientProperty("__topicId",
                      topicHandler.getId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -1482,11 +1474,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
 
          if (this.jmxDestinationHelper != null) {
-            try {
-               sendJmxNotification(summary, description, eventType, null, false);
-            } catch (Throwable e) {
-               e.printStackTrace();
-            }
+            sendJmxNotification(summary, description, eventType, null, false);
          }
       } catch (Throwable e) {
          e.printStackTrace();
@@ -1514,5 +1502,65 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public int getInstanceCounter() {
       return this.instanceCounter;
+   }
+   
+   protected void callbackStateChange(DispatchManager dispatchManager, ConnectionStateEnum oldState, ConnectionStateEnum newState) {
+      if (this.callbackSessionStateSet == null) return;
+
+      SessionName sessionName = dispatchManager.getSessionName();
+
+      String foundEvent = sessionName.getRelativeName();
+      if (!this.callbackSessionStateSet.contains(foundEvent)) {
+         foundEvent = "*";
+         if (!this.callbackSessionStateSet.contains(foundEvent)) {
+            return;
+         }
+      }
+      
+      try {
+         String summary = "Callback state change to " 
+             + oldState.toString() + " for client " 
+             + sessionName.getAbsoluteName();
+         String description = "Callback state changed from " + oldState.toString()
+            + " to "+ oldState.toString() + " for client " 
+            + sessionName.getAbsoluteName();
+         String eventType = "callbackSessionState." + foundEvent;
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            sendEmail(summary, description, eventType, null, false);
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            sendMessage(summary, description, eventType, errorCode, sessionName);
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            sendJmxNotification(summary, description, eventType, null, false);
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toAlive(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
+    */
+   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.ALIVE);
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toPolling(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum)
+    */
+   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+      callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.POLLING);
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.dispatch.I_ConnectionStatusListener#toDead(org.xmlBlaster.util.dispatch.DispatchManager, org.xmlBlaster.util.dispatch.ConnectionStateEnum, java.lang.String)
+    */
+   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+      callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.DEAD);
    }
 }

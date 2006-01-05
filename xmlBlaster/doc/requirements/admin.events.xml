@@ -88,6 +88,7 @@
  <tr><td>topic.alive.[topicId]</td><td>Captures event if the given topic is created, e.g. "topic.alive.hello"</td></tr>
  <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  <tr><td>topic.dead.[topicId]</td><td>Captures event if the given topic is destroyed, e.g. "topic.dead.hello"</td></tr>
+ <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
  </table>
 
 
