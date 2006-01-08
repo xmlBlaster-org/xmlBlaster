@@ -8,6 +8,8 @@ package org.xmlBlaster.engine.runlevel;
 import org.jutils.log.LogChannel;
 import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.authentication.Authenticate;
@@ -27,7 +29,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
  */
-public final class RunlevelManager
+public final class RunlevelManager implements RunlevelManagerMBean
 {
    private String ME = "RunlevelManager";
    private final Global glob;
@@ -52,6 +54,9 @@ public final class RunlevelManager
 
    private final I_RunlevelListener[] DUMMY_ARR = new I_RunlevelListener[0];
 
+   /** My JMX registration */
+   private JmxMBeanHandle mbeanHandle;
+   private ContextNode contextNode;
 
    /**
     * For listeners who want to be informed about runlevel changes. 
@@ -69,6 +74,15 @@ public final class RunlevelManager
       this.log = glob.getLog("runlevel");
       this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Incarnated run level manager");
+      try {
+         // For JMX instanceName may not contain ","
+         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+               "RunlevelManager", this.glob.getScopeContextNode());
+         this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, e.getMessage());
+      }
    }
 
    /**
@@ -136,6 +150,23 @@ public final class RunlevelManager
          return glob.getRunlevelManager().changeRunlevel(level, true);
       }
    }
+   
+
+   /**
+    * JMX: Change the run level of xmlBlaster. 
+    * @param 0 is halted and 9 is fully operational
+    */
+   public String setRunlevel(String level) throws Exception {
+      try {
+         int numErrors = changeRunlevel(level, true);
+         return "Changed to run level " +toRunlevelStr(getCurrentRunlevel())+" '" + level + "'" +
+          ((numErrors>0) ? (" with "+numErrors+" errors") : "");
+      }
+      catch (XmlBlasterException e) {
+         throw new Exception(e.getMessage());
+      }
+   }
+
 
    /**
     * Change the run level to the given newRunlevel. 
@@ -384,9 +415,9 @@ public final class RunlevelManager
 
    /**
     * Parses given string to extract the priority of a message
-    * @param prio For example "HIGH" or 7
-    * @param defaultPriority Value to use if not parseable
-    * @return "RUNLEVEL_UNKNOWN" if no valid run level
+    * @param level For example 7
+    * @return "RUNLEVEL_UNKNOWN" if no valid run level, else for
+    * example "STANDBY_POST"
     */
    public final static String toRunlevelStr(int level) {
       if (level == RUNLEVEL_HALTED_PRE)
@@ -419,38 +450,65 @@ public final class RunlevelManager
 
    /**
     * Parses given string to extract the priority of a message
-    * @param prio For example "HIGH" or 7
+    * @param level For example "STANDBY" or 7
     * @param defaultPriority Value to use if not parseable
     * @return -10 if no valid run level
     */
    public final static int toRunlevelInt(String level) {
+      if (level == null) return -10;
+      level = level.trim();
+      try {
+         return Integer.parseInt(level);
+      }
+      catch(NumberFormatException e) {}
+
       if (level.equalsIgnoreCase("HALTED_PRE"))
          return RUNLEVEL_HALTED_PRE;
-         /*
-      else if (level == RUNLEVEL_HALTED)
-         return "HALTED";
-      else if (level == RUNLEVEL_HALTED_POST)
-         return "HALTED_POST";
-      else if (level == RUNLEVEL_STANDBY_PRE)
-         return "STANDBY_PRE";
-      else if (level == RUNLEVEL_STANDBY)
-         return "STANDBY";
-      else if (level == RUNLEVEL_STANDBY_POST)
-         return "STANDBY_POST";
-      else if (level == RUNLEVEL_CLEANUP_PRE)
-         return "CLEANUP_PRE";
-      else if (level == RUNLEVEL_CLEANUP)
-         return "CLEANUP";
-      else if (level == RUNLEVEL_CLEANUP_POST)
-         return "CLEANUP_POST";
-      else if (level == RUNLEVEL_RUNNING_PRE)
-         return "RUNNING_PRE";
-      else if (level == RUNLEVEL_RUNNING)
-         return "RUNNING";
-      else if (level == RUNLEVEL_RUNNING_POST)
-         return "RUNNING_POST";
-         */
+      else if (level.equalsIgnoreCase("HALTED"))
+         return RUNLEVEL_HALTED;
+      else if (level.equalsIgnoreCase("HALTED_POST"))
+         return RUNLEVEL_HALTED_POST;
+      else if (level.equalsIgnoreCase("STANDBY_PRE"))
+         return RUNLEVEL_STANDBY_PRE;
+      else if (level.equalsIgnoreCase("STANDBY"))
+         return RUNLEVEL_STANDBY;
+      else if (level.equalsIgnoreCase("STANDBY_POST"))
+         return RUNLEVEL_STANDBY_POST;
+      else if (level.equalsIgnoreCase("CLEANUP_PRE"))
+         return RUNLEVEL_CLEANUP_PRE;
+      else if (level.equalsIgnoreCase("CLEANUP"))
+         return RUNLEVEL_CLEANUP;
+      else if (level.equalsIgnoreCase("CLEANUP_POST"))
+         return RUNLEVEL_CLEANUP_POST;
+      else if (level.equalsIgnoreCase("RUNNING_PRE"))
+         return RUNLEVEL_RUNNING_PRE;
+      else if (level.equalsIgnoreCase("RUNNING"))
+         return RUNLEVEL_RUNNING;
+      else if (level.equalsIgnoreCase("RUNNING_POST"))
+         return RUNLEVEL_RUNNING_POST;
       else
          return -10;
    }
+   
+   public void shutdown() {
+      this.glob.unregisterMBean(this.mbeanHandle);
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#usage()
+    */
+   public java.lang.String usage() {
+      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#getUsageUrl()
+    */
+   public java.lang.String getUsageUrl() {
+      return Global.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* (non-Javadoc)
+    * JMX dummy to have a copy/paste functionality in jconsole
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#setUsageUrl(java.lang.String)
+    */
+   public void setUsageUrl(java.lang.String url) {}
 }
