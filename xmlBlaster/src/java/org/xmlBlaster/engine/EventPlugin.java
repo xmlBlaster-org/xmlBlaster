@@ -115,7 +115,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>topic.alive.hello</td><td>Captures event if the topic 'hello' is created</td></tr>
  * <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  * <tr><td>topic.dead.hello</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
- * <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
+ * <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING. Note that the status change to DEAD is currently not implemented (it is reported as POLLING)</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -545,7 +545,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                }
                this.requestBroker.getAuthenticate().addClientListener(this);
                if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
-               this.callbackSessionStateSet.add(sessionName.getAbsoluteName());
+               this.callbackSessionStateSet.add(sessionName.getRelativeName());
             }
             else {
                log.warning("Ignoring unknown '" + event
@@ -960,7 +960,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      sessionInfo.getDispatchManager().addConnectionStatusListener(this);
                      // done already:
                      //if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
-                     //this.callbackSessionStateSet.add(sessionName.getAbsoluteName());
+                     //this.callbackSessionStateSet.add(sessionName.getRelativeName());
                   }
                   else
                      System.err.println("EventPlugin.sessionAdded: Unexpected missing of " + name);
@@ -1519,11 +1519,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       
       try {
          String summary = "Callback state change to " 
-             + oldState.toString() + " for client " 
+             + newState.toString() + " for client " 
              + sessionName.getAbsoluteName();
-         String description = "Callback state changed from " + oldState.toString()
-            + " to "+ oldState.toString() + " for client " 
-            + sessionName.getAbsoluteName();
+         String description = (oldState.equals(newState))? 
+               ("Callback state changed"
+               + " to "+ newState.toString() + " for client " 
+               + sessionName.getAbsoluteName())
+               :
+               ("Callback state changed from " + oldState.toString()
+               + " to "+ newState.toString() + " for client " 
+               + sessionName.getAbsoluteName());
          String eventType = "callbackSessionState." + foundEvent;
          String errorCode = null;
 

@@ -88,7 +88,7 @@
  <tr><td>topic.alive.[topicId]</td><td>Captures event if the given topic is created, e.g. "topic.alive.hello"</td></tr>
  <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  <tr><td>topic.dead.[topicId]</td><td>Captures event if the given topic is destroyed, e.g. "topic.dead.hello"</td></tr>
- <tr><td>callbackSessionState.[relativeSessionName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
+ <tr><td>callbackSessionState.[relativeSessionName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING. Note that the status change to DEAD is currently not implemented, it is reported as POLLING.</td></tr>
  <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a log.severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'log.severe' to detect this.</td></tr>
  </table>
 
