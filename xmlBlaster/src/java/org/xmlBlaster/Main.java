@@ -495,6 +495,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       log.plain(ME, "   -xmlBlaster/jmx/HtmlAdaptor       Set to true to enable JMX HTTP access on 'http://localhost:8082' [false]");
       log.plain(ME, "   -xmlBlaster/jmx/XmlBlasterAdaptor Set to true to enable JMX xmlBlaster adaptor access for swing GUI 'org.xmlBlaster.jmxgui.Main' [false].");
       log.plain(ME, "   java -Dcom.sun.management.jmxremote ...  Switch on JMX support with jconsole (JDK >= 1.5).");
+      log.plain(ME, "   -xmlBlaster/jmx/observeLowMemory      Write a log error when 90% of the JVM memory is used (JDK >= 1.5) [true]");
+      log.plain(ME, "   -xmlBlaster/jmx/memoryThresholdFactor Configure the log error memory threshhold (defaults to 90%) (JDK >= 1.5) [0.9]");
+      log.plain(ME, "   -xmlBlaster/jmx/exitOnMemoryThreshold If true xmlBlaster stops if the memoryThresholdFactor is reached (JDK >= 1.5) [false]");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
       log.plain(ME, "   java org.xmlBlaster.Main -cluster false");

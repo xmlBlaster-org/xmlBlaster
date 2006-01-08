@@ -148,27 +148,26 @@ public class JmxWrapper
             // javap com.sun.management.UnixOperatingSystem
             ObjectName name = new ObjectName("java.lang:type=OperatingSystem");
             Object obj = this.mbeanServer.getAttribute(name, "TotalPhysicalMemorySize"); 
-            long total = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+            Global.totalPhysicalMemorySize = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
             obj = this.mbeanServer.getAttribute(name, "CommittedVirtualMemorySize"); 
             //long committed = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
             obj = this.mbeanServer.getAttribute(name, "MaxFileDescriptorCount"); 
-            long descriptors = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
+            Global.maxFileDescriptorCount = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
 
             
             name = new ObjectName("java.lang:type=Memory");
             obj = this.mbeanServer.getAttribute(name, "HeapMemoryUsage"); 
-            long maxJvmBytes = 0;
             if (obj instanceof javax.management.openmbean.CompositeDataSupport) {
                //java.lang.management.MemoryUsage.getMax()
                javax.management.openmbean.CompositeDataSupport comp = 
                  (javax.management.openmbean.CompositeDataSupport)obj;
                Long max = (Long)comp.get("max");
-               maxJvmBytes = max.longValue();
+               Global.heapMemoryUsage = max.longValue();
             }
 
-            log.info(ME, "Physical RAM size is " + Global.byteString(total) + "," +
-                         " this JVM may use max " + Global.byteString(maxJvmBytes) +
-                         " and max " + descriptors + " file descriptors");
+            log.info(ME, "Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
+                         " this JVM may use max " + Global.byteString(Global.heapMemoryUsage) +
+                         " and max " + Global.maxFileDescriptorCount + " file descriptors");
 
          }
          catch (Exception e) {

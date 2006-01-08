@@ -80,15 +80,16 @@
  <tr><td>client.sessionRemoved.[relativeSessionName]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.client/joe/1"</td></tr>
  <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
  <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked, e.g. "subscribe.hello"</td></tr>
- <tr><td>subscribe.[relativeName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
+ <tr><td>subscribe.[relativeSessionName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
  <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
  <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked, e.g. "unSubscribe.hello"</td></tr>
- <tr><td>unSubscribe.[relativeName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
+ <tr><td>unSubscribe.[relativeSessionName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
  <tr><td>topic.alive.*</td><td>Captures if a topic is created (on all topics)</td></tr>
  <tr><td>topic.alive.[topicId]</td><td>Captures event if the given topic is created, e.g. "topic.alive.hello"</td></tr>
  <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  <tr><td>topic.dead.[topicId]</td><td>Captures event if the given topic is destroyed, e.g. "topic.dead.hello"</td></tr>
- <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
+ <tr><td>callbackSessionState.[relativeSessionName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING|DEAD</td></tr>
+ <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a log.severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'log.severe' to detect this.</td></tr>
  </table>
 
 

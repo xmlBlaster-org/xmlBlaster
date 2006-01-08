@@ -115,6 +115,24 @@ public class Global implements Cloneable
 {
    private static Global firstInstance;
 
+   /** The amount of physical RAM of this machine.
+    * Set by JmxWrappter.java, else 0
+    * @since JDK 1.5
+    */
+   public static long totalPhysicalMemorySize;
+
+   /** Number of bytes this JVM can allocate max, the -Xmx???M setting
+    * Set by JmxWrappter.java, else 0
+    * @since JDK 1.5
+    */
+   public static long heapMemoryUsage;
+
+   /** The max number of file descriptors this JVM may use
+    * Set by JmxWrappter.java, else 0
+    * @since JDK 1.5
+    */
+   public static long maxFileDescriptorCount;
+
    /** Version string, please change for new releases (4 digits) */
    private String versionDefault = "1.1";
    /** This will be replaced by build.xml with the current version */

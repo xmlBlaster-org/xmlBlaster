@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14525 Reworked LowMemoryDetector to be more useful for admin.events.xml
+
  o #14486 Runlevel manager: Added create attribute <plugin id='SOCKET' create='true' ...>
    The new create attribute allows to suppress loading a plugin from xmlBlasterPlugins.xml
 
