@@ -46,6 +46,8 @@ public final class ContextNode
    public final static String TOPIC_MARKER_TAG = "topic";
    /** Use to mark a subscription */
    public final static String SUBSCRIPTION_MARKER_TAG = "subscription";
+   /** Use to mark event methods */
+   public final static String EVENT_MARKER_TAG = "event";
    /** Use to mark a system and configuration properties and command line arguments */
    public final static String SYSPROP_MARKER_TAG = "sysprop";
    /** Use to mark logging settings */
