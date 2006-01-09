@@ -35,6 +35,10 @@ public final class ConnectionStateEnum implements java.io.Serializable
          default: return ""+this.connectionState; // error
       }
    }
+   
+   public boolean equals(ConnectionStateEnum other) {
+      return this.connectionState == other.getInt();
+   }
 
    /**
     * Returns the int representation of this connectionState
