@@ -10,6 +10,13 @@
      <p>Here is the sequence by which xmlBlaster looks into the file system to find the
         properties file:
      </p>
+     <p>To monitor the lookup sequence (outputs with System.out), use the property <code>property.debug</code>, whereat
+	0=nothing, 1=info and 2=trace.
+	<pre>
+	java -Dproperty.verbose 2
+	java MyApp -property.verbose 2
+	</pre>
+     </p>
      <table border="1">
       <tr>
         <th>Location</th>
