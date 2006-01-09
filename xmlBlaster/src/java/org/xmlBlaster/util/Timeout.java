@@ -439,7 +439,7 @@ public class Timeout extends Thread
    public static void main(String args[]) throws Exception {
       {
          Timeout t = new Timeout();
-         System.out.println("Timeout constructor done, sleeping 10 sec");
+         System.out.println("Timeout constructor done, sleeping 10 sec " + t.toString());
          try { Thread.sleep(10000); } catch (InterruptedException e) {}
       }
       //testWeakReference();
@@ -458,7 +458,7 @@ public class Timeout extends Thread
          },
          2000L, null);
       try { Thread.sleep(4000L); } catch (InterruptedException e) {}
-      System.err.println("ERROR: Timeout not occurred.");
+      System.err.println("ERROR: Timeout not occurred " + timeoutHandle.toString());
       System.exit(1);
    }
 
@@ -469,10 +469,8 @@ public class Timeout extends Thread
 
       {
          WeakObj weakObj = new WeakObj();
-         Object anotherRef = new Object();
-         Timestamp timeoutHandle = timeout.addTimeoutListener(weakObj, 4000L, weakObj); //anotherRef);
+         /*Timestamp timeoutHandle =*/timeout.addTimeoutListener(weakObj, 4000L, weakObj);
          weakObj = null;
-         //anotherRef = null;
       }
 
       System.gc();
