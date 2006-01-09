@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.admin.extern;
 
-import org.jutils.init.Property;
 import org.jutils.log.*;
 import org.xmlBlaster.util.Global;
 import javax.management.*;
@@ -20,7 +19,6 @@ public class JmxLogChannel implements JmxLogChannelMBean, org.jutils.log.Logable
 
   private String ME = "LogChannel";
   public String logText = "";
-  private int logLevel = 0;
   private Global glob;
   private StringBuffer sbLogText = new StringBuffer();
   private LogChannel log;
@@ -63,7 +61,7 @@ public class JmxLogChannel implements JmxLogChannelMBean, org.jutils.log.Logable
 
   public void log(int level, String source, String str)
   {
-       str = log.bitToLogLevel(level) + " [" + source + "] " + str;
+       str = LogChannel.bitToLogLevel(level) + " [" + source + "] " + str;
      System.out.println("Log des JmxLogChannels: " + str);
      sbLogText.append(str + "\n");
    }
@@ -82,25 +80,25 @@ public class JmxLogChannel implements JmxLogChannelMBean, org.jutils.log.Logable
    }
 
    public void addErrorLevel(){
-     log.addLogLevel(log.LOG_ERROR);
+     log.addLogLevel(LogChannel.LOG_ERROR);
      log.info(ME,"ErrorLevel added");
      fireNotification();
    }
 
    public void removeErrorLevel() {
-     log.removeLogLevel(log.LOG_ERROR);
+     log.removeLogLevel(LogChannel.LOG_ERROR);
      log.info(ME,"ErrorLevel removed");
      fireNotification();
    }
 
    public void addDumpLevel(){
-     log.addLogLevel(log.LOG_DUMP);
+     log.addLogLevel(LogChannel.LOG_DUMP);
      log.info(ME,"DumpLevel added");
      fireNotification();
    }
 
    public void removeDumpLevel(){
-     log.removeLogLevel(log.LOG_DUMP);
+     log.removeLogLevel(LogChannel.LOG_DUMP);
      log.info(ME,"Dumplevel removed");
      fireNotification();
    }

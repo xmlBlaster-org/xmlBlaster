@@ -69,6 +69,23 @@ public class JmxLogLevel implements DynamicMBean {
       this.log = glob.getLog("jmx");
       if (log.CALL) log.call(ME, "Constructor created");
    }
+   
+   // JDK14 logging    jutils logging
+   // severe           error
+   // warning          warn
+   /**
+    * @param attribute_name For example "severe/jdbc"
+    */
+   private String convertToJutils(String attribute_name) {
+      if (attribute_name == null)
+         return null;
+      else if (attribute_name.startsWith("severe/"))
+         return "error"+attribute_name.substring(6);
+      else if (attribute_name.startsWith("warning/"))
+         return "warn"+attribute_name.substring(7);
+      return attribute_name;
+   }
+
 
    /**
     * Allows the value of the specified attribute of the Dynamic MBean to be obtained.
@@ -84,6 +101,7 @@ public class JmxLogLevel implements DynamicMBean {
 
       attribute_name = Global.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
 
+      attribute_name = convertToJutils(attribute_name);
       try {
          return new Boolean(this.glob.getLogLevel(attribute_name));
       }
@@ -118,7 +136,7 @@ public class JmxLogLevel implements DynamicMBean {
       // name="info[core]" value="false"
 
       try {
-         this.glob.changeLogLevel(name, value.booleanValue());
+         this.glob.changeLogLevel(convertToJutils(name), value.booleanValue());
       }
       catch (XmlBlasterException e) {
          throw(new AttributeNotFoundException("Cannot set log level attribute "+ name +":" + e.toString()));
@@ -254,7 +272,7 @@ public class JmxLogLevel implements DynamicMBean {
       this.numChannels = arr.length;
 
       //String[] levels = { "ERROR", "WARN", "INFO", "CALL",  "TIME", "TRACE", "DUMP", "PLAIN" };
-      String[] levels = { "error", "warn", "info", "call",  "trace", "dump" };
+      String[] levels = { "severe", "warning", "info", "call",  "trace", "dump" };
       String[] comments = { "Critical xmlBlaster server error",
                             "Warning of wrong or problematic usage",
                             "Informations about operation",
