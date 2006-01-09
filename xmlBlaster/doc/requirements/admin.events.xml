@@ -56,7 +56,7 @@
  </p>
 
 
-      <p class="celltitel">List of supported event sources</p>
+      <p id="eventTypes" class="celltitel">List of supported event sources</p>
  <p>
  Note that this plugin must be active on
  a runlevel early enough depending on the event you want to capture.
@@ -88,10 +88,11 @@
  <tr><td>topic/[topicId]/event/dead</td><td>Captures event if the given topic is destroyed, e.g. "topic/hello/event/dead"</td></tr>
  <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING, e.g. "client/joe/session/1/event/callbackState". Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
  <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a logging/severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'logging/severe/*' to detect this.</td></tr>
+ <tr><td>heartbeat.360000</td><td>Sends a heartbeat notification every given milli seconds. Setting <code>heartbeat</code> without millis specified defaults to one notification per day (86400000 millis).</td></tr>
  </table>
 
 
-      <p class="celltitel">List of supported event sinks</p>
+      <p id="eventSinks" class="celltitel">List of supported event sinks</p>
       <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table.</p>
  <table class="BORDER" border="1">
       <tr>
@@ -144,7 +145,7 @@
    </description>
 
    <example lang="XML" type="HTML">
-      <p class="celltitel">Example sending client login/logout events</p>
+      <p id="loginLogout" class="celltitel">Example sending client login/logout events</p>
       <p>Here is an example how to setup <code>xmlBlasterPlugins.xml</code>
       with an JMX and publish data sink. They all will receive
       events on coming and going clients.
@@ -188,7 +189,7 @@
    </example>
 
    <example lang="XML" type="HTML">
-      <p class="celltitel">Example sending small emails capable for SMS</p>
+      <p id="sms" class="celltitel">Example sending small emails capable for SMS</p>
       <p>Here is an example how to setup <code>xmlBlasterPlugins.xml</code>
       to send tiny emails which are useful to be forwarded as SMS on your mobile phone.
       You will be notified when an error occurs or when xmlBlaster is shutdown.
@@ -229,6 +230,64 @@
       <p>The mail send is very small and could be forwarded as an SMS to your mobile phone.
       </p>
    </example>
+
+   <example lang="XML" type="HTML">
+      <p id="messageFormat" class="celltitel">Examples of published messages</p>
+      <p>The following list shows typical messages send by this plugin.
+      Note the clientProperty names used.
+      </p>
+<pre class="BORDER">
+
+ &lt;key oid='__sys__Event' contentMimeExtended='1.0'>
+  &lt;org.xmlBlaster>&lt;event/>&lt;/org.xmlBlaster>
+ &lt;/key>
+ &lt;content size='23'>topic/*/event/subscribe&lt;/content>
+ &lt;qos>
+  &lt;clientProperty name='_subscriptionId'>__subId:xmlBlaster_127_0_0_2_3412-1136812798913000000&lt;/clientProperty>
+  &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
+  &lt;clientProperty name='_description' encoding='base64'>...&lt;/clientProperty>
+  &lt;clientProperty name='_eventType'>topic/*/event/subscribe&lt;/clientProperty>
+  &lt;clientProperty name='_summary'>New subscription of client /node/xmlBlaster_127_0_0_2_3412/client/joe/1 on topic airport&lt;/clientProperty>
+  &lt;clientProperty name='_publicSessionId' type='long'>1&lt;/clientProperty>
+  &lt;clientProperty name='_subjectId'>joe&lt;/clientProperty>
+  &lt;clientProperty name='_absoluteName'>/node/xmlBlaster_127_0_0_2_3412/client/joe/1&lt;/clientProperty>
+  &lt;clientProperty name='_topicId'>airport&lt;/clientProperty>
+ &lt;/qos>
+
+
+ &lt;key oid='__sys__Event' contentMimeExtended='1.0'>
+  &lt;org.xmlBlaster>&lt;event/>&lt;/org.xmlBlaster>
+ &lt;/key>
+ &lt;content size='15'>heartbeat.10000&lt;/content>
+ &lt;qos>
+  &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
+  &lt;clientProperty name='_description'>
+nodeId=/xmlBlaster/node/xmlBlaster_127_0_0_2_3412
+release=1.1 1.1
+started=2006-01-09 14:45:33.71
+numClients=3
+numTopics=1
+memory(used/free/max)=3.921 MBytes/68.954 MBytes/72.876 MBytes
+lastError=
+lastWarning=[org.xmlBlaster.engine.EventPlugin.init] The combination of 'destination.publish' with 'logging/warning' could loop.
+  &lt;clientProperty name='_eventType'>heartbeat.10000&lt;/clientProperty>
+  &lt;clientProperty name='_summary'>Heartbeat event from /xmlBlaster/node/xmlBlaster_127_0_0_2_3412, runlevel=RUNNING (9)&lt;/clientProperty>
+ &lt;/qos>
+
+
+ &lt;key oid='__sys__Event' contentMimeExtended='1.0'>
+  &lt;org.xmlBlaster>&lt;event/>&lt;/org.xmlBlaster>
+ &lt;/key>
+ &lt;content size='47'>service/RunlevelManager/event/shutdownRunlevel8&lt;/content>
+ &lt;qos>
+  &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
+  &lt;clientProperty name='_description'>xmlBlaster shutdown runlevel from RUNNING to RUNNING_PRE&lt;/clientProperty>
+  &lt;clientProperty name='_eventType'>service/RunlevelManager/event/shutdownRunlevel8&lt;/clientProperty>
+  &lt;clientProperty name='_summary'>Shutdown to RUNNING_PRE (8)&lt;/clientProperty>
+ &lt;/qos>
+</pre>
+   </example>
+
 
    <configuration where="server">
       <p>
