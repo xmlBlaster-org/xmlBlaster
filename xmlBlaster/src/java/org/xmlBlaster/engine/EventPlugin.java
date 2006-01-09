@@ -114,6 +114,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * <tr><td>topic/* /event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  * <tr><td>topic/hello/event/dead</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
  * <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING. Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
+ * <tr><td>heartbeat.360000</td><td>Sends a heartbeat notification every given milli seconds. Setting <code>heartbeat</code> defaults to one notification per day (86400000 millis).</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -276,6 +277,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected Timestamp smtpTimeoutHandle;
    protected EmailData currentEmailData;
 
+   protected long heartbeatInterval;
+   protected Timeout heartbeatTimeout;
+   protected Timestamp heartbeatTimeoutHandle;
+   
    /**
     * Helper class to publish messages. 
     */
@@ -348,7 +353,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             // To be backwards compatible with loginEvent=true setting:
             */
          }
-         msgQosData.addClientProperty("__nodeId", engineGlob.getId());
+         msgQosData.addClientProperty("_nodeId", engineGlob.getId());
 
          return msgQosData;
       }
@@ -542,6 +547,31 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (this.topicSet == null) this.topicSet = new TreeSet();
                this.topicSet.add(event);
             }
+            else if (event.startsWith("heartbeat")) {
+               // "heartbeat.360000
+               log.fine("Register heartbeat event = " + event);
+               int index = event.indexOf(".");
+               if (index > 0 && index < event.length()-1)
+                  this.heartbeatInterval = Long.valueOf(event.substring(index+1)).longValue();
+               else
+                  this.heartbeatInterval = Constants.DAY_IN_MILLIS;
+               if (this.heartbeatInterval > 0) {
+               this.heartbeatTimeout = new Timeout("EventPlugin-HeartbeatTimer");
+               this.heartbeatTimeoutHandle = this.heartbeatTimeout.addTimeoutListener(new I_Timeout() {
+                  public void timeout(Object userData) {
+                     log.fine("Timeout happened " + userData + ": Sending now heartbeat");
+                     newHeartbeatNotification((String)userData);
+                     try {
+                        heartbeatTimeout.addOrRefreshTimeoutListener(this, heartbeatInterval, userData, heartbeatTimeoutHandle);
+                     }
+                     catch (XmlBlasterException e) {
+                        e.printStackTrace();
+                     }
+                    
+                  }
+                }, this.heartbeatInterval, event);
+               }
+            }
             else {
                log.warning("Ignoring unknown '" + event
                      + "' from eventTypes='" + eventTypes + "'");
@@ -555,6 +585,50 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   /**
+    * Send a heartbeat message/notification. 
+    * @param eventType
+    */
+   protected void newHeartbeatNotification(String eventType) {
+      try {
+         ContextNode contextNode = this.engineGlob.getContextNode();
+         int rl = this.engineGlob.getRunlevelManager().getCurrentRunlevel();
+         long usedMem = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
+
+         String summary = "Heartbeat event from " + contextNode.getAbsoluteName() + ", runlevel=" + RunlevelManager.toRunlevelStr(rl) + " (" + rl + ")";
+         // TODO: Change to be configurable with ${amdincommands} replacements
+         String description = "\nnodeId=" + contextNode.getAbsoluteName()
+               + "\nrelease=" + this.engineGlob.getVersion() + " " + this.engineGlob.getReleaseId()
+               + "\nstarted=" + this.engineGlob.getRequestBroker().getStartupDate()
+               + "\nnumClients=" + this.engineGlob.getRequestBroker().getAuthenticate().getNumClients()
+               + "\nnumTopics=" + this.engineGlob.getRequestBroker().getNumTopics()
+               + "\nmemory(used/free/max)=" + Global.byteString(usedMem) + "/" + Global.byteString(Global.heapMemoryUsage-usedMem) + "/" + Global.byteString(Global.heapMemoryUsage)
+               + "\nlastError=" + this.engineGlob.getRequestBroker().getLastError()
+               + "\nlastWarning=" + this.engineGlob.getRequestBroker().getLastWarning()
+               //Is added in sendEmail etc:
+               //+ "\nversionInfo=" + versionInfo
+               //+ "\n\n---"
+               //+ "\nSee URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html"
+               ;
+         String errorCode = null;
+         SessionName sessionName = null;
+   
+         if (this.smtpDestinationHelper != null) {
+            sendEmail(summary, description, eventType, null, false);
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            sendMessage(summary, description, eventType, errorCode, sessionName);
+         }
+   
+         if (this.jmxDestinationHelper != null) {
+            sendJmxNotification(summary, description, eventType, null, false);
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+   
    /**
     * Initialize email sending. 
     * @param destination The configuration string, a comma separated list of key/value properties, e.g.
@@ -872,7 +946,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   public void timeout(Object userData) {
                      synchronized(smtpDestinationMonitor) {
                         smtpTimeoutHandle = null;
-                        //System.out.println("Timeout happened");
                         if (currentEmailData == null) return;
                         try {
                            smtpDestinationHelper.smtpClient.sendEmail(currentEmailData);
@@ -1366,11 +1439,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
                     eventType, errorCode, sessionName);
-               msgUnit.getQosData().addClientProperty("__subscriptionId",
+               msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
-               msgUnit.getQosData().addClientProperty("__oid",
+               msgUnit.getQosData().addClientProperty("_oid",
                      oid);
-               msgUnit.getQosData().addClientProperty("__topicId",
+               msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
             } catch (Throwable e) {
@@ -1443,11 +1516,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
                      eventType, errorCode, sessionName);
-               msgUnit.getQosData().addClientProperty("__subscriptionId",
+               msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
-               msgUnit.getQosData().addClientProperty("__oid",
+               msgUnit.getQosData().addClientProperty("_oid",
                      oid);
-               msgUnit.getQosData().addClientProperty("__topicId",
+               msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
             } catch (Throwable e) {
@@ -1515,7 +1588,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
                     eventType, errorCode, null);
-               msgUnit.getQosData().addClientProperty("__topicId",
+               msgUnit.getQosData().addClientProperty("_topicId",
                      topicHandler.getId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
             } catch (Throwable e) {
