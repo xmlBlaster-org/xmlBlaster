@@ -122,10 +122,11 @@ public class Global implements Cloneable
    public static long totalPhysicalMemorySize;
 
    /** Number of bytes this JVM can allocate max, the -Xmx???M setting
-    * Set by JmxWrappter.java, else 0
+    * Set by JmxWrappter.java
+    * (defaults to Runtime.getRuntime().maxMemory())
     * @since JDK 1.5
     */
-   public static long heapMemoryUsage;
+   public static long heapMemoryUsage = Runtime.getRuntime().maxMemory();
 
    /** The max number of file descriptors this JVM may use
     * Set by JmxWrappter.java, else 0
