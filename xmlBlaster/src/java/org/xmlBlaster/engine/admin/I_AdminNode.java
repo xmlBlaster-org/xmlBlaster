@@ -142,26 +142,51 @@ public interface I_AdminNode extends I_AdminUsage {
     */
    public void clearLastWarning();
 
-    /**
-     * Returns the amount of free memory in the Java Virtual Machine.
+   /**
+    * Returns the max. amount of free memory, including what the Java Virtual Machine
+    * could additionally allocate. 
+    * Calling the 
+    * <code>gc</code> method may result in increasing the value returned 
+    * by <code>freeMemory.</code>
+    *
+    * @return  an approximation to the total amount of memory
+    *          available for future allocated objects, measured in bytes.
+    */
+  public long getMaxFreeMem();
+
+  /**
+   * Nicer to read for humans. 
+   * @see #getMaxFreeMem
+   */
+  public String getMaxFreeMemStr();
+
+  /**
+     * Returns the current amount of free memory in the Java Virtual Machine.
      * Calling the 
      * <code>gc</code> method may result in increasing the value returned 
      * by <code>freeMemory.</code>
      *
      * @return  an approximation to the total amount of memory currently
      *          available for future allocated objects, measured in bytes.
+     *          Note that the JVM may allocate more memory and the free memory
+     *          will grow.
      */
    public long getFreeMem();
 
-    /**
-     * Returns the total amount of memory in the Java virtual machine.
+   /**
+    * Nicer to read for humans. 
+    * @see #getFreeMem
+    */
+   public String getFreeMemStr();
+
+   /**
+     * Returns the current amount of memory in the Java virtual machine.
      * The value returned by this method may vary over time, depending on 
      * the host environment.
      * <p>
      * Note that the amount of memory required to hold an object of any 
      * given type may be implementation-dependent.
      * <p>
-     * Increase with for example <tt>java -Xmx512M</tt> on startup.
      * 
      * @return  the total amount of memory currently available for current 
      *          and future objects, measured in bytes.
@@ -169,6 +194,30 @@ public interface I_AdminNode extends I_AdminUsage {
    public long getTotalMem();
 
    /**
+    * Nicer to read for humans. 
+    * @see #getTotalMem
+    */
+   public String getTotalMemStr();
+
+   /**
+    * Returns the total amount of memory including what the Java virtual machine
+    * could additionally allocate.
+    * The value returned by this method does not change (see java -Xmx...).
+    * <p>
+    * Increase with for example <tt>java -Xmx512M</tt> on startup.
+    * 
+    * @return  the total amount of memory currently available for current 
+    *          and future objects, measured in bytes.
+    */
+  public long getMaxMem();
+
+  /**
+   * Nicer to read for humans. 
+   * @see #getMaxMem
+   */
+  public String getMaxMemStr();
+
+  /**
     * @return getTotalMem() - getFreeMem()
     */ 
    public long getUsedMem();

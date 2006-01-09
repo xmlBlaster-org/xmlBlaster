@@ -2246,14 +2246,36 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public long getFreeMem() {
       return Runtime.getRuntime().freeMemory();
    }
+   public String getFreeMemStr() {
+      return Global.byteString(getFreeMem());
+   }
+   /** Free memory in bytes */
+   public long getMaxFreeMem() {
+      return Global.heapMemoryUsage-getUsedMem();
+   }
+   public String getMaxFreeMemStr() {
+      return Global.byteString(getMaxFreeMem());
+   }
 /*   public void setFreeMem(long freeMem) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "Setting of property 'freeMem' is not supported");
    } */
    public long getTotalMem() {
       return Runtime.getRuntime().totalMemory();
    }
+   public String getTotalMemStr() {
+      return Global.byteString(getTotalMem());
+   }
+   public long getMaxMem() {
+      return Runtime.getRuntime().maxMemory();
+   }
+   public String getMaxMemStr() {
+      return Global.byteString(getMaxMem());
+   }
    public long getUsedMem() {
       return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+   }
+   public String getUsedMemStr() {
+      return Global.byteString(getUsedMem());
    }
    public String getGc() {
       if (log.TRACE) log.trace(ME, "Garbage collector is activated");
