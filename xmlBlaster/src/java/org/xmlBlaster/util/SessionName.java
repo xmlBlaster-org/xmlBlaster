@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
 
 /**
  * Handles unified naming convention of login names and user sessions. 
@@ -24,8 +25,8 @@ public final class SessionName implements java.io.Serializable
    /** Name for logging output */
    private static String ME = "SessionName";
    private transient final Global glob;
-   public final static String ROOT_MARKER_TAG = "/node";
-   public final static String SUBJECT_MARKER_TAG = "client";
+   public final static String ROOT_MARKER_TAG = "/"+ContextNode.CLUSTER_MARKER_TAG; //"/node";
+   public final static String SUBJECT_MARKER_TAG = ContextNode.SUBJECT_MARKER_TAG; //"client";
    /** The absolute name */
    private String absoluteName;
    private NodeId nodeId;
@@ -43,6 +44,10 @@ public final class SessionName implements java.io.Serializable
     *  client/joe/2
     *  joe/2
     *  joe
+    *  
+    *  /node/heron/client/joe/session/2
+    *  client/joe/session/2
+    *  joe/session/2
     * </pre>
     * @exception IllegalArgumentException if your name can't be parsed
     */
@@ -95,7 +100,7 @@ public final class SessionName implements java.io.Serializable
             }
          }
          if (arr.length > 2) {
-            if (!"client".equals(arr[2]))
+            if (!SUBJECT_MARKER_TAG.equals(arr[2]))
                throw new IllegalArgumentException(ME+": '" + name + "': 'client' tag is missing.");
          }
 
@@ -127,10 +132,10 @@ public final class SessionName implements java.io.Serializable
       }
 
       int ii=0;
-      String[] arr = StringHelper.toArray(relative, "/");
+      String[] arr = StringHelper.toArray(relative, ContextNode.SEP); //"/"
       if (arr.length > ii) {
          String tmp = arr[ii++];
-         if ("client".equals(tmp)) {
+         if (SUBJECT_MARKER_TAG.equals(tmp)) { // "client"
             if (arr.length > ii) {
                this.subjectId = arr[ii++];
             }
@@ -146,7 +151,13 @@ public final class SessionName implements java.io.Serializable
          throw new IllegalArgumentException(ME+": '" + name + "': No relative information found.");
       }
       if (arr.length > ii) {
-         this.pubSessionId = Long.parseLong(arr[ii++]);
+         String tmp = arr[ii++];
+         if (ContextNode.SESSION_MARKER_TAG.equals(tmp)) {
+            if (arr.length > ii) {
+               tmp = arr[ii++];
+            }
+         }
+         this.pubSessionId = Long.parseLong(tmp);
       }
    }
 
@@ -311,12 +322,13 @@ public final class SessionName implements java.io.Serializable
    /**
     * Method for testing only.<p />
     *
-    * Invoke: java -Djava.compiler= org.xmlBlaster.util.SessionName
+    * Invoke: java -Djava.compiler= org.xmlBlaster.util.SessionName -name client/jack/1
     */
    public static void main(String args[]) {
       Global glob = new Global(args);
       try {
-         SessionName sessionName = new SessionName(glob, "jack");
+         String name = (args.length>=2) ? args[1] : "jack";
+         SessionName sessionName = new SessionName(glob, name);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
       }
       catch (IllegalArgumentException e) {
