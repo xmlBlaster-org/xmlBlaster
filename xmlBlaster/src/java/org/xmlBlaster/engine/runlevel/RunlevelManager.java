@@ -84,6 +84,10 @@ public final class RunlevelManager implements RunlevelManagerMBean
          log.error(ME, e.getMessage());
       }
    }
+   
+   public ContextNode getContextNode() {
+      return this.contextNode;
+   }
 
    /**
     * Sets the cluster node ID as soon as it is known. 
