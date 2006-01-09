@@ -80,12 +80,16 @@
       Example on how to access the status page:
       </p>
    <pre>
-java org.xmlBlaster.Main
+java org.xmlBlaster.Main -xmlBlaster/monitor/freeMemThreshold 2.0 -xmlBlaster/monitor/statusRefresh 60
 
 Open URL
    http://localhost:3412/status.html
 in your browser.
    </pre>
+   <p>Note that the command line arguments <code>-xmlBlaster/monitor/freeMemThreshold 2.0 -xmlBlaster/monitor/statusRefresh 60</code>
+   are optional, they are used inside the status.html page to set the color of the free memory to red if
+   less than 2 MBytes of memory are available and refreshes the HTML page every 60 seconds (defaults to 5 MBytes and 12 seconds).
+   </p>
    <p>You can change the http port on command line:
    </p>
    <pre>
