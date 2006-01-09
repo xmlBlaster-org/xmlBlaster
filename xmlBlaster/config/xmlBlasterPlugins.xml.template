@@ -212,7 +212,7 @@
    <plugin id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-      <attribute id='eventTypes'>log.severe,log.warning,startupRunlevel.9,shutdownRunlevel.8</attribute>
+      <attribute id='eventTypes'>logging/severe/*,logging/warning/*,service/RunlevelManager/event/startupRunlevel9,service/RunlevelManager/event/shutdownRunlevel8</attribute>
       <attribute id='destination.smtp'>
          mail.smtp.from=xmlBlaster@localhost,
          mail.smtp.to=demo@localhost,
@@ -228,7 +228,7 @@
    <plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='9'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='9'/>
-      <attribute id='eventTypes'>log.severe,shutdownRunlevel.8</attribute>
+      <attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8</attribute>
       <attribute id='destination.smtp'>
          mail.subject=xmlBlaster $_{eventType},
          mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},

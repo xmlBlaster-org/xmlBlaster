@@ -66,10 +66,10 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
  *   
  *   &lt;attribute id='eventTypes'>
- *      log.severe,
- *      log.warning,
- *      startupRunlevel.8,
- *      client.sessionAdded
+ *      logging/severe/*,
+ *      logging/warning/*,
+ *      service/RunlevelManager/event/startupRunlevel8,
+ *      client/joe/session/1/event/connect
  *   &lt;/attribute>
  *   
  *   &lt;attribute id='destination.smtp'>
@@ -82,7 +82,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * </pre>
  * 
  * <p>
- * In the above example an email is send if any log.severe (==log.error) or log.warning occurs.
+ * In the above example an email is send if any logging/severe/* (==log/error) or logging/warning/* occurs.
  * Further an event is emitted on xmlBlaster startup in run level 8
  * and if a new client logs in.
  * Those events are send as JMX notifications as well.
@@ -95,27 +95,25 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * a runlevel early enough depending on the event you want to capture:
  * </p>
  * <table border="1">
- * <tr><td>log.severe</td><td>Captures all errors logged</td></tr>
- * <tr><td>log.warning</td><td>Captures all warnings logged</td></tr>
- * <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- * <tr><td>startupRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- * <tr><td>client.sessionAdded.*</td><td>Captures event on client login (all clients)</td></tr>
- * <tr><td>client.sessionAdded.[subjectId]</td><td>Captures event on given client login, e.g. "client.sessionAdded.joe"</td></tr>
- * <tr><td>client.sessionAdded.[relativeSessionName]</td><td>Captures event on given client login, e.g. "client.sessionAdded.client/joe/1"</td></tr>
- * <tr><td>client.sessionRemoved.*</td><td>Captures event on client logout (all clients)</td></tr>
- * <tr><td>client.sessionRemoved.[subjectId]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.joe"</td></tr>
- * <tr><td>client.sessionRemoved.[relativeSessionName]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.client/joe/1"</td></tr>
- * <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
- * <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
- * <tr><td>subscribe.[relativeName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
- * <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
- * <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
- * <tr><td>unSubscribe.[relativeName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
- * <tr><td>topic.alive.*</td><td>Captures if a topic is created (on all topics)</td></tr>
- * <tr><td>topic.alive.hello</td><td>Captures event if the topic 'hello' is created</td></tr>
- * <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
- * <tr><td>topic.dead.hello</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
- * <tr><td>callbackSessionState.[relativeName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING. Note that the status change to DEAD is currently not implemented (it is reported as POLLING)</td></tr>
+ * <tr><td>logging/severe/*</td><td>Captures all errors logged</td></tr>
+ * <tr><td>logging/warning/*</td><td>Captures all warnings logged</td></tr>
+ * <tr><td>service/RunlevelManager/event/startupRunlevel9</td><td>Captures event when startup run level reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ * <tr><td>service/RunlevelManager/event/shutdownRunlevel8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other run level is possible as well (note that this plugin must be active beforehand)</td></tr>
+ * <tr><td>client/* /session/* /event/connect</td><td>Captures event on client login (all clients)</td></tr>
+ * <tr><td>client/[subjectId]/session/[publicSessionId]/event/connect</td><td>Captures event on given client login, e.g. "client/joe/session/1/event/connect"</td></tr>
+ * <tr><td>client/* /session/* /event/disconnect</td><td>Captures event on client logout (all clients)</td></tr>
+ * <tr><td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td><td>Captures event on given client logout, e.g. "client/joe/session/1/event/disconnect"</td></tr>
+ * <tr><td>topic/* /event/subscribe</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
+ * <tr><td>topic/[topicId]/event/subscribe</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
+ * <tr><td>client/[subjectId]/session/[publicSessionId]/event/subscribe</td><td>Captures if the given client has invoked subscribe(), e.g. "client/joe/session/1/event/subscribe". The publicSessionId can be a wildcard "*".</td></tr>
+ * <tr><td>topic/* /event/unSubscribe</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
+ * <tr><td>topic/[topicId]/event/unSubscribe</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
+ * <tr><td>client/[subjectId]/session/[publicSessionId]/event/unSubscribe</td><td>Captures if the given client has invoked unSubscribe(), e.g. "client/joe/session/1/event/unSubscribe". The publicSessionId can be a wildcard "*".</td></tr>
+ * <tr><td>topic/* /event/alive</td><td>Captures if a topic is created (on all topics)</td></tr>
+ * <tr><td>topic/hello/event/alive</td><td>Captures event if the topic 'hello' is created</td></tr>
+ * <tr><td>topic/* /event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
+ * <tr><td>topic/hello/event/dead</td><td>Captures event if the topic 'hello' is destroyed</td></tr>
+ * <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING. Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
  * </table>
  * <p>
  * List of supported event sinks:
@@ -188,11 +186,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected boolean isShutdown;
    
    protected String eventTypes;
-   protected Set startupRunlevelSet;
-   protected Set shutdownRunlevelSet;
-   protected Set loginLogoutSet;
-   protected Set subscribeSet;
-   protected Set unSubscribeSet;
+   protected Set loggingSet;
+   protected Set runlevelSet;
+   protected Set clientSet;
    protected Set topicSet;
    
    protected Set pendingCallbackSessionInfoSet;
@@ -332,7 +328,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (errorCode != null && errorCode.length() > 0)
             msgQosData.addClientProperty("_errorCode", errorCode);
          if (sessionName != null) {
+            msgQosData.addClientProperty("_publicSessionId",
+                  sessionName.getPublicSessionId());
+            msgQosData.addClientProperty("_subjectId",
+                  sessionName.getLoginName());
+            msgQosData.addClientProperty("_absoluteName",
+                  sessionName.getAbsoluteName());
+            /*
             // To be backwards compatible with loginEvent=true setting:
+            // deprecated:
             msgQosData.addClientProperty("__publicSessionId",
                   sessionName.getPublicSessionId());
             msgQosData.addClientProperty("__subjectId",
@@ -342,6 +346,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             // TODO: backwards compatible?
             //msgUnit.setContent(sessionName.getLoginName().getBytes());
             // To be backwards compatible with loginEvent=true setting:
+            */
          }
          msgQosData.addClientProperty("__nodeId", engineGlob.getId());
 
@@ -349,7 +354,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
       MsgUnit getMsgUnit(String summary, String description,
             String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
-         String content = description;
+         String content = eventType;
          return new MsgUnit(
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
@@ -428,10 +433,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.publishDestinationConfiguration = this.publishDestinationConfiguration.trim();
          this.publishDestinationHelper = new PublishDestinationHelper(this.publishDestinationConfiguration);
          destLogStr += "destination.publish:" + this.publishDestinationConfiguration;
-         if (this.eventTypes.indexOf("log.severe") != -1 || this.eventTypes.indexOf("log.error") != -1)
-            log.warning("The combination of 'destination.publish' with 'log.severe' is dangerous as it could loop forever, it is supressed");
-         if (this.eventTypes.indexOf("log.warning") != -1 || this.eventTypes.indexOf("log.warn") != -1)
-            log.warning("The combination of 'destination.publish' with 'log.warning' is very dangerous as it could loop forever, it is supressed");
+         if (this.eventTypes.indexOf("logging/severe/*") != -1 || this.eventTypes.indexOf("log/error/*") != -1)
+            log.warning("The combination of 'destination.publish' with 'logging/severe/*' is dangerous as it could loop forever, it is supressed.");
+         else if (this.eventTypes.indexOf("logging/severe/") != -1 || this.eventTypes.indexOf("log/error/") != -1)
+            log.warning("The combination of 'destination.publish' with 'logging/severe/xyz' is dangerous as it could loop forever.");
+         if (this.eventTypes.indexOf("logging/warning") != -1 || this.eventTypes.indexOf("logging/warn") != -1)
+            log.warning("The combination of 'destination.publish' with 'logging/warning' is very dangerous as it could loop forever, it is supressed.");
       }
 
       // Sending the events as a JMX notification?
@@ -458,15 +465,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    /**
     * Find out which events to listen. 
-    * @param eventTypes A commas seperated list of supported events, e.g. <code>log.severe,log.warning</code>
+    * @param eventTypes A commas seperated list of supported events, e.g. <code>logging/severe/*,logging/warning/*</code>
     */
    public void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
+         
          try {
-            if ("log.severe".equals(event)
-                  || "log.error".equals(event)) {
+            // "logging/severe/*"
+            if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/severe/") // TODO: support specific channels as "logging/severe/*" -> "logging/severe/core"
+                  || event.startsWith("log/error/")) {
                // Please use JDK14 notation for configuration
                // We want to be notified if a log.error() is called, this will
                // notify our LogableDevice.log() method
@@ -474,68 +483,33 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                LogNotifierDeviceFactory lf = this.engineGlob
                      .getLogNotifierDeviceFactory();
                lf.register(LogChannel.LOG_ERROR, this);
+               if (this.loggingSet == null) this.loggingSet = new TreeSet();
+               this.loggingSet.add(event);
             }
-            else if ("log.warning".equals(event)
-                  || "log.warn".equals(event)) {
+            // "logging/warning/*"
+            else if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/warning/")
+                  || event.startsWith("logging/warn/")) {
                log.fine("Register logging status " + event);
                LogNotifierDeviceFactory lf = this.engineGlob
                      .getLogNotifierDeviceFactory();
                lf.register(LogChannel.LOG_WARN, this);
+               if (this.loggingSet == null) this.loggingSet = new TreeSet();
+               this.loggingSet.add(event);
             }
-            else if (event.startsWith("startupRunlevel.")) {
-               String rl = event.substring(event.indexOf(".")+1);
-               log.fine("Register startupRunlevel = " + rl);
+            // "service/RunlevelManager/event/startupRunlevel8", "service/RunlevelManager/event/shutdownRunlevel7"
+            else if (event.startsWith(this.engineGlob.getRunlevelManager().getContextNode().getRelativeName()+"/event/")) {
+               log.fine("Register event = " + event);
                this.engineGlob.getRunlevelManager().addRunlevelListener(this);
-               if (this.startupRunlevelSet == null) this.startupRunlevelSet = new TreeSet();
-               this.startupRunlevelSet.add(rl);
+               if (this.runlevelSet == null) this.runlevelSet = new TreeSet();
+               this.runlevelSet.add(event);
             }
-            else if (event.startsWith("shutdownRunlevel.")) {
-               String rl = event.substring(event.indexOf(".")+1);
-               log.fine("Register shutdownRunlevel = " + rl);
-               this.engineGlob.getRunlevelManager().addRunlevelListener(this);
-               if (this.shutdownRunlevelSet == null) this.shutdownRunlevelSet = new TreeSet();
-               this.shutdownRunlevelSet.add(rl);
-            }
-            else if (event.startsWith("client.")) {
-               // client.sessionAdded.*, client.sessionRemoved.*, client.sessionAdded.client/joe/1
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register login/logout event = " + ev);
-               this.requestBroker.getAuthenticate().addClientListener(this);
-               if (this.loginLogoutSet == null) this.loginLogoutSet = new TreeSet();
-               this.loginLogoutSet.add(ev);
-            }
-            else if (event.startsWith("subscribe.")) {
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register subscribe event = " + ev);
-               this.requestBroker.addSubscriptionListener(this);
-               if (this.subscribeSet == null) this.subscribeSet = new TreeSet();
-               this.subscribeSet.add(ev);
-            }
-            else if (event.startsWith("unSubscribe.")) {
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register unSubscribe event = " + ev);
-               this.requestBroker.addSubscriptionListener(this);
-               if (this.unSubscribeSet == null) this.unSubscribeSet = new TreeSet();
-               this.unSubscribeSet.add(ev);
-            }
-            else if (event.startsWith("topic.alive.")) {
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register topic event = " + ev);
-               this.requestBroker.addTopicListener(this);
-               if (this.topicSet == null) this.topicSet = new TreeSet();
-               this.topicSet.add(ev);
-            }
-            else if (event.startsWith("topic.dead.")) {
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register topic event = " + ev);
-               this.requestBroker.addTopicListener(this);
-               if (this.topicSet == null) this.topicSet = new TreeSet();
-               this.topicSet.add(ev);
-            }
-            else if (event.startsWith("callbackSessionState.")) {
-               String ev = event.substring(event.indexOf(".")+1);
-               log.fine("Register callback session state event = " + ev);
-               SessionName sessionName = new SessionName(this.engineGlob, ev);
+            else if (event.endsWith("/event/callbackState") || event.endsWith("/event/callbackAlive") || event.endsWith("/event/callbackPolling") || event.endsWith("/event/callbackDead")) {
+               // "client/joe/session/1/event/callbackState"
+               // Not yet supported: "client/joe/session/1/event/callbackAlive", "client/joe/session/1/event/callbackPolling"
+               int index = event.lastIndexOf("/event/");
+               String name = event.substring(0, index);
+               log.fine("Register callback session state event = " + event);
+               SessionName sessionName = new SessionName(this.engineGlob, name);
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
                if (sessionInfo != null)
                   sessionInfo.getDispatchManager().addConnectionStatusListener(this);
@@ -547,12 +521,34 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
                this.callbackSessionStateSet.add(sessionName.getRelativeName());
             }
+            else if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP)) {
+               // "client/joe/session/1/event/connect", "client/*/session/*/event/disconnect"
+               // "client/joe/session/1/event/subscribe"
+               log.fine("Register login/logout event = " + event);
+               if (event.endsWith("/event/subscribe") || event.endsWith("/event/unSubscribe"))
+                  this.requestBroker.addSubscriptionListener(this);
+               else
+                  this.requestBroker.getAuthenticate().addClientListener(this);
+               if (this.clientSet == null) this.clientSet = new TreeSet();
+               this.clientSet.add(event);
+            }
+            else if (event.startsWith(ContextNode.TOPIC_MARKER_TAG+ContextNode.SEP)) {
+               // "topic/hello/event/alive", "topic/hello/event/subscribe" ...
+               log.fine("Register topic event = " + event);
+               if (event.endsWith("/event/subscribe") || event.endsWith("/event/unSubscribe"))
+                  this.requestBroker.addSubscriptionListener(this);
+               else
+                  this.requestBroker.addTopicListener(this);
+               if (this.topicSet == null) this.topicSet = new TreeSet();
+               this.topicSet.add(event);
+            }
             else {
                log.warning("Ignoring unknown '" + event
                      + "' from eventTypes='" + eventTypes + "'");
             }
          }
          catch (Throwable e) {
+            e.printStackTrace();
             log.warning("Ignoring '" + event
                      + "' from eventTypes='" + eventTypes + "' because of " + e.toString());
          }
@@ -635,6 +631,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       // TODO: Check if we unregister everything!
       // TODO: Protect each call with catch Throwable
       
+      if (this.loggingSet != null)
+         this.loggingSet = null;
       LogNotifierDeviceFactory lf = this.engineGlob
             .getLogNotifierDeviceFactory();
       lf.unregister(LogChannel.LOG_WARN, this);
@@ -643,23 +641,23 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.engineGlob != null && this.mbeanHandle != null)
          this.engineGlob.unregisterMBean(this.mbeanHandle);
 
-      if (this.shutdownRunlevelSet != null)
-         this.shutdownRunlevelSet = null;
-      if (this.startupRunlevelSet != null)
-         this.startupRunlevelSet = null;
+      if (this.runlevelSet != null)
+         this.runlevelSet = null;
       if (this.engineGlob != null) {
          this.engineGlob.getRunlevelManager().removeRunlevelListener(this);
       }
       
-      if (this.loginLogoutSet != null)
-         this.loginLogoutSet = null;
+      if (this.clientSet != null)
+         this.clientSet = null;
       if (this.requestBroker != null)
          this.requestBroker.getAuthenticate().removeClientListener(this);
 
+      /*
       if (this.subscribeSet != null)
          this.subscribeSet = null;
       if (this.unSubscribeSet != null)
          this.unSubscribeSet = null;
+      */
       this.requestBroker.removeSubscriptionListener(this);
       
       if (this.topicSet != null)
@@ -699,6 +697,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (LogChannel.LOG_WARN != level && LogChannel.LOG_ERROR != level)
          return;
 
+      if (this.loggingSet == null) return;
+      
+      String found = (LogChannel.LOG_WARN == level) ? "logging/warning/" : "logging/severe/";
+      String foundEvent = found + "*"; // "logging/warning/*"
+      if (!this.loggingSet.contains(foundEvent))
+         return;
+      // How to extract the LogChannel name like "core"?
+      
       try {
          if (source == null) source = "";
          String description = (str == null) ? "" : str;
@@ -709,7 +715,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
            + " " + Thread.currentThread().getName()
            + " " + source + "]";
 
-         String eventType = (LogChannel.LOG_WARN == level) ? "log.warning" : "log.severe";
+         String eventType = foundEvent;
          
          // extract errorCode e.g. "... errorCode=communication.noConnection bla bla..."
          String errorCode=null;
@@ -770,7 +776,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       try {
          String message = eventType + ": " + summary; // Shows up under 'Message' in jconsole
          //String message = eventType + ": " + description; // Shows up under 'Message' in jconsole
-         String attributeName = eventType; // TODO shutdownRunlevel.8 is no allowed attribute
+         String attributeName = eventType;
          String oldValue = ""; // TODO what to put here?
          String newValue = eventType + ": " + summary; // Won't work if attributeName is illegal
          this.engineGlob.sendNotification(this, message,
@@ -805,7 +811,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Sending email as configured with <code>destination.smtp</code>. 
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
     * @param description The event description to send, it is injected as $_{description}
-    * @param eventType For example "log.severe"
+    * @param eventType For example "logging/severe/*"
     * @param forceSending If true send directly and ignore the timeout
     * @see http://www.faqs.org/rfcs/rfc2822.html
     */
@@ -901,24 +907,32 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public void runlevelChange(int from, int to, boolean force) {
       if (to == from)
          return;
+      if (this.runlevelSet == null)
+         return;
+
+      // "service/RunlevelManager/event/startupRunlevel8", "service/RunlevelManager/event/shutdownRunlevel7"
+      String found = this.engineGlob.getRunlevelManager().getContextNode().getRelativeName()+"/event/";
+      String tmp = (to > from) ? ("startupRunlevel"+to) : ("shutdownRunlevel"+to);
+      String foundEvent = found + tmp;
+      if (!this.runlevelSet.contains(foundEvent)) {
+         foundEvent = found + "*";
+         if (!this.runlevelSet.contains(foundEvent))
+            return;
+      }
 
       try {
          String summary = null;
          String description = null;
          String eventType = null;
          if (to > from) { // startup
-            if (this.startupRunlevelSet != null && this.startupRunlevelSet.contains(""+to)) {
-               summary = "Startup to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
-               description = "xmlBlaster startup runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
-               eventType = "startupRunlevel."+to;
-            }
+            summary = "Startup to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
+            description = "xmlBlaster startup runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
+            eventType = foundEvent;
          }
          if (to < from) { // shutdown
-            if (this.shutdownRunlevelSet != null && this.shutdownRunlevelSet.contains(""+to)) {
-               summary = "Shutdown to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
-               description = "xmlBlaster shutdown runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
-               eventType = "shutdownRunlevel."+to;
-            }
+            summary = "Shutdown to " + RunlevelManager.toRunlevelStr(to) + " (" + to + ")";
+            description = "xmlBlaster shutdown runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
+            eventType = foundEvent;
          }
          
          if (eventType == null) return;
@@ -971,19 +985,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
       
-      if (this.loginLogoutSet == null) return;
+      if (this.clientSet == null) return;
       
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String relativeName = sessionName.getRelativeName();
 
-      String event = "sessionAdded.";
-      String foundEvent = event + relativeName;
-      if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.client/joe/1"
-         foundEvent = event + sessionName.getLoginName();
-         if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.joe"
-            foundEvent = event + "*";
-            if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionAdded.*"
+      String event = ContextNode.SEP + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "connect";
+      String foundEvent = relativeName + event;  // "client/joe/session/1/event/connect"
+      if (!this.clientSet.contains(foundEvent)) {
+         // "client/joe/session/*/event/connect"
+         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+         if (!this.clientSet.contains(foundEvent)) {
+            // "client/*/session/*/event/connect"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.clientSet.contains(foundEvent)) {
                return;
             }
          }
@@ -995,7 +1011,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
          String summary = "Login of client " + sessionName.getAbsoluteName();
          String description = sessionInfo.toXml();
-         String eventType = "client." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1052,30 +1068,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       // Key '__sys__UserList' for login/logout event
       // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
 
-      if (this.loginLogoutSet == null) return;
+      if (this.clientSet == null) return;
       
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
+      String relativeName = sessionName.getRelativeName();
 
-      String event = "sessionRemoved.";
-      String foundEvent = event + sessionName.getRelativeName();
-      if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.client/joe/1"
-         foundEvent = event + sessionName.getLoginName();
-         if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.joe"
-            foundEvent = event + "*";
-            if (!this.loginLogoutSet.contains(foundEvent)) { // "sessionRemoved.*"
+      String event = ContextNode.SEP + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "disconnect";
+      String foundEvent = relativeName + event;  // "client/joe/session/1/event/disconnect"
+      if (!this.clientSet.contains(foundEvent)) {
+         // "client/joe/session/*/event/disconnect"
+         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+         if (!this.clientSet.contains(foundEvent)) {
+            // "client/*/session/*/event/disconnect"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.clientSet.contains(foundEvent)) {
                return;
             }
          }
       }
       
       try {
-         //PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
-         // Key '__sys__UserList' for login/logout event
-         // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
          String summary = "Logout of client " + sessionName.getAbsoluteName();
          String description = summary;
-         String eventType = "client." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1297,21 +1313,37 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionAdd(org.xmlBlaster.engine.SubscriptionEvent)
     */
    public void subscriptionAdd(SubscriptionEvent subscriptionEvent) throws XmlBlasterException {
-      if (this.subscribeSet == null) return;
+      if (this.topicSet == null && this.clientSet == null) return;
 
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String oid = subscriptionInfo.getKeyOid();
       
-      String foundEvent = subscriptionInfo.getSubscriptionId();
-      if (!this.subscribeSet.contains(foundEvent)) {
-         foundEvent = oid;
-         if (!this.subscribeSet.contains(foundEvent)) {
-            foundEvent = sessionName.getRelativeName();
-            if (!this.subscribeSet.contains(foundEvent)) {
-               foundEvent = "*";
-               if (!this.subscribeSet.contains(foundEvent)) {
+      // "/event/subscribe"
+      String event = ContextNode.SEP + "event" + ContextNode.SEP + "subscribe";
+      
+      // "topic/hello/event/subscribe"
+      String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + oid + event;
+      boolean found = true;
+      if (this.topicSet != null) {
+         if (!this.topicSet.contains(foundEvent)) {
+            // "topic/*/event/subscribe"
+            foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.topicSet.contains(foundEvent)) {
+               found = false;
+            }
+         }
+      }
+      if (!found) {
+         if (this.clientSet == null) return;
+         if (!this.clientSet.contains(foundEvent)) {
+            // "client/joe/session/*/event/subscribe"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.clientSet.contains(foundEvent)) {
+               // "client/*/session/*/event/subscribe"
+               foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+               if (!this.clientSet.contains(foundEvent)) {
                   return;
                }
             }
@@ -1323,7 +1355,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
              + sessionInfo.getSessionName().getAbsoluteName()
              + " on topic " + oid;
          String description = subscriptionInfo.toXml();
-         String eventType = "subscribe." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1358,21 +1390,37 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.engine.I_SubscriptionListener#subscriptionRemove(org.xmlBlaster.engine.SubscriptionEvent)
     */
    public void subscriptionRemove(SubscriptionEvent subscriptionEvent) throws XmlBlasterException {
-      if (this.unSubscribeSet == null) return;
+      if (this.topicSet == null && this.clientSet == null) return;
 
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String oid = subscriptionInfo.getKeyOid();
+
+      // "/event/unSubscribe"
+      String event = ContextNode.SEP + "event" + ContextNode.SEP + "unSubscribe";
       
-      String foundEvent = subscriptionInfo.getSubscriptionId();
-      if (!this.unSubscribeSet.contains(foundEvent)) {
-         foundEvent = oid;
-         if (!this.unSubscribeSet.contains(foundEvent)) {
-            foundEvent = sessionName.getRelativeName();
-            if (!this.unSubscribeSet.contains(foundEvent)) {
-               foundEvent = "*";
-               if (!this.unSubscribeSet.contains(foundEvent)) {
+      // "topic/hello/event/unSubscribe"
+      String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + oid + event;
+      boolean found = true;
+      if (this.topicSet != null) {
+         if (!this.topicSet.contains(foundEvent)) {
+            // "topic/*/event/unSubscribe"
+            foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.topicSet.contains(foundEvent)) {
+               found = false;
+            }
+         }
+      }
+      if (!found) {
+         if (this.clientSet == null) return;
+         if (!this.clientSet.contains(foundEvent)) {
+            // "client/joe/session/*/event/unSubscribe"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.clientSet.contains(foundEvent)) {
+               // "client/*/session/*/event/unSubscribe"
+               foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+               if (!this.clientSet.contains(foundEvent)) {
                   return;
                }
             }
@@ -1384,7 +1432,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
              + sessionInfo.getSessionName().getAbsoluteName()
              + " on topic " + oid;
          String description = subscriptionInfo.toXml();
-         String eventType = "unSubscribe." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1419,16 +1467,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see org.xmlBlaster.engine.EventPluginMBean#triggerTestLogSevere()
     */
    public String triggerTestLogSevere() {
-      log.severe("This is a manually invoked logging output for testing purposes only");// TODO Auto-generated method stub
-      return "log.severe invoked";
+      log.severe("This is a manually invoked logging output for testing purposes only");
+      return "logging/severe/"+EventPlugin.class.getName()+" invoked";
    }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.engine.EventPluginMBean#triggerTestLogWarning()
     */
    public String triggerTestLogWarning() {
-      log.warning("This is a manually invoked logging output for testing purposes only");// TODO Auto-generated method stub
-      return "log.warning invoked";
+      log.warning("This is a manually invoked logging output for testing purposes only");
+      return "logging/warning/"+EventPlugin.class.getName()+" invoked";
    }
 
    /* (non-Javadoc)
@@ -1439,13 +1487,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       TopicHandler topicHandler = topicEvent.getTopicHandler();
       
-      boolean newTopic = !topicHandler.isDead(); // UNCONFIGURED is treated as alive 
-      String event = (newTopic) ? "alive." : "dead.";
+      boolean newTopic = !topicHandler.isDead(); // UNCONFIGURED is treated as alive
+      // "/event/alive", "/event/dead"
+      String event = ContextNode.SEP + "event" + ContextNode.SEP + ((newTopic) ? "alive" : "dead");
       
-      String foundEvent = event + topicHandler.getId();
-      if (!this.topicSet.contains(foundEvent)) { // "alive.hello"
-         foundEvent = event + "*";
-         if (!this.topicSet.contains(foundEvent)) { // "dead.*"
+      // "topic/hello/event/alive"
+      String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + topicHandler.getId() + event;
+      if (!this.topicSet.contains(foundEvent)) {
+         foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + "*" + event;
+         if (!this.topicSet.contains(foundEvent)) {
             return;
          }
       }
@@ -1454,7 +1504,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String summary = (newTopic) ? ("Creating new topic " + topicHandler.getId())
                           : ("Destroying topic " + topicHandler.getId());
          String description = topicHandler.toXml();
-         String eventType = "topic." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1509,27 +1559,56 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       SessionName sessionName = dispatchManager.getSessionName();
 
-      String foundEvent = sessionName.getRelativeName();
+      /*
+      // Not yet implemented:
+      // "/event/callbackAlive" "/event/callbackPolling"
+      //String event = ContextNode.SEP + "event" + ContextNode.SEP + (newState.equals(ConnectionStateEnum.ALIVE)?"callbackAlive":"callbackPolling");
+
+      // "client/joe/session/1/event/callbackAlive", "client/joe/session/1/event/callbackPolling"
+      String foundEvent = sessionName.getRelativeName() + event;
       if (!this.callbackSessionStateSet.contains(foundEvent)) {
-         foundEvent = "*";
+         // "client/joe/session/* /event/callbackAlive"
+         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
          if (!this.callbackSessionStateSet.contains(foundEvent)) {
-            return;
+            // "client/* /session/* /event/callbackAlive"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.callbackSessionStateSet.contains(foundEvent)) {
+               return;
+            }
          }
       }
+      */
+      
+      // "/event/callbackState"
+      String event = ContextNode.SEP + "event" + ContextNode.SEP + "callbackState";
+      // "client/joe/session/1/event/callbackState"
+      String foundEvent = sessionName.getRelativeName();
+      if (!this.callbackSessionStateSet.contains(foundEvent)) {
+         // "client/joe/session/*"
+         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+         if (!this.callbackSessionStateSet.contains(foundEvent)) {
+            // "client/*/session/*"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+            if (!this.callbackSessionStateSet.contains(foundEvent)) {
+               return;
+            }
+         }
+      }
+      foundEvent += event;
       
       try {
-         String summary = "Callback state change to " 
+         String summary = "Callback state has changed to " 
              + newState.toString() + " for client " 
              + sessionName.getAbsoluteName();
          String description = (oldState.equals(newState))? 
-               ("Callback state changed"
+               ("Callback has state changed"
                + " to "+ newState.toString() + " for client " 
                + sessionName.getAbsoluteName())
                :
-               ("Callback state changed from " + oldState.toString()
+               ("Callback state has changed from " + oldState.toString()
                + " to "+ newState.toString() + " for client " 
                + sessionName.getAbsoluteName());
-         String eventType = "callbackSessionState." + foundEvent;
+         String eventType = foundEvent;
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
@@ -1567,5 +1646,38 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
       callbackStateChange(dispatchManager, oldState, ConnectionStateEnum.DEAD);
+   }
+
+   /**
+    * JMX
+    * @return Returns the jmxDestinationConfiguration.
+    */
+   public String getJmxDestinationConfiguration() {
+      if (this.jmxDestinationHelper == null) return "<not active>";
+      return (this.jmxDestinationConfiguration == null) ? "<default configuration>" : this.jmxDestinationConfiguration;
+   }
+
+   /**
+    * JMX
+    * @return Returns the publishDestinationConfiguration.
+    */
+   public String getPublishDestinationConfiguration() {
+      if (this.publishDestinationHelper == null) return "<not active>";
+      return (this.publishDestinationConfiguration == null) ? "<default configuration>" : this.publishDestinationConfiguration;
+   }
+
+   /**
+    * @param jmxDestinationConfiguration The jmxDestinationConfiguration to set.
+    */
+   public void setJmxDestinationConfiguration(String jmxDestinationConfiguration) {
+      this.jmxDestinationConfiguration = jmxDestinationConfiguration;
+   }
+
+   /**
+    * @param publishDestinationConfiguration The publishDestinationConfiguration to set.
+    */
+   public void setPublishDestinationConfiguration(
+         String publishDestinationConfiguration) {
+      this.publishDestinationConfiguration = publishDestinationConfiguration;
    }
 }

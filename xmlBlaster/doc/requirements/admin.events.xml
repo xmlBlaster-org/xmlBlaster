@@ -8,7 +8,7 @@
       <p>
       This is a configurable event capture plugin which has for example the characteristics of sending an email to a given 
       address when an error is logged. But this plugins offers many more xmlBlaster internal events to capture and offers
-      to send the events to other destinations like JMX notifications are send them as ordinary xmlBlaster messages.
+      to send the events to other destinations like JMX notifications or send them as ordinary xmlBlaster messages.
       </p>
     <p>
     This is useful for clients or administrators to be notified on certain core events.
@@ -26,10 +26,10 @@
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
    
    &lt;attribute id='eventTypes'>
-      log.severe,
-      log.warning,
-      startupRunlevel.8,
-      client.sessionAdded.*
+      logging/severe/*,
+      logging/warning/*,
+      service/RunlevelManager/event/startupRunlevel8,
+      client/*/session/*/event/connect
    &lt;/attribute>
    
    &lt;attribute id='destination.smtp'>
@@ -40,13 +40,13 @@
 
    &lt;attribute id='destination.jmx'/>
 &lt;/plugin&gt;
- </pre>
+</pre>
  
  <p>
  The first two &lt;action> tags just configure the plugin itself to be loaded by xmlBlaster on startup
  and to be removed again on shutdown</p>
  <p>
- In the above example an email is send if any log.severe (==log.error) or log.warning occurs.
+ In the above example an email is send if any logging/severe/* (==log.error) or logging/warning/* occurs.
  Further an event is emitted on xmlBlaster startup in run level 8
  and if a new client logs in.
  Those events are send as JMX notifications as well.
@@ -68,28 +68,26 @@
       <th>Event Name</th>
       <th>Description</th>
       </tr>
- <tr><td>log.severe</td><td>Captures all errors logged, avoid to use this with the publish message sink as this could produce more log.severe and loop</td></tr>
- <tr><td>log.warning</td><td>Captures all warnings logged, never use this with the publish message sink as this could produce more log.warning and loop</td></tr>
- <tr><td>startupRunlevel.9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- <tr><td>shutdownRunlevel.8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
- <tr><td>client.sessionAdded.*</td><td>Captures event on client login (all clients)</td></tr>
- <tr><td>client.sessionAdded.[subjectId]</td><td>Captures event on given client login, e.g. "client.sessionAdded.joe"</td></tr>
- <tr><td>client.sessionAdded.[relativeSessionName]</td><td>Captures event on given client login, e.g. "client.sessionAdded.client/joe/1"</td></tr>
- <tr><td>client.sessionRemoved.*</td><td>Captures event on client logout (all clients)</td></tr>
- <tr><td>client.sessionRemoved.[subjectId]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.joe"</td></tr>
- <tr><td>client.sessionRemoved.[relativeSessionName]</td><td>Captures event on given client logout, e.g. "client.sessionRemoved.client/joe/1"</td></tr>
- <tr><td>subscribe.*</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
- <tr><td>subscribe.[topicId]</td><td>Captures if subscribe() on the specified topic is invoked, e.g. "subscribe.hello"</td></tr>
- <tr><td>subscribe.[relativeSessionName]</td><td>Captures if the given client has invoked subscribe(), e.g. "subscribe.client/joe/1"</td></tr>
- <tr><td>unSubscribe.*</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
- <tr><td>unSubscribe.[topicId]</td><td>Captures if unSubscribe() on the specified topic is invoked, e.g. "unSubscribe.hello"</td></tr>
- <tr><td>unSubscribe.[relativeSessionName]</td><td>Captures if the given client has invoked unSubscribe(), e.g. "unSubscribe.client/joe/1"</td></tr>
- <tr><td>topic.alive.*</td><td>Captures if a topic is created (on all topics)</td></tr>
- <tr><td>topic.alive.[topicId]</td><td>Captures event if the given topic is created, e.g. "topic.alive.hello"</td></tr>
- <tr><td>topic.dead.*</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
- <tr><td>topic.dead.[topicId]</td><td>Captures event if the given topic is destroyed, e.g. "topic.dead.hello"</td></tr>
- <tr><td>callbackSessionState.[relativeSessionName]</td><td>Captures event if the client callback server goes to ALIVE|POLLING. Note that the status change to DEAD is currently not implemented, it is reported as POLLING.</td></tr>
- <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a log.severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'log.severe' to detect this.</td></tr>
+ <tr><td>logging/severe/*</td><td>Captures all errors logged, avoid to use this with the publish message sink as this could produce more logging/severe and loop</td></tr>
+ <tr><td>logging/warning/*</td><td>Captures all warnings logged, never use this with the publish message sink as this could produce more logging/warning and loop</td></tr>
+ <tr><td>service/RunlevelManager/event/startupRunlevel9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ <tr><td>service/RunlevelManager/event/shutdownRunlevel8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
+ <tr><td>client/*/session/*/event/connect</td><td>Captures event on client login (all clients)</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/connect</td><td>Captures event on given client login, e.g. "client/joe/session/1/event/connect". The combination of publicSessionId=noneWildcard and subjectId=* is not supported.</td></tr>
+ <tr><td>client/*/session/*/event/disconnect</td><td>Captures event on client logout (all clients)</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td><td>Captures event on given client logout, e.g. "client/joe/session/1/event/disconnect". The combination of publicSessionId=noneWildcard and subjectId=* is not supported.</td></tr>
+ <tr><td>topic/*/event/subscribe</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
+ <tr><td>topic/[topicId]/event/subscribe</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/subscribe</td><td>Captures if the given client has invoked subscribe(), e.g. "client/joe/session/1/event/subscribe". The publicSessionId can be a wildcard "*".</td></tr>
+ <tr><td>topic/*/event/unSubscribe</td><td>Captures if unSubscribe() is invoked (on all topics)</td></tr>
+ <tr><td>topic/[topicId]/event/unSubscribe</td><td>Captures if unSubscribe() on the specified topic is invoked</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/unSubscribe</td><td>Captures if the given client has invoked unSubscribe(), e.g. "client/joe/session/1/event/unSubscribe". The publicSessionId can be a wildcard "*".</td></tr>
+ <tr><td>topic/*/event/alive</td><td>Captures if a topic is created (on all topics)</td></tr>
+ <tr><td>topic/[topicId]/event/alive</td><td>Captures event if the given topic is created, e.g. "topic/hello/event/alive"</td></tr>
+ <tr><td>topic/*/event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
+ <tr><td>topic/[topicId]/event/dead</td><td>Captures event if the given topic is destroyed, e.g. "topic/hello/event/dead"</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING, e.g. "client/joe/session/1/event/callbackState". Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
+ <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a logging/severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'logging/severe/*' to detect this.</td></tr>
  </table>
 
 
@@ -155,11 +153,11 @@
 &lt;plugin id='messageEvents' className='org.xmlBlaster.engine.EventPlugin'>
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-   &lt;attribute id='eventTypes'>client.sessionAdded.*,client.sessionRemoved.*&lt;/attribute>
+   &lt;attribute id='eventTypes'>client/*/session/*/event/connect,client/*/session/*/event/disconnect&lt;/attribute>
    &lt;attribute id='destination.publish'/>
    &lt;attribute id='destination.jmx'/>
 &lt;/plugin>
-      </pre>
+</pre>
    <h3>JMX Jconsole screenshot</h3>
    <p>The following screen shot shows the JMX events received by <code>jconsole</code>
    when a client logs in and logs out again</p>
@@ -168,32 +166,25 @@
       </p>
    <h3>Received messages</h3>
    <p>A client subscribing to <code>__sys__Event</code> receives messages similar to the following.
-   Note that the exact markup may change in a future xmlBlaster version.
    </p>
 <pre class="BORDER">
  &lt;key oid='__sys__Event' contentMimeExtended='1.0'>
   &lt;org.xmlBlaster>&lt;event/>&lt;/org.xmlBlaster>
  &lt;/key>
- &lt;content size='47'>Login of client /node/heron/client/Publisher/-3&lt;/content>
+
+ &lt;content size='33'>client/Publisher/-3/event/connect&lt;/content>
+ 
  &lt;qos>
-  &lt;sender>/node/heron/client/__RequestBroker_internal[heron]/1&lt;/sender>
-  &lt;subscribe id='__subId:heron-1136288346909000000'/>
-  &lt;expiration lifeTime='-1'/>
-  &lt;rcvTimestamp nanos='1136288380490000000'/>
-  &lt;queue index='0' size='1'/>
-  &lt;forceUpdate/>
-  &lt;isPublish/>
-  &lt;clientProperty name='__nodeId'>heron&lt;/clientProperty>
-  &lt;clientProperty name='__subjectId'>Publisher&lt;/clientProperty>
-  &lt;clientProperty name='_description'>Login of client /node/heron/client/Publisher/-3&lt;/clientProperty>
-  &lt;clientProperty name='_errorCode'/>
-  &lt;clientProperty name='_eventType'>client.sessionAdded&lt;/clientProperty>
-  &lt;clientProperty name='__publicSessionId' type='long'>-3&lt;/clientProperty>
-  &lt;clientProperty name='__absoluteName'>/node/heron/client/Publisher/-3&lt;/clientProperty>
+  &lt;clientProperty name='_nodeId'>heron&lt;/clientProperty>
+  &lt;clientProperty name='_subjectId'>Publisher&lt;/clientProperty>
+  &lt;clientProperty name='_publicSessionId' type='long'>-3&lt;/clientProperty>
+  &lt;clientProperty name='_absoluteName'>/node/heron/client/Publisher/-3&lt;/clientProperty>
+  &lt;clientProperty name='_eventType'>client/Publisher/-3/event/connect&lt;/clientProperty>
   &lt;clientProperty name='_summary'>Login of client /node/heron/client/Publisher/-3&lt;/clientProperty>
+  &lt;clientProperty name='_description'>Login of client /node/heron/client/Publisher/-3&lt;/clientProperty>
  &lt;/qos>
 </pre>
-
+   <p>The content carries the <code>eventType</code> which was the original reason for the message.</p>
    </example>
 
    <example lang="XML" type="HTML">
@@ -217,7 +208,7 @@
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='9'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='9'/>
 
-   &lt;attribute id='eventTypes'>log.severe,shutdownRunlevel.8&lt;/attribute>
+   &lt;attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8&lt;/attribute>
    &lt;attribute id='destination.smtp'>
       mail.subject=xmlBlaster $_{eventType},
       mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},

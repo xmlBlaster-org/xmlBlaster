@@ -99,4 +99,16 @@ public interface EventPluginMBean extends I_AdminService {
     * @param smtpDestinationConfiguration The comma separated properties to set.
     */
    public void setSmtpDestinationConfiguration(String smtpDestinationConfiguration);
+   
+   /**
+    * The JMX configuration setup from xmlBlasterPlugins.xml
+    * @return
+    */
+   public String getJmxDestinationConfiguration();
+
+   /**
+    * The publish-message configuration setup from xmlBlasterPlugins.xml
+    * @return Returns the publishDestinationConfiguration.
+    */
+   public String getPublishDestinationConfiguration();
 }
