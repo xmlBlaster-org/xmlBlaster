@@ -11,6 +11,9 @@
       var key = "${sysprop/?xmlBlaster/monitor/statusRefresh}";
       refreshInverval = (key.indexOf("$")==-1) ? key : 12;
       document.write("<meta http-equiv='Refresh' content='"+refreshInverval+"'>");
+
+      key = "${sysprop/?xmlBlaster/monitor/freeMemThreshold}";
+      freeMemThreshold = (key.indexOf("$")==-1) ? key : 5; // MBytes
     //]]>
                                     </script>
 
@@ -126,12 +129,13 @@
         <td class="listValue">
           <script language="JavaScript" type="text/javascript">
           //<![CDATA[
-               var free = ${?freeMem} / 1000000;
-               var used = ${?usedMem} / 1000000;
-               if (free < 1.5) /* < 1.5 MB will alert red */
-                  document.write("<div class='alert'>Free " + free + " MByte<\/div><div>Used " + used + " MByte<\/div>");
+               var free = ${?maxFreeMem} / 1000000;
+               var freeStr = "${?maxFreeMemStr}";
+               var usedStr = "${?maxMemStr}";
+               if (free < freeMemThreshold) /* < 5 MB will alert red */
+                  document.write("<div class='alert'>Free " + freeStr + "<\/div><div>Used " + usedStr + "<\/div>");
                else
-                  document.write("<div>Free " + free + " MByte<\/div><div>Used " + used + " MByte<\/div>");
+                  document.write("<div>Free " + freeStr + "<\/div><div>Used " + usedStr + "<\/div>");
             //]]>
                                                                                           </script>
         </td>
