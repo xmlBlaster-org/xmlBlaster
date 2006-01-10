@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.sql.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -358,8 +359,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return msgQosData;
       }
       MsgUnit getMsgUnit(String summary, String description,
-            String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
-         String content = eventType;
+            String eventType, String errorCode, SessionName sessionName,
+            boolean useEventTypeAsContent) throws XmlBlasterException {
+         String content = (useEventTypeAsContent) ? eventType : description;
          return new MsgUnit(
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
@@ -476,6 +478,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
+         if (event.length() < 1) continue; // Allow ',' at end
          
          try {
             // "logging/severe/*"
@@ -593,10 +596,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       try {
          ContextNode contextNode = this.engineGlob.getContextNode();
          int rl = this.engineGlob.getRunlevelManager().getCurrentRunlevel();
-         long usedMem = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-
          String summary = "Heartbeat event from " + contextNode.getAbsoluteName() + ", runlevel=" + RunlevelManager.toRunlevelStr(rl) + " (" + rl + ")";
-         // TODO: Change to be configurable with ${amdincommands} replacements
+         /*
          String description = "\nnodeId=" + contextNode.getAbsoluteName()
                + "\nrelease=" + this.engineGlob.getVersion() + " " + this.engineGlob.getReleaseId()
                + "\nstarted=" + this.engineGlob.getRequestBroker().getStartupDate()
@@ -610,15 +611,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                //+ "\n\n---"
                //+ "\nSee URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html"
                ;
+         */
+         String description = createStatusDump(this.engineGlob);
          String errorCode = null;
          SessionName sessionName = null;
    
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            // Ignores contentTemplate and forces the XML as last argument
+            sendEmail(summary, description, eventType, null, false, description);
          }
    
          if (this.publishDestinationHelper != null) {
-            sendMessage(summary, description, eventType, errorCode, sessionName);
+            // Uses XML as message content
+            sendMessage(summary, description, eventType, errorCode, sessionName, false);
          }
    
          if (this.jmxDestinationHelper != null) {
@@ -627,6 +632,49 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       } catch (Throwable e) {
          e.printStackTrace();
       }
+   }
+   
+   /**
+    * Create an XML xmlBlaster dump which contains the most important status informations. 
+    * Follows the admin.commands markup (without the root tag &lt;xmlBlaster> 
+    * @param g The global of the running server instance
+    * @return The XML dump
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">The admin.commands requirement</a>
+    */
+   public static String createStatusDump(org.xmlBlaster.engine.Global g) {
+      // Change to be configurable with ${amdincommands} replacements
+      RequestBroker r = g.getRequestBroker();
+      StringBuffer buf = new StringBuffer(4096);
+      //buf.append("\n").append("<xmlBlaster>"); // Root tag not added, so we easily can collect different nodes to a big xml dump
+      buf.append("\n ").append("<node id='").append(g.getId()).append("'>");
+      buf.append("\n  ").append("<uptime>").append(r.getUptime()).append("</uptime>");
+      buf.append("\n  ").append("<runlevel>").append(g.getRunlevelManager().getCurrentRunlevel()).append("</runlevel>");
+      buf.append("\n  ").append("<instanceId>").append(g.getInstanceId()).append("</instanceId>");
+      buf.append("\n  ").append("<version>").append(g.getVersion()).append("</version>");
+      buf.append("\n  ").append("<revisionNumber>").append(g.getRevisionNumber()).append("</revisionNumber>");
+      buf.append("\n  ").append("<freeMem>").append(r.getFreeMem()).append("</freeMem>");
+      buf.append("\n  ").append("<maxFreeMem>").append(r.getMaxFreeMem()).append("</maxFreeMem>");
+      buf.append("\n  ").append("<maxMem>").append(r.getMaxMem()).append("</maxMem>");
+      buf.append("\n  ").append("<usedMem>").append(r.getUsedMem()).append("</usedMem>");
+      buf.append("\n  ").append("<serverTimestamp>").append(new java.sql.Timestamp(new java.util.Date().getTime()).toString()).append("</serverTimestamp>");
+      buf.append("\n  ").append("<numClients>").append(r.getNumClients()).append("</numClients>");
+      buf.append("\n  ").append("<clientList>").append(r.getClientList()).append("</clientList>");
+      buf.append("\n  ").append("<numTopics>").append(r.getNumTopics()).append("</numTopics>");
+      buf.append("\n  ").append("<topicList>").append(r.getTopicList()).append("</topicList>");
+      // " encoding='base64'" if string contains CDATA?
+      String warning = ReplaceVariable.replaceAll(r.getLastWarning(), "<![CDATA[", "&lt;![CDATA[");
+      warning = ReplaceVariable.replaceAll(warning, "]]>", "]]&gt;");
+      String error = ReplaceVariable.replaceAll(r.getLastError(), "<![CDATA[", "&lt;![CDATA[");
+      error = ReplaceVariable.replaceAll(error, "]]>", "]]&gt;");
+      buf.append("\n  ").append("<lastWarning><![CDATA[").append(warning).append("]]></lastWarning>");
+      buf.append("\n  ").append("<lastError><![CDATA[").append(error).append("]]></lastError>");
+      XmlBlasterException e = new XmlBlasterException(g,
+            ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
+      buf.append("\n  ").append("<versionInfo><![CDATA[").append(e.getVersionInfo()).append("]]></versionInfo>");
+      buf.append("\n  ").append("<see>").append("http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html").append("</see>");
+      buf.append("\n ").append("</node>");
+      //buf.append("\n").append("</xmlBlaster>");
+      return buf.toString();
    }
    
    /**
@@ -863,16 +911,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * The xmlBlaster-message data sink. 
     * Publishes a message with the current event occurred. 
+    * @param useEventTypeAsContent TODO
     * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
     */
    protected void sendMessage(String summary, String description,
-         String eventType, String errorCode, SessionName sessionName) {
+         String eventType, String errorCode, SessionName sessionName, boolean useEventTypeAsContent) {
       if (this.publishDestinationHelper == null) return;
       if (!this.isActive) return;
 
       try {
          MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-              eventType, errorCode, sessionName);
+              eventType, errorCode, sessionName, useEventTypeAsContent);
          // Done already in getMsgUnit() above
          //msgUnit.getQosData().addClientProperty("_summary", summary);
          this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -882,15 +931,25 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
+    * @see #sendEmail(String summary, String description,
+            String eventType, String errorCode, boolean forceSending, String contentTemp)
+    */
+   protected void sendEmail(String summary, String description,
+         String eventType, String errorCode, boolean forceSending) {
+      sendEmail(summary, description,
+                eventType, errorCode, forceSending, this.smtpDestinationHelper.contentTemplate);
+   }
+   /**
     * Sending email as configured with <code>destination.smtp</code>. 
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
     * @param description The event description to send, it is injected as $_{description}
     * @param eventType For example "logging/severe/*"
     * @param forceSending If true send directly and ignore the timeout
+    * @param contentTemp Overwrite the default this.contentTemplate
     * @see http://www.faqs.org/rfcs/rfc2822.html
     */
    protected void sendEmail(String summary, String description,
-            String eventType, String errorCode, boolean forceSending) {
+            String eventType, String errorCode, boolean forceSending, String contentTemp) {
       try {
          if (this.smtpDestinationHelper == null) return;
          if (!this.isActive) return;
@@ -904,7 +963,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                emailData.setSubject(replaceTokens(
                      this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
                emailData.setContent(replaceTokens(
-                     this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+                     contentTemp, summary, description, eventType, errorCode));
                this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             } catch (Throwable e) {
                throw new IllegalArgumentException(e.toString());
@@ -921,7 +980,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
             emailData.setContent(old
                   + replaceTokens(
-                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+                  contentTemp, summary, description, eventType, errorCode));
             
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
@@ -1016,7 +1075,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             try {
-               sendMessage(summary, description, eventType, null, null);
+               sendMessage(summary, description, eventType, null, null, true);
             } catch (Throwable e) {
                e.printStackTrace();
             }
@@ -1093,7 +1152,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                  eventType, errorCode, sessionName);
+                  eventType, errorCode, sessionName, true);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1173,7 +1232,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                    eventType, errorCode, sessionName);
+                    eventType, errorCode, sessionName, true);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1438,7 +1497,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode, sessionName);
+                    eventType, errorCode, sessionName, true);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("_oid",
@@ -1515,7 +1574,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                     eventType, errorCode, sessionName);
+                     eventType, errorCode, sessionName, true);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("_oid",
@@ -1587,7 +1646,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode, null);
+                    eventType, errorCode, null, true);
                msgUnit.getQosData().addClientProperty("_topicId",
                      topicHandler.getId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -1689,7 +1748,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
    
          if (this.publishDestinationHelper != null) {
-            sendMessage(summary, description, eventType, errorCode, sessionName);
+            sendMessage(summary, description, eventType, errorCode, sessionName, true);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1753,4 +1812,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String publishDestinationConfiguration) {
       this.publishDestinationConfiguration = publishDestinationConfiguration;
    }
+   
+   /* java org.xmlBlaster.engine.EventPlugin
+   public static void main(String[] args) {
+      org.xmlBlaster.engine.Global g = new org.xmlBlaster.engine.Global();
+      System.out.println(EventPlugin.createStatusDump(g));
+   }
+   */
 }
