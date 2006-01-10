@@ -5,7 +5,6 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.sql.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -234,7 +233,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (map.containsKey("mail.content"))
             this.contentTemplate = (String) map.get("mail.content");
          else
-            this.contentTemplate = "$_{nodeId}\n\n$_{summary}\n$_{description}\n\nEventDate:$_{datetime}\n$_{versionInfo}\n\n--\nhttp://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html";
+            this.contentTemplate = "eventType:   $_{eventType}\ninstanceId:  $_{instanceId}\n\nsummary:     $_{summary}\ndescription: $_{description}\n\neventDate:   $_{datetime}\nversionInfo: $_{versionInfo}\n\n--\nhttp://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html";
 
          if (map.containsKey("mail.contentSeparator"))
             this.contentSeparator = (String) map.get("mail.contentSeparator");
@@ -388,6 +387,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       synchronized (EventPlugin.class) {
          staticInstanceCounter++;
          this.instanceCounter = staticInstanceCounter;
+         log.fine("instance #" + instanceCounter + " created");
       }
    }
    
@@ -703,14 +703,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @param errorCode The value for a $_{errorCode}, can be null
     * @return Resolved string
     */
-   private String replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+   protected String replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
       if (str == null || str.indexOf("$") == -1)
          return str;
       str = ReplaceVariable.replaceAll(str, "$_{datetime}",
             new java.sql.Timestamp(new java.util.Date().getTime()).toString());
       str = ReplaceVariable.replaceAll(str, "$_{summary}", (summary==null)?"":summary);
       str = ReplaceVariable.replaceAll(str, "$_{description}", (description==null)?"":description);
-      str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getInstanceId()); // "/xmlBlaster/node/heron/instanceId/1136220586692"
+      str = ReplaceVariable.replaceAll(str, "$_{instanceId}", this.engineGlob.getInstanceId()); // "/xmlBlaster/node/heron/instanceId/1136220586692"
+      str = ReplaceVariable.replaceAll(str, "$_{nodeId}", this.engineGlob.getId()); // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{eventType}", (eventType==null)?"":eventType);
       str = ReplaceVariable.replaceAll(str, "$_{errorCode}", (errorCode==null)?"":errorCode);
@@ -1740,7 +1741,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                ("Callback state has changed from " + oldState.toString()
                + " to "+ newState.toString() + " for client " 
                + sessionName.getAbsoluteName());
-         String eventType = foundEvent;
+         String eventType = foundEvent + " " + newState.toString();
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
