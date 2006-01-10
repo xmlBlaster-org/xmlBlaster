@@ -162,6 +162,11 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (this.glob == null)
          throw new XmlBlasterException(globUtil, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       this.log = this.glob.getLog("cluster");
+      
+      if (!this.glob.useCluster()) {
+         log.warn(ME, "Activating cluster is switched off with '-cluster false'");
+         return;
+      }
       this.sessionInfo = this.glob.getInternalSessionInfo();
       this.glob.getRunlevelManager().addRunlevelListener(this);
       this.glob.setClusterManager(this);
@@ -172,7 +177,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
             "ClusterManager[" + getType() + vers + "]", this.glob.getContextNode());
       this.ME = this.contextNode.getRelativeName();
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
-
+      
       try {
          postInit();
       }
