@@ -74,10 +74,14 @@ public final class RunlevelManager implements RunlevelManagerMBean
       this.log = glob.getLog("runlevel");
       this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Incarnated run level manager");
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "RunlevelManager", this.glob.getScopeContextNode());
+   }
+   
+   // Is done from external engine.Global to avoid 
+   public void initJmx() {
       try {
-         // For JMX instanceName may not contain ","
-         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
-               "RunlevelManager", this.glob.getScopeContextNode());
          this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
       }
       catch(XmlBlasterException e) {
@@ -495,7 +499,8 @@ public final class RunlevelManager implements RunlevelManagerMBean
    }
    
    public void shutdown() {
-      this.glob.unregisterMBean(this.mbeanHandle);
+      if (this.mbeanHandle != null)
+         this.glob.unregisterMBean(this.mbeanHandle);
    }
 
    /* (non-Javadoc)
