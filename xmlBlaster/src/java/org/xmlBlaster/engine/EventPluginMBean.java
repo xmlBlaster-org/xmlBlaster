@@ -111,4 +111,10 @@ public interface EventPluginMBean extends I_AdminService {
     * @return Returns the publishDestinationConfiguration.
     */
    public String getPublishDestinationConfiguration();
+   
+   /**
+    * Manually trigger a heart beat message. 
+    * @return Success text
+    */
+   public String triggerHeartbeatNotification();
 }

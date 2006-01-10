@@ -633,6 +633,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          e.printStackTrace();
       }
    }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.engine.EventPluginMBean#triggerHeartbeatNotification()
+    */
+   public String triggerHeartbeatNotification() {
+      String eventType = "heartbeat.manuallyTriggered";
+      newHeartbeatNotification(eventType);
+      return "Triggered event of type '" + eventType + "'";
+   }
    
    /**
     * Create an XML xmlBlaster dump which contains the most important status informations. 
@@ -1813,7 +1822,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String publishDestinationConfiguration) {
       this.publishDestinationConfiguration = publishDestinationConfiguration;
    }
-   
+
    /* java org.xmlBlaster.engine.EventPlugin
    public static void main(String[] args) {
       org.xmlBlaster.engine.Global g = new org.xmlBlaster.engine.Global();
