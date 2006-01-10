@@ -245,6 +245,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       this.clusterManager = clusterManager;
       this.useCluster = (this.clusterManager != null);
    }
+   
+   /**
+    * Since v1.1 the clusterManager is loaded via xmlBlasterPlugins.xml
+    * See useCluster() to check if clustering is switched on
+    * First checks if ClusterManager is loaded already and if its state is ready.
+    * @return
+    */
+   public final boolean isClusterManagerReady() {
+      return (this.clusterManager != null && this.clusterManager.isReady());
+   }
 
    /**
     * Access instance which manages myself in a cluster environment.

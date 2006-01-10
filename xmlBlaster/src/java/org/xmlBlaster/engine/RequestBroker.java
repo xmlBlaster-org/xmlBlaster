@@ -827,7 +827,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          }
 
          StatusQosData qos = null;
-         if (this.glob.useCluster()) { // cluster support - forward message to master
+         if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
             try {
                subscribeQos.setSubscriptionId(returnOid); // force the same subscriptionId on all cluster nodes
                SubscribeReturnQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
@@ -922,7 +922,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          // even if there are no matching keys
          // In the cluster environment all messages are accessed from the master cluster node,
          // tuning with XmlBlasterAccess.synchronousCache is not yet implemented.
-         if (this.glob.useCluster()) { // cluster support - forward erase to master
+         if (this.glob.isClusterManagerReady()) { // cluster support - forward erase to master
            try {
                MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
                if (tmp != null && tmp.length > 0) {
@@ -1344,7 +1344,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       try {
          if (log.CALL) log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') ...");
 
-         if (this.glob.useCluster()) { // cluster support - forward message to master
+         if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
             try {
                UnSubscribeReturnQos[] ret = glob.getClusterManager().forwardUnSubscribe(sessionInfo, xmlKey, unSubscribeQos);
                if (ret != null) {
@@ -1365,6 +1365,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   throw e;
                }
             }
+         }
+         else {
+            if (this.glob.useCluster())
+               log.warn(ME, "unSubscribe not forwarded to cluster as ClusterManager is not ready");
          }
 
          Set subscriptionIdSet = new HashSet();
@@ -1588,7 +1592,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             if (!publishQos.isClusterUpdate()) { // updates from other nodes are arriving here in publish as well
                //if (!glob.getClusterManager().isReady())
                //   glob.getClusterManager().blockUntilReady();
-               if (glob.getClusterManager().isReady()) {
+               if (this.glob.isClusterManagerReady()) {
                   if (publishQos.isPtp()) {  // is PtP message
                      Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
                      for (int ii = 0; ii<destinationArr.length; ii++) {
@@ -1699,7 +1703,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * @return if not null the message was forwarded to another cluster
     */
    public PublishReturnQos forwardPtpPublish(SessionInfo sessionInfo, MsgUnit msgUnit, boolean isClusterUpdate, Destination destination) throws XmlBlasterException {
-      if (this.glob.useCluster()) {
+      if (this.glob.isClusterManagerReady()) {
          if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
             try {
                return glob.getClusterManager().forwardPtpPublish(sessionInfo, msgUnit, destination);
@@ -1821,7 +1825,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          for (int ii=0; ii<topicHandlerArr.length; ii++) {
             TopicHandler topicHandler = topicHandlerArr[ii];
 
-            if (this.glob.useCluster() && !isClusterUpdate) { // cluster support - forward erase to master
+            if (this.glob.isClusterManagerReady() && !isClusterUpdate) { // cluster support - forward erase to master
                try {
                   clusterRetArr = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
                   //Thread.currentThread().dumpStack();
@@ -1837,7 +1841,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   }
                }
             }
-
+            if (this.glob.useCluster() && !this.glob.isClusterManagerReady()) {
+               log.warn(ME, "erase not forwarded to cluster as ClusterManager is not ready");
+            }
+            
             if (topicHandler == null) { // unSubscribe on a unknown message ...
                if (clusterRetArr != null && clusterRetArr.length > 0) {
                   log.info(ME, "Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
@@ -2138,7 +2145,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
       sb.append(bigXmlKeyDOM.toXml(extraOffset+Constants.INDENT, true));
       sb.append(clientSubscriptions.toXml(extraOffset+Constants.INDENT));
-      if (this.glob.useCluster()) {
+      if (this.glob.isClusterManagerReady()) {
          sb.append(glob.getClusterManager().toXml(extraOffset+Constants.INDENT));
       }
       sb.append(offset).append("</RequestBroker>");
@@ -2148,7 +2155,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
    //====== These methods satisfy the I_AdminNode administration interface ======
    public int getNumNodes() {
-      if (glob.useCluster() == false) return 1;
+      if (!glob.isClusterManagerReady()) return 1;
       try {
          return glob.getClusterManager().getNumNodes();
       } catch(XmlBlasterException e) {
@@ -2156,7 +2163,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
    }
    public String getNodeList() {
-      if (glob.useCluster() == false) return glob.getId();
+      if (!glob.isClusterManagerReady()) return glob.getId();
       try {
          return glob.getClusterManager().getNodeList();
       } catch(XmlBlasterException e) {
@@ -2164,7 +2171,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
    }
    public String[] getNodes() {
-      if (glob.useCluster() == false) return new String[] { glob.getId() };
+      if (!glob.isClusterManagerReady()) return new String[] { glob.getId() };
       try {
          return glob.getClusterManager().getNodes();
       } catch(XmlBlasterException e) {

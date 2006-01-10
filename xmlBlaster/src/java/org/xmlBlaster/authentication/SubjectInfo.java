@@ -393,7 +393,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          if (this.subjectName.getLoginName().startsWith(org.xmlBlaster.engine.RequestBroker.internalLoginNamePrefix))
             return null; // don't check for internal logins
 
-         if (glob.useCluster()) {
+         if (glob.isClusterManagerReady()) {
             // Is the client a well known, configured cluster node?
             ClusterNode clusterNode = glob.getClusterManager().getClusterNode(this.subjectName.getLoginName()); // is null if not found
             if (clusterNode != null) {
