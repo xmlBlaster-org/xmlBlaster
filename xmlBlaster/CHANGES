@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14565 Fixed deadlock with manually started RMI JMX and rmiregistry
+
  o #14561 cluster bug fix necessary as ClusterManager is loaded as plugin since #14422
 
  o #14545 Refactored naming convention for admin.events requirements
