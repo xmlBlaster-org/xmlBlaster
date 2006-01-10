@@ -122,7 +122,7 @@ public interface I_AdminNode extends I_AdminUsage {
 
    /**
     * Access the last logged error.
-    * @return The complete information about the last error logged
+    * @return The complete information about the last error logged, never null
     */
    public String getLastError();
 
@@ -133,7 +133,7 @@ public interface I_AdminNode extends I_AdminUsage {
 
    /**
     * Access the last logged warning.
-    * @return The complete information about the last warning logged
+    * @return The complete information about the last warning logged, never null
     */
    public String getLastWarning();
 
