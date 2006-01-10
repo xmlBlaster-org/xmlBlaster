@@ -225,9 +225,64 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     */
    public final RunlevelManager getRunlevelManager() {
       if (this.runlevelManager == null) {
+         boolean initJmx = false;
          synchronized(this) {
-            if (this.runlevelManager == null)
+            if (this.runlevelManager == null) {
                this.runlevelManager = new RunlevelManager(this);
+               initJmx = true;
+            }
+         }
+         if (initJmx) {
+            /* To avoid dead lock do outside of sync:
+             * "RMI TCP Connection(1)-127.0.0.2" daemon prio=1 tid=0x08602b10 nid=0x1ae1 waiting for monitor entry [0xa73b8000..0xa73b9040]
+        at org.xmlBlaster.util.Global.initLog(Global.java:519)
+        - waiting to lock <0xa8f06f40> (a org.xmlBlaster.engine.Global)
+        at org.xmlBlaster.util.Global.addLogChannel(Global.java:624)
+        at org.xmlBlaster.util.Global.getLog(Global.java:646)
+        at org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler.publish(XmlBlasterJdk14LoggingHandler.java:86)
+        at java.util.logging.Logger.log(Logger.java:428)
+        at java.util.logging.Logger.doLog(Logger.java:450)
+        at java.util.logging.Logger.logp(Logger.java:566)
+        at sun.rmi.runtime.Log$LoggerLog.log(Log.java:212)
+        at sun.rmi.server.UnicastServerRef.logCall(UnicastServerRef.java:424)
+        at sun.rmi.server.UnicastServerRef.oldDispatch(UnicastServerRef.java:372)
+        at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:240)
+        at sun.rmi.transport.Transport$1.run(Transport.java:153)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at sun.rmi.transport.Transport.serviceCall(Transport.java:149)
+        at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:460)
+        at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:701)
+        at java.lang.Thread.run(Thread.java:595)
+
+"main" prio=1 tid=0x0805f588 nid=0x1ad2 runnable [0xbfe20000..0xbfe20998]
+        at java.net.SocketInputStream.socketRead0(Native Method)
+        at java.net.SocketInputStream.read(SocketInputStream.java:129)
+        at java.io.BufferedInputStream.fill(BufferedInputStream.java:218)
+        at java.io.BufferedInputStream.read(BufferedInputStream.java:235)
+        - locked <0xa8a5f1e8> (a java.io.BufferedInputStream)
+        at java.io.DataInputStream.readByte(DataInputStream.java:241)
+        at sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:189)
+        at sun.rmi.server.UnicastRef.invoke(UnicastRef.java:343)
+        at sun.rmi.registry.RegistryImpl_Stub.unbind(Unknown Source)
+        at java.rmi.Naming.unbind(Naming.java:135)
+        at org.xmlBlaster.util.admin.extern.JmxWrapper.init(JmxWrapper.java:325)
+        - locked <0xa8f40a18> (a org.xmlBlaster.util.admin.extern.JmxWrapper)
+        at org.xmlBlaster.util.admin.extern.JmxWrapper.<init>(JmxWrapper.java:133)
+        at org.xmlBlaster.util.admin.extern.JmxWrapper.getInstance(JmxWrapper.java:117)
+        - locked <0xacc982b8> (a java.lang.Class)
+        at org.xmlBlaster.util.Global.getJmxWrapper(Global.java:327)
+        at org.xmlBlaster.util.Global.registerMBean(Global.java:375)
+        at org.xmlBlaster.engine.runlevel.RunlevelManager.<init>(RunlevelManager.java:81)
+        at org.xmlBlaster.engine.Global.getRunlevelManager(Global.java:230)
+        - locked <0xa8f06f40> (a org.xmlBlaster.engine.Global)
+        at org.xmlBlaster.engine.Global.initThis(Global.java:156)
+        at org.xmlBlaster.engine.Global.init(Global.java:132)
+        at org.xmlBlaster.engine.Global.<init>(Global.java:113)
+        at org.xmlBlaster.Main.<init>(Main.java:108)
+        at org.xmlBlaster.Main.main(Main.java:524)
+
+             */
+            this.runlevelManager.initJmx();
          }
       }
       return this.runlevelManager;
