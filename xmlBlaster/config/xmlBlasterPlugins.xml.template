@@ -209,7 +209,7 @@
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <!--
-   <plugin id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   <plugin create='true' id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>logging/severe/*,logging/warning/*,service/RunlevelManager/event/startupRunlevel9,service/RunlevelManager/event/shutdownRunlevel8</attribute>
@@ -225,18 +225,35 @@
    <!-- Small and only the most important. Useful if email is forwarded as SMS -->
    <!-- Configure the SmtpClient plugin on an earlier run level as well -->
    <!--
-   <plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   <plugin create='true' id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='9'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='9'/>
       <attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8</attribute>
       <attribute id='destination.smtp'>
-         mail.subject=xmlBlaster $_{eventType},
+         mail.subject=[XmlBlaster event: $_{eventType}] $_{nodeId},
          mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},
          mail.contentSeparator=${line.separator}${line.separator},
          mail.smtp.from=xmlBlaster@somecompany.com,
          mail.smtp.to=admin@somecompany.com,
          "mail.smtp.cc=xmlBlaster@et.universe,somebody@somewhere.xx",
          mail.collectMillis=360000
+      </attribute>
+   </plugin>
+   -->
+
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <!-- Send an XML formatted heartbeat email, one per day -->
+   <!--
+   <plugin create='true' id='heartbeatEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>
+           heartbeat.72000000
+      </attribute>
+      <attribute id='destination.smtp'>
+         mail.smtp.from=xmlBlaster@localhost,
+         mail.smtp.to=demo@localhost,
+         mail.collectMillis=0
       </attribute>
    </plugin>
    -->
