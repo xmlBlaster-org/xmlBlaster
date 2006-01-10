@@ -471,10 +471,17 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          if (emailData.getBcc().length > 0)
             message.setRecipients(Message.RecipientType.BCC, emailData.getBcc());
          message.setSubject(emailData.getSubject(), Constants.UTF8_ENCODING);
+         AttachmentHolder[] holder = emailData.getAttachments();
+
+         if (holder.length == 0 && emailData.getContent() != null && emailData.getContent().length() > 0) {
+            message.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+            send(message);
+            return;
+         }
          
          // create the Multipart and add its parts to it
          Multipart multi = new MimeMultipart();
-         
+
          if (emailData.getContent() != null && emailData.getContent().length() > 0) {
             MimeBodyPart mbp = new MimeBodyPart();
             mbp.setFileName("content.txt");
@@ -483,7 +490,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             multi.addBodyPart(mbp);
          }
 
-         AttachmentHolder[] holder = emailData.getAttachments();
          for (int i=0; i<holder.length; i++) {
             MimeBodyPart mbp = new MimeBodyPart();
             // 'AA xmlBlasterMessage.xbf' will be automatically quoted to '"AA xmlBlasterMessage.xbf"' by javamail implementation
@@ -636,9 +642,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          mail.setSessionProperties(props, glob, null);
          String from = glob.getProperty().get("from", "blue@localhost");
          String to = glob.getProperty().get("to", "blue@localhost");
+         String subject = glob.getProperty().get("subject", "Hi from java");
+         String content = glob.getProperty().get("content", "Some body text");
 
-         EmailData msg = new EmailData(to, from, "Hi from java",
-               "Some body text");
+         EmailData msg = new EmailData(to, from, subject, content);
          mail.sendEmail(msg);
          System.out.println("Sent a message from '" + from + "' to '" + to
                + "'");
