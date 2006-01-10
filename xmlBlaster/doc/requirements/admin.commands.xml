@@ -31,6 +31,7 @@
    <numNodes>5</numNodes>
    <nodeList>heron,avalon,golan,frodo,bilbo</nodeList>
    <node id='heron'>
+      <startupDate>2005-03-20 11:19:12.322</startupDate>
       <uptime>34000</uptime>      <!-- sec -->
       <runlevel>9</runlevel>
       <!-- runLevel=0 HALTED -->
@@ -38,9 +39,14 @@
       <!-- runLevel=6 CLEANUP -->
       <!-- runLevel=9 RUNNING -->
 
-      <freeMem>13000000</freeMem> <!-- bytes -->
+      <usedMem>6200000</usedMem> <!-- [bytes] -->
+      <freeMem>1900000</freeMem> <!-- currently free in JVM [bytes] -->
+      <maxFreeMem>13000000</maxFreeMem> <!-- free, totally allocatable by JVM [bytes] -->
+
+      <instanceId>/node/heron/instanceId/33470080380</instanceId>
       <nodeId>heron</nodeId>
       <version>0.84</version>
+      <revisionNumber>14544</revisionNumber>
       
       <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
       <port>3412</port>
@@ -51,6 +57,13 @@
 
       <serverTimestamp>2005-03-21 11:31:35.044</serverTimestamp>
       <serverTimestampMillis>1111401087533</serverTimestampMillis>
+
+      <lastWarning>&lt;![CDATA[JdbcDriver-/node/heron] Couldn't initialize driver 'org.firebirdsql.jdbc.FBDriver',
+                   please check your CLASSPATH]]&gt;</lastWarning>
+      <lastError>&lt;![CDATA[]]&gt;</lastError>
+      <versionInfo>&lt;![CDATA[os.name=Linux, os.version=2.6.13-15-default, java.vm.vendor=Sun Microsystems Inc.,
+                   java.vm.version=1.5.0_05-b05, os.arch=i386], ...&gt;</versionInfo>
+      <see>http://www.xmlBlaster.org</see>
 
       <gc/>   <!-- run garbage collector in xmlBlaster JVM -->
       <exit/> <!-- exit xmlBlaster server -->
