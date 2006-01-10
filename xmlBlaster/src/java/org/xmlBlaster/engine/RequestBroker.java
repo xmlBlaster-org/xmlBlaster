@@ -769,7 +769,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(i);
                   sub.update(subscribeQos);
                }
-               log.warn(ME, "Ignoring duplicate subscription '" + 
+               log.info(ME, "Ignoring duplicate subscription '" + 
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
                         "' as you have set multiSubscribe to false");
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
