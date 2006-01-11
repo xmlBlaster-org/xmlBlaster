@@ -320,7 +320,8 @@
   &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
   &lt;clientProperty name='_description' encoding='base64'>...&lt;/clientProperty>
   &lt;clientProperty name='_eventType'>topic/*/event/subscribe&lt;/clientProperty>
-  &lt;clientProperty name='_summary'>New subscription of client /node/xmlBlaster_127_0_0_2_3412/client/joe/1 on topic airport&lt;/clientProperty>
+  &lt;clientProperty name='_summary'>New subscription of client /node/xmlBlaster_127_0_0_2_3412/client/joe/1 
+              on topic airport&lt;/clientProperty>
   &lt;clientProperty name='_publicSessionId' type='long'>1&lt;/clientProperty>
   &lt;clientProperty name='_subjectId'>joe&lt;/clientProperty>
   &lt;clientProperty name='_absoluteName'>/node/xmlBlaster_127_0_0_2_3412/client/joe/1&lt;/clientProperty>
@@ -401,7 +402,7 @@
 
          <tr>
             <td>mail.content</td>
-            <td>eventType:   $_{eventType}\ninstanceId:  $_{instanceId}\n\nsummary:     $_{summary}\ndescription: $_{description}\n\neventDate:   $_{datetime}\nversionInfo: $_{versionInfo}\n\n--\n http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html</td>
+            <td>eventType:   $_{eventType}\ninstanceId:  $_{instanceId}\n\nsummary:     $_{summary}\ndescription: $_{description}\n\neventDate:   $_{datetime}\nversionInfo: $_{versionInfo}\n\n--\n http://www.xmlblaster.org/ xmlBlaster/doc/requirements/admin.events.html</td>
             <td>The template to generate the email content of the email.<br />
             Please replace '\n' with ${line.separator} to enforce a new line.
             </td>
