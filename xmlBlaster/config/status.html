@@ -131,7 +131,7 @@
           //<![CDATA[
                var free = ${?maxFreeMem} / 1000000;
                var freeStr = "${?maxFreeMemStr}";
-               var usedStr = "${?maxMemStr}";
+               var usedStr = "${?usedMemStr}";
                if (free < freeMemThreshold) /* < 5 MB will alert red */
                   document.write("<div class='alert'>Free " + freeStr + "<\/div><div>Used " + usedStr + "<\/div>");
                else

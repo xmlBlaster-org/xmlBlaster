@@ -222,6 +222,12 @@ public interface I_AdminNode extends I_AdminUsage {
     */ 
    public long getUsedMem();
 
+   /**
+    * Nicer to read for humans. 
+    * @see #getUsedMem
+    */
+   public String getUsedMemStr();
+
    /* TODO: rename to gc(); as it is an operation */
    public String getGc();
    public void setGc(String dummy);
