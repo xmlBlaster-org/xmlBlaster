@@ -13,7 +13,7 @@ body {
 }
 
 table { 
-   width: "100%"; 
+   width: 100%; 
    BORDER-WIDTH: 0; 
    CELL-PADDING: 10; 
    CELL-SPACING: 10; 
