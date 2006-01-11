@@ -584,6 +584,9 @@ on server side and on java client side.</p>
              If you leave the password away we try to connect
              to the MTA (mail transfer agent)
              with switched off authentication.
+             If the username or password contains a '@' character it
+             usually should be escaped by a '%40'. For easier usage
+             we do this automatically for you.
              </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
