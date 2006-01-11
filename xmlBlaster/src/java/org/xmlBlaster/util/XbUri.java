@@ -7,11 +7,14 @@ package org.xmlBlaster.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.jutils.text.StringHelper;
+
 /**
  * Convenience wrapper to parse an URI. 
  * 
  * It supports to directly access the user and password.
  * <br />
+ * <pre>
  * smtp://joe:mypassword@server.xmlBlaster.org:3412
  *
  * http://x.org:6000/mypath/?
@@ -23,7 +26,9 @@ import java.net.URISyntaxException;
  * http://server.xmlBlaster.org:3412/myPath/?key.oid=MyMessage
  *
  * http://server.xmlBlaster.org:3412/myPath?key.oid=MyMessage#myFragment
- *
+ * </pre>
+ * 
+ * <pre>
  * http://joe:mypassword@server.xmlBlaster.org:3412/myPath?key.oid=MyMessage#myFragment
 Protocol: http
 Host:     server.xmlBlaster.org
@@ -33,7 +38,8 @@ Path:     /myPath
 Query:    key.oid=MyMessage
 Ref:      myFragment
 UserInfo: joe:mypassword
- *
+ * </pre>
+ * <pre>
  * http:/myPath/?key.oid=MyMessage#myFragment
 Protocol: http
 Host:     
@@ -43,11 +49,15 @@ Path:     /myPath/
 Query:    key.oid=MyMessage
 Ref:      myFragment
 UserInfo: null
+ * </pre>
  *
  * INVALID:
  * http://server.xmlBlaster.org:3412/myPath#myFragment?key.oid=MyMessage
  *
  * getRef() == Fragment
+ * <p />
+ * Note: Using a '@' character in the username or password should
+ * be written as '%40', but we handle the '@' as well to ease the use.
  * @see SocketUrl.java
  */
 public class XbUri
@@ -57,9 +67,34 @@ public class XbUri
    private String user;
    private String password;
    
+   private final String placeHolder = "$____$"; // "%40"
+   
    public XbUri(String uriStr) throws URISyntaxException {
-      this.uri = new URI(uriStr);
+      parse(uriStr);
+   }
+   
+   
+   private void parse(String uriStr) throws URISyntaxException {
+      //http://j@@oe:my@p@assword@server.xmlBlaster.org:3412/myPath?key.oid=MyMessage#myFragment
+      //
+      // The normal URI can't handle a '@' in the username or password:
+      //    pop3://test@xy:test@xy@localhost:8110/INBOX
+      // it should be escaped with '%40':
+      //    pop3://test%40xy:test%40xy@localhost:8110/INBOX
+      //
+      // As we can't expect to people doing so, we handle it here by a temporary replacement
+      int count=0;
+      for (int i=0; i<uriStr.length(); i++) {
+         if (uriStr.charAt(i) == '@') {
+            count++;
+         }
+      }
+      for (int i=1; i<count; i++) {
+         uriStr = StringHelper.replaceFirst(uriStr, "@", placeHolder);
+      }
 
+      this.uri = new URI(uriStr);
+      
       this.user = "";
       this.password = null;
       if (this.uri.getUserInfo() != null) {
@@ -68,6 +103,10 @@ public class XbUri
          if (i != -1) {
             this.user = this.uri.getUserInfo().substring(0,i);
             this.password = this.uri.getUserInfo().substring(i+1);
+            if (count > 1) {
+               this.user = StringHelper.replaceAll(this.user, placeHolder, "@");
+               this.password = StringHelper.replaceAll(this.password, placeHolder, "@");
+            }
          }
       }
    }
@@ -133,7 +172,12 @@ public class XbUri
     * @return Returns the userInfo.
     */
    public String getUserInfo() {
-      return this.uri.getUserInfo();
+      //return this.uri.getUserInfo(); -> contains replacement !
+      if (this.user == null && this.password == null)
+         return null;
+      String userInfo = (this.user != null) ? this.user : "";
+      if (this.password != null) {userInfo += ":"+this.password;}
+      return userInfo;
    }
    
    public String toString() {

@@ -690,7 +690,13 @@ implements I_Plugin, I_Timeout,
     */
    private Store getStore() throws XmlBlasterException {
       Store store = null;
-      URLName urln = new URLName(this.pop3Url);
+      //Fails if username contains '@', should be ok for %40?
+      //URLName urln = new URLName(this.pop3Url);
+      
+      // This constructor automatically transforms a '@' in a username to '%40'
+      URLName urln = new URLName(this.xbUri.getScheme(), this.xbUri.getHost(),
+            this.xbUri.getPort(), this.xbUri.getPath(),
+            this.xbUri.getUser(), this.xbUri.getPassword()); 
       try {
          store = getSession().getStore(urln);
       } catch (NoSuchProviderException e) {
@@ -709,6 +715,12 @@ implements I_Plugin, I_Timeout,
          }
          return store;
       } catch (MessagingException e) {
+         /*
+         if (e.getNextException() != null && (e.getNextException() instanceof ConnectException)) {
+            //e.detailMessage=="Connect failed";
+            log.warning("POP3 server is down" + e.getMessage());
+         }
+         */
          if (this.isConnected) { // Avoid too many logging output
             log.warning("No POP3 server '" + this.pop3Url
                   + "' found, we poll every " + this.pollingInterval
