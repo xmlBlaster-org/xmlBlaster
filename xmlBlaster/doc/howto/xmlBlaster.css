@@ -15,8 +15,7 @@ body {
 table { 
    width: 100%; 
    BORDER-WIDTH: 0; 
-   CELL-PADDING: 10; 
-   CELL-SPACING: 10; 
+   PADDING: 10; 
 }
 
 td {
@@ -121,8 +120,8 @@ pre {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; f
 p.BORDER, table.BORDER, pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #ffffcc; font-size:80%;
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 
-# DOES KILL netscape, works fine in mozilla, so we should avoid it
-# use <table border="1"><tr><td><pre> instead
+/* DOES KILL netscape, works fine in mozilla, so we should avoid it */
+/* use <table border="1"><tr><td><pre> instead */
 pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:80%;
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 #pre.BORDER { font-family : 'courier new', monospace; background-color : #CCCCFF; border : #000000 1px solid;
