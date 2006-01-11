@@ -968,16 +968,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (description == null) description = "";
          
          if (forceSending) {
-            try {
-               EmailData emailData = this.smtpDestinationHelper.createEmailData();
-               emailData.setSubject(replaceTokens(
-                     this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
-               emailData.setContent(replaceTokens(
-                     contentTemp, summary, description, eventType, errorCode));
-               this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
-            } catch (Throwable e) {
-               throw new IllegalArgumentException(e.toString());
-            }
+            EmailData emailData = this.smtpDestinationHelper.createEmailData();
+            emailData.setSubject(replaceTokens(
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
+            emailData.setContent(replaceTokens(
+                  contentTemp, summary, description, eventType, errorCode));
+            this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             return;
          }
    
