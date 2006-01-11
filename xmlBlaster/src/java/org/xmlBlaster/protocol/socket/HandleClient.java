@@ -134,18 +134,8 @@ public class HandleClient extends SocketExecutor implements Runnable
          driver.removeClient(this);
 
          this.secretSessionId = null;
-
-         if (responseListenerMap.size() > 0) {
-            java .util.Iterator iterator = responseListenerMap.keySet().iterator();
-            StringBuffer buf = new StringBuffer(256);
-            while (iterator.hasNext()) {
-               if (buf.length() > 0) buf.append(", ");
-               String key = (String)iterator.next();
-               buf.append(key);
-            }
-            log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
-            responseListenerMap.clear();
-         }
+         
+         clearResponseListenerMap();
 
          freePendingThreads();
       }

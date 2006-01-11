@@ -78,6 +78,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * The key is the String requestId, the value the listener thread I_ResponseListener
     */
    protected final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
+   private boolean responseListenerMapWasCleared;
    /** Used for execute() */
    public static final boolean ONEWAY = false;
    /** Used for execute() */
@@ -308,7 +309,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       if (requestId == null || l == null) {
          throw new IllegalArgumentException("addResponseListener() with requestId=null");
       }
-      Object o = responseListenerMap.put(requestId, l);
+      Object o = this.responseListenerMap.put(requestId, l);
       if (o == null) {
          if (log.TRACE) log.trace(ME, "Added addResponseListener requestId=" + requestId);
       }
@@ -324,14 +325,17 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       if (requestId == null) {
          throw new IllegalArgumentException("removeResponseListener() with requestId=null");
       }
-      synchronized (responseListenerMap) {
-         Object o = responseListenerMap.remove(requestId);
-         if (o == null) {
-            log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
+      Object o = this.responseListenerMap.remove(requestId);
+      if (o == null) {
+         if (this.responseListenerMapWasCleared) {
+            if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
          }
          else {
-            if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") done");
+            log.error(ME, "removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
          }
+      }
+      else {
+         if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") done");
       }
    }
 
@@ -342,7 +346,35 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       if (requestId == null) {
          throw new IllegalArgumentException("getResponseListener() with requestId=null");
       }
-      return (I_ResponseListener)responseListenerMap.get(requestId);
+      return (I_ResponseListener)this.responseListenerMap.get(requestId);
+   }
+   
+   public void clearResponseListenerMap() {
+      try {
+         StringBuffer buf = null;
+         int size = 0;
+         synchronized (this.responseListenerMap) { // for iteration we need to sync
+            size = this.responseListenerMap.size();
+            if (size > 0) {
+               buf = new StringBuffer(256);
+               java .util.Iterator iterator = this.responseListenerMap.keySet().iterator();
+               while (iterator.hasNext()) {
+                  if (buf.length() > 0) buf.append(", ");
+                  String key = (String)iterator.next();
+                  buf.append(key);
+               }
+            }
+         }
+         if (size > 0) {
+            if (buf != null)
+               log.warn(ME, "There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
+            this.responseListenerMap.clear();
+            this.responseListenerMapWasCleared = true;
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    /**
