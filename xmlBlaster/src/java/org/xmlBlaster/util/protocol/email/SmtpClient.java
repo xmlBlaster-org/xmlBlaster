@@ -623,7 +623,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    /**
     * Standalone usage example:
     * <code>
-    * java -Dmail.debug=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+    * java -Dmail.debug=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost:25 org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
     * </code>
     * @see #setSessionProperties(Properties) for other properties
     */
