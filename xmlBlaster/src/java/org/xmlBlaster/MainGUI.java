@@ -213,10 +213,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       //double elapsedSeconds = elapsedTime / 1000.0;
 
       {
-         publishedMessages = RequestBroker.publishedMessages;
+         publishedMessages = this.glob.getRequestBroker().getNumPublish();
          int currentPublishedAvg = (int)((publishedMessages - lastPublishedMessages)/sleepSeconds);
          if ((publishedMessages - lastPublishedMessages) == 1) currentPublishedAvg = 1;
-         //int totalPublishedAvg = (int)(publishedMessages/elapsedSeconds);
+         //int totalPublishedAvg = (int)(numPublish/elapsedSeconds);
          publishedMessagesBar.setCurrentValue(currentPublishedAvg);
          if (currentPublishedAvg > peakPublishedMessages) {
             peakPublishedMessages = currentPublishedAvg;
@@ -228,7 +228,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       }
 
       {
-         sentMessages = SessionInfo.sentMessages;
+         sentMessages = 0;// TODO SessionInfo.sentMessages;
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
          if ((sentMessages - lastSentMessages) == 1) currentSentAvg = 1;
          //int totalSentAvg = (int)(sentMessages/elapsedSeconds);
@@ -243,11 +243,11 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       }
 
       {
-         getMessages = RequestBroker.getMessages;
+         getMessages = this.glob.getRequestBroker().getNumGet();
          int currentGetAvg = (int)((getMessages - lastGetMessages)/sleepSeconds);
          if ((getMessages - lastGetMessages) == 1) currentGetAvg = 1;
-         //int totalGetAvg = (int)(getMessages/elapsedSeconds);
-         // System.out.println("totally getMessages=" + getMessages + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
+         //int totalGetAvg = (int)(numGet/elapsedSeconds);
+         // System.out.println("totally numGet=" + numGet + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
          getMessagesBar.setCurrentValue(currentGetAvg);
          if (currentGetAvg > peakGetMessages) {
             peakGetMessages = currentGetAvg;

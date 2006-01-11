@@ -670,6 +670,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       buf.append("\n  ").append("<clientList>").append(r.getClientList()).append("</clientList>");
       buf.append("\n  ").append("<numTopics>").append(r.getNumTopics()).append("</numTopics>");
       buf.append("\n  ").append("<topicList>").append(r.getTopicList()).append("</topicList>");
+      buf.append("\n  ").append("<numGet>").append(r.getNumGet()).append("</numGet>");
+      buf.append("\n  ").append("<numPublish>").append(r.getNumPublish()).append("</numPublish>");
+      buf.append("\n  ").append("<numUpdate>").append(r.getNumUpdate()).append("</numUpdate>");
       // " encoding='base64'" if string contains CDATA?
       String warning = ReplaceVariable.replaceAll(r.getLastWarning(), "<![CDATA[", "&lt;![CDATA[");
       warning = ReplaceVariable.replaceAll(warning, "]]>", "]]&gt;");

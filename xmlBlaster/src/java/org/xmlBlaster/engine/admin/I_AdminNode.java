@@ -334,4 +334,20 @@ public interface I_AdminNode extends I_AdminUsage {
    public String displayClassInfo(String clazzName);
 
    //public void setMaxClients(int maxClients);
+   
+   /**
+    * @return Returns the number of get() invocations
+    */
+   public long getNumGet();
+   
+   /**
+    * @return Returns the number if publish() invocations
+    */
+   public long getNumPublish();
+
+   /**
+    * The overall sent updates (callback to client)
+    */
+   public long getNumUpdate();
+
 }

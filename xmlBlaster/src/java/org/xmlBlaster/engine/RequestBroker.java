@@ -28,6 +28,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -92,10 +93,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    private final Global glob;
    private final LogChannel log;
 
-   /** Total count of published messages */
-   public static long publishedMessages = 0L;
-   /** Total count of accessed messages via get() */
-   public static long getMessages = 0L;
+   /**
+    * Contains total count of published messages and get() invocations. 
+    */
+   private DispatchStatistic dispatchStatistic = new DispatchStatistic();
 
    private String lastWarning = "";
    private String lastError = "";
@@ -1039,7 +1040,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          }
 
          MsgUnit[] msgUnitArr = (MsgUnit[])msgUnitList.toArray(new MsgUnit[msgUnitList.size()]);
-         getMessages += msgUnitArr.length;
+         this.dispatchStatistic.incrNumGet(msgUnitArr.length);
          if (log.TRACE) log.trace(ME, "Returning for get() " + msgUnitArr.length + " messages");
          return msgUnitArr;
       }
@@ -1560,7 +1561,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             }
          }
 
-         publishedMessages++;
+         this.dispatchStatistic.incrNumPublish(1);
 
          if (msgKeyData.isAdministrative()) {
             if (!glob.supportAdministrative())
@@ -2470,5 +2471,27 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          new MBeanNotificationInfo(types, name, "Client logout events of cluster node '" + this.glob.getId() + "'");
 
       return new MBeanNotificationInfo[] {loggingEventInfo, loginEventInfo, logoutEventInfo};
+   }
+
+   /**
+    * @return Returns the number of get() invocations
+    */
+   public long getNumGet() {
+      return this.dispatchStatistic.getNumGet();
+   }
+
+   /**
+    * @return Returns the number if publish() invocations
+    */
+   public long getNumPublish() {
+      return this.dispatchStatistic.getNumPublish();
+   }
+
+   public long getNumUpdate() {
+      SessionInfo[] arr = getAuthenticate().getSessionInfoArr();
+      long numUpdate = 0;
+      for (int i=0; i<arr.length; i++)
+         numUpdate += arr[i].getDispatchStatistic().getNumUpdate();
+      return numUpdate;
    }
 }

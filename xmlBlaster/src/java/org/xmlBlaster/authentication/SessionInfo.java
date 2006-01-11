@@ -76,7 +76,6 @@ import org.xmlBlaster.util.ReentrantLock;
  */
 public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 {
-   public static long sentMessages = 0L;
    private String ME = "SessionInfo";
    private final ContextNode contextNode;
    /** The cluster wide unique identifier of the session e.g. "/node/heron/client/joe/2" */
