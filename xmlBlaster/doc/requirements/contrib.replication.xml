@@ -54,6 +54,9 @@
       <b>Prerequisistes for this tutorial is that you have an oracle database up and running.</b>
     </p>
     <p>
+      The demo is also available as a Flash movie <a href="http://www.xmlBlaster.org/liveDemos/replicationDemo.html">here</a>.
+    </p>
+    <p>
     <h2>Prepare, build and start the server</h2><br/>
        <ul>
          <li>To avoid messy and strange behaviours make sure you don't have any old configuration around. Consider that as cleaning up the
