@@ -70,6 +70,11 @@ public class MailUtil {
    static boolean saveAttachments = false;
 
    static int attnum = 1;
+   
+   /**
+    * Fixed name which is used for the normal email content / body
+    */
+   static public final String BODY_NAME = "body.xml"; 
 
    /**
     * Reading POP3 messages and dump them (for testing only). Usage:<br/>
@@ -237,7 +242,7 @@ public class MailUtil {
       try {
          String ct = p.getContentType();
          String fileName = p.getFileName();
-         if (fileName == null) fileName = "body.xml";
+         if (fileName == null) fileName = BODY_NAME;
    
          /*
           * Using isMimeType to determine the content type avoids fetching the
