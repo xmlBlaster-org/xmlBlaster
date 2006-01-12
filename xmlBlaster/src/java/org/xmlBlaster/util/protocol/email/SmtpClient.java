@@ -62,6 +62,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    
    private PluginInfo pluginInfo;
 
+   // If the mail.smtp.from changes we would need a new session instance with its own properties
    private Session session;
 
    private PasswordAuthentication authentication;
@@ -324,6 +325,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     * </p>
     */
    public void send(Message message) throws MessagingException {
+/*
+ * Reuse transport for better performance:
+ * See http://java.sun.com/products/javamail/FAQ.html
+  MimeMessage msg = ...;
+   construct message
+   msg.saveChanges();
+   Transport t = session.getTransport("smtp");
+   t.connect();
+   for (int i = 0; .....) {
+     t.sendMessage(msg, new Address[] { recipients[i] });
+   }
+   t.close();
+*/
+
       try {
          Transport.send(message);
       } catch (MessagingException e) {
