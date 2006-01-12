@@ -67,12 +67,6 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
    private PasswordAuthentication authentication;
 
-   /*
-   private String user;
-   private String password;
-   private String host;
-   private int port;
-   */
    private XbUri xbUri;
    
    private boolean isInitialized;
