@@ -83,7 +83,12 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *
  * java -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
  * </pre>
- * 
+ * <p>
+ * TODO: Implement reusing inbox.getMessage() for better performance
+ * currently we reconnect for each query (
+ * the benefit is that we don't block the POP3 server
+ * with a permanent connection).
+ * </p>
  * @see <a
  *      href="http://www-106.ibm.com/developerworks/java/library/j-james1.html">James
  *      MTA</a>
