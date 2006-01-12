@@ -329,8 +329,23 @@ public class EmailData {
     * @return The content of the message, never null
     */
    public String getContent() {
+      if (this.content == null || this.content.length() == 0) {
+         AttachmentHolder h = getAttachment(MailUtil.BODY_NAME);
+         if (h != null)
+            this.content = new String(h.getContent());
+      }
       return (this.content == null) ? "" : this.content;
    }
+   
+   public AttachmentHolder getAttachment(String fileName) {
+      if (fileName == null) return null;
+      AttachmentHolder[] arr = getAttachments();
+      for (int i=0; i<arr.length; i++)
+         if (fileName.equals(arr[i].getFileName()))
+            return arr[i];
+      return null;
+   }
+   
 
    /**
     * Dumps message to xml.
