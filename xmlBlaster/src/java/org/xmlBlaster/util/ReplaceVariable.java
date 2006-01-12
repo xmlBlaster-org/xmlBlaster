@@ -43,7 +43,6 @@ public final class ReplaceVariable
     * @throws IllegalArgumentException if matching "}" is missing
     */
    public final String replace(String text, I_ReplaceVariable cb) {
-      String origValue = text;
       int minIndex = 0;
       for (int ii = 0;; ii++) {
          int fromIndex = text.indexOf(this.startToken, minIndex);
@@ -137,6 +136,50 @@ public final class ReplaceVariable
       }
       buf.append(tail);
       return buf.toString();
+   }
+
+   /**
+    * Find the given tag from the given xml string and return its value.  
+    * Does not work if the tag exists multiple time or occures somewhere else in the text 
+    * @param tag For example "nodeId" for a tag &lt;nodeId>value&lt;/nodeId>
+    * @return null if none is found
+    */
+   public static String extract(String xml, String tag) {
+      if (xml == null || tag == null) return null;
+      final String startToken = "<" + tag + ">";
+      final String endToken = "</" + tag + ">";
+      int start = xml.indexOf(startToken);
+      int end = xml.indexOf(endToken);
+      if (start != -1 && end != -1) {
+         return xml.substring(start + startToken.length(), end);
+      }
+      return null;
+   }
+   
+   /**
+    * Find the given attribute from the given tag from the given xml string and return its value.  
+    * Does not work if the tag exists multiple time or occures somewhere else in the text
+    * @param xml The xml string to parse 
+    * @param tag For example "node" for a tag &lt;node id='heron'>
+    * @param attributeName "id"
+    * @return null if none is found
+    */
+   public static String extract(String xml, String tag, String attributeName) {
+      if (xml == null || tag == null || attributeName == null) return null;
+      final String startToken = "<" + tag;
+      final String endToken = ">";
+      int start = xml.indexOf(startToken);
+      int end = xml.indexOf(endToken);
+      if (start != -1 && end != -1) {
+         String tok = attributeName+"=";
+         int attrStart = xml.indexOf(attributeName, start);
+         if (attrStart == -1) return null;
+         char apo = xml.charAt(attrStart+tok.length());
+         int attrEnd = xml.indexOf(apo, attrStart+tok.length()+1);
+         if (attrEnd == -1) return xml.substring(attrStart+tok.length()+1);
+         return xml.substring(attrStart+tok.length()+1, attrEnd);
+      }
+      return null;
    }
 
    /**
