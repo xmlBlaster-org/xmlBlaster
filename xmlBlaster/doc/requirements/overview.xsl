@@ -32,12 +32,9 @@ Author:    xmlBlaster@marcelruff.info
    <body>
 
    <p class="sideend">
-       Last updated $Date$ $Author$
+       Last updated 2006-01-11
    </p>
    <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
-
-   IMPORTANT NOTE: Many features are not yet documented here (work in progress).<br />
-   The examples are in Java, but similar coding is used for other languages like C++ and Perl
 
    <p /><br />
    <table cellpadding="2" cellspacing="4">
