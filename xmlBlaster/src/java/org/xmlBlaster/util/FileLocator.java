@@ -8,6 +8,10 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -244,7 +248,6 @@ public class FileLocator
     public static void main(String[] args) {
        Global glob = Global.instance();
        glob.init(args);
-       LogChannel log = glob.getLog("test");
 
        FileLocator locator = new FileLocator(glob);
 
@@ -265,5 +268,87 @@ public class FileLocator
 
     }   
 
+   /**
+    * Read a file into <code>byte[]</code>.
+    * <br><b>Example:</b><br>
+    *    <code>byte[] data=FileLocator.readFile("/tmp", "hello.txt");</code>
+    *
+    * @param      parent Path to the file, can be null
+    * @param      fileName  Name of file
+    * @return     data from the file
+    * @exception  XmlBlasterException
+    *             if the file is not readable or any error occurred while reading the file.
+    */
+   public static final byte[] readFile(String parent, String fileName)
+      throws XmlBlasterException
+   {
+      File f = (parent==null) ? new File(fileName) : new File(parent, fileName);
+      return readFile(f);
+   }
+   
+   public static final byte[] readFile(File f)
+      throws XmlBlasterException
+   {
+      byte[] fileBlob = null;
+      String fileName = f.getAbsolutePath();
+      if (!f.exists()) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, can't find file " + fileName);
+      }
+      if (!f.isFile() || f.length() < 1) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, doesn't seem to be a file " + fileName + " or is empty");
+      }
+      if (!f.canRead()) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, no access permissions for file " + fileName);
+      }
+      FileInputStream from = null;
+      try {
+         from = new FileInputStream(f);
+         fileBlob = new byte[ (int) f.length()];
+         int bytes_read = from.read(fileBlob);
+         if (bytes_read != f.length()) {
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "File read error in " + fileName + ": Excpected " + f.length() + " bytes, but only found " + bytes_read + "bytes");
+         }
+      }
+      catch (FileNotFoundException e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
+      }
+      catch (IOException e2) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, e2.toString());
+      }
+      finally {
+         if (from != null)
+            try {
+            from.close();
+         }
+         catch (IOException e) {
+            ;
+         }
+      }
+      if (f.length() != fileBlob.length) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Read file " + fileName + " with size=" + f.length() + " but only got " + fileBlob.length + " bytes");
+      }
+      return fileBlob;
+   }
+
+   /**
+    * Write data from <code>byte[]</code> into a file.
+    *
+    * @param      parent the path, can be null
+    * @param      child the name
+    * @param      arr data
+    */
+   public static final void writeFile(String parent, String child, byte[] arr)
+      throws XmlBlasterException
+   {
+      try {
+         File to_file = (parent==null) ? new File(child) : new File(parent, child);
+         FileOutputStream to = new FileOutputStream(to_file);
+         to.write(arr);
+         to.close();
+      }
+      catch (Exception e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't write file " + child + ":" + e.toString());
+      }
+   }
 }
 
