@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14586 POP3 bugfix: Fixed single connection leak on startup, the Store was not closed
+
  o #14579 SMTP/POP3 Url: Added handling for '@' in username or password
 
  o #14572 Removed missleading log.error for SOCKET protocol about missing response listener
