@@ -983,19 +983,15 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
 
    /**
     * java -Dmail.pop3.url=pop3://blue:blue@localhost:110/INBOX
-    * org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
+    * org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling true -clearMessages false
     * <p>
     * 
     * @see #setSessionProperties(Properties) for other properties
     */
    public static void main(String[] args) {
-      boolean receivePolling = false;
-      if (args.length > 0) {
-         if ("-receivePolling".equalsIgnoreCase(args[0])) {
-            receivePolling = true;
-         }
-      }
       Global glob = new Global(args);
+      boolean receivePolling = glob.getProperty().get("receivePolling", false);
+      boolean clearMessages = glob.getProperty().get("clearMessages", Pop3Driver.CLEAR_MESSAGES);
 
       Pop3Driver pop3Client = new Pop3Driver();
       try {
@@ -1006,10 +1002,10 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
          props.put("pop3Client.debug", "" + debug);
          pop3Client.setSessionProperties(props, glob, null);
 
-         System.out.println("Reading POP3 messages");
+         System.out.println("Reading POP3 messages clearMessages=" + clearMessages);
          while (true) {
             long start = System.currentTimeMillis();
-            EmailData[] msgs = pop3Client.readInbox(Pop3Driver.CLEAR_MESSAGES);
+            EmailData[] msgs = pop3Client.readInbox(clearMessages);
             long diff = System.currentTimeMillis() - start;
 
             for (int i = 0; i < msgs.length; i++) {
