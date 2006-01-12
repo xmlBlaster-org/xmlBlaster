@@ -523,11 +523,20 @@ implements I_Plugin, I_Timeout,
       // Pass "this" for SMTP authentication with Authenticator
       this.session = Session.getInstance(this.props, this);
 
-      try { // Produces a success logging output
-         getStore();
+      // Produces a success logging output
+      Store store = null;
+      try { 
+         store = getStore();
       } catch (XmlBlasterException e) {
          log.warning(e.getMessage() + " We poll every " + this.pollingInterval
                + " milliseconds again.");
+      }
+      finally {
+         try {
+            if (store != null) store.close();
+         } catch (MessagingException e) {
+            e.printStackTrace();
+         }
       }
    }
 
@@ -814,14 +823,18 @@ public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
                      + "'", e);
       } finally {
          try {
-            if (inbox != null)
+            if (inbox != null) {
                inbox.close(true);
+               inbox = null;
+            }
          } catch (Exception e) { // MessagingException, IOException
             log.warning("Ignoring inbox close problem: " + e.toString());
          }
          try {
-            if (store != null)
+            if (store != null) {
                store.close();
+               store = null;
+            }
          } catch (Exception e) { // MessagingException, IOException
             log.warning("Ignoring store close problem: " + e.toString());
          }
