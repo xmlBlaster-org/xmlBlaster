@@ -693,7 +693,7 @@ implements I_Plugin, I_Timeout,
 
    /**
     * Connect to POP3 store.
-    * 
+    * NOTE: You need to call store.close() after usage to cleanup resources.
     * @return never null
     * @throws XmlBlasterException
     */
@@ -759,7 +759,7 @@ implements I_Plugin, I_Timeout,
     *           If CLEAR_MESSAGES=true the messages are destroyed on the server
     * @return Never null
     */
-public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
+   public EmailData[] readInbox(boolean clear) throws XmlBlasterException {
       // if (isShutdown()) Does it recover automatically after a shutdown?
       // throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE,
       // Pop3Driver.class.getName(), "The plugin is shutdown");
