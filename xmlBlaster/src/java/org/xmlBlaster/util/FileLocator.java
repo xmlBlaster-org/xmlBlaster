@@ -294,8 +294,8 @@ public class FileLocator
       if (!f.exists()) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, can't find file " + fileName);
       }
-      if (!f.isFile() || f.length() < 1) {
-         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, doesn't seem to be a file " + fileName + " or is empty");
+      if (!f.isFile()) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, doesn't seem to be a file " + fileName);
       }
       if (!f.canRead()) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, no access permissions for file " + fileName);
