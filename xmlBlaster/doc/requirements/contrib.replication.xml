@@ -17,6 +17,9 @@
        framework is currently used with more than one source for one sink, but there are limitations, for example you must ensure that the 
        same data (at least on a row granularity) always comes from one single source.
     </p>
+    <p>
+       <center><img src="replWithXmlBlaster.png" alt="replication with xmlBlaster"/></center>
+    </p>
     <p>Which features does this framework offer ? <br />
       <ul>
         <li>Single Master / Multi Slave approach</li>
