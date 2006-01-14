@@ -5,15 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.property;
 
-import org.xmlBlaster.util.def.Constants;
-
-
 /**
  * Base class for the various property data type implementations. 
  * @author xmlBlaster@marcelruff.info
  */
 public final class PropString extends PropEntry implements java.io.Serializable, Cloneable
 {
+   private static final long serialVersionUID = 1L;
    private String valueDefault; // Remember default setting for usage output etc.
    private String value;
 
