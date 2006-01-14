@@ -810,8 +810,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
          newOne.reconnected = (PropBoolean)this.reconnected.clone();
          //newOne.sessionQos = (SessionQos)this.sessionQos.clone();
          //newOne.securityQos = (I_SecurityQos)this.securityQos.clone();
-         newOne.serverRefVec = (Vector)this.serverRefVec;
-         newOne.nodeId = (NodeId)this.nodeId;
+         newOne.serverRefVec = this.serverRefVec;
+         newOne.nodeId = this.nodeId;
       }
       return newOne;
    }
