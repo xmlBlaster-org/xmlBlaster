@@ -86,7 +86,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String dataIdColName;
    private String keyAttr;
 
-   private final String managerName;
+  // private final String managerName;
    private final I_Storage storage;
 
    PreparedStatement pingPrepared = null;
@@ -121,7 +121,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public JdbcManagerCommonTable(JdbcConnectionPool pool, I_EntryFactory factory, String managerName, I_Storage storage)
       throws XmlBlasterException {
-      this.managerName = managerName;
+   //   this.managerName = managerName;
       this.pool = pool;
       this.glob = this.pool.getGlobal();
       this.log = glob.getLog("jdbc");
