@@ -1,8 +1,14 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for current svn
-=======================
+Changes for 1.1.1 [2006-01-16] #14622
+=====================================
+
+ o #14620 Bugfix potential memory leak (ClientSubscriptions.java):
+   Added shutdown() for XPath subscriptions
+
+ o #14613 Changed getNativeConnectArgs()
+   It is not forcing CACHE,1.0 anymore as this is the default setting
 
  o #14612 Bugfix potential memory leak (SocketDriver.java):
    Removed nulling of secretSessionId to prevent memory leak
