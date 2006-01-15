@@ -221,16 +221,6 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
 
    /**
-    * Clean up everything, since i will be deleted now.
-    */
-   private void erase() {
-      if (log.TRACE) log.trace(ME, "Entering erase()");
-      subscribeQos = null;
-      // Keep keyData for further processing
-      // Keep uniqueKey for further processing
-   }
-
-   /**
     * This must be called as soon as my TopicHandler handles me.
     * @param topicHandler I'm handled (lifetime) by this handler
     */
@@ -275,7 +265,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
          return;
       }
       topicHandler.removeSubscriber(uniqueKey);
-      erase();
+      shutdown();
    }
 
    /**
@@ -414,12 +404,15 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    /**
     * Cleanup subscription. 
     */
-   public void shutdown() throws XmlBlasterException
+   public void shutdown()
    {
       this.glob.unregisterMBean(this.mbeanHandle);
       if (querySub != null) {
          querySub.removeChildSubscription(this);
       }
+      subscribeQos = null;
+      // Keep keyData for further processing
+      // Keep uniqueKey for further processing
    }
 
    /**
