@@ -578,6 +578,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    public String getSubscribeQosStr() {
       return (this.subscribeQos==null) ? "" : this.subscribeQos.toXml();
    }
+   public String getSubscribeKeyStr() {
+      return (this.keyData==null) ? "" : this.keyData.toXml();
+   }
    public String[] getAccessFilters() {
       AccessFilterQos[] arr = subscribeQos.getAccessFilterArr();
       if (arr == null) return new String[0];

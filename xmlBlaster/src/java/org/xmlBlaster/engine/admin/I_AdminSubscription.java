@@ -49,6 +49,11 @@ public interface I_AdminSubscription extends I_AdminUsage {
     */
    public String getCreationTimestamp();
    /**
+    * Get the subscription key. 
+    * @return The XML dump of the Key
+    */
+   public String getSubscribeKeyStr();
+   /**
     * Get the configuration for this subscription. 
     * @return The XML dump of the QoS
     */
