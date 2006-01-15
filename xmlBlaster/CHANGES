@@ -4,6 +4,15 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #14612 Bugfix potential memory leak (SocketDriver.java):
+   Removed nulling of secretSessionId to prevent memory leak
+
+ o #14611 Bugfix potential memory leak (SubscriptionInfo.java):
+   In SubscriptionInfo fixed shutdown to prevent from JMX mbean memory leak
+
+ o #14608 Bugfix potential memory leak (ContextNode.java):
+   Added WeakReference for ContextNode childs to avoid memory leaks.
+
  o #14586 POP3 bugfix: Fixed single connection leak on startup, the Store was not closed
 
  o #14579 SMTP/POP3 Url: Added handling for '@' in username or password
