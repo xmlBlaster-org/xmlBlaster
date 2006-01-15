@@ -68,6 +68,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
 
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
+   
+   private boolean isShutdown;
 
    /**
     * Use this constructor for an exact subscription.
@@ -406,11 +408,13 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public void shutdown()
    {
+      if (this.isShutdown) return;
       this.glob.unregisterMBean(this.mbeanHandle);
-      if (querySub != null) {
-         querySub.removeChildSubscription(this);
+      if (this.querySub != null) {
+         this.querySub.removeChildSubscription(this);
       }
-      subscribeQos = null;
+      this.subscribeQos = null;
+      this.isShutdown = true;
       // Keep keyData for further processing
       // Keep uniqueKey for further processing
    }
