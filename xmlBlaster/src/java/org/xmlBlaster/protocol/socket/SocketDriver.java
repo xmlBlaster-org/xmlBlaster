@@ -473,10 +473,16 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
 
    final void removeClient(HandleClient h) {
       synchronized (handleClientSet) {
-         handleClientSet.remove(h);
+         boolean removed = handleClientSet.remove(h);
+         if (!removed) { // May be called twice: from SessionInfo.shutdown() and from HandleClient->exiting run()
+            if (log.TRACE) log.trace(ME, "Didn't find a client object to remove: " + h.toString());
+         }
       }
       synchronized(handleClientMap) {
-         handleClientMap.remove(h.getSecretSessionId());
+         Object removed = handleClientMap.remove(h.getSecretSessionId());
+         if (removed == null) {
+            if (log.TRACE) log.trace(ME, "Didn't find a client handle to remove: " + h.toString());
+         }
       }
    }
 

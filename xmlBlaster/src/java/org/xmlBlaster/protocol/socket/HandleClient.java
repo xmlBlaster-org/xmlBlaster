@@ -133,13 +133,20 @@ public class HandleClient extends SocketExecutor implements Runnable
 
          driver.removeClient(this);
 
-         this.secretSessionId = null;
-         
          clearResponseListenerMap();
 
          freePendingThreads();
       }
       closeSocket();
+   }
+   
+   public String toString() {
+      String ret = getType() + "-" + this.addressConfig.getName();
+      if (loginName != null && loginName.length() > 0)
+         ret += "-"+loginName;
+      else
+         ret += "-"+getSecretSessionId();
+      return ret;
    }
 
    private void closeSocket() {
@@ -269,7 +276,6 @@ public class HandleClient extends SocketExecutor implements Runnable
                driver.addClient(this.secretSessionId, this);
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
-               this.secretSessionId = null;
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
