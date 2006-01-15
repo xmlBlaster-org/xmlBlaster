@@ -377,6 +377,7 @@ public class Global implements Cloneable
 
    /**
     * Unregister a JMX MBean. 
+    * Never throws any exception 
     * @param objectName The object you got from registerMBean() of type ObjectName,
     *                   if null nothing happens
     */
@@ -390,6 +391,9 @@ public class Global implements Cloneable
       }
       catch (XmlBlasterException e) {
          log.warn(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
+      }
+      catch (Throwable e) {
+         log.error(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
       }
    }
 
