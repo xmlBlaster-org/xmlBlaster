@@ -8,6 +8,8 @@ package org.xmlBlaster.util.context;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.def.Constants;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import javax.management.ObjectName;
 
@@ -65,7 +67,7 @@ public final class ContextNode
    private String className; // e.g. "node"
    private String instanceName; // e.g. "heron"
    private ContextNode parent;
-   private ArrayList childs;
+   private ArrayList childs; // contains 'new WeakReference(ContextNode)'
    
    public static char QUOTE = '\"';
 
@@ -207,7 +209,8 @@ public final class ContextNode
    }
 
    /**
-    * Add the given child, it exists already nothing happens
+    * Add the given child, it exists already nothing happens. 
+    * The child is hold as a weak reference, so you don't need to cleanup. 
     * @param child The child to add
     * @return true if the child was added, the parent of your child is modified!
     *          false if it existed already or if you given child is null
@@ -217,7 +220,8 @@ public final class ContextNode
    }
    
    /**
-    * Add the given child, it exists already nothing happens
+    * Add the given child, it exists already nothing happens. 
+    * The child is hold as a weak reference, so you don't need to cleanup. 
     * @param child The child to add
     * @param doClone If true the given child is not modified
     *                 if false the given child is changed to have us as a new parent 
@@ -226,22 +230,28 @@ public final class ContextNode
     */
    public boolean addChild(ContextNode child, boolean doClone) {
       if (child == null) return false;
-      if (this.childs == null) {
-         this.childs = new ArrayList();
-      }
-      for (int i=0; i<this.childs.size(); i++) {
-         ContextNode currentChild = (ContextNode)this.childs.get(i);
-         if (child.equalsAbsolute(currentChild))
+      ContextNode[] children = getChildren();
+      for (int i=0; i<children.length; i++) {
+         if (child.equalsAbsolute(children[i]))
             return false; // Child is already here
       }
-      if (doClone) {
-         ContextNode clone = child.getClone();
-         this.childs.add(clone);
-         clone.parent = this;
-      }
-      else {
-         this.childs.add(child);
-         child.parent = this;
+      synchronized (this) {
+         if (this.childs == null) {
+            this.childs = new ArrayList();
+         }
+         if (doClone) {
+            ContextNode clone = child.getClone();
+            this.childs.add(new WeakReference(clone));
+            clone.parent = this;
+         }
+         else {
+            if (child.parent != null && this != child.parent) {
+               // If child had another parent already remove it
+               child.parent.removeChild(child);
+            }
+            this.childs.add(new WeakReference(child));
+            child.parent = this;
+         }
       }
       return true;
    }
@@ -300,11 +310,41 @@ public final class ContextNode
    /**
     * @return All children, never null (but empty array)
     */
-   public ContextNode[] getChildren() {
-      if (this.childs == null) {
+   public synchronized ContextNode[] getChildren() {
+      if (this.childs == null || this.childs.size() == 0) {
          return new ContextNode[0];
       }
-      return (ContextNode[])this.childs.toArray(new ContextNode[this.childs.size()]);
+      WeakReference[] refs = (WeakReference[])this.childs.toArray(new WeakReference[this.childs.size()]);
+      ArrayList list = new ArrayList(refs.length);
+      for (int i=0; i<refs.length; i++) {
+         Object referent = refs[i].get();
+         if (referent != null) {
+            list.add((ContextNode)referent);
+         }
+         else {
+            this.childs.remove(refs[i]); // Cleanup the obsolete WeakReference
+         }
+      } 
+      return (ContextNode[])list.toArray(new ContextNode[list.size()]);
+   }
+   
+   /**
+    * Remove a child. 
+    * @param child
+    * @return true if the child was removed
+    */
+   public synchronized boolean removeChild(ContextNode child) {
+      if (this.childs == null || this.childs.size() == 0 || child == null) {
+         return false;
+      }
+      for (int i=0; i<this.childs.size(); i++) {
+         ContextNode curr = (ContextNode)((WeakReference)this.childs.get(i)).get();
+         if (curr != null && curr.equalsAbsolute(child)) {
+            this.childs.remove(i);
+            return true;
+         }
+      }
+      return false;
    }
 
    /**
@@ -323,15 +363,15 @@ public final class ContextNode
     */
    protected ContextNode getChild(ContextNode node, String className, String instanceName) {
       if (className == null && instanceName == null) return null;
-      ContextNode[] childs = node.getChildren();
+      ContextNode[] childsArr = node.getChildren();
       if (className == null && node.getInstanceNameNotNull().equals(instanceName))
          return node;
       if (instanceName == null && node.getClassName().equals(className))
          return node;
       if (node.getClassName().equals(className) && node.getInstanceNameNotNull().equals(instanceName))
          return node;
-      for (int i=0; i<childs.length; i++) {
-         return getChild(childs[i], className, instanceName);
+      for (int i=0; i<childsArr.length; i++) {
+         return getChild(childsArr[i], className, instanceName);
       }
       return null;
    }
@@ -452,7 +492,13 @@ public final class ContextNode
       return getRelativeName().equals(contextNode.getRelativeName());
    }
 
+   /**
+    * Compare the absolute name. 
+    * @param contextNode Returns false if null
+    * @return
+    */
    public boolean equalsAbsolute(ContextNode contextNode) {
+      if (contextNode == null) return false;
       return getAbsoluteName().equals(contextNode.getAbsoluteName());
    }
 
