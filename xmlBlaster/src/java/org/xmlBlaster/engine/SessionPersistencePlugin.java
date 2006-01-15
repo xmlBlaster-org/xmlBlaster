@@ -28,9 +28,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.SubscribeStoreProperty;
 import org.xmlBlaster.util.qos.storage.SessionStoreProperty;
@@ -64,8 +62,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private I_Map subscribeStore;
    private StorageId sessionStorageId;
    private StorageId subscribeStorageId;
-   private ConnectQosSaxFactory connectQosFactory;
-   private QueryQosSaxFactory queryQosFactory;
    private AddressServer addressServer;
    private Object sync = new Object();
    
@@ -85,7 +81,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          if (entries[i] instanceof SessionEntry) {
             // do connect
             SessionEntry entry = (SessionEntry)entries[i];
-            ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
+            ConnectQosData data = this.global.getConnectQosFactory().readObject(entry.getQos());
             
             this.addressServer = new AddressServer(this.global, "NATIVE", this.global.getId(), (java.util.Properties)null);
 
@@ -129,7 +125,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                   try {
                      SubscribeEntry subscribeEntry = (SubscribeEntry)entry;
                      //QueryKeyData keyData = queryKeyFactory.readObject(subscribeEntry.getKey());
-                     QueryQosData qosData = queryQosFactory.readObject(subscribeEntry.getQos());
+                     QueryQosData qosData = global.getQueryQosFactory().readObject(subscribeEntry.getQos());
                      //String key = keyData.getOid() + qosData.getSender().getAbsoluteName();
 
                      SessionName sessionName = new SessionName(global, subscribeEntry.getSessionName());
@@ -181,7 +177,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             // do connect
             SubscribeEntry entry = (SubscribeEntry)entries[i];
             String qos = entry.getQos();
-            QueryQosData qosData = this.queryQosFactory.readObject(qos);
+            QueryQosData qosData = global.getQueryQosFactory().readObject(qos);
 
             ClientProperty clientProperty = qosData.getClientProperty(Constants.PERSISTENCE_ID);
             if (clientProperty == null) {
@@ -245,8 +241,6 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.log = this.global.getLog("subscription");
          if (this.log.CALL) this.log.call(ME, "init");
 
-         this.connectQosFactory = new ConnectQosSaxFactory(this.global);
-         this.queryQosFactory = new QueryQosSaxFactory(this.global);
          // init the storages
          QueuePropertyBase sessionProp = new SessionStoreProperty(this.global, this.global.getStrippedId());   
          if (sessionProp.getMaxEntries() > 0L) {
