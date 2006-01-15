@@ -208,7 +208,7 @@ public class HelloWorldSubscribe implements I_Callback
 
          con = glob.getXmlBlasterAccess();
 
-         // Doe fail safe handling:
+         // Do fail safe handling:
          con.registerConnectionListener(new I_ConnectionStateListener() {
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                if (connection.getConnectReturnQos().isReconnected())
