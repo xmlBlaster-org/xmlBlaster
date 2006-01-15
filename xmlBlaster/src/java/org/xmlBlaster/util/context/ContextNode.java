@@ -67,7 +67,7 @@ public final class ContextNode
    private String className; // e.g. "node"
    private String instanceName; // e.g. "heron"
    private ContextNode parent;
-   private ArrayList childs; // contains 'new WeakReference(ContextNode)'
+   private ArrayList childs; // contains 'new WeakReference(ContextNode)' TODO: Change to map
    
    public static char QUOTE = '\"';
 
@@ -323,6 +323,7 @@ public final class ContextNode
          }
          else {
             this.childs.remove(refs[i]); // Cleanup the obsolete WeakReference
+            // TODO: ReferenceQueue
          }
       } 
       return (ContextNode[])list.toArray(new ContextNode[list.size()]);
