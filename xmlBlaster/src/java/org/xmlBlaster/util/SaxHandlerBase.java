@@ -75,17 +75,19 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     * This method parses the XML InputSource using the SAX parser.
     * @param inputSource The XML string
     */
-   public void init(InputSource inputSource) throws XmlBlasterException
+   protected void init(InputSource inputSource) throws XmlBlasterException
    {
       parse(inputSource);
    }
 
    /*
     * This method parses the XML InputSource using the SAX parser.
+    * Note that it is not synchronized and not thread safe.
+    * The derived class should synchronize.
     * @param inputSource For logging only (e.g. the XML file) or null
     * @param xmlLiteral The XML string
     */
-   public void init(String xmlSource, InputSource inputSource) throws XmlBlasterException
+   protected void init(String xmlSource, InputSource inputSource) throws XmlBlasterException
    {
       this.xmlSource = xmlSource;
       parse(inputSource);
@@ -95,7 +97,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     * This method parses the XML string using the SAX parser.
     * @param xmlLiteral The XML string
     */
-   public void init(String xmlLiteral) throws XmlBlasterException
+   protected void init(String xmlLiteral) throws XmlBlasterException
    {
       if (xmlLiteral == null)
          xmlLiteral = "";
