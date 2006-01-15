@@ -1941,9 +1941,16 @@ public class Global implements Cloneable
    /**
     * Convenience method which returns the typical environment settings for a LOCAL connection. 
     * <p>If you write a native plugin you can use these settings as a base.</p>
+    * Don't use for plugins started on runlevel below AvailabilityChecker allows to publish
+    * as we don't have a client side queue.
     * @return A string array which you can pass to <tt>this.global = glob.getClone(glob.getNativeConnectArgs());</tt>
     */
    public final String[] getNativeConnectArgs() {
+      /*
+      Problem:
+      These settings can't be overwritten in xmlBlaster.properties
+      as they are assumed to be from command line which is strongest
+      */
       final String[] nativeConnectArgs = {
               "-protocol", "LOCAL",
               "-session.timeout", "0",
@@ -1951,12 +1958,11 @@ public class Global implements Cloneable
               "-dispatch/connection/pingInterval", "0",
               "-dispatch/connection/burstMode/collectTime", "0",
               "-dispatch/callback/protocol", "LOCAL",
-              "-dispatch/callback/pingInterval", "10000",
+              "-dispatch/callback/pingInterval", "10000", // For low run levels and persistent connections like DbWatcher
               "-dispatch/callback/retries", "-1",
               "-dispatch/callback/burstMode/collectTime", "0",
-              /*"-queue/defaultPlugin", "RAM,1.0",*/
               "-queue/connection/defaultPlugin", "RAM,1.0",
-              "-queue/callback/defaultPlugin", "CACHE,1.0",
+              /*"-queue/callback/defaultPlugin", "CACHE,1.0", is already default */
               "-queue/subject/defaultPlugin", "RAM,1.0"
            };
       return nativeConnectArgs;
