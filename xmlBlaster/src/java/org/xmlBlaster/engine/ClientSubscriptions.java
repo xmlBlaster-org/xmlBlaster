@@ -587,6 +587,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
             if (sub.getSessionInfo().getSessionName().getRelativeName().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
                 subscriptionInfoUniqueKey == sub.getSubscriptionId()) {
                vec.addElement(sub);
+               sub.shutdown();
             }
          }
          for (int ii=0; ii<vec.size(); ii++) {
