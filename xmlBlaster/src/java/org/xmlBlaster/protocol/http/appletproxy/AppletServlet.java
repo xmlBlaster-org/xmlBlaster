@@ -680,6 +680,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
 
       // xmlBlaster uses Suns XML parser as default
+      /*
       if (conf.getInitParameter("org.xml.sax.parser") != null) {
          props.put( "org.xml.sax.parser", conf.getInitParameter("org.xml.sax.parser"));
          if (log.TRACE) log.trace(ME, "Found system parameter org.xml.sax.parser=" + conf.getInitParameter("org.xml.sax.parser"));
@@ -687,7 +688,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       else
          props.put("org.xml.sax.parser", "org.apache.crimson.parser.Parser2"); // xmlBlaster uses Suns XML parser as default
       log.info(ME, "Using system parameter org.xml.sax.parser=" + props.get("org.xml.sax.parser"));
-
+      */
       if (props.size() > 0) {
          System.setProperties(props);
       }
