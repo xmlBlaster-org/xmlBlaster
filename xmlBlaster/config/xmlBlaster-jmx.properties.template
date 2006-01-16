@@ -213,16 +213,6 @@ XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideExce
 LogFormat.Date=MEDIUM
 LogFormat.Time=MEDIUM
 
-
-#------------------------------------------------------------------------------
-#
-# JAXP parsers. Currently only crimson is actually possible to use.
-#
-javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
-javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
-#------------------------------------------------------------------------------
-
-
 #------------------------------------------------------------------------------
 # Any other custom properties can be added here.
 # These are available through the API e.g.
