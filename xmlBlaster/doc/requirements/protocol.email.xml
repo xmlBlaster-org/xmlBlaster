@@ -381,10 +381,11 @@ care yourself to increment it manually for each follow up email:<br />
         &lt;expires>2005-12-13 19:17:53.148&lt;/expires>
       &lt;/messageId></code>
 </p>
-<p>Optionally you can send an expire date, when this is elapsed the email is discarded by the xmlBlaster server.</p>
 <p>If you use our embedded java client protocol plugin for <code>email</code>
 this limitation does not exist, here we correctly send a unique and ascending timestamp.
 </p>
+
+<p>Additional note: Optionally you can send an expire date, when this is elapsed the email is discarded by the xmlBlaster server.</p>
 </example>
 
 
@@ -587,6 +588,9 @@ on server side and on java client side.</p>
              If the username or password contains a '@' character it
              usually should be escaped by a '%40'. For easier usage
              we do this automatically for you.
+             Other special characters like '%' are not handled
+             by xmlBlaster and you need to url encode it yourself, in this
+             case write '%25' instead (the hex 25 from the ASCII chart).
              </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -912,6 +916,7 @@ on server side and on java client side.</p>
       </ol>
    </todo>
    <see type="REQ">protocol</see>
+   <see type="REQ">admin.events</see>
    <see type="API">org.xmlBlaster.util.protocol.email.Pop3Driver</see>
    <see type="API">org.xmlBlaster.util.protocol.email.SmtpClient</see>
    <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
