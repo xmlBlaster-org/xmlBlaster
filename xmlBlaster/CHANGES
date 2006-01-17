@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.1.1 [2006-01-16] #14622
 =====================================
 
+ o #14632 EventPlugin added check for client callback to prevent NPE
+
  o #14620 Bugfix potential memory leak (ClientSubscriptions.java):
    Added shutdown() for XPath subscriptions
 
