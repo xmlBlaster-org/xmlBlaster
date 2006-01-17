@@ -201,5 +201,12 @@ public class SpecificPostgres extends SpecificDefault {
       throw new Exception("SpecificPostgres.getContentFromGuid is not implemented yet for table='" + table + "' and guid='" + guid + "'");
    }
    
+   /**
+    * returns true if the sequence exists already.
+    */
+   protected boolean sequenceExists(Connection conn, String sequenceName) throws Exception {
+      throw new Exception("The method sequenceExist has not been implemented yet. Please implement it");
+   }
+
    
 }

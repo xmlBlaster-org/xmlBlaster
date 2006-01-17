@@ -55,10 +55,10 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * not detect synchronously if a CREATE has been done or which can not register the necessary triggers on that
     * newly created table.
     * 
-    * @param catalog
-    * @param schema
-    * @param table
-    * @param attrs
+    * @param catalog can be null
+    * @param schema can be null
+    * @param table can not be null
+    * @param attrs can be null
     * @param sendInitialContents if true it will send all the contents of the added table, if false it
     * will not send anything. So normally if you made a dump of the Database you don't want
     * to send all the content of the tables again.

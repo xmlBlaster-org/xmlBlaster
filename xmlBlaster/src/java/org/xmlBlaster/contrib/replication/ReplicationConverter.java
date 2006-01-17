@@ -256,10 +256,20 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          completeAttrs.put(ACTION_ATTR, action);
          if (markProcessed)
             completeAttrs.put(ALREADY_PROCESSED_ATTR, "true");
-         
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             try {
                log.info("addInfo: going to create a new table '" + tableName + "'");
+               this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+               log.severe("Could not correctly add trigger on table '" + tableName + "' : " + ex.getMessage());
+            }
+         }
+         if (action.equalsIgnoreCase(INITIAL_ACTION)) {
+            try {
+               log.info("addInfo: going to start a (requested) intial action for table  '" + tableName + "' and destination '" + newContent + "'");
+               completeAttrs.put("_destination", newContent);
                this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
             }
             catch (Exception ex) {

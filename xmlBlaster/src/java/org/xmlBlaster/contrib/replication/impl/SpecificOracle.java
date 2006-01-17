@@ -612,150 +612,6 @@ public class SpecificOracle extends SpecificDefault {
    }
    
    
-
-   private int cleanupOpOLD(Connection conn, ArrayList names, String schema, String prefix, String postfix) throws SQLException {
-      int sum = 0;
-      for (int i=0; i < names.size(); i++) {
-         Statement st = null;
-         try {
-            String name = (String)names.get(i);
-            if (schema != null)
-               name = schema + "." + name;
-            // String sql = "DROP TABLE "  + name + " CASCADE CONSTRAINTS";
-            String sql = prefix + " " + name + " " + postfix;
-            st = conn.createStatement();
-            sum += st.executeUpdate(sql);
-         }
-         catch (SQLException ex) {
-            if (st != null) {
-               st.close();
-            }
-         }
-      }
-      return sum;
-   }
-   
-   private int wipeoutSchemaSingleSweepOLD(String catalog, String schema) throws Exception {
-      Connection conn = null;
-      Statement st = null;
-      ResultSet rs = null;
-      int sum = 0;
-      try {
-         conn = this.dbPool.reserve();
-         conn.setAutoCommit(true);
-
-         {  // TRIGGERS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            // since cleanupOp does not really return the number of effectively removed entries
-            cleanupOp(conn, names, schema, "DROP TRIGGER", "");
-            rs.close();
-            st.close();
-         }
-         {  // SEQUENCES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
-            rs.close();
-            st.close();
-         }
-         {  // FUNCTIONS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP FUNCTION", "");
-            rs.close();
-            st.close();
-         }
-         {  // PROCEDURES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
-            rs.close();
-            st.close();
-         }
-         {  // VIEWS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
-            rs.close();
-            st.close();
-         }
-         {  // TABLES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
-            rs.close();
-            st.close();
-         }
-         {  // SYNONYMS
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP SYNONYM", "");
-            rs.close();
-            st.close();
-         }
-         {  // INDEXES
-            st = conn.createStatement();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
-            rs = st.executeQuery(sql);
-            ArrayList names = new ArrayList();
-            while (rs.next())
-               names.add(rs.getString(1));
-            sum += names.size();
-            cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
-            rs.close();
-            st.close();
-         }
-      }
-      finally {
-         if (rs != null)
-            rs.close();
-         if (st != null)
-            st.close();
-
-      }
-      return sum;
-   }
-
-
-   
-   
-   
    private int wipeoutSchemaSingleSweep(String catalog, String schema) throws Exception {
       Connection conn = null;
       int sum = 0;
@@ -942,6 +798,29 @@ public class SpecificOracle extends SpecificDefault {
          if (conn != null)
             this.dbPool.release(conn);
          conn = null;
+      }
+   }
+
+   /**
+    * returns true if the sequence exists already.
+    */
+   protected boolean sequenceExists(Connection conn, String sequenceName) throws Exception {
+      Statement st = null;
+      try {
+         st = conn.createStatement();
+         ResultSet rs = st.executeQuery("SELECT * from ALL_SEQUENCES WHERE SEQUENCE_NAME='" + sequenceName + "'");
+         return rs.next();
+      }
+      finally {
+         if (st != null) {
+            try {
+               st.close();
+            }
+            catch (Exception ex) {
+               log.warning("An exception occured when closing the statement, but the result will be considered: " + ex.getMessage());
+               ex.printStackTrace();
+            }
+         }
       }
    }
 

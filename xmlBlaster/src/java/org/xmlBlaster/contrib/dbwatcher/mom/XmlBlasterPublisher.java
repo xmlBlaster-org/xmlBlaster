@@ -99,6 +99,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    protected boolean eraseOnDelete;
    private int initCount = 0; 
    private I_Update defaultUpdate;
+   private String adminKey = "<key oid='mom.publisher.adminMsg'/>";
+   
    /** 
     * Can be null, taken out of the info object if the owner of this object has set the
     * parameter _connectionStateListener.
@@ -315,17 +317,21 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       else
          command = "";
 
+      String destLiteral = null;
+      Destination destination = null;
+      if (attrMap != null)
+         destLiteral = (String)attrMap.get("_destination");
+      if (destLiteral != null) {
+         destination = new Destination(new SessionName(this.glob, destLiteral));
+         destination.forceQueuing(true); // to ensure it works even if this comes before manager
+      }
+      
       // this is used to register the owner of this object (typically the DbWatcher)
       if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command)) {
          
-         String destination = null;
-         if (attrMap != null)
-            destination = (String)attrMap.get("_destination");
          PublishQos qos = null;
          if (destination != null) {
-            Destination dest = new Destination(new SessionName(this.glob, destination));
-            dest.forceQueuing(true); // to ensure it works even if this comes before manager
-            qos = new PublishQos(this.glob, dest);
+            qos = new PublishQos(this.glob, destination);
          }
          else
             qos = new PublishQos(this.glob);
@@ -366,14 +372,17 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       if (log.isLoggable(Level.FINER)) log.finer("Topic '" + pk + "' is published: " + out);
       try {
-         MsgUnit msgUnit = new MsgUnit(pk, out, this.publishQos);
+         if (destination != null)
+            pk = this.adminKey;
          
+         MsgUnit msgUnit = new MsgUnit(pk, out, this.publishQos);
+         if (destination != null)
+            ((MsgQosData)msgUnit.getQosData()).addDestination(destination);
          // to force to fill the client properties map !!
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);
          new ClientPropertiesInfo(msgUnit.getQosData().getClientProperties(), tmpInfo);
          addStringPropToQos(attrMap, (MsgQosData)msgUnit.getQosData());
-         
-         // msgUnit.getQosData().
+
          PublishReturnQos prq = this.con.publish(msgUnit);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
          if (log.isLoggable(Level.FINE)) log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");

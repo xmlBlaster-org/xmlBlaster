@@ -313,12 +313,12 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     *           opeation itself will have '0', the subsequent associated INSERT
     *           operations will have an increasing number (it is the number of
     *           the message not the number of the associated INSERT operation).
-    * 
+    * @param destination in case it is a ptp it is sent only to that destination, otherwise it is sent as a pub/sub
     * @return a uniqueId identifying this publish operation.
     * 
     * @throws Exception
     */
-   public final String publishCreate(int counter, SqlInfo updateInfo, long newReplKey) throws Exception {
+   public final String publishCreate(int counter, SqlInfo updateInfo, long newReplKey, String destination) throws Exception {
       log.info("publishCreate invoked for counter '" + counter + "'");
       SqlDescription description = updateInfo.getDescription();
       

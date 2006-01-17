@@ -43,15 +43,59 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
-public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
+public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ {
 
+   class ResultHandler implements I_ResultCb {
+
+      private int rowsPerMessage;
+      private InitialUpdater initialUpdater;
+      private SqlInfo sqlInfo;
+      private long newReplKey;
+      
+      public ResultHandler(InitialUpdater initialUpdater, SqlInfo sqlInfo, long newReplKey, int rowsPerMessage) {
+         this.initialUpdater = initialUpdater;
+         this.sqlInfo = sqlInfo;
+         this.newReplKey = newReplKey;
+         this.rowsPerMessage = rowsPerMessage;
+      }
+      
+      /**
+       * @see I_ResultCb#init(ResultSet)
+       */
+      public final void result(ResultSet rs) throws Exception {
+         try {
+            // TODO clear the columns since not really used anymore ...
+            int msgCount = 1; // since 0 was the create, the first must be 1
+            int internalCount = 0;
+            String destination = null; // FIXME pass the correct ptp destination or null
+            while (rs != null && rs.next()) {
+               // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
+               this.sqlInfo.fillOneRowWithObjects(rs, null);
+               internalCount++;
+               log.fine("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
+               if (internalCount == this.rowsPerMessage) {
+                  internalCount = 0;
+                  // publish
+                  log.fine("result: going to publish msg '" + msgCount + "' and internal count '" + internalCount + "'");
+                  this.initialUpdater.publishCreate(msgCount++, this.sqlInfo, this.newReplKey, destination);
+                  this.sqlInfo.getRows().clear(); // clear since re-using the same dbUpdateInfo
+               }
+            } // end while
+            if (this.sqlInfo.getRows().size() > 0) {
+               log.fine("result: going to publish last msg '" + msgCount + "' and internal count '" + internalCount + "'");
+               this.initialUpdater.publishCreate(msgCount, this.sqlInfo, this.newReplKey, destination);
+            }
+         } catch (Exception e) {
+            e.printStackTrace();
+            log.severe("Can't publish change event meat for CREATE");
+         }
+      }
+   }
+   
+   
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
 
    private int rowsPerMessage = 10;
-
-   private SqlInfo dbUpdateInfo;
-
-   private long newReplKey;
 
    protected I_Info info;
 
@@ -280,6 +324,8 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       }
    }
 
+   protected abstract boolean sequenceExists(Connection conn, String sequenceName) throws Exception;
+   
    /**
     * Checks if the sequence has to be created. 
     * If it is a 'CREATE SEQUENCE' operation a non-negative value is returned,
@@ -303,12 +349,20 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       try {
          conn = this.dbPool.reserve();
          try {
-            incrementReplKey(conn);
-            log.info("sequence '" +  name + "' exists, will not create it");
-            return 0; 
+            if (sequenceExists(conn, name)) {
+               log.info("sequence '" +  name + "' exists, will not create it");
+               return 0;
+            }
+            else {
+               log.info("table '" +  name + "' does not exist, will create it");
+               return 1;
+            }
+            //incrementReplKey(conn);
+            //log.info("sequence '" +  name + "' exists, will not create it");
+            //return 0; 
          }
          catch (Exception ex) {
-            log.info("table '" +  name + "' does not exist, will create it");
+            log.info("table '" +  name + "' does not exist (an exception occured), will create it");
             return 1;
          }
       }
@@ -582,11 +636,12 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       Connection conn = this.dbPool.reserve();
       int oldTransIsolation = 0;
       boolean oldTransIsolationKnown = false;
+
       try {
          conn.setAutoCommit(true);
          oldTransIsolation = conn.getTransactionIsolation();
          oldTransIsolationKnown = true;
-         this.dbUpdateInfo = new SqlInfo(this.info);
+         SqlInfo sqlInfo = new SqlInfo(this.info);
 
          if (catalog != null)
             catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -594,12 +649,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             schema = this.dbMetaHelper.getIdentifier(schema);
          table = this.dbMetaHelper.getIdentifier(table);
 
-         this.dbUpdateInfo.fillMetadata(conn, catalog, schema, table, null,
-               null);
-         SqlDescription description = this.dbUpdateInfo
-               .getDescription();
+         sqlInfo.fillMetadata(conn, catalog, schema, table, null, null);
+         SqlDescription description = sqlInfo.getDescription();
          description.addAttributes(attrs);
-         this.newReplKey = 0;
 
          // check if function and trigger are necessary (they are only if the
          // table has to be replicated.
@@ -611,34 +663,41 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             boolean addTrigger = tableToWatch.isReplicate();
             Statement st = null;
             if (addTrigger) { // create the function and trigger here
-               String createString = createTableTrigger(this.dbUpdateInfo.getDescription(), triggerName, tableToWatch.getActions());
-               if (createString != null && createString.length() > 1) {
-                  log.info("adding triggers to '" + table + "':\n\n" + createString);
-                  st = conn.createStatement();
-                  st.executeUpdate(createString);
-                  st.close();
+               if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK)) {
+                  String createString = createTableTrigger(sqlInfo.getDescription(), triggerName, tableToWatch.getActions());
+                  if (createString != null && createString.length() > 1) {
+                     log.info("adding triggers to '" + table + "':\n\n" + createString);
+                     st = conn.createStatement();
+                     st.executeUpdate(createString);
+                     st.close();
+                  }
+                  tableToWatch.setStatus(TableToWatchInfo.STATUS_OK);
+                  tableToWatch.storeStatus(this.replPrefix, this.dbPool);
                }
             }
             else
                log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
          }
-         else
+         else {
             log.info("table to watch '" + table + "' not found");
-
+         }
          conn.commit(); // just to make oracle happy for the next set transaction
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-         conn.setAutoCommit(false);
+         boolean autoCommit = false;
+         conn.setAutoCommit(autoCommit);
          // retrieve the Sequence number here ...
-         this.newReplKey = incrementReplKey(conn);
+         long newReplKey = incrementReplKey(conn);
          // publish the structure of the table (need to be done here since we
          // must retreive repl key after having added the trigger)
          
          if (sendInitialContents) {
-            this.initialUpdater.publishCreate(0, this.dbUpdateInfo, this.newReplKey);
+            String destination = null; // FIXME pass the correct destination in case it is a ptp
+            this.initialUpdater.publishCreate(0, sqlInfo, newReplKey, destination);
             if (schema != null)
                table = schema + "." + table;
             String sql = new String("SELECT * FROM " + table);
-            this.dbPool.select(conn, sql, false, this);
+            I_ResultCb resultHandler = new ResultHandler(this.initialUpdater, sqlInfo, newReplKey, this.rowsPerMessage); 
+            this.dbPool.select(conn, sql, autoCommit, resultHandler);
          }
          conn.commit();
       } 
@@ -663,37 +722,6 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             }
             this.dbPool.release(conn);
          }
-      }
-   }
-
-   /**
-    * @see I_ResultCb#init(ResultSet)
-    */
-   public final void result(ResultSet rs) throws Exception {
-      try {
-         // TODO clear the columns since not really used anymore ...
-         int msgCount = 1; // since 0 was the create, the first must be 1
-         int internalCount = 0;
-         while (rs != null && rs.next()) {
-            // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
-            this.dbUpdateInfo.fillOneRowWithObjects(rs, null);
-            internalCount++;
-            log.fine("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
-            if (internalCount == this.rowsPerMessage) {
-               internalCount = 0;
-               // publish
-               log.fine("result: going to publish msg '" + msgCount + "' and internal count '" + internalCount + "'");
-               this.initialUpdater.publishCreate(msgCount++, this.dbUpdateInfo, this.newReplKey);
-               this.dbUpdateInfo.getRows().clear(); // clear since re-using the same dbUpdateInfo
-            }
-         } // end while
-         if (this.dbUpdateInfo.getRows().size() > 0) {
-            log.fine("result: going to publish last msg '" + msgCount + "' and internal count '" + internalCount + "'");
-            this.initialUpdater.publishCreate(msgCount, this.dbUpdateInfo, this.newReplKey);
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
-         log.severe("Can't publish change event meat for CREATE");
       }
    }
 
@@ -729,12 +757,13 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
     * @return true if the table is found among the registered tables, false if not.
     * @throws SQLException
     */
-   private final boolean isTableRegistered(Connection conn, String catalog, String schema, String tableName) throws SQLException {
+   // private final boolean isTableRegistered(Connection conn, String catalog, String schema, String tableName) throws SQLException {
+   private final boolean isTableRegistered(Connection conn, TableToWatchInfo tableToWatch) throws SQLException {
       Statement st = null;
       ResultSet rs = null;
       try {
          // check wether the item already exists, if it exists return false
-         String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE catalogname='" + catalog + "' AND schemaname='" + schema + "' AND tablename='" + tableName + "'";
+         String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE catalogname='" + tableToWatch.getCatalog() + "' AND schemaname='" + tableToWatch.getSchema() + "' AND tablename='" + tableToWatch.getTable() + "'";
          st = conn.createStatement();
          rs = st.executeQuery(sql);
          return rs.next();
@@ -799,10 +828,20 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
             log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
          }
-         if (isTableRegistered(conn, catalog, schema, tableName) && !force) {
+         TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
+         if (isTableRegistered(conn, tableToWatch) && !force) {
             log.info("table '" + tableName + "' is already registered, will not add it");
             return false;
          }
+         /*
+         if (force) {
+            if (isTableRegistered(conn, tableToWatch)) {
+               log.info("table '" + tableName + "' is already registered and 'force' has been choosed. Will set its status to 'REMOVE'");
+               tableToWatch.setStatus(TableToWatchInfo.STATUS_REMOVE);
+               tableToWatch.storeStatus(this.replPrefix, this.dbPool);
+            }
+         }
+         */
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
@@ -874,14 +913,20 @@ public abstract class SpecificDefault implements I_DbSpecific, I_ResultCb {
       String originalCatalog = infoDescription.getCatalog();
       String completeTableName = null;
       if (mapper != null) {
-         String tableName = mapper.getMappedTable(originalCatalog, originalSchema, originalTableName, null);
          String schema = null;
+         String tableName = mapper.getMappedTable(originalCatalog, originalSchema, originalTableName, null);
          if (originalSchema != null)
             schema = mapper.getMappedSchema(originalCatalog, originalSchema, originalTableName, null);
          if (schema != null)
             completeTableName = schema + "." + tableName;
          else
             completeTableName = tableName;
+      }
+      else {
+         if (originalSchema != null)
+            completeTableName = originalSchema + "." + originalTableName;
+         else
+            completeTableName = originalTableName;
       }
       
       buf.append("CREATE TABLE ").append(completeTableName).append(" (");

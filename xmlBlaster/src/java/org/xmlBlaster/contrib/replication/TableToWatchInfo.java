@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.util.StringPairTokenizer;
 
 
@@ -33,6 +34,10 @@ public class TableToWatchInfo {
    public final static String TRIGGER_KEY = "trigger";
    public final static String SEQUENCE_KEY = "sequence";
 
+   public final static String STATUS_CREATING = "CREATING";
+   public final static String STATUS_OK = "OK";
+   public final static String STATUS_REMOVE = "REMOVE";
+   
    private String catalog;
    private String schema;
    private String table;
@@ -204,68 +209,6 @@ public class TableToWatchInfo {
             String txt = "The string '" +tmp + "' could not be parsed as a long for 'sequence'. The complete value was '" + val;
             throw new Exception(txt);
          }
-      }
-   }
-   
-   /**
-    * Parses the value and fills the object appropriately. The 
-    * syntax to be parsed is of the kind: <br/>
-    * [${replicateTxt}.][${triggerName}.]${sequenceNr}<br/>
-    * Defaults are replicateTxt=IDU, triggerName=null (will be 
-    * assigned by the application, sequenceNr=-1, will be assigned
-    * by the application.
-    * @param val
-    * @throws Exception
-    * @deprecated
-    */
-   private final void parseValueOLD(String val) throws Exception {
-      if (val == null || val.trim().length() < 1) {
-         this.actions = "";
-         this.trigger = null;
-         this.replKey = -1L;
-         return;
-      }
-      
-      String tmp1 = null;
-      String tmp2 = null;
-      String tmp3 = null;
-      val = val.trim();
-      if (val.startsWith(VAL_SEP))
-         val = " " + val;
-      String doubleSep = VAL_SEP + VAL_SEP;
-      // since it does not recognize ',,' as ', ,'
-      int pos = val.indexOf(doubleSep);
-      if (pos > -1L) {
-         val = val.substring(0, pos) + VAL_SEP + " " + VAL_SEP + val.substring(pos + doubleSep.length());
-      }
-      
-      StringTokenizer tokenizer = new StringTokenizer(val, VAL_SEP);
-      if (tokenizer.hasMoreTokens()) {
-         tmp1 = tokenizer.nextToken();
-         if (tokenizer.hasMoreTokens()) {
-            tmp2 = tokenizer.nextToken();
-            if (tokenizer.hasMoreTokens())
-               tmp3 = tokenizer.nextToken();
-         }
-      }
-      try {
-         if (tmp1 != null && tmp1.trim().length() > 0)
-            this.actions = tmp1.trim().toUpperCase();
-         else
-            this.actions = "";
-      }
-      catch (Throwable ex) {
-         throw new Exception("Can not parse the value '" + tmp1 + "' as a boolean inside the value '" + val + "' must either be true or false");
-      }
-      if (tmp2 != null && tmp2.trim().length() > 0)
-         this.trigger = tmp2.trim();
-      
-      try {
-         if (tmp3 != null && tmp3.trim().length() > 0)
-            this.replKey = Long.parseLong(tmp3.trim());
-      }
-      catch (Throwable ex) {
-         throw new Exception("Can not parse the value '" + tmp3 + "' as a long inside the value '" + val + "' must be a long value");
       }
    }
    
@@ -507,6 +450,11 @@ public class TableToWatchInfo {
 
    public void setDebug(int debug) {
       this.debug = debug;
+   }
+   
+   public void storeStatus(String replicationPrefix, I_DbPool dbPool) throws Exception {
+      String sql = "UPDATE " + replicationPrefix + "tables SET status='" + this.status + "' WHERE catalogname='" + this.catalog + "' AND schemaname='" + this.schema + "' AND tablename='" + this.table + "'";
+      dbPool.update(sql);
    }
    
 }

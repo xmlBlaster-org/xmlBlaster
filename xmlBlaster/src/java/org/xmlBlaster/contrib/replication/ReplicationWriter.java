@@ -136,8 +136,22 @@ private final static String ME = "ReplicationWriter";
    }
 
    public void shutdown() throws Exception {
-      if (this.prePostStatement != null)
+      if (this.prePostStatement != null) {
          this.prePostStatement.shutdown();
+         this.prePostStatement = null;
+      }
+      if (this.dbSpecific != null) {
+         this.dbSpecific.shutdown();
+         this.dbSpecific = null;
+      }
+      if (this.pool != null) {
+         this.pool.shutdown();
+         this.pool = null;
+      }
+      if (this.mapper != null) {
+         this.mapper.shutdown();
+         this.mapper = null;
+      }
    }
 
    /**
