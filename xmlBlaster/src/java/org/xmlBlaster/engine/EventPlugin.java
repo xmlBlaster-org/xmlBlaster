@@ -519,8 +519,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                log.fine("Register callback session state event = " + event);
                SessionName sessionName = new SessionName(this.engineGlob, name);
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+               DispatchManager mgr = null;
                if (sessionInfo != null)
-                  sessionInfo.getDispatchManager().addConnectionStatusListener(this);
+                  mgr = sessionInfo.getDispatchManager();
+               if (mgr != null) {
+                  mgr.addConnectionStatusListener(this);
+               }
                else {
                   if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
                   this.pendingCallbackSessionInfoSet.add(sessionName.getAbsoluteName());
@@ -1111,8 +1115,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (found) {
                   SessionName sessionName = new SessionName(this.engineGlob, name);
                   SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-                  if (sessionInfo != null) {
-                     sessionInfo.getDispatchManager().addConnectionStatusListener(this);
+                  DispatchManager mgr = null;
+                  if (sessionInfo != null)
+                     mgr = sessionInfo.getDispatchManager();
+                  if (mgr != null) {
+                     mgr.addConnectionStatusListener(this);
                      // done already:
                      //if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
                      //this.callbackSessionStateSet.add(sessionName.getRelativeName());
@@ -1189,8 +1196,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // Remove the listener for now
                SessionName sessionName = new SessionName(this.engineGlob, name);
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-               if (sessionInfo != null) {
-                  sessionInfo.getDispatchManager().removeConnectionStatusListener(this);
+               DispatchManager mgr = null;
+               if (sessionInfo != null)
+                  mgr = sessionInfo.getDispatchManager();
+               if (mgr != null) {
+                  mgr.removeConnectionStatusListener(this);
                   // this.callbackSessionStateSet does not change as the client could login again
                }
             } catch (Throwable e) {
