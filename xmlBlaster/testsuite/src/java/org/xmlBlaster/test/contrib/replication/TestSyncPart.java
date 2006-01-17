@@ -161,6 +161,14 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       }
       catch (Exception ex) {
       }
+      if (this.dbSpecific != null) {
+         this.dbSpecific.shutdown();
+         this.dbSpecific = null;
+      }
+      if (this.pool != null) {
+         this.pool.shutdown();
+         this.pool = null;
+      }
    }
 
    

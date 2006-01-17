@@ -175,6 +175,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          boolean doWarn = false;
          boolean force = true;
          dbSpecific.bootstrap(conn, doWarn, force);
+         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false);
       }
       catch (Exception ex) {
          if (conn != null)
@@ -297,10 +298,21 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
     */
    protected void tearDown() throws Exception {
       super.tearDown();
-       
+
+      try {
+         dbPool.update("DELETE from " + dbHelper.getIdentifier(this.replPrefix + "TABLES"));
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+      
       if (dbSpecific != null) {
          dbSpecific.shutdown();
          dbSpecific = null;
+      }
+      if (dbPool != null) {
+         dbPool.shutdown();
+         dbPool = null;
       }
    }
 
@@ -508,14 +520,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       {
          String sql = "CREATE SEQUENCE blabla  values(sss)";
          int ret = specificDefault.checkSequenceForCreation(sql);
-         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "') shall be zero since it only checks for the existence or 'repl_seq' by invoking a function", 0, ret);
-      }
-      String dropSql = "DROP SEQUENCE repl_seq";
-      pool.update(dropSql); // erases the sequence
-      {
-         String sql = "CREATE SEQUENCE repl_seq  values(sss)";
-         int ret = specificDefault.checkSequenceForCreation(sql);
-         assertEquals("check the operation of SpecificDefault.checkSequenceForCreation('" + sql + "')", 1, ret);
+         assertEquals("check the operation of SpecificDefault.checkTableForCreation('" + sql + "') shall be one since the sequence shall not exist", 1, ret);
       }
       {
          String sql = "CREATE TABLE repl_seq  values(sss)";

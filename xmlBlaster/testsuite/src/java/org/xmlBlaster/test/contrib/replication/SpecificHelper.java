@@ -106,6 +106,7 @@ public final class SpecificHelper {
        setDefaultProperty(props, "replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle");
        setDefaultProperty(props, "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/oracle/bootstrap.sql");
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/oracle/cleanup.sql");
+       setDefaultProperty(props, "dbWriter.shutdownMom", "true");
        this.sql = this.oracleTypesSql;
        // this.dropSql = this.dropSqlOracle;
        this.cascade = ""; // "CASCADE CONSTRAIN";
@@ -122,6 +123,7 @@ public final class SpecificHelper {
        setDefaultProperty(props, "replication.dbSpecific.class", "org.xmlBlaster.contrib.replication.impl.SpecificPostgres");
        setDefaultProperty(props, "replication.bootstrapFile", "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql");
        setDefaultProperty(props, "replication.cleanupFile", "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql");
+       setDefaultProperty(props, "dbWriter.shutdownMom", "true");
        this.sql = this.postgresTypesSql;
        // this.dropSql = this.dropSqlPostgres;
        this.cascade = " CASCADE";

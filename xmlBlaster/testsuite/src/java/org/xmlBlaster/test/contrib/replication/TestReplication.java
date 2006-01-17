@@ -15,6 +15,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
@@ -147,6 +148,9 @@ public class TestReplication extends XMLTestCase {
          setProp(writerInfo, "dispatch/callback/retries", "-1", true);
          setProp(writerInfo, "dispatch/callback/delay", "10000", true);
          setProp(writerInfo, "queue/callback/maxEntries", "10000", true);
+         // we need this since we are in testing, otherwise it would loop after the second tearDown
+         // because there would be two XmlBlasterAccess having the same session name (and only one session is allowed)
+         setProp(writerInfo, "dbWriter.shutdownMom", "true", true);
       }
       return ret;
    }
@@ -184,6 +188,11 @@ public class TestReplication extends XMLTestCase {
       boolean forceCreationAndInit = true;
       I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(tmpInfo, forceCreationAndInit);
       I_DbPool pool = (I_DbPool)tmpInfo.getObject("db.pool");
+
+      DbInfo persistentInfo = new DbInfo(pool, "replication");
+      String name = readerInfo.get("replication.prefix", "repl_") + ".oldReplKey";
+      persistentInfo.put(name, "0");
+      
       Connection conn = null;
       try {
          this.dbHelper = new DbMetaHelper(pool);

@@ -167,8 +167,14 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          if (conn != null)
             this.pool.release(conn);
       }
-      if (this.pool != null)
+      if (this.dbSpecific != null) {
+         this.dbSpecific.shutdown();
+         this.dbSpecific = null;
+      }
+      if (this.pool != null) {
          this.pool.shutdown();
+         this.pool = null;
+      }
    }
 
    

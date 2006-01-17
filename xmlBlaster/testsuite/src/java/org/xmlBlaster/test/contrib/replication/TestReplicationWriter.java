@@ -119,7 +119,6 @@ public class TestReplicationWriter extends XMLTestCase {
           ex.printStackTrace();
           fail();
        }
-       
     }
 
     /**
@@ -272,6 +271,14 @@ public class TestReplicationWriter extends XMLTestCase {
       if (dbSpecific != null) {
          dbSpecific.shutdown();
          dbSpecific = null;
+      }
+      if (this.replicationWriter != null) {
+         this.replicationWriter.shutdown();
+         this.replicationWriter = null;
+      }
+      if (this.dbPool != null) {
+         this.dbPool.shutdown();
+         this.dbPool = null;
       }
    }
 
