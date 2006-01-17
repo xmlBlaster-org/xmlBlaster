@@ -38,8 +38,20 @@ public class Publisher implements I_Timeout {
    private String publishKey;
    private String publishQos;
    private ConnectQos connectQos;
+
    private long pollInterval;
    private long maximumFileSize;
+   private String fileFilter;
+   private String filterType;
+   private String directoryName;
+   private boolean copyOnMove;
+   private String sent;
+   private String discarded;
+   private String lockExtention;
+   private long delaySinceLastFileChange;
+   
+   public static final String USE_REGEX = "regex";
+
    private Timestamp timeoutHandle;
    private static Timeout timeout = new Timeout("FileSystem-Poller");
    
@@ -50,6 +62,9 @@ public class Publisher implements I_Timeout {
    
    /** only used as a default login name and logging */
    private String name;
+   
+   private boolean isActive;
+   
    
    // private I_PluginConfig pluginConfig;
    
@@ -92,26 +107,52 @@ public class Publisher implements I_Timeout {
          this.global.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
       }
 
-      String fileFilter =  this.global.get("fileFilter", (String)null, null, pluginConfig);
-      String directoryName = this.global.get("directoryName", (String)null, null, pluginConfig);
+      this.fileFilter =  this.global.get("fileFilter", (String)null, null, pluginConfig);
+      this.directoryName = this.global.get("directoryName", (String)null, null, pluginConfig);
       if (directoryName == null)
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'directoryName' is mandatory");
       
       this.maximumFileSize = this.global.get("maximumFileSize", 10000000L, null, pluginConfig);
-      long delaySinceLastFileChange = this.global.get("delaySinceLastFileChange", 10000L, null, pluginConfig);
+      this.delaySinceLastFileChange = this.global.get("delaySinceLastFileChange", 10000L, null, pluginConfig);
       this.pollInterval = this.global.get("pollInterval", 2000L, null, pluginConfig);
 
-      String sent =  this.global.get("sent", (String)null, null, pluginConfig);
-      String discarded =  this.global.get("discarded", (String)null, null, pluginConfig);
-      String lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
+      this.sent =  this.global.get("sent", (String)null, null, pluginConfig);
+      this.discarded =  this.global.get("discarded", (String)null, null, pluginConfig);
+      this.lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
      
       // this would throw an exception and act as a validation if something is not OK in configuration
       new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
-      String filterType = this.global.get("filterType", "simple", null, pluginConfig);
-      boolean isTrueRegex = "regex".equalsIgnoreCase(filterType);
-      boolean copyOnMove = this.global.get("copyOnMove", false, null, pluginConfig);
-      this.directoryManager = new DirectoryManager(this.global, name, directoryName, delaySinceLastFileChange, 
-                                                   fileFilter, sent, discarded, lockExtention, isTrueRegex, copyOnMove);
+      this.filterType = this.global.get("filterType", "simple", null, pluginConfig);
+      this.copyOnMove = this.global.get("copyOnMove", false, null, pluginConfig);
+      
+      createDirectoryManager();
+   }
+   
+   /**
+    * Create the file checker instance with the current configuration. 
+    * @throws XmlBlasterException
+    */
+   private void createDirectoryManager() throws XmlBlasterException {
+      boolean isTrueRegex = USE_REGEX.equalsIgnoreCase(filterType);
+      this.directoryManager = new DirectoryManager(this.global,
+            this.name, this.directoryName, this.delaySinceLastFileChange, 
+            this.fileFilter, this.sent, this.discarded, this.lockExtention, isTrueRegex,
+            this.copyOnMove);
+   }
+
+   /**
+    * Useful for JMX invocations
+    */
+   private void reCreateDirectoryManager() {
+      try {
+         createDirectoryManager();
+      } catch (XmlBlasterException e) {
+         throw new IllegalArgumentException(e.getMessage());
+      }
+   }
+
+   public String toString() {
+      return "FilePoller " + this.filterType + " directoryName=" + this.directoryName + " fileFilter='" + this.fileFilter + "'";
    }
    
    /**
@@ -130,6 +171,7 @@ public class Publisher implements I_Timeout {
       this.access = this.global.getXmlBlasterAccess();
       // no callback listener (we are not subscribing and don't want ptp)
       this.access.connect(this.connectQos, null);
+      this.isActive = true;
       this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
    }
    
@@ -141,6 +183,7 @@ public class Publisher implements I_Timeout {
       if (this.log.CALL) 
          this.log.call(ME, "shutdown");
       timeout.removeTimeoutListener(this.timeoutHandle);
+      this.isActive = false;
       this.forceShutdown = true; // in case doPublish is looping due to an exception
       synchronized (this) {
          this.isShutdown = false;
@@ -149,11 +192,10 @@ public class Publisher implements I_Timeout {
       }
    }
    
-   public synchronized void publish() {
+   public synchronized int publish() {
       while (true) {
          try {
-            doPublish();
-            break;
+            return doPublish();
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "publish: exception " + ex.getMessage());
@@ -165,14 +207,15 @@ public class Publisher implements I_Timeout {
          if (this.forceShutdown)
             break;
       }
+      return 0;
    }
    
-   private void doPublish() throws XmlBlasterException {
+   private int doPublish() throws XmlBlasterException {
       if (this.log.CALL) 
          this.log.call(ME, "doPublish");
       Set entries = this.directoryManager.getEntries();
       if (entries == null || entries.size() < 1)
-         return;
+         return 0;
       FileInfo[] infos = (FileInfo[])entries.toArray(new FileInfo[entries.size()]);
       for (int i=0; i < infos.length; i++) {
          if (this.maximumFileSize <= 0L || infos[i].getSize() <= this.maximumFileSize) {
@@ -215,6 +258,7 @@ public class Publisher implements I_Timeout {
             }
          }
       }
+      return entries.size();
    }
    
    /**
@@ -234,5 +278,181 @@ public class Publisher implements I_Timeout {
          this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
       }
    }
-      
+
+   public void activate() throws Exception {
+      if (!this.isActive) {
+         this.isActive = true;
+         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminService#deActivate()
+    */
+   public void deActivate() {
+      timeout.removeTimeoutListener(this.timeoutHandle);
+      this.isActive = false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminService#isActive()
+    */
+   public boolean isActive() {
+      return this.isActive;
+   }
+   
+   public String triggerScan() {
+      try {
+         int count = doPublish();
+         if (count == 0)
+            return "No matching file found to publish";
+         else
+            return "Published " + count + " matching files";
+      } catch (XmlBlasterException e) {
+         throw new IllegalArgumentException(e.getMessage());
+      }
+   }
+
+   /**
+    * @return Returns the directoryName.
+    */
+   public String getDirectoryName() {
+      return this.directoryName;
+   }
+
+   /**
+    * @param directoryName The directoryName to set.
+    */
+   public void setDirectoryName(String directoryName) {
+      this.directoryName = directoryName;
+      reCreateDirectoryManager();
+   }
+
+   /**
+    * @return Returns the fileFilter.
+    */
+   public String getFileFilter() {
+      return this.fileFilter;
+   }
+
+   /**
+    * @param fileFilter The fileFilter to set.
+    */
+   public void setFileFilter(String fileFilter) {
+      this.fileFilter = fileFilter;
+      reCreateDirectoryManager();
+   }
+
+   /**
+    * @return Returns the filterType.
+    */
+   public String getFilterType() {
+      return this.filterType;
+   }
+
+   /**
+    * @param filterType The filterType to set.
+    */
+   public void setFilterType(String filterType) {
+      this.filterType = filterType;
+      reCreateDirectoryManager();
+   }
+
+   /**
+    * @return Returns the maximumFileSize.
+    */
+   public long getMaximumFileSize() {
+      return this.maximumFileSize;
+   }
+
+   /**
+    * @param maximumFileSize The maximumFileSize to set.
+    */
+   public void setMaximumFileSize(long maximumFileSize) {
+      this.maximumFileSize = maximumFileSize;
+   }
+
+   /**
+    * @return Returns the pollInterval.
+    */
+   public long getPollInterval() {
+      return this.pollInterval;
+   }
+
+   /**
+    * @param pollInterval The pollInterval to set.
+    */
+   public void setPollInterval(long pollInterval) {
+      this.pollInterval = pollInterval;
+   }
+
+   /**
+    * @return Returns the copyOnMove.
+    */
+   public boolean isCopyOnMove() {
+      return this.copyOnMove;
+   }
+
+   /**
+    * @param copyOnMove The copyOnMove to set.
+    */
+   public void setCopyOnMove(boolean copyOnMove) {
+      this.copyOnMove = copyOnMove;
+   }
+
+   /**
+    * @return Returns the delaySinceLastFileChange.
+    */
+   public long getDelaySinceLastFileChange() {
+      return this.delaySinceLastFileChange;
+   }
+
+   /**
+    * @param delaySinceLastFileChange The delaySinceLastFileChange to set.
+    */
+   public void setDelaySinceLastFileChange(long delaySinceLastFileChange) {
+      this.delaySinceLastFileChange = delaySinceLastFileChange;
+   }
+
+   /**
+    * @return Returns the discarded.
+    */
+   public String getDiscarded() {
+      return this.discarded;
+   }
+
+   /**
+    * @param discarded The discarded to set.
+    */
+   public void setDiscarded(String discarded) {
+      this.discarded = discarded;
+   }
+
+   /**
+    * @return Returns the lockExtention.
+    */
+   public String getLockExtention() {
+      return this.lockExtention;
+   }
+
+   /**
+    * @param lockExtention The lockExtention to set.
+    */
+   public void setLockExtention(String lockExtention) {
+      this.lockExtention = lockExtention;
+   }
+
+   /**
+    * @return Returns the sent.
+    */
+   public String getSent() {
+      return this.sent;
+   }
+
+   /**
+    * @param sent The sent to set.
+    */
+   public void setSent(String sent) {
+      this.sent = sent;
+   }
 }

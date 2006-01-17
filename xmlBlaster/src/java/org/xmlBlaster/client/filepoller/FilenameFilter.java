@@ -8,7 +8,6 @@ package org.xmlBlaster.client.filepoller;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -37,12 +36,10 @@ public class FilenameFilter implements FileFilter {
    }
 
    public void setPattern(Global global, String globPattern, boolean trueRegex) throws XmlBlasterException {
-      LogChannel log = global.getLog("filepoller");
       char[] gPat = globPattern.toCharArray();
       char[] rPat = new char[gPat.length * 2];
       boolean isWin32 = (File.separatorChar == '\\');
       boolean inBrackets = false;
-      StringBuffer buf = new StringBuffer();
       int j = 0;
       if (isWin32) {
          //    On windows, a pattern ending with *.* is equal to ending with *

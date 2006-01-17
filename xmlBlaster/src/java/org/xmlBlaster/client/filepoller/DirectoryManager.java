@@ -437,25 +437,37 @@ public class DirectoryManager {
       }
    }
    
+   /** java org.xmlBlaster.client.filepoller.DirectoryManager -path /tmp/filepoller -filter "*.xml" -filterType simple */
    public static void main(String[] args) {
       try {
          Global global = new Global(args);
-         File directory = new File(".");
-         System.out.println("directory to look into: '" + directory.getName() + "'");
+         String path = global.get("path", ".", null, null);
+         File directory = new File(path);
          String filter = global.get("filter", "*.txt", null, null);
          String filterType = global.get("filterType", "simple", null, null);
          boolean trueRegex = false;
          if ("regex".equalsIgnoreCase(filterType))
             trueRegex = true;
-         System.out.println("the regex filter is '" + filter + "'"); 
+         System.out.println("-----------Configuration:-------------------------");
+         System.out.println("Directory to look into: '" + directory.getAbsolutePath() + "'");
+         System.out.println("The " + filterType + " filter is '" + filter + "'"); 
+         System.out.println(""); 
+         System.out.println("-----------Matching Results:----------------------");
          FilenameFilter fileFilter = new FilenameFilter(global, filter, trueRegex);
          File[] files = directory.listFiles(fileFilter);
-         if (files == null || files.length < 1)
-            System.out.println("no files found matching the regex expression '" + filter + "'");
+         if (files == null || files.length < 1) {
+            System.out.println(""); 
+            System.out.println("WARN: no files found matching the " + filterType + " expression '" + filter + "'");
+            System.out.println(""); 
+            System.exit(0);
+         }
          for (int i=0; i < files.length; i++) {
-            System.out.println("   - file '" + i + "' \t + " + files[i].getName());
-         } 
-         System.out.println("no more files found");         
+            System.out.println("file[" + i + "] = " + files[i].getName());
+         }
+         if (files.length > 0) {
+            System.out.println("");
+            System.out.println("no more files found");
+         }
          
       }
       catch (Exception ex) {
