@@ -1,6 +1,16 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Current svn repository
+======================
+
+ o #14635 Added full JMX control for FilePollerPlugin 
+ 
+ o #14632 EventPlugin: Check if client has a callback configured to avoid NPE
+
+ o #14627 Removed outdated XML parser configuration for servlet (http and applet)
+
+
 Changes for 1.1.1 [2006-01-16] #14622
 =====================================
 
