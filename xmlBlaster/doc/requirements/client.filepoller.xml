@@ -75,13 +75,34 @@
               <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
            </ul>
          </li>
-	 <li>
-	   To listen to different directories and/or to publish on different topics you need to configure different
-	   plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
-	   plugins).
-	 </li>
+         <li>
+           To listen to different directories and/or to publish on different topics you need to configure different
+           plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
+           plugins).
+         </li>
        </ul>
    </description>
+
+
+   <example lang="any" type="HTML">
+      <p id="regex" class="celltitel">Testing your filter pattern</p>
+      <p>You have two options to test your regular expression or your 'simple' filter in your configuration.</p>
+      <p>First, you can use the  <a href="admin.jmx.html#jconsole" target="others"><code>jconsole</code> (see admin.jmx requirement)</a>
+      to test your filter pattern. Go to the <code>MBean -> org.xmlBlaster -> node -> [your cluster name] -> service -> FilePollerPlugin[xxx]</code>
+      area. Here you can adjust all settings dynamically and test the settings under the tab <code>Operations</code> by clicking the
+      <code>triggerScan</code> button.
+      </p>
+      <p>Further you can test the pattern on command line:</p>
+
+<pre class="BORDER">
+ java org.xmlBlaster.client.filepoller.DirectoryManager -path /tmp/filepoller -filter "*.xml" -filterType simple 
+
+ java org.xmlBlaster.client.filepoller.DirectoryManager -path /tmp/filepoller -filter "hi.*\.xml" -filterType regex 
+</pre>
+
+   </example>
+
+
    <configuration where="server">
       <p>
          The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
@@ -299,11 +320,11 @@ and here a minimalistic one:
          <td>String</td>
          <td>simple</td>
          <td><b>optional</b>: If nothing is specified here, 'simple' is assumed. Valid types are 'simple' and 
-	        'regex'. This attribute decides which filter to use when processing both the fileFilter.
-		If you choose 'simple' then you can specify filters of the kind '*.xml' which are very simple to be used but
-		somehow limited if you want more advanced things to be done. The type 'regex' allows you to use regex 
-		syntax for the fileFilter. Note that <i>lockExtention</i> is not affected by this flag and is always considered
-		of type 'simple'.
+                'regex'. This attribute decides which filter to use when processing both the fileFilter.
+                If you choose 'simple' then you can specify filters of the kind '*.xml' which are very simple to be used but
+                somehow limited if you want more advanced things to be done. The type 'regex' allows you to use regex 
+                syntax for the fileFilter. Note that <i>lockExtention</i> is not affected by this flag and is always considered
+                of type 'simple'.
          </td>
        </tr>
        <tr>
@@ -311,21 +332,16 @@ and here a minimalistic one:
          <td>boolean</td>
          <td>false</td>
          <td><b>optional</b>: This flag has only effect if <b>sent</b> or <b>discarted</b> have been defined. If this 
-	     flag is false (or not set) then the file will be simply moved (or renamed). This is fast but it does not 
-	     work on all systems. Particularly on non-local file systems this is known to fail. Setting this flag to
-	     <i>true</i> forces a complete copy/delete of the file. This is slower but works even on file systems
-	     mounted remotely like nfs, samba or cifs.
+             flag is false (or not set) then the file will be simply moved (or renamed). This is fast but it does not 
+             work on all systems. Particularly on non-local file systems this is known to fail. Setting this flag to
+             <i>true</i> forces a complete copy/delete of the file. This is slower but works even on file systems
+             mounted remotely like nfs, samba or cifs.
          </td>
        </tr>
      </table>   
 
    </configuration>
 
-
-   <example lang="Java">
-      <![CDATA[
-      ]]>
-   </example>
    <see type="REQ">engine.runlevel</see>
    <author>laghi@swissinfo.org</author>
    <author>mr@marcelruff.info</author>
