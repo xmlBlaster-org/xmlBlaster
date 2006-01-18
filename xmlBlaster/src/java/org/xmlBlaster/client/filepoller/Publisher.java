@@ -172,7 +172,8 @@ public class Publisher implements I_Timeout {
       // no callback listener (we are not subscribing and don't want ptp)
       this.access.connect(this.connectQos, null);
       this.isActive = true;
-      this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+      if (this.pollInterval >= 0)
+         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
    }
    
    /**
@@ -192,10 +193,15 @@ public class Publisher implements I_Timeout {
       }
    }
    
-   public synchronized int publish() {
+   /**
+    * Fail-safe sending files. 
+    * @return Comman separated list of send file names
+    */
+   public synchronized void publish() {
       while (true) {
          try {
-            return doPublish();
+            doPublish();
+            break;
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "publish: exception " + ex.getMessage());
@@ -207,15 +213,36 @@ public class Publisher implements I_Timeout {
          if (this.forceShutdown)
             break;
       }
-      return 0;
+   }
+
+   /**
+    * Create a comma separated list of file names. 
+    * @param infos
+    * @param max Max file names to collect
+    * @return
+    */
+   public String toString(FileInfo[] infos, int max) {
+      StringBuffer sb = new StringBuffer();
+      if (max <= 0) max = infos.length;
+      if (max > infos.length) max = infos.length;
+      for (int i=0; i<max; i++) {
+         if (i>0) sb.append(",");
+         sb.append(infos[i].getRelativeName());
+      }
+      return sb.toString();
    }
    
-   private int doPublish() throws XmlBlasterException {
+   /**
+    * Publish file to xmlBlaster. 
+    * @return An empty string if nothing was sent, is never null
+    * @throws XmlBlasterException
+    */
+   private FileInfo[] doPublish() throws XmlBlasterException {
       if (this.log.CALL) 
          this.log.call(ME, "doPublish");
       Set entries = this.directoryManager.getEntries();
       if (entries == null || entries.size() < 1)
-         return 0;
+         return new FileInfo[0];
       FileInfo[] infos = (FileInfo[])entries.toArray(new FileInfo[entries.size()]);
       for (int i=0; i < infos.length; i++) {
          if (this.maximumFileSize <= 0L || infos[i].getSize() <= this.maximumFileSize) {
@@ -258,7 +285,7 @@ public class Publisher implements I_Timeout {
             }
          }
       }
-      return entries.size();
+      return infos;
    }
    
    /**
@@ -275,14 +302,16 @@ public class Publisher implements I_Timeout {
          this.log.error(ME, "timeout: " + ex.getMessage());
       }
       finally {
-         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+         if (this.pollInterval >= 0)
+            this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
       }
    }
 
    public void activate() throws Exception {
       if (!this.isActive) {
          this.isActive = true;
-         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+         if (this.pollInterval >= 0)
+            this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
       }
    }
 
@@ -291,6 +320,7 @@ public class Publisher implements I_Timeout {
     */
    public void deActivate() {
       timeout.removeTimeoutListener(this.timeoutHandle);
+      this.timeoutHandle = null;
       this.isActive = false;
    }
 
@@ -303,11 +333,18 @@ public class Publisher implements I_Timeout {
    
    public String triggerScan() {
       try {
-         int count = doPublish();
-         if (count == 0)
-            return "No matching file found to publish";
+         //this.timeoutHandle = timeout.addTimeoutListener(this, 0, null);
+         // Hack: I need to call it twice to be effective, why? (Marcel 2006-01)
+         for (int i=0; i<2; i++) {
+            FileInfo[] infos = doPublish();
+            if (infos.length > 0) {
+               return "Published matching files '" + toString(infos, 10) + "'";
+            }
+         }
+         if (this.delaySinceLastFileChange > 0)
+            return "No matching file found to publish, note that it may take delaySinceLastFileChange=" + this.delaySinceLastFileChange + " millis until the file is sent.";
          else
-            return "Published " + count + " matching files";
+            return "No matching file found to publish.";
       } catch (XmlBlasterException e) {
          throw new IllegalArgumentException(e.getMessage());
       }
@@ -384,6 +421,8 @@ public class Publisher implements I_Timeout {
     */
    public void setPollInterval(long pollInterval) {
       this.pollInterval = pollInterval;
+      if (this.pollInterval < 0)
+         deActivate();
    }
 
    /**
@@ -398,6 +437,7 @@ public class Publisher implements I_Timeout {
     */
    public void setCopyOnMove(boolean copyOnMove) {
       this.copyOnMove = copyOnMove;
+      reCreateDirectoryManager();
    }
 
    /**
@@ -412,6 +452,7 @@ public class Publisher implements I_Timeout {
     */
    public void setDelaySinceLastFileChange(long delaySinceLastFileChange) {
       this.delaySinceLastFileChange = delaySinceLastFileChange;
+      reCreateDirectoryManager();
    }
 
    /**
@@ -426,6 +467,7 @@ public class Publisher implements I_Timeout {
     */
    public void setDiscarded(String discarded) {
       this.discarded = discarded;
+      reCreateDirectoryManager();
    }
 
    /**
@@ -440,6 +482,7 @@ public class Publisher implements I_Timeout {
     */
    public void setLockExtention(String lockExtention) {
       this.lockExtention = lockExtention;
+      reCreateDirectoryManager();
    }
 
    /**
@@ -454,5 +497,6 @@ public class Publisher implements I_Timeout {
     */
    public void setSent(String sent) {
       this.sent = sent;
+      reCreateDirectoryManager();
    }
 }

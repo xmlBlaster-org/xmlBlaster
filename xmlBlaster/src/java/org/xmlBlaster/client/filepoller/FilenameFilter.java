@@ -24,8 +24,8 @@ import gnu.regexp.REException;
  */
 public class FilenameFilter implements FileFilter {
 
-   //private Pattern pattern;
-   private RE pattern;
+   private RE regex;
+   private String pattern;
    
    public FilenameFilter() {
    }
@@ -36,88 +36,92 @@ public class FilenameFilter implements FileFilter {
    }
 
    public void setPattern(Global global, String globPattern, boolean trueRegex) throws XmlBlasterException {
-      char[] gPat = globPattern.toCharArray();
-      char[] rPat = new char[gPat.length * 2];
-      boolean isWin32 = (File.separatorChar == '\\');
-      boolean inBrackets = false;
-      int j = 0;
-      if (isWin32) {
-         //    On windows, a pattern ending with *.* is equal to ending with *
-         int len = gPat.length;
-         if (globPattern.endsWith("*.*")) {
-            len -= 2;
-         }
-         for (int i = 0; i < len; i++) {
-            if (gPat[i] == '*') {
-               rPat[j++] = '.';
-            }
-            rPat[j++] = gPat[i];
-         }
+      if (trueRegex) {
+         this.pattern = globPattern;
       }
       else {
-         for (int i = 0; i < gPat.length; i++) {
-            switch (gPat[i]) {
-               case '*':
-                  if (!inBrackets) {
-                     rPat[j++] = '.';
-                  }
-                  rPat[j++] = '*';
-                  break;
-               case '?':
-                  rPat[j++] = inBrackets ? '?' : '.';
-                  break;
-               case '[':
-                  inBrackets = true;
-                  rPat[j++] = gPat[i];
-                  if (i < gPat.length - 1) {
-                     switch (gPat[i + 1]) {
-                        case '!':
-                        case '^':
-                           rPat[j++] = '^';
-                           i++;
-                           break;
-                        case ']':
-                           rPat[j++] = gPat[++i];
-                           break;
+         char[] gPat = globPattern.toCharArray();
+         char[] rPat = new char[gPat.length * 2];
+         boolean isWin32 = (File.separatorChar == '\\');
+         boolean inBrackets = false;
+         int j = 0;
+         if (isWin32) {
+            //    On windows, a regex ending with *.* is equal to ending with *
+            int len = gPat.length;
+            if (globPattern.endsWith("*.*")) {
+               len -= 2;
+            }
+            for (int i = 0; i < len; i++) {
+               if (gPat[i] == '*') {
+                  rPat[j++] = '.';
+               }
+               rPat[j++] = gPat[i];
+            }
+         }
+         else {
+            for (int i = 0; i < gPat.length; i++) {
+               switch (gPat[i]) {
+                  case '*':
+                     if (!inBrackets) {
+                        rPat[j++] = '.';
                      }
-                  }
-                  break;
-               case ']':
-                  rPat[j++] = gPat[i];
-                  inBrackets = false;
-                  break;
-               case '\\':
-                  if (i == 0 && gPat.length > 1 && gPat[1] == '~') {
-                     rPat[j++] = gPat[++i];
-                  }
-                  else {
-                     rPat[j++] = '\\';
-                     if (i < gPat.length - 1 && "*?[]".indexOf(gPat[i + 1]) >= 0) {
+                     rPat[j++] = '*';
+                     break;
+                  case '?':
+                     rPat[j++] = inBrackets ? '?' : '.';
+                     break;
+                  case '[':
+                     inBrackets = true;
+                     rPat[j++] = gPat[i];
+                     if (i < gPat.length - 1) {
+                        switch (gPat[i + 1]) {
+                           case '!':
+                           case '^':
+                              rPat[j++] = '^';
+                              i++;
+                              break;
+                           case ']':
+                              rPat[j++] = gPat[++i];
+                              break;
+                        }
+                     }
+                     break;
+                  case ']':
+                     rPat[j++] = gPat[i];
+                     inBrackets = false;
+                     break;
+                  case '\\':
+                     if (i == 0 && gPat.length > 1 && gPat[1] == '~') {
                         rPat[j++] = gPat[++i];
                      }
                      else {
                         rPat[j++] = '\\';
+                        if (i < gPat.length - 1 && "*?[]".indexOf(gPat[i + 1]) >= 0) {
+                           rPat[j++] = gPat[++i];
+                        }
+                        else {
+                           rPat[j++] = '\\';
+                        }
                      }
-                  }
-                  break;
-               default:
-                  //if ("+()|^$.{}<>".indexOf(gPat[i]) >= 0) {
-                  if (!Character.isLetterOrDigit(gPat[i])) {
-                     rPat[j++] = '\\';
-                  }
-                  rPat[j++] = gPat[i];
-                  break;
+                     break;
+                  default:
+                     //if ("+()|^$.{}<>".indexOf(gPat[i]) >= 0) {
+                     if (!Character.isLetterOrDigit(gPat[i])) {
+                        rPat[j++] = '\\';
+                     }
+                     rPat[j++] = gPat[i];
+                     break;
+               }
             }
          }
+         this.pattern = new String(rPat, 0, j);
       }
+      
       try {
-         if (trueRegex)
-            this.pattern = new RE(globPattern, RE.REG_ICASE);
-         else
-            this.pattern = new RE(new String(rPat, 0, j), RE.REG_ICASE);
+         this.regex = new RE(this.pattern, RE.REG_ICASE);
       }
       catch (REException ex) {
-         throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + new String(rPat, 0, j) + "'", ex);
+         throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + this.pattern + "'", ex);
       }
       //this.pattern = Pattern.compile(new String(rPat, 0, j), Pattern.CASE_INSENSITIVE);
    }
@@ -132,7 +136,14 @@ public class FilenameFilter implements FileFilter {
       if (f.isDirectory()) {
          return false;
       }
-      return pattern.isMatch(f.getName());
-      // return pattern.matcher(f.getName()).matches();
+      return regex.isMatch(f.getName());
+      // return regex.matcher(f.getName()).matches();
+   }
+
+   /**
+    * @return Returns the pattern.
+    */
+   public String getPattern() {
+      return this.pattern;
    }
 }

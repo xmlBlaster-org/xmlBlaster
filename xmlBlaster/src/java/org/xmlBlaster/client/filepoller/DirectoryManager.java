@@ -34,6 +34,7 @@ public class DirectoryManager {
    private LogChannel log;
    private long delaySinceLastFileChange;
 
+   private String directoryName;
    private File directory;
    /** this is the the directory where files are moved to after successful publishing. If null they will be erased */
    private File sentDirectory;
@@ -60,6 +61,7 @@ public class DirectoryManager {
       this.log = this.global.getLog("filepoller");
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
+      this.directoryName = directoryName;
       this.directory = initDirectory(null, "directoryName", directoryName);
       if (this.directory == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".constructor", "the directory '" + directoryName + "' is null");
@@ -132,6 +134,7 @@ public class DirectoryManager {
          this.lockFiles.clear();
       }
       
+      this.directory = initDirectory(null, "directoryName", this.directoryName);
       if (!directory.canRead())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".scan", "I don't have rights to read from '" + directory.getName() + "'");
       if (!directory.canWrite())
