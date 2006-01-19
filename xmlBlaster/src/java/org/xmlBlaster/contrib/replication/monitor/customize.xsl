@@ -3,7 +3,7 @@
 
 <xsl:param name="queue.highalarm" select="10"/>
 <xsl:param name="queue.highwarn" select="4"/>
-<xsl:param name="show.cascading" select="'no'"/> <!-- the single quotes are important ! -->
+<xsl:param name="show.cascading" select="'yes'"/> <!-- the single quotes are important ! -->
 <xsl:param name="refresh.rate" select="10"/>
 
 <xsl:template name="header">
@@ -22,7 +22,7 @@
 
 <xsl:template name="footer">
      <div class="footer">
-        <a class="image" href="http://www.xmlBlaster.org"><img src="tims_rainbowfish.gif" alt="xmlBlaster" title="xmlBlaster.org" width="40"/></a>
+        <a class="image" href="http://www.xmlblaster.org/replication/ch03.html"><img src="tims_rainbowfish.gif" alt="xmlBlaster" title="monitoring documentation" width="40"/></a>
      </div>
 </xsl:template>
 
