@@ -157,6 +157,26 @@ public final class ReplaceVariable
    }
    
    /**
+    * Find the given tag from the given xml string and return its value.  
+    * Does not work if the tag exists multiple time or occures somewhere else in the text 
+    * @param tag For example "nodeId" for a tag &lt;nodeId>value&lt;/nodeId>
+    * @param attrToMatch. If you want to parse &lt;nodeId name='dummy' x='3'>value&lt;/nodeId> then 
+    * you need to pass " name='dummy' x='3'" here.
+    * @return null if none is found
+    */
+   public static String extractWithMatchingAttrs(String xml, String tag, String attrString) {
+      if (xml == null || tag == null) return null;
+      final String startToken = "<" + tag + attrString + ">";
+      final String endToken = "</" + tag + ">";
+      int start = xml.indexOf(startToken);
+      int end = xml.indexOf(endToken);
+      if (start != -1 && end != -1) {
+         return xml.substring(start + startToken.length(), end);
+      }
+      return null;
+   }
+   
+   /**
     * Find the given attribute from the given tag from the given xml string and return its value.  
     * Does not work if the tag exists multiple time or occures somewhere else in the text
     * @param xml The xml string to parse 
