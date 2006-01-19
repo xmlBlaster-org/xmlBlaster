@@ -171,7 +171,7 @@
    <!--
    <plugin create='true' id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
       <attribute id="xsltProcessor">XSLTProcessor</attribute>
-      <attribute id="hostname">localhost</attribute>
+      <attribute id="host">localhost</attribute>
       <attribute id="port">9999</attribute>
       <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
       <attribute id="xsltPath">org/xmlBlaster/contrib/replication/monitor</attribute>
