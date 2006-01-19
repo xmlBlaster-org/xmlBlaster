@@ -26,6 +26,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
@@ -259,17 +260,13 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             try {
                log.info("addInfo: going to create a new table '" + tableName + "'");
-               this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
-            }
-            catch (Exception ex) {
-               ex.printStackTrace();
-               log.severe("Could not correctly add trigger on table '" + tableName + "' : " + ex.getMessage());
-            }
-         }
-         if (action.equalsIgnoreCase(INITIAL_ACTION)) {
-            try {
-               log.info("addInfo: going to start a (requested) intial action for table  '" + tableName + "' and destination '" + newContent + "'");
-               completeAttrs.put("_destination", newContent);
+               if (newContent != null) {
+                  String destination = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='_destination'");
+                  if (destination == null || destination.length() < 1)
+                     log.severe("The destination could not be extracted from '" + newContent + "'");
+                  else
+                     completeAttrs.put("_destination", destination);
+               }
                this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
             }
             catch (Exception ex) {

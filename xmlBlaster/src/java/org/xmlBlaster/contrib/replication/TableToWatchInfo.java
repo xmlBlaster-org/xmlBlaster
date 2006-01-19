@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.util.StringPairTokenizer;
 
@@ -57,7 +58,7 @@ public class TableToWatchInfo {
    public final static String VAL_SEP = ",";
    public final static String EMPTY = " ";
    public final static String TABLE_PREFIX_WITH_SEP = TABLE_PREFIX + KEY_SEP;
-   
+
    /**
     * Gets an array containing all the tables to watch found in this configuration 
     * info object.
@@ -332,8 +333,14 @@ public class TableToWatchInfo {
       this.trigger = trigger;
    }
 
-   
-   private static TableToWatchInfo get(ResultSet rs) throws SQLException {
+   /**
+    * 
+    * @param rs
+    * @param tableToWatch can be null. If not it will be the instance returned (after having filled it of course).
+    * @return
+    * @throws SQLException
+    */
+   private static TableToWatchInfo get(ResultSet rs, TableToWatchInfo tableToWatch) throws SQLException {
       if (!rs.next())
          return null;
       String catalog = rs.getString(1);
@@ -344,7 +351,13 @@ public class TableToWatchInfo {
       long replKey = rs.getLong(6);
       String triggerName  = rs.getString(7);
       long debug = rs.getInt(8);
-      TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, table);
+      if (tableToWatch == null)
+         tableToWatch = new TableToWatchInfo(catalog, schema, table);
+      else {
+         tableToWatch.setCatalog(catalog);
+         tableToWatch.setSchema(schema);
+         tableToWatch.setTable(table);
+      }
       tableToWatch.setActions(actions);
       tableToWatch.setStatus(status);
       tableToWatch.setReplKey(replKey);
@@ -360,10 +373,11 @@ public class TableToWatchInfo {
     * @param catalog
     * @param schema
     * @param table
+    * @param tableToWatch can be null. If it is not null, it will be changed appropriately and returned.
     * @return
     * @throws Exception
     */
-   public static TableToWatchInfo get(Connection conn, String tableName, String catalog, String schema, String table) throws Exception {
+   public static TableToWatchInfo get(Connection conn, String tableName, String catalog, String schema, String table , TableToWatchInfo tableToWatch) throws Exception {
       Statement st = null;
       ResultSet rs = null;
       if (catalog == null)
@@ -373,7 +387,7 @@ public class TableToWatchInfo {
       try {
          st = conn.createStatement();
          rs = st.executeQuery("SELECT * from " + tableName + " WHERE catalogname='" + catalog + "' AND schemaname='" + schema + "' AND tablename='" + table + "'");
-         return get(rs);
+         return get(rs, tableToWatch);
       }
       finally {
          if (rs != null)
@@ -400,7 +414,7 @@ public class TableToWatchInfo {
          rs = st.executeQuery("SELECT * from " + tableName);
          
          TableToWatchInfo tmp = null;
-         while ( (tmp=get(rs)) != null)
+         while ( (tmp=get(rs, null)) != null)
             list.add(tmp);
          return (TableToWatchInfo[])list.toArray(new TableToWatchInfo[list.size()]);
       }
@@ -456,5 +470,17 @@ public class TableToWatchInfo {
       String sql = "UPDATE " + replicationPrefix + "tables SET status='" + this.status + "' WHERE catalogname='" + this.catalog + "' AND schemaname='" + this.schema + "' AND tablename='" + this.table + "'";
       dbPool.update(sql);
    }
+
+   public void removeFromDb(String replicationPrefix, I_DbPool dbPool) throws Exception {
+      String sql = "DELETE FROM " + replicationPrefix + "tables WHERE catalogname='" + this.catalog + "' AND schemaname='" + this.schema + "' AND tablename='" + this.table + "'";
+      dbPool.update(sql);
+   }
+   
+   public boolean isStatusOk() {
+      if (this.status == null)
+         return false;
+      return getStatus().equals(TableToWatchInfo.STATUS_OK);      
+   }
+   
    
 }

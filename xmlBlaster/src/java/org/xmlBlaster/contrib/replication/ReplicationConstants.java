@@ -49,7 +49,6 @@ public interface ReplicationConstants {
    public final static String DELETE_ACTION = "DELETE";
    public final static String DROP_ACTION = "DROP";
    public final static String CREATE_ACTION = "CREATE";
-   public final static String INITIAL_ACTION = "INITIAL";
    public final static String ALTER_ACTION = "ALTER";
    public final static String DUMP_ACTION = "DUMP";
    public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement

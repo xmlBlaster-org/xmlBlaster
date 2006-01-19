@@ -12,8 +12,6 @@ public interface ReplSlaveMBean {
    long getMaxReplKey();
    String getStatus();
    String getSqlResponse();
-   void doContinue() throws Exception;
-   void doPause() throws Exception;
    boolean toggleActive() throws Exception;
    void cancelInitialUpdate() throws Exception;
    boolean isActive();

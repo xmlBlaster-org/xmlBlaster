@@ -84,6 +84,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
       setStatus(STATUS_NORMAL);
+      final boolean doPersist = false;
+      final boolean dispatcherActive = false;
+      try {
+         setDispatcher(dispatcherActive, doPersist);
+      }
+      catch (Exception ex) {
+         log.severe("Could not temporary block the dispatcher for '" + this.slaveSessionId + "'");
+      }
    }
 
    public String getTopic() {
@@ -148,6 +156,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
       if (tmpStatus > -1)
          setStatus(tmpStatus);
+      
+      final boolean doPersist = false;
+      setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
       this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
       long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
@@ -241,7 +252,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
 
       if (this.statusTopic != null)
          sendStatusInformation("dbInitStart");
-      doPause(); // stop the dispatcher
+      final boolean doPersist = true;
+      doPause(doPersist); // stop the dispatcher
       SubscribeQos subQos = new SubscribeQos(this.global);
       subQos.setMultiSubscribe(false);
       subQos.setWantInitialUpdate(false);
@@ -316,7 +328,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.minReplKey = minReplKey;
       this.maxReplKey = maxReplKey;
       setStatus(STATUS_TRANSITION);
-      doContinue();
+      final boolean doPersist = true;
+      doContinue(doPersist);
    }
 
    /**
@@ -338,8 +351,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
          return new ArrayList();
       }
-      if (this.status == STATUS_INITIAL && !this.forceSending) // should not happen since Dispatcher is set to false
+      if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
+         final boolean doPersist = true;
+         doPause(doPersist);
          return new ArrayList();
+      }
 
       if (entries.size() > 0) {
          for (int i=entries.size()-1; i > -1; i--) {
@@ -365,7 +381,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          }
       }
       
-      
       // check if one of the messages is the transition end tag            
       for (int i=0; i < entries.size(); i++) {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);
@@ -376,7 +391,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             setStatus(STATUS_NORMAL);
             queue.removeRandom(entry);
             entries.remove(i);
-            // initiate a cascaded replication (if so configured)
+            // initiate a cascaded replication (if configured that way)
             if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null) {
                log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
                this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
@@ -458,20 +473,25 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       return new HashSet();
    }
 
+   private final void setDispatcher(boolean status, boolean doPersist) throws Exception {
+      I_AdminSession session = getSession(); 
+      session.setDispatcherActive(status);
+      if (doPersist)
+         this.persistentInfo.put(this.slaveSessionId + ".dispatcher", "" + status);
+   }
+   
    /**
     * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#doContinue()
     */
-   public void doContinue() throws Exception {
-      I_AdminSession session = getSession(); 
-      session.setDispatcherActive(true);
+   public void doContinue(boolean doPersist) throws Exception {
+      setDispatcher(true, doPersist);
    }
 
    /**
     * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#doPause()
     */
-   public void doPause() throws Exception {
-      I_AdminSession session = getSession(); 
-      session.setDispatcherActive(false);
+   public void doPause(boolean doPersist) throws Exception {
+      setDispatcher(false, doPersist);
    }
    
    /**
@@ -480,9 +500,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#toggleActive()
     * @return the actual state.
     */
-   public boolean toggleActive() throws Exception {
+   public synchronized boolean toggleActive() throws Exception {
       I_AdminSession session = getSession();
-      session.setDispatcherActive(!session.getDispatcherActive());
+      final boolean doPersist = true;
+      setDispatcher(!session.getDispatcherActive(), doPersist);
       return session.getDispatcherActive();
    }
    
