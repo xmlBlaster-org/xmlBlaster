@@ -94,6 +94,13 @@ td.normal {
    color: #007524;
 }
 
+td.error {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   background-color: #FF8080;
+   color: #000000;
+}
+
 td.number {
     font-family: "Courier New", Courier, mono;
     font-size: 9pt;

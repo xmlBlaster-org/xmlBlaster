@@ -53,13 +53,20 @@ Example of an xml output:
 <head>
 <title>Initiate Replication</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+
+<xsl:choose>
+  <xsl:when test="starts-with(/MBeanOperation/Operation/attribute::return,'error:') or /MBeanOperation/Operation/attribute::result='error'">
+  </xsl:when>
+  <xsl:otherwise>
 <xsl:element name="meta">
   <xsl:attribute name="http-equiv">refresh</xsl:attribute>
   <xsl:attribute name="content"><xsl:value-of select="0"/>;url=<xsl:call-template name="setDestination"/></xsl:attribute>
 </xsl:element>
+  </xsl:otherwise>
+</xsl:choose>
+
 
 <link href="styles.css" rel="stylesheet" type="text/css"/>
-
 
 <script language="JavaScript" type="text/javascript">
 
@@ -95,9 +102,29 @@ function gotoDestination() {
 </xsl:template>
 
 <xsl:template match='Operation'>
+        <xsl:choose>
+          <xsl:when test="starts-with(@return,'error:')">
+        <tr>         
+	   <td class="error"><xsl:value-of select="@return"/></td>
+	</tr>
+          </xsl:when>
+	  <xsl:otherwise>
         <tr>         
 	   <td class="normal"><xsl:value-of select="@return"/></td>
 	</tr>
+	  </xsl:otherwise>
+        </xsl:choose>
+
+
+        <xsl:choose>
+          <xsl:when test="@result = 'error'">
+        <tr>         
+	   <td class="error"><xsl:value-of select="@errorMsg"/></td>
+	</tr>
+          </xsl:when>
+        </xsl:choose>
+
+
 	<tr>
           <td colspan="1" align="center"><button class="small" title="Click to return to the replication list" onClick="gotoDestination()"><xsl:value-of select="$request.destination"/></button></td>
         </tr>
