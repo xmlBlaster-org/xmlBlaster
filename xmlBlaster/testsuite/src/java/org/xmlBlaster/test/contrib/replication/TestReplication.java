@@ -305,7 +305,8 @@ public class TestReplication extends XMLTestCase {
          
          try {
             boolean force = false;
-            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+            String destination = null;
+            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -368,7 +369,8 @@ public class TestReplication extends XMLTestCase {
          String sql = null;
          try {
             boolean force = false;
-            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+            String destination = null;
+            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
          }
          catch (Exception ex) {
             ex.printStackTrace();

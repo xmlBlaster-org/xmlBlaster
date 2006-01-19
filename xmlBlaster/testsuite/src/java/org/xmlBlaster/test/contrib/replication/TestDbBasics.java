@@ -464,13 +464,35 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          }
 
          {
-            sql = "{? = call " + this.replPrefix + "check_tables(?,?,?,?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "check_tables(?,?,?,?,NULL)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, "dbName");    // database name
                st.setString(3, "schema");
                st.setString(4, "table");
                st.setString(5, "COMMAND");
+               st.registerOutParameter(1, Types.VARCHAR);
+               ResultSet rs = st.executeQuery();
+               String ret = st.getString(1);
+               log.fine("The return value of the query '" + sql + "' is '" + ret + "'");
+               rs.close();
+               st.close();
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur when testing '" + sql + "'", false);
+            }
+         }
+
+         {
+            sql = "{? = call " + this.replPrefix + "check_tables(?,?,?,?,?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               st.setString(2, "dbName");    // database name
+               st.setString(3, "schema");
+               st.setString(4, "table");
+               st.setString(5, "COMMAND");
+               st.setString(6, "TEST CONTENT");
                st.registerOutParameter(1, Types.VARCHAR);
                ResultSet rs = st.executeQuery();
                String ret = st.getString(1);
@@ -517,7 +539,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             sql = "{? = call " + this.replPrefix + "add_table(?,?,?,?)}"; // name text, content text)
             try {
                boolean force = false;
-               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null, force);
+               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null, force, null);
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, null);
                st.setString(3, this.specificHelper.getOwnSchema(this.pool));
@@ -863,7 +885,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       if (doReplicate)
          flags = "IDU";
       boolean force = false;
-      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null, force);
+      String destination = null;
+      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null, force, destination);
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
@@ -961,7 +984,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          
          // add the tables to be detected to the repl_tables table
          boolean force = false;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+         String destination = null;
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -1050,7 +1074,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
 
          // add the tables to be detected to the repl_tables table
          boolean force = false;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force);
+         String destination = null;
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();

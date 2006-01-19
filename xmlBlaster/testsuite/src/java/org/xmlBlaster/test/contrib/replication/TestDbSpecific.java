@@ -175,7 +175,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          boolean doWarn = false;
          boolean force = true;
          dbSpecific.bootstrap(conn, doWarn, force);
-         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false);
+         String destination = null;
+         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false, destination);
       }
       catch (Exception ex) {
          if (conn != null)
