@@ -715,18 +715,20 @@ END ${replPrefix}debug_trigger;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}check_tables(dbName VARCHAR, schName 
-                                          VARCHAR, tblName VARCHAR, op VARCHAR)
+                                          VARCHAR, tblName VARCHAR, op VARCHAR,
+					  cont VARCHAR)
    RETURN VARCHAR AS
    transId    VARCHAR(${charWidth});
    res        VARCHAR(${charWidthSmall});
    tmp        INTEGER;
    replKey    INTEGER;
+   contClob   CLOB;
 BEGIN
    ${replPrefix}debug('CHECK_TABLES ' || schName || '.' || tblName);
---   SELECT count(*) INTO tmp FROM all_tables WHERE (table_name=tblName                 
---                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName))
---		   AND (owner=schName OR owner=UPPER(schName) OR 
---		   owner=LOWER(schName));
+--   SELECT count(*) INTO tmp FROM all_tables WHERE (table_name=tblName         
+--                   OR table_name=UPPER(tblName) OR table_name=LOWER(tblName)) 
+--		   AND (owner=schName OR owner=UPPER(schName) OR                
+--		   owner=LOWER(schName));                                       
 
    SELECT count(*) INTO tmp FROM sys.all_tables WHERE table_name=tblName AND owner=schName;
 
@@ -736,12 +738,20 @@ BEGIN
    IF tmp = 0 THEN 
       res := 'FALSE';
    ELSE
+      if cont = NULL THEN
+         contClob := EMPTY_CLOB;
+         dbms_lob.writeappend(contClob, length(cont), cont);
+         dbms_lob.close(contClob);
+      ELSE
+	contClob := NULL;
+      END IF;
+
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
                   guid, db_action, db_catalog, db_schema, content, oldContent,
                   version) values (replKey, transId, dbName, tblName,
-                  NULL, op, NULL, schName, NULL, NULL,  '0.0');
+                  NULL, op, NULL, schName, cont, NULL,  '0.0');
       res := 'TRUE';
    END IF;        
    RETURN res;
@@ -783,7 +793,7 @@ BEGIN
       op := 'REPLMOD';
       tableName := :new.tablename;
    END IF;
-   ret := ${replPrefix}check_tables(dbName, schemaName, tableName, op);
+   ret := ${replPrefix}check_tables(dbName, schemaName, tableName, op, NULL);
 END ${replPrefix}tables_trigger;
 -- EOC (end of command: needed as a separator for our script parser)            
 
