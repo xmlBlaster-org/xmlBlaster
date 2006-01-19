@@ -71,7 +71,8 @@ public class MX4JAdaptor extends GlobalInfo {
             Enumeration enm = this.getClass().getClassLoader().getResources(path);
             if(enm.hasMoreElements()) {
                URL url = (URL)enm.nextElement();
-               log.fine("loading file '" + url.getFile() + "'");
+               String urlTxt = "loading file '" + url.getFile() + "'";
+               log.fine(urlTxt);
                try {
                   ret = url.openStream();
                }
@@ -81,8 +82,8 @@ public class MX4JAdaptor extends GlobalInfo {
                while(enm.hasMoreElements() && !this.warnings.contains(path)) {
                   this.warnings.add(path);
                   url = (URL)enm.nextElement();
-                  log.warning("an additional matching file has been found in the classpath at '"
-                     + url.getFile() + "' please check that the correct one has been loaded (see info above)"
+                  log.warning(urlTxt + ". An additional matching file has been found in the classpath at '"
+                     + url.getFile() + "' please check that the correct one has been loaded (see info above)."
                   );
                }
             }
@@ -112,7 +113,7 @@ public class MX4JAdaptor extends GlobalInfo {
    private final void instantiateAdaptor(Global global) throws Exception {
       
       int port = getInt("port", 9999);
-      String host = get("host", "localhost");
+      String host = get("host", "0.0.0.0");
       String adaptorName = get("adaptorName", "HttpAdaptorMX4J");
       MBeanServer server = global.getJmxWrapper().getMBeanServer();
 
