@@ -329,3 +329,14 @@ only the SNMP subagent module jax.jar is GPL only!
   with a set of own xsl stylesheets. Added 2005-12-30. Version 3.0.1
   http://www.mx4j.org
 
+44) jmxtools.jar, jmxremote.jar and jmxri.jar
+=============================================
+  For JMX Sun-HTMLAdaptor support, 2003-04-30
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor
+  http://java.sun.com/products/JavaManagement/download.html
+  mx-1_2_1-ri (2005-07-03):    
+     jmxri.jar, jmxtools.jar
+  jmxremote-1_0_1-ri-bin-b58 (1.0.1 Update 4 2005-01-19):
+     jmxremote.jar, jmxremote_optional.jar, rmissl.jar
+  Note:
+     jmxremote.jar and jmxri.jar are needed for JDK 1.4 only
