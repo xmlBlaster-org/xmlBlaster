@@ -198,10 +198,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public String initiateReplication(String slaveSessionName, String replicationPrefix, String cascadeSlaveSessionName, String cascadeReplicationPrefix) throws Exception {
       try {
-         if (slaveSessionName == null || slaveSessionName.length() < 1)
+         if (slaveSessionName == null || slaveSessionName.trim().length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
          if (replicationPrefix == null || replicationPrefix.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The replication.prefix is null, please provide one");
+         slaveSessionName = slaveSessionName.trim();
          String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationPrefix + "'";
          log.info(ret);
          I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
@@ -219,12 +220,21 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
 
                if (cascadeReplicationPrefix != null && cascadeReplicationPrefix.trim().length() > 0)
                   individualInfo.put(I_ReplSlave.CASCADED_REPL_PREFIX, cascadeReplicationPrefix.trim());
-               if (cascadeSlaveSessionName != null && cascadeSlaveSessionName.trim().length() > 0)
-                  individualInfo.put(I_ReplSlave.CASCADED_REPL_SLAVE, cascadeSlaveSessionName.trim());
+
+               if (cascadeSlaveSessionName != null) {
+                  // check to avoid loops
+                  cascadeSlaveSessionName = cascadeSlaveSessionName.trim();
+                  if (slaveSessionName.equals(cascadeSlaveSessionName))
+                     return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
+                  if (cascadeSlaveSessionName.length() > 0)
+                     individualInfo.put(I_ReplSlave.CASCADED_REPL_SLAVE, cascadeSlaveSessionName);
+               }
                
                boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId);
-               if (isOkToStart == false)
-                  ret += " did fail since your status is '" + slave.getStatus() + "'";
+               if (isOkToStart == false) {
+                  ret += " did fail since your status is '" + slave.getStatus() + "'. Please invoke first 'Cancel Update'";
+                  return "error: " + ret; // don't throw an exception here since MX4J seems to loose exception msg.
+               }
             }
             else
                throw new Exception("the replication slave '" + slaveSessionName + "' was not found among the list of slaves which is '" + getSlaves() + "'");
@@ -843,7 +853,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (!hasUsAsDispatchPlugin(connQos))
          return;
       String sessionName = e.getSubscriptionInfo().getSessionInfo().getSessionName().getRelativeName();
-      log.info("removal of session for '" + sessionName +"' occured");
+      log.info("removal of one subscription for '" + sessionName +"' occured");
+      /*
       synchronized (this.replSlaveMap) {
          if (!this.replSlaveMap.containsKey(sessionName))
             log.warning("The slave '" + sessionName + "' is not registered.");
@@ -851,6 +862,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             this.replSlaveMap.remove(sessionName);
          }
       }
+      */
    }
 
    void setEngineGlobalProperty(String key, String val) {

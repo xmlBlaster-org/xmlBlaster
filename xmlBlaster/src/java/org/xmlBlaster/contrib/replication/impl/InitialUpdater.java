@@ -339,6 +339,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
 
       Map map = new HashMap();
       map.put("_command", "CREATE");
+      if (destination != null)
+         map.put("_destination", destination);
       // and later put the part number inside
       if (this.publisher == null) {
          log.warning("SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
@@ -392,7 +394,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
       else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
          boolean force = true;
-         this.dbSpecific.addTriggersIfNeeded(force);
+         this.dbSpecific.addTriggersIfNeeded(force, null);
       }
       else {
          log.warning("update from '" + topic + "' with request '" + msg + "'");

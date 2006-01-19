@@ -38,6 +38,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.I_Mapper;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
@@ -423,7 +424,17 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   buf.append(cmd).append("\n");
                log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
             }
-         } 
+         }
+         catch (Throwable ex) {
+            StringBuffer buf = new StringBuffer();
+            for (int j = 0; j < cmds.length; j++)
+               buf.append(cmd).append("\n");
+            log.severe("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
+            if (ex instanceof Exception)
+               throw (Exception)ex;
+            else
+               throw new Exception(ex);
+         }
          finally {
             if (st != null) {
                st.close();
@@ -656,7 +667,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // check if function and trigger are necessary (they are only if the
          // table has to be replicated.
          // it does not need this if the table only needs an initial synchronization. 
-         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table);
+         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table, null);
          
          if (tableToWatch != null) {
             String triggerName = tableToWatch.getTrigger();
@@ -691,7 +702,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // must retreive repl key after having added the trigger)
          
          if (sendInitialContents) {
-            String destination = null; // FIXME pass the correct destination in case it is a ptp
+            String destination = (String)attrs.get("_destination");
             this.initialUpdater.publishCreate(0, sqlInfo, newReplKey, destination);
             if (schema != null)
                table = schema + "." + table;
@@ -748,36 +759,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
 
-   
-   /**
-    * To use this method the arguments must already have been cleaned.
-    * @param catalog can not be null (use ' ' for null).
-    * @param schema can not be null (use ' ' for null)
-    * @param tablename can not be null
-    * @return true if the table is found among the registered tables, false if not.
-    * @throws SQLException
-    */
-   // private final boolean isTableRegistered(Connection conn, String catalog, String schema, String tableName) throws SQLException {
-   private final boolean isTableRegistered(Connection conn, TableToWatchInfo tableToWatch) throws SQLException {
-      Statement st = null;
-      ResultSet rs = null;
-      try {
-         // check wether the item already exists, if it exists return false
-         String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE catalogname='" + tableToWatch.getCatalog() + "' AND schemaname='" + tableToWatch.getSchema() + "' AND tablename='" + tableToWatch.getTable() + "'";
-         st = conn.createStatement();
-         rs = st.executeQuery(sql);
-         return rs.next();
-      }
-      finally {
-         if (rs != null) {
-            try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
-         }
-         if (st != null) {
-            try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
-         }
-      }
-   }
-   
    /**
     * To use this method the arguments must already have been cleaned.
     * @param schema can not be null (use ' ' for null)
@@ -808,7 +789,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @see I_DbSpecific#addTableToWatch(String, boolean)
     */
    public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         String actions, String triggerName, boolean force) throws Exception {
+         String actions, String triggerName, boolean force, String destination) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -828,9 +809,27 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
          }
-         TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
-         if (isTableRegistered(conn, tableToWatch) && !force) {
-            log.info("table '" + tableName + "' is already registered, will not add it");
+         
+         final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
+         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, null);
+         if (!force && tableToWatch != null && tableToWatch.isStatusOk()) { 
+            // send it manually since table exits already and trigger is OK.
+            log.info("table '" + tableName + "' is already registered, will add directly an entry in the ENTRIES Table");
+            String destAttrName = "?";
+            if (destination == null)
+               destAttrName = "NULL";
+            String sql = "{? = call " + this.replPrefix + "check_tables(NULL,?,?,?," + destAttrName + ")}"; // name text, content text)
+            CallableStatement st = conn.prepareCall(sql);
+            st.setString(2, schema);
+            st.setString(3, tableName);
+            st.setString(4, ReplicationConstants.CREATE_ACTION);
+            if (destination != null) {
+               String destinationTxt = "<desc><attr id='_destination'>" + destination + "</attr></desc>";
+               st.setString(5, destinationTxt);
+            }
+            st.registerOutParameter(1, Types.VARCHAR);
+            st.executeQuery();
+            st.close();
             return false;
          }
          /*
@@ -842,6 +841,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             }
          }
          */
+         // then it is either not OK or force true. or null 
+         if (tableToWatch != null) // then it is either not OK or force true. In both cases we need to remove old entry
+            tableToWatch.removeFromDb(this.replPrefix, this.dbPool);
+         
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
@@ -949,7 +952,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       return buf.toString();
    }
 
-   public final void addTriggersIfNeeded(boolean force) throws Exception {
+   public final void addTriggersIfNeeded(boolean force, String destination) throws Exception {
       if (force) {
          try {
             this.dbPool.update("DELETE FROM " + this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"));
@@ -967,7 +970,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          String table = tablesToWatch[i].getTable();
          String actions = tablesToWatch[i].getActions();
          String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, actions, trigger, force);
+         addTableToWatch(catalog, schema, table, actions, trigger, force, destination);
       }
    }
 
@@ -988,16 +991,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn = this.dbPool.reserve();
          oldTransactionIsolation = conn.getTransactionIsolation();
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-         // the result must be sent as a high prio message to the real
-         // destination
-         
-         /*
-          *  TODO Here we need to split this method in two since the triggers are generated/added asynchronously by the
-          *  polling of the DbWatcher. So we need to add the tables to watch, the DbWatcher needs to send a message to
-          *  us to notify us when he finished the job and then we could continue with phase2 of the initial Update
-          */
-         boolean doNotForce = false;
-         addTriggersIfNeeded(doNotForce);
+         // the result must be sent as a high prio message to the real destination
+         boolean forceFlag = false;
+         addTriggersIfNeeded(forceFlag, slaveName);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
          String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo);
