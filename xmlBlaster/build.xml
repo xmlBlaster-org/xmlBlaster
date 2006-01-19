@@ -348,12 +348,13 @@ TODO
       <echo message="   testsuite   --> generates the testsuite.jar file"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
-      <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
-      <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support [true]"/>
-      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support [true]"/>
-      <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support [false]"/>
+      <echo message="         -DADD_HSQLDB=false    hsqldb.jar, for embedded database support [true]"/>
+      <echo message="         -DADD_CORBA=false     jacorb.jar, for CORBA support [true]"/>
+      <echo message="         -DADD_XMLRPC=false    xmlrpc.jar, for XMLRPC support [true]"/>
+      <echo message="         -DADD_SNMP=false      jax.jar, for SNMP support [false]"/>
       <echo message="         -DADD_EMAIL=false     no EMAIL support [true]"/>
-      <echo message="         -DADD_TINYSQL=true    add tinySQL JDBC dBase driver support [false]"/>
+      <echo message="         -DADD_MX4J=false      mx4j-impl.jar, mx4j-tools.jar, for JMX-MX4J support [false]"/>
+      <echo message="         -DADD_TINYSQL=true    tinySQL JDBC dBase driver support [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_PLUGINPROP=[xml file] Adds your customized xmlBlasterPlugins.xml file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
@@ -1576,6 +1577,7 @@ TODO
       <property name="ADD_J2EE" value="false"/>
       <property name="ADD_CONTRIB" value="false"/>
       <property name="ADD_JMXTOOLS" value="false"/> <!-- To use HTMLAdaptor, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor -->
+      <property name="ADD_MX4J" value="false"/> <!-- To use JMX MX4J HTML Adaptor, see http://www.mx4j.org, http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#htmladaptor -->
       <property name="ADD_SNMP" value="false"/>
       <property name="ADD_TINYSQL" value="false"/>
       <property name="ADD_PROP" value="default"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties (to configure MoM) -->
@@ -1647,6 +1649,15 @@ TODO
             <!-- added this since it does not work with JDK1.4 otherwise -->
             <unjar src="${lib.dir}/jmxremote.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/jmxri.jar" dest="${dist-classes.dir}" />
+         </case>
+         <default>
+         </default>
+      </switch>
+      <switch value="${ADD_MX4J}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/mx4j-impl.jar for JMX MX4J Adaptor support" />
+            <unjar src="${lib.dir}/mx4j-impl.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/mx4j-tools.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
          </default>
