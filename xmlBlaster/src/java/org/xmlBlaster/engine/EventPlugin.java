@@ -462,10 +462,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return;
       }
 
-      registerEventTypes(this.eventTypes);
-      
       this.isActive = true;
 
+      registerEventTypes(this.eventTypes);
+      
       log.info("Configured to send core events of type '" + this.eventTypes.trim()
             + "' to '" + destLogStr + "'");
    } // init()
@@ -563,20 +563,22 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                else
                   this.heartbeatInterval = Constants.DAY_IN_MILLIS;
                if (this.heartbeatInterval > 0) {
-               this.heartbeatTimeout = new Timeout("EventPlugin-HeartbeatTimer");
-               this.heartbeatTimeoutHandle = this.heartbeatTimeout.addTimeoutListener(new I_Timeout() {
-                  public void timeout(Object userData) {
-                     log.fine("Timeout happened " + userData + ": Sending now heartbeat");
-                     newHeartbeatNotification((String)userData);
-                     try {
-                        heartbeatTimeout.addOrRefreshTimeoutListener(this, heartbeatInterval, userData, heartbeatTimeoutHandle);
+                  // send the first heartbeat directly after startup:
+                  long initialInterval = (this.heartbeatInterval > 2000) ? 2000L : this.heartbeatInterval;
+                  this.heartbeatTimeout = new Timeout("EventPlugin-HeartbeatTimer");
+                  this.heartbeatTimeoutHandle = this.heartbeatTimeout.addTimeoutListener(new I_Timeout() {
+                     public void timeout(Object userData) {
+                        log.fine("Timeout happened " + userData + ": Sending now heartbeat");
+                        newHeartbeatNotification((String)userData);
+                        try {
+                           heartbeatTimeout.addOrRefreshTimeoutListener(this, heartbeatInterval, userData, heartbeatTimeoutHandle);
+                        }
+                        catch (XmlBlasterException e) {
+                           e.printStackTrace();
+                        }
+                       
                      }
-                     catch (XmlBlasterException e) {
-                        e.printStackTrace();
-                     }
-                    
-                  }
-                }, this.heartbeatInterval, event);
+                   }, initialInterval, event);
                }
             }
             else {
