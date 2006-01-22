@@ -211,6 +211,7 @@
    <see type="API">org.xmlBlaster.contrib.replication.ReplicationAgent</see>
    <see type="API">org.xmlBlaster.contrib.replication.ReplSlave</see>
    <see type="API">org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin</see>
+   <see type="INTERNET" label="Replication Documentation">http://www.xmlBlaster.org/replication/index.html</see>
    <see type="REQ">contrib.dbwatcher</see>
    <see type="REQ">contrib.dbwriter</see>
    <author>laghi@swissinfo.org</author>
