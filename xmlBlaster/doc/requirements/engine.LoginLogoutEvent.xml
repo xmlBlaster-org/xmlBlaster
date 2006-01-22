@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.LoginLogoutEvent' type='NEW' prio='LOW' status="CLOSED">
-   <topic>Clients can be notified about other clients login or logout events</topic>
+<requirement id='engine.LoginLogoutEvent' type='NEW' prio='LOW' status="DEPRECATED">
+   <topic>Clients can be notified about other clients login or logout events. <br />
+   <b>Deprecated: Please use events as described in requirement <i>admin.events</i></b></topic>
    <description>
       There are two internal messages which hold login and logout events. 
       You can subscribe to "<tt>__sys__Login</tt>" to be notified when a new client logs in,
@@ -42,8 +43,45 @@ String absoluteName = updateQos.getClientProperty("__absoluteName", "");
 System.out.println("Client is '" + absoluteName + "'");
 </pre>
    </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the plugin.
+      </p>
+<p class="celltitel">Email data sink specific settings</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>loginEvent</td>
+            <td>true</td>
+            <td>Send an event on client login using topic name <code>__sys__Login</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>logoutEvent</td>
+            <td>true</td>
+            <td>Send an event on client logout using topic name <code>__sys__Logout</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>userListEvent</td>
+            <td>true</td>
+            <td>Send complete user list when a client comes or goes using topic name <code>__sys__UserList</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
    <see type="REQ">admin</see>
-   <see type="REQ">admin.events</see>
+   <see type="REQ" name="New event approach 'admin.events'">admin.events</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 03 25</date>
    <revision>$Revision: 1.5 $</revision>
