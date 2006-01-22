@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='contrib.replication' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='contrib.replication' type='NEW' prio='HIGH' status="CLOSED">
    <topic>
       Replication is a plugin framework used to replicate data between database (RDBMS) sources and sinks.
    </topic>
