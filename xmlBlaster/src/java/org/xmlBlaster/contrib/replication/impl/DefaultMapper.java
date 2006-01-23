@@ -34,7 +34,6 @@ public class DefaultMapper implements I_Mapper {
    private Map columnMap;
    private Map tableMap;
    private Map schemaMap;
-   //private boolean caseSensitive;
    
    public DefaultMapper() {
       this.schemaMap = new HashMap();
@@ -138,7 +137,9 @@ public class DefaultMapper implements I_Mapper {
     */
    public Set getUsedPropertyKeys() {
       Set set = new HashSet();
-      set.add("replication.mapper.tables");
+      set.add("replication.mapper.schema");
+      set.add("replication.mapper.table");
+      set.add("replication.mapper.column");
       return set;
    }
 
@@ -154,7 +155,6 @@ public class DefaultMapper implements I_Mapper {
       this.schemaMap = InfoHelper.getPropertiesStartingWith("replication.mapper.schema.", info, dbHelper);
       this.tableMap = InfoHelper.getPropertiesStartingWith("replication.mapper.table.", info, dbHelper);
       this.columnMap = InfoHelper.getPropertiesStartingWith("replication.mapper.column.", info, dbHelper);
-      // this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
    }
    
    public void shutdown() throws Exception {

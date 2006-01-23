@@ -218,19 +218,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                if (dbWatcherSessionId == null)
                   throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
 
-               if (cascadeReplicationPrefix != null && cascadeReplicationPrefix.trim().length() > 0)
-                  individualInfo.put(I_ReplSlave.CASCADED_REPL_PREFIX, cascadeReplicationPrefix.trim());
-
                if (cascadeSlaveSessionName != null) {
                   // check to avoid loops
                   cascadeSlaveSessionName = cascadeSlaveSessionName.trim();
                   if (slaveSessionName.equals(cascadeSlaveSessionName))
                      return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
-                  if (cascadeSlaveSessionName.length() > 0)
-                     individualInfo.put(I_ReplSlave.CASCADED_REPL_SLAVE, cascadeSlaveSessionName);
                }
                
-               boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId);
+               boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId, cascadeReplicationPrefix, cascadeSlaveSessionName);
                if (isOkToStart == false) {
                   ret += " did fail since your status is '" + slave.getStatus() + "'. Please invoke first 'Cancel Update'";
                   return "error: " + ret; // don't throw an exception here since MX4J seems to loose exception msg.

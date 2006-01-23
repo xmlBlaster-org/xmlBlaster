@@ -29,6 +29,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -84,13 +85,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
       setStatus(STATUS_NORMAL);
-      final boolean doPersist = false;
-      final boolean dispatcherActive = false;
+      //final boolean doPersist = false;
+      //final boolean dispatcherActive = false;
       try {
-         setDispatcher(dispatcherActive, doPersist);
+         //setDispatcher(dispatcherActive, doPersist);
+         this.persistentInfo = new DbInfo(this.pool, "replication");
       }
       catch (Exception ex) {
-         log.severe("Could not temporary block the dispatcher for '" + this.slaveSessionId + "'");
+         throw new XmlBlasterException(this.global, ErrorCode.RESOURCE, "ReplSlave constructor", "could not instantiate correctly", ex);
       }
    }
 
@@ -121,8 +123,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public synchronized void init(I_Info info) throws Exception {
       // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
-      // if (this.initialized)
-      //    return;
       this.replPrefix = info.get("_replName", null);
       if (this.replPrefix == null) 
          throw new Exception("The replication name '_replName' has not been defined");
@@ -130,14 +130,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.dataTopic = info.get("mom.topicName", "replication." + this.replPrefix);
       // only send status messages if it has been configured that way
       this.statusTopic = info.get("mom.statusTopicName", null);
-      // this.statusTopic = info.get("mom.statusTopicName", this.dataTopic + ".status");
-
-      //this.masterSessionId = info.get("_senderSession", null);
-      //if (this.masterSessionId == null)
-      //   throw new Exception("ReplSlave '" + this.name + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
-
-      // this.global = (Global)info.getObject("org.xmlBlaster.engine.Global");
-      // String instanceName = "replication" + ContextNode.SEP + slaveSessionId;
       
       // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
       boolean forceSending = info.getBoolean("replication.forceSending", false);
@@ -149,10 +141,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.mbeanHandle = this.global.registerMBean(contextNode, this);
       
       this.dbWatcherSessionName = info.get(DBWATCHER_SESSION_NAME, null);
-      this.cascadedReplPrefix = info.get(CASCADED_REPL_PREFIX, null);
-      this.cascadedReplSlave = info.get(CASCADED_REPL_SLAVE, null);
+      this.cascadedReplPrefix = this.persistentInfo.get(CASCADED_REPL_PREFIX, null);
+      this.cascadedReplSlave = this.persistentInfo.get(CASCADED_REPL_SLAVE, null);
       log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
-      this.persistentInfo = new DbInfo(this.pool, "replication");
       int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
       if (tmpStatus > -1)
          setStatus(tmpStatus);
@@ -214,11 +205,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
 
-   public boolean run(I_Info info, String dbWatcherSessionId) throws Exception {
+   public boolean run(I_Info info, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName) throws Exception {
       if (this.status != STATUS_NORMAL && this.status != STATUS_INCONSISTENT) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
          return false;
       }
+      this.persistentInfo.put(CASCADED_REPL_PREFIX, cascadeReplPrefix);
+      this.persistentInfo.put(CASCADED_REPL_SLAVE, cascadeSlaveSessionName);
+      
       info.put(DBWATCHER_SESSION_NAME, dbWatcherSessionId);
       init(info);
       prepareForRequest(info);
@@ -594,7 +588,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
 
    public String reInitiateReplication() throws Exception {
-      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix, null, null);
+      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix, this.cascadedReplSlave, this.cascadedReplPrefix);
    }
    
 }
