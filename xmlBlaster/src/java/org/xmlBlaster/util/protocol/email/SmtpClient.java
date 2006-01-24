@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XbUri;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -89,6 +90,8 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     */
    private boolean contentForceBase64;
    
+   private boolean breakLongMessageIdLine;
+
    /**
     * Comma separated list of fileName extensions to send attachment as inline
     */
@@ -279,6 +282,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                pluginConfig));
       p = props.getProperty("contentForceBase64");
       this.contentForceBase64 = new Boolean(p).booleanValue();
+
+      if (props.getProperty("breakLongMessageIdLine") == null)
+         props.put("breakLongMessageIdLine", ""+glob.get("breakLongMessageIdLine", false, null,
+               pluginConfig));
+      p = props.getProperty("breakLongMessageIdLine");
+      this.breakLongMessageIdLine = new Boolean(p).booleanValue();
 
       if (props.getProperty("inlineExtension") == null)
          props.put("inlineExtension", ""+glob.get("inlineExtension", "", null,
@@ -512,6 +521,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
             }
             else {
+               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);  // "Content-Transfer-Encoding", "quoted-printable");
                if (holder[i].hasExtensionFromList(this.inlineExtension))
                   mbp.setDisposition(MimeBodyPart.INLINE);
             }
@@ -519,7 +529,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
             //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
             if (holder[i].getContentType().startsWith("text/")) {
-               mbp.setText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING);
+               //String tmp = MimeUtility.encodeText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);
+               //mbp.setText(tmp, Constants.UTF8_ENCODING);
+               String contentStr = new String(content, Constants.UTF8_ENCODING);
+               if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i]))
+                     contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
+               mbp.setText(contentStr, Constants.UTF8_ENCODING);
             }
             else {
                // "application/xmlBlaster-xbformat"
