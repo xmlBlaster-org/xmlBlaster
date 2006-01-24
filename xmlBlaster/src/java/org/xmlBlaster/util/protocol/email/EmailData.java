@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.def.Constants;
@@ -673,19 +674,6 @@ public class EmailData {
    }
 
    /**
-    * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
-    */
-   public static void main(String[] args) {
-      String[] receivers = { "Receiver1", "Receiver2" };
-      EmailData msg = new EmailData(receivers, "Sender", "A subject",
-            "A content");
-      msg.addAttachment(new AttachmentHolder("xy.xbf", "application/xmlBlaster", "Hello World".getBytes()));
-      System.out.println("ORIG:\n" + msg.toXml(true));
-      msg = EmailData.parseXml(msg.toXml(true));
-      System.out.println("NEW:\n" + msg.toXml(true));
-   }
-
-   /**
     * @return Returns the bcc array, is never null
     */
    public InternetAddress[] getBcc() {
@@ -743,9 +731,14 @@ public class EmailData {
          }
          return false;
       }
-      
+
       String expires = extractMessageId(EmailData.EXPIRES_TAG);
       if (expires != null) {
+         /* The string may contain CR LF as shown here (added by any MTA):
+         <messageId><sessionId>lm4e560ghdFzj</sessionId><requestId>1138093430247000000</requestId><methodName>ping</methodName><expires>2006-01-24
+          09:04:50.248</expires></messageId>      
+         */
+         expires = ReplaceVariable.replaceAll(expires, "\r\n", " ");
          try {
             Timestamp timestamp = Timestamp.valueOf(expires);
             Date now = new Date();
@@ -815,5 +808,27 @@ public class EmailData {
     */
    public void setRequestIdFromSentDate(boolean requestIdFromSentDate) {
       this.requestIdFromSentDate = requestIdFromSentDate;
+   }
+   
+   /**
+    * For manual tests. java org.xmlBlaster.util.protocol.email.EmailData
+    */
+   public static void main(String[] args) {
+      if (false) {
+         String[] receivers = { "Receiver1", "Receiver2" };
+         EmailData msg = new EmailData(receivers, "Sender", "A subject",
+               "A content");
+         msg.addAttachment(new AttachmentHolder("xy.xbf", "application/xmlBlaster", "Hello World".getBytes()));
+         System.out.println("ORIG:\n" + msg.toXml(true));
+         msg = EmailData.parseXml(msg.toXml(true));
+         System.out.println("NEW:\n" + msg.toXml(true));
+      }
+      {
+         String[] receivers = { "Receiver" };
+         String subject = "<messageId><expires>2006-01-24\r\n09:04:50.248</expires></messageId>";      
+         EmailData msg = new EmailData(receivers, "Sender", subject, "A content");
+         if (msg.isExpired())
+            System.out.println("Is expired");
+      }
    }
 }
