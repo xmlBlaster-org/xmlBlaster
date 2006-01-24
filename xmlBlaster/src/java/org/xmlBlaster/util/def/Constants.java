@@ -29,6 +29,7 @@ public class Constants {
 
    public final static String EMAIL_TRANSFER_ENCODING = "Content-Transfer-Encoding";
    public final static String ENCODING_BASE64 = "base64";
+   public final static String ENCODING_QUOTED_PRINTABLE = "quoted-printable";
    public final static String ENCODING_NONE = null;
 
    public final static String TYPE_STRING = "String"; // is default, same as ""
