@@ -738,7 +738,7 @@ public class EmailData {
          <messageId><sessionId>lm4e560ghdFzj</sessionId><requestId>1138093430247000000</requestId><methodName>ping</methodName><expires>2006-01-24
           09:04:50.248</expires></messageId>      
          */
-         expires = ReplaceVariable.replaceAll(expires, "\r\n", " ");
+         expires = ReplaceVariable.replaceAll(expires, "\r\n", "");
          try {
             Timestamp timestamp = Timestamp.valueOf(expires);
             Date now = new Date();
