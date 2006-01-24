@@ -31,7 +31,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * java HelloWorld7 -protocol email -session.name joe/1 -dispatch/connection/pingInterval 0
  *  
  * # 3.Start a delegate, hit enter to subscribe and than kill it with Ctrl-C (to not disconnect):
- * java javaclients.HelloWorldSubscribe -session.name joe/1 -persistentSubscribe true -protocol email
+ * java javaclients.HelloWorldSubscribe -protocol email -session.name subscribe/1 -persistentSubscribe true -dispatch/callback/pingInterval 5000 -dispatch/callback/retries -1  -dispatch/connection/protocol XMLRPC  
  * 
  * # 4. Start a publisher and watch the messages arriving at HelloWorld7
  * java javaclients.HelloWorldPublish -numPublish 10
