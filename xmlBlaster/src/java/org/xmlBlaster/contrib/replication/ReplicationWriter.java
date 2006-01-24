@@ -438,6 +438,10 @@ private final static String ME = "ReplicationWriter";
                ex.printStackTrace();
             }
          }
+         catch (Exception ex) {
+            log.severe("An exception occured when trying storing the entry." + ex.getMessage());
+            ex.printStackTrace();
+         }
          finally {
             if (conn != null) {
                try {

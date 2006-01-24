@@ -543,7 +543,7 @@ public class SpecificOracle extends SpecificDefault {
             // String sql = "DROP TABLE "  + name + " CASCADE CONSTRAINTS";
             String sql = prefix + " " + name + " " + postfix;
             st = conn.createStatement();
-            log.info("statement: " + sql + "' for cleanup");
+            log.fine("statement: " + sql + "' for cleanup");
             sum += st.executeUpdate(sql);
          }
          catch (Exception ex) {
