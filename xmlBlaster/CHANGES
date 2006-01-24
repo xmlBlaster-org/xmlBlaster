@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14668 Email protocol fix: Handling now CR LF which could be added for long lines to <expires> by MTA
+
  o #14635 Added full JMX control for FilePollerPlugin 
  
  o #14632 EventPlugin: Check if client has a callback configured to avoid NPE
