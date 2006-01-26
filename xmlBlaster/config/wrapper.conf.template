@@ -33,8 +33,11 @@ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 set.MSSQLSERVER_JAR=%XMLBLASTER_HOME%/lib
 wrapper.java.classpath.1=%XMLBLASTER_HOME%/lib/wrapper.jar
 wrapper.java.classpath.2=%JAVA_HOME%/lib/tools.jar
-wrapper.java.classpath.3=%MSSQLSERVER_JAR%\msbase.jar;%MSSQLSERVER_JAR%\mssqlserver.jar;%MSSQLSERVER_JAR%\msutil.jar
-wrapper.java.classpath.4=%XMLBLASTER_HOME%/lib/xmlBlaster.jar
+# MS-SQLServer 2005:
+wrapper.java.classpath.3=%MSSQLSERVER_JAR%\sqljdbc.jar
+# or MS-SQLServer 2000:
+wrapper.java.classpath.4=%MSSQLSERVER_JAR%\msbase.jar;%MSSQLSERVER_JAR%\mssqlserver.jar;%MSSQLSERVER_JAR%\msutil.jar
+wrapper.java.classpath.5=%XMLBLASTER_HOME%/lib/xmlBlaster.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=%XMLBLASTER_HOME%/lib
@@ -63,6 +66,20 @@ wrapper.app.parameter.10=-xmlBlaster/sleepOnStartup
 wrapper.app.parameter.11=0
 # You may want to set the sleepOnStartup to say 5000 (5sec)
 # so that MSSQLSERVER's JDBC listener is up.
+wrapper.app.parameter.12=-xmlBlaster/jmx/HtmlAdaptor
+wrapper.app.parameter.13=true 
+# Adding HTML access (JMX) with user 'admin' and password 'secret'
+wrapper.app.parameter.14=-xmlBlaster/jmx/HtmlAdaptor/loginName
+wrapper.app.parameter.15=admin
+wrapper.app.parameter.16=-xmlBlaster/jmx/HtmlAdaptor/password
+wrapper.app.parameter.17=secret
+wrapper.app.parameter.18=-xmlBlaster/jmx/rmi
+wrapper.app.parameter.19=true
+# Adding jconsole access (JMX) with user 'admin' and password 'secret'
+wrapper.app.parameter.20=-xmlBlaster/jmx/rmi/user
+wrapper.app.parameter.21=admin
+wrapper.app.parameter.22=-xmlBlaster/jmx/rmi/password
+wrapper.app.parameter.23=secret
 
 
 #********************************************************************
