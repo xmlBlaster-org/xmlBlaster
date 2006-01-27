@@ -108,6 +108,14 @@ td.number {
     width: 80pt;
 }
 
+td.hidden {
+    font-family: "Courier New", Courier, mono;
+    font-size: 9pt;
+    background-color: #000000;
+    color: #000000;
+    width: 80pt;
+}
+
 td.highalarm {
     font-family: "Courier New", Courier, mono;
     font-size: 9pt;
