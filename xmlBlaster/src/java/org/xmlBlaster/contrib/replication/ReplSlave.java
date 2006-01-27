@@ -77,6 +77,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String replPrefix;
    private String cascadedReplSlave;
    private String cascadedReplPrefix;
+   private long forcedCounter;  // counter used when forceSending is set to 'true'
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
@@ -101,10 +102,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
    public long getMinReplKey() {
+      if (this.forceSending)
+         return this.forcedCounter;
       return this.minReplKey;
    }
    
    public long getMaxReplKey() {
+      if (this.forceSending)
+         return this.forcedCounter;
       return this.maxReplKey;
    }
 
@@ -161,6 +166,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          this.maxReplKey = 0L;
       }
       this.initialized = true;
+      this.forcedCounter = 0L;
    }
    
    private final void setStatus(int status) {
@@ -340,7 +346,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * FIXME TODO HERE
     */
    public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
-      log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' ");
+      this.forcedCounter++;
+      log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
       if (!this.initialized) {
          log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
          return new ArrayList();
@@ -589,6 +596,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
 
    public String reInitiateReplication() throws Exception {
       return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix, this.cascadedReplSlave, this.cascadedReplPrefix);
+   }
+   
+   public String getReplPrefix() {
+      return this.replPrefix;
    }
    
 }
