@@ -702,7 +702,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // must retreive repl key after having added the trigger)
          
          if (sendInitialContents) {
-            String destination = (String)attrs.get("_destination");
+            String destination = null;
+            if (attrs != null)
+                destination = (String)attrs.get("_destination");
             this.initialUpdater.publishCreate(0, sqlInfo, newReplKey, destination);
             if (schema != null)
                table = schema + "." + table;
