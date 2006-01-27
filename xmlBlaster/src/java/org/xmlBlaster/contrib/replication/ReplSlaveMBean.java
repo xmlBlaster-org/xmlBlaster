@@ -22,4 +22,5 @@ public interface ReplSlaveMBean {
    void kill() throws Exception;
    String getSessionName() throws Exception;
    String reInitiateReplication() throws Exception;
+   String getReplPrefix();
 }
