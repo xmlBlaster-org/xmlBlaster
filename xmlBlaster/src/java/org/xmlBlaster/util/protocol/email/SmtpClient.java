@@ -555,8 +555,10 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
          // Set the xmlBlaster specific expiry header field "X-xmlBlaster-ExpiryDate"
          // This could be evaluated by MTA plugins
-         if (emailData.getExpiryTime() != null) 
+         if (emailData.getExpiryTime() != null) {
             message.setHeader(EmailData.EXPIRES_HEADER, emailData.getExpiryTime().toString());
+            message.setHeader(EmailData.EXPIRES_HEADER_RFC2156, MailUtil.dateTime(emailData.getExpiryTime()));
+         }
 
          //log.severe("DEBUG ONLY: Trying to send email" + emailData.toXml(true));
          send(message);

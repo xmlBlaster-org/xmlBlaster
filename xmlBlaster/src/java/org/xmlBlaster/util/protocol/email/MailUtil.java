@@ -14,6 +14,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -35,6 +37,7 @@ import javax.mail.event.StoreEvent;
 import javax.mail.event.StoreListener;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MailDateFormat;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 
@@ -113,7 +116,82 @@ public class MailUtil {
       testPOP3Read();
 
    }
+   
+   /**
+    * Transforms an email "date-time" string to a java.util.Date. 
+    * <pre>
+     date-time   =  [ day "," ] date time        ; dd mm yy
+                                                 ;  hh:mm:ss zzz
 
+     day         =  "Mon"  / "Tue" /  "Wed"  / "Thu"
+                 /  "Fri"  / "Sat" /  "Sun"
+
+     date        =  1*2DIGIT month 2DIGIT        ; day month year
+                                                 ;  e.g. 20 Jun 82
+
+     month       =  "Jan"  /  "Feb" /  "Mar"  /  "Apr"
+                 /  "May"  /  "Jun" /  "Jul"  /  "Aug"
+                 /  "Sep"  /  "Oct" /  "Nov"  /  "Dec"
+
+     time        =  hour zone                    ; ANSI and Military
+
+     hour        =  2DIGIT ":" 2DIGIT [":" 2DIGIT]
+                                                 ; 00:00:00 - 23:59:59
+
+     zone        =  "UT"  / "GMT"                ; Universal Time
+                                                 ; North American : UT
+                 /  "EST" / "EDT"                ;  Eastern:  - 5/ - 4
+                 /  "CST" / "CDT"                ;  Central:  - 6/ - 5
+                 /  "MST" / "MDT"                ;  Mountain: - 7/ - 6
+                 /  "PST" / "PDT"                ;  Pacific:  - 8/ - 7
+                 /  1ALPHA                       ; Military: Z = UT;
+                                                 ;  A:-1; (J not used)
+                                                 ;  M:-12; N:+1; Y:+12
+                 / ( ("+" / "-") 4DIGIT )        ; Local differential
+                                                 ;  hours+min. (HHMM)
+    * </pre>
+    * @param dateString The http://www.faqs.org/rfcs/rfc822.html "date-time" string
+    * @return the date parsed
+    * @see http://www.faqs.org/rfcs/rfc2156.html
+    * @throws IllegalArgumentException on ParseException
+    */
+   public static Date dateTime(String dateString) {
+      DateFormat df = new MailDateFormat();
+      try {
+         return df.parse(dateString);
+      } catch (java.text.ParseException e) {
+         throw new IllegalArgumentException("Can't parse date-time string '" + dateString + "', please check email RFC 822: " + e.toString());
+      }     
+   }
+
+   /**
+    * @param dateString The http://www.faqs.org/rfcs/rfc822.html "date-time" string
+    * @return the timestamp parsed
+    * @throws IllegalArgumentException on ParseException
+    */
+   public static java.sql.Timestamp dateTimeTS(String dateString) {
+      Date date = dateTime(dateString);
+      return new Timestamp(date.getTime());
+   }
+   
+   /**
+    * @param date
+    * @return The http://www.faqs.org/rfcs/rfc822.html "date-time" string
+    */
+   public static String dateTime(Date date) {
+      DateFormat df = new MailDateFormat();
+      return df.format(date);     
+   }
+   
+   /**
+    * @param ts
+    * @return The http://www.faqs.org/rfcs/rfc822.html "date-time" string
+    */
+   public static String dateTime(java.sql.Timestamp ts) {
+      Date date = new Date(ts.getTime());
+      return dateTime(date);
+   }
+   
    private static void testPOP3Read() {
       try {
          final String mbox = "INBOX";

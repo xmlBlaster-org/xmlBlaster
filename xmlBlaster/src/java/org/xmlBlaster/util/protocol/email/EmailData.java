@@ -104,6 +104,13 @@ public class EmailData {
     * the .f* are optional
     */
    public static final String EXPIRES_HEADER = "X-xmlBlaster-ExpiryDate";
+   /**
+    * Expiry Date Indication
+    * Supported as new RFC 822 header (Expires:).  In general, no
+    * automatic action can be expected.
+    * @see http://www.faqs.org/rfcs/rfc2156.html
+    */
+   public static final String EXPIRES_HEADER_RFC2156 = "Expires";
 
    /** Holding the relevant email meta info like a request identifier */
    public static final String MESSAGEID_EXTENSION = ".mid";

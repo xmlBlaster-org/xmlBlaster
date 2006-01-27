@@ -817,6 +817,20 @@ implements I_Plugin, I_Timeout,
                   e.printStackTrace();
                }
             }
+            else {
+               expires = msg.getHeader(EmailData.EXPIRES_HEADER_RFC2156);
+               if (expires != null && expires.length > 0) {
+                  // Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
+                  String value = expires[0].trim();
+                  try {
+                     datas[i].setExpiryTime(MailUtil.dateTimeTS(value));
+                  }
+                  catch (Throwable e) {
+                     System.err.println("xmlBlaster Pop3Driver.java: Ignoring illegal email header '" + expires[0] + "'");
+                     e.printStackTrace();
+                  }
+               }
+            }
 
             datas[i].setAttachments(MailUtil.accessAttachments(msg));
          }
