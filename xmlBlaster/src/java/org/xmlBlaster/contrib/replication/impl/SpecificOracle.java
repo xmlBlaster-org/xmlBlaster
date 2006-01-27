@@ -291,14 +291,17 @@ public class SpecificOracle extends SpecificDefault {
          schemaNameTmp = "NULL";
       else schemaNameTmp = "'" + schemaName + "'";
       buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
-      buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
       buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");
       buf.append("                           content, oldContent, version) values \n");
-      buf.append("                           (replKey, transId,").append(dbNameTmp).append(",\n");
+      buf.append("                           (replKey, 'UNKNOWN',").append(dbNameTmp).append(",\n");
       buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(
             ", newCont, \n");
       buf.append("            oldCont, '0.0');\n");
+      // INSERT + UPDATE instead of only INSERT since it appears that the sequence is incremented outside the transaction
+      buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
+      buf.append("    UPDATE " + this.replPrefix + "items SET trans_key=transId WHERE repl_key=replKey;\n");
+      
       buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
