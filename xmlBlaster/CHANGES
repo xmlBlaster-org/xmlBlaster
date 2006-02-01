@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn repository
 ======================
+ 
+ o #14686 in SessionInfo passing the correct dispatcher status flag when recreating the dispatcher
 
  o #14668 Email protocol fix: Handling now CR LF which could be added for long lines to <expires> by MTA
 
