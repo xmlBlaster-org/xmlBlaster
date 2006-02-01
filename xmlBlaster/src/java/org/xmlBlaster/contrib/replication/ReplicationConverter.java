@@ -192,7 +192,15 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       // TODO remove this after testing.
       // puts this in the metadata attributes of the message to be sent over the mom
       this.event.getAttributeMap().put("_tableName__", tableName);
-
+      if (transKey == null)
+         log.severe("The transaction key was not set. Must be set in order to be processed correctly");
+      else {
+         if (transKey.equals("UNKNOWN")) {
+            String txt = "The transaction key has not been set at the time of entry collection. This is a bug which shall be fixed";
+            log.severe(txt);
+            throw new Exception(txt);
+         }
+      }
       log.fine("sequence number '" + replKey + "' processing now for table '" + tableName + "'");
       if (this.transactionId == null)
          this.transactionId = transKey;
