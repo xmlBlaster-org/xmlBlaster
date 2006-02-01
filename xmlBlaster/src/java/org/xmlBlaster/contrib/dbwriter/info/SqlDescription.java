@@ -480,6 +480,7 @@ public class SqlDescription {
     */
    public int update(Connection conn, SqlRow row) throws Exception {
       PreparedStatement st = null;
+      String sql = "";
       try {
          ArrayList entries = new ArrayList();
          String setSt = createSetStatement(row, entries);
@@ -493,7 +494,7 @@ public class SqlDescription {
           * it will warn too.
           */
          if (!hasPk()) {
-            String sql = "SELECT count(*) FROM " + getCompleteTableName() + whereSt;
+            sql = "SELECT count(*) FROM " + getCompleteTableName() + whereSt;
             ResultSet rs = null;
             try {
                st = conn.prepareStatement(sql);
@@ -521,12 +522,19 @@ public class SqlDescription {
             }
          }
          
-         String sql = "UPDATE " + getCompleteTableName() + setSt + whereSt;
+         sql = "UPDATE " + getCompleteTableName() + setSt + whereSt;
          st = conn.prepareStatement(sql);
 
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
          return st.executeUpdate();
+      }
+      catch (Throwable ex) {
+         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         if (ex instanceof Exception)
+            throw (Exception)ex;
+         else
+            throw new Exception(ex);
       }
       finally {
          if (st != null)
@@ -543,6 +551,7 @@ public class SqlDescription {
     */
    public int delete(Connection conn, SqlRow row) throws Exception {
       PreparedStatement st = null;
+      String sql = "";
       try {
          ArrayList entries = new ArrayList();
          String whereSt = createWhereStatement(row, entries);
@@ -552,7 +561,7 @@ public class SqlDescription {
           * it will warn too.
           */
          if (!hasPk()) {
-            String sql = "SELECT count(*) FROM " + getCompleteTableName() + whereSt;
+            sql = "SELECT count(*) FROM " + getCompleteTableName() + whereSt;
             ResultSet rs = null;
             try {
                st = conn.prepareStatement(sql);
@@ -579,13 +588,21 @@ public class SqlDescription {
             }
          }
          
-         String sql = "DELETE FROM " + getCompleteTableName() + whereSt;
+         sql = "DELETE FROM " + getCompleteTableName() + whereSt;
          st = conn.prepareStatement(sql);
 
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
          return st.executeUpdate();
       }
+      catch (Throwable ex) {
+         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         if (ex instanceof Exception)
+            throw (Exception)ex;
+         else
+            throw new Exception(ex);
+      }
+      
       finally {
          if (st != null)
             st.close();
@@ -602,12 +619,13 @@ public class SqlDescription {
    public int insert(Connection conn, SqlRow row) throws Exception {
       PreparedStatement st = null;
       int ret = 0;
+      String sql = null;
       try {
          ArrayList entries = new ArrayList();
 
          String insertSt = createInsertStatement(row, entries);
 
-         String sql = "INSERT INTO " + getCompleteTableName() + insertSt;
+         sql = "INSERT INTO " + getCompleteTableName() + insertSt;
          st = conn.prepareStatement(sql);
 
          for (int i=0; i < entries.size(); i++)
@@ -622,8 +640,17 @@ public class SqlDescription {
             log.severe("Entry '" + row.toXml("") + "' exists already. Will ignore it an continue");
             return 0;
          }
-         else
+         else {
+            log.severe(" Entry '" + row.toXml("") + "' caused an exception. Statement was *" + sql + "': " + ex.getMessage());
             throw ex;
+         }
+      }
+      catch (Throwable ex) {
+         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         if (ex instanceof Exception)
+            throw (Exception)ex;
+         else
+            throw new Exception(ex);
       }
       finally {
          if (st != null)
