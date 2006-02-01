@@ -454,9 +454,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
       else if (wantsCallbacks && !hasCallback()) {
          log.info(ME, "Successfully reconfigured and created dispatch manager with given callback address");
-         this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+         DispatchManager tmpDispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                               newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
+         if (this.dispatchManager != null)
+            tmpDispatchManager.setDispatcherActive(this.dispatchManager.isDispatcherActive());
+         this.dispatchManager = tmpDispatchManager;
       }
       else if (!wantsCallbacks && hasCallback()) {
          this.dispatchManager.shutdown();
