@@ -529,9 +529,18 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 }
 
 # ifdef MSG_UTIL_MAIN
+/* On Linux defaults to HAVE_FUNC_GETHOSTBYNAME_R_6:
+   gcc -g -Wall -o msgUtil msgUtil.c helper.c -I.. -DMSG_UTIL_MAIN=1
+*/
 int main()
 {
-   printf("Hello\n");
+   struct hostent hostbuf, *hostP = 0;
+   char *tmphstbuf=0;
+   size_t hstbuflen=0;
+   char serverHostName[256];
+   strcpy(serverHostName, "localhost");
+   hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen);
+   printf("Hello '%s'\n", hostP->h_name);
    return 0;
 }
 # endif
