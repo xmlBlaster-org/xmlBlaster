@@ -322,6 +322,8 @@ public final class XmlKey
     */
    public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException {
       loadDomTree();
+      // This domToXml() fixes JDK 1.5 adoptNode() bug with missing attribute value
+      //log.error(ME, "DEBUG ONLY before merge: " + this.xmlToDom.domToXml(""));
       this.xmlToDom.mergeRootNode(merger);
    }
 

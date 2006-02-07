@@ -472,24 +472,24 @@ public class XmlNotPortable
          //  After: <key oid="aTopic"><AA name=""/></key>
          // but never happenend again after changes (did we remerge an invalid DOM?)
          //document.adoptNode(node);   -> Use reflection for backward compatibility
+         /*
          Class[] paramCls = new Class[] { org.w3c.dom.Node.class };
          Object[] params = new Object[] { node };
          java.lang.reflect.Method method = document.getClass().getMethod("adoptNode", paramCls);
          method.invoke(document, params);
          return document.getDocumentElement().appendChild(node);
+         */
          
          // importNode introduced in DOM Level 2
          // It makes a deep clone and is slower
          // The source node is not altered or removed from the original document;
          // this method creates a new copy of the source node.
-         /*
          //Class[] paramCls = new Class[] { org.w3c.dom.Node.class, boolean.class };
          //Object[] params = new Object[] { node, Boolean.TRUE };
          //java.lang.reflect.Method method = document.getClass().getMethod("importNode", paramCls);
          //method.invoke(document, params);
          org.w3c.dom.Node newNode = document.importNode(node, true);
          return document.getDocumentElement().appendChild(newNode);
-         */
       }
       catch(/*org.w3c.dom.DOMException*/Exception e) {
          log.error(ME, "Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
