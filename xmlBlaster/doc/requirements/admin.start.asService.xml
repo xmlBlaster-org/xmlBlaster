@@ -11,6 +11,9 @@
      This requirement will instruct you how to configure
      xmlBlaster with the Wrapper library.
      </p>
+     <p>We provide a typical example configuration in
+     <code>xmlBlaster/config/wrapper.conf.template</code>
+     </p>
    </description>
 
 
@@ -25,10 +28,10 @@
          <li>Copy wrapper/lib to xmlBlaster/lib<br/>
          The contents of the lib directory from the wrapper distribution should be copied to the lib directory
          of the xmlBlaster distribution.
-	 </li>
+         </li>
          <li>Copy wrapper.exe from wrapper/bin to xmlBlaster/bin<br/>
          This is the java service monitor program.
-	</li>
+        </li>
          <li>Modify the wrapper.conf file<br/>
          This file is in the config subdirectory. See the documentation in the file wrapper.conf.template
          for instructions on how
@@ -36,7 +39,9 @@
          </li>
          <li>Install the Windows service<br/>
          This is done by executing the following command:<br></br><br></br>
-         <![CDATA[wrapper -i xmlBlaster/config/wrapper.conf]]>
+         <code>wrapper -i xmlBlaster/config/wrapper.conf</code><br />
+         or<br />
+         <code>..\bin\wrapper -i C:\xmlBlasterServer\conf\wrapper.conf set.XMLBLASTER_HOME=C:\xmlBlasterServer</code>
          </li>
          <li>From the control panel, start the xmlBlaster service</li>
       </ol>
