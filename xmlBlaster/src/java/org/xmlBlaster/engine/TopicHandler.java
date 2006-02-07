@@ -958,7 +958,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * The root node of the xmlBlaster DOM tree
     */
    public final org.w3c.dom.Node getRootNode() throws XmlBlasterException {
-      return getXmlKey().getRootNode();
+      return getXmlKey().getRootNode(); // don't cache it, as it may change after merge
    }
 
    /**
