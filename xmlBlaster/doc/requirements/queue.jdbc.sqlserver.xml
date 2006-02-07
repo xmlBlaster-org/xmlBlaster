@@ -230,6 +230,7 @@ go
    <see type="API">org.xmlBlaster.util.Global</see>
    <see type="REQ">queue</see>
    <see type="INTERNET" label="Download Microsoft JDBC driver">http://www.microsoft.com/sql/downloads</see>
+   <see type="INTERNET" label="SQLServer tutorial">http://www.akadia.com/services/sqlsrv_programming.html</see>
 
    <author>zzwzyz@163.com</author>
    <date>2003 06 09</date>
