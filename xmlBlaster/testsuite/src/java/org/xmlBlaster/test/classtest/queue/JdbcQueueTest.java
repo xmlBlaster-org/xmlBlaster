@@ -146,7 +146,6 @@ public class JdbcQueueTest extends TestCase {
 
       // cleaning up the database from previous runs ...
 
-      QueuePropertyBase prop = null;
       try {
          // test initialize()
 //         this.queue.destroy();
@@ -168,6 +167,7 @@ public class JdbcQueueTest extends TestCase {
       }
    }
 
+   
    public void testPutWithBreak() {
       if (this.suppressTest) {
          log.error(ME, "JDBC test is not driven as no database was found");
