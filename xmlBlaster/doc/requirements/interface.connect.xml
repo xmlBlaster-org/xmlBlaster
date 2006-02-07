@@ -297,6 +297,44 @@ public String connect(String qos_literal)
       </pre>
    </example>
 
+   <example lang="email" type="HTML">
+      <p id="email" class="celltitel">Example of an email based login</p>
+<pre class="BORDER">
+   &lt;connect>
+     &lt;qos>
+       &lt;securityService type="htpasswd" version="1.0">
+         &lt;user>joe&lt;/user>
+         &lt;passwd>secret&lt;/passwd>
+       &lt;/securityService>
+       &lt;persistent>true&lt;/persistent>
+       &lt;session name='joe/1' timeout='0' reconnectSameClientOnly='false'/>
+       &lt;queue relating='connection'>
+          &lt;!-- LOCAL (if embedded) or 'email' if started as a standalone client with XmlScript -->
+          &lt;address type="email" pingInterval='0'>
+             xmlBlaster@master.com
+          &lt;/address>
+       &lt;/queue>
+       &lt;queue relating='callback' maxEntries='10000000' maxEntriesCache='1000'>
+          &lt;callback type='email' sessionId='xxpo569hJd' pingInterval='60000'
+                    retries='-1' delay='30000' oneway='false' dispatcherActive='true'
+                     dispatchPlugin='ReplManager,1.0'>
+            repslave@someHost.com
+            &lt;burstMode maxEntries='1' />
+            &lt;!-- five minutes: 300000 -->
+            &lt;attribute name='responseTimeout' type='long'>300000&lt;/attribute>
+            &lt;!-- one minute: 60000 -->
+            &lt;attribute name='pingResponseTimeout' type='long'>60000&lt;/attribute>
+            &lt;!-- 2 hours: 7200000 (one day: 43200000) -->
+            &lt;attribute name='updateResponseTimeout' type='long'>7200000&lt;/attribute>
+         &lt;/callback>
+       &lt;/queue>
+     &lt;/qos>
+  &lt;/connect>
+</pre>
+   <p>For more details please read requirement <a href="protocol.email.html"
+             target="others">protocol.email</a>.</p>
+   </example>
+
    <example lang="Java" type="HTML">
       <p>
       A typical Java client code:
