@@ -25,7 +25,7 @@
             <ul>
             <li>Query the queue sizes to detect message tail back</li>
             <li>Check the available memory (RAM)</li>
-            <li>List all logged in clients with there properties</li>
+            <li>List all logged in clients with their properties</li>
             <li>Show message throughput</li>
             </ul>
        </li>
@@ -121,7 +121,7 @@
    <see type="REQ">admin.deploy</see>
 
    <author>xmlBlaster@marcelruff.info</author>
-   <date>2002 05 26</date>
+   <date>2006 02 02</date>
    <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
