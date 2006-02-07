@@ -187,6 +187,38 @@ public class TestSubXPath extends TestCase
    }
 
    /**
+    * TEST: Check if XPath finds XML-attributes
+    */
+   public void testAttribute()  {
+      ME = "TestSubXPath:testAttribute()";
+
+      String oid = "gunsNroses";
+
+      this.updateInterceptor.clear();
+
+      try {
+         PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
+         pk.setClientTags("<rose><color id='green'></color></rose>");
+         PublishQos pq = new PublishQos(glob);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
+         PublishReturnQos tmp = senderConnection.publish(msgUnit);
+         assertEquals("returned oid", oid, tmp.getKeyOid());
+         subscribeXPath("//rose/color[@id='green']");
+         assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         assertEquals("", 1, this.updateInterceptor.getMsgs().length);
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, e.getMessage());
+         fail(e.getMessage());
+      }
+
+      try {
+         EraseReturnQos[] arr = senderConnection.erase("<key oid='"+oid+"'/>", "<qos/>");
+         assertEquals("Erase", 1, arr.length);
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
+   }
+
+   /**
     * TEST: Construct 5 messages and publish them,<br />
     * the previous XPath subscription should match message #3 and send an update.
     */
@@ -228,6 +260,7 @@ public class TestSubXPath extends TestCase
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        suite.addTest(new TestSubXPath(new Global(), "testInitial", loginName));
+       suite.addTest(new TestSubXPath(new Global(), "testAttribute", loginName));
        suite.addTest(new TestSubXPath(new Global(), "testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
@@ -238,7 +271,8 @@ public class TestSubXPath extends TestCase
    public static void main(String args[]) {
       TestSubXPath testSub = new TestSubXPath(new Global(args), "TestSubXPath", "Tim");
       testSub.setUp();
-      testSub.testInitial();
+      testSub.testAttribute();
+      //testSub.testInitial();
       //testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
    }
