@@ -310,11 +310,21 @@ public class JmxWrapper
          // If there is no rmiregistry around we start one
          // url ::= service:jmx:protocol:sap
          // sap ::= //[host[:port]][url-path]
+         //
+         // JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://localhost:3000/jndi/rmi://localhost:9999/server");
+         //
+         //   which tells the RMIConnectorServer to bind to the RMIRegistry running
+         //   on port 9999 and to export the RMIServer and RMIConnection remote objects on port 3000.
          if (!supportsJconsole) {
             log.warn(ME, "JMX setting '-xmlBlaster/jmx/rmi true' ignored in this JVM runtime, you need JDK 1.5 or higher.");
          }
          else {
             try {
+               // Force to export the RMIServer and RMIConnection remote objects on host and port
+               int rmiServerPort = glob.getProperty().get("xmlBlaster/jmx/rmiserver/port", 6011);
+               String rmiServerHost = glob.getProperty().get("xmlBlaster/jmx/rmiserver/hostname", (String)null);
+
+               // Force the RMI registry
                int rmiRegistryPort = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/port", DEFAULT_REGISTRY_PORT); // 1099
                String rmiRegistryHost = glob.getProperty().get("xmlBlaster/jmx/rmiregistry/hostname", glob.getLocalIP());
                startRmiRegistry(rmiRegistryHost, rmiRegistryPort);
@@ -329,6 +339,9 @@ public class JmxWrapper
 
                //String loc = "service:jmx:rmi://"+rmiRegistryHost+":"+rmiRegistryPort+"/jndi/" + bindName;
                String loc = "service:jmx:rmi:///jndi/" + bindName;
+               if (rmiServerHost != null) {
+                  loc = "service:jmx:rmi://" + rmiServerHost + ":" + rmiServerPort + "/jndi/" + bindName;
+               }
 
                //since JDK 1.5 or with including jmxremote.jar for JDK 1.3/1.4
                final String storedUser = glob.getProperty().get("xmlBlaster/jmx/rmi/user", (String)null);
