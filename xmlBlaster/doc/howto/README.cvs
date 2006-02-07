@@ -52,3 +52,16 @@ Setting up CVS server for xmlBlaster [11/1/1999]:
 
    export CVS_RSH=/usr/bin/ssh
    cvs -d :ext:server.xmlBlaster.org:/opt/cvsroot co xmlBlaster
+
+
+
+
+
+Setting up a SVN sproject:
+==========================
+svnadmin create /opt/svn/myrep
+cd /opt/svn/myrep/conf
+-> edit svnserve.conf to have write access
+
+cd myrep/..
+svn import myrep http://www.xmlblaster.org/svn/myrep/trunk
