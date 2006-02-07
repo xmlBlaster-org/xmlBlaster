@@ -389,6 +389,42 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
          </td>
        </tr>
        <tr>
+         <td>xmlBlaster/jmx/rmiregistry/hostname</td>
+         <td>String</td>
+         <td>no</td>
+         <td>localhost</td>
+         <td>
+         Set the host of the rmiregistry server.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/rmiregistry/port</td>
+         <td>int</td>
+         <td>no</td>
+         <td>1099</td>
+         <td>
+         Set the port of the rmiregistry server.
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/rmiserver/hostname</td>
+         <td>String</td>
+         <td>no</td>
+         <td>localhost</td>
+         <td>
+         Force the host of the RMIServer and RMIConnection remote objects
+         </td>
+       </tr>
+       <tr>
+         <td>xmlBlaster/jmx/rmiserver/port</td>
+         <td>int</td>
+         <td>no</td>
+         <td>6011</td>
+         <td>
+         Force the port of the RMIServer and RMIConnection remote objects
+         </td>
+       </tr>
+       <tr>
          <td>xmlBlaster/jmx/HtmlAdaptor</td>
          <td>bool</td>
          <td>no</td>
@@ -482,19 +518,19 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
       <li>Strip down embedded xmlBlaster to minimum</li>
       <li>Write some jmxgui plugins</li>
       <li>Find a free SNMP adaptor</li>
-      <li>Add notifications</li>
+      <li>Analyze if we need more notifications</li>
       <li>Add client observation (C/C++/Java clients over internal messages)</li>
       <li>Fix XmlBlasterException (-> Exception)</li>
       <li>Add attribute help, see descriptions like 
          TopicHandlerMBeanDescription in http://mx4j.sourceforge.net/docs/ch04.html or
          XDoclet http://mx4j.sourceforge.net/docs/ch07s15.html#N11001</li>
-      <li>Add email notification, e.g. with MX4J http://mx4j.sourceforge.net/docs/ch06s10.html</li>
       <li>Add ManageEngine example, connected over MX4J RMI connector</li>
       <li>Consider to use http://jakarta.apache.org/commons/modeler/ to avoid MBean base interfaces</li>
     </ol>
    </todo>
 
    <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.events</see>
    <see type="API" label="Node specific usage details">org.xmlBlaster.engine.admin.I_AdminNode</see>
    <see type="API" label="Subject specific usage details">org.xmlBlaster.engine.admin.I_AdminSubject</see>
    <see type="API" label="Session specific usage details">org.xmlBlaster.engine.admin.I_AdminSession</see>
@@ -510,6 +546,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
    <see type="INTERNET" label="MX4J Open Source implementation of JMX">http://www.mx4j.org</see>
    <see type="INTERNET" label="JMDK homepage">http://java.sun.com/products/jdmk/</see>
    <see type="INTERNET" label="MC4J homepage">http://mc4j.sourceforge.net/</see>
+   <!-- Tutorial: http://www.javasig.com/Archive/lectures/JavaSIG-JMX-LuisMiguelAlventosa.pdf -->
 
    <author>oliver.neubert@doubleslash.de</author>
    <author>xmlblast@marcelruff.info</author>
