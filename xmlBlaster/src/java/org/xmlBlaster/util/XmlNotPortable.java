@@ -8,11 +8,19 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.Document;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 
@@ -164,6 +172,79 @@ public class XmlNotPortable
       }
    }
 
+   private static final java.io.ByteArrayOutputStream write(ByteArrayOutputStream out, Node node, String offset) throws IOException  {
+      final String off = "\n" + offset;
+
+      if (node instanceof Element) {
+         String name = node.getNodeName();
+         // String value = node.getNodeValue();
+         NamedNodeMap attrs = node.getAttributes();
+         StringBuffer buf = new StringBuffer(128);
+         StringBuffer buf1 = new StringBuffer(50);
+
+         buf.append(off).append("<").append(name);
+         if (attrs != null && attrs.getLength() > 0) {
+            for (int i=0; i < attrs.getLength(); i++) {
+               Node attr = attrs.item(i);
+               buf.append(" ").append(attr.getNodeName()).append("='").append(attr.getNodeValue()).append("'");
+            }
+         }
+         boolean hasChilds = node.hasChildNodes();
+         if (!hasChilds) {
+            buf.append("/>");
+            out.write(buf.toString().getBytes());
+         }
+         else {
+            buf.append(">");
+            out.write(buf.toString().getBytes());
+            buf = new StringBuffer(50);
+            buf1.append("</").append(name).append(">");
+            if (hasChilds) {
+               NodeList childs = node.getChildNodes();
+               for (int i=0; i < childs.getLength(); i++) {
+                  Node child = childs.item(i);
+                  write(out, child, offset + "  ");
+               }
+               buf.append(off);
+            }
+            buf.append(buf1);
+            out.write(buf.toString().getBytes());
+         }
+      }
+      else if (node instanceof CDATASection) {
+         String value = node.getNodeValue();
+         out.write(off.getBytes());
+         out.write("<![CDATA[".getBytes());
+         if (value != null)
+            out.write(value.getBytes());
+         out.write("]]>".getBytes());
+      }
+      else if (node instanceof Comment) {
+         String value = node.getNodeValue();
+         out.write(off.getBytes());
+         out.write("<!-- ".getBytes());
+         if (value != null)
+            out.write(value.getBytes());
+         out.write(" -->".getBytes());
+      }
+      else if (node instanceof Text) {
+         String value = node.getNodeValue();
+         if (value != null && value.trim().length() > 0)
+            out.write(value.getBytes());
+      }
+
+      return out;
+   }
+   
+   public static final ByteArrayOutputStream writeNode(Node node) throws IOException  {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      out = write(out, node, "");
+      out.flush();
+      return out;
+   }
+   
+   
+   
   /**
    * Dumo the DOM nodes to a XML string. 
    *
