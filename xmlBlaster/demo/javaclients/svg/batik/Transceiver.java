@@ -224,8 +224,7 @@ public class Transceiver implements I_Callback
       log.trace(ME, "update called, updateKey: " + updateKey);
       log.trace(ME, "update called, updateQos: " + updateQos);
 
-      XmlToDom keyDom = new XmlToDom(org.xmlBlaster.util.Global.instance(), updateKey.toString());
-      NodeList nodes = keyDom.getXmlDoc().getDocumentElement().getElementsByTagName("svg");
+      NodeList nodes = XmlToDom.parseToDomTree(glob, updateKey.toString()).getDocumentElement().getElementsByTagName("svg");
       int length = nodes.getLength();
       if ((nodes == null) || (length < 1)) {
          throw new XmlBlasterException(ME, ".update: no svg node found in the key");
