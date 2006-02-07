@@ -7,7 +7,7 @@
 # Then install the Windows service with
 #
 #   cd %XMLBLASTER_HOME%\conf
-#   wrapper -i %XMLBLASTER_HOME%\conf\wrapper.conf
+#   wrapper -i %XMLBLASTER_HOME%\conf\wrapper.conf set.XMLBLASTER_HOME=%XMLBLASTER_HOME%
 #
 #   net start|stop xmlBlaster
 #
