@@ -169,7 +169,7 @@ public final class ReplaceVariable
       final String startToken = "<" + tag + attrString + ">";
       final String endToken = "</" + tag + ">";
       int start = xml.indexOf(startToken);
-      int end = xml.indexOf(endToken);
+      int end = xml.indexOf(endToken, start);
       if (start != -1 && end != -1) {
          return xml.substring(start + startToken.length(), end);
       }
