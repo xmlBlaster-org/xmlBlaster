@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
  
+ o #14699 ReplaceVariable.java: changed ReplaceVariable to allow hits with attribute on second tag
+ 
  o #14696 Bugfix for XML XPath query of topics.
    Was introduced some month ago and affected missing attribute values under JDL 1.5 only
 
