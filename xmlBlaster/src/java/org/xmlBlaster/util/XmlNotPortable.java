@@ -8,12 +8,16 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import org.w3c.dom.Document;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 
 import java.io.IOException;
 import java.util.Enumeration;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * XmlNotPortable holds static methods for parser dependent code. 
@@ -168,14 +172,14 @@ public class XmlNotPortable
    * Instead, we use vendor (crimson) specific code for input to and output from DOM parsers,
    * which is a disadvantage when portability is a requirement.
    */
-   public static final java.io.ByteArrayOutputStream write(org.w3c.dom.Document document) throws IOException
+   public static final java.io.ByteArrayOutputStream write(org.w3c.dom.Node node) throws IOException
    {
       java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-
+/*
       if (getJvmXmlVersionToUse() == 13) {
          if (document.getClass().getName().equals("org.apache.crimson.tree.XmlDocument")) {
             //if (document instanceof org.apache.crimson.tree.XmlDocument) {
-            //   ((org.apache.crimson.tree.XmlDocument)document).write(out/*, encoding*/);
+            //   ((org.apache.crimson.tree.XmlDocument)document).write(out/*, encoding* /);
             //}
             try {
                Class[] paramCls = new Class[] { java.io.OutputStream.class };
@@ -190,7 +194,7 @@ public class XmlNotPortable
          }
          return out;
       }
-      
+*/      
       if (getJvmXmlVersionToUse() == 14) {
          // see http://java.sun.com/xml/jaxp/dist/1.1/docs/tutorial/xslt/2_write.html
          try {
@@ -202,11 +206,11 @@ public class XmlNotPortable
             t.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");
             t.setOutputProperty(javax.xml.transform.OutputKeys.ENCODING, ENCODING);
             //t.setOutputProperty(javax.xml.transform.OutputKeys.CDATA_SECTION_ELEMENTS, "");
-            t.transform(new javax.xml.transform.dom.DOMSource(document), new javax.xml.transform.stream.StreamResult(out));
+            t.transform(new javax.xml.transform.dom.DOMSource(node), new javax.xml.transform.stream.StreamResult(out));
          }
          catch(Exception e) {
             e.printStackTrace();
-            log.error(ME, "Code to write XML-ASCII has failed for document class=" + document.getClass().getName() + ": " + e.toString());
+            log.error(ME, "Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
          }
          return out;
       }
@@ -239,7 +243,11 @@ public class XmlNotPortable
          Class clazz_DOMImplementationLS = java.lang.Class.forName("org.w3c.dom.ls.DOMImplementationLS");
 
          /* org.w3c.dom.ls.DOMImplementationLS */
-         Object implls = document.getImplementation();
+         Object implls = null;
+         if (node instanceof Document)
+            implls = ((Document)node).getImplementation();
+         else
+            implls = node.getOwnerDocument().getImplementation();
 
          Class[] paramCls = new Class[0];
          Object[] params = new Object[0];
@@ -264,13 +272,13 @@ public class XmlNotPortable
          method_setEncoding.invoke(output, params);
 
          paramCls = new Class[] { org.w3c.dom.Node.class, clazz_LSOutput };
-         params = new Object[] { document, output };
+         params = new Object[] { node, output };
          java.lang.reflect.Method method_write = domWriter.getClass().getMethod("write", paramCls);
          method_write.invoke(domWriter, params);
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME, "Code to write XML-ASCII has failed for document class=" + document.getClass().getName() + ": " + e.toString());
+         log.error(ME, "Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
       }
       /* NEW: xerces 2x (=IBM xml4j 4.0.1)   2002-04-18
       -> samples/dom/GetElementsByTagName.java shows how to dump XML our self
@@ -344,14 +352,14 @@ public class XmlNotPortable
     *  </li>
     * </ol>
     * @param the destination document
-    * @param the node to merge into the DOM tree
+    * @param the node to merge into the DOM tree, it is invalid after this call
+    * @return The node added or null
     */
-   public static final void mergeNode(org.w3c.dom.Document document, org.w3c.dom.Node node)
+   public static final org.w3c.dom.Node mergeNode(org.w3c.dom.Document document, org.w3c.dom.Node node)
    {
       if (log.CALL) log.call(ME, "mergeNode()");
       if (log.DUMP) log.dump(ME, "mergeNode=" + node.toString());
 
-      //if (getJvmXmlVersionToUse() == 13) {
       if (getJvmXmlVersionToUse() == 13 || getJvmXmlVersionToUse() == 14) {
          //if (document instanceof org.apache.crimson.tree.XmlDocument) {
          if (document.getClass().getName().equals("org.apache.crimson.tree.XmlDocument")) {
@@ -361,7 +369,7 @@ public class XmlNotPortable
                Object[] params = new Object[] { node };
                java.lang.reflect.Method method = document.getClass().getMethod("changeNodeOwner", paramCls);
                method.invoke(document, params);
-               document.getDocumentElement().appendChild(node);
+               return document.getDocumentElement().appendChild(node);
             }
             catch(Exception e) {
                log.error(ME, "Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
@@ -370,36 +378,42 @@ public class XmlNotPortable
          else {
             log.error(ME, "Code to merge XML-documents is missing for document class=" + document.getClass().getName());
          }
-         return;
+         return null;
       }
-      /* -> This did not produce anything useful marcel 2005-08-22
-            and makes no sense at it clones the DOM and is too slow
-      if (getJvmXmlVersionToUse() == 14) {
-         try {
-            if (log.TRACE) log.trace(ME, "mergeNode - Using JDK 1.4 DOM implementation");
-            document.importNode(node, true);
-            document.getDocumentElement().appendChild(node);
-         }
-         catch(org.w3c.dom.DOMException e) {
-            log.error(ME, "Code to merge XML-documents importNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
-         }
-         return;
-      }
-      */
       try {
          if (log.TRACE) log.trace(ME, "mergeNode - Using JDK 1.5 DOM implementation");
+         // DOM Level 3 WD - Experimental
+         // com/sun/org/apache/xerces/internal/dom/CoreDocumentImpl.adoptNode()
+         // Changes the ownerDocument of a node, its children, as well as the attached attribute nodes if there are any.
+         // This effectively allows moving a subtree from one document to another (unlike importNode() which create a copy of the source node instead of moving it). 
+         // Note: This failed as our attribute value got lost (2006-02-07 marcel):
+         //  Befor: <key oid="aTopic"><AA name="HELLO"/></key>
+         //  After: <key oid="aTopic"><AA name=""/></key>
+         // but never happenend again after changes (did we remerge an invalid DOM?)
          //document.adoptNode(node);   -> Use reflection for backward compatibility
          Class[] paramCls = new Class[] { org.w3c.dom.Node.class };
          Object[] params = new Object[] { node };
          java.lang.reflect.Method method = document.getClass().getMethod("adoptNode", paramCls);
          method.invoke(document, params);
-         document.getDocumentElement().appendChild(node);
+         return document.getDocumentElement().appendChild(node);
+         
+         // importNode introduced in DOM Level 2
+         // It makes a deep clone and is slower
+         // The source node is not altered or removed from the original document;
+         // this method creates a new copy of the source node.
+         /*
+         //Class[] paramCls = new Class[] { org.w3c.dom.Node.class, boolean.class };
+         //Object[] params = new Object[] { node, Boolean.TRUE };
+         //java.lang.reflect.Method method = document.getClass().getMethod("importNode", paramCls);
+         //method.invoke(document, params);
+         org.w3c.dom.Node newNode = document.importNode(node, true);
+         return document.getDocumentElement().appendChild(newNode);
+         */
       }
       catch(/*org.w3c.dom.DOMException*/Exception e) {
          log.error(ME, "Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
       }
-
-      if (log.CALL) log.call(ME, "Successfully merged tree");
+      return null;
    }
 
    /**
@@ -514,4 +528,46 @@ public class XmlNotPortable
       if (log.TRACE) log.trace(ME, "Successfully replaced node");
    }
     */
+   
+   // java org.xmlBlaster.util.XmlNotPortable
+   public static void main(String[] args) {
+      Global glob = new Global(args);
+      
+      // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
+      org.w3c.dom.Document bigDoc = null;
+      String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                   "<xmlBlaster></xmlBlaster>";
+      java.io.StringReader reader = new java.io.StringReader(xml);
+      org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
+      try {
+         DocumentBuilderFactory dbf = glob.getDocumentBuilderFactory();
+         //dbf.setNamespaceAware(true);
+         //dbf.setCoalescing(true);
+         //dbf.setValidating(false);
+         //dbf.setIgnoringComments(true);
+         DocumentBuilder db = dbf.newDocumentBuilder ();
+         bigDoc = db.parse(input);
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+
+      
+      xml = "<key oid='aTopic'><AA name='HELLO'/></key>";
+      try {
+         XmlToDom dom = new XmlToDom(glob, xml);
+         System.out.println("Before merge: " + dom.domToXml(""));
+         
+         org.w3c.dom.Node newNode = XmlNotPortable.mergeNode(bigDoc, dom.getRootNode());
+         
+         //org.w3c.dom.Node newNode = bigDoc.importNode(dom.getRootNode(), true);
+         //bigDoc.getDocumentElement().appendChild(newNode);
+         
+         //bigDoc.adoptNode(dom.getRootNode());
+
+         System.out.println("After merge: " + XmlNotPortable.write(newNode));
+         System.out.println("After merge complete: " + XmlNotPortable.write(bigDoc));
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+   }
 }

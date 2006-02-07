@@ -25,14 +25,12 @@ import java.util.StringTokenizer;
 public class XmlToDom
 {
    private String ME = "XmlToDom";
+   protected Global glob;
    private final LogChannel log;
 
    protected String xmlKey_literal;
+   protected org.w3c.dom.Node rootNode;    // this is always the <key ...>
 
-   protected org.w3c.dom.Document xmlDoc = null;  // the parsed xmlKey_literal DOM
-   protected org.w3c.dom.Node rootNode = null;    // this is always the <key ...>
-
-   protected Global glob;
    /**
     * Parses given xml string
     *
@@ -42,7 +40,7 @@ public class XmlToDom
    public XmlToDom(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
       this.glob = glob;
-      log = this.glob.getLog("core");
+      this.log = this.glob.getLog("core");
       create(xmlKey_literal);
    }
 
@@ -57,8 +55,7 @@ public class XmlToDom
       if (log.CALL) log.trace(ME, "Creating DOM tree");
 
       if (this.xmlKey_literal != null) {
-         xmlDoc = null;
-         rootNode = null;
+         this.rootNode = null;
       }
 
       this.xmlKey_literal = xmlKey_literal.trim();
@@ -106,17 +103,7 @@ public class XmlToDom
    public final org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
       loadDomTree();
-      return rootNode;
-   }
-
-
-   /**
-    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
-    */
-   public final org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
-   {
-      loadDomTree();
-      return xmlDoc;
+      return this.rootNode;
    }
 
 
@@ -128,31 +115,34 @@ public class XmlToDom
     */
    private void loadDomTree() throws XmlBlasterException
    {
-      if (xmlDoc != null)
+      if (this.rootNode != null)
          return;       // DOM tree is already loaded
+      this.rootNode = parseToDomTree(glob, this.xmlKey_literal).getDocumentElement();
+   }
 
+
+   public static org.w3c.dom.Document parseToDomTree(Global glob, String xmlKey_literal) throws XmlBlasterException
+   {
       java.io.StringReader reader = new java.io.StringReader(xmlKey_literal);
       InputSource input = new InputSource(reader);
       //input.setEncoding("UTF-8");
       //input.setEncoding("ISO-8859-2");
       //input.setSystemId("9999999999");
-
+      final String ME = "DOMParser";
       try {
          DocumentBuilderFactory dbf = glob.getDocumentBuilderFactory();
          DocumentBuilder db = dbf.newDocumentBuilder();
-         xmlDoc = db.parse(input);
+         return db.parse(input);
       } catch (javax.xml.parsers.ParserConfigurationException e) {
-         log.error(ME+".IO", "Problems when building DOM parser: " + e.toString() + "\n" + xmlKey_literal);
+         glob.getLog("core").error(ME+".IO", "Problems when building DOM parser: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string\n" + xmlKey_literal, e);
       } catch (java.io.IOException e) {
-         log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         glob.getLog("core").error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       } catch (org.xml.sax.SAXException e) {
-         log.warn(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         glob.getLog("core").warn(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       }
-
-      rootNode = xmlDoc.getDocumentElement();
    }
 
 
@@ -161,10 +151,8 @@ public class XmlToDom
     */
    public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException
    {
-      org.w3c.dom.Node tmpRootNode = rootNode;
       if (log.TRACE) log.trace(ME, "Entering mergeRootNode() ...");
-      /*org.w3c.dom.Node node = */merger.mergeNode(tmpRootNode);
-      rootNode = tmpRootNode;  // everything successful, assign the rootNode
+      this.rootNode = merger.mergeNode(this.rootNode);
    }
 
 
@@ -179,7 +167,7 @@ public class XmlToDom
    {
       StringBuffer sb = new StringBuffer();
       try {
-         java.io.ByteArrayOutputStream out = XmlNotPortable.write(getXmlDoc());
+         java.io.ByteArrayOutputStream out = XmlNotPortable.write(getRootNode());
          StringTokenizer st = new StringTokenizer(out.toString(), "\n");
          while (st.hasMoreTokens()) {
             sb.append(offset).append("   ").append(st.nextToken());

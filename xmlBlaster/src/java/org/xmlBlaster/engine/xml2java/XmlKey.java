@@ -264,14 +264,6 @@ public final class XmlKey
    }
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
-    */
-   public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException {
-      loadDomTree();
-      return this.xmlToDom.getXmlDoc();
-   }
-
-   /**
     * Fills the DOM tree, and assures that a valid <pre>&lt;key oid=""></pre> is used.
     */
    private synchronized void loadDomTree() throws XmlBlasterException {
@@ -283,9 +275,6 @@ public final class XmlKey
 
       this.xmlToDom = new XmlToDom(glob, this.keyData.toXml());
       org.w3c.dom.Node node = this.xmlToDom.getRootNode();
-
-      //log.error(ME, "DEBUG ONLY: Doing DOM parse");
-      //Thread.currentThread().dumpStack();
 
       // Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
       if (node == null) {
@@ -383,15 +372,12 @@ public final class XmlKey
     */
    public final boolean match(String xpath) throws XmlBlasterException {
       String xmlKey_literal = this.keyData.toXml();
-      if (xmlKeyDoc == null) {
+      if (this.xmlKeyDoc == null) {
          try {
-            //log.error(ME, "DEBUG ONLY: Creating tiny DOM tree and a query manager ...");
             if (log.TRACE) log.trace(ME, "Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
             String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
-            XmlToDom tinyDomHandle = new XmlToDom(glob,tmp);
-            xmlKeyDoc = tinyDomHandle.getXmlDoc();
-            //queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
+            this.xmlKeyDoc = XmlToDom.parseToDomTree(glob, tmp);
          } catch (Exception e) {
             String text = "Problems building tiny key DOM tree\n" + xmlKey_literal + "\n for XPath subscriptions check: " + e.getMessage();
             log.warn(ME + ".MergeNodeError", text);
@@ -399,8 +385,7 @@ public final class XmlKey
          }
       }
       try {
-         //Enumeration nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xpath);
-         Enumeration nodeIter = XmlNotPortable.getNodeSetFromXPath(xpath, xmlKeyDoc);
+         Enumeration nodeIter = XmlNotPortable.getNodeSetFromXPath(xpath, this.xmlKeyDoc);
          if (nodeIter != null && nodeIter.hasMoreElements()) {
             log.info(ME, "XPath subscription '" + xpath + "' matches message '" + getKeyOid() + "'");
             return true;
@@ -421,7 +406,6 @@ public final class XmlKey
    public void cleanupMatch()
    {
       if (log.TRACE) log.trace(ME, "Releasing tiny DOM tree");
-      //queryMgr = null;
-      xmlKeyDoc = null;
+      this.xmlKeyDoc = null;
    }
 }

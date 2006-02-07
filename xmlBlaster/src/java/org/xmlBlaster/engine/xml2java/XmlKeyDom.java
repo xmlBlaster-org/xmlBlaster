@@ -50,8 +50,6 @@ public class XmlKeyDom implements I_MergeDomNode
    private final Global glob;
    private final LogChannel log;
 
-   //protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
-
    protected Document xmlKeyDoc = null;
 
    protected String encoding = "ISO-8859-1";             // !!! TODO: access from xmlBlaster.properties file
@@ -88,35 +86,19 @@ public class XmlKeyDom implements I_MergeDomNode
       }
    }
 
-
-   /*
-    * Accesing the query manager for XPath.
-    * <p />
-    * queryMgr is instantiated if null
-    * @return the query manager
-   protected final com.fujitsu.xml.omquery.DomQueryMgr getQueryMgr()
-   {
-      if (queryMgr == null)
-         queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
-      return queryMgr;
-   }
-   */
-
    /**
     * Adding a new &lt;key> node to the xmlBlaster xmlKey tree.
     * <p />
     * This method is forced by the interface I_MergeDomNode
-    * @param the node to merge into the DOM tree
-    * @return the node added
+    * @param the node to merge into the DOM tree, it is invalid after this call
+    * @return the node added or null
     */
    public final org.w3c.dom.Node mergeNode(org.w3c.dom.Node node) throws XmlBlasterException
    {
       // !!! synchronize is missing !!!
       // !!! PENDING: If same key oid exists, remove the old and replace with new
-
-      XmlNotPortable.mergeNode(xmlKeyDoc, node);
-      //queryMgr = null; // needs to be reloaded, since the Document changed
-      return node;
+      org.w3c.dom.Node newNode = XmlNotPortable.mergeNode(xmlKeyDoc, node);
+      return newNode;
    }
 
 
@@ -142,7 +124,6 @@ public class XmlKeyDom implements I_MergeDomNode
       Enumeration nodeIter;
       try {
          if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = '" + xpathQuery + "'");
-         //nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
          nodeIter = XmlNotPortable.getNodeSetFromXPath(xpathQuery, xmlKeyDoc);
          if (log.TRACE) log.trace(ME, "Node iter done");
       } catch (XmlBlasterException e) {
