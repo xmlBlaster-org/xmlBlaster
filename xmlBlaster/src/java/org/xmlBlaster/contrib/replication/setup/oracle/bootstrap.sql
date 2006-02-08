@@ -1,4 +1,3 @@
--- ---------------------------------------------------------------------------- 
 -- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
 --                                                                              
 -- Some Comments:                                                               
@@ -96,6 +95,20 @@ CREATE TABLE ${replPrefix}items (repl_key INTEGER,
 	     db_action VARCHAR(${charWidth}), db_catalog VARCHAR(${charWidth}),
 	     db_schema VARCHAR(${charWidth}), content CLOB, oldContent CLOB, 
 	     version VARCHAR(${charWidthSmall}), PRIMARY KEY (repl_key))
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- This trigger is needed if you want to detect change events synchronously as  
+-- they occur without the need of polling. It is only used in conjunction with  
+-- the OracleByEventScheduler.                                                  
+-- ---------------------------------------------------------------------------- 
+CREATE TRIGGER ${replPrefix}scheduler_trigger AFTER INSERT
+ON ${replPrefix}tables
+FOR EACH ROW
+BEGIN
+   dbms_alert.signal('${replPrefix}ITEMS', 'INSERT');
+END ${replPrefix}scheduler_trigger;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -747,6 +760,10 @@ BEGIN
       END IF;
 
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      if transId = NULL THEN
+         transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+      END IF;
+
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
                   guid, db_action, db_catalog, db_schema, content, oldContent,
@@ -846,6 +863,10 @@ BEGIN
    ELSE
       ${replPrefix}debug('ADD_TABLE inserting entry into items table');
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      if transId = NULL THEN
+         transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+      END IF;
+
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
                   guid, db_action, db_catalog, db_schema, content, oldContent,
@@ -877,7 +898,10 @@ BEGIN
    dbms_lob.open(contClob, dbms_lob.lob_readwrite);
    dbms_lob.writeappend(contClob, length(txt), txt);
    dbms_lob.close(contClob);
-   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+   IF transId = NULL THEN
+      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+   END IF;
    SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
    INSERT INTO ${replPrefix}items (repl_key, trans_key, db_action, content, 
                version) values (replKey, transId, 'statement', contClob, '0.0');

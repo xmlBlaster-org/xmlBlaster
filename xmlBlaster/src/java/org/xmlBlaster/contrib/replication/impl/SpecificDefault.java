@@ -708,7 +708,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
       }
       finally {
-         if (st == null)
+         if (st != null)
             st.close();
       }
    }

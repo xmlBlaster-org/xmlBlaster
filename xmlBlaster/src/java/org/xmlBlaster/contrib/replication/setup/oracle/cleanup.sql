@@ -26,6 +26,8 @@ DROP FUNCTION ${replPrefix}check_tables
 -- FLUSH (dropped ${replPrefix}check_tables)                                    
 DROP TRIGGER ${replPrefix}tables_trigger
 -- FLUSH (dropped ${replPrefix}tables_trigger)                                  
+DROP TRIGGER ${replPrefix}scheduler_trigger
+-- FLUSH (dropped ${replPrefix}scheduler_trigger)                               
 DROP TABLE ${replPrefix}tables
 -- FLUSH (dropped ${replPrefix}tables)                                          
 DROP TABLE ${replPrefix}current_tables
