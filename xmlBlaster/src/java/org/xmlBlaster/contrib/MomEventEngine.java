@@ -17,8 +17,10 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.Global;
@@ -190,13 +192,23 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
     * is currently used: qos, containing the qos literal.
     * @return the PublishQos as a string.
     */
-   public String publish(String changeKey, byte[] message, Map attrMap) throws Exception {
+   public String publish(String oid, byte[] message, Map attrMap) throws Exception {
       String qos = null;
       if (attrMap != null)
          qos = (String)attrMap.get("qos");
-      if (qos == null)
-         qos = "<qos/>";
-      MsgUnit msg = new MsgUnit(this.glob, changeKey, message, qos);
+      if (qos == null) {
+         if (attrMap != null) {
+            PublishQos pubQos = new PublishQos(this.glob);
+            ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(pubQos.getData().getClientProperties(), null);
+            InfoHelper.fillInfoWithEntriesFromMap(tmpInfo, attrMap);
+            qos = pubQos.toXml();
+         }
+         else {
+            qos = "<qos/>";
+         }
+      }
+      PublishKey pubKey = new PublishKey(this.glob, oid);
+      MsgUnit msg = new MsgUnit(this.glob, pubKey.toXml(), message, qos);
       return this.con.publish(msg).toXml();
    }
 

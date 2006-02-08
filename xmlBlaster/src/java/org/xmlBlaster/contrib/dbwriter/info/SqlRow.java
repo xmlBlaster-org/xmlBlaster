@@ -134,9 +134,9 @@ public class SqlRow {
     */
    final static void renameProp(String oldName, String newName, Map map, List list) throws Exception {
       if (oldName == null)
-         throw new Exception("RecordRow.renameProp: the oldName is null, which is not allowed");
+         throw new Exception("SqlRow.renameProp: the oldName is null, which is not allowed");
       if (newName == null)
-         throw new Exception("RecordRow.renameProp: the newName is null, which is not allowed when trying to rename '" + oldName + "'");
+         throw new Exception("SqlRow.renameProp: the newName is null, which is not allowed when trying to rename '" + oldName + "'");
       
       // remove entry having the new name (if any)
       findStringEntry(newName, list, true);
@@ -161,10 +161,10 @@ public class SqlRow {
     */
    final static void storeProp(ClientProperty value, Map map, List list) {
       if (value == null)
-         throw new IllegalArgumentException("RecordRow.storeProp: the value is null, which is not allowed");
+         throw new IllegalArgumentException("SqlRow.storeProp: the value is null, which is not allowed");
       String name = value.getName();
       if (name == null)
-         throw new IllegalArgumentException("RecordRow.storeProp: the name of the value is null, which is not allowed");
+         throw new IllegalArgumentException("SqlRow.storeProp: the name of the value is null, which is not allowed");
       if (map.containsKey(name)) {
          map.put(name, value);
       }

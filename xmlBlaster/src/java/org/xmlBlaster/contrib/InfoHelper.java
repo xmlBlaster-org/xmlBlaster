@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 
 /**
@@ -118,4 +119,52 @@ public class InfoHelper {
          return map;
       }
    }
+
+   /**
+    * Fills the I_Info with the entries of the map. If the values of the map are strings they are added
+    * if they are ClientProperties they are added too, otherwise they are added as objects.
+    */
+   public static void fillInfoWithEntriesFromMap(I_Info info, Map map) {
+      synchronized (info) {
+         synchronized (map) {
+            Iterator iter = map.keySet().iterator();
+            while (iter.hasNext()) {
+               String key = ((String)iter.next()).trim();
+               Object obj = map.get(key);
+               if (obj instanceof String) {
+                  info.put(key, (String)obj);
+               }
+               else if (obj instanceof ClientProperty) {
+                  info.put(key, ((ClientProperty)obj).getStringValue());
+               }
+               else {
+                  info.putObject(key, obj);
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Returns a string containing all entries found. They are separated by what's specified as the separator,
+    * @param iter
+    * @return
+    */
+   public static String getIteratorAsString(Iterator iter, final String separator) {
+      StringBuffer buf = new StringBuffer();
+      boolean isFirst = true;
+      while (iter.hasNext()) {
+         if (isFirst)
+            isFirst = false;
+         else
+            buf.append(separator);
+         buf.append(iter.next());
+      }
+      return buf.toString();
+   }
+   
+   public static String getIteratorAsString(Iterator iter) {
+      return getIteratorAsString(iter, ",");
+   }
+   
 }
