@@ -175,16 +175,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    };
 
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
    private String CREATE_COUNTER_KEY = "_createCounter";
    private static Logger log = Logger.getLogger(InitialUpdater.class.getName());
 
@@ -274,6 +264,14 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
       this.stringToCheck = info.get("replication.initial.stringToCheck", null);
+      // rewrite the default behaviour of the timestamp detector to detect even UPDATES (deletes are also updates)
+      /*
+      boolean detectUpdates = this.info.getBoolean("detector.detectUpdates", false);
+      if (detectUpdates)
+         throw new Exception("You have configured the DbWatcher to have 'detector.detectUpdates=true'. This is not allowed in replication");
+      log.info("overwriting the default for 'detector.detectUpdates' from 'true' to 'false' since we are in replication");
+      this.info.put("detector.detectUpdates", "" + false);
+      */
       sendRegistrationMessage();
    }
 
@@ -353,51 +351,76 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    /**
     * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
     */
-   public final void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public final void update(String topic, byte[] content, Map attrMap) {
 
-      if (content == null)
-         content = new byte[0];
-      String msg = new String(content);
-      // this comes from the requesting ReplSlave
-      log.info("update for '" + topic + "' and msg='" + msg + "'");
-      if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_sender");
-         if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
-         String destination = prop.getStringValue();
+      try {
+         if (content == null)
+            content = new byte[0];
+         String msg = new String(content);
+         // this comes from the requesting ReplSlave
+         log.info("update for '" + topic + "' and msg='" + msg + "'");
+         if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
+            ClientProperty prop = (ClientProperty)attrMap.get("_sender");
+            if (prop == null)
+               throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
+            String destination = prop.getStringValue();
 
-         String replTopic = this.info.get("mom.topicName", null);
-         if (replTopic == null)
-            throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
+            String replTopic = this.info.get("mom.topicName", null);
+            if (replTopic == null)
+               throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
 
-         prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
-         if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
-         String slaveName = prop.getStringValue();
-         
-         // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
-         ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, this.dbSpecific);
-         executionThread.start();
-         
-      }
-      else if (ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
-         // do cancel
-         ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
-         if (prop == null)
-            throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
-         String slaveName = prop.getStringValue();
-         synchronized (this) {
-            Execute exec = (Execute)this.runningExecutes.remove(slaveName);
-            if (exec != null)
-               exec.stop();
+            prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
+            if (prop == null)
+               throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
+            String slaveName = prop.getStringValue();
+            
+            // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
+            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, this.dbSpecific);
+            executionThread.start();
+            
+         }
+         else if (ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
+            // do cancel
+            ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
+            if (prop == null)
+               throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
+            String slaveName = prop.getStringValue();
+            synchronized (this) {
+               Execute exec = (Execute)this.runningExecutes.remove(slaveName);
+               if (exec != null)
+                  exec.stop();
+            }
+         }
+         else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
+            boolean force = true;
+            this.dbSpecific.addTriggersIfNeeded(force, null);
+         }
+         else if (ReplicationConstants.STATEMENT_ACTION.equals(msg)) {
+            String sql = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_ATTR)).getStringValue();
+            boolean isHighPrio = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_PRIO_ATTR)).getBooleanValue();
+            long maxResponseEntries = ((ClientProperty)attrMap.get(ReplicationConstants.MAX_ENTRIES_ATTR)).getLongValue();
+            String statementId = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_ID_ATTR)).getStringValue();
+            String sqlTopic =  ((ClientProperty)attrMap.get(ReplicationConstants.SQL_TOPIC_ATTR)).getStringValue();
+            log.info("Be aware that the number of entries in the result set will be limited to '" + maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
+            final boolean isMaster = true;
+            
+            byte[] response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
+            
+            if (this.publisher != null) {
+               Map map = new HashMap();
+               map.put(ReplicationConstants.MASTER_ATTR, this.replPrefix);
+               map.put(ReplicationConstants.STATEMENT_ID_ATTR, statementId);
+               map.put("_command", ReplicationConstants.STATEMENT_ACTION);
+               this.publisher.publish(sqlTopic, response, map);
+            }
+         }
+         else {
+            log.warning("update from '" + topic + "' with request '" + msg + "'");
          }
       }
-      else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
-         boolean force = true;
-         this.dbSpecific.addTriggersIfNeeded(force, null);
-      }
-      else {
-         log.warning("update from '" + topic + "' with request '" + msg + "'");
+      catch (Throwable ex) {
+         log.severe("An exception occured when processing the received update '" + new String(content) + "': " + ex.getMessage());
+         ex.printStackTrace();
       }
    }
 

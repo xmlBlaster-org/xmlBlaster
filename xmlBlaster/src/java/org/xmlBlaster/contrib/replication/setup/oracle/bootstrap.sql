@@ -37,8 +37,8 @@ CREATE TABLE ${replPrefix}debug_table(replKey INTEGER, line VARCHAR(255))
 CREATE OR REPLACE PROCEDURE ${replPrefix}debug(lineTxt VARCHAR2) AS
    replKey INTEGER;
 BEGIN							    
-      SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
-      INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
+   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+   -- INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
 END;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -856,4 +856,34 @@ BEGIN
    RETURN res;
 END ${replPrefix}add_table;
 -- EOC (end of command: needed as a separator for our script parser)            
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}prepare_broadcast is used to make the first entry in the items  
+-- table before publishing a statement.                                         
+-- returns TRUE if the table exists (has to be replicated) or FALSE otherwise.  
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}prepare_broadcast(txt VARCHAR)
+   RETURN VARCHAR AS
+   replKey  INTEGER;
+   transId  VARCHAR(${charWidth});
+   tmp      NUMBER;
+   res      VARCHAR(${charWidthSmall});
+   contClob CLOB;
+BEGIN
+   ${replPrefix}debug('PREPARE_BROADCAST ' || txt);
+   contClob := EMPTY_CLOB;
+   dbms_lob.createtemporary(contClob, TRUE);
+   dbms_lob.open(contClob, dbms_lob.lob_readwrite);
+   dbms_lob.writeappend(contClob, length(txt), txt);
+   dbms_lob.close(contClob);
+   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+   INSERT INTO ${replPrefix}items (repl_key, trans_key, db_action, content, 
+               version) values (replKey, transId, 'statement', contClob, '0.0');
+   res := 'TRUE';
+   RETURN res;
+END ${replPrefix}prepare_broadcast;
+-- EOC (end of command: needed as a separator for our script parser)            
+
 

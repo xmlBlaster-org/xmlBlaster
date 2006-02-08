@@ -160,7 +160,16 @@ function toggleDispatcher() {
  	 <!-- Counter Line -->
     	  <tr class="inner">
     	    <td colspan="1" class="normal" title="Current counter of the replicated data">Count</td>
-	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
+	    
+	    <xsl:choose>
+	       <xsl:when test="Attribute[@name='MaxReplKey']/@value = '0'">
+    	    <td align="right" colspan="1" class="hidden"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
+	       </xsl:when>
+	       <xsl:otherwise>
+    	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
+	       </xsl:otherwise>
+	    </xsl:choose>
+
     	    <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
 	  </tr>
 	 

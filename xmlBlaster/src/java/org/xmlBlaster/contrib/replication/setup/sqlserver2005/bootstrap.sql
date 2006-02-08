@@ -1,7 +1,8 @@
 -- TODO!
 
 -- ---------------------------------------------------------------------------- 
--- Written by Michele Laghi (laghi@swissinfo.org) 2005-08-09                    
+-- Written by Michele Laghi (laghi@swissinfo.org) 2006-01-27                    
+-- and Marcel Ruff (mr@marcelruff.info)                                         
 --                                                                              
 -- Some Comments:                                                               
 --                                                                              
@@ -58,12 +59,12 @@
 -- it will only watch for initial replication.                                  
 -- ---------------------------------------------------------------------------- 
 
-CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(${charWidth}), 
+CREATE TABLE ${user}.${replPrefix}tables(catalogname VARCHAR(${charWidth}), 
                          schemaname VARCHAR(${charWidth}),
                          tablename VARCHAR(${charWidth}), actions CHAR(3),
-			 status VARCHAR(${charWidthSmall}), repl_key INTEGER, 
-			 trigger_name VARCHAR(${charWidth}), debug INTEGER, 
-			 PRIMARY KEY(catalogname, schemaname, tablename))
+                         status VARCHAR(${charWidthSmall}), repl_key INTEGER, 
+                         trigger_name VARCHAR(${charWidth}), debug INTEGER, 
+                         PRIMARY KEY(catalogname, schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -91,12 +92,12 @@ CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(${charWidth}),
 -- CREATE SEQUENCE ${replPrefix}seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
 -- EOC (end of command: needed as a separator for our script parser)            
 
-CREATE TABLE ${replPrefix}items (repl_key int IDENTITY(1,1)PRIMARY KEY, 
+CREATE TABLE ${user}.${replPrefix}items (repl_key int IDENTITY(1,1)PRIMARY KEY, 
              trans_key VARCHAR(${charWidth}), dbId VARCHAR(${charWidth}), 
-	     tablename VARCHAR(${charWidth}), guid VARCHAR(${charWidth}), 
-	     db_action VARCHAR(${charWidth}), db_catalog VARCHAR(${charWidth}),
-	     db_schema VARCHAR(${charWidth}), content VARCHAR(MAX), oldContent VARCHAR(MAX), 
-	     version VARCHAR(${charWidthSmall}))
+             tablename VARCHAR(${charWidth}), guid VARCHAR(${charWidth}), 
+             db_action VARCHAR(${charWidth}), db_catalog VARCHAR(${charWidth}),
+             db_schema VARCHAR(${charWidth}), content NTEXT, oldContent NTEXT, 
+             version VARCHAR(${charWidthSmall}))
 -- EOC (end of command: needed as a separator for our script parser)            
 
 -- ---------------------------------------------------------------------------- 
@@ -108,21 +109,16 @@ CREATE TABLE ${replPrefix}items (repl_key int IDENTITY(1,1)PRIMARY KEY,
 -- ---------------------------------------------------------------------------- 
 
 -- DROP FUNCTION ${replPrefix}col2xml_cdata
-CREATE FUNCTION ${replPrefix}col2xml_cdata(
-   @name VARCHAR, 
-   @content VARCHAR(MAX))
-RETURNS VARCHAR(MAX) AS BEGIN
+CREATE FUNCTION ${replPrefix}col2xml_cdata(@name VARCHAR, @content NTEXT)
+RETURNS NTEXT AS BEGIN
 DECLARE
-  @ch  VARCHAR(MAX)
+  @ch  NTEXT
 BEGIN
-   SET @ch = '<col name="' + @name +
-             '"><![CDATA[' + @content +
-             ']]></col>'
+   SET @ch = '<col name="' + @name + '"><![CDATA[' + @content + ']]></col>'
 END   
    RETURN  @ch
 END
 -- EOC (end of command: needed as a separator for our script parser)            
-
 
 
 -- ---------------------------------------------------------------------------- 
@@ -131,7 +127,7 @@ END
 -- returns an integer. If 1 it means CDATA protection will suffice, if 2 it     
 -- means it needs BASE64.                                                       
 -- ---------------------------------------------------------------------------- 
-CREATE FUNCTION ${replPrefix}needs_prot(@content VARCHAR(MAX)) 
+CREATE FUNCTION ${replPrefix}needs_prot(@content NTEXT) 
 RETURNS INTEGER AS BEGIN
 --local variables
 DECLARE
@@ -139,40 +135,50 @@ DECLARE
   @ret       INTEGER,
   @len       INTEGER,
   @offset    INTEGER,
-  @tmp       VARCHAR(MAX),
+  @tmp       NTEXT,
   @increment INTEGER
 BEGIN
    SET @ret = 0
    SET @offset = 1
    SET @increment = 32766
-   SET @len = LEN(@content)
+   SET @len = DATALENGTH(@content)
 
-   --WHILE   @offset < @len BEGIN
-   --   pos := INSTR(tmp, ']]>', 1, 1);
-   --   IF POS > 0 THEN
-   --      IF ret < 2 THEN
---	    ret := 2;
---	 END IF;
---      END IF;
---      pos := INSTR(tmp, '<', 1, 1);
---      IF POS > 0 THEN 
---	 IF ret < 1 THEN
---	    ret := 1;
---	 END IF;
---      END IF;
---      pos := INSTR(tmp, '&', 1, 1);
---      IF POS > 0 THEN 
---         IF ret < 1 THEN 
---	    ret := 1;
---         END IF;
---      END IF;
+   -- WHAT DOES INSTR DO ?
+   --
+   WHILE @offset < @len
+   BEGIN
+     SET @pos = PATINDEX('%]]>%', @tmp) -- INSTR(@tmp, ']]>', 1, 1)
+     IF @pos > 0
+     BEGIN
+       IF @ret < 2
+       BEGIN
+         SET @ret = 2
+       END
+     END
+      
+     SET @pos = PATINDEX('%<%', @tmp)
+     IF @pos > 0
+     BEGIN
+       IF @ret < 1
+       BEGIN
+         SET @ret = 1
+       END
+     END
+     SET @pos = PATINDEX('%&%', @tmp)
+     IF @pos > 0
+     BEGIN
+       IF @ret < 1
+       BEGIN
+         SET @ret = 1
+       END
+     END
    END
-   RETURN @ret
+END
+RETURN @ret
 END
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
-		 
 --IF object_id('[dbo].[base64_encode]') IS NOT NULL
 --  DROP FUNCTION [dbo].[base64_encode]
 --GO

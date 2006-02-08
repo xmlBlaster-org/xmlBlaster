@@ -54,6 +54,8 @@ DROP FUNCTION ${replPrefix}test_blob
 -- FLUSH (dropped ${replPrefix}test_blob)                                       
 DROP FUNCTION ${replPrefix}test_clob
 -- FLUSH (dropped ${replPrefix}test_clob)                                       
+DROP FUNCTION ${replPrefix}prepare_broadcast
+-- FLUSH (dropped ${replPrefix}prepare_broadcast)                               
 PURGE RECYCLEBIN
 -- FLUSH (purged recyclebin)                                                    
 

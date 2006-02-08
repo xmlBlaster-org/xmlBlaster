@@ -33,6 +33,7 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -115,6 +116,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    private boolean bootstrapWarnings;
    
    private int initCount = 0;
+   
+   private boolean isInMaster;
    
    class Replacer implements I_ReplaceVariable {
 
@@ -534,12 +537,52 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       // do a bootstrapping if needed !!!!!
       boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher) {
+         this.isInMaster = true;
          this.bootstrapWarnings = this.info.getBoolean("replication.bootstrapWarnings", false);
          doBootstrapIfNeeded();
       }
       this.initCount++;
    }
 
+   public void checkTriggerConsistency(boolean doFix) throws Exception {
+      Connection conn = this.dbPool.reserve();
+      try {
+         TableToWatchInfo[] tables = TableToWatchInfo.getAll(conn, this.replPrefix + "TABLES");
+         for (int i=0; i < tables.length; i++) {
+            if (!triggerExists(conn, tables[i])) {
+               String txt = "Trigger '" + tables[i].getTrigger() + "' on table '" + tables[i].getTable() + "' does in fact not exist.";
+               if (doFix) {
+                  // check first if the table really exists
+                  ResultSet rs = conn.getMetaData().getTables(null, null, tables[i].getTable(), null);
+                  try {
+                     if (!rs.next()) {
+                        log.info(txt + " and the table does not exist either. Will not do anything");
+                        return;
+                     }
+                  }
+                  finally {
+                     if (rs != null)
+                        rs.close();
+                  }
+                  log.info(txt + " Will add it now");
+                  // addTrigger(conn, tables[i], null);
+                  String catalog = tables[i].getCatalog();
+                  String schema = tables[i].getSchema();
+                  String table = tables[i].getTable();
+                  readNewTable(catalog, schema, table, null, false);
+               }
+               else
+                  log.info(txt);
+            }
+         }
+      }
+      finally {
+         if (conn != null)
+            this.dbPool.release(conn);
+      }
+   }
+   
+   
    /**
     * Checks wheter a bootstrapping is needed. If it is needed it will do first
     * a complete cleanup and therafter a bootstrap.
@@ -640,6 +683,37 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    }
 
    /**
+    * Adds a trigger.
+    * 
+    * @param conn
+    * @param tableToWatch
+    * @param sqlInfo
+    * @throws Exception
+    */
+   private void addTrigger(Connection conn, TableToWatchInfo tableToWatch, SqlInfo sqlInfo) throws Exception {
+      Statement st = null;
+      String triggerName = tableToWatch.getTrigger();
+      String table = tableToWatch.getTable();
+      try {
+         if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK)) {
+            String createString = createTableTrigger(sqlInfo.getDescription(), triggerName, tableToWatch.getActions());
+            if (createString != null && createString.length() > 1) {
+               log.info("adding triggers to '" + table + "':\n\n" + createString);
+               st = conn.createStatement();
+               st.executeUpdate(createString);
+               st.close();
+            }
+            tableToWatch.setStatus(TableToWatchInfo.STATUS_OK);
+            tableToWatch.storeStatus(this.replPrefix, this.dbPool);
+         }
+      }
+      finally {
+         if (st == null)
+            st.close();
+      }
+   }
+   
+   /**
     * @see I_DbSpecific#readNewTable(String, String, String, Map)
     */
    public final void readNewTable(String catalog, String schema, String table,
@@ -670,21 +744,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table, null);
          
          if (tableToWatch != null) {
-            String triggerName = tableToWatch.getTrigger();
             boolean addTrigger = tableToWatch.isReplicate();
-            Statement st = null;
             if (addTrigger) { // create the function and trigger here
-               if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK)) {
-                  String createString = createTableTrigger(sqlInfo.getDescription(), triggerName, tableToWatch.getActions());
-                  if (createString != null && createString.length() > 1) {
-                     log.info("adding triggers to '" + table + "':\n\n" + createString);
-                     st = conn.createStatement();
-                     st.executeUpdate(createString);
-                     st.close();
-                  }
-                  tableToWatch.setStatus(TableToWatchInfo.STATUS_OK);
-                  tableToWatch.storeStatus(this.replPrefix, this.dbPool);
-               }
+               addTrigger(conn, tableToWatch, sqlInfo);
             }
             else
                log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
@@ -1032,8 +1094,85 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String, java.lang.String)
+    */
+   public void initialCommand(String slaveName, String completeFilename) throws Exception {
+      this.initialUpdater.initialCommand(slaveName, completeFilename, null);
+   }
 
-
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#broadcastStatement(java.lang.String, long, long, boolean, boolean, String, String)
+    */
+   public byte[] broadcastStatement(String sql, long maxResponseEntries, boolean isHighPrio, boolean isMaster, String sqlTopic, String statementId) throws Exception {
+      Connection conn = this.dbPool.reserve();
+      byte[] response = null;
+      try {
+         conn.setAutoCommit(false);
+         if (this.isInMaster) {
+            CallableStatement st = null;
+            try {
+               StringBuffer buf = new StringBuffer();
+               // buf.append("<desc>\n");
+               buf.append("<attr id='").append(ReplicationConstants.STATEMENT_ATTR).append("'>").append(sql).append("</attr>\n");
+               buf.append("<attr id='").append(ReplicationConstants.STATEMENT_PRIO_ATTR).append("'>").append(isHighPrio).append("</attr>\n");
+               buf.append("<attr id='").append(ReplicationConstants.MAX_ENTRIES_ATTR).append("'>").append(maxResponseEntries).append("</attr>\n");
+               buf.append("<attr id='").append(ReplicationConstants.STATEMENT_ID_ATTR).append("'>").append(statementId).append("</attr>\n");
+               buf.append("<attr id='").append(ReplicationConstants.SQL_TOPIC_ATTR).append("'>").append(sqlTopic).append("</attr>\n");
+               // buf.append("</desc>\n");
+               
+               String sqlTxt = "{? = call " + this.replPrefix + "prepare_broadcast(?)}";
+               st = conn.prepareCall(sqlTxt);
+               String value = buf.toString();
+               st.setString(2, value);
+               st.registerOutParameter(1, Types.VARCHAR);
+               st.executeQuery();
+            }
+            finally {
+               st.close();
+            }
+         }
+         
+         Statement st2 = conn.createStatement();
+         try {
+            if (st2.execute(sql)) {
+               ResultSet rs = st2.getResultSet();
+               response = ResultSetToXmlConverter.getResultSetAsXmlLiteral(rs, "statement", "query", maxResponseEntries);
+            }
+            else {
+               int updateCount = st2.getUpdateCount();
+               StringBuffer buf1 = new StringBuffer();
+               buf1.append("<sql>\n");
+               buf1.append("  <desc>\n");
+               buf1.append("    <command>").append("statement").append("</command>");
+               buf1.append("    <ident>").append("update").append("</ident>");
+               buf1.append("    <attr id='").append("updateCount").append("'>").append(updateCount).append("</attr>");
+               buf1.append("  </desc>\n");
+               buf1.append("</sql>\n");
+               response = buf1.toString().getBytes();
+            }
+            // TODO make this a fine
+            log.info("statement to broadcast shall give this response: " + new String(response));
+         }
+         finally {
+            if (st2 != null)
+               st2.close();
+         }
+         conn.commit();
+         return response;
+      }
+      catch (Exception ex) {
+         conn.rollback();
+         throw ex;
+      }
+      finally {
+         if (conn != null) {
+            this.dbPool.release(conn);
+            conn = null;
+         }
+      }
+   }
+   
 
    /**
     * Example code.
@@ -1103,13 +1242,5 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
       }
    }
-
-   /**
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String, java.lang.String)
-    */
-   public void initialCommand(String slaveName, String completeFilename) throws Exception {
-      this.initialUpdater.initialCommand(slaveName, completeFilename, null);
-   }
-   
 
 }

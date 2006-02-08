@@ -38,7 +38,11 @@ public interface ReplicationConstants {
    public final static String ACTION_ATTR = "action";
    public final static String OLD_CONTENT_ATTR = "oldContent";
    public final static String STATEMENT_ATTR = "statement";
+   public final static String STATEMENT_PRIO_ATTR = "statementPrio";
+   public final static String STATEMENT_ID_ATTR = "statementId";
+   public final static String SQL_TOPIC_ATTR = "sqlTopic";
    public final static String MAX_ENTRIES_ATTR = "maxEntries";
+   public final static String MASTER_ATTR = "isMaster";
    public final static String DUMP_FILENAME = "dumpName";
    public final static String ALREADY_PROCESSED_ATTR = "alreadyProcessed"; // Used to mark a message which has already been processed and which has been sent twice.
    

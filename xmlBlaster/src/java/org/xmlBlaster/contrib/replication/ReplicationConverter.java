@@ -38,7 +38,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private static Logger log = Logger.getLogger(ReplicationConverter.class.getName());
    
    private I_DbSpecific dbSpecific;
-   private SqlInfo dbUpdateInfo;
+   private SqlInfo sqlInfo;
    private I_Info info;
    private I_AttributeTransformer transformer;
    private OutputStream out;
@@ -112,6 +112,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.replPrefix = this.info.get("replication.prefix", "repl_");
       boolean forceCreationAndInit = true;
       this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
+      final boolean doFix = true;
+      this.dbSpecific.checkTriggerConsistency(doFix);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       // this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
       // this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
@@ -243,12 +245,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       
       String version = rs.getString(11);
       
-      if (this.dbUpdateInfo.getRowCount() == 0L) {
+      if (this.sqlInfo.getRowCount() == 0L) {
 
          if (this.transformer != null) {
             Map attr = this.transformer.transform(rs, -1);
             if (attr != null) {
-               this.dbUpdateInfo.getDescription().addAttributes(attr);
+               this.sqlInfo.getDescription().addAttributes(attr);
             }
          }
       }
@@ -283,29 +285,42 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             }
          }
          else if (action.equalsIgnoreCase(DROP_ACTION)) {
-            SqlDescription description = this.dbUpdateInfo.getDescription(); 
+            SqlDescription description = this.sqlInfo.getDescription(); 
             description.setCommand(action);
             description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(ALTER_ACTION)) {
-            SqlDescription description = this.dbUpdateInfo.getDescription(); 
+            SqlDescription description = this.sqlInfo.getDescription(); 
             description.setCommand(action);
             description.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(INSERT_ACTION)) {
-            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            SqlRow row = this.sqlInfo.fillOneRow(rs, newContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
             completeAttrs.put(OLD_CONTENT_ATTR, oldContent);
-            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, newContent, this.transformer);
+            SqlRow row = this.sqlInfo.fillOneRow(rs, newContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-            SqlRow row = this.dbUpdateInfo.fillOneRow(rs, oldContent, this.transformer);
+            SqlRow row = this.sqlInfo.fillOneRow(rs, oldContent, this.transformer);
             row.addAttributes(completeAttrs);
          }
-
+         else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
+            String sql = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='" + STATEMENT_ATTR + "'");
+            String statementPrio = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='" + STATEMENT_PRIO_ATTR + "'");
+            String maxEntries = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='" + MAX_ENTRIES_ATTR + "'");
+            String id = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='" + STATEMENT_ID_ATTR + "'");
+            String sqlTopic = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='" + SQL_TOPIC_ATTR + "'");
+            this.sqlInfo.getDescription().setCommand(STATEMENT_ACTION);
+            this.sqlInfo.getDescription().setAttribute(ACTION_ATTR, STATEMENT_ACTION);
+            this.sqlInfo.getDescription().setAttribute(STATEMENT_ID_ATTR, id);
+            this.sqlInfo.getDescription().setAttribute(STATEMENT_ATTR, sql);
+            this.sqlInfo.getDescription().setAttribute(STATEMENT_PRIO_ATTR, statementPrio);
+            this.sqlInfo.getDescription().setAttribute(MAX_ENTRIES_ATTR, maxEntries);
+            this.sqlInfo.getDescription().setAttribute(SQL_TOPIC_ATTR, sqlTopic);
+         }
       }
    }
 
@@ -314,29 +329,38 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    }
 
    public int done() throws Exception {
-      int ret = this.dbUpdateInfo.getRowCount(); 
-      this.out.write(this.dbUpdateInfo.toXml("").getBytes());
+      int ret = this.sqlInfo.getRowCount();
+      if (ret < 1) {
+         // mark it to block delivery if it has no data and is not a STATEMENT
+         String command = this.sqlInfo.getDescription().getCommand();
+         if (command == null || REPLICATION_CMD.equals(command)) {
+            // puts this in the metadata attributes of the message to be sent over the mom
+            this.event.getAttributeMap().put("_ignore_this_message", "" + true);
+         }
+      }
+      String tmp = this.sqlInfo.toXml("");
+      this.out.write(tmp.getBytes());
       this.out.flush();
-      this.dbUpdateInfo = null;
+      this.sqlInfo = null;
       return ret;
    }
 
    public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
       this.out = out;
       this.transactionId = null;
-      this.dbUpdateInfo = new SqlInfo(this.info);
+      this.sqlInfo = new SqlInfo(this.info);
       SqlDescription description = new SqlDescription(this.info);
       description.setCommand(REPLICATION_CMD);
       if (ident != null)
          description.setIdentity(ident);
-      this.dbUpdateInfo.setDescription(description);
+      this.sqlInfo.setDescription(description);
       this.event = event;
    }
 
    public String getPostStatement() {
       if (this.transactionId == null) {
-         if (this.dbUpdateInfo != null)
-            log.severe("No transaction id has been found for " + this.dbUpdateInfo.toXml(""));
+         if (this.sqlInfo != null)
+            log.severe("No transaction id has been found for " + this.sqlInfo.toXml(""));
          return null;
       }
       // TODO REMOVE THIS AFTER TESTING
@@ -347,3 +371,4 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    
    
 }
+

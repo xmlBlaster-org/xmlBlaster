@@ -52,7 +52,7 @@ private final static String ME = "ReplicationWriter";
    private boolean doCreate;
    private boolean doAlter;
    private boolean doStatement;
-   private String sqlTopic;
+   // private String sqlTopic;
    private String schemaToWipeout;
    private I_PrePostStatement prePostStatement;
    private boolean hasInitialCmd;
@@ -115,8 +115,8 @@ private final static String ME = "ReplicationWriter";
       this.doStatement = info.getBoolean("replication.statements", true);
       this.schemaToWipeout = info.get("replication.writer.schemaToWipeout", null);
       
-      if (this.doStatement)
-         this.sqlTopic = this.info.get("replication.sqlTopic", null);
+      // if (this.doStatement)
+      //    this.sqlTopic = this.info.get("replication.sqlTopic", null);
       String prePostStatementClass = this.info.get("dbWriter.prePostStatement.class", "");
       if (prePostStatementClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
@@ -314,9 +314,6 @@ private final static String ME = "ReplicationWriter";
                      else if (action.equalsIgnoreCase(DELETE_ACTION)) {
                         desc.delete(conn, row);
                      }
-                     else {
-                        throw new Exception(ME + ".store: row with unknown action '" + action + "' invoked '" + row.toXml(""));
-                     }
                      if (this.prePostStatement != null)
                         this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
                   }
@@ -391,36 +388,40 @@ private final static String ME = "ReplicationWriter";
                else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
                   if (this.doStatement) {
                      String sql = getStringAttribute(STATEMENT_ATTR, null, description);
-                     if (sql != null && sql.length() > 1) {
-                        Statement st = conn.createStatement();
-                        try {
-                           boolean ret = st.execute(sql);
-                           if (ret) {
-                              ResultSet rs = st.getResultSet();
-                              SqlInfo sqlInfo = new SqlInfo(this.info);
-                              
-                              String maxEntriesTxt = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
-                              long maxEntries = -1L;
-                              if (maxEntriesTxt != null)
-                                 maxEntries = Long.parseLong(maxEntriesTxt.trim());
-                              long count = 0L;
-                              while (rs.next() && (count < maxEntries || maxEntries < 0L)) {
-                                 sqlInfo.fillOneRowWithObjects(rs, null);
-                              }
-                              if (this.sqlTopic != null) {
-                                 I_ChangePublisher momEngine = (I_ChangePublisher)this.info.getObject("org.xmlBlaster.contrib.dbwriter.mom.MomEventEngine");
-                                 if (momEngine == null)
-                                    throw new Exception("ReplicationWriter: the momEngine used can not handle publishes");
-                                 momEngine.publish(this.sqlTopic, sqlInfo.toXml("").getBytes(), null);
-                              }
-                              else
-                                 log.info("statement '" + sql + "' resulted in response '" + sqlInfo.toXml(""));
-                           }
-                        }
-                        finally {
-                           st.close();
-                        }
+                     String tmp = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
+                     
+                     long maxResponseEntries = 0L;
+                     if (tmp != null)
+                        maxResponseEntries = Long.parseLong(tmp.trim());
+                     // tmp = getStringAttribute(STATEMENT_PRIO, null, description);
+                     final boolean isHighPrio = false; // does not really matter here    
+                     final boolean isMaster = false;
+                     final String noId = null; // no statement id necessary here
+                     final String noTopic = null; // no need for a topic in the slave
+                     byte[] response = null;
+                     Exception ex = null;
+                     try {
+                        response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, noTopic, noId);
                      }
+                     catch (Exception e) {
+                        ex = e;
+                        response = e.getMessage().getBytes();
+                     }
+
+                     if (true) { // TODO add here the possibility to block sending of messages
+                        I_ChangePublisher momEngine = (I_ChangePublisher)this.info.getObject("org.xmlBlaster.contrib.dbwriter.mom.MomEventEngine");
+                        if (momEngine == null)
+                           throw new Exception("ReplicationWriter: the momEngine used can not handle publishes");
+                        String statementId = getStringAttribute(STATEMENT_ID_ATTR, null, description);
+                        String sqlTopic = getStringAttribute(SQL_TOPIC_ATTR, null, description);
+                        HashMap map = new HashMap();
+                        map.put(STATEMENT_ID_ATTR, statementId);
+                        momEngine.publish(sqlTopic, response, map);
+                     }
+                     else
+                        log.info("statement '" + sql + "' resulted in response '" + new String(response));
+                     if (ex != null) // now that we notified the server we can throw the exception
+                        throw ex;
                   }
                   else
                      log.fine("STATEMENT is disabled for this writer");

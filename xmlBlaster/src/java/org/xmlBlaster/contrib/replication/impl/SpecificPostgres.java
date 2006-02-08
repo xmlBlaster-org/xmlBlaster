@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.Types;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 
 public class SpecificPostgres extends SpecificDefault {
 
@@ -206,6 +207,13 @@ public class SpecificPostgres extends SpecificDefault {
     */
    protected boolean sequenceExists(Connection conn, String sequenceName) throws Exception {
       throw new Exception("The method sequenceExist has not been implemented yet. Please implement it");
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#triggerExists(org.xmlBlaster.contrib.replication.TableToWatchInfo)
+    */
+   public boolean triggerExists(Connection conn, TableToWatchInfo tableToWatch) throws Exception {
+      throw new Exception("The method triggerExists is not implemented yet for the postgres implementation");
    }
 
    

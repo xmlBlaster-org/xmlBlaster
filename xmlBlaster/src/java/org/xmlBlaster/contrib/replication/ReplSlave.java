@@ -393,11 +393,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             queue.removeRandom(entry);
             entries.remove(i);
             // initiate a cascaded replication (if configured that way)
-            if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null) {
-               log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
+            if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
+               log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
                this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
             }
-            else {      
+            else {
                log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
             }
             break; // there should only be one such message 
@@ -432,12 +432,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          if (replKey >= this.minReplKey || this.forceSending) {
             log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
             ret.add(entry);
-            
             if (replKey > this.maxReplKey || this.forceSending) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");
                setStatus(STATUS_NORMAL);
                // initiate a cascaded replication (if so configured)
-               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null) {
+               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                   log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
                   this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
                }

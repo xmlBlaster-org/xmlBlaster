@@ -33,13 +33,14 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
-import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.SqlStatement;
 import org.xmlBlaster.engine.I_SubscriptionListener;
 import org.xmlBlaster.engine.SubscriptionEvent;
 import org.xmlBlaster.engine.SubscriptionInfo;
@@ -53,8 +54,10 @@ import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -86,12 +89,13 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    
    public final static String SESSION_ID = "replManager/1";
    private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
-   // private I_ChangePublisher publisher;
-   private Map replications;
    private Object mbeanHandle;
    private String user = "replManager";
    private String password = "secret";
+   private Map replications;
    private Map replSlaveMap;
+   /** Keys are requestId Strings, and values are SqlStatement objects */
+   private Map sqlStatementMap;
    private boolean shutdown;
    private boolean initialized;
    
@@ -101,6 +105,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private long maxResponseEntries; 
    private I_DbPool pool;
    
+   
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
     */
@@ -108,28 +113,16 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       super(new String[] {});
       this.replications = new TreeMap();
       this.replSlaveMap = new TreeMap();
+      this.sqlStatementMap = new TreeMap();
    }
 
-   private String getKeysAsString(Iterator iter) {
-      StringBuffer buf = new StringBuffer();
-      boolean isFirst = true;
-      while (iter.hasNext()) {
-         if (isFirst)
-            isFirst = false;
-         else
-            buf.append(",");
-         buf.append(iter.next());
-      }
-      return buf.toString();
-   }
-   
    /**
     * Never returns null. It returns a list of keys identifying the slaves using the replication 
     * manager.
     * @return
     */
    public String getSlaves() {
-      return getKeysAsString(this.replSlaveMap.keySet().iterator());
+      return InfoHelper.getIteratorAsString(this.replSlaveMap.keySet().iterator());
    }
    
    /**
@@ -137,7 +130,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @return
     */
    public String getReplications() {
-      return getKeysAsString(this.replications.keySet().iterator());
+      return InfoHelper.getIteratorAsString(this.replications.keySet().iterator());
    }
    
    public String getType() {
@@ -245,13 +238,6 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    }
 
    /**
-    * @deprecated you should use the variant with four arguments.
-    */
-   public String initiateReplication(String slaveSessionName, String replicationPrefix) throws Exception {
-      return initiateReplication(slaveSessionName, replicationPrefix, null, null);
-   }
-
-   /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    protected synchronized void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
@@ -287,7 +273,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          putObject("org.xmlBlaster.engine.Global", global);
          getEngineGlobal(this.global).getPluginRegistry().register(getType() + "," + getVersion(), this);
 
-         this.sqlTopic = this.get("replication.sqlTopic", null);
+         this.sqlTopic = this.get("replication.sqlTopic", "sqlTopic");
          if (this.sqlTopic != null) {
             SubscribeKey subKey = new SubscribeKey(this.global, this.sqlTopic);
             SubscribeQos subQos = new SubscribeQos(this.global);
@@ -346,6 +332,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          conn.disconnect(new DisconnectQos(this.global));
          this.replications.clear();
          this.replSlaveMap.clear();
+         
+         synchronized(this.sqlStatementMap) {
+            String[] keys = (String[])this.sqlStatementMap.keySet().toArray(new String[this.sqlStatementMap.size()]);
+            for (int i=0; i < keys.length; i++)
+               unregisterSqlStatement(keys[i]);
+         }
          
          getEngineGlobal(this.global).getPluginRegistry().unRegister(getType() + "," + getVersion());
          this.pool.shutdown();
@@ -426,13 +418,25 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          // 1. This is a response from an sql statement which has been previously sent to the slaves.
          if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
             String sender = updateQos.getSender().getRelativeName();
+            ClientProperty prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.STATEMENT_ID_ATTR);
+            if (prop == null) {
+               log.severe("The statement id is not specified, can not process it");
+               return "NOK";
+            }
+            String reqId = prop.getStringValue();
+            SqlStatement sqlStatement = (SqlStatement)this.sqlStatementMap.get(reqId);
+            if (sqlStatement == null) {
+               log.severe("The statement with id '" + reqId + "' has not been found");
+               return "NOK";
+            }
             
-            I_ReplSlave slave = (I_ReplSlave)this.replSlaveMap.get(sender);
-            if (slave == null)
-               log.warning("Update data from SQL request came from user '" + sender + "' but the user is not registered. Registered users: " + getSlaves());
+            prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.MASTER_ATTR);
+            if (prop != null) { // then it is the response from the master
+               String replPrefix = prop.getStringValue();
+               sqlStatement.setResponse(replPrefix, new String(content));
+            }
             else {
-               log.info("Update data from SQL request came from user '" + sender + "'");
-               slave.setSqlResponse(new String(content));
+               sqlStatement.setResponse(senderSession.getRelativeName(), new String(content));
             }
          }
          // 2. This is the response coming from a DbWatcher on a request for initial update which one of the ReplSlaves has previously requested.
@@ -650,53 +654,87 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
    }
 
+   private synchronized void registerSqlStatement(String replPrefix, String reqId, String statement) throws Exception {
+      log.info("registering statement '" + replPrefix + "-" + reqId + "' for statement '" + statement + "'");
+      ArrayList slaves = new ArrayList();
+      Iterator iter = this.replSlaveMap.keySet().iterator();
+      synchronized (this.replSlaveMap) {
+         while (iter.hasNext()) {
+            Object key = iter.next();
+            ReplSlave replSlave = (ReplSlave)this.replSlaveMap.get(key);
+            String tmpPrefix = replSlave.getReplPrefix();
+            if (replPrefix.equals(tmpPrefix)) {
+               slaves.add(key);
+            }
+         }
+      }
+      SqlStatement sqlStatement = new SqlStatement(replPrefix, reqId, statement, slaves);
+      this.sqlStatementMap.put(reqId, sqlStatement);
+      String instanceName = getInstanceName() + ContextNode.SEP + replPrefix + ContextNode.SEP + reqId;
+      ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName, this.global.getContextNode());
+      sqlStatement.setHandle(this.global.registerMBean(contextNode, sqlStatement));
+   }
+
+   private synchronized void unregisterSqlStatement(String reqId) {
+      log.info("unregistering statement '" + reqId + "'");
+      SqlStatement sqlStatement = (SqlStatement)this.sqlStatementMap.remove(reqId);
+      if (sqlStatement == null)
+         log.warning("The sql statement with request id '" + reqId + "' was not found in the map, can not unregister it");
+      else
+         log.info("The sql statement with request id '" + reqId + "' will be unregistered now");
+      this.global.unregisterMBean(sqlStatement.getHandle());
+   }
+   
+   public void removeSqlStatement(String statementId) {
+      unregisterSqlStatement(statementId);
+   }
+   
+   private void sendBroadcastRequest(String replicationPrefix, String sql, boolean isHighPrio) throws Exception {
+      I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
+      String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+      String requestId = "" + new Timestamp().getTimestamp();
+      registerSqlStatement(replicationPrefix, requestId, sql);
+      
+      log.info("Broadcasting sql statement '" + sql + "' for master '" + replicationPrefix + "'");
+      I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+      // no oid for this ptp message 
+      PublishKey pubKey = new PublishKey(this.global);
+      Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
+      destination.forceQueuing(true);
+      PublishQos pubQos = new PublishQos(this.global, destination);
+      pubQos.setPersistent(true);
+      if (isHighPrio)
+         pubQos.setPriority(PriorityEnum.HIGH8_PRIORITY);
+      // pubQos.addClientProperty(ReplicationConstants.ACTION_ATTR, ReplicationConstants.STATEMENT_ACTION);
+      pubQos.addClientProperty(ReplicationConstants.STATEMENT_ATTR, sql);
+      pubQos.addClientProperty(ReplicationConstants.STATEMENT_PRIO_ATTR, isHighPrio);
+      pubQos.addClientProperty(ReplicationConstants.STATEMENT_ID_ATTR, requestId);
+      pubQos.addClientProperty(ReplicationConstants.SQL_TOPIC_ATTR, this.sqlTopic);
+      if (this.maxResponseEntries > -1L) {
+         pubQos.addClientProperty(ReplicationConstants.MAX_ENTRIES_ATTR, this.maxResponseEntries);
+         log.info("Be aware that the number of entries in the result set will be limited to '" + this.maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
+      }
+      MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.STATEMENT_ACTION.getBytes(), pubQos);
+      conn.publish(msg);
+      
+   }
+   
    /**
     * @see org.xmlBlaster.contrib.replication.impl.ReplManagerPluginMBean#broadcastSql(java.lang.String, java.lang.String)
     */
-   public void broadcastSql(String repl, String sql, boolean highPrio) throws Exception {
+   public void broadcastSql(String repl, String sql) throws Exception {
       if (repl == null)
          throw new Exception("executeSql: the replication id is null. Can not perform it.");
       if (sql == null)
          throw new Exception("executeSql: the sql statement to perform on  '" + repl + "' is null. Can not perform it.");
+
+      final boolean highPrio = true;
       
       I_Info dbWatcherInfo = (I_Info)this.replications.get(repl);
       if (dbWatcherInfo == null)
          throw new Exception("executeSql: the replication with Id='" + repl + "' was not found (has not been registered). Allowed ones are : " + getReplications());
-      
-      String oid = dbWatcherInfo.get("mom.topicName", null);
-      if (oid == null) {
-         StringBuffer buf = new StringBuffer();
-         Iterator iter = dbWatcherInfo.getKeys().iterator();
-         while (iter.hasNext())
-            buf.append(iter.next()).append(" ");
-         throw new Exception("executeSql: the replication with Id='" + repl + "' did not contain a property 'mom.topicName' which is needed. Found properties where: " + buf.toString());
-      }
-      
-      PropertiesInfo tmpInfo = new PropertiesInfo(new Properties());
-      SqlInfo sqlInfo = new SqlInfo(tmpInfo);
-      sqlInfo.getDescription().setAttribute(ReplicationConstants.ACTION_ATTR, ReplicationConstants.STATEMENT_ACTION);
-      sqlInfo.getDescription().setAttribute(ReplicationConstants.STATEMENT_ATTR, sql);
-      
-      PublishKey key = new PublishKey(this.global, oid);
-      PublishQos qos = new PublishQos(this.global);
-      qos.setPersistent(true);
-      if (highPrio)
-         qos.setPriority(PriorityEnum.HIGH_PRIORITY);
-      if (this.maxResponseEntries > -1L) {
-         qos.addClientProperty(ReplicationConstants.MAX_ENTRIES_ATTR, this.maxResponseEntries);
-         log.info("Be aware that the number of entries in the result set will be limited to '" + this.maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
-      }
-      // reset all responses ....
-      synchronized (this.replSlaveMap) {
-         Iterator iter = this.replSlaveMap.values().iterator();
-         while (iter.hasNext()) {
-            I_ReplSlave slave = (I_ReplSlave)iter.next();
-            slave.setSqlResponse("");
-         }
-      }
-      MsgUnit msgUnit = new MsgUnit(key, sqlInfo.toXml("").getBytes(), qos);
-      this.global.getXmlBlasterAccess().publish(msgUnit);
-      
+      log.info("Sending Broadcast request for repl='" + repl + "' and statement='" + sql + "'");
+      sendBroadcastRequest(repl, sql, highPrio);
    }
 
    /**

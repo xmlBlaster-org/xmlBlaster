@@ -94,6 +94,27 @@ td.normal {
    color: #007524;
 }
 
+
+td.waiting {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   color: #007524;
+   background-color: #FFFFAA;
+}
+td.ok {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   color: #007524;
+   background-color: #AAFFAA;
+}
+td.failed {
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
+   color: #007524;
+   background-color: #FFAAAA;
+}
+
+
 td.error {
    font-family: "Courier New", Courier, mono;
    font-size: 9pt;

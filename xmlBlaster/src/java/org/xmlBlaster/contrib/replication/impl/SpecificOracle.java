@@ -6,6 +6,7 @@
 package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,6 +23,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 
 public class SpecificOracle extends SpecificDefault {
 
@@ -827,4 +829,46 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
 
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#triggerExists(java.sql.Connection, org.xmlBlaster.contrib.replication.TableToWatchInfo)
+    */
+   public boolean triggerExists(Connection conn, TableToWatchInfo tableToWatch) throws Exception {
+      PreparedStatement st = null;
+      try {
+         String sql = "SELECT table_name, table_owner, status FROM all_triggers where trigger_name=?";
+         st = conn.prepareStatement(sql);
+         String triggerName = tableToWatch.getTrigger();
+         st.setString(1, triggerName);
+         ResultSet rs = st.executeQuery();
+         if (rs.next()) {
+            String tableName = rs.getString(1);
+            String tableOwner = rs.getString(2);
+            String status = rs.getString(3);
+            boolean ret = true;
+            if (!tableName.equalsIgnoreCase(tableToWatch.getTable())) {
+               log.warning("trigger '" + triggerName + "' exists, is on table '" + tableName + "' but is expected to be on '" + tableToWatch.getTable() + "'");
+               ret = false;
+            }
+            if (!tableOwner.equalsIgnoreCase(tableToWatch.getSchema())) {
+               log.warning("trigger '" + tableToWatch.getTrigger() + "' exists, is onwed by schema '" + tableOwner + "' but is expected to be on '" + tableToWatch.getSchema() + "'");
+               ret = false;
+            }
+            if (!status.equalsIgnoreCase("ENABLED")) {
+               log.warning("trigger '" + tableToWatch.getTrigger() + "' exists but is not enabled");
+               ret = false;
+            }
+            if (!ret) {
+               tableToWatch.setStatus(TableToWatchInfo.STATUS_REMOVE);
+               tableToWatch.storeStatus(this.replPrefix, this.dbPool);
+            }
+            return ret;
+         }
+         return false;
+      }
+      finally {
+         if (st != null)
+            st.close();
+      }
+   }
+   
 }

@@ -225,4 +225,39 @@ public interface I_DbSpecific extends I_ContribPlugin {
     */
    void addTriggersIfNeeded(boolean force, String destination) throws Exception;
    
+   /**
+    * Checks wether a trigger really exists or not. This method is normally implemented
+    * by the vendor specific implementation. It is used to detect inconsistencies.
+    * 
+    * @param tableToWatch The object containing the table to be checked for trigger
+    * @return true if the trigger really exists, false otherwise.
+    * @throws Exception If an exception occurs in the backend.
+    */
+   boolean triggerExists(Connection conn, TableToWatchInfo tableToWatch) throws Exception;
+
+   /**
+    * Checks if the triggers are consistent, i.e. if the description found in the table is consistent with the
+    * real values.
+    * 
+    * @param doFix
+    * @throws Exception
+    */
+   void checkTriggerConsistency(boolean doFix) throws Exception;
+
+   /**
+    * broadcasts a statement to be replicated.
+    *
+    * @param sql
+    * @param maxResponseEntries
+    * @param isHighPrio
+    * @param isMaster true if it is on the master side, i.e. in the DbWatcher. Then it will first put an entry in the
+    * ITEMS table and thereafter execute the statement.
+    * @param sqlTopic the topic on which the response will be published.
+    * @param statementId The unique Id identifying this statement. This will also be the topic on which the response is sent.
+    * @return a byte[] containing the response (an xml literal) 
+    * 
+    * @throws Exception
+    */
+   byte[] broadcastStatement(String sql, long maxResponseEntries, boolean isHighPrio, boolean isMaster, String sqlTopic, String statementId) throws Exception;
+   
 }

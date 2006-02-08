@@ -49,6 +49,11 @@ function gotoInitiate() {
    self.location.href= url;
 }
 
+function gotoStatements() {
+   var url = '<xsl:value-of select="$sqlStatementsUrl"/>';
+   self.location.href= url;
+}
+
 function refresh() {
    var url = '<xsl:value-of select="$destinationListUrl"/>';
    self.location.href= url;
@@ -77,13 +82,13 @@ function refresh() {
     	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
     	  </tr>
     
-
     <xsl:apply-templates/>
 
             </table>
             <table width="450" align="center" border="0" summary="">
     	      <tr>
     	        <td align="center" colspan="4" class="normal"><button title="Click to refresh this page manually" class="common" onClick="refresh()">Refresh</button></td>
+    	        <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
     	        <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initate Repl.</button></td>
     	      </tr>
             </table>
@@ -103,20 +108,37 @@ function refresh() {
 
 <xsl:template match="MBean[@classname='org.xmlBlaster.contrib.replication.ReplSlave']">
 
+   <!-- <xsl:param name="replKeyStartsWith">DEMO</xsl:param> -->
+
+   <!-- <xsl:param name="tmp1" select="Attribute[@name='ReplPrefix']/@value"/> -->
    <xsl:param name="sessionName" select="Attribute[@name='SessionName']/@value"/>
-   <xsl:param name="beanName" select="$sessionName"/>
+   <xsl:param name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
+   <xsl:param name="objectName" select="@objectname"/>
+   <xsl:param name="maxReplKey" select="Attribute[@name='MaxReplKey']/@value"/>
+   <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
+   <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
+   <xsl:param name="connectedStatus" select="Attribute[@name='Connected']/@value"/>
+
+<!--
+   <xsl:param name="sessionName"/>
+   <xsl:param name="queueEntries"/>
+   <xsl:param name="objectName"/>
+   <xsl:param name="maxReplKey"/>
+   <xsl:param name="replStatus"/>
+   <xsl:param name="activeStatus"/>
+   <xsl:param name="connectedStatus""/>
+-->
 
     	  <tr class="inner">
     	    <td colspan="3" class="normal" title="Click to get details on this replication">
 	      <xsl:element name="a">
-		 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="@objectname"/>&amp;template=destinationDetails</xsl:attribute>
+		 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails</xsl:attribute>
 		 <xsl:call-template name="modifySessionName">
                     <xsl:with-param name="content" select="$sessionName"/>
 		 </xsl:call-template>
 	      </xsl:element>
 	    </td>
   
-            <xsl:variable name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
             <xsl:choose>
               <xsl:when test="$queueEntries > $queue.highwarn">
                  <xsl:choose>
@@ -138,10 +160,18 @@ function refresh() {
 	    </td>
               </xsl:otherwise>
             </xsl:choose>
-  
-    	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
+
+	    <xsl:choose>
+	       <xsl:when test="$maxReplKey = '0'">
+    	    <td align="right" colspan="1" class="hidden"><xsl:value-of select="$maxReplKey"/></td>
+	       </xsl:when>
+	       <xsl:otherwise>
+    	    <td align="right" colspan="1" class="number"><xsl:value-of select="$maxReplKey"/></td>
+	       </xsl:otherwise>
+	    </xsl:choose>
+
+
     	    <td align="center" colspan="1" class="normal">
-	       <xsl:variable name="replStatus" select="Attribute[@name='Status']/@value"/>
 	       <xsl:element name="img">
 	          <xsl:attribute name="height">18</xsl:attribute>
 	          <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>
@@ -151,7 +181,7 @@ function refresh() {
 	    </td>
   
             <xsl:choose>
-              <xsl:when test="Attribute[@name='Active']/@value = 'true'">
+              <xsl:when test="$activeStatus = 'true'">
        	    <td align="center" colspan="1" class="normal"><img height="18" src="./active.png" alt="active" title="active" /></td>
               </xsl:when>
               <xsl:otherwise>
@@ -159,15 +189,15 @@ function refresh() {
               </xsl:otherwise>
             </xsl:choose>
             <xsl:choose>
-              <xsl:when test="Attribute[@name='Connected']/@value = 'true'">
+              <xsl:when test="$connectedStatus = 'true'">
        	    <td align="center" colspan="1" class="normal"><img height="18" src="./connected.png" alt="connected" title="connected" /></td>
               </xsl:when>
               <xsl:otherwise>
        	    <td align="center" colspan="1" class="normal"><img height="18" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
               </xsl:otherwise>
             </xsl:choose>
-
     	  </tr>
+
 </xsl:template>      
 
 <!-- end body -->

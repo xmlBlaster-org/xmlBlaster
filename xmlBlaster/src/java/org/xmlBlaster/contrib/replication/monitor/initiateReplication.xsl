@@ -216,7 +216,8 @@ function cancel() {
                 <td colspan="1" class="normal" title="Optional source of cascaded replication">Source</td>
                 <td colspan="1" class="value">
                   <select class="values" id="extraSources" name="extraSources" size="1">
-                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option>
+<!--                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option> -->
+                     <option></option>
    <xsl:call-template name="replaceString">
      <xsl:with-param name="content" select="Attribute[@name='Replications']/@value"/>
    </xsl:call-template>
@@ -227,7 +228,8 @@ function cancel() {
                 <td colspan="1" class="normal" title="Optional destination of cascaded replication">Destination</td>
                 <td colspan="1" class="value">
                   <select class="values" id="extraDestinations" name="extraDestinations" size="1">
-                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option>
+<!--                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option> -->
+                     <option></option>
    <xsl:call-template name="replaceString">
      <xsl:with-param name="content" select="Attribute[@name='Slaves']/@value"/>
    </xsl:call-template>
