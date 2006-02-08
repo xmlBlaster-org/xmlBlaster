@@ -180,6 +180,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
       return ret < 0;
    }
    
+   
    /**
     * Check the observed data for changes. 
     * @param attrMap Currently "oldTimestamp" can be passed to force a specific scan
@@ -255,31 +256,31 @@ public class TimestampChangeDetector implements I_ChangeDetector
                 tableExists = true;
 
             if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand, null);
-                String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
-                try {
-                   changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
-                }
-                catch (Exception e) {
-                   log.severe("Panic: Query meat failed for '" + stmt + "': " + e.toString()); 
-                   reported = true;
-                   throw e;
-                }
-            }
-            else { // send message without meat ...
-               String resultXml = "";
-               ChangeEvent changeEvent = new ChangeEvent(groupColName, null, resultXml, this.changeCommand, null);
-               if (dataConverter != null) { // add some basic meta info ...
-                  ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                  BufferedOutputStream out = new BufferedOutputStream(bout);
-                  dataConverter.setOutputStream(out, this.changeCommand, groupColName, changeEvent);
-                  dataConverter.done();
-                  resultXml = bout.toString();
-                  changeEvent.setXml(resultXml);
+               ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand, null);
+               String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
+               try {
+                  changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
                }
-               changeListener.hasChanged(changeEvent);
-               changeCount++;
-            }
+               catch (Exception e) {
+                  log.severe("Panic: Query meat failed for '" + stmt + "': " + e.toString()); 
+                  reported = true;
+                  throw e;
+               }
+           }
+           else { // send message without meat ...
+              String resultXml = "";
+              ChangeEvent changeEvent = new ChangeEvent(groupColName, null, resultXml, this.changeCommand, null);
+              if (dataConverter != null) { // add some basic meta info ...
+                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                 BufferedOutputStream out = new BufferedOutputStream(bout);
+                 dataConverter.setOutputStream(out, this.changeCommand, groupColName, changeEvent);
+                 dataConverter.done();
+                 resultXml = bout.toString();
+                 changeEvent.setXml(resultXml);
+              }
+              changeListener.hasChanged(changeEvent);
+              changeCount++;
+           }
             oldTimestamp = newTimestamp;
             
             // TODO rollback in case of an exception and distributed transactions ...

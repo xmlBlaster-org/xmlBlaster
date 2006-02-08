@@ -343,10 +343,12 @@ public class DbWatcher implements I_ChangeListener {
                             dataConverter.done();
                             resultXml = bout.toString();
                          }
-                         boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
-                         if (published)
-                            doPostStatement();
-                         changeCount++;
+                         if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
+                            boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                            if (published)
+                               doPostStatement();
+                            changeCount++;
+                         }
                          bout = null;
                       }
     
@@ -373,11 +375,13 @@ public class DbWatcher implements I_ChangeListener {
                       dataConverter.done();
                       resultXml = bout.toString();
                    }
-                   
-                   boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
-                   if (published)
-                      doPostStatement();
-                   changeCount++;
+
+                   if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
+                      boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                      if (published)
+                         doPostStatement();
+                      changeCount++;
+                   }
                 }
                 catch (Exception e) {
                    e.printStackTrace();

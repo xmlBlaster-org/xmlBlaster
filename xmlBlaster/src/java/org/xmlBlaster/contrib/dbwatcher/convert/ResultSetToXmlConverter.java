@@ -8,13 +8,16 @@ package org.xmlBlaster.contrib.dbwatcher.convert;
 
 import java.util.logging.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.Properties;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 
 /**
@@ -92,7 +95,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
    protected boolean doneCalled;
    protected boolean addMeta;
    protected String charSet;
-   
+   private int maxRows;
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -116,7 +119,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
       this.rootTag = info.get("converter.rootName", "sql");
       this.addMeta = info.getBoolean("converter.addMeta", true);
       this.charSet = info.get("charSet", "UTF-8");
-      
+      this.maxRows = info.getInt("converter.maxRows", 0);
       ClassLoader cl = this.getClass().getClassLoader();
       
       String transformerClassName = info.get("transformer.class", "");
@@ -129,6 +132,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
 
    /**
     * This should be called before the first #addInfo(ResultSet) call.
+    * @param event can be null since it is not used in this implementation.
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#setOutputStream(OutputStream, String, String)
     */
    public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
@@ -185,6 +189,9 @@ public class ResultSetToXmlConverter implements I_DataConverter
          throw new IllegalArgumentException("ResultSetToXmlConverter: Given ResultSet is null");
       if (this.out == null)
          throw new IllegalArgumentException("ResultSetToXmlConverter: Please call setOutputStream() first"); 
+
+      if (this.maxRows > 0 && this.rowCounter > this.maxRows)
+         return;
 
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
@@ -338,6 +345,23 @@ public class ResultSetToXmlConverter implements I_DataConverter
 
    public String getPostStatement() {
       return null;
+   }
+
+   public static byte[] getResultSetAsXmlLiteral(ResultSet rs, String command, String ident, long maxRows) throws Exception {
+      Properties props = new Properties();
+      if (maxRows > 0L) {
+         if (maxRows > Integer.MAX_VALUE)
+            throw new Exception("Too many maxRows: '" + maxRows + "' but should be maximum '" + Integer.MAX_VALUE + "'");
+         props.put("converter.maxRows", "" + maxRows);
+      }
+      ResultSetToXmlConverter converter = new ResultSetToXmlConverter(new PropertiesInfo(props));
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      converter.setOutputStream(baos, command, ident, null);
+      while (rs.next())
+         converter.addInfo(rs, ResultSetToXmlConverter.ROW_ONLY);
+      converter.done();
+      converter.shutdown();
+      return baos.toByteArray();
    }
    
    

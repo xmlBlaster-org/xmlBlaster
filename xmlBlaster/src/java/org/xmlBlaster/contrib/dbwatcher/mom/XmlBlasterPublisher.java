@@ -316,7 +316,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          command = (String)attrMap.get("_command");
       else
          command = "";
-
+      
       String destLiteral = null;
       Destination destination = null;
       if (attrMap != null)
@@ -327,7 +327,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       
       // this is used to register the owner of this object (typically the DbWatcher)
-      if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command)) {
+      if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command) || "STATEMENT".equals(command)) {
          
          PublishQos qos = null;
          if (destination != null) {
