@@ -68,7 +68,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       
       TestDbBasics test = new TestDbBasics();
       try {
-
          test.setUp();
          test.testInternalFunctions();
          test.tearDown();
@@ -861,6 +860,39 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                   oldVal = ret;
                else
                   assertEquals(sql, oldVal + i , ret);
+            }
+         }
+         
+         {  // tests that by broadcast statements they are written in the ITEMS table
+            // make sure there is nothing in the ITEMS table
+            sql = "DELETE FROM " + this.dbHelper.getIdentifier(this.replPrefix + "ITEMS");
+            this.pool.update(sql);
+            
+            sql = "SELECT * FROM " + this.dbHelper.getIdentifier(this.replPrefix + "ITEMS");
+            
+            long maxResponseEntries = 10L;
+            boolean isHighPrio = true;
+            boolean isMaster = false;
+            String sqlTopic = null;
+            String statementId = "1";
+            this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
+            Statement st = conn.createStatement();
+            try {
+               ResultSet rs = st.executeQuery("SELECT content FROM " + this.dbHelper.getIdentifier(this.replPrefix + "ITEMS"));
+               if (rs.next()) {
+                  Clob clob = rs.getClob(1);
+                  long len = clob.length();
+                  byte[] buf = new byte[(int)len];
+                  clob.getAsciiStream().read(buf);
+                  String txt = new String(buf);
+                  log.info("The statement to broadcast is '" + txt + "'");
+                  assertFalse("There must not be any results after a SELECT statement to broadcast", rs.next());
+               }
+               else
+                  assertTrue("There must be entries in the ITEMS table. Seems that the broadcastStatement function does not work", false);
+            }
+            finally {
+               st.close();
             }
          }
       } 

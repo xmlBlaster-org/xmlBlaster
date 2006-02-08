@@ -530,7 +530,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       }
       log.info("SUCCESS");
    }
-   
+
    public final void testSchemaWipeout() throws Exception {
       currentMethod = new String("testSchemaCleanup");
       log.info("Start " + currentMethod);
