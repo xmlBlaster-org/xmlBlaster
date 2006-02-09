@@ -104,7 +104,7 @@ CREATE TABLE ${replPrefix}items (repl_key INTEGER,
 -- the OracleByEventScheduler.                                                  
 -- ---------------------------------------------------------------------------- 
 CREATE TRIGGER ${replPrefix}scheduler_trigger AFTER INSERT
-ON ${replPrefix}tables
+ON ${replPrefix}ITEMS
 FOR EACH ROW
 BEGIN
    dbms_alert.signal('${replPrefix}ITEMS', 'INSERT');
@@ -898,10 +898,7 @@ BEGIN
    dbms_lob.open(contClob, dbms_lob.lob_readwrite);
    dbms_lob.writeappend(contClob, length(txt), txt);
    dbms_lob.close(contClob);
-   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-   IF transId = NULL THEN
-      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
-   END IF;
+   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
    SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
    INSERT INTO ${replPrefix}items (repl_key, trans_key, db_action, content, 
                version) values (replKey, transId, 'statement', contClob, '0.0');

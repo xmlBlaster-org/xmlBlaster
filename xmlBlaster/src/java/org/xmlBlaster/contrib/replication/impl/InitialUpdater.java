@@ -403,16 +403,27 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             String sqlTopic =  ((ClientProperty)attrMap.get(ReplicationConstants.SQL_TOPIC_ATTR)).getStringValue();
             log.info("Be aware that the number of entries in the result set will be limited to '" + maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
             final boolean isMaster = true;
-            
-            byte[] response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
+            byte[] response  = null;
+            Exception ex = null;
+            try {
+               response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
+            }
+            catch (Exception e) {
+               response = "".getBytes();
+               ex = e;
+            }
             
             if (this.publisher != null) {
                Map map = new HashMap();
                map.put(ReplicationConstants.MASTER_ATTR, this.replPrefix);
                map.put(ReplicationConstants.STATEMENT_ID_ATTR, statementId);
                map.put("_command", ReplicationConstants.STATEMENT_ACTION);
+               if (ex != null)
+                  map.put(ReplicationConstants.EXCEPTION_ATTR, ex.getMessage());
                this.publisher.publish(sqlTopic, response, map);
             }
+            if (ex != null)
+               throw ex;
          }
          else {
             log.warning("update from '" + topic + "' with request '" + msg + "'");

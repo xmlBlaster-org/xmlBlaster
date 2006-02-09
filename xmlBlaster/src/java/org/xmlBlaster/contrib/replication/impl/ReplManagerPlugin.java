@@ -417,7 +417,6 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
 
          // 1. This is a response from an sql statement which has been previously sent to the slaves.
          if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
-            String sender = updateQos.getSender().getRelativeName();
             ClientProperty prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.STATEMENT_ID_ATTR);
             if (prop == null) {
                log.severe("The statement id is not specified, can not process it");
@@ -429,14 +428,25 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                log.severe("The statement with id '" + reqId + "' has not been found");
                return "NOK";
             }
-            
+
+            prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.EXCEPTION_ATTR);
+            String response = null;
+            boolean isException = false;
+            if (prop != null) {
+               response = prop.getStringValue();
+               isException = true;
+            }
             prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.MASTER_ATTR);
             if (prop != null) { // then it is the response from the master
                String replPrefix = prop.getStringValue();
-               sqlStatement.setResponse(replPrefix, new String(content));
+               if (response == null)
+                  response = new String(content);
+               sqlStatement.setResponse(replPrefix, response, isException);
             }
             else {
-               sqlStatement.setResponse(senderSession.getRelativeName(), new String(content));
+               if (response == null)
+                  response = new String(content);
+               sqlStatement.setResponse(senderSession.getRelativeName(), response, isException);
             }
          }
          // 2. This is the response coming from a DbWatcher on a request for initial update which one of the ReplSlaves has previously requested.

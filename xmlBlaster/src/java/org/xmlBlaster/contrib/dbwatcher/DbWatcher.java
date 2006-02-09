@@ -244,15 +244,18 @@ public class DbWatcher implements I_ChangeListener {
    }
     
    /**
+    * Publishes a message if it has changed and if it has not to be ignored.
     * @param changeEvent The event data
     * @param recursion To detect recursion
-    * @return true if the message has been published, false otherwise.
+    * @return true if publishing of message succeeded or if the message did not need to be published.
     */
    private boolean hasChanged(final ChangeEvent changeEvent, boolean recursion) {
       try {
-         if (log.isLoggable(Level.FINE)) log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
-         this.publisher.publish(changeEvent.getGroupColValue(),
-               changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
+         if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
+            if (log.isLoggable(Level.FINE)) log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
+            this.publisher.publish(changeEvent.getGroupColValue(),
+                  changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
+         }
          return true;
       }
       catch(Exception e) {
@@ -343,12 +346,10 @@ public class DbWatcher implements I_ChangeListener {
                             dataConverter.done();
                             resultXml = bout.toString();
                          }
-                         if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
-                            boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
-                            if (published)
-                               doPostStatement();
-                            changeCount++;
-                         }
+                         boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                         if (published)
+                            doPostStatement();
+                         changeCount++;
                          bout = null;
                       }
     
@@ -376,12 +377,10 @@ public class DbWatcher implements I_ChangeListener {
                       resultXml = bout.toString();
                    }
 
-                   if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
-                      boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
-                      if (published)
-                         doPostStatement();
-                      changeCount++;
-                   }
+                   boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                   if (published)
+                      doPostStatement();
+                   changeCount++;
                 }
                 catch (Exception e) {
                    e.printStackTrace();

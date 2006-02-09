@@ -7,7 +7,6 @@ package org.xmlBlaster.contrib.replication;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -60,22 +59,53 @@ public class OracleByEventsScheduler implements I_AlertProducer {
       public void run() {
          
          I_DbPool pool = null;
+         long count = 0L;
          try {
             pool = DbWatcher.getDbPool(this.info);
-            OracleByEventsScheduler.registerEvent(pool, this.event);
-            
+            // OracleByEventsScheduler.registerEvent(pool, this.event);
             while (!this.forceShutdown) {
-               if (log.isLoggable(Level.FINE)) 
-                  log.fine("Checking now Database again. pollInterval=" + this.period + " ...");
+               Connection conn = null;
                try {
-                  OracleByEventsScheduler.waitForEvent(pool, this.event, this.period);
-                  this.changeDetector.checkAgain(null);
+                  conn = pool.reserve();
+                  conn.setAutoCommit(true);
+                  if (log.isLoggable(Level.FINE)) 
+                     log.fine("Checking now Database again. pollInterval=" + this.period + " ...");
+                  try {
+                     OracleByEventsScheduler.registerEvent(conn, this.event);
+                     this.changeDetector.checkAgain(null);
+                     log.fine("scheduler: before blocking " + count);
+                     OracleByEventsScheduler.waitForEvent(conn, this.event, this.period);
+                     log.fine("scheduler: after blocking " + count);
+                  }
+                  catch (Throwable e) {
+                     log.severe("Don't know how to handle error: " + e.toString()); 
+                  }
+                  count++;
+                  if (count == Long.MAX_VALUE)
+                     count = 0L;
                }
-               catch (Throwable e) {
-                  log.severe("Don't know how to handle error: " + e.toString()); 
+               catch (Throwable ex) {
+                  try {
+                     if (conn != null) {
+                        pool.erase(conn);
+                        conn = null;
+                     }
+                  }
+                  catch (Throwable e) {
+                     e.printStackTrace();
+                  }
+               }
+               finally {
+                  try {
+                     if (conn != null)
+                        pool.release(conn);
+                  }
+                  catch (Throwable e) {
+                     e.printStackTrace();
+                  }
                }
             }
-            OracleByEventsScheduler.registerEvent(pool, this.event);
+            // OracleByEventsScheduler.unregisterEvent(pool, this.event);
          }
          catch (Throwable ex) {
             log.severe("An exception occured in the running thread of the scheduler. It will be halter. " + ex.getMessage());
@@ -124,6 +154,7 @@ public class OracleByEventsScheduler implements I_AlertProducer {
       if (changeDetector == null) 
          throw new IllegalArgumentException("changeDetector is null, can't schedule anything.");
       log.fine("created");
+      this.info = info;
       this.changeDetector = changeDetector;
    }
    
@@ -163,102 +194,56 @@ public class OracleByEventsScheduler implements I_AlertProducer {
    
    /**
     * This method does not return exceptions (also catches Throwable).
-    * @param pool the pool of database connections to use.
+    * @param conn The database connection to use.
     * @param event the name of the even on which to wait
     * @param timeout the maximum time to wait in ms
-    * @return true if there was an event, false if the return is caused by the timeout or an exception.
     */
-   public static boolean waitForEvent(I_DbPool pool, String event, long timeout) {
-      Connection conn = null;
+   public static void waitForEvent(Connection conn, String event, long timeout) throws Exception {
+      CallableStatement st = null;
       try {
-         conn = pool.reserve();
-         conn.setAutoCommit(true);
-         CallableStatement st = null;
-         try {
-            String sql = "{call dbms_alert.waitone(?,?,?,?)}";
-            st = conn.prepareCall(sql);
-            st.setString(1, event);
-            st.setLong(4, timeout / 1000L);
-            st.registerOutParameter(2, Types.VARCHAR);
-            st.registerOutParameter(3, Types.INTEGER);
-            ResultSet rs = st.executeQuery();
-            long ret = rs.getLong(3);
-            return ret == 0;
-         }
-         finally {
-            if (st != null)
-               st.close();
-         }
-      }
-      catch (Throwable ex) {
-         try {
-            pool.erase(conn);
-         }
-         catch (Throwable e) {
-            ex.printStackTrace();
-         }
-         conn = null;
-         return false;
+         String sql = "{call dbms_alert.waitone(?,?,?,?)}";
+         st = conn.prepareCall(sql);
+         st.setString(1, event);
+         st.setLong(4, timeout / 1000L);
+         st.registerOutParameter(2, Types.VARCHAR);
+         st.registerOutParameter(3, Types.INTEGER);
+         st.executeQuery();
       }
       finally {
-         if (conn != null) {
-            try {
-               pool.release(conn);
-               conn = null;
-            }
-            catch (Throwable ex) {
-               log.severe("An exception occured when giving back the connection to its pool");
-               ex.printStackTrace();
-            }
-         }
+         if (st != null)
+            st.close();
       }
    }
 
-   public static void registerEvent(I_DbPool pool, String event) throws Exception {
-      registerUnregisterForEvents(pool, event, true);
+   public static void registerEvent(Connection conn, String event) throws Exception {
+      registerUnregisterForEvents(conn, event, true);
    }
    
-   public static void unregisterEvent(I_DbPool pool, String event) throws Exception {
-      registerUnregisterForEvents(pool, event, false);
+   public static void unregisterEvent(Connection conn, String event) throws Exception {
+      registerUnregisterForEvents(conn, event, false);
    }
 
    /**
     * This method does not return exceptions (also catches Throwable).
-    * @param pool the pool of database connections to use.
+    * @param conn the database connection to use.
     * @param event the name of the even on which to wait
     * @param doRegister if true it will register, otherwise unregister.
     */
-   private static void registerUnregisterForEvents(I_DbPool pool, String event, boolean doRegister) throws Exception {
-      Connection conn = null;
+   private static void registerUnregisterForEvents(Connection conn, String event, boolean doRegister) throws Exception {
+      CallableStatement st = null;
+      String sql = null;
+      if (doRegister)
+         sql = "{call dbms_alert.register(?)}";
+      else
+         sql = "{call dbms_alert.remove(?)}";
       try {
-         conn = pool.reserve();
-         conn.setAutoCommit(true);
-         CallableStatement st = null;
-         String sql = null;
-         if (doRegister)
-            sql = "{call dbms_alert.register(?)}";
-         else
-            sql = "{call dbms_alert.remove(?)}";
-         try {
-            st = conn.prepareCall(sql);
-            st.setString(1, event);
-            st.executeQuery();
-         }
-         finally {
-            if (st != null)
-               st.close();
-         }
-      }
-      catch (Exception ex) {
-         pool.erase(conn);
-         conn = null;
-         throw ex;
+         st = conn.prepareCall(sql);
+         st.setString(1, event);
+         st.executeQuery();
       }
       finally {
-         if (conn != null) {
-            pool.release(conn);
-            conn = null;
-         }
+         if (st != null)
+            st.close();
       }
    }
    

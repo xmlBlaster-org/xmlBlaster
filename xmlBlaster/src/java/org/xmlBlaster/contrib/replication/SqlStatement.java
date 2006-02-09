@@ -52,7 +52,7 @@ public class SqlStatement implements SqlStatementMBean {
       return this.mbeanHandle;
    }
    
-   public void setResponse(String id, String response) throws Exception {
+   public void setResponse(String id, String response, boolean isException) throws Exception {
       if (id == null)
          throw new Exception("setResponse for '" + this.me + "' failed since id of the slave/master is null");
       if (response == null)
@@ -81,6 +81,8 @@ public class SqlStatement implements SqlStatementMBean {
          else
             throw new Exception("setResponse for '" + this.me + "' failed for id '" + id + "' since not found among the slaves nor the master");
       }
+      if (isException)
+         this.status = FAILED;
    }
    
    /**

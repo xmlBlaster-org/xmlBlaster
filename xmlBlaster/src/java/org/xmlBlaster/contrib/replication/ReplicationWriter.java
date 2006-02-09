@@ -405,7 +405,7 @@ private final static String ME = "ReplicationWriter";
                      }
                      catch (Exception e) {
                         ex = e;
-                        response = e.getMessage().getBytes();
+                        response = "".getBytes();
                      }
 
                      if (true) { // TODO add here the possibility to block sending of messages
@@ -416,6 +416,8 @@ private final static String ME = "ReplicationWriter";
                         String sqlTopic = getStringAttribute(SQL_TOPIC_ATTR, null, description);
                         HashMap map = new HashMap();
                         map.put(STATEMENT_ID_ATTR, statementId);
+                        if (ex != null)
+                           map.put(ReplicationConstants.EXCEPTION_ATTR, ex.getMessage());
                         momEngine.publish(sqlTopic, response, map);
                      }
                      else

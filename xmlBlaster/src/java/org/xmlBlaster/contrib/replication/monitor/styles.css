@@ -191,6 +191,8 @@ button.danger:hover {
 }
 
 button.common { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
    #color:#EE0000; 
    text-decoration:none; 
    font-weight:normal; 
@@ -199,6 +201,8 @@ button.common {
 }
 
 button.common:hover { 
+   font-family: "Courier New", Courier, mono;
+   font-size: 9pt;
    #color:#EE0000; 
    text-decoration:none; 
    #background-color:#FFFF99; 
