@@ -215,6 +215,8 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
 #  elif defined(__FreeBSD__)
 #    define LOCAL_GETHOSTBYNAME_R /* FreeBSD */
 /* this should actually work for other platforms... so long as they support pthreads */
+#  elif defined(__MacOSX__)
+#    define LOCAL_GETHOSTBYNAME_R /* Mac OSX */ 
 #  elif defined(__hpux) /* with gcc 2.8 - 3.4.3 */
 #  else
 #    define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
