@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.io.OutputStream;
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
@@ -124,6 +125,27 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (tmp > -1L) {
          this.oldReplKey = tmp;
          log.info("One entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.oldReplKey + "'");
+         // this to fix the situation where the peristent DBINFO has not been cleaned up but the sequence has been reset
+         Connection conn = null;
+         try {
+            conn = this.dbPool.reserve();
+            conn.setAutoCommit(true);
+            long realCounter = this.dbSpecific.incrementReplKey(conn);
+            if (this.oldReplKey > realCounter) {
+               log.warning("The counter from persistence is '" + this.oldReplKey + "' while the sequence is '" + realCounter + "' which is lower. Supposly you have reset the sequence but not the persistence. This is now fixed by initially setting the old replKey to be '" + realCounter + "'");
+               this.oldReplKey = realCounter;
+            }
+         }
+         catch (Throwable ex) {
+            log.severe("An exception occured when verifying the intial status of the counter against the old replKeY: " + ex.getMessage());
+            ex.printStackTrace();
+            this.dbPool.erase(conn);
+            conn = null;
+         }
+         finally {
+            if (conn != null)
+               this.dbPool.release(conn);
+         }
       }
       else {
          log.info("No entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
