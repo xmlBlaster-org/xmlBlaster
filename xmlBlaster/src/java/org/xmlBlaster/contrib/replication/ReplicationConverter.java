@@ -125,7 +125,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (tmp > -1L) {
          this.oldReplKey = tmp;
          log.info("One entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.oldReplKey + "'");
-         // this to fix the situation where the peristent DBINFO has not been cleaned up but the sequence has been reset
+         // the following to fix the situation where the peristent DBINFO has not been cleaned up but the sequence has been reset
          Connection conn = null;
          try {
             conn = this.dbPool.reserve();

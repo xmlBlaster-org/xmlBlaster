@@ -310,6 +310,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       Connection conn = null;
       try {
          conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
          ResultSet rs = conn.getMetaData().getTables(null, null, name, null);
          boolean exists = rs.next();
          rs.close();
@@ -352,6 +353,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       Connection conn = null;
       try {
          conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
          try {
             if (sequenceExists(conn, name)) {
                log.info("sequence '" +  name + "' exists, will not create it");
@@ -547,6 +549,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    public void checkTriggerConsistency(boolean doFix) throws Exception {
       Connection conn = this.dbPool.reserve();
       try {
+         conn.setAutoCommit(true);
          TableToWatchInfo[] tables = TableToWatchInfo.getAll(conn, this.replPrefix + "TABLES");
          for (int i=0; i < tables.length; i++) {
             if (!triggerExists(conn, tables[i])) {
@@ -868,6 +871,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       log.info("Checking for addition of '" + tableName + "'");
       try {
          conn = this.dbPool.reserve();
+         conn.setAutoCommit(true); // TODO check: is this safe enougth ?
          long tmp = this.incrementReplKey(conn);
          if (!isSchemaRegistered(conn, schema)) {
             log.info("schema '" + schema + "' is not registered, going to add it");
@@ -1053,6 +1057,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          if (this.dbPool == null)
             throw new Exception("intitiate update: The Database pool has not been instantiated (yet)");
          conn = this.dbPool.reserve();
+         conn.setAutoCommit(false);
          oldTransactionIsolation = conn.getTransactionIsolation();
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
          // the result must be sent as a high prio message to the real destination
