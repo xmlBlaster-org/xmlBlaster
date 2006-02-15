@@ -216,7 +216,7 @@ This can be usefull to test if your connection URL (user name, password etc) is 
 1. Start a command line poller for user 'xmlBlaster':
 </p>
 <code>
-   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling
+   java -Dmail.pop3.url=pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX org.xmlBlaster.util.protocol.email.Pop3Driver -receivePolling true
 </code>
 
 <p>
