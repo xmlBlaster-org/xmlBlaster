@@ -100,7 +100,7 @@ public final class LikeOpWrapper {
       this.expression = new RE(tmp);
    }
    catch (REException ex) {
-      if (this.log.TRACE) this.log.trace(ME, "constructor " + Global.getStackTraceAsString());
+      if (this.log.TRACE) this.log.trace(ME, "constructor " + Global.getStackTraceAsString(ex));
       throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + " constructor: could not generate a Regex from the string '" + pattern + "' reason: " + ex.getMessage());
    }
 }

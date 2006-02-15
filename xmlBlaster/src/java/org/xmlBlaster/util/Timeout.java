@@ -276,7 +276,7 @@ public class Timeout extends Thread
       }
 
       if (obj == null) {
-         String pos = Global.getStackTraceAsString();
+         String pos = Global.getStackTraceAsString(null);
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_UNAVAILABLE, ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done: " + pos);
       }
       Container container = (Container)obj;

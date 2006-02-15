@@ -308,8 +308,7 @@ final public class Authenticate implements I_RunlevelListener
          throw e;
       }
       catch (Throwable e) {
-         e.printStackTrace();
-         log.error(ME, "PANIC: Access is denied: " + e.getMessage());
+         log.error(ME, "PANIC: Access is denied: " + e.getMessage() + "\n" + Global.getStackTraceAsString(e));
          // On error: cleanup resources
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
