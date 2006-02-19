@@ -22,6 +22,7 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwriter.I_Parser;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -544,7 +545,8 @@ public class TestReplicationWriter extends XMLTestCase {
                   ClientProperty oldRowProp = new ClientProperty(ReplicationConstants.OLD_CONTENT_ATTR, null, null, row.toXml("", false));
                   row.setAttribute(oldRowProp);
                   try {
-                     int ret = desc.update(conn, row);
+                     I_Parser parser = new SqlInfoParser(this.info);
+                     int ret = desc.update(conn, row, parser);
                      if (ret != 1)
                         throw new Exception("the number of updated entries is wrong '" + ret + "' but should be 1");
                   }
