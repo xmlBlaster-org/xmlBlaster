@@ -1822,7 +1822,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                             getNumOfHistoryEntries() + " history messages.");
             }
 
-            if (!forceDestroy && !isSoftErased()) {
+            if (/*!forceDestroy &&*/ !isSoftErased()) {
                notifyList = collectNotifySubscribersAboutErase(sessionName);
             }
 
