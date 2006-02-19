@@ -26,6 +26,7 @@ import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
+import org.xmlBlaster.contrib.dbwriter.I_Parser;
 import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.I_PrePostStatement;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -56,7 +57,8 @@ private final static String ME = "ReplicationWriter";
    private String schemaToWipeout;
    private I_PrePostStatement prePostStatement;
    private boolean hasInitialCmd;
-      
+   private I_Parser parserForOldInUpdates;
+   
    public ReplicationWriter() {
    }
    
@@ -133,6 +135,16 @@ private final static String ME = "ReplicationWriter";
          log.info("The property 'replication.initialCmd' was not found in the configuration");
       else
          log.info("The property 'replication.initialCmd' is '" + tmp + "' and hasInitialCmd is '" + this.hasInitialCmd + "'");
+      
+      String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.SqlInfoParser").trim();
+      if (parserClass.length() > 0) {
+         ClassLoader cl = this.getClass().getClassLoader();
+         this.parserForOldInUpdates = (I_Parser)cl.loadClass(parserClass).newInstance();
+         this.parserForOldInUpdates.init(info);
+         if (log.isLoggable(Level.FINE)) log.fine(parserClass + " created and initialized");
+      }
+      else
+         log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
    }
 
    public void shutdown() throws Exception {
@@ -151,6 +163,10 @@ private final static String ME = "ReplicationWriter";
       if (this.mapper != null) {
          this.mapper.shutdown();
          this.mapper = null;
+      }
+      if (this.parserForOldInUpdates != null) {
+         this.parserForOldInUpdates.shutdown();
+         this.parserForOldInUpdates = null;
       }
    }
 
@@ -309,7 +325,7 @@ private final static String ME = "ReplicationWriter";
                         desc.insert(conn, row);
                      }
                      else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-                        desc.update(conn, row);
+                        desc.update(conn, row, this.parserForOldInUpdates);
                      }
                      else if (action.equalsIgnoreCase(DELETE_ACTION)) {
                         desc.delete(conn, row);

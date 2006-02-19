@@ -45,14 +45,14 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private OutputStream out;
    private boolean sendInitialTableContent = true;
    private long oldReplKey = -1L;
-   private int consecutiveReplKeyErrors = 0; // used to detect serious problems in sequences
-   private int maxConsecutiveReplKeyErrors = 10;
    private I_Info persistentInfo;
    private String oldReplKeyPropertyName;
    private ChangeEvent event;
    private String transactionId;
    private String replPrefix;
    private I_DbPool dbPool;
+   
+   // just for testing
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -186,19 +186,16 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       /*
        * Note that this test implies that the replKeys come in a growing sequence. If this is not the case, this test is useless.
        */
-      int replKey = rs.getInt(1);
+      long replKey = rs.getLong(1);
       boolean markProcessed = false;
+      
+      long tmpOldKey = this.oldReplKey; // TODO REMOVE THIS AFTER TESTING
+      
       if (replKey <= this.oldReplKey) {
          log.warning("the replication key '" + replKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
          markProcessed = true;
-         this.consecutiveReplKeyErrors++;
-         if (this.consecutiveReplKeyErrors > this.maxConsecutiveReplKeyErrors) {
-            log.severe("'" + this.consecutiveReplKeyErrors + "' consecutive errors on replKey occured now. HINT: Could it be that you have cleaned up the replKey counter but not the persistent Map ? (check the previous warnings)");
-            this.consecutiveReplKeyErrors = 0; // to avoid too many errors
-         }
       }
       else { // TODO move this after the sending of the message since this could still fail.
-         this.consecutiveReplKeyErrors = 0;
          this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
          this.oldReplKey = replKey;
       }
@@ -212,7 +209,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       String action = rs.getString(6);
       String catalog = rs.getString(7);
       String schema = rs.getString(8);
-      
+
+      // TODO REMOVE THIS AFTER TESTING
+      if (replKey != (tmpOldKey+1)) {
+         log.warning("REPLICATION KEY INCREMENT new='" + replKey + "' old='" + tmpOldKey + "' for table='" + tableName + "' and action='" + action + "'");
+      }
+
       // TODO remove this after testing.
       // puts this in the metadata attributes of the message to be sent over the mom
       this.event.getAttributeMap().put("_tableName__", tableName);
