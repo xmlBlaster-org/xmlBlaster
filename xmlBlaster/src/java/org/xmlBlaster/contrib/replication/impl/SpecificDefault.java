@@ -107,6 +107,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
 
    protected String replPrefix = "repl_";
    
+   protected String replVersion = "0.0";
+   
    protected ReplaceVariable replaceVariable;
 
    protected Replacer replacer;
@@ -476,7 +478,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          String schema = tables[i].getSchema();
          boolean doRemove = !set.contains(schema);
          set.add(schema);
-         this.removeTableToWatch(tables[i], doRemove);
+         removeTableToWatch(tables[i], doRemove);
       }
       updateFromFile(conn, "cleanup", "replication.cleanupFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/cleanup.sql",
@@ -516,7 +518,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       this.replaceVariable = new ReplaceVariable();
       this.info = info;
       this.replPrefix = this.info.get("replication.prefix", "repl_");
+      this.replVersion =  this.info.get("replication.version", "0.0");
       Map map = new HashMap();
+      map.put("replVersion", this.replVersion);
       map.put("replPrefix", this.replPrefix);
       map.put("charWidth", this.info.get("replication.charWidth", "50"));
       map.put("charWidthSmall", this.info.get("replication.charWidthSmall", "10"));
@@ -670,12 +674,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                "SpecificDefault.incrementReplKey: the DB connection is null");
       CallableStatement st = null;
       try {
-         // st = conn.prepareCall("{? = call nextval('" + this.replPrefix + "seq')}");
          st = conn.prepareCall("{? = call " + this.replPrefix + "increment()}");
-         // st.registerOutParameter(1, Types.BIGINT);
          st.registerOutParameter(1, Types.INTEGER);
          st.executeQuery();
-         return st.getLong(1);
+         long ret = st.getLong(1);
+         log.severe("increment invoked with '" + ret + "'");
+         return ret;
       } finally {
          try {
             if (st != null)
@@ -871,7 +875,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       log.info("Checking for addition of '" + tableName + "'");
       try {
          conn = this.dbPool.reserve();
-         conn.setAutoCommit(true); // TODO check: is this safe enougth ?
+         conn.setAutoCommit(false);
          long tmp = this.incrementReplKey(conn);
          if (!isSchemaRegistered(conn, schema)) {
             log.info("schema '" + schema + "' is not registered, going to add it");
@@ -923,10 +927,31 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          log.info("Inserting the statement '" + sql + "'");
          this.dbPool.update(conn, sql);
          return true;
-      } 
+      }
+      catch (Throwable ex) {
+         try {
+            if (conn != null)
+               conn.rollback();
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
+         this.dbPool.erase(conn);
+         conn = null;
+         if (ex instanceof Exception)
+            throw (Exception)ex;
+         throw new Exception(ex);
+      }
       finally {
-         if (conn != null)
+         if (conn != null) {
+            try {
+               conn.commit();
+            }
+            catch (Throwable ex) {
+               ex.printStackTrace();
+            }
             this.dbPool.release(conn);
+         }
       }
    }
 

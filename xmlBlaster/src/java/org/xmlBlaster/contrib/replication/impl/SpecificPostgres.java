@@ -124,7 +124,7 @@ public class SpecificPostgres extends SpecificDefault {
       buf.append("                           content, oldContent, version) values \n");
       buf.append("                           (CURRENT_TIMESTAMP,current_database(),\n");
       buf.append("            TG_RELNAME, oid, TG_OP, NULL, current_schema(), newCont, \n");
-      buf.append("            oldCont, '0.0');\n");
+      buf.append("            oldCont, '").append(this.replVersion).append("');\n");
       buf.append("    tmp = inet_client_addr();\n");
       buf.append("\n");
       buf.append("    IF (TG_OP = 'DELETE') THEN RETURN OLD;\n");

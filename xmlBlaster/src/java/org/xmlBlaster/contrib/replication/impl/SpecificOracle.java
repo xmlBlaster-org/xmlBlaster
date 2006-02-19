@@ -299,12 +299,9 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("                           (replKey, 'UNKNOWN',").append(dbNameTmp).append(",\n");
       buf.append("            ").append(tableNameTmp).append(", oid, op, NULL, ").append(schemaNameTmp).append(
             ", newCont, \n");
-      buf.append("            oldCont, '0.0');\n");
+      buf.append("            oldCont, '").append(this.replVersion).append("');\n");
       // INSERT + UPDATE instead of only INSERT since it appears that the sequence is incremented outside the transaction
       buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
-      buf.append("    if transId = NULL THEN\n");
-      buf.append("       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);\n");
-      buf.append("    END IF;\n");
       buf.append("    UPDATE " + this.replPrefix + "items SET trans_key=transId WHERE repl_key=replKey;\n");
       
       buf.append("END ").append(triggerName).append(";\n");

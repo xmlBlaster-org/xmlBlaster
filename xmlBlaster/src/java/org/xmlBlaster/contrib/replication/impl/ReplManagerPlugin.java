@@ -20,12 +20,14 @@ import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
@@ -63,6 +65,8 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -415,8 +419,34 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          String request = updateQos.getClientProperty("_command", "");
          log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");
 
+         if ("broadcastSql".equalsIgnoreCase(request)) {
+            try {
+               final boolean highPrio = true;
+               String requestId = updateQos.getClientProperty("requestId", (String)null);
+               if (requestId == null)
+                  throw new Exception("The requestId has not been defined");
+               String repl =  updateQos.getClientProperty("replication.prefix", (String)null);
+               String sql =  new String(content);
+               sendBroadcastRequest(repl, sql, highPrio, requestId);
+               return "OK";
+            }
+            catch (Throwable ex) {
+               ex.printStackTrace();
+               return "NOK";
+            }
+         }
+         else if ("removeBroadcast".equalsIgnoreCase(request)) {
+            try {
+               removeSqlStatement(new String(content));
+               return "OK";
+            }
+            catch (Throwable ex) {
+               ex.printStackTrace();
+               return "NOK";
+            }
+         }
          // 1. This is a response from an sql statement which has been previously sent to the slaves.
-         if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
+         else if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
             ClientProperty prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.STATEMENT_ID_ATTR);
             if (prop == null) {
                log.severe("The statement id is not specified, can not process it");
@@ -699,10 +729,18 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       unregisterSqlStatement(statementId);
    }
    
-   private void sendBroadcastRequest(String replicationPrefix, String sql, boolean isHighPrio) throws Exception {
+   private void sendBroadcastRequest(String replicationPrefix, String sql, boolean isHighPrio, String requestId) throws Exception {
+      if (replicationPrefix == null)
+         throw new Exception("executeSql: the replication id is null. Can not perform it.");
+      if (sql == null)
+         throw new Exception("executeSql: the sql statement to perform on  '" + replicationPrefix + "' is null. Can not perform it.");
+
       I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
+      if (individualInfo == null)
+         throw new Exception("executeSql: the replication with Id='" + replicationPrefix + "' was not found (has not been registered). Allowed ones are : " + getReplications());
+      
+      log.info("Sending Broadcast request for repl='" + replicationPrefix + "' and statement='" + sql + "' and requestId='" + requestId + "'");
       String dbWatcherSessionId = individualInfo.get("_senderSession", null);
-      String requestId = "" + new Timestamp().getTimestamp();
       registerSqlStatement(replicationPrefix, requestId, sql);
       
       log.info("Broadcasting sql statement '" + sql + "' for master '" + replicationPrefix + "'");
@@ -733,18 +771,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.contrib.replication.impl.ReplManagerPluginMBean#broadcastSql(java.lang.String, java.lang.String)
     */
    public void broadcastSql(String repl, String sql) throws Exception {
-      if (repl == null)
-         throw new Exception("executeSql: the replication id is null. Can not perform it.");
-      if (sql == null)
-         throw new Exception("executeSql: the sql statement to perform on  '" + repl + "' is null. Can not perform it.");
-
       final boolean highPrio = true;
-      
-      I_Info dbWatcherInfo = (I_Info)this.replications.get(repl);
-      if (dbWatcherInfo == null)
-         throw new Exception("executeSql: the replication with Id='" + repl + "' was not found (has not been registered). Allowed ones are : " + getReplications());
-      log.info("Sending Broadcast request for repl='" + repl + "' and statement='" + sql + "'");
-      sendBroadcastRequest(repl, sql, highPrio);
+      String requestId = "" + new Timestamp().getTimestamp();
+      sendBroadcastRequest(repl, sql, highPrio, requestId);
    }
 
    /**
@@ -938,6 +967,64 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
       else
          throw new Exception("Could not find a replication source with replication.prefix='" + replPrefix + "'");
+   }
+   
+
+   private static void mainUsage() {
+      System.err.println("You must invoke at least java org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin -cmd insert|delete -requestId someId -replication.prefix somePrefix < filename");
+      System.exit(-1);
+   }
+   
+   public static void main(String[] args) {
+      try {
+         Global global = new Global(args);
+         I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
+         ConnectQos connectQos = new ConnectQos(global);
+         conn.connect(connectQos, new ReplManagerPlugin()); // just a fake
+         
+         String cmd = global.getProperty().get("cmd", (String)null);
+         if (cmd == null)
+            mainUsage();
+         
+         String requestId = global.getProperty().get("requestId", (String)null);
+         if (requestId == null)
+            mainUsage();
+         
+         int count = Integer.parseInt(requestId.trim());
+         
+         String repl = global.getProperty().get("replication.prefix", (String)null);
+         if (repl == null)
+            mainUsage();
+         
+         PublishKey pubKey = new PublishKey(global, "broadcastChecker");
+
+         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+         String line = null;
+         while ( (line=br.readLine()) != null) {
+            PublishQos pubQos = new PublishQos(global,new Destination(new SessionName(global, SESSION_ID)));
+            requestId = "" + count++;
+            MsgUnit msg = null;
+            if (cmd.equals("insert")) {
+               pubQos.addClientProperty("_command", "broadcastSql");
+               pubQos.addClientProperty("requestId", requestId);
+               pubQos.addClientProperty("replication.prefix", repl);
+               msg = new MsgUnit(pubKey, line.trim().getBytes(), pubQos);
+            }
+            else {
+               pubQos.addClientProperty("_command", "removeBroadcast");
+               msg = new MsgUnit(pubKey, requestId.getBytes(), pubQos);
+            }
+            if (line != null && line.trim().length() > 0) {
+               conn.publish(msg);
+            }
+         }
+         conn.erase(new EraseKey(global, "broadcastChecker"), new EraseQos(global));
+         conn.disconnect(new DisconnectQos(global));
+         br.close();
+      }
+      catch (Throwable ex) {
+         ex.printStackTrace();
+      }
    }
    
 }
