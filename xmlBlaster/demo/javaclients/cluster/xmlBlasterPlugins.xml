@@ -28,5 +28,11 @@
       <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    </plugin>
 
+   <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
+   <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
+      <action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='4' sequence='5'/>   
+   </plugin>
+
 </xmlBlaster>
 
