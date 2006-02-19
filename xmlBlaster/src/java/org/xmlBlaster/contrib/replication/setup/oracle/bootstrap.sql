@@ -35,8 +35,9 @@ CREATE TABLE ${replPrefix}debug_table(replKey INTEGER, line VARCHAR(255))
 
 CREATE OR REPLACE PROCEDURE ${replPrefix}debug(lineTxt VARCHAR2) AS
    replKey INTEGER;
-BEGIN							    
-   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+BEGIN
+   replKey := 1;							    
+   -- SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
    -- INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
 END;
 -- EOC (end of command: needed as a separator for our script parser)            
@@ -759,16 +760,14 @@ BEGIN
 	contClob := NULL;
       END IF;
 
-      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-      if transId = NULL THEN
-         transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
-      END IF;
-
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
                   guid, db_action, db_catalog, db_schema, content, oldContent,
-                  version) values (replKey, transId, dbName, tblName,
-                  NULL, op, NULL, schName, cont, NULL,  '0.0');
+                  version) values (replKey, 'UNKNOWN', dbName, tblName,
+                  NULL, op, NULL, schName, cont, NULL, '${replVersion}');
+
+      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
       res := 'TRUE';
    END IF;        
    RETURN res;
@@ -862,16 +861,15 @@ BEGIN
       res := 'FALSE';
    ELSE
       ${replPrefix}debug('ADD_TABLE inserting entry into items table');
-      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
-      if transId = NULL THEN
-         transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
-      END IF;
 
       SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
       INSERT INTO ${replPrefix}items (repl_key, trans_key, dbId, tablename, 
                   guid, db_action, db_catalog, db_schema, content, oldContent,
-                  version) values (replKey, transId, dbName, tblName,
-                  NULL, op, NULL, schName, NULL, NULL,  '0.0');
+                  version) values (replKey, 'UNKNOWN', dbName, tblName,
+                  NULL, op, NULL, schName, NULL, NULL, '${replVersion}');
+
+      transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
       res := 'TRUE';
    END IF;
    RETURN res;
@@ -898,10 +896,14 @@ BEGIN
    dbms_lob.open(contClob, dbms_lob.lob_readwrite);
    dbms_lob.writeappend(contClob, length(txt), txt);
    dbms_lob.close(contClob);
-   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(TRUE);
+
    SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
    INSERT INTO ${replPrefix}items (repl_key, trans_key, db_action, content, 
-               version) values (replKey, transId, 'statement', contClob, '0.0');
+               version) values (replKey, 'UNKNOWN', 'statement', 
+	       contClob, '${replVersion}');
+   transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+   UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
+
    res := 'TRUE';
    RETURN res;
 END ${replPrefix}prepare_broadcast;

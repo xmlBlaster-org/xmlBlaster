@@ -255,7 +255,7 @@ BEGIN
                        db_action, db_catalog, db_schema, content, oldContent, 
 		       version) values (CURRENT_TIMESTAMP, current_database(), 
 		       colVar.relname, colVar.oid, 'DROP', NULL, 
-		       current_schema(), NULL, NULL, '0.0');
+		       current_schema(), NULL, NULL, '${replVersion}');
       counter = 1;
     END LOOP;					 
     FOR colVar IN (SELECT relname FROM pg_statio_user_tables WHERE relname 
@@ -266,7 +266,8 @@ BEGIN
                        db_action, db_catalog, db_schema, content, oldContent, 
 		       version) values (CURRENT_TIMESTAMP, 
 		       current_database(), colVar.relname, colVar.oid, 
-		       'CREATE', NULL, current_schema(), NULL, NULL, '0.0');
+		       'CREATE', NULL, current_schema(), NULL, NULL, 
+		       '${replVersion}');
       counter = 1;
     END LOOP;
     IF counter > 0 THEN
@@ -291,7 +292,7 @@ BEGIN
 		       version) VALUES (CURRENT_TIMESTAMP, 
 		       current_database(), colVar.relname, colVar.oid, 
 		       'ALTER', NULL, current_schema(), NULL, NULL, 
-		       '0.0');
+		       '${replVersion}');
 	 counter = 1;
        END IF;
     END LOOP;
