@@ -180,6 +180,7 @@ public final class PublishQos
    }
 
    /**
+    * Control message life cycle on message expiry, defaults to false. 
     * @param forceDestroy true Force message destroy on message expire<br />
     *        false On message expiry messages which are already in callback queues are delivered.
     */
