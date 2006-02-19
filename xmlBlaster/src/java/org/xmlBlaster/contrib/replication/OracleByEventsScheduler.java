@@ -79,6 +79,7 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                   }
                   catch (Throwable e) {
                      log.severe("Don't know how to handle error: " + e.toString()); 
+                     Thread.sleep(500L); // to avoid looping
                   }
                   count++;
                   if (count == Long.MAX_VALUE)
@@ -90,6 +91,7 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                         pool.erase(conn);
                         conn = null;
                      }
+                     Thread.sleep(500L); // to avoid looping
                   }
                   catch (Throwable e) {
                      e.printStackTrace();
