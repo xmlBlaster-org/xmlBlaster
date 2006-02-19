@@ -27,6 +27,7 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -48,6 +49,13 @@ public class SqlDescription {
    
    public final static String COMMAND_TAG = "command";
    
+   final static String OLD_PREFIX = "<?xml version='1.0' encoding='UTF-8' ?>\n" +
+                                      "<sql>\n" + 
+                                      "  <desc><command>REPLICATION</command><ident>FAKE</ident></desc>\n" +
+                                      "  <row num='0'>\n";
+
+   final static String OLD_POSTFIX = "  </row>\n</sql>\n";
+
    private String identity;
    private String command;
    
@@ -254,7 +262,7 @@ public class SqlDescription {
                log.info("column '" + colNames[i] + "' not found, will ignore it");
                continue;
             }
-            if (sqlCol.isPrimaryKey() || !hasPk()) {
+            if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
                searchEntries.add(colContent);
                if (firstHit)
                   firstHit = false;
@@ -264,6 +272,18 @@ public class SqlDescription {
             }
          }
       }
+      /*
+       * This code does not work since the COL=NULL gives always back nothing (at least in oracle)
+      if (!hasPk()) { // find possible NULL which will serve to determine uniqueness
+         for (int i=0; i < this.columnList.size(); i++) {
+            String colName = ((SqlColumn)this.columnList.get(i)).getColName();
+            ClientProperty prop = row.getColumn(colName);
+            if (prop == null) {
+               buf.append(" AND ").append(colName).append("=NULL");
+            }
+         }
+      }
+      */
       return buf.toString();
    }
    
@@ -342,10 +362,8 @@ public class SqlDescription {
          return;
       }
       String tmp = prop.getStringValue();
-      if (tmp != null)
-         tmp = tmp.trim();
       if (sqlType == Types.INTEGER) {
-         if (tmp == null || tmp.length() < 1) {
+         if (tmp == null || tmp.trim().length() < 1) {
             st.setObject(pos, null);
             return;
          }
@@ -354,7 +372,7 @@ public class SqlDescription {
          st.setLong(pos, val);
       }
       if (sqlType == Types.DECIMAL) {
-         if (tmp == null || tmp.length() < 1) {
+         if (tmp == null || tmp.trim().length() < 1) {
             st.setObject(pos, null);
             return;
          }
@@ -363,7 +381,7 @@ public class SqlDescription {
          st.setDouble(pos, val);
       }
       else if (sqlType == Types.SMALLINT) {
-         if (tmp == null || tmp.length() < 1) {
+         if (tmp == null || tmp.trim().length() < 1) {
             st.setObject(pos, null);
             return;
          }
@@ -372,7 +390,7 @@ public class SqlDescription {
          st.setInt(pos, val);
       }
       else if (sqlType == Types.DOUBLE) {
-         if (tmp == null || tmp.length() < 1) {
+         if (tmp == null || tmp.trim().length() < 1) {
             st.setObject(pos, null);
             return;
          }
@@ -381,7 +399,7 @@ public class SqlDescription {
          st.setDouble(pos, val);
       }
       else if (sqlType == Types.FLOAT) {
-         if (tmp == null || tmp.length() < 1) {
+         if (tmp == null || tmp.trim().length() < 1) {
             st.setObject(pos, null);
             return;
          }
@@ -478,16 +496,30 @@ public class SqlDescription {
     * @return
     * @throws Exception
     */
-   public int update(Connection conn, SqlRow row) throws Exception {
+   public int update(Connection conn, SqlRow newRow, I_Parser parserForOld) throws Exception {
       PreparedStatement st = null;
       String sql = "";
       try {
          ArrayList entries = new ArrayList();
-         String setSt = createSetStatement(row, entries);
+         String setSt = createSetStatement(newRow, entries);
          int setSize = entries.size();
          if (setSize < 1)
-            throw new Exception("SqlDescription.update: could not update since the row did generate an empty set of columns to update. Row: " + row.toXml("") + " cols: " + toXml(""));
-         String whereSt = createWhereStatement(row, entries);
+            throw new Exception("SqlDescription.update: could not update since the row did generate an empty set of columns to update. Row: " + newRow.toXml("") + " cols: " + toXml(""));
+         if (parserForOld == null)
+            throw new Exception("SqlDescription.update: the parser is null. It is needed to parse the old value");
+         
+         ClientProperty prop = newRow.getAttribute(ReplicationConstants.OLD_CONTENT_ATTR);
+         if (prop == null || prop.getValueRaw() == null)
+            throw new Exception("The attribute '" + ReplicationConstants.OLD_CONTENT_ATTR + "' was not defined for '" + newRow.toXml("") + "'");
+
+         String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
+         
+         SqlInfo sqlInfo = parserForOld.parse(xmlLiteral);
+         if (sqlInfo.getRowCount() < 1)
+            throw new Exception("The string '" + xmlLiteral + "' did not contain any row for '" + newRow.toXml("") + "'");
+         
+         SqlRow oldRow = (SqlRow)sqlInfo.getRows().get(0);
+         String whereSt = createWhereStatement(oldRow, entries);
          /**
           * If it does not have a Primary key it needs to check wether the entry exists
           * and is really unique. If it is not unique it will warn. If nothing is found
@@ -503,10 +535,11 @@ public class SqlDescription {
                }
                rs = st.executeQuery();
                if (!rs.next())
-                  throw new Exception("When updating '" + row.toXml("") + "' for '" + toXml("") + "' the statement '" + sql + "' returned an emtpy result set. Can not determine what to do");
+                  throw new Exception("When updating '" + newRow.toXml("") + "' for '" + toXml("") + "' the statement '" + sql + "' returned an emtpy result set. Can not determine what to do");
                long entriesFound = rs.getLong(1);
                if (entriesFound == 0) {
-                  log.warning("no entries found for the statement '" + sql + "' I will not do anything");
+                  log.warning("no entries found for the statement '" + sql + "' I will not do anything. The msg was '" + newRow.toXml("") + "' and the old msg was '" + oldRow.toXml("") + "'");
+                  
                   return 0;
                }
                if (entriesFound > 1)
@@ -530,7 +563,7 @@ public class SqlDescription {
          return st.executeUpdate();
       }
       catch (Throwable ex) {
-         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         log.severe(" Entry '" + newRow.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
          if (ex instanceof Exception)
             throw (Exception)ex;
          else

@@ -148,7 +148,7 @@ public class SqlInfo implements ReplicationConstants {
                colDesc.setSigned(rsMeta.isSigned(i));
                colDesc.setReadOnly(rsMeta.isReadOnly(i));
                colDesc.setNullable(rsMeta.isNullable(i));
-               // rsMeta.isSearchable(i);
+               colDesc.setSearchable(rsMeta.isSearchable(i));
                // rsMeta.isWritable(i);
                // rsMeta.isDefinitelyWritable(i);
                colDesc = null; // to get correct info on exceptions
@@ -377,7 +377,7 @@ public class SqlInfo implements ReplicationConstants {
     * @param conn
     * @throws SQLException
     */
-   public SqlRow fillOneRowWithStringEntries(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
+   public SqlRow fillOneRowWithStringEntriesDEPRECATED(ResultSet rs, I_AttributeTransformer transformer) throws Exception {
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
       int count = getRowCount();
@@ -516,9 +516,6 @@ public class SqlInfo implements ReplicationConstants {
    
    /**
     * Result set must come from a select spaning over a single table.
-    * This class is supposed to replace fillOneRowWithStringEntries as
-    * soon as it has been extensively tested !!
-    * TODO FIXME !!!
     * 
     * @param rs
     * @param conn

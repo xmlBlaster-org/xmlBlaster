@@ -24,6 +24,7 @@ public class SqlColumn {
    public final static String SCALE_ATTR = "scale";
    public final static String NULLABLE_ATTR = "nullable";
    public final static String SIGNED_ATTR = "signed";
+   public final static String SEARCHABLE_ATTR = "searchable";
    public final static String RO_ATTR = "readOnly";
    public final static String DATA_TYPE = "datatype";
    
@@ -86,6 +87,7 @@ public class SqlColumn {
    private int precision; // DECIMAL_DIGITS position (9)
    private int scale;  // <-- not used in replication 
    private int nullable; // no default: is always written out
+   private boolean searchable = true; // defaults to true 
    private boolean signed = true;   // defaults to true <-- not used in replication
    private boolean readOnly; // defaults to false <-- not used in replication 
    private boolean primaryKey; // defaults to false (but unknown)
@@ -140,6 +142,16 @@ public class SqlColumn {
 
    public boolean isReadOnly() {
       return this.readOnly;
+   }
+
+   
+   public boolean isSearchable() {
+      return this.searchable;
+   }
+
+
+   public void setSearchable(boolean searchable) {
+      this.searchable = searchable;
    }
 
 
@@ -338,6 +350,8 @@ public class SqlColumn {
          buf.append(" ").append(SCALE_ATTR).append("='").append(this.scale).append("'");
       // always write this out since there is no default defined.
       buf.append(" ").append(NULLABLE_ATTR).append("='").append(this.nullable).append("'");
+      if (!this.searchable) // don't write the default which is 'true' (also check the parser)
+         buf.append(" ").append(SEARCHABLE_ATTR).append("='").append(this.searchable).append("'");
       if (!this.signed) // don't write the default which is 'true' (also check the parser)
          buf.append(" ").append(SIGNED_ATTR).append("='").append(this.signed).append("'");
       if (this.readOnly) // don't write the default which is 'false' (also check the parser)

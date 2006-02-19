@@ -206,6 +206,8 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
             }
             boolean bool = getBoolAttr(attrs, SqlColumn.SIGNED_ATTR, true);
             colDescription.setSigned(bool);
+            bool = getBoolAttr(attrs, SqlColumn.SEARCHABLE_ATTR, true);
+            colDescription.setSearchable(bool);
             bool = getBoolAttr(attrs, SqlColumn.RO_ATTR, false);
             colDescription.setReadOnly(bool);
             bool = getBoolAttr(attrs, SqlColumn.PK_ATTR, false);

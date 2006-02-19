@@ -131,7 +131,7 @@ public class XmlParserBase extends SaxHandlerBase {
       }
 
       if (this.allowedTagNames.contains(name)) {
-         String tmp = character.toString().trim();
+         String tmp = character.toString(); // .trim();
          if (this.clientProperty != null) {
             if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
                this.clientProperty.setValue(tmp);
