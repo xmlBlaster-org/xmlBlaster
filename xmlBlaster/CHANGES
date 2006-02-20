@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14733 Added EraseKey and EraseQos (as ClientProperty) send to cluster slaves on topic erases
+   so that slave knows the erase properties
+   Reported by Jonathan Clark
+
+ o #14729 Bugfix removed forceDestroy check to have a NotifySubscribersAboutErase if the boolean is set
+   to get erase events for cluster slaves (with erase done on master)
+   by Jonathan Clark
+
  o "14720 changed signature of Global.getStackTraceAsString (allows an exception now)
 
  o #14716 replication: fix to check consistency of old replKey when initializing
