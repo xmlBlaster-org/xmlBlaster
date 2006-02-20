@@ -125,7 +125,12 @@ TEST
 ----
 
 o Add automatic testssuite for C++, Perl, PHP
-
+o http://xradar.sourceforge.net
+  The batch-processing framework produces HTML/SVG reports of the systems current state and the development over time 
+o http://www.fitnesse.org/
+  Standalone wiki, and acceptance testing framework
+o http://checkstyle.sourceforge.net/
+  Write Java code that adheres to a coding standard
 
 AUTHENTICATE / AUTHORIZATION
 ----------------------------
