@@ -151,14 +151,14 @@ public class XmlQoSBase extends SaxHandlerBase
 
       if (this.clientPropertyTagNames.contains(name)) {
          this.inClientProperty = false;
-         String tmp = this.cpCharacter.toString().trim();
-         this.cpCharacter.setLength(0);
          if (this.clientProperty != null) {
+            String tmp = (this.clientProperty.isStringType()) ? this.cpCharacter.toString() : this.cpCharacter.toString().trim();
             if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
                this.clientProperty.setValue(tmp);
             else
                this.clientProperty.setValueRaw(tmp);
          }
+         this.cpCharacter.setLength(0);
          return true;
       }
 
