@@ -241,7 +241,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
       }
       else {
          this.value = value;
-         getValidatedValueForXml();
+         if (this.encoding == null || !this.encoding.equalsIgnoreCase(Constants.ENCODING_FORCE_PLAIN))
+            getValidatedValueForXml();
       }
    }
 

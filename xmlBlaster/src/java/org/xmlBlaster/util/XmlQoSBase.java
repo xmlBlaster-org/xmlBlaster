@@ -86,6 +86,10 @@ public class XmlQoSBase extends SaxHandlerBase
     */
    protected final boolean startElementBase(String uri, String localName, String name, Attributes attrs)
    {
+      if (this.inClientProperty) {
+         addTagToString(this.cpCharacter, name, attrs);
+         return true;
+      }
       if (name.equalsIgnoreCase("qos")) {
          inQos = true;
          return true;
@@ -106,6 +110,16 @@ public class XmlQoSBase extends SaxHandlerBase
       return false;
    }
 
+   protected static void addTagToString(StringBuffer buf,  String tagName, Attributes attrs) {
+      buf.append("<").append(tagName);
+      if (attrs == null || attrs.getLength() < 1)
+         return;
+      for (int i=0; i < attrs.getLength(); i++) {
+         buf.append(" ").append(attrs.getQName(i)).append("='").append(attrs.getValue(i)).append("'");
+      }
+      buf.append(">");
+   }
+   
    /**
     * Characters.
     * The text between two tags, in the following example 'Hello':
@@ -143,7 +157,7 @@ public class XmlQoSBase extends SaxHandlerBase
     *         false this tag is not handled by this Base class
     */
    protected final boolean endElementBase(String uri, String localName, String name) {
-      if( name.equalsIgnoreCase("qos") ) {
+      if( name.equalsIgnoreCase("qos") && !this.inClientProperty) {
          inQos = false;
          character.setLength(0);
          return true;
@@ -159,6 +173,11 @@ public class XmlQoSBase extends SaxHandlerBase
                this.clientProperty.setValueRaw(tmp);
          }
          this.cpCharacter.setLength(0);
+         return true;
+      }
+
+      if (this.inClientProperty) {
+         this.cpCharacter.append("</").append(name).append(">");
          return true;
       }
 

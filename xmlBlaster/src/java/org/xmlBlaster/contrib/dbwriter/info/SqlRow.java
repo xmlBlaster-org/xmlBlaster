@@ -15,6 +15,7 @@ import java.util.Map;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -83,7 +84,12 @@ public class SqlRow {
          if (val == null)
             continue;
          if (val instanceof String) {
-            ClientProperty prop = new ClientProperty((String)key, null, null, (String)val);
+            ClientProperty prop = null;
+            if (((String)key).equalsIgnoreCase(ReplicationConstants.OLD_CONTENT_ATTR)) {
+               prop = new ClientProperty((String)key, null, null, (String)val);
+            }
+            else
+               prop = new ClientProperty((String)key, null, Constants.ENCODING_FORCE_PLAIN, (String)val);
             storeProp(prop, destinationMap, destinationList);
          }
          else if (val instanceof ClientProperty) {
