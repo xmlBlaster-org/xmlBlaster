@@ -1024,6 +1024,8 @@ implements I_Plugin, I_Timeout,
       Global glob = new Global(args);
       boolean receivePolling = glob.getProperty().get("receivePolling", false);
       boolean clearMessages = glob.getProperty().get("clearMessages", Pop3Driver.CLEAR_MESSAGES);
+      boolean interactive = glob.getProperty().get("interactive", true);
+      long pollingInterval = glob.getProperty().get("pop3PollingInterval", 2000L);
 
       Pop3Driver pop3Client = new Pop3Driver();
       try {
@@ -1040,8 +1042,9 @@ implements I_Plugin, I_Timeout,
             EmailData[] msgs = pop3Client.readInbox(clearMessages);
             long diff = System.currentTimeMillis() - start;
 
+            java.sql.Timestamp date = new java.sql.Timestamp(new java.util.Date().getTime());
             for (int i = 0; i < msgs.length; i++) {
-               System.out.println(msgs[i].toXml(true));
+               System.out.println(date.toString() + "\n" + msgs[i].toXml(true));
             }
             if (msgs.length == 0) {
                System.out.println("[" + pop3Client.getPop3Url()
@@ -1049,14 +1052,18 @@ implements I_Plugin, I_Timeout,
             }
             else {
                System.out.println("[" + pop3Client.getPop3Url()
-                     + "] (" + diff + " millis)");
+                     + " "+date.toString()+"] Got "+msgs.length +" mails (" + diff + " millis)");
             }
             if (!receivePolling)
                break;
-            int ch = Global.waitOnKeyboardHit("[" + pop3Client.getPop3Url()
-                  + "] Hit a key for next polling ('q' to quit) >");
-            if (ch == 'q')
-               break;
+            if (interactive) {
+               int ch = Global.waitOnKeyboardHit("[" + pop3Client.getPop3Url()
+                     + "] Hit a key for next polling ('q' to quit) >");
+               if (ch == 'q')
+                  break;
+            }
+            else 
+               Thread.sleep(pollingInterval);
          }
       } catch (Exception e) {
          e.printStackTrace();
