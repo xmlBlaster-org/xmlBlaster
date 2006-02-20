@@ -161,11 +161,12 @@ public class HelloWorldPublish
          log.info(ME, "   -createDomEntry " + createDomEntry);
          log.info(ME, "   -queue/history/maxEntries " + historyMaxMsg);
          log.info(ME, " PtP settings");
-         log.info(ME, "   -subscribable  " + subscribable);
+         log.info(ME, "   -subscribable   " + subscribable);
          log.info(ME, "   -forceQueuing   " + forceQueuing);
          log.info(ME, "   -destination    " + destination);
          log.info(ME, " Erase settings");
          log.info(ME, "   -erase.forceDestroy " + eraseForceDestroy);
+         log.info(ME, "   -erase.domain   " + ((domain==null)?"":domain));
          log.info(ME, " ConnectQos settings");
          log.info(ME, "   -connect/qos/persistent " + connectPersistent);
          log.info(ME, "For more info please read:");
@@ -311,6 +312,7 @@ public class HelloWorldPublish
             }
 
             EraseKey ek = new EraseKey(glob, oid);
+            if (domain != null) ek.setDomain(domain);
             EraseQos eq = new EraseQos(glob);
             eq.setForceDestroy(eraseForceDestroy);
             if (log.DUMP) log.dump("", "Going to erase the topic: " + ek.toXml() + eq.toXml());
