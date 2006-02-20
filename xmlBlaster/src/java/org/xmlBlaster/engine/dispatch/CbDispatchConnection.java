@@ -169,7 +169,8 @@ public final class CbDispatchConnection extends DispatchConnection
                   catch (Throwable e) {
                      log.error(ME, "Failed to set subscriptionId: " + e.toString());
                   }
-                  mu.getQosData().getClientProperties().clear();
+                  mu.getQosData().getClientProperties().remove("__oid");
+                  mu.getQosData().getClientProperties().remove("__subscriptionId");
                }
             }
             else {
