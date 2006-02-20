@@ -321,6 +321,36 @@ public class ClientPropertyTest extends XMLTestCase {
       
    }
 
+   public void testClientPropertyEnclosedXmlTree() throws Exception {
+      
+      String xml =  "<qos>\n" +
+         "  <isPublish/>\n" + 
+         "  <clientProperty name='StringKey' type=''><BlaBla attr1='val1' attr2=' val2 '> Something </BlaBla></clientProperty>\n" + 
+         "</qos>";      
+      
+      MsgQosSaxFactory parser = new MsgQosSaxFactory(this.glob);
+      MsgQosData data = parser.readObject(xml);
+      ClientProperty prop = data.getClientProperty("StringKey");
+      System.out.println(prop.toXml());
+      // assertEquals("", true, prop.isBase64());
+      
+      
+      String val = "<BlaBla attr1='val1' attr2=' val2 '> Something </BlaBla>";
+      prop = new ClientProperty("StringKey", null, Constants.ENCODING_FORCE_PLAIN, val);
+      System.out.println(prop.toXml());
+
+      xml =  "<qos>\n" +
+      "  <isPublish/>\n" + 
+      "  <clientProperty name='StringKey' type='' encoding='forcePlain'><qos attr1='val1' attr2=' val2 '> Something </qos></clientProperty>\n" + 
+      "</qos>";      
+      
+      parser = new MsgQosSaxFactory(this.glob);
+      data = parser.readObject(xml);
+      prop = data.getClientProperty("StringKey");
+      System.out.println(prop.toXml());
+      System.out.println("END");
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.ClientPropertyTest
@@ -331,6 +361,7 @@ public class ClientPropertyTest extends XMLTestCase {
       try {
          ClientPropertyTest testSub = new ClientPropertyTest("ClientPropertyTest");
          testSub.setUp();
+         testSub.testClientPropertyEnclosedXmlTree();
          testSub.testClientProperty();
          testSub.testClientPropertyEncoding();
          testSub.testClientPropertyCtorEncoding();
