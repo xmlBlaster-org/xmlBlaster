@@ -192,7 +192,10 @@
          <tr>
             <td>Publish/Subscribe</td>
             <td>
-            This feature is implemented for Publish/Subscribe and ready for production use.   
+            This feature is implemented for Publish/Subscribe and ready for production use.
+            Note that <code>erase()</code> calls to the slaves need to have the domain set in the XmlKey (similar to the publishes)
+            to be forwarded to the master. <code>erase()</code> calls to the master are automatically propagated
+            to all slaves, even with a missing domain setting.
             </td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
