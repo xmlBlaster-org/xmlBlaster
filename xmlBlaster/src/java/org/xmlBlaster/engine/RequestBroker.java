@@ -1455,8 +1455,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public final String update(SessionInfo sessionInfo, UpdateKey updateKey, byte[] content, MsgQosData msgQosData) throws XmlBlasterException
    {
       if (msgQosData.isErased()) {
-         QueryKeyData key = glob.getQueryKeyFactory().readObject(updateKey.toXml());
-         EraseQosServer qos = new EraseQosServer(glob, "<qos/>");
+         String eraseKey = msgQosData.getClientProperty("__eraseKey", updateKey.toXml());
+         QueryKeyData key = glob.getQueryKeyFactory().readObject(eraseKey);
+         String eraseQos = msgQosData.getClientProperty("__eraseQos", "<qos/>");
+         EraseQosServer qos = new EraseQosServer(glob, eraseQos);
          String[] ret = erase(sessionInfo, key, qos, true);
          if (ret != null && ret.length > 0)
             return ret[0];
@@ -1719,21 +1721,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    }
 
    /**
-    * Called to erase a isVolatile() message.
-    * @param sessionInfo can be null
-    */
-   public void eraseVolatile(SessionInfo sessionInfo, TopicHandler topicHandler) throws XmlBlasterException
-   {
-      if (log.TRACE) log.trace(ME, "Published message is marked as volatile, erasing it");
-      if (sessionInfo == null) sessionInfo = this.unsecureSessionInfo;
-      try {
-         topicHandler.fireMessageEraseEvent(sessionInfo, null); // null: no erase event for volatile messages
-      } catch (XmlBlasterException e) {
-         if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
-      }
-   }
-
-   /**
     * This helper method checks for a published message which didn't exist before if
     * there are any XPath subscriptions pending which match.
     * <p />
@@ -1818,6 +1805,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") +
                 "erase(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                 "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
+         if (log.DUMP) log.dump(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.toXml());
 
          TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
          Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
@@ -1869,7 +1857,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             }
             else { // erase the complete topic
                try {
-                  topicHandler.fireMessageEraseEvent(sessionInfo, eraseQos);
+                  topicHandler.fireMessageEraseEvent(sessionInfo, xmlKey, eraseQos);
                } catch (XmlBlasterException e) {
                   if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
                }

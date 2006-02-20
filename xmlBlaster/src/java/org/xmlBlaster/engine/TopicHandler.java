@@ -33,6 +33,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -939,7 +940,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (!hasCacheEntries() && !hasExactSubscribers()) {
             try {
                if (isSoftErased()) {
-                  notifyList = toDead(this.creatorSessionName, false);
+                  notifyList = toDead(this.creatorSessionName, null, null);
                }
                else {
                   notifyList = toUnreferenced(false);
@@ -1082,7 +1083,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       synchronized (this) {
          if (!hasCacheEntries() && !hasExactSubscribers()) {
             if (isUnconfigured())
-               notifyList = toDead(this.creatorSessionName, false);
+               notifyList = toDead(this.creatorSessionName, null, null);
             else {
                try {
                   notifyList = toUnreferenced(false);
@@ -1667,7 +1668,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                addToBigDom();
             } catch (XmlBlasterException e) {
                if (isUnreferenced())
-                  toDead(this.creatorSessionName, false);
+                  toDead(this.creatorSessionName, null, null);
                else if (isUnconfigured())
                   ; // ignore
                throw e;
@@ -1724,7 +1725,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
          if (!onAdministrativeCreate) {
             if (this.topicProperty == null) {
-               notifyList = toDead(this.creatorSessionName, true);
+               EraseQosServer eraseQos = new EraseQosServer(glob, "<qos/>");
+               eraseQos.setForceDestroy(true);
+               notifyList = toDead(this.creatorSessionName, null, eraseQos);
                return notifyList; // ALIVE -> UNREFERENCED
             }
 
@@ -1754,8 +1757,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /**
     * @param sessionInfo The session which triggered the erase
+    * @param eraseQosServer TODO
     */
-   private ArrayList toSoftErased(SessionInfo sessionInfo) {
+   private ArrayList toSoftErased(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       if (log.CALL) log.call(ME, "Entering toSoftErased(oldState="+getStateStr()+")");
       ArrayList notifyList = null;
       synchronized (this) {
@@ -1769,7 +1773,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
          if (hasSubscribers()) {
             if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
-            notifyList = collectNotifySubscribersAboutErase(sessionInfo.getSessionName());
+            notifyList = collectNotifySubscribersAboutErase(sessionInfo.getSessionName(), eraseKey, eraseQos);
             clearSubscribers();
          }
 
@@ -1782,8 +1786,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /**
     * @param sessionName The session which triggered this event
+    * @param eraseKey TODO
     */
-   private ArrayList toDead(SessionName sessionName, boolean forceDestroy) {
+   private ArrayList toDead(SessionName sessionName, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       
       if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
       long numHistory = 0L;
@@ -1822,8 +1827,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                             getNumOfHistoryEntries() + " history messages.");
             }
 
-            if (/*!forceDestroy &&*/ !isSoftErased()) {
-               notifyList = collectNotifySubscribersAboutErase(sessionName);
+            if (/*!eraseQos.getForceDestroy() &&*/ !isSoftErased()) {
+               notifyList = collectNotifySubscribersAboutErase(sessionName, eraseKey, eraseQos);
             }
 
             if (hasHistoryEntries()) {
@@ -1973,9 +1978,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * The oid of the PtP message is temporary "__sys__ErasedTopic" and later
     * the oid of the erased topic, the state is set to STATE_ERASED 
     * @param sessionName The session which triggered the erase 
+    * @param eraseKey Can be null if not known (e.g. for implicit erase after unSubscribe or last message is expired)
+    * @param eraseQos Can be null if not known
     * @return A set containing MsgUnit instances to send to the various clients
     */
-   private ArrayList collectNotifySubscribersAboutErase(SessionName sessionName) {
+   private ArrayList collectNotifySubscribersAboutErase(SessionName sessionName, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
 
       if (hasSubscribers()) { // && (isAlive() || isUnconfigured())) { // Filter for Approach 1. (supresses XPath notifies)
@@ -2013,6 +2020,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   pq.addDestination(new Destination(sub.getSessionInfo().getSessionName()));
                   pq.addClientProperty("__oid", getUniqueKey());
                   pq.addClientProperty("__subscriptionId", sub.getSubSourceSubscriptionId());
+                  if (eraseKey != null) // To have all attributes for cluster slaves getting forwarded the erase
+                     pq.addClientProperty("__eraseKey", eraseKey.toXml());
+                  if (eraseQos != null) // To have all attributes for cluster slaves getting forwarded the erase
+                     pq.addClientProperty("__eraseQos", eraseQos.toXml());
                   if (i==0) {
                      TopicProperty topicProperty = new TopicProperty(glob);
                      //topicProperty.setDestroyDelay(destroyDelay);
@@ -2100,9 +2111,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * Notify all Listeners that a message is erased.
     *
     * @param sessionInfo
-    * @param topicHandler
+    * @param eraseKey The original EraseKey
+    * @param eraseQos
     */
-   final void fireMessageEraseEvent(SessionInfo sessionInfo, EraseQosServer eraseQos) throws XmlBlasterException {
+   final void fireMessageEraseEvent(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
       eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob, MethodName.ERASE)) : eraseQos;
       ArrayList notifyList = null;
@@ -2110,14 +2122,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          synchronized (this) {
             if (isAlive() || isUnconfigured()) {
                if (eraseQos.getForceDestroy()) {
-                  notifyList = toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
+                  notifyList = toDead(sessionInfo.getSessionName(), eraseKey, eraseQos);
                   return;
                }
                else {
-                  notifyList = toSoftErased(sessionInfo); // kills all history entries, notify subscribers
+                  notifyList = toSoftErased(sessionInfo, eraseKey, eraseQos); // kills all history entries, notify subscribers
                   long numMsgUnitStore = (this.msgUnitCache==null) ? 0L : this.msgUnitCache.getNumOfEntries();
                   if (numMsgUnitStore < 1) { // has no callback references?
-                     toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
+                     toDead(sessionInfo.getSessionName(), eraseKey, eraseQos);
                      return;
                   }
                   else {
@@ -2128,7 +2140,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
 
             if (isUnreferenced()) {
-               notifyList = toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
+               notifyList = toDead(sessionInfo.getSessionName(), eraseKey, eraseQos);
                return;
             }
          }
@@ -2154,7 +2166,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       synchronized (this) {
          if (isAlive()) // interim message arrived?
             return null;
-         return toDead(this.creatorSessionName, false);
+         return toDead(this.creatorSessionName, null, null);
       }
    }
 
