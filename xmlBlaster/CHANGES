@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn repository
 ======================
+ 
+ o #14743 added ENCODING_FORCE_PLAIN to allow nested xml inside a ClientProperty 
 
  o #14733 Added EraseKey and EraseQos (as ClientProperty) send to cluster slaves on topic erases
    so that slave knows the erase properties
