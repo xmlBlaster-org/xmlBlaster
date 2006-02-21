@@ -6,6 +6,14 @@ Current svn repository
  
  o #14743 added ENCODING_FORCE_PLAIN to allow nested xml inside a ClientProperty 
 
+ o #14753 Added getPingRoundTripDelay() and getRoundTripDelay() for JMX or telnet observation
+
+ o #14751 email protocol
+   Removed xmlBlaster specific expires header 'X-xmlBlaster-ExpiryDate:' but keeping 'Expires:'
+   Changed <expires> tag to be fully ISO 8601 date time formatting compatible like '1997-07-16T19:20:30.678Z' and is always UTC
+
+ o #14741 Removed trim() for string ClientProperties
+
  o #14733 Added EraseKey and EraseQos (as ClientProperty) send to cluster slaves on topic erases
    so that slave knows the erase properties
    Reported by Jonathan Clark
