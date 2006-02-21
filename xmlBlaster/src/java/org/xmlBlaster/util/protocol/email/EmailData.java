@@ -363,6 +363,10 @@ public class EmailData {
       String offset = "\n";
       StringBuffer sb = new StringBuffer(1024);
       sb.append(offset).append("<message>");
+      
+      if (getExpiryTime() != null)
+         sb.append(offset).append("  ").append(createMessageId(null, getExpiryTime()));
+      
       sb.append(offset).append("  <from>").append(XmlNotPortable.escape(getFrom())).append(
             "</from>");
       for (int i = 0; i < this.recipients.length; i++) {
