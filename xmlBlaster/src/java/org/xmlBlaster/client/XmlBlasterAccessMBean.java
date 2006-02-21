@@ -84,6 +84,19 @@ public interface XmlBlasterAccessMBean {
    
    /** How many messages are max. allowed in this client side queue */
    public long getConnectionQueueMaxMsgs();
+
+   /**
+    * Measures the round trip for the last ping() invocation in milli seconds.  
+    * @return Returns the pingRoundTripDelay.
+    */
+   public long getPingRoundTripDelay();
+
+   /**
+    * Measures the round trip for the last remote method invocation in milli seconds.
+    * For example <code>update(), publish(), subscribe()</code>  
+    * @return Returns the roundTripDelay.
+    */
+   public long getRoundTripDelay();
    
    /**
     * Publish a message. 

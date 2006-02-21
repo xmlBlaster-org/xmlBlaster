@@ -117,6 +117,19 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public long getCbQueueNumMsgs();
    /** How many messages are max. allowed in this clients session callback queue */
    public long getCbQueueMaxMsgs();
+   
+   /**
+    * Measures the round trip for the last ping() invocation in milli seconds.  
+    * @return Returns the pingRoundTripDelay.
+    */
+   public long getPingRoundTripDelay();
+
+   /**
+    * Measures the round trip for the last remote method invocation in milli seconds.
+    * For example <code>update(), publish(), subscribe()</code>  
+    * @return Returns the roundTripDelay.
+    */
+   public long getRoundTripDelay();
    /** Comma separated list of all subscribed topic oids of this login session */
    public String[] getSubscribedTopics();
    /** How many topics are currently subscribed */

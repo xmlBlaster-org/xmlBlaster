@@ -1282,6 +1282,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return this.clientQueue.getMaxNumOfEntries();
    }
 
+   public final long getPingRoundTripDelay() {
+      return getDispatchStatistic().getPingRoundTripDelay();
+   }
+
+   public final long getRoundTripDelay() {
+      return getDispatchStatistic().getRoundTripDelay();
+   }
+
    /** JMX **/
    public String invokePublish(String key, String content, String qos) throws Exception {
       if (key == null || key.length()==0 || key.equalsIgnoreCase("String"))

@@ -219,7 +219,9 @@ abstract public class DispatchConnection implements I_Timeout
 
       // Send the message ...
       try {
+         long now = System.currentTimeMillis();
          doSend(msgArr);
+         this.connectionsHandler.getDispatchStatistic().setRoundTripDelay(System.currentTimeMillis() - now);
          handleTransition(true, null);
          return;
       }
@@ -275,7 +277,9 @@ abstract public class DispatchConnection implements I_Timeout
       data = (data==null)?"":data;
 
       try {
+         long now = System.currentTimeMillis();
          String returnVal = doPing(data);
+         this.connectionsHandler.getDispatchStatistic().setPingRoundTripDelay(System.currentTimeMillis() - now);
          // Ignore "" returns as this was specified to always return in older xmlBlaster versions
          if (returnVal.length() > 0 && returnVal.indexOf("OK") == -1) {
             // Fake a server standby exception: ping() is not specified to transport a remote XmlBlasterException but carries standby information in the state id.

@@ -35,6 +35,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
@@ -712,6 +713,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();
+   }
+   
+   public long getPingRoundTripDelay() {
+      return getDispatchStatistic().getPingRoundTripDelay();
+   }
+
+   public long getRoundTripDelay() {
+      return getDispatchStatistic().getRoundTripDelay();
    }
 
    public final String[] getSubscribedTopics() {

@@ -43,6 +43,9 @@ public class DispatchStatistic implements I_ProgressListener
    private long numBytesToWrite;
    /** Overall bytes send since startup */
    private long overallBytesWritten;
+   
+   protected long pingRoundTripDelay;
+   protected long roundTripDelay;
 
    /* The time-stamp when the last message was fully written */
    /*private long lastWrittenTimestamp; Not yet implemented as we should ignore the ping */
@@ -300,6 +303,34 @@ public class DispatchStatistic implements I_ProgressListener
          sb.append("' numDisconnect='").append(getNumDisconnect()).append("'/>");
       }
       return sb.toString();
+   }
+
+   /**
+    * @return Returns the pingRoundTripDelay.
+    */
+   public long getPingRoundTripDelay() {
+      return this.pingRoundTripDelay;
+   }
+
+   /**
+    * @param pingRoundTripDelay The pingRoundTripDelay to set.
+    */
+   public void setPingRoundTripDelay(long pingRoundTripDelay) {
+      this.pingRoundTripDelay = pingRoundTripDelay;
+   }
+
+   /**
+    * @return Returns the roundTripDelay.
+    */
+   public long getRoundTripDelay() {
+      return this.roundTripDelay;
+   }
+
+   /**
+    * @param roundTripDelay The roundTripDelay to set.
+    */
+   public void setRoundTripDelay(long roundTripDelay) {
+      this.roundTripDelay = roundTripDelay;
    }
 }
 

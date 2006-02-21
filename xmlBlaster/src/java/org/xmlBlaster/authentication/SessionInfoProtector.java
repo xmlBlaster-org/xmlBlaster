@@ -120,6 +120,14 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final long getCbQueueMaxMsgs() {
       return this.sessionInfo.getCbQueueMaxMsgs();
    }
+   
+   public long getPingRoundTripDelay() {
+      return this.sessionInfo.getPingRoundTripDelay();
+   }
+
+   public long getRoundTripDelay() {
+      return this.sessionInfo.getRoundTripDelay();
+   }
 
    public final String[] getSubscribedTopics() {
       return this.sessionInfo.getSubscribedTopics();
