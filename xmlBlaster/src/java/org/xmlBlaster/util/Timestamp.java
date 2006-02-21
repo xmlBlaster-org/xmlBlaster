@@ -403,7 +403,7 @@ public class Timestamp implements Comparable, java.io.Serializable
          ts.toString();
       }
       long elapsed = System.currentTimeMillis() - start;
-      System.out.println("toString(): " + count + " toString " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/toString()");
+      System.out.println("toString(): " + count + " toString " + elapsed + " millisec -> " + ((elapsed*1000.*1000.)/count) + " nanosec/toString()");
    }
    /** Test only */
    private static final void testValueOf()
@@ -416,7 +416,7 @@ public class Timestamp implements Comparable, java.io.Serializable
          Timestamp.valueOf(val);
       }
       long elapsed = System.currentTimeMillis() - start;
-      System.out.println("valueOf(): " + count + " valueOf " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/valueOf()");
+      System.out.println("valueOf(): " + count + " valueOf " + elapsed + " millisec -> " + ((elapsed*1000.*1000.)/count) + " nanosec/valueOf()");
    }
    /** Test only */
    private static final void testToXml(boolean literal)
@@ -428,7 +428,7 @@ public class Timestamp implements Comparable, java.io.Serializable
          ts.toXml(null, literal);
       }
       long elapsed = System.currentTimeMillis() - start;
-      System.out.println("toXml(" + literal + "): " + count + " toXml " + elapsed + " millisec -> " + ((((double)elapsed)*1000.*1000.)/((double)count)) + " nanosec/toXml()");
+      System.out.println("toXml(" + literal + "): " + count + " toXml " + elapsed + " millisec -> " + ((elapsed*1000.*1000.)/count) + " nanosec/toXml()");
    }
 }
 
