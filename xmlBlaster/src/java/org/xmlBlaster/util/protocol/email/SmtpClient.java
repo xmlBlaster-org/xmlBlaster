@@ -22,6 +22,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMultipart;
 
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -493,62 +494,61 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
          if (holder.length == 0 && emailData.getContent() != null && emailData.getContent().length() > 0) {
             message.setText(emailData.getContent(), Constants.UTF8_ENCODING);
-            send(message);
-            return;
          }
+         else {
+            // create the Multipart and add its parts to it
+            Multipart multi = new MimeMultipart();
+   
+            if (emailData.getContent() != null && emailData.getContent().length() > 0) {
+               MimeBodyPart mbp = new MimeBodyPart();
+               mbp.setFileName("content.txt");
+               mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
+               mbp.setDisposition(MimeBodyPart.INLINE);
+               multi.addBodyPart(mbp);
+            }
+   
+            for (int i=0; i<holder.length; i++) {
+               MimeBodyPart mbp = new MimeBodyPart();
+               // 'AA xmlBlasterMessage.xbf' will be automatically quoted to '"AA xmlBlasterMessage.xbf"' by javamail implementation
+               // 'xx.xbf' names will be send unquoted
+               mbp.setFileName(holder[i].getFileName());
+               byte[] content = holder[i].getContent();
+               if (this.messageIdForceBase64 && emailData.isMessageIdAttachment(holder[i])
+                    || this.contentForceBase64 && emailData.isMsgUnitAttachment(holder[i])) {
+                  //We don't need to do it, javamail does it for us
+                  //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
+                  mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
+               }
+               else {
+                  mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);  // "Content-Transfer-Encoding", "quoted-printable");
+                  if (holder[i].hasExtensionFromList(this.inlineExtension))
+                     mbp.setDisposition(MimeBodyPart.INLINE);
+               }
+               
+               // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
+               //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
+               if (holder[i].getContentType().startsWith("text/")) {
+                  //String tmp = MimeUtility.encodeText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);
+                  //mbp.setText(tmp, Constants.UTF8_ENCODING);
+                  String contentStr = new String(content, Constants.UTF8_ENCODING);
+                  if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i]))
+                        contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
+                  mbp.setText(contentStr, Constants.UTF8_ENCODING);
+               }
+               else {
+                  // "application/xmlBlaster-xbformat"
+                  DataSource ds = new ByteArrayDataSource(
+                        content,
+                        holder[i].getContentType());
+                  mbp.setDataHandler(new DataHandler(ds));
+               }
+               multi.addBodyPart(mbp);
+            }
+   
+            // add the Multipart to the message
+            message.setContent(multi);
+         } // else multipart
          
-         // create the Multipart and add its parts to it
-         Multipart multi = new MimeMultipart();
-
-         if (emailData.getContent() != null && emailData.getContent().length() > 0) {
-            MimeBodyPart mbp = new MimeBodyPart();
-            mbp.setFileName("content.txt");
-            mbp.setText(emailData.getContent(), Constants.UTF8_ENCODING);
-            mbp.setDisposition(MimeBodyPart.INLINE);
-            multi.addBodyPart(mbp);
-         }
-
-         for (int i=0; i<holder.length; i++) {
-            MimeBodyPart mbp = new MimeBodyPart();
-            // 'AA xmlBlasterMessage.xbf' will be automatically quoted to '"AA xmlBlasterMessage.xbf"' by javamail implementation
-            // 'xx.xbf' names will be send unquoted
-            mbp.setFileName(holder[i].getFileName());
-            byte[] content = holder[i].getContent();
-            if (this.messageIdForceBase64 && emailData.isMessageIdAttachment(holder[i])
-                 || this.contentForceBase64 && emailData.isMsgUnitAttachment(holder[i])) {
-               //We don't need to do it, javamail does it for us
-               //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
-               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
-            }
-            else {
-               mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);  // "Content-Transfer-Encoding", "quoted-printable");
-               if (holder[i].hasExtensionFromList(this.inlineExtension))
-                  mbp.setDisposition(MimeBodyPart.INLINE);
-            }
-            
-            // Encoding violates RFC 2231 but is very common to do so for non-ASCII character sets:
-            //mbp.setFileName(MimeUtility.encodeText(holder[i].getFileName()));
-            if (holder[i].getContentType().startsWith("text/")) {
-               //String tmp = MimeUtility.encodeText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);
-               //mbp.setText(tmp, Constants.UTF8_ENCODING);
-               String contentStr = new String(content, Constants.UTF8_ENCODING);
-               if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i]))
-                     contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
-               mbp.setText(contentStr, Constants.UTF8_ENCODING);
-            }
-            else {
-               // "application/xmlBlaster-xbformat"
-               DataSource ds = new ByteArrayDataSource(
-                     content,
-                     holder[i].getContentType());
-               mbp.setDataHandler(new DataHandler(ds));
-            }
-            multi.addBodyPart(mbp);
-         }
-
-         // add the Multipart to the message
-         message.setContent(multi);
-
          // set the Date: header
          Date date = new Date();
          message.setSentDate(date);
@@ -649,8 +649,28 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    /**
     * Standalone usage example:
     * <code>
-    * java -Dmail.debug=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost:25 org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost
+    * java -Dmail.debug=true -Dmail.smtp.url=smtp://xmlBlaster:xmlBlaster@localhost:25 org.xmlBlaster.util.protocol.email.SmtpClient -from xmlBlaster@localhost -to xmlBlaster@localhost -expires +5000
     * </code>
+    * The output is like
+<pre>
+Return-Path: <blue@localhost>
+Received: from localhost ([127.0.0.1])
+          by noty (JAMES SMTP Server 2.2.0) with SMTP ID 501
+          for <blue@localhost>;
+          Tue, 21 Feb 2006 10:54:58 +0100 (CET)
+Message-ID: <13748088.01140515698827.JavaMail.xmlBlaster@noty>
+Date: Tue, 21 Feb 2006 10:54:58 +0100 (CET)
+From: blue@localhost
+To: blue@localhost
+Subject: Hi from java
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-xmlBlaster-ExpiryDate: 2006-02-21 10:55:00.825
+Expires: Tue, 21 Feb 2006 10:55:00 +0100 (CET)
+
+Some body text
+</pre>
     * @see #setSessionProperties(Properties) for other properties
     */
    public static void main(String[] args) {
@@ -670,8 +690,21 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          String to = glob.getProperty().get("to", "blue@localhost");
          String subject = glob.getProperty().get("subject", "Hi from java");
          String content = glob.getProperty().get("content", "Some body text");
+         String expires = glob.getProperty().get("expires", ""); // "+5000" means lives 5 sec from now on
+         
+         Timestamp ts = null;
+         if (expires.length() > 0) {
+            Date now = new Date();
+            if (expires.indexOf("+") == 0) {
+               ts = new Timestamp(Long.valueOf(expires.substring(1)).longValue() + now.getTime());
+            }
+            else
+               ts = Timestamp.valueOf(expires);
+         }
 
          EmailData msg = new EmailData(to, from, subject, content);
+         if (ts != null) msg.setExpiryTime(ts);
+         System.out.println("Sending message " + msg.toXml(true));
          mail.sendEmail(msg);
          System.out.println("Sent a message from '" + from + "' to '" + to
                + "'");
