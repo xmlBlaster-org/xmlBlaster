@@ -127,16 +127,16 @@ is used for zlib compressed messages.</p>
 <p class="celltitel">Email expiry</p>
 <a name="expires"/>
 <p>Each email send by xmlBlaster has an expiry date set on two places.
-We add two header fields to the email:</p>
+We add a header field to the email:</p>
 <pre class="BORDER">
-X-xmlBlaster-ExpiryDate: 2005-12-15 21:45:01.634
 Expires: Thu, 15 Dec 2005 21:45:01 +0100 (CET)
 </pre>
-<p>and additionally we add an expires markup tag to the send messageId attachment (or subject line if configured with <code>mail.subject</code>):</p>
+<p>and additionally we add an expires markup tag to the send messageId attachment (or subject line if configured with <code>mail.subject</code>),
+it follows the Date/Time format of ISO 8601 and is the UTC (==GMT) time (see the trailing 'Z'):</p>
 <pre class="BORDER">
-&lt;messageId>...&lt;expires>2005-12-15 21:44:56.296&lt;/expires>&lt;/messageId>
+&lt;messageId>...&lt;expires>2005-12-15T21:44:56.296Z&lt;/expires>&lt;/messageId>
 </pre>
-<p>The <code>X-xmlBlaster-ExpiryDate: </code> expire date follows the java.sql.Timestamp format (more or less ISO 8601), and its value is determined
+<p>The expires date value is determined
 by the currently configured <code>responseTimeout</code>, <code>pingResponseTimeout</code> or <code>updateResponseTimeout</code>
 (corresponding to the type of message send).</p>
 <p>The <code>Expires: </code> header field is established for news groups (RFC1036) and additionally specified
@@ -382,7 +382,7 @@ care yourself to increment it manually for each follow up email:<br />
         &lt;sessionId>sessionId:127.0.0.2-null-1134491480448--1073813090-3&lt;/sessionId>
         &lt;requestId>1136486974900000000&lt;/requestId>
         &lt;methodName>subscribe&lt;/methodName>
-        &lt;expires>2005-12-13 19:17:53.148&lt;/expires>
+        &lt;expires>2005-12-13T19:17:53.148Z&lt;/expires>
       &lt;/messageId></code>
 </p>
 <p>If you use our embedded java client protocol plugin for <code>email</code>
@@ -437,7 +437,6 @@ Subject: XmlBlaster Generated Email
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
    boundary="----=_Part_3_23776721.1132242312553"
-X-xmlBlaster-ExpiryDate: 2006-01-27 13:01:17.972
 Expires: Fri, 27 Jan 2006 13:01:17 +0100 (CET)
 Delivered-To: xmlBlaster@localhost
 
@@ -746,7 +745,7 @@ on server side and on java client side.</p>
          <tr>
             <td>useEmailExpiryTimestamp</td>
             <td>true</td>
-            <td>Adds two email headers of type <code>X-xmlBlaster-ExpiryDate: 2005-12-24 16:45:55.322</code> and of type
+            <td>Adds email header of type
             <code>Expires: Fri, 27 Jan 2006 13:01:17 +0100 (CET)</code>.
             If you have an intelligent MTA
             you can configure it to drop the mail if expired. The xmlBlaster library
