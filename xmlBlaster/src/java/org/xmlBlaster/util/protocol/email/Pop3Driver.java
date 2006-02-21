@@ -804,13 +804,14 @@ implements I_Plugin, I_Timeout,
             datas[i].setSentDate(msg.getSentDate());
             datas[i].setReplyTo((InternetAddress[])msg.getReplyTo());
             
+            /*
             String[] expires = msg.getHeader(EmailData.EXPIRES_HEADER);
             // "X-xmlBlaster-ExpiryDate: 2005-12-24 16:45:55.322"
             if (expires != null && expires.length > 0) {
                // expires[0]="2005-12-24 16:45:55.322"
                String value = expires[0].trim();
                try {
-                  datas[i].setExpiryTime(java.sql.Timestamp.valueOf(value));
+                  datas[i].setExpiryTime(java.sql.Timestamp.valueOf(value)); // Change to IsoDateParser with UTC!
                }
                catch (Throwable e) {
                   System.err.println("xmlBlaster Pop3Driver.java: Ignoring illegal email header '" + expires[0] + "'");
@@ -818,7 +819,9 @@ implements I_Plugin, I_Timeout,
                }
             }
             else {
-               expires = msg.getHeader(EmailData.EXPIRES_HEADER_RFC2156);
+            */
+               // Expires: Thu, 15 Dec 2005 21:45:01 +0100 (CET)
+               String[]  expires = msg.getHeader(EmailData.EXPIRES_HEADER_RFC2156);
                if (expires != null && expires.length > 0) {
                   // Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
                   String value = expires[0].trim();
@@ -830,7 +833,7 @@ implements I_Plugin, I_Timeout,
                      e.printStackTrace();
                   }
                }
-            }
+            //}
 
             datas[i].setAttachments(MailUtil.accessAttachments(msg));
          }

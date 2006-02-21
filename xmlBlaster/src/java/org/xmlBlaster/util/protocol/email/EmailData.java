@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlNotPortable;
@@ -99,11 +100,11 @@ public class EmailData {
 
    public static final String EXPIRES_TAG = "expires";
 
-   /**
+   /*
     * The value has the format <code>yyyy-mm-dd hh:mm:ss.fffffffff</code>,
     * the .f* are optional
     */
-   public static final String EXPIRES_HEADER = "X-xmlBlaster-ExpiryDate";
+   //public static final String EXPIRES_HEADER = "X-xmlBlaster-ExpiryDate";
    /**
     * Expiry Date Indication
     * Supported as new RFC 822 header (Expires:).  In general, no
@@ -653,7 +654,7 @@ public class EmailData {
     * @param methodName Can be null
     * @param expiryTimestamp Can be null
     * @return A well formatted XML, the timestamp follows the ASCII ISO notation
-    * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName><expires>2005-11-30 12:42:24.200</expires></messageId>
+    * <messageId><sessionId>abcd</sessionId><requestId>5</requestId><methodName>update</methodName><expires>2005-11-30T12:42:24.200Z</expires></messageId>
     */
    public static String createMessageId(String sessionId, String requestId, MethodName methodName, Timestamp expiryTimestamp) {
       if (sessionId == null && requestId == null && methodName == null && expiryTimestamp == null)
@@ -667,7 +668,7 @@ public class EmailData {
       if (methodName != null)
          sb.append("<").append(METHODNAME_TAG).append(">").append(methodName).append("</").append(METHODNAME_TAG).append(">");
       if (expiryTimestamp != null)
-         sb.append("<").append(EXPIRES_TAG).append(">").append(expiryTimestamp).append("</").append(EXPIRES_TAG).append(">");
+         sb.append("<").append(EXPIRES_TAG).append(">").append(IsoDateParser.getUTCTimestampT(expiryTimestamp)).append("</").append(EXPIRES_TAG).append(">");
       sb.append("</").append(MESSAGEID_TAG).append(">");
       return sb.toString();
    }
@@ -676,7 +677,7 @@ public class EmailData {
       return "from: " + this.from 
             + " to: " + getRecipientsList() 
             + " subject:" + this.subject
-            + ((this.expiryTime != null) ? (" " + EXPIRES_HEADER + ":" + this.expiryTime.toString()) : "")
+            + ((this.expiryTime != null) ? (" " + EXPIRES_HEADER_RFC2156 + ":" + MailUtil.dateTime(this.expiryTime)) : "")
             + " attachments:" + getFileNameList();
    }
 
@@ -731,9 +732,9 @@ public class EmailData {
     * @return true if is expired
     */
    public boolean isExpired() {
-      // TODO: Currently we have two approaches to transport expiryDate:
-      // first as an email-Header: "X-xmlBlaster-ExpiryDate"
-      // second in our messageId XML markup: <expires>2005-12-24 16:45:12</expires>
+      // Currently we have two approaches to transport expiryDate:
+      // first as an email-Header: "Expires: "
+      // second in our messageId XML markup: <expires>2005-12-24T16:45:12Z</expires>
       if (this.expiryTime != null) {
          Date now = new Date();
          if (now.getTime() > this.expiryTime.getTime()) {
@@ -746,12 +747,14 @@ public class EmailData {
       String expires = extractMessageId(EmailData.EXPIRES_TAG);
       if (expires != null) {
          /* The string may contain CR LF as shown here (added by any MTA):
-         <messageId><sessionId>lm4e560ghdFzj</sessionId><requestId>1138093430247000000</requestId><methodName>ping</methodName><expires>2006-01-24
-          09:04:50.248</expires></messageId>      
+         <messageId><sessionId>lm4e560ghdFzj</sessionId><requestId>1138093430247000000</requestId><methodName>ping</methodName><expires>2006-01-24T
+          09:04:50.248Z</expires></messageId>
+          
+          or somethin like MimeUtility.decode(expires, "quoted-printable"); ?
          */
          expires = ReplaceVariable.replaceAll(expires, "\r\n", "");
          try {
-            Timestamp timestamp = Timestamp.valueOf(expires);
+            Timestamp timestamp = new Timestamp(IsoDateParser.parse(expires).getTime());
             Date now = new Date();
             if (now.getTime() > timestamp.getTime()) {
                if (log.isLoggable(Level.FINE)) log.fine("Email is epxired, we discard it: " + toString());
@@ -766,7 +769,7 @@ public class EmailData {
    }
    
    /**
-    * Is transported in the email header "X-xmlBlaster-ExpiryDate:yyyy-mm-dd hh:mm:ss"
+    * Is transported in the email header "Expires: "
     * @return Returns the expiryTime or null if none is defined
     */
    public Timestamp getExpiryTime() {
@@ -836,10 +839,9 @@ public class EmailData {
       }
       {
          String[] receivers = { "Receiver" };
-         String subject = "<messageId><expires>2006-01-24\r\n09:04:50.248</expires></messageId>";      
+         String subject = "<messageId><expires>2006-01-24\r\nT09:04:50.248Z</expires></messageId>";      
          EmailData msg = new EmailData(receivers, "Sender", subject, "A content");
-         if (msg.isExpired())
-            System.out.println("Is expired");
+         System.out.println("Is " + ((msg.isExpired()) ? "" : "not ") + "expired");
       }
    }
 }

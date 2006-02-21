@@ -186,6 +186,7 @@ public class MailUtil {
    /**
     * @param ts
     * @return The http://www.faqs.org/rfcs/rfc822.html "date-time" string
+    * @see org.xmlBlaster.util.IsoDateParser
     */
    public static String dateTime(java.sql.Timestamp ts) {
       Date date = new Date(ts.getTime());

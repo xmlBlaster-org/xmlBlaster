@@ -553,10 +553,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          Date date = new Date();
          message.setSentDate(date);
 
-         // Set the xmlBlaster specific expiry header field "X-xmlBlaster-ExpiryDate"
+         // Set the xmlBlaster specific expiry header field
+         // Expires: Thu, 15 Dec 2005 21:45:01 +0100 (CET)
          // This could be evaluated by MTA plugins
          if (emailData.getExpiryTime() != null) {
-            message.setHeader(EmailData.EXPIRES_HEADER, emailData.getExpiryTime().toString());
+            //message.setHeader(EmailData.EXPIRES_HEADER, emailData.getExpiryTime().toString());
             message.setHeader(EmailData.EXPIRES_HEADER_RFC2156, MailUtil.dateTime(emailData.getExpiryTime()));
          }
 
@@ -666,7 +667,6 @@ Subject: Hi from java
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-xmlBlaster-ExpiryDate: 2006-02-21 10:55:00.825
 Expires: Tue, 21 Feb 2006 10:55:00 +0100 (CET)
 
 Some body text
