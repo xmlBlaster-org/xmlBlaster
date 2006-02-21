@@ -716,4 +716,45 @@ Some body text
             mail.shutdown();
       }
    }
+   /* James 2.2.0 extension in
+    *   org.apache.james.transport.mailets.RemoteDelivery.java
+    * method
+    *   boolean deliver(MailImpl mail, Session session)
+    * to throw away expired mails:
+    
+ try {
+    // Expiry Date Indication
+    // Supported as new RFC 822 header (Expires:).
+    // @see http://www.faqs.org/rfcs/rfc2156.html
+    final String EXPIRES_HEADER_RFC2156 = "Expires";
+    String[] expires = mail.getMessage().getHeader(EXPIRES_HEADER_RFC2156);
+    if (expires != null && expires.length > 0) {
+       // Date: Thu, 17 Nov 2005 16:45:12 +0100 (CET)
+       String value = expires[0].trim();
+       java.text.DateFormat df = new javax.mail.internet.MailDateFormat();
+       java.util.Date expire = df.parse(value);
+       java.util.Date now = new java.util.Date();
+       if (now.getTime() > expire.getTime()) {
+           StringBuffer logMessageBuffer =
+             new StringBuffer(256)
+             .append("Mail ")
+             .append(mail.getName())
+             .append(" to host ")
+             .append(outgoingMailServer.getHostName())
+             .append(" at ")
+             .append(outgoingMailServer.getHost())
+             .append(" to addresses ")
+             .append(Arrays.asList(addr))
+             .append(" is expired since ")
+             .append(value)
+             .append(" and silently discarded");
+          log(logMessageBuffer.toString());
+          return true;
+       }
+    }
+ }
+ catch (Throwable e) {
+    e.printStackTrace(); // Ignore Expires: problems 
+ }
+    */
 }
