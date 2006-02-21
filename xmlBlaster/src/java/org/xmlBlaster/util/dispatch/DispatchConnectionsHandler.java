@@ -226,6 +226,15 @@ abstract public class DispatchConnectionsHandler
     */
    abstract public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException;
 
+   /** @return a currently available callback connection (with any state) or null */
+   public final DispatchConnection getCurrentDispatchConnection() {
+      DispatchConnection d = getAliveDispatchConnection();
+      if (d == null)
+         d = getPollingDispatchConnection();
+      if (d == null)
+         d = getDeadDispatchConnection();
+      return d;
+   }
 
    /** @return a currently alive callback connection or null */
    public final DispatchConnection getAliveDispatchConnection() {
