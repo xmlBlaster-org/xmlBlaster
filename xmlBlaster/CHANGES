@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
  
+ o #14756 email protocol:
+   Added switch for 'addExpiresHeader' and JMX accessor
+   Fixed 'breakLongMessageIdLine' for max 72 char per line and added JMX accessor
+
  o #14743 added ENCODING_FORCE_PLAIN to allow nested xml inside a ClientProperty 
 
  o #14753 Added getPingRoundTripDelay() and getRoundTripDelay() for JMX or telnet observation
