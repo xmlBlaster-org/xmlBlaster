@@ -94,6 +94,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    private boolean breakLongMessageIdLine;
 
    /**
+    * Add 'Expires:' email header. 
+    * If the message to send has an expiry date and this
+    * addExpiresHeader=true we send an 'Expires:' header in the email
+    * (Expiry Date Indication). 
+    * <br />
+    * Supported as new RFC 822 header (Expires:).  In general, no
+    * automatic action can be expected by MTAs.
+    * <br />
+    * Defaults to true.
+    * @see http://www.faqs.org/rfcs/rfc2156.html
+    */
+   private boolean addExpiresHeader;
+   
+   /**
     * Comma separated list of fileName extensions to send attachment as inline
     */
    private String inlineExtension;
@@ -284,6 +298,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       p = props.getProperty("contentForceBase64");
       this.contentForceBase64 = new Boolean(p).booleanValue();
 
+      if (props.getProperty("addExpiresHeader") == null)
+         props.put("addExpiresHeader", ""+glob.get("addExpiresHeader", true, null,
+               pluginConfig));
+      p = props.getProperty("addExpiresHeader");
+      this.addExpiresHeader = new Boolean(p).booleanValue();
+      
       if (props.getProperty("breakLongMessageIdLine") == null)
          props.put("breakLongMessageIdLine", ""+glob.get("breakLongMessageIdLine", false, null,
                pluginConfig));
@@ -517,6 +537,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                     || this.contentForceBase64 && emailData.isMsgUnitAttachment(holder[i])) {
                   //We don't need to do it, javamail does it for us
                   //content = Base64.encode(holder[i].getContent()).getBytes(Constants.UTF8_ENCODING);
+                  //Buggy: is not accepted by javamail: (Why? and How?)
                   mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
                }
                else {
@@ -531,8 +552,12 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                   //String tmp = MimeUtility.encodeText(new String(content, Constants.UTF8_ENCODING), Constants.UTF8_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);
                   //mbp.setText(tmp, Constants.UTF8_ENCODING);
                   String contentStr = new String(content, Constants.UTF8_ENCODING);
-                  if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i]))
-                        contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
+                  if (this.breakLongMessageIdLine && emailData.isMessageIdAttachment(holder[i])) {
+                     // <messageId><sessionId>unknown</sessionId><requestId>1140597982821000000</requestId><methodName>update</methodName><expires>2006-02-23T08:46:22.821Z</expires></messageId>
+                     contentStr = ReplaceVariable.replaceAll(contentStr, "<requestId>", "\r\n<requestId>");
+                     contentStr = ReplaceVariable.replaceAll(contentStr, "<methodName>", "\r\n<methodName>");
+                     contentStr = ReplaceVariable.replaceAll(contentStr, "<expires>", "\r\n<expires>");
+                  }
                   mbp.setText(contentStr, Constants.UTF8_ENCODING);
                }
                else {
@@ -556,7 +581,7 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
          // Set the xmlBlaster specific expiry header field
          // Expires: Thu, 15 Dec 2005 21:45:01 +0100 (CET)
          // This could be evaluated by MTA plugins
-         if (emailData.getExpiryTime() != null) {
+         if (this.addExpiresHeader && emailData.getExpiryTime() != null) {
             //message.setHeader(EmailData.EXPIRES_HEADER, emailData.getExpiryTime().toString());
             message.setHeader(EmailData.EXPIRES_HEADER_RFC2156, MailUtil.dateTime(emailData.getExpiryTime()));
          }
@@ -757,4 +782,32 @@ Some body text
     e.printStackTrace(); // Ignore Expires: problems 
  }
     */
+
+   /**
+    * @return Returns the addExpiresHeader.
+    */
+   public boolean isAddExpiresHeader() {
+      return this.addExpiresHeader;
+   }
+
+   /**
+    * @param addExpiresHeader The addExpiresHeader to set.
+    */
+   public void setAddExpiresHeader(boolean addExpiresHeader) {
+      this.addExpiresHeader = addExpiresHeader;
+   }
+
+   /**
+    * @return Returns the breakLongMessageIdLine.
+    */
+   public boolean isBreakLongMessageIdLine() {
+      return this.breakLongMessageIdLine;
+   }
+
+   /**
+    * @param breakLongMessageIdLine The breakLongMessageIdLine to set.
+    */
+   public void setBreakLongMessageIdLine(boolean breakLongMessageIdLine) {
+      this.breakLongMessageIdLine = breakLongMessageIdLine;
+   }
 }

@@ -243,7 +243,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
    
    /**
-    * @return Returns the responseTimeout for JMX
+    * Access the timeout for method invocation. 
+    * @param methodName e.g. "PING", "UPDATE", "SUBSCRIBE", "PUBLISH", ...
+    * @return Returns the responseTimeout for JMX in milli seconds
     */
    public long getResponseTimeout(String methodName) {
       return getResponseTimeout(MethodName.toMethodName(methodName));
@@ -663,6 +665,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    /**
     * Interrupts a blocking request with a not returning reply. 
     * The pending message is handled as not delivered and will be queued
+    * @return Number of interrupted invocations, typically 0 or 1
     */
    public int interruptInvocation() {
       LatchHolder[] latches = getLatches();

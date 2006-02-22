@@ -45,6 +45,47 @@ public interface I_AdminSmtpClient extends I_AdminUsage {
    public void setMessageIdForceBase64(boolean messageIdForceBase64);
 
    /**
+    * If the message to send has an expiry date and this
+    * addExpiresHeader=true we send an 'Expires:' header in the email
+    * (Expiry Date Indication). 
+    * <br />
+    * Supported as new RFC 822 header (Expires:).  In general, no
+    * automatic action can be expected by MTAs.
+    * <br />
+    * Defaults to true.
+    * @see http://www.faqs.org/rfcs/rfc2156.html
+    */
+   public boolean isAddExpiresHeader();
+
+   /**
+    * Add 'Expires:' email header. 
+    * If the message to send has an expiry date and this
+    * addExpiresHeader=true we send an 'Expires:' header in the email
+    * (Expiry Date Indication). 
+    * <br />
+    * Supported as new RFC 822 header (Expires:).  In general, no
+    * automatic action can be expected by MTAs.
+    * <br />
+    * Defaults to true.
+    * @see http://www.faqs.org/rfcs/rfc2156.html
+    */
+   public void setAddExpiresHeader(boolean addExpiresHeader);
+   
+   /**
+    * Defaults to false. 
+    * @return Returns the breakLongMessageIdLine.
+    */
+   public boolean isBreakLongMessageIdLine();
+
+   /**
+    * Defaults to false. 
+    * If set to true tries to keep the &lt;messageId> markup in lines
+    * shorter than 72 characters.
+    * @param breakLongMessageIdLine The breakLongMessageIdLine to set.
+    */
+   public void setBreakLongMessageIdLine(boolean breakLongMessageIdLine);
+
+   /**
     * Access the SMTP access uri,
     * for example "smtp://aUser:mypassword@mySmtpHost.org:25"
     * @return The SMTP server uri
