@@ -176,7 +176,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          boolean force = true;
          dbSpecific.bootstrap(conn, doWarn, force);
          String destination = null;
-         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false, destination);
+         boolean forceSend = false;
+         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false, destination, forceSend);
       }
       catch (Exception ex) {
          if (conn != null)
@@ -535,7 +536,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
       currentMethod = new String("testSchemaCleanup");
       log.info("Start " + currentMethod);
       try {
-         dbSpecific.wipeoutSchema(null, specificHelper.getOwnSchema(dbPool));
+         final String catalog = null;
+         dbSpecific.wipeoutSchema(catalog, specificHelper.getOwnSchema(dbPool), null);
       }
       catch (Exception ex) {
          ex.printStackTrace();

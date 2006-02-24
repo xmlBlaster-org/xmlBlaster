@@ -538,7 +538,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             sql = "{? = call " + this.replPrefix + "add_table(?,?,?,?)}"; // name text, content text)
             try {
                boolean force = false;
-               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null, force, null);
+               boolean forceSend = false;
+               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null, force, null, forceSend);
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, null);
                st.setString(3, this.specificHelper.getOwnSchema(this.pool));
@@ -918,7 +919,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          flags = "IDU";
       boolean force = false;
       String destination = null;
-      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null, force, destination);
+      boolean forceSend = false;
+      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null, force, destination, forceSend);
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
@@ -1017,7 +1019,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          // add the tables to be detected to the repl_tables table
          boolean force = false;
          String destination = null;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
+         boolean forceSend = false;
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -1107,7 +1110,8 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          // add the tables to be detected to the repl_tables table
          boolean force = false;
          String destination = null;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination);
+         boolean forceSend = false;
+         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();

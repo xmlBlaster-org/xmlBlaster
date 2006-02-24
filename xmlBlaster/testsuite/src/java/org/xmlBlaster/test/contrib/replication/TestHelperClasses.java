@@ -5,6 +5,10 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -15,6 +19,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
@@ -42,6 +47,9 @@ public class TestHelperClasses extends XMLTestCase {
       
       TestHelperClasses test = new TestHelperClasses();
       try {
+         test.setUp();
+         test.testVersionTransformerCache();
+         test.tearDown();
 
          test.setUp();
          test.testInfoHelper();
@@ -107,6 +115,87 @@ public class TestHelperClasses extends XMLTestCase {
       super.tearDown();
    }
 
+   public void testVersionTransformerCacheInternal() {
+      
+      String srcData = "<?xml version='1.0' encoding='iso-8859-1' ?>\n" + 
+                       "<check><test/></check>\n";
+
+      String replPrefix = "test";
+      String srcVersion = "01";
+      String destVersion = "02";
+      String destination = "client/subject/1";
+      
+      VersionTransformerCache cache = new VersionTransformerCache();
+      
+      try {
+         String ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, null);
+         log.info(ret);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+      
+      System.out.println("TEST");
+   }      
+   
+   
+   public void testVersionTransformerCache() {
+      try {
+         URLClassLoader cl = (URLClassLoader)getClass().getClassLoader();
+         URL[] urls = cl.getURLs();
+         String url = null;
+         for (int i=0; i < urls.length; i++) {
+            int pos = urls[i].getFile().indexOf(File.separator + "xmlBlaster" + File.separator + "lib" + File.separator); 
+            if (pos > -1) {
+               url = urls[i].getFile().substring(0, pos);
+               break;
+            }
+         }
+         if (url == null)
+            url = "";
+         log.info("The found xmlBlaster url is '" + url + "'");
+         StringBuffer buf = new StringBuffer();
+         buf.append(File.separator).append("xmlBlaster");
+         buf.append(File.separator).append("testsuite");
+         buf.append(File.separator).append("data");
+         buf.append(File.separator).append("xsl").append(File.separator);
+         String name = "file:" + url + buf.toString();
+         URL[] tmpUrls = new URL[] { new URL(name) };
+         URLClassLoader subLoader = URLClassLoader.newInstance(tmpUrls, cl);
+         
+         // Object obj = subLoader.loadClass(TestHelperClasses.class.getName()).newInstance();
+         // Method method = obj.getClass().getMethod("testVersionTransformerCacheInternal", null);
+         // method.invoke(obj, null);
+         
+         
+         String srcData = "<?xml version='1.0' encoding='iso-8859-1' ?>\n" + 
+         "<check><test/></check>\n";
+
+         String replPrefix = "test";
+         String srcVersion = "01";
+         String destVersion = "02";
+         String destination = "client/subject/1";
+
+         VersionTransformerCache cache = new VersionTransformerCache();
+
+         try {
+            String ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
+            log.info(ret);
+            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
+            log.info(ret);
+            destVersion = "03";
+            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
+            log.info(ret);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+         log.info("END");
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
    
    /**
     * 
