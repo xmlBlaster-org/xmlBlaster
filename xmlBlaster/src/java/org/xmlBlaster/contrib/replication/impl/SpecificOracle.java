@@ -302,6 +302,9 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("            oldCont, '").append(this.replVersion).append("');\n");
       // INSERT + UPDATE instead of only INSERT since it appears that the sequence is incremented outside the transaction
       buf.append("    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);\n");
+      buf.append("    if transId = NULL THEN\n");
+      buf.append("       transId := CHR(replKey);\n");
+      buf.append("    END IF;\n");
       buf.append("    UPDATE " + this.replPrefix + "items SET trans_key=transId WHERE repl_key=replKey;\n");
       
       buf.append("END ").append(triggerName).append(";\n");
@@ -562,13 +565,15 @@ public class SpecificOracle extends SpecificDefault {
       return sum;
    }
    
-   public int wipeoutSchema(String catalog, String schema) throws Exception {
+   public int wipeoutSchema(String catalog, String schema, boolean[] objectsToWipeout) throws Exception {
+      if (objectsToWipeout == null)
+         objectsToWipeout = WIPEOUT_ALL;
       int sum = 0;
       int count = 0;
       int maxCount = 50;
       int oldSum = 0;
       while (count < maxCount) {
-         sum = wipeoutSchemaSingleSweep(catalog, schema);
+         sum = wipeoutSchemaSingleSweep(catalog, schema, objectsToWipeout);
          count++;
          log.info("sweep '" + count + "' for schema '" + schema + "' has erased '" + sum + "' objects");
          if (sum == oldSum)
@@ -615,9 +620,8 @@ public class SpecificOracle extends SpecificDefault {
          catch (Throwable ex) { ex.printStackTrace(); }
       }
    }
-   
-   
-   private int wipeoutSchemaSingleSweep(String catalog, String schema) throws Exception {
+
+   private int wipeoutSchemaSingleSweep(String catalog, String schema, boolean[] objectsToWipeout) throws Exception {
       Connection conn = null;
       int sum = 0;
       try {
@@ -626,110 +630,128 @@ public class SpecificOracle extends SpecificDefault {
          
          try {  
             // TRIGGERS
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP TRIGGER", "");
+            if (objectsToWipeout[WIPEOUT_TRIGGERS]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP TRIGGER", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          
          try {  // SEQUENCES
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
+            if (objectsToWipeout[WIPEOUT_SEQUENCES]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP SEQUENCE", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // FUNCTIONS
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP FUNCTION", "");
+            if (objectsToWipeout[WIPEOUT_FUNCTIONS]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP FUNCTION", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // PACKAGES
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP PACKAGE", "");
+            if (objectsToWipeout[WIPEOUT_PACKAGES]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP PACKAGE", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // PROCEDURES
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
+            if (objectsToWipeout[WIPEOUT_PROCEDURES]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP PROCEDURE", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // VIEWS
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
+            if (objectsToWipeout[WIPEOUT_VIEWS]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP VIEW", "CASCADE CONSTRAINTS");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // TABLES
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
+            if (objectsToWipeout[WIPEOUT_TABLES]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP TABLE", "CASCADE CONSTRAINTS");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // SYNONYMS
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP SYNONYM", "");
+            if (objectsToWipeout[WIPEOUT_SYNONYMS]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP SYNONYM", "");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();
          }
          try {  // INDEXES
-            ArrayList names = new ArrayList();
-            String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
-            log.info("going to execute sql statement '" + sql + "'");
-            sum += invokeListStatement(conn, names, sql);
-            // since cleanupOp does not really return the number of effectively removed entries
-            if (names.size() > 0)
-               cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
+            if (objectsToWipeout[WIPEOUT_INDEXES]) {
+               ArrayList names = new ArrayList();
+               String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
+               log.info("going to execute sql statement '" + sql + "'");
+               sum += invokeListStatement(conn, names, sql);
+               // since cleanupOp does not really return the number of effectively removed entries
+               if (names.size() > 0)
+                  cleanupOp(conn, names, schema, "DROP INDEX", "FORCE");
+            }
          }
          catch (Exception ex) {
             ex.printStackTrace();

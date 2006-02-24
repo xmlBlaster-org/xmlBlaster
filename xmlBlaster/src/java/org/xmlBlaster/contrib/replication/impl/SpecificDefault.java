@@ -404,7 +404,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          String[] cmds = (String[]) sqls.get(i);
          String cmd = "";
          try {
-            conn.setAutoCommit(true);
             st = conn.createStatement();
 
             boolean doExecuteBatch = false;
@@ -421,8 +420,11 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   st.addBatch(cmd);
                }
             }
-            if (doExecuteBatch)
+            if (doExecuteBatch) {
                st.executeBatch();
+               if (!conn.getAutoCommit())
+                  conn.commit();
+            }
          } 
          catch (SQLException ex) {
             if (doWarn /*|| log.isLoggable(Level.FINE)*/) {
@@ -431,12 +433,16 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   buf.append(cmd).append("\n");
                log.warning("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
             }
+            if (conn != null && !conn.getAutoCommit())
+               conn.rollback();
          }
          catch (Throwable ex) {
             StringBuffer buf = new StringBuffer();
             for (int j = 0; j < cmds.length; j++)
                buf.append(cmd).append("\n");
             log.severe("operation:\n" + buf.toString() + "\n failed: " + ex.getMessage());
+            if (conn != null && !conn.getAutoCommit())
+               conn.rollback();
             if (ex instanceof Exception)
                throw (Exception)ex;
             else
@@ -572,6 +578,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                         rs.close();
                   }
                   log.info(txt + " Will add it now");
+                  tables[i].setStatus(TableToWatchInfo.STATUS_REMOVE);
+                  tables[i].storeStatus(this.replPrefix, this.dbPool);
                   // addTrigger(conn, tables[i], null);
                   String catalog = tables[i].getCatalog();
                   String schema = tables[i].getSchema();
@@ -604,6 +612,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       Connection conn = null;
       try {
          conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
          boolean noForce = false;
          bootstrap(conn, this.bootstrapWarnings, noForce);
          
@@ -678,7 +687,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          st.registerOutParameter(1, Types.INTEGER);
          st.executeQuery();
          long ret = st.getLong(1);
-         log.severe("increment invoked with '" + ret + "'");
          return ret;
       } finally {
          try {
@@ -838,18 +846,14 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     */
    private final boolean isSchemaRegistered(Connection conn, String schema) throws SQLException {
       Statement st = null;
-      ResultSet rs = null;
       try {
          // check wether the item already exists, if it exists return false
          String sql = "SELECT * FROM " + this.replPrefix + "tables WHERE schemaname='" + schema + "'";
          st = conn.createStatement();
-         rs = st.executeQuery(sql);
+         ResultSet rs = st.executeQuery(sql);
          return rs.next();
       }
       finally {
-         if (rs != null) {
-            try { rs.close(); } catch (SQLException ex) {ex.printStackTrace();}
-         }
          if (st != null) {
             try { st.close(); } catch (SQLException ex) {ex.printStackTrace();}
          }
@@ -881,9 +885,11 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
          }
-         
+
          final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
          TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, null);
+         if (!conn.getAutoCommit())
+            conn.commit(); // to be sure it is a new transaction
          if (!force && tableToWatch != null && tableToWatch.isStatusOk()) { 
             // send it manually since table exits already and trigger is OK.
             log.info("table '" + tableName + "' is already registered, will add directly an entry in the ENTRIES Table");
@@ -1055,6 +1061,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             ex.printStackTrace();
          }
       }
+      final boolean doFix = true;
+      checkTriggerConsistency(doFix);
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
       log.info("there are '" + tablesToWatch.length + "' tables to watch");
       for (int i=0; i < tablesToWatch.length; i++) {
@@ -1071,7 +1079,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public final void initiateUpdate(String topic, String destination, String slaveName) throws Exception {
+   public final void initiateUpdate(String topic, String destination, String slaveName, String version) throws Exception {
       
       log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "'");
       Connection conn = null;
@@ -1090,7 +1098,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          addTriggersIfNeeded(forceFlag, slaveName);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
-         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo);
+         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, version);
          
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
@@ -1127,8 +1135,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String, java.lang.String)
     */
-   public void initialCommand(String slaveName, String completeFilename) throws Exception {
-      this.initialUpdater.initialCommand(slaveName, completeFilename, null);
+   public void initialCommand(String slaveName, String completeFilename, String version) throws Exception {
+      this.initialUpdater.initialCommand(slaveName, completeFilename, null, version);
    }
 
    /**
@@ -1203,7 +1211,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
-
    /**
     * Example code.
     * <p />
@@ -1246,17 +1253,19 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          I_DbSpecific specific = ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
          pool = (I_DbPool) info.getObject("db.pool");
          conn = pool.reserve();
+         conn.setAutoCommit(true);
          String schema = info.get("wipeout.schema", null);
+         String version = info.get("replication.version", null);
          if (schema == null) {
             String initialUpdateFile = info.get("initialUpdate.file", null);
             if (initialUpdateFile != null) {
-               specific.initialCommand(null, initialUpdateFile);
+               specific.initialCommand(null, initialUpdateFile, version);
             }
             else
                specific.cleanup(conn, true);
          }
          else {
-            specific.wipeoutSchema(null, schema);
+            specific.wipeoutSchema(null, schema, WIPEOUT_ALL);
          }
       } catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
@@ -1272,5 +1281,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
       }
    }
+   
 
 }

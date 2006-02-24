@@ -747,8 +747,6 @@ BEGIN
    SELECT count(*) INTO tmp FROM sys.all_tables WHERE table_name=tblName AND owner=schName;
 
    ${replPrefix}debug('CHECK_TABLES count=' || TO_CHAR(tmp));
-   -- tmp := 1; -- THIS IS A HACK. TODO: Fix this, strangely a foreign schema table returns 0
-             -- even if it exists (this hack makes the assumption the table exists)
    IF tmp = 0 THEN 
       res := 'FALSE';
    ELSE
@@ -767,6 +765,10 @@ BEGIN
                   NULL, op, NULL, schName, cont, NULL, '${replVersion}');
 
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      -- we compare in the db watcher if replKey = transKey and warn for it
+      if transId = NULL THEN
+         transId := CHR(replKey);
+      END IF;
       UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
       res := 'TRUE';
    END IF;        
@@ -869,6 +871,10 @@ BEGIN
                   NULL, op, NULL, schName, NULL, NULL, '${replVersion}');
 
       transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+      -- we compare in the db watcher if replKey = transKey and warn for it
+      if transId = NULL THEN
+         transId := CHR(replKey);
+      END IF;
       UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
       res := 'TRUE';
    END IF;
@@ -902,6 +908,10 @@ BEGIN
                version) values (replKey, 'UNKNOWN', 'statement', 
 	       contClob, '${replVersion}');
    transId := DBMS_TRANSACTION.LOCAL_TRANSACTION_ID(FALSE);
+   -- we compare in the db watcher if replKey = transKey and warn for it
+   if transId = NULL THEN
+      transId := CHR(replKey);
+   END IF;
    UPDATE ${replPrefix}items SET trans_key=transId WHERE repl_key=replKey;
 
    res := 'TRUE';

@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.contrib;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -167,4 +169,20 @@ public class InfoHelper {
       return getIteratorAsString(iter, ",");
    }
    
+   /**
+    * Prints the stack trace as a String so it can be put on the normal logs.
+    * @param ex The exception for which to write out the stack trace. If you pass null it will print the Stack trace of
+    * a newly created exception.
+    * @return The Stack trace as a String.
+    */
+   public static String getStackTraceAsString(Throwable ex) {
+      // this is just to send the stack trace to the log file (stderr does not go there)
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream pstr = new PrintStream(baos);
+      if (ex == null)
+         ex = new Exception();
+      ex.printStackTrace(pstr);
+      return new String(baos.toByteArray());
+   }
+
 }

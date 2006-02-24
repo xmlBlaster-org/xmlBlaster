@@ -34,6 +34,7 @@ public class XmlParserBase extends SaxHandlerBase {
    protected ClientProperty clientProperty;
    protected Set allowedTagNames;
    protected String qosTag;
+   private boolean inClientProperty;
    
 
    public XmlParserBase(Global glob, String qosTag) {
@@ -43,6 +44,16 @@ public class XmlParserBase extends SaxHandlerBase {
       this.allowedTagNames = new HashSet();
    }
 
+   
+   protected static void addTagToString(StringBuffer buf,  String tagName, Attributes attrs) {
+      buf.append("<").append(tagName);
+      if (attrs == null || attrs.getLength() < 1)
+         return;
+      for (int i=0; i < attrs.getLength(); i++) {
+         buf.append(" ").append(attrs.getQName(i)).append("='").append(attrs.getValue(i)).append("'");
+      }
+      buf.append(">");
+   }
    
    public void addAllowedTag(String key) {
       this.allowedTagNames.add(key);
@@ -82,6 +93,10 @@ public class XmlParserBase extends SaxHandlerBase {
     *         false this tag is not handled by this Base class
     */
    protected final boolean startElementBase(String uri, String localName, String name, Attributes attrs) {
+      if (this.inClientProperty) {
+         addTagToString(this.character, name, attrs);
+         return true;
+      }
       if (name.equalsIgnoreCase(this.qosTag)) {
          this.inRootTag = true;
          return true;
@@ -94,6 +109,7 @@ public class XmlParserBase extends SaxHandlerBase {
       }
       if (this.allowedTagNames.contains(name)) {
          this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
+         this.inClientProperty = true;
          character.setLength(0);
          return true;
       }
@@ -132,12 +148,18 @@ public class XmlParserBase extends SaxHandlerBase {
 
       if (this.allowedTagNames.contains(name)) {
          String tmp = character.toString(); // .trim();
+         this.inClientProperty = false;
          if (this.clientProperty != null) {
             if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
                this.clientProperty.setValue(tmp);
             else
                this.clientProperty.setValueRaw(tmp);
          }
+         return true;
+      }
+
+      if (this.inClientProperty) {
+         this.character.append("</").append(name).append(">");
          return true;
       }
 

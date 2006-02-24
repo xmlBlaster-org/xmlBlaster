@@ -190,8 +190,7 @@ public class SpecificPostgres extends SpecificDefault {
       }
    }
 
-   
-   public int wipeoutSchema(String catalog, String schema) throws Exception {
+   public int wipeoutSchema(String catalog, String schema, boolean[] objectsToWipeout) throws Exception {
       throw new Exception("cleanupSchema for '" + schema + "' can not be executed since not implemented");
    }
 

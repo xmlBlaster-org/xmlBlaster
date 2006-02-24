@@ -78,6 +78,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String cascadedReplSlave;
    private String cascadedReplPrefix;
    private long forcedCounter;  // counter used when forceSending is set to 'true'
+   private String ownVersion;
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
@@ -165,6 +166,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
          this.maxReplKey = 0L;
       }
+      String tmpVersion = info.get("replication.version", "");
+      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, tmpVersion);
       this.initialized = true;
       this.forcedCounter = 0L;
    }
@@ -294,6 +297,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
       pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
+      pubQos.addClientProperty(ReplicationConstants.REPL_VERSION, this.ownVersion);
       pubQos.setPersistent(true);
       MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_UPDATE.getBytes(), pubQos);
       conn.publish(msg);
@@ -362,6 +366,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          for (int i=entries.size()-1; i > -1; i--) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
+            
+            String txt = msgUnit.getContentStr();
+            
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
             if (replKey > -1L) {
                setMaxReplKey(replKey);
@@ -599,6 +606,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    public String getReplPrefix() {
       return this.replPrefix;
+   }
+   
+   public String getVersion() {
+      return this.ownVersion;
    }
    
 }

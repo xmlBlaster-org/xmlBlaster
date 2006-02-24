@@ -60,4 +60,23 @@ public interface ReplManagerPluginMBean {
    
    void removeSqlStatement(String statementId);
    
+   /**
+    * Performs a version transformation from one version to the other.
+    * @param replPrefix The replication prefix of the source to be used.
+    * @param destVersion The desidered version on the destination
+    * @param destination The session name of the destination.
+    * @param srcData The content of the data to be transformed
+    * @return the transformed string.
+    * 
+    * @throws Exception
+    */
+   String transformVersion(String replPrefix, String destVersion, String destination, String srcData) throws Exception;
+
+   /**
+    * 
+    *
+    */
+   public void clearVersionCache();
+
+   
 }

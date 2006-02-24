@@ -11,13 +11,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.util.StringPairTokenizer;
 
 
@@ -30,6 +38,8 @@ import org.xmlBlaster.util.StringPairTokenizer;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TableToWatchInfo {
+
+   private static Logger log = Logger.getLogger(TableToWatchInfo.class.getName());
 
    public final static String ACTION_KEY = "actions";
    public final static String TRIGGER_KEY = "trigger";
@@ -59,6 +69,102 @@ public class TableToWatchInfo {
    public final static String EMPTY = " ";
    public final static String TABLE_PREFIX_WITH_SEP = TABLE_PREFIX + KEY_SEP;
 
+   /**
+    * Checks if there are foreign keys which are not resolved yet
+    * @return true if all foreign keys are resolved or if there was no foreign key, false otherwise.
+    */
+   private static boolean checkIfForeignKeysAreResolved(SqlDescription desc, Set setOfProcessedTables, Map allTables) throws Exception {
+      SqlColumn[] cols = desc.getColumns();
+      for (int i=0; i < cols.length; i++) {
+         SqlColumn col = cols[i];
+         if (col.isFk()) {
+            String fkTable = col.getFkTable();
+            if (fkTable == null)
+               throw new Exception("The column '" + cols[i].getTable() + "' has a column '" + cols[i].getColName() + "' which is a foreign key but no associated table name was found");
+            if (!setOfProcessedTables.contains(fkTable)) {
+               if (!allTables.containsKey(fkTable)) 
+                  log.warning("The column '" + cols[i].getTable() + "' has a column '" + cols[i].getColName() + "' which is a foreign key. It is associated with a table which is not replicated (remember to make sure that this table is available on the destination also.");
+               else
+                  return false;
+            }
+         }
+      }
+      return true;
+   }
+   
+   public static String getSortedTablesToWatch(Connection conn, I_Info info, List outputSequence) throws Exception {
+
+      TableToWatchInfo[] tables = getTablesToWatch(info);
+      List nonExisting = new ArrayList();
+      List toProcess = new ArrayList();
+      Map tableMap = new HashMap();
+       for (int i=0; i < tables.length; i++) {
+          try {
+             SqlInfo sqlInfo = new SqlInfo(info);
+             String catalog = tables[i].getCatalog();
+             String schema =  tables[i].getSchema();
+             String tableName = tables[i].getTable();
+             tableMap.put(tableName, tables[i]);
+             sqlInfo.fillMetadata(conn, catalog, schema, tableName, null, null);
+             toProcess.add(sqlInfo.getDescription());
+          }
+          catch (Throwable ex) {
+             ex.printStackTrace();
+             nonExisting.add(tables[i]);
+          }
+       }
+
+       Set set = new HashSet(); // better performance
+       StringBuffer buf = new StringBuffer();
+       int sweepCount = 0;
+       int maxSweepCount = toProcess.size();
+       if (maxSweepCount < 2)
+          maxSweepCount = 2;
+       
+       while (toProcess.size() > 0) {
+          int count = 0;
+          SqlDescription[] sqlDesc = (SqlDescription[])toProcess.toArray(new SqlDescription[toProcess.size()]);
+          for (int i=0; i < sqlDesc.length; i++) {
+             if (checkIfForeignKeysAreResolved(sqlDesc[i], set, tableMap)) {
+                String tableName = sqlDesc[i].getIdentity();
+                set.add(tableName);
+                outputSequence.add(sqlDesc[i]);
+                SqlDescription removed = (SqlDescription)toProcess.remove(i-count);
+                count++;
+                TableToWatchInfo tableToWatch = (TableToWatchInfo)tableMap.get(tableName);
+                if (tableToWatch == null)
+                   throw new Exception("Table '" + tableToWatch + "' was not found in the list of tables to be processed");
+                tableToWatch.setReplKey((long)i);
+                buf.append("    <attribute id='").append(tableToWatch.getConfigKey()).append("'>").append(tableToWatch.getConfigValue()).append("</attribute>\n");
+                
+                if (!removed.getIdentity().equalsIgnoreCase(tableName))
+                   throw new Exception("An inconsistency aroze when trying to determine the correct loading sequence for tables. Failed for *" + sqlDesc[i-count].toXml("") + "' but has removed '" + removed.toXml(""));
+             }
+          }
+          sweepCount++;
+          if (sweepCount >= maxSweepCount) {
+             StringBuffer exBuf = new StringBuffer();
+             for (int i=0; i < toProcess.size(); i++) {
+                SqlDescription desc = (SqlDescription)toProcess.get(i);
+                exBuf.append(desc.getIdentity()).append(" ");
+             }
+             throw new Exception("Still entries to be processed after '" + sweepCount + "' sweeps. Still to be processed: '" + exBuf.toString() + "'");
+          }
+       }
+       
+       if (nonExisting.size() > 0) {
+          buf.append("    <!-- THE FOLLOWING ENTRIES WHERE NOT FOUND ON THE DATABASE. THEIR SEQUENCE CAN THEREFORE NOT BE GUARANTEED -->\n");
+          for (int i=0; i < nonExisting.size(); i++) {
+             TableToWatchInfo tableToWatch = (TableToWatchInfo)nonExisting.get(i);
+             if (tableToWatch == null)
+                throw new Exception("Table '" + tableToWatch + "' was not found in the list of tables to be processed");
+             tableToWatch.setReplKey(-1L);
+             buf.append("    <attribute id='").append(tableToWatch.getConfigKey()).append("'>").append(tableToWatch.getConfigValue()).append("</attribute>\n");
+          }
+       }
+       return buf.toString();
+   }
+   
    /**
     * Gets an array containing all the tables to watch found in this configuration 
     * info object.
@@ -170,6 +276,41 @@ public class TableToWatchInfo {
       }
    }
    
+   public String getConfigKey() {
+      StringBuffer buf = new StringBuffer();
+      buf.append("table").append(KEY_SEP);
+      if (this.catalog != null && this.catalog.length() > 0)
+         buf.append(this.catalog).append(KEY_SEP);
+      if (this.schema != null && this.schema.length() > 0)
+         buf.append(this.schema).append(KEY_SEP);
+      else
+         if (this.catalog != null && this.catalog.length() > 0)
+            buf.append(KEY_SEP);
+
+      buf.append(this.table);
+      return buf.toString();
+   }
+
+   public String getConfigValue() {
+      StringBuffer buf = new StringBuffer();
+      boolean isFirst = true;
+      if (this.actions != null && this.actions.length() > 0) {
+         buf.append(ACTION_KEY).append("=").append(this.actions);
+         isFirst = false;
+      }
+      if (this.trigger != null && this.trigger.length() > 0) {
+         if (!isFirst)
+            buf.append(VAL_SEP);
+         buf.append(TRIGGER_KEY).append("=").append(this.trigger);
+         isFirst = false;
+      }
+      if (this.replKey > -1L) {
+         if (!isFirst)
+            buf.append(VAL_SEP);
+         buf.append(SEQUENCE_KEY).append("=").append(this.replKey);
+      }
+      return buf.toString();
+   }
    
    /**
     * Parses the value and fills the object appropriately. The 
@@ -480,6 +621,15 @@ public class TableToWatchInfo {
       if (this.status == null)
          return false;
       return getStatus().equals(TableToWatchInfo.STATUS_OK);      
+   }
+   
+   public static void main(String[] args) {
+      try {
+         
+      }
+      catch (Throwable ex) {
+         
+      }
    }
    
    

@@ -154,18 +154,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       private String replTopic;
       private String destination;
       private String slaveName;
+      private String version;
       private I_DbSpecific dbSpecific;
       
-      public ExecutionThread(String replTopic, String destination, String slaveName, I_DbSpecific dbSpecific) {
+      public ExecutionThread(String replTopic, String destination, String slaveName, String version, I_DbSpecific dbSpecific) {
          this.replTopic = replTopic;
          this.destination = destination;
          this.slaveName = slaveName;
+         this.version = version;
          this.dbSpecific = dbSpecific;
       }
       
       public void run() {
          try {
-            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
+            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName, version);
          }
          catch (Exception ex) {
             log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + destination + "' as slave '" + slaveName);
@@ -373,9 +375,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
             String slaveName = prop.getStringValue();
-            
+
+            prop = (ClientProperty)attrMap.get(ReplicationConstants.REPL_VERSION);
+            String requestedVersion = null;
+            if (prop != null)
+               requestedVersion = prop.getStringValue();
             // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
-            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, this.dbSpecific);
+            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, requestedVersion, this.dbSpecific);
             executionThread.start();
             
          }
@@ -572,7 +578,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * 
     * @throws Exception
     */
-   public final String initialCommand(String invoker, String completeFilename, ConnectionInfo connInfo) throws Exception {
+   public final String initialCommand(String invoker, String completeFilename, ConnectionInfo connInfo, String version) throws Exception {
       if (this.initialCmd == null)
          return null;
       String filename = null;
@@ -582,6 +588,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
       // String cmd = this.initialCmd + " \"" + completeFilename + "\"";
       String cmd = this.initialCmd + " " + completeFilename;
+      if (version != null)
+         cmd += " " + version;
       osExecute(invoker, cmd, connInfo);
       return filename;
    }

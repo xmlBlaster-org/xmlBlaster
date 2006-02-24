@@ -533,15 +533,17 @@ private final static String ME = "ReplicationWriter";
             
             if (this.schemaToWipeout != null) {
                log.info("Going to clean up the schema '" + this.schemaToWipeout);
+               final String catalog = null;
                try {
-                  this.dbSpecific.wipeoutSchema(null, this.schemaToWipeout);
+                  this.dbSpecific.wipeoutSchema(catalog, this.schemaToWipeout, null);
                }
                catch (Exception ex) {
                   log.severe("Could not clean up completely the schema");
                   ex.printStackTrace();
                }
             }
-            this.dbSpecific.initialCommand(null, completeFilename);
+            String version = null;
+            this.dbSpecific.initialCommand(null, completeFilename, version);
             if (!this.keepDumpFiles) {
                File fileToDelete = new File(completeFilename);
                boolean del = fileToDelete.delete();

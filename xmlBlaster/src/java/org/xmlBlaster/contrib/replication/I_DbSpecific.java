@@ -8,12 +8,27 @@ package org.xmlBlaster.contrib.replication;
 
 import java.sql.Connection;
 import java.util.Map;
+import java.util.Set;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 
 public interface I_DbSpecific extends I_ContribPlugin {
+   
+   public final static int WIPEOUT_TRIGGERS = 0;
+   public final static int WIPEOUT_SEQUENCES = 1;
+   public final static int WIPEOUT_FUNCTIONS = 2;
+   public final static int WIPEOUT_PACKAGES = 3;
+   public final static int WIPEOUT_PROCEDURES = 4;
+   public final static int WIPEOUT_VIEWS = 5;
+   public final static int WIPEOUT_TABLES = 6;
+   public final static int WIPEOUT_SYNONYMS = 7;
+   public final static int WIPEOUT_INDEXES = 8;
+
+   public final static boolean[] WIPEOUT_ALL = new boolean[] {true, true, true, true, true, true, true, true, true };
+   public final static boolean[] WIPEOUT_ONLY_TABLES = new boolean[] {false, false, false, false, false, false, true, false, false};
+   public final static boolean[] WIPEOUT_NO_TABLES = new boolean[] {true, true, true, true, true, true, false, true, true };
 
    /** 
     * key for the property defining if the publisher is needed on the implementation of this interface.
@@ -166,9 +181,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param topic
     * @param destination
     * @param slaveName
+    * @param version the version for which to start replication. If null the current version
+    * is ment.
     * @throws Exception
     */
-   void initiateUpdate(String topic, String destination, String slaveName) throws Exception;
+   void initiateUpdate(String topic, String destination, String slaveName, String version) throws Exception;
 
    /**
     * This is the intial command which is invoked on the OS. It is basically used for the
@@ -178,9 +195,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param argument the argument to execute. It is normally the absolute file name to be
     * exported/imported.
     * 
+    * @param version the version for which to start replication. If null the current version
+    * is ment.
     * @throws Exception
     */
-   void initialCommand(String slaveName, String completeFilename) throws Exception;
+   void initialCommand(String slaveName, String completeFilename, String version) throws Exception;
    
    /**
     * removes the specified trigger from the specified table.
@@ -198,10 +217,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
     *  
     * @param catalog
     * @param schema
+    * @param objectsToWipeout a boolean[] array containing 9 elements telling wether the specified objects of a certain
+    * type have to be wiped out or not. For the relationship between position and meaning see the static variables.
+    * If you pass null here all object types are wiped out.
     * @return the number of entries removed.
     * @throws Exception
     */
-   int wipeoutSchema(String catalog, String schema) throws Exception;
+   int wipeoutSchema(String catalog, String schema, boolean[] objectsToWipeout) throws Exception;
 
    /**
     * This is used for cases where it was not possible to retrieve the (new) content 

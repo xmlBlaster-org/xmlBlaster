@@ -37,6 +37,12 @@ public interface I_DbPool extends I_ContribPlugin {
    void release(Connection con)  throws Exception;
    
    /**
+    * 
+    * @return the name of the user
+    */
+   String getUser();
+   
+   /**
    * Destroy the JDBC connection
    * @param con The JDBC connection
    * @throws Exception

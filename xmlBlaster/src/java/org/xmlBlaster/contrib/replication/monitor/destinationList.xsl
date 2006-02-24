@@ -74,12 +74,13 @@ function refresh() {
           <td>
             <table class="inner" width="550" align="center" summary="" border="1">
     	  <tr>
-    	    <th class="normal" title="Name of the destination of the replication" colspan="3">Destination Name</th>
+    	    <th class="normal" title="Name of the destination of the replication" colspan="2">Destination Name</th>
     	    <th class="normal" title="Amount of entries in the queue. These entries have not been delivered yet" colspan="1">Holdback Messages</th>
     	    <th class="normal" title="Current counter for this replication. This is a monoton increasing positive integer" colspan="1">Counter</th>
     	    <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
     	    <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
     	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
+    	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Version</th>
     	  </tr>
     
     <xsl:apply-templates/>
@@ -118,6 +119,7 @@ function refresh() {
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
    <xsl:param name="connectedStatus" select="Attribute[@name='Connected']/@value"/>
+   <xsl:param name="version" select="Attribute[@name='Version']/@value"/>
 
 <!--
    <xsl:param name="sessionName"/>
@@ -130,7 +132,7 @@ function refresh() {
 -->
 
     	  <tr class="inner">
-    	    <td colspan="3" class="normal" title="Click to get details on this replication">
+    	    <td colspan="2" class="normal" title="Click to get details on this replication">
 	      <xsl:element name="a">
 		 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails</xsl:attribute>
 		 <xsl:call-template name="modifySessionName">
@@ -196,6 +198,9 @@ function refresh() {
        	    <td align="center" colspan="1" class="normal"><img height="18" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
               </xsl:otherwise>
             </xsl:choose>
+
+       	    <td align="center" colspan="1" class="normal"><xsl:value-of select="$version"/></td>
+
     	  </tr>
 
 </xsl:template>      

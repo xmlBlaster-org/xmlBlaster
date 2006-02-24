@@ -170,7 +170,11 @@ function toggleDispatcher() {
 	       </xsl:otherwise>
 	    </xsl:choose>
 
-    	    <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+    	    <td colspan="1" class="normal" title="Current Version of the replication data">Version</td>
+    	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='Version']/@value"/></td>
+
+    	    <!-- <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td> -->
+
 	  </tr>
 	 
  	 <!-- Status Of Initial Update Line -->

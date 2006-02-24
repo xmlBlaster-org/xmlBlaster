@@ -86,10 +86,10 @@ public class SqlRow {
          if (val instanceof String) {
             ClientProperty prop = null;
             if (((String)key).equalsIgnoreCase(ReplicationConstants.OLD_CONTENT_ATTR)) {
-               prop = new ClientProperty((String)key, null, null, (String)val);
+               prop = new ClientProperty((String)key, null, Constants.ENCODING_FORCE_PLAIN, (String)val);
             }
             else
-               prop = new ClientProperty((String)key, null, Constants.ENCODING_FORCE_PLAIN, (String)val);
+               prop = new ClientProperty((String)key, null, null, (String)val);
             storeProp(prop, destinationMap, destinationList);
          }
          else if (val instanceof ClientProperty) {

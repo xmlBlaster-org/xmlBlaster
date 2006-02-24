@@ -23,4 +23,5 @@ public interface ReplSlaveMBean {
    String getSessionName() throws Exception;
    String reInitiateReplication() throws Exception;
    String getReplPrefix();
+   String getVersion();
 }

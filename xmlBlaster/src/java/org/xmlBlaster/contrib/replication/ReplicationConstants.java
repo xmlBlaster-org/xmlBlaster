@@ -23,6 +23,7 @@ public interface ReplicationConstants {
    public final static String REPL_REQUEST_RECREATE_TRIGGERS = "REQUEST_RECREATE_TRIGGERS";
 
    public final static String SLAVE_NAME = "_slaveName";
+   public final static String REPL_VERSION = "_replVersion";
    
    // attributes 
    public final static String TABLE_NAME_ATTR = "tableName";
@@ -58,8 +59,9 @@ public interface ReplicationConstants {
    public final static String DUMP_ACTION = "DUMP";
    public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement
    
-   
    public final static String END_OF_TRANSITION = "_END_OF_TRANSITION"; // sent to determine that the transition status is finished
-   
+   public final static String VERSION_TOKEN = "_Ver_";
+   public final static String DUMP_POSTFIX = ".dump";
+   public final static String SUPPORTED_VERSIONS = "_supportedVersions";
    
 }

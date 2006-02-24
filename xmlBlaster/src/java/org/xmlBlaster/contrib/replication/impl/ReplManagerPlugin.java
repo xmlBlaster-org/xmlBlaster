@@ -37,6 +37,7 @@ import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
@@ -92,6 +93,7 @@ import java.util.logging.Logger;
 public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener, I_SubscriptionListener {
    
    public final static String SESSION_ID = "replManager/1";
+   private final static String SENDER_SESSION = "_senderSession";
    private static Logger log = Logger.getLogger(ReplManagerPlugin.class.getName());
    private Object mbeanHandle;
    private String user = "replManager";
@@ -108,7 +110,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private String sqlTopic;
    private long maxResponseEntries; 
    private I_DbPool pool;
-   
+   private VersionTransformerCache transformerCache;
+   private String cachedListOfReplications;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -118,8 +121,33 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       this.replications = new TreeMap();
       this.replSlaveMap = new TreeMap();
       this.sqlStatementMap = new TreeMap();
+      this.transformerCache = new VersionTransformerCache();
    }
 
+   public String transformVersion(String replPrefix, String srcVersion, String destVersion, String destination, String srcData) throws Exception {
+      if (destVersion == null)
+         return srcData;
+      if (destVersion.equalsIgnoreCase(srcVersion))
+         return srcData;
+      return this.transformerCache.transform(replPrefix, srcVersion, destVersion, destination, srcData, null);
+   }
+   
+   
+   public String transformVersion(String replPrefix, String destVersion, String destination, String srcData) throws Exception {
+      I_Info tmpInfo = (I_Info)this.replications.get(replPrefix);
+      if (tmpInfo == null)
+         throw new Exception("The replication with replication.prefix='" + replPrefix + "' was not found");
+      String srcVersion = tmpInfo.get("replication.version", "").trim();
+      if (srcVersion.length() < 1)
+         throw new Exception("The replication '" + replPrefix + "' has no version defined");
+      return transformVersion(replPrefix, srcVersion, destVersion, destination, srcData);
+   }
+   
+   public void clearVersionCache() {
+      this.transformerCache.clearCache();
+   }
+
+   
    /**
     * Never returns null. It returns a list of keys identifying the slaves using the replication 
     * manager.
@@ -134,7 +162,32 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @return
     */
    public String getReplications() {
-      return InfoHelper.getIteratorAsString(this.replications.keySet().iterator());
+      if (this.cachedListOfReplications != null)
+         return this.cachedListOfReplications;
+      // rebuild the cache
+      Iterator iter = this.replications.values().iterator();
+      boolean isFirst = true;
+      StringBuffer buf = new StringBuffer();
+      while (iter.hasNext()) {
+         I_Info tmpInfo = (I_Info)iter.next();
+         String tmp = tmpInfo.get(ReplicationConstants.SUPPORTED_VERSIONS, null);
+         if (tmp != null) {
+            if (!isFirst)
+               buf.append(",");
+            isFirst = false;
+            buf.append(tmp);
+         }
+         else {
+            String replPrefix = tmpInfo.get("replication.prefix", "");
+            log.warning("Property '" + ReplicationConstants.SUPPORTED_VERSIONS + "' not found for '" + replPrefix + "'");
+            if (!isFirst)
+               buf.append(",");
+            isFirst = false;
+            buf.append(replPrefix);
+         }
+      }
+      // return InfoHelper.getIteratorAsString(this.replications.keySet().iterator());
+      return buf.toString();
    }
    
    public String getType() {
@@ -193,17 +246,23 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @param cascadeReplicationPrefix
     * @throws Exception
     */
-   public String initiateReplication(String slaveSessionName, String replicationPrefix, String cascadeSlaveSessionName, String cascadeReplicationPrefix) throws Exception {
+   public String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix) throws Exception {
       try {
          if (slaveSessionName == null || slaveSessionName.trim().length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
-         if (replicationPrefix == null || replicationPrefix.length() < 1)
+         if (prefixWithVersion == null || prefixWithVersion.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The replication.prefix is null, please provide one");
          slaveSessionName = slaveSessionName.trim();
-         String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + replicationPrefix + "'";
+         String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + prefixWithVersion + "'";
          log.info(ret);
+         
+         
+         String replicationPrefix = VersionTransformerCache.stripReplicationPrefix(prefixWithVersion);
+         String requestedVersion = VersionTransformerCache.stripReplicationVersion(prefixWithVersion);
+         
          I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
          if (individualInfo != null) {
+            individualInfo.put(ReplicationConstants.REPL_VERSION, requestedVersion);
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
             I_ReplSlave slave = null;
             synchronized (this.replSlaveMap) {
@@ -211,9 +270,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             }
             if (slave != null) {
                individualInfo.put("_replName", replicationPrefix);
-               String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+               String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
                if (dbWatcherSessionId == null)
-                  throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '_senderSession' are not found. Can not continue with initial update");
+                  throw new Exception("ReplSlave '" + slave + "' constructor: the master Session Id (which is passed in the properties as '" + SENDER_SESSION + "' are not found. Can not continue with initial update");
 
                if (cascadeSlaveSessionName != null) {
                   // check to avoid loops
@@ -352,7 +411,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       this.shutdown = true;
       log.info("Stopped DbWatcher plugin '" + getType() + "'");
    }
-
+   
    /**
     * Used to register a dbWatcher. This is a request coming directly from the
     * DbWatcher which registeres himself to this plugin.
@@ -369,10 +428,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public synchronized void register(String senderSession, String replicationPrefix, I_Info info) {
       I_Info oldInfo = (I_Info)this.replications.get(replicationPrefix);
-      info.put("_senderSession", senderSession);
+      info.put(SENDER_SESSION, senderSession);
       if (oldInfo != null) {
          log.info("register '" + replicationPrefix + "' by senderSession='" + senderSession + "'");
-         String oldSenderSession = oldInfo.get("_senderSession", senderSession);
+         String oldSenderSession = oldInfo.get(SENDER_SESSION, senderSession);
          if (oldSenderSession.equals(senderSession)) {
             log.info("register '" + replicationPrefix + "' by senderSession='" + senderSession + "' will overwrite old registration done previously");
             this.replications.put(replicationPrefix, info);
@@ -383,6 +442,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
       else
          this.replications.put(replicationPrefix, info);
+      this.cachedListOfReplications = null; // clear the cache
    }
    
    public synchronized void unregister(String senderSession, String replicationPrefix) {
@@ -397,7 +457,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             Thread.dumpStack();
          }
          */
-         String oldSenderSession = oldInfo.get("_senderSession", senderSession);
+         String oldSenderSession = oldInfo.get(SENDER_SESSION, senderSession);
          if (oldSenderSession.equals(senderSession)) {
             this.replications.remove(replicationPrefix);
          }
@@ -405,6 +465,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             log.warning("unregister '" + replicationPrefix + "' by senderSession='" + senderSession + "' was not done since there is a registration done by '" + oldSenderSession + "'. Please do it with the correct Session");
          }
       }
+      this.cachedListOfReplications = null; // clear the cache
    }
    
    /**
@@ -740,7 +801,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          throw new Exception("executeSql: the replication with Id='" + replicationPrefix + "' was not found (has not been registered). Allowed ones are : " + getReplications());
       
       log.info("Sending Broadcast request for repl='" + replicationPrefix + "' and statement='" + sql + "' and requestId='" + requestId + "'");
-      String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+      String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
       registerSqlStatement(replicationPrefix, requestId, sql);
       
       log.info("Broadcasting sql statement '" + sql + "' for master '" + replicationPrefix + "'");
@@ -950,7 +1011,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       
       I_Info individualInfo = (I_Info)this.replications.get(replPrefix);
       if (individualInfo != null) {
-         String dbWatcherSessionId = individualInfo.get("_senderSession", null);
+         String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
          if (dbWatcherSessionId == null)
             throw new Exception("The replication source with replication.prefix='" +  replPrefix + "' had no '_senderSession' attribute set in its configuration");
 

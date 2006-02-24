@@ -105,6 +105,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
       this.poolManager = new PoolManager("DbPool", this, maxInstances, busyToIdle, idleToErase);
       this.initCount++;
    }
+
+   public String getUser() {
+      return this.dbUser;
+   }
    
    /**
     * Load the JDBC drivers given in environment. 
