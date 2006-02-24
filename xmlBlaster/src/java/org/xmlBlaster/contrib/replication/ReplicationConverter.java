@@ -294,14 +294,18 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          if (action.equalsIgnoreCase(CREATE_ACTION)) {
             try {
                log.info("addInfo: going to create a new table '" + tableName + "'");
+               boolean forceSend = false;
                if (newContent != null) {
                   String destination = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='_destination'");
                   if (destination == null || destination.length() < 1)
                      log.severe("The destination could not be extracted from '" + newContent + "'");
                   else
                      completeAttrs.put("_destination", destination);
+                  String forceSendTxt = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='_forceSend'");
+                  if (forceSendTxt != null && "true".equalsIgnoreCase(forceSendTxt.trim()))
+                     forceSend = true;
                }
-               this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent);
+               this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent || forceSend);
             }
             catch (Exception ex) {
                ex.printStackTrace();

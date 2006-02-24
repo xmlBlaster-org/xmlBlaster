@@ -861,10 +861,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    }
    
    /**
-    * @see I_DbSpecific#addTableToWatch(String, boolean)
+    * @see I_DbSpecific#addTableToWatch(String, String, String, String, String, boolean, String, boolean)
     */
    public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         String actions, String triggerName, boolean force, String destination) throws Exception {
+         String actions, String triggerName, boolean force, String destination, boolean forceSend) throws Exception {
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -902,7 +902,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             st.setString(3, tableName);
             st.setString(4, ReplicationConstants.CREATE_ACTION);
             if (destination != null) {
-               String destinationTxt = "<desc><attr id='_destination'>" + destination + "</attr></desc>";
+               String post = "</desc>";
+               if (forceSend)
+                  post = "<attr id='_forceSend'>true</attr>" + post;
+               String destinationTxt = "<desc><attr id='_destination'>" + destination + "</attr>" + post;
                st.setString(5, destinationTxt);
             }
             st.registerOutParameter(1, Types.VARCHAR);
@@ -1051,7 +1054,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       return buf.toString();
    }
 
-   public final void addTriggersIfNeeded(boolean force, String destination) throws Exception {
+   public final void addTriggersIfNeeded(boolean force, String destination, boolean forceSend) throws Exception {
       if (force) {
          try {
             this.dbPool.update("DELETE FROM " + this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"));
@@ -1071,7 +1074,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          String table = tablesToWatch[i].getTable();
          String actions = tablesToWatch[i].getActions();
          String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, actions, trigger, force, destination);
+         addTableToWatch(catalog, schema, table, actions, trigger, force, destination, forceSend);
       }
    }
 
@@ -1079,7 +1082,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public final void initiateUpdate(String topic, String destination, String slaveName, String version) throws Exception {
+   public final void initiateUpdate(String topic, String destination, String slaveName, String requestedVersion) throws Exception {
       
       log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "'");
       Connection conn = null;
@@ -1095,15 +1098,18 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
          // the result must be sent as a high prio message to the real destination
          boolean forceFlag = false;
-         addTriggersIfNeeded(forceFlag, slaveName);
+         boolean forceSend = true;
+         if (this.replVersion.equalsIgnoreCase(requestedVersion))
+            forceSend = false;
+         addTriggersIfNeeded(forceFlag, slaveName, forceSend);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
-         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, version);
+         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, requestedVersion);
          
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey);
+         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, this.replVersion);
       }
       catch (Exception ex) {
          if (conn != null) {

@@ -215,7 +215,14 @@ public class VersionTransformerCache {
       return doXSLTransformation(firstChoice, secondChoice, thirdChoice, srcData, cl);
    }
 
+   /**
+    * Returns the prefix of the complete name. It only returns null if the input string was null.
+    * @param replicationPrefix
+    * @return
+    */
    public static String stripReplicationPrefix(String replicationPrefix) {
+      if (replicationPrefix == null)
+         return null;
       int pos = replicationPrefix.lastIndexOf(ReplicationConstants.VERSION_TOKEN);
       if (pos < 0)
          return replicationPrefix;
@@ -223,6 +230,11 @@ public class VersionTransformerCache {
       return ret.trim();
    }
    
+   /**
+    * Can return null if no version token (_Ver_) was found.
+    * @param replicationPrefix
+    * @return
+    */
    public static String stripReplicationVersion(String replicationPrefix) {
       int pos = replicationPrefix.lastIndexOf(ReplicationConstants.VERSION_TOKEN);
       if (pos < 0)

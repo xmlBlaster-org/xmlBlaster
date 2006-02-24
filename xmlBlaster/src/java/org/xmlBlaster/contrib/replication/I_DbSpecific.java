@@ -142,12 +142,13 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param force if true, then the trigger is added even if it exists already.
     * @param destination can be null. If it has to be sent to an individual client you pass its session name here. 
     * If you pass null, then it is published in pub/sub modus.
+    * @param forceSend if true, all content data of the table will be sent.
     * @return true if the table was added, false otherwise. If the table already was registered (added), then
     * it will not add it anymore.
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName, boolean force, String destination) throws Exception;
+   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName, boolean force, String destination, boolean forceSend) throws Exception;
    
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
@@ -245,7 +246,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param force to force recreation of triggers even if they exist already.
     * @throws Exception
     */
-   void addTriggersIfNeeded(boolean force, String destination) throws Exception;
+   void addTriggersIfNeeded(boolean force, String destination, boolean forceSend) throws Exception;
    
    /**
     * Checks wether a trigger really exists or not. This method is normally implemented

@@ -6,9 +6,11 @@
 
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -29,7 +32,9 @@ import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -42,6 +47,8 @@ import org.xmlBlaster.jms.XBStreamingMessage;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -215,9 +222,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    }
    
    
-   private synchronized void sendRegistrationMessage() throws Exception {
+   private synchronized void sendRegistrationMessage(String currentVersion) throws Exception {
       if (this.publisher != null) {
          log.info("Sending registration message for '" + this.replPrefix + "'");
+         this.info.put(ReplicationConstants.SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
          // fill the info to be sent with the own info objects
          HashMap msgMap = new HashMap();
          new ClientPropertiesInfo(msgMap, this.info);
@@ -248,8 +256,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("going to initialize the resources");
       this.info = info;
       this.replPrefix = this.info.get("replication.prefix", "repl_");
-      Map map = new HashMap();
-      map.put("replPrefix", this.replPrefix);
+      
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher) {
          this.info.putObject("_connectionStateListener", this);
@@ -274,7 +281,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("overwriting the default for 'detector.detectUpdates' from 'true' to 'false' since we are in replication");
       this.info.put("detector.detectUpdates", "" + false);
       */
-      sendRegistrationMessage();
+      String currentVersion = this.info.get("replication.version", null);
+      sendRegistrationMessage(currentVersion);
    }
 
    /**
@@ -398,8 +406,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             }
          }
          else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
-            boolean force = true;
-            this.dbSpecific.addTriggersIfNeeded(force, null);
+            final boolean force = true;
+            final boolean forceSend = false;
+            this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
          }
          else if (ReplicationConstants.STATEMENT_ACTION.equals(msg)) {
             String sql = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_ATTR)).getStringValue();
@@ -451,8 +460,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey) throws Exception {
-      sendInitialFile(slaveSessionName, filename, minKey);
+   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String currentVersion) throws Exception {
+      sendInitialFile(slaveSessionName, filename, minKey, currentVersion);
       HashMap attrs = new HashMap();
       attrs.put("_destination", destination);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
@@ -472,7 +481,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey)throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String currentVersion)throws FileNotFoundException, IOException, JMSException  {
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
@@ -505,7 +514,41 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
          msg.setInputStream(fis);
          producer.send(msg);
-         if (!this.keepDumpFiles) {
+         // make a version copy if none exists yet
+         boolean doDelete = true;
+         if (currentVersion != null) {
+            String backupFileName = this.initialCmdPath + File.separator + this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentVersion + ReplicationConstants.DUMP_POSTFIX;
+            File backupFile = new File(backupFileName);
+            if (!backupFile.exists()) {
+               final boolean copy = true;
+               if (copy) {
+                  BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
+                  FileOutputStream os = new FileOutputStream(backupFileName);
+                  long length = file.length();
+                  long remaining = length;
+                  final int BYTE_LENGTH = 100000; // For the moment it is hardcoded
+                  byte[] buf = new byte[BYTE_LENGTH];
+                  while (remaining > 0) {
+                     int tot = bis.read(buf);
+                     remaining -= tot;
+                     os.write(buf, 0, tot);
+                  }
+                  bis.close();
+                  os.close();
+               }
+               else {
+                  boolean ret = file.renameTo(backupFile);
+                  if (!ret)
+                     log.severe("could not move the file '" + filename + "' to '" + backupFileName + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+                  else
+                     doDelete = false;
+               }
+            }
+         }
+         else
+            log.severe("The version is not set. Can not make a backup copy of the version file");
+        
+         if (!this.keepDumpFiles && doDelete) {
             if (file.exists()) { 
                boolean ret = file.delete();
                if (!ret)
@@ -565,6 +608,33 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    }
    
    
+   public String getSupportedVersions(String currentReplVersion) throws Exception {
+      if (this.initialCmdPath == null)
+         throw new Exception("InitialUpdater.getSupportedVersions invoked with no initialCmdPath specified");
+      File dir = new File(this.initialCmdPath);
+      if (!dir.exists())
+         throw new Exception("InitialUpdater.getSupportedVersions invoked but the directory '" + this.initialCmdPath + "' does not exist");
+      if (!dir.isDirectory())
+         throw new Exception("InitialUpdater.getSupportedVersions invoked but '" + this.initialCmdPath + "' is not a directory");
+      File[] childs = dir.listFiles();
+      TreeSet set = new TreeSet();
+      for (int i=0; i < childs.length; i++) {
+         if (childs[i].isDirectory())
+            continue;
+         if (!childs[i].canRead())
+            continue;
+         String filename = childs[i].getName();
+         String prefix = VersionTransformerCache.stripReplicationPrefix(filename).trim();
+         String version = VersionTransformerCache.stripReplicationVersion(filename);
+         if (version != null && prefix.equals(this.replPrefix))
+            set.add(prefix + ReplicationConstants.VERSION_TOKEN + version.trim());
+      }
+      if (currentReplVersion != null)
+         set.add(this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentReplVersion);
+      return InfoHelper.getIteratorAsString(set.iterator());
+   }
+   
+   
    /**
     * This is the intial command which is invoked on the OS. It is basically used for the
     * import and export of the DB. Could also be used for other operations on the OS.
@@ -603,7 +673,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
          log.info("connection is going from '" + oldState + " to 'ALIVE'");
-         sendRegistrationMessage();
+         String currentVersion = this.info.get("replication.version", null);
+         sendRegistrationMessage(currentVersion);
       }
       catch (Exception ex) {
          ex.printStackTrace();
