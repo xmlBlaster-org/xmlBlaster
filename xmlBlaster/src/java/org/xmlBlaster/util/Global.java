@@ -1953,7 +1953,7 @@ public class Global implements Cloneable
     * as we don't have a client side queue.
     * @return A string array which you can pass to <tt>this.global = glob.getClone(glob.getNativeConnectArgs());</tt>
     */
-   public final String[] getNativeConnectArgs() {
+   public String[] getNativeConnectArgs() {
       /*
       Problem:
       These settings can't be overwritten in xmlBlaster.properties
