@@ -3,6 +3,10 @@ http://log4cplus.sourceforge.net/projstatus.html
 Original Author:  Tad E. Smith
 
 
+API:
+http://log4cplus.sourceforge.net/docs/html/hierarchy.html
+
+
 Changed configurator.cxx to not only replace ${} variables
 with a env lookup with getenv() but preferably try to find
 the replacement variable in the property file itself.
