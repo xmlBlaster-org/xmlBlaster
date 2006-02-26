@@ -541,6 +541,9 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                   mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_BASE64);  // "Content-Transfer-Encoding", "base64");
                }
                else {
+                  // http://www.ietf.org/rfc/rfc2045.txt
+                  // The Quoted-Printable encoding REQUIRES that encoded lines be no more than 76
+                  // characters long. (78 with CRLF), the line uses a trailing '=' as a soft line brake
                   mbp.setHeader(Constants.EMAIL_TRANSFER_ENCODING, Constants.ENCODING_QUOTED_PRINTABLE);  // "Content-Transfer-Encoding", "quoted-printable");
                   if (holder[i].hasExtensionFromList(this.inlineExtension))
                      mbp.setDisposition(MimeBodyPart.INLINE);
