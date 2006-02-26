@@ -268,7 +268,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       
       String version = rs.getString(11);
-      
       if (this.sqlInfo.getRowCount() == 0L) {
 
          if (this.transformer != null) {
@@ -302,8 +301,10 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
                   else
                      completeAttrs.put("_destination", destination);
                   String forceSendTxt = ReplaceVariable.extractWithMatchingAttrs(newContent, "attr", " id='_forceSend'");
-                  if (forceSendTxt != null && "true".equalsIgnoreCase(forceSendTxt.trim()))
+                  if (forceSendTxt != null && "true".equalsIgnoreCase(forceSendTxt.trim())) {
                      forceSend = true;
+                     log.info("Force Send was set to 'true'");
+                  }
                }
                this.dbSpecific.readNewTable(catalog, schema, tableName, completeAttrs, this.sendInitialTableContent || forceSend);
             }

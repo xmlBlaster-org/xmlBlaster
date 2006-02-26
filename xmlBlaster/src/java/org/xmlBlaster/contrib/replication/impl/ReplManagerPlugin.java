@@ -145,6 +145,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    
    public void clearVersionCache() {
       this.transformerCache.clearCache();
+      this.cachedListOfReplications = null;
    }
 
    
@@ -171,6 +172,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       while (iter.hasNext()) {
          I_Info tmpInfo = (I_Info)iter.next();
          String tmp = tmpInfo.get(ReplicationConstants.SUPPORTED_VERSIONS, null);
+         log.info("replications : '" + tmp + "'");
          if (tmp != null) {
             if (!isFirst)
                buf.append(",");
@@ -178,7 +180,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             buf.append(tmp);
          }
          else {
-            String replPrefix = tmpInfo.get("replication.prefix", "");
+            String replPrefix = tmpInfo.get("replication.prefix", "REPL_");
             log.warning("Property '" + ReplicationConstants.SUPPORTED_VERSIONS + "' not found for '" + replPrefix + "'");
             if (!isFirst)
                buf.append(",");
@@ -187,7 +189,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          }
       }
       // return InfoHelper.getIteratorAsString(this.replications.keySet().iterator());
-      return buf.toString();
+      this.cachedListOfReplications = buf.toString();
+      return this.cachedListOfReplications;
    }
    
    public String getType() {

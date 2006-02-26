@@ -34,7 +34,7 @@ public class XmlParserBase extends SaxHandlerBase {
    protected ClientProperty clientProperty;
    protected Set allowedTagNames;
    protected String qosTag;
-   private boolean inClientProperty;
+   protected int inClientProperty;
    
 
    public XmlParserBase(Global glob, String qosTag) {
@@ -93,7 +93,9 @@ public class XmlParserBase extends SaxHandlerBase {
     *         false this tag is not handled by this Base class
     */
    protected final boolean startElementBase(String uri, String localName, String name, Attributes attrs) {
-      if (this.inClientProperty) {
+      if (this.inClientProperty > 0) {
+         if (this.allowedTagNames.contains(name))
+            this.inClientProperty++;
          addTagToString(this.character, name, attrs);
          return true;
       }
@@ -109,7 +111,7 @@ public class XmlParserBase extends SaxHandlerBase {
       }
       if (this.allowedTagNames.contains(name)) {
          this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
-         this.inClientProperty = true;
+         this.inClientProperty++;
          character.setLength(0);
          return true;
       }
@@ -148,17 +150,19 @@ public class XmlParserBase extends SaxHandlerBase {
 
       if (this.allowedTagNames.contains(name)) {
          String tmp = character.toString(); // .trim();
-         this.inClientProperty = false;
-         if (this.clientProperty != null) {
-            if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
-               this.clientProperty.setValue(tmp);
-            else
-               this.clientProperty.setValueRaw(tmp);
+         this.inClientProperty--;
+         if (this.inClientProperty < 1) {
+            if (this.clientProperty != null) {
+               if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
+                  this.clientProperty.setValue(tmp);
+               else
+                  this.clientProperty.setValueRaw(tmp);
+            }
+            return true;
          }
-         return true;
       }
 
-      if (this.inClientProperty) {
+      if (this.inClientProperty > 0) {
          this.character.append("</").append(name).append(">");
          return true;
       }

@@ -239,13 +239,17 @@ public class VersionTransformerCache {
       int pos = replicationPrefix.lastIndexOf(ReplicationConstants.VERSION_TOKEN);
       if (pos < 0)
          return null;
-      String ret = replicationPrefix.substring(pos+1);
+      String ret = replicationPrefix.substring(pos + ReplicationConstants.VERSION_TOKEN.length());
       
       pos = ret.lastIndexOf(ReplicationConstants.DUMP_POSTFIX);
       if (pos < 0)
          return ret.trim();
       ret = ret.substring(0, pos);
       return ret.trim();
+   }
+   
+   public static String buildFilename(String replicationPrefix, String version) {
+      return replicationPrefix + ReplicationConstants.VERSION_TOKEN + version + ReplicationConstants.DUMP_POSTFIX;
    }
    
 }

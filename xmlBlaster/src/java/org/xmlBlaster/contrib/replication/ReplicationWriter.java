@@ -45,6 +45,7 @@ private final static String ME = "ReplicationWriter";
    private I_DbSpecific dbSpecific;
    I_Mapper mapper;
    private boolean overwriteTables;
+   private boolean recreateTables;
    private String importLocation;
    private I_Update callback;
    private boolean keepDumpFiles;
@@ -100,7 +101,9 @@ private final static String ME = "ReplicationWriter";
       }
       else
          log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
-      this.overwriteTables = this.info.getBoolean("replication.overwriteTables", false);
+      this.overwriteTables = this.info.getBoolean("replication.overwriteTables", true);
+      this.recreateTables =  this.info.getBoolean("replication.recreateTables", false);
+      
       this.importLocation = this.info.get("replication.importLocation", "${java.io.tmpdir}");
       boolean overwriteDumpFiles = true;
       String lockExtention =  null;
@@ -257,7 +260,6 @@ private final static String ME = "ReplicationWriter";
    
    
    public void store(SqlInfo dbInfo) throws Exception {
-      
       if (checkIfAlreadyProcessed(dbInfo)) {
          log.info("Entry '" + dbInfo.toXml("") + "' already processed, will ignore it");
          return;
@@ -343,20 +345,37 @@ private final static String ME = "ReplicationWriter";
                      boolean tableExistsAlready = rs.next();
                      rs.close();
 
+                     boolean invokeCreate = true;
+                     completeTableName = table;
+                     if (schema != null && schema.length() > 1)
+                        completeTableName = schema + "." + table;
+
                      if (tableExistsAlready) {
                         if (!this.overwriteTables) {
                            throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
                         }
                         else {
-                           log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
-                           Statement st = conn.createStatement();
-                           st.executeUpdate("DROP TABLE " + completeTableName);
-                           st.close();
+                           if (this.recreateTables) {
+                              log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
+                              Statement st = conn.createStatement();
+                              st.executeUpdate("DROP TABLE " + completeTableName);
+                              st.close();
+                           }
+                           else {
+                              log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true' and 'replication.recreateTables' is set to false. Will only delete contents of table but keep the old structure");
+                              invokeCreate = false;
+                           }
                         }
                      }
-                     
-                     String sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
-                     log.info("CREATE STATEMENT: '" + sql + "'");
+                     String sql = null;
+                     if (invokeCreate) {
+                        sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
+                        log.info("CREATE STATEMENT: '" + sql + "'");
+                     }
+                     else {
+                        sql = "DELETE FROM " + completeTableName;
+                        log.info("CLEANING UP TABLE '" + completeTableName + "'");
+                     }
                      Statement st = conn.createStatement();
                      try {
                         st.executeUpdate(sql);
@@ -370,6 +389,9 @@ private final static String ME = "ReplicationWriter";
                }
                else if (action.equalsIgnoreCase(DROP_ACTION)) {
                   if (this.doDrop) {
+                     completeTableName = table;
+                     if (schema != null && schema.length() > 1)
+                        completeTableName = schema + "." + table;
                      String sql = "DROP TABLE " + completeTableName;
                      Statement st = conn.createStatement();
                      try {

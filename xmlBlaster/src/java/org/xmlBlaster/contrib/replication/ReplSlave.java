@@ -79,6 +79,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String cascadedReplPrefix;
    private long forcedCounter;  // counter used when forceSending is set to 'true'
    private String ownVersion;
+   private String srcVersion;
+   private boolean doTransform;
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
@@ -166,8 +168,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
          this.maxReplKey = 0L;
       }
-      String tmpVersion = info.get("replication.version", "");
-      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, tmpVersion);
+      this.srcVersion = info.get("replication.version", "");
+      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, this.srcVersion);
+      if (this.srcVersion != null && this.ownVersion != null && this.srcVersion.equalsIgnoreCase(this.ownVersion))
+         this.doTransform = true;
       this.initialized = true;
       this.forcedCounter = 0L;
    }
@@ -434,10 +438,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                ret.add(entry);
                continue;
             }
-        }
+         }
          log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "] for client '" + this.slaveSessionId + "' ");
          if (replKey >= this.minReplKey || this.forceSending) {
             log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
+            
+            /* TODO reactivate this code after testing
+            if (this.doTransform) {
+               String newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, msgUnit.getContentStr());
+               msgUnit.setContent(newContent.getBytes());
+            }
+            */ 
             ret.add(entry);
             if (replKey > this.maxReplKey || this.forceSending) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");

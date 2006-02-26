@@ -281,7 +281,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("overwriting the default for 'detector.detectUpdates' from 'true' to 'false' since we are in replication");
       this.info.put("detector.detectUpdates", "" + false);
       */
-      String currentVersion = this.info.get("replication.version", null);
+      String currentVersion = this.info.get("replication.version", "0.0");
       sendRegistrationMessage(currentVersion);
    }
 
@@ -460,8 +460,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String currentVersion) throws Exception {
-      sendInitialFile(slaveSessionName, filename, minKey, currentVersion);
+   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String requestedVersion, String currentVersion) throws Exception {
+      sendInitialFile(slaveSessionName, filename, minKey, requestedVersion, currentVersion);
       HashMap attrs = new HashMap();
       attrs.put("_destination", destination);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
@@ -481,7 +481,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String currentVersion)throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String requestedVersion, String currentVersion)throws FileNotFoundException, IOException, JMSException  {
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
@@ -517,7 +517,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          // make a version copy if none exists yet
          boolean doDelete = true;
          if (currentVersion != null) {
-            String backupFileName = this.initialCmdPath + File.separator + this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentVersion + ReplicationConstants.DUMP_POSTFIX;
+            String backupFileName = this.initialCmdPath + File.separator + VersionTransformerCache.buildFilename(this.replPrefix, currentVersion);
             File backupFile = new File(backupFileName);
             if (!backupFile.exists()) {
                final boolean copy = true;
@@ -548,7 +548,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          else
             log.severe("The version is not set. Can not make a backup copy of the version file");
         
-         if (!this.keepDumpFiles && doDelete) {
+         boolean isRequestingCurrentVersion = currentVersion.equalsIgnoreCase(requestedVersion); 
+         if (!this.keepDumpFiles && doDelete && isRequestingCurrentVersion) {
             if (file.exists()) { 
                boolean ret = file.delete();
                if (!ret)
@@ -626,11 +627,16 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          String filename = childs[i].getName();
          String prefix = VersionTransformerCache.stripReplicationPrefix(filename).trim();
          String version = VersionTransformerCache.stripReplicationVersion(filename);
-         if (version != null && prefix.equals(this.replPrefix))
+         if (version != null && prefix.equals(this.replPrefix)) {
+            log.info("added version='" + version + "' for prefix='" + prefix + "' when encountering file='" + filename + "'");
             set.add(prefix + ReplicationConstants.VERSION_TOKEN + version.trim());
+         }
       }
-      if (currentReplVersion != null)
-         set.add(this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentReplVersion);
+      if (currentReplVersion != null) {
+         String txt = this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentReplVersion; 
+         set.add(txt);
+         log.info("added default version '" + txt + "'");
+      }
       return InfoHelper.getIteratorAsString(set.iterator());
    }
    
@@ -673,7 +679,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
          log.info("connection is going from '" + oldState + " to 'ALIVE'");
-         String currentVersion = this.info.get("replication.version", null);
+         String currentVersion = this.info.get("replication.version", "0.0");
          sendRegistrationMessage(currentVersion);
       }
       catch (Exception ex) {

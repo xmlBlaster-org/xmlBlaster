@@ -265,6 +265,8 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
     */
    public void endElement(String uri, String localName, String name) {
       if (super.endElementBase(uri, localName, name) == true) {
+         if (this.inClientProperty > 0)
+            return;
          if (!this.inRow && !this.inDescription) 
             return;
          

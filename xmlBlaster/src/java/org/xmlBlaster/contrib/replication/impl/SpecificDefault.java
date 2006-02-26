@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
@@ -1067,7 +1068,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       final boolean doFix = true;
       checkTriggerConsistency(doFix);
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
-      log.info("there are '" + tablesToWatch.length + "' tables to watch");
+      log.info("there are '" + tablesToWatch.length + "' tables to watch (invoked with forceSend='" + forceSend + "'");
       for (int i=0; i < tablesToWatch.length; i++) {
          String catalog = tablesToWatch[i].getCatalog();
          String schema = tablesToWatch[i].getSchema();
@@ -1098,18 +1099,24 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
          // the result must be sent as a high prio message to the real destination
          boolean forceFlag = false;
-         boolean forceSend = true;
+         boolean isRequestingCurrentVersion = false;
+         log.info("current replication version is *" + this.replVersion + "' and requested version is '" + requestedVersion + "'");
          if (this.replVersion.equalsIgnoreCase(requestedVersion))
-            forceSend = false;
+            isRequestingCurrentVersion = true;
+         boolean forceSend = !isRequestingCurrentVersion;
          addTriggersIfNeeded(forceFlag, slaveName, forceSend);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
-         String filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, requestedVersion);
+         String filename = null;
+         if (isRequestingCurrentVersion)
+            filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, requestedVersion);
+         else
+            filename = VersionTransformerCache.buildFilename(this.replPrefix, requestedVersion);
          
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, this.replVersion);
+         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion);
       }
       catch (Exception ex) {
          if (conn != null) {
