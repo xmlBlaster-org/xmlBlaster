@@ -348,6 +348,22 @@ public class ClientPropertyTest extends XMLTestCase {
       data = parser.readObject(xml);
       prop = data.getClientProperty("StringKey");
       System.out.println(prop.toXml());
+      
+      
+      
+      xml =  "<qos>\n" +
+      "  <isPublish/>\n" + 
+      "  <clientProperty name='StringKey' type='' encoding='forcePlain'><clientProperty name='aaa' type='' encoding=''>Something</clientProperty></clientProperty>\n" + 
+      "</qos>";      
+      
+      parser = new MsgQosSaxFactory(this.glob);
+      data = parser.readObject(xml);
+      prop = data.getClientProperty("StringKey");
+      System.out.println(prop.toXml());
+      
+      
+      
+      
       System.out.println("END");
    }
 

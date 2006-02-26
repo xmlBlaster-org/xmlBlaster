@@ -6,7 +6,6 @@
 package org.xmlBlaster.test.contrib.replication;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -186,6 +185,24 @@ public class TestHelperClasses extends XMLTestCase {
             destVersion = "03";
             ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
             log.info(ret);
+            
+            {
+               String in = "repl_Ver_0.5.dump";
+               String prefix = VersionTransformerCache.stripReplicationPrefix(in);
+               String version = VersionTransformerCache.stripReplicationVersion(in);
+               assertEquals("Wrong prefix", "repl", prefix);
+               assertEquals("Wrong version", "0.5", version);
+            }
+            {
+               String in = "repl_Ver_0.5";
+               String prefix = VersionTransformerCache.stripReplicationPrefix(in);
+               String version = VersionTransformerCache.stripReplicationVersion(in);
+               assertEquals("Wrong prefix", "repl", prefix);
+               assertEquals("Wrong version", "0.5", version);
+            }
+            
+            
+            
          }
          catch (Exception ex) {
             ex.printStackTrace();

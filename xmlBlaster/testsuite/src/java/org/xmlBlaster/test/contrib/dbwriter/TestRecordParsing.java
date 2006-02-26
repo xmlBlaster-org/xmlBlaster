@@ -51,6 +51,10 @@ public class TestRecordParsing extends XMLTestCase {
        TestRecordParsing test = new TestRecordParsing();
        try {
           test.setUp();
+          test.testUnprotectedClientProperties();
+          test.tearDown();
+
+          test.setUp();
           test.testParsing();
           test.tearDown();
        }
@@ -174,6 +178,50 @@ public class TestRecordParsing extends XMLTestCase {
       assertXMLEqual("output xml is not the same as input xml", xml, record.toXml(""));
       //assertXpathNotExists("/myRootTag/row[@num='0']", xml);
       //assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
+      log.info("SUCCESS");
+   }
+   
+   /**
+    * If the table does not exist we expect a null ResultSet
+    * @throws Exception Any type is possible
+    */
+   public final void testUnprotectedClientProperties() throws Exception {
+      log.info("Start testUnprotectedClientProperties()");
+      /** Comments are not allowed otherwise the xml are not considered the same */
+            String xml = "" +
+                   "<?xml version='1.0' encoding='UTF-8' ?>\n" +
+                   "<sql>\n" +
+                   "  <desc>\n" +
+                   "    <command>INSERT</command>\n" +
+                   "    <ident>EDDI</ident>\n" +
+		           "  </desc>\n" + 
+                   "  <row num='0'>\n" + 
+                   "    <col name='WP_KEY'>270232</col>\n" + 
+                   "    <col name='WP_ID'>6400E</col>\n" + 
+                   "    <col name='WP_FLOC_KEY'>7053</col>\n" + 
+                   "    <col name='WP_NAME'>64N000E</col>\n" + 
+                   "    <col name='WP_LAT_LON'>N640000E0000000</col>\n" + 
+                   "    <col name='WP_USAGE'>BOTH</col>\n" + 
+                   "    <col name='WP_RNAV'>N</col>\n" + 
+                   "    <col name='WP_LAST_UPDATE'>2003-10-02 00:00:00</col>\n" + 
+                   "    <col name='WP_OPERATOR'>JP</col>\n" + 
+                   "    <col name='WP_SUBSTITUTE'>Y</col>\n" + 
+                   "    <attr name='oldContent' encoding='forcePlain'><col name='WP_KEY'>270232</col></attr>\n" + 
+                   "    <attr name='replKey'>2795</attr>\n" + 
+                   "    <attr name='action'>UPDATE</attr>\n" + 
+                   "    <attr name='transaction'>9.7.4118</attr>\n" + 
+                   "    <attr name='WP_SUBSTITUTE'>Y</attr>\n" + 
+                   "    <attr name='guid'>AAAXlWAAFAAAFFgAAA</attr>\n" + 
+                   "    <attr name='tableName'>R_WAYPOINTS</attr>\n" + 
+                   "    <attr name='schema'>AIS</attr>\n" + 
+                   "    <attr name='dbId'>NULL</attr>\n" + 
+                   "    <attr name='version'>0.5</attr>\n" + 
+                   "  </row>\n" +
+		           "</sql>\n";
+      
+      SqlInfoParser parser = new SqlInfoParser(this.info);
+      SqlInfo record = parser.readObject(xml);
+      log.info(record.toXml(""));
       log.info("SUCCESS");
    }
    
