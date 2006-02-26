@@ -25,20 +25,20 @@
                         onFail='resource.configuration.pluginFailed'/&gt;
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
    
-   &lt;attribute id='eventTypes'>
+   <font color="blue">&lt;attribute id='eventTypes'>
       logging/severe/*,
       logging/warning/*,
       service/RunlevelManager/event/startupRunlevel8,
       client/*/session/*/event/connect
-   &lt;/attribute>
+   &lt;/attribute></font>
    
-   &lt;attribute id='destination.smtp'>
+   <font color="red">&lt;attribute id='destination.smtp'>
       mail.smtp.from=xmlBlaster@localhost,
       mail.smtp.to=demo@localhost,
       mail.collectMillis=10000
-   &lt;/attribute>
+   &lt;/attribute></font>
 
-   &lt;attribute id='destination.jmx'/>
+   <font color="red">&lt;attribute id='destination.jmx'/></font>
 &lt;/plugin&gt;
 </pre>
  
@@ -46,11 +46,11 @@
  The first two &lt;action> tags just configure the plugin itself to be loaded by xmlBlaster on startup
  and to be removed again on shutdown</p>
  <p>
- In the above example an email is send if any logging/severe/* (==log.error) or logging/warning/* occurs.
+ In the above example an email is send if any <font color="blue">logging/severe/*</font> (==log.error) or <font color="blue">logging/warning/*</font> occurs.
  Further an event is emitted on xmlBlaster startup in run level 8
  and if a new client logs in.
  Those events are send as JMX notifications as well.
- Adding <code>&lt;attribute id='destination.publish'/></code> would send
+ Adding <font color="red"><code>&lt;attribute id='destination.publish'/></code></font> would send
  the event as a xmlBlaster message as well, but take care to not send logging events
  as such messages will most certainly loop (if they log something they will trigger another message and so forth)!
  </p>
@@ -61,7 +61,7 @@
  Note that this plugin must be active on
  a runlevel early enough depending on the event you want to capture.
  </p>
- <p>Those event types can be added to <code>&lt;attribute id='eventTypes'>...&lt;/attribute></code>
+ <p>Those event types can be added to <code><font color="blue">&lt;attribute id='eventTypes'>...&lt;/attribute></font></code>
  markup as a comma separated list, like this you choose exactly the events you want.</p>
  <table class="BORDER" border="1">
       <tr>
@@ -96,7 +96,8 @@
 
 
       <p id="eventSinks" class="celltitel">List of supported event sinks</p>
-      <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table.</p>
+      <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table,
+      see the configuration tags <font color="red">&lt;attribute id='destination.XXX'>...&lt;/attribute></font>.</p>
  <table class="BORDER" border="1">
       <tr>
       <th>Sink Name</th>
@@ -157,9 +158,9 @@
 &lt;plugin id='messageEvents' className='org.xmlBlaster.engine.EventPlugin'>
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
-   &lt;attribute id='eventTypes'>client/*/session/*/event/connect,client/*/session/*/event/disconnect&lt;/attribute>
-   &lt;attribute id='destination.publish'/>
-   &lt;attribute id='destination.jmx'/>
+   <font color="blue">&lt;attribute id='eventTypes'>client/*/session/*/event/connect,client/*/session/*/event/disconnect&lt;/attribute></font>
+   <font color="red">&lt;attribute id='destination.publish'/></font>
+   <font color="red">&lt;attribute id='destination.jmx'/></font>
 &lt;/plugin>
 </pre>
    <h3>JMX Jconsole screenshot</h3>
@@ -198,22 +199,22 @@
       You will be notified when an error occurs or when xmlBlaster is shutdown.
       </p>
       <p>To send emails you also need to configure the SmtpClient plugin as shown below,
-      please set the <code>mail.smtp.url</code> variable to find your mail transfer agent (MTA).
+      please set the <font color="green"><code>mail.smtp.url</code></font> variable to find your mail transfer agent (MTA).
       Additionally please adjust all email addresses to valid ones in your environment.</p>
 <pre class="BORDER">
 &lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
    &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
             onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
-   &lt;attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25&lt;/attribute>
+   &lt;attribute id='mail.smtp.url'><font color="green">smtp://xmlBlaster:xmlBlaster@localhost:25</font>&lt;/attribute>
 &lt;/plugin>
 
 &lt;plugin id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='9'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='9'/>
 
-   &lt;attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8&lt;/attribute>
-   &lt;attribute id='destination.smtp'>
+   <font color="blue">&lt;attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8&lt;/attribute></font>
+   <font color="red">&lt;attribute id='destination.smtp'>
       mail.subject=xmlBlaster $_{eventType},
       mail.content=$_{datetime} $_{id} $_{errorCode} $_{summary},
       mail.contentSeparator=${line.separator}${line.separator},
@@ -221,7 +222,7 @@
       mail.smtp.to=admin@somecompany.com,
       "mail.smtp.cc=xmlBlaster@et.universe,somebody@somewhere.xx",
       mail.collectMillis=360000
-   &lt;/attribute>
+   &lt;/attribute></font>
 &lt;/plugin>
       </pre>
    <h3>Email GUI screenshot</h3>
@@ -241,27 +242,27 @@
       to send a heartbeat email every 12 hours. It contains some important status information
       about the xmlBlaster server with XML markup.</p>
       <p>To send emails you also need to configure the SmtpClient plugin as shown below,
-      please set the <code>mail.smtp.url</code> variable to find your mail transfer agent (MTA).
+      please set the <font color="green"><code>mail.smtp.url</code></font> variable to find your mail transfer agent (MTA).
       Additionally please adjust all email addresses to valid ones in your environment.</p>
 <pre class="BORDER">
 &lt;plugin id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
    &lt;action do='LOAD' onStartupRunlevel='4' sequence='7' 
             onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
-   &lt;attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25&lt;/attribute>
+   &lt;attribute id='mail.smtp.url'><font color="green">smtp://xmlBlaster:xmlBlaster@localhost:25</font>&lt;/attribute>
 &lt;/plugin>
 
 &lt;plugin create='true' id='heartbeatEmail' className='org.xmlBlaster.engine.EventPlugin'>
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='14'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='14'/>
-   &lt;attribute id='eventTypes'>
+   <font color="blue">&lt;attribute id='eventTypes'>
         heartbeat.43200000
-   &lt;/attribute>
-   &lt;attribute id='destination.smtp'>
+   &lt;/attribute></font>
+   <font color="red">&lt;attribute id='destination.smtp'>
       mail.smtp.from=xmlBlaster@localhost,
       mail.smtp.to=xmlblasterStatus@someadmin.somecompany.eu,
       mail.collectMillis=0
-   &lt;/attribute>
+   &lt;/attribute></font>
 &lt;/plugin>
       </pre>
 
