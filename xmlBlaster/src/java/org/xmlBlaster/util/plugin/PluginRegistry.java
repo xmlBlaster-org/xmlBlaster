@@ -9,12 +9,9 @@ package org.xmlBlaster.util.plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -25,14 +22,12 @@ import java.util.Enumeration;
  */
 public class PluginRegistry {
    private static String ME = "PluginRegistry";
-   private final Global glob;
    private final LogChannel log;
    /** key=pluginId String, value=I_Plugin */
    private Hashtable plugins;
 
 
    public PluginRegistry(Global glob) {
-      this.glob = glob;
       this.log = glob.getLog("core");
       this.plugins = new Hashtable();
    }
