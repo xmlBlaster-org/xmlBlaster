@@ -172,5 +172,32 @@ public interface XmlBlasterAccessMBean {
     * @return The absolute file names dumped
     */
    public String[] peekClientMessagesToFile(int numOfEntries, String path) throws Exception;
+   
+   /**
+    * Get the xmlBlaster client library version number. 
+    * @return For example "1.0.4"
+    */
+   public String getVersion();
+   /**
+    * Returns the xmlBlaster client library SVN version control revision number. 
+    * @return The subversion revision number of the monitored instance,
+    *         for example "13593"
+    */
+   public String getRevisionNumber();
+   /**
+    * Returns the date when xmlBlaster client library was compiled. 
+    * @return For example "07/28/2005 03:47 PM"
+    */
+   public String getBuildTimestamp();
+   /**
+    * The java vendor of the compiler. 
+    * @return For example "Sun Microsystems Inc."
+    */
+   public String getBuildJavaVendor();
+   /**
+    * The compiler java version. 
+    * @return For example "1.5.0"
+    */
+   public String getBuildJavaVersion();
 }
 

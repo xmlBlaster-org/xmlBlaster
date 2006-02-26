@@ -1705,5 +1705,21 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public void setUpdateListener(I_Callback updateListener) {
       this.updateListener = updateListener;
    }
+
+   public String getVersion() {
+      return glob.getVersion();
+   }
+   public String getRevisionNumber() {
+      return glob.getRevisionNumber();
+   }
+   public String getBuildTimestamp() {
+      return glob.getBuildTimestamp();
+   }
+   public String getBuildJavaVendor() {
+      return glob.getBuildJavaVendor();
+   }
+   public String getBuildJavaVersion() {
+      return glob.getBuildJavaVersion();
+   }
 }
 
