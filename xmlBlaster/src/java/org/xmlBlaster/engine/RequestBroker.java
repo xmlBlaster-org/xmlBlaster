@@ -12,7 +12,6 @@ import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -115,6 +114,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * For listeners who want to be informed about topic creation / deletion events.
     */
    private final Set topicListenerSet = Collections.synchronizedSet(new TreeSet());
+
+   private final Set remotePropertiesListeners = Collections.synchronizedSet(new TreeSet());
 
    /**
     * Store configuration of all topics in xmlBlaster for recovery
@@ -1571,6 +1572,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             return glob.getMomClientGateway().setCommand(sessionInfo, msgKeyData, msgUnit, publishQos, publishQos.isClusterUpdate());
          }
 
+         if (msgKeyData.isRemoteProperties()) {
+            sessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            I_RemotePropertiesListener[] arr = getRemotePropertiesListenerArr();
+            for (int i=0; i<arr.length; i++)
+               arr[i].update(sessionInfo, publishQos.getData().getClientProperties());
+            return Constants.RET_OK;
+         }
+         
          // Check if a publish filter is installed and if so invoke it ...
          if (getPublishPluginManager().hasPlugins() && !publishQos.isClusterUpdate()) {
             Map mimePlugins = getPublishPluginManager().findMimePlugins(msgKeyData.getContentMime(),msgKeyData.getContentMimeExtended());
@@ -1977,6 +1986,30 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
    
+   /**
+    * Add listener if new remote properties arrive. 
+    * Clients which publish client side properties to their sessionInfo
+    * @param RemotePropertiesListener
+    * @return
+    */
+   public synchronized boolean addRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
+      return this.remotePropertiesListeners.add(remotePropertiesListener);
+   }
+
+   /**
+    * Remove the given listener
+    * @param RemotePropertiesListener
+    * @return true if it was removed
+    */
+   public synchronized boolean removeRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
+      return this.remotePropertiesListeners.remove(remotePropertiesListener);
+   }
+   
+   
+   public synchronized I_RemotePropertiesListener[] getRemotePropertiesListenerArr() {
+      return (I_RemotePropertiesListener[])this.remotePropertiesListeners.toArray(new I_RemotePropertiesListener[this.remotePropertiesListeners.size()]);
+   }
+
    /**
     * Adds the specified Topic listener to receive creation/destruction events of Topics. 
     */

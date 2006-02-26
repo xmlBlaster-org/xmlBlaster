@@ -39,7 +39,6 @@ import org.xmlBlaster.util.def.Constants;
  */
 public abstract class KeyData implements java.io.Serializable, Cloneable
 {
-   private final static String ME = "KeyData";
    protected transient Global glob;
    protected transient LogChannel log;
    protected transient final String serialData; // can be null - in this case use toXml() - original without generated oid
@@ -106,6 +105,14 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
     */
    public final boolean isDeadMessage() {
       return Constants.OID_DEAD_LETTER.equals(this.oid);
+   }
+
+   /**
+    * __sys__remoteProperties
+    * @return
+    */
+   public final boolean isRemoteProperties() {
+      return Constants.INTERNAL_OID_REMOTE_PROPERTIES.equals(this.oid);
    }
 
    /**

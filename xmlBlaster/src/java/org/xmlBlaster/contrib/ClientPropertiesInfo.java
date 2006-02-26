@@ -111,7 +111,7 @@ public class ClientPropertiesInfo implements I_Info {
       if (obj == null)
          return null;
       if (!(obj instanceof ClientProperty))
-         return (ClientProperty)null;
+         return null;
       
       return (ClientProperty)obj;
    }
@@ -268,4 +268,8 @@ public class ClientPropertiesInfo implements I_Info {
       return clientPropertyMap;
    }
    
+   public ClientProperty[] getClientPropertyArr() {
+      if (this.clientPropertyMap.size() == 0) return new ClientProperty[0]; 
+      return (ClientProperty[])this.clientPropertyMap.values().toArray(new ClientProperty[this.clientPropertyMap.size()]);
+   }
 }

@@ -36,6 +36,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.protocol.email.EmailData;
 import org.xmlBlaster.util.protocol.email.SmtpClient;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -43,6 +44,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -162,7 +164,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
       LogableDevice, I_SubscriptionListener, I_TopicListener,
-      I_ConnectionStatusListener, Comparable {
+      I_ConnectionStatusListener, I_RemotePropertiesListener, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -563,6 +565,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                else
                   this.heartbeatInterval = Constants.DAY_IN_MILLIS;
                if (this.heartbeatInterval > 0) {
+                  this.requestBroker.addRemotePropertiesListener(this);
                   // send the first heartbeat directly after startup:
                   long initialInterval = (this.heartbeatInterval > 2000) ? 2000L : this.heartbeatInterval;
                   this.heartbeatTimeout = new Timeout("EventPlugin-HeartbeatTimer");
@@ -594,6 +597,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   /**
+    * Called when a client sends his remote properties, for example client side errors. 
+    * Enforced by I_RemotePropertiesListener 
+    */
+   public void update(SessionInfo sessionInfo, Map remoteProperties) {
+      log.fine("Received new remote properties from client " + sessionInfo.getId());
+      newHeartbeatNotification("heartbeat.remoteProperties");
+   }
+   
    /**
     * Send a heartbeat message/notification. 
     * @param eventType
@@ -674,6 +686,23 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       buf.append("\n  ").append("<serverTimestamp>").append(new java.sql.Timestamp(new java.util.Date().getTime()).toString()).append("</serverTimestamp>");
       buf.append("\n  ").append("<numClients>").append(r.getNumClients()).append("</numClients>");
       buf.append("\n  ").append("<clientList>").append(r.getClientList()).append("</clientList>");
+      SubjectInfo[] clients = r.getAuthenticate().getSubjectInfoArr();
+      for (int c=0; c<clients.length; c++) {
+         SubjectInfo subjectInfo = clients[c];
+         if (subjectInfo.getLoginName().startsWith("__")) continue;// Ignore internal sessions
+         buf.append("\n  ").append("<client id='").append(subjectInfo.getSubjectName()).append("'>");
+         SessionInfo[] sessions = subjectInfo.getSessions();
+         for (int s=0; s<sessions.length; s++) {
+            SessionInfo sessionInfo = sessions[s];
+            buf.append("\n   ").append("<session id='").append(sessionInfo.getPublicSessionId()).append("'>");
+            buf.append("\n    ").append("<state>").append(sessionInfo.getConnectionState()).append("</state>");
+            ClientProperty[] props = sessionInfo.getRemotePropertyArr();
+            for (int p=0; p<props.length; p++)
+               buf.append(props[p].toXml("   ", "remoteProperty"));
+            buf.append("\n   ").append("</session>");
+         }
+         buf.append("\n  ").append("</client>");
+      }
       buf.append("\n  ").append("<numTopics>").append(r.getNumTopics()).append("</numTopics>");
       buf.append("\n  ").append("<topicList>").append(r.getTopicList()).append("</topicList>");
       buf.append("\n  ").append("<numGet>").append(r.getNumGet()).append("</numGet>");
@@ -793,6 +822,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.requestBroker != null)
          this.requestBroker.getAuthenticate().removeClientListener(this);
 
+      this.requestBroker.removeRemotePropertiesListener(this);
       /*
       if (this.subscribeSet != null)
          this.subscribeSet = null;

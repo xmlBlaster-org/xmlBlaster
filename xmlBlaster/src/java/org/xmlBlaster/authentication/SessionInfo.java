@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.Map;
+
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
@@ -35,7 +37,6 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
@@ -51,6 +52,7 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
@@ -103,6 +105,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private final SessionInfoProtector sessionInfoProtector;
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
+   
+   /** Holding properties send by our remote client via the topic __sys__sessionProperties */
+   private ClientPropertiesInfo remoteProperties;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -961,4 +966,27 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}
+
+   /**
+    * @return Returns the remoteProperties or null
+    */
+   public ClientPropertiesInfo getRemoteProperties() {
+      return this.remoteProperties;
+   }
+   
+   /**
+    * @return never null
+    */
+   public ClientProperty[] getRemotePropertyArr() {
+      ClientPropertiesInfo tmp = this.remoteProperties;
+      if (tmp == null) return new ClientProperty[0];
+      return tmp.getClientPropertyArr();
+   }
+
+   /**
+    * @param remoteProperties The remoteProperties to set.
+    */
+   public void setRemoteProperties(Map map) {
+      this.remoteProperties = new ClientPropertiesInfo(map);
+   }
 }
