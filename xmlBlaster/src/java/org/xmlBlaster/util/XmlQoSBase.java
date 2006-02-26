@@ -31,7 +31,7 @@ public class XmlQoSBase extends SaxHandlerBase
    protected boolean inQos = false;     // parsing inside <qos> ? </qos>
    protected ClientProperty clientProperty;
    protected final Set clientPropertyTagNames = new TreeSet();
-   protected boolean inClientProperty;
+   private int inClientProperty;
    protected StringBuffer cpCharacter;
 
    /**
@@ -86,7 +86,10 @@ public class XmlQoSBase extends SaxHandlerBase
     */
    protected final boolean startElementBase(String uri, String localName, String name, Attributes attrs)
    {
-      if (this.inClientProperty) {
+      if (this.inClientProperty > 0) {
+         if (this.clientPropertyTagNames.contains(name))
+            this.inClientProperty++;
+
          addTagToString(this.cpCharacter, name, attrs);
          return true;
       }
@@ -101,7 +104,7 @@ public class XmlQoSBase extends SaxHandlerBase
          return true;
       }
       if (this.clientPropertyTagNames.contains(name)) {
-         this.inClientProperty = true;
+         this.inClientProperty++;
          if (this.cpCharacter == null) this.cpCharacter = new StringBuffer();
          this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
          character.setLength(0);
@@ -126,7 +129,7 @@ public class XmlQoSBase extends SaxHandlerBase
     * <key>Hello</key>
     */
    public void characters(char ch[], int start, int length) {
-      if (this.inClientProperty) {
+      if (this.inClientProperty > 0) {
          this.cpCharacter.append(ch, start, length);
       }
       else { 
@@ -157,26 +160,28 @@ public class XmlQoSBase extends SaxHandlerBase
     *         false this tag is not handled by this Base class
     */
    protected final boolean endElementBase(String uri, String localName, String name) {
-      if( name.equalsIgnoreCase("qos") && !this.inClientProperty) {
+      if( name.equalsIgnoreCase("qos") && (this.inClientProperty < 1)) {
          inQos = false;
          character.setLength(0);
          return true;
       }
 
       if (this.clientPropertyTagNames.contains(name)) {
-         this.inClientProperty = false;
-         if (this.clientProperty != null) {
-            String tmp = (this.clientProperty.isStringType()) ? this.cpCharacter.toString() : this.cpCharacter.toString().trim();
-            if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
-               this.clientProperty.setValue(tmp);
-            else
-               this.clientProperty.setValueRaw(tmp);
+         this.inClientProperty--;
+         if (this.inClientProperty < 1) {
+            if (this.clientProperty != null) {
+               String tmp = (this.clientProperty.isStringType()) ? this.cpCharacter.toString() : this.cpCharacter.toString().trim();
+               if (this.clientProperty.isStringType() && !this.clientProperty.isBase64())
+                  this.clientProperty.setValue(tmp);
+               else
+                  this.clientProperty.setValueRaw(tmp);
+            }
+            this.cpCharacter.setLength(0);
+            return true;
          }
-         this.cpCharacter.setLength(0);
-         return true;
       }
 
-      if (this.inClientProperty) {
+      if (this.inClientProperty > 0) {
          this.cpCharacter.append("</").append(name).append(">");
          return true;
       }
