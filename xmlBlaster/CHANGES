@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
  
+ o #14765 nested ClientProperties are now allowed in ClientProperties after fix in XmlQoSBase
+
  o #14756 email protocol:
    Added switch for 'addExpiresHeader' and JMX accessor
    Fixed 'breakLongMessageIdLine' for max 72 char per line and added JMX accessor
