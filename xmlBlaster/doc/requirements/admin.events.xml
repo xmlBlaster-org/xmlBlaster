@@ -290,7 +290,8 @@
   &lt;numPublish>2&lt;/numPublish>
   &lt;numUpdate>0&lt;/numUpdate>
   &lt;lastWarning>[HtPasswd] Security risk, no access control:
-        The passwd file is switched off with 'Security.Server.Plugin.htpasswd.secretfile=NONE'&lt;/lastWarning>
+        The passwd file is switched off with 'Security.Server.Plugin.htpasswd.secretfile=NONE'
+  &lt;/lastWarning>
   &lt;lastError>&lt;/lastError>
   &lt;versionInfo>version=1.1,revision=14569:14573M,os.name=Linux,os.version=2.6.13-15-default,
                   java.vm.vendor=Sun Microsystems Inc.,java.vm.version=1.5.0_05-b05,os.arch=i386,
@@ -320,15 +321,15 @@
  &lt;/key>
  &lt;content size='23'>topic/*/event/subscribe&lt;/content>
  &lt;qos>
-  &lt;clientProperty name='_subscriptionId'>__subId:xmlBlaster_127_0_0_2_3412-1136812798913000000&lt;/clientProperty>
-  &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
+  &lt;clientProperty name='_subscriptionId'>__subId:heron-1136812798913000000&lt;/clientProperty>
+  &lt;clientProperty name='_nodeId'>heron&lt;/clientProperty>
   &lt;clientProperty name='_description' encoding='base64'>...&lt;/clientProperty>
   &lt;clientProperty name='_eventType'>topic/*/event/subscribe&lt;/clientProperty>
-  &lt;clientProperty name='_summary'>New subscription of client /node/xmlBlaster_127_0_0_2_3412/client/joe/1 
+  &lt;clientProperty name='_summary'>New subscription of client /node/heron/client/joe/1 
               on topic airport&lt;/clientProperty>
   &lt;clientProperty name='_publicSessionId' type='long'>1&lt;/clientProperty>
   &lt;clientProperty name='_subjectId'>joe&lt;/clientProperty>
-  &lt;clientProperty name='_absoluteName'>/node/xmlBlaster_127_0_0_2_3412/client/joe/1&lt;/clientProperty>
+  &lt;clientProperty name='_absoluteName'>/node/heron/client/joe/1&lt;/clientProperty>
   &lt;clientProperty name='_topicId'>airport&lt;/clientProperty>
  &lt;/qos>
 
@@ -338,12 +339,76 @@
  &lt;/key>
  &lt;content size='47'>service/RunlevelManager/event/shutdownRunlevel8&lt;/content>
  &lt;qos>
-  &lt;clientProperty name='_nodeId'>xmlBlaster_127_0_0_2_3412&lt;/clientProperty>
-  &lt;clientProperty name='_description'>xmlBlaster shutdown runlevel from RUNNING to RUNNING_PRE&lt;/clientProperty>
+  &lt;clientProperty name='_nodeId'>heron&lt;/clientProperty>
+  &lt;clientProperty name='_description'>shutdown from RUNNING to RUNNING_PRE&lt;/clientProperty>
   &lt;clientProperty name='_eventType'>service/RunlevelManager/event/shutdownRunlevel8&lt;/clientProperty>
   &lt;clientProperty name='_summary'>Shutdown to RUNNING_PRE (8)&lt;/clientProperty>
  &lt;/qos>
 </pre>
+   </example>
+
+
+   <example lang="XML" type="HTML">
+      <p id="remoteProperty" class="celltitel">Observing the status of connected clients</p>
+      <p>Clients can publish their status to xmlBlaster and this status can be observed by the EventPlugin framework.
+      For example a client can choose to send its error logging to xmlBlaster or other fatal situations
+      like low memory or lost database connections.
+      </p>
+      <p>
+      To do this the steps are as follows:
+      </p>
+      <ol>
+      <li>The client publishes a message to the topic <i>__sys__remoteProperties</i></li>
+      <li>The PublishQos of the messages contains any number of client properties</li>
+      <li>Those client properties are kept in RAM by the xmlBlaster SessionInfo instance to this client, they are named <i>remoteProperties</i></li>
+      <li>If configured, a heartbeat EventPlugin will send those properties to any configured sink</li>
+      <li>Note: You can use the <code>jconsole</code> GUI to see the current remote properties in the running server
+          and manipulate them manually (add another, remove all)</li>
+      <li>Note: On xmlBlaster restart those properties are lost, the client needs to resend them if desired</li>
+      </ol>
+
+      <p>Here is a simple java client sending remote properties to xmlBlaster, use this to start playing with the feature:</p> 
+      <p>Start xmlBlaster with this <code>xmlBlasterPlugins.xml</code> setting</p>
+<pre class="BORDER">
+&lt;plugin create='true' id='heartbeatPropertyEvent' className='org.xmlBlaster.engine.EventPlugin'>
+   &lt;action do='LOAD' onStartupRunlevel='8' sequence='14'/>
+   &lt;action do='STOP' onShutdownRunlevel='7' sequence='14'/>
+   <font color="blue">&lt;attribute id='eventTypes'>
+        heartbeat.43200000
+   &lt;/attribute></font>
+   <font color="red">&lt;attribute id='destination.publish'/></font>
+&lt;/plugin>
+      </pre>
+
+      <p>Start a subscriber to receive the events:</p>
+      <p>
+      <code>java javaclients.HelloWorldSubscribe -session.name subscribe/1 -oid __sys__Event</code>
+      </p>
+      <p>And now publish three remote properties:
+      </p>
+      <p>
+      <code>java javaclients.HelloWorldPublish -session.name publish/1 -oid __sys__remoteProperties -clientProperty[logging/error] "Some severe problem occurred" -clientProperty[myDatabase] "postgres@192.168.1.20" -clientProperty[someStrangeProperty] "(&lt;|@>?"</code>
+      </p>
+      <p>The event received by the above subscriber may look similar to this:</p>
+      <pre>
+&lt;node id='heron'>
+  &lt;uptime>210&lt;/uptime>
+  &lt;runlevel>9&lt;/runlevel>
+  &lt;instanceId>/xmlBlaster/node/heron/instanceId/1141049201013&lt;/instanceId>
+  &lt;version>1.1.1&lt;/version>
+  ...
+  &lt;client id='publish'>
+   &lt;session id='1'>
+    &lt;state>UNDEF&lt;/state>
+    &lt;remoteProperty name='myDatabase'>postgres@192.168.1.20&lt;/remoteProperty>
+    &lt;remoteProperty name='someStrangeProperty' encoding='base64'>KDx8QD4/&lt;/remoteProperty>
+    &lt;remoteProperty name='logging/error'>Some severe problem occurred&lt;/remoteProperty>
+   &lt;/session>
+  &lt;/client>
+  &lt;numTopics>1&lt;/numTopics>
+  ...
+&lt;/node>
+      </pre>
    </example>
 
 
