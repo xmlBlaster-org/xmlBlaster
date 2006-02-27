@@ -690,7 +690,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       for (int c=0; c<clients.length; c++) {
          SubjectInfo subjectInfo = clients[c];
          if (subjectInfo.getLoginName().startsWith("__")) continue;// Ignore internal sessions
-         buf.append("\n  ").append("<client id='").append(subjectInfo.getSubjectName()).append("'>");
+         buf.append("\n  ").append("<client id='").append(subjectInfo.getLoginName()).append("'>");
          SessionInfo[] sessions = subjectInfo.getSessions();
          for (int s=0; s<sessions.length; s++) {
             SessionInfo sessionInfo = sessions[s];
