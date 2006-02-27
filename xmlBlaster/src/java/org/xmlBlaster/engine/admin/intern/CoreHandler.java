@@ -28,6 +28,7 @@ import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.SubscriptionInfo;
 
 import java.lang.reflect.*;
+import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 
 
@@ -232,7 +233,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
-         String ret = ""+setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
          return cmd.getValue();
       }
@@ -251,7 +252,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (pubSessionId.startsWith("?")) {
          // for example "/node/heron/joe/?uptime"
-         String ret = ""+setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
          return cmd.getValue();
       }
@@ -265,7 +266,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          I_AdminSession sessionInfo = subjectInfo.getSessionByPubSessionId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
-         String ret = ""+setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
          log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
          return cmd.getValue();
       }
@@ -277,6 +278,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    /**
     * @param property e.g. "uptime", the method "getUptime()" will be called
     * @param aClass e.g. I_AdminSubject.class
+    * @return Object typically of type String or String[]
     */
    private Object getInvoke(String property, Object impl, Class aInterface, QueryKeyData keyData, QueryQosData qosData) 
       throws XmlBlasterException {
@@ -392,8 +394,19 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     */
    private Object setInvoke(String property, Object impl, Class aClass, String[] argValuesAsStrings) throws XmlBlasterException {
       try {
-         PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
-         Method method = desc.getWriteMethod();
+         Method method = null;
+         try {
+            PropertyDescriptor desc = new PropertyDescriptor(property, aClass); // if property=value it looks for setValue() or getValue()
+            method = desc.getWriteMethod();
+         }
+         catch (IntrospectionException e) { // try operations like 'addProperty' without set/get prefix
+            Method[] m = aClass.getMethods();
+            for (int i=0; m!=null&&i<m.length;i++)
+               if (m[i].getName().equals(property))
+                  method = m[i];
+            if (method == null)
+               throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: No such method found");
+         }
          Object[] argValues =  convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
 
          Object obj = method.invoke (impl, argValues);

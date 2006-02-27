@@ -249,7 +249,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             lastCommand = cmd;
             return getErrorText("Ignoring your empty command.");
          }
-         String cmdType = (String)st.nextToken();
+         String cmdType = st.nextToken();
          cmdType = cmdType.trim();
 
          if (!st.hasMoreTokens()) {
@@ -272,12 +272,12 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
                lastCommand = cmd;
                return getErrorText("Please give me a login name and password to connect: '" + cmd + " <name> <passwd>'");
             }
-            String loginName = (String)st.nextToken();
+            String loginName = st.nextToken();
             if (!st.hasMoreTokens()) {
                lastCommand = cmd;
                return getErrorText("Please give me a password to connect: '" + cmd + " <passwd>'");
             }
-            String passwd = (String)st.nextToken();
+            String passwd = st.nextToken();
             connect(loginName, passwd); // throws Exception or sets isLogin=true  
             log.info(ME, "Successful login for telnet client '" + loginName + "', session timeout is " +
                      org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
@@ -331,8 +331,8 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
                MsgUnit msg = msgs[ii];
-               if (msg.getQos().startsWith("text/plain"))
-                  sb.append(msg.getKey()).append("=").append(msg.getContentStr()).append(CRLF);
+               if ("text/plain".equalsIgnoreCase(msg.getKeyData().getContentMime()))
+                  sb./*append(msg.getKey()).append("=").*/append(msg.getContentStr()).append(CRLF);
                else
                   sb.append(msg.toXml());
             }
