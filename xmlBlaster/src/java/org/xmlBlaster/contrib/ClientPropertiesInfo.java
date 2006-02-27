@@ -264,10 +264,16 @@ public class ClientPropertiesInfo implements I_Info {
       return this.objects.keySet();
    }
 
+   /**
+    * @return Never null
+    */
    public Map getClientPropertyMap() {
       return clientPropertyMap;
    }
    
+   /**
+    * @return Never null
+    */
    public ClientProperty[] getClientPropertyArr() {
       if (this.clientPropertyMap.size() == 0) return new ClientProperty[0]; 
       return (ClientProperty[])this.clientPropertyMap.values().toArray(new ClientProperty[this.clientPropertyMap.size()]);
