@@ -130,7 +130,7 @@ public final class CommandWrapper
       StringTokenizer st = new StringTokenizer(prefix, "/");
       int ii=1;
       while (st.hasMoreTokens()) {
-         String token = (String)st.nextToken();
+         String token = st.nextToken();
          if (log.TRACE) log.trace(ME, "Parsing '" + prefix + "' ii=" + ii + " token=" + token);
          if (ii==1)
             root = token;
