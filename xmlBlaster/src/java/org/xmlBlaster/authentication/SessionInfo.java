@@ -984,9 +984,30 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * @param remoteProperties The remoteProperties to set.
+    * @param remoteProperties The remoteProperties to set, pass null to reset.
     */
-   public void setRemoteProperties(Map map) {
-      this.remoteProperties = new ClientPropertiesInfo(map);
+   public synchronized void setRemoteProperties(Map map) {
+      if (map == null)
+         this.remoteProperties = null;
+      else
+         this.remoteProperties = new ClientPropertiesInfo(map);
+   }
+
+   /**
+    * Add a remote property. 
+    * Usually this is done by a publish of a client, but for
+    * testing reasons we can to it here manually.
+    * If the key exists, its value is overwritten
+    * @param key The unique key (no multimap)
+    * @param value The value, it is assumed to be of type "String"
+    * @return The old ClientProperty if existed, else null
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
+    */
+   public synchronized ClientProperty addRemoteProperty(String key, String value) {
+      if (this.remoteProperties == null)
+         this.remoteProperties = new ClientPropertiesInfo(null);
+      ClientProperty old = (ClientProperty)this.remoteProperties.getClientPropertyMap().get(key); 
+      this.remoteProperties.put(key, value);
+      return old;
    }
 }

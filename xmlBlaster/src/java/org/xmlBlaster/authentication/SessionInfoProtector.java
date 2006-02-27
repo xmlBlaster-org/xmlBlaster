@@ -5,9 +5,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
@@ -247,6 +249,29 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    /** Enforced by ConnectQosDataMBean interface. */
    public final boolean isPersistent() {
       return this.sessionInfo.getConnectQos().getData().isPersistent();
+   }
+   
+   public String[] getRemoteProperties() {
+      ClientProperty[] cp = this.sessionInfo.getRemotePropertyArr();
+      String[] arr = new String[cp.length];
+      for (int i=0; i<cp.length; i++)
+         arr[i] = cp[i].toXml("", "remoteProperty").trim();
+      return arr;
+   }
+   
+   public String clearRemoteProperties() {
+      ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
+      if (info == null) return "No remote properties found, nothing to clear";
+      this.sessionInfo.setRemoteProperties(null);
+      return "Removed " + info.getClientPropertyMap().size() + " remote properties";
+   }
+
+   public String addRemoteProperty(String key, String value) {
+      ClientProperty old = this.sessionInfo.addRemoteProperty(key, value);
+      if (old == null)
+         return "Added client property '" + key + "'";
+      else
+         return "Replaced existing client property '" + old.toXml("", "remoteProperty").trim() + "'";
    }
    
    /** JMX */

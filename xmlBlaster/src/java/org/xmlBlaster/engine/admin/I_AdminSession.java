@@ -210,4 +210,32 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @throws Exception if the underlying implementation gets an exception.
     */
    public long removeFromCallbackQueue(long numOfEntries) throws Exception;
+   
+   /**
+    * Access all known remote properties kept in this session. 
+    * The remote properties are client side settings send to the
+    * server, they contain informations which, for example,
+    * can be used by the EventPlugin to alert administrators.
+    * @return The properties in notation key=value
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
+    */
+   public String[] getRemoteProperties();
+   
+   /**
+    * Remove all remote properties from this session. 
+    * @return Some receipt text
+    */
+   public String clearRemoteProperties();
+
+   /**
+    * Add a remote property. 
+    * Usually this is done by a publish of a client, but for
+    * testing reasons we can to it here manually.
+    * If the key exists, its value is overwritten
+    * @param key The unique key (no multimap)
+    * @param value The value, it is assumed to be of type "String"
+    * @return Some receipt text
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
+    */
+   public String addRemoteProperty(String key, String value);
 }
