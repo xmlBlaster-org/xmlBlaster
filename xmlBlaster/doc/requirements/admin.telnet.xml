@@ -164,15 +164,30 @@
             <th>Description</th>
          </tr>
          <tr>
-            <td>set client/joe/ses17/?cbQueueMaxMsgs=30000</td>
+            <td>set client/joe/1/?sessionTimeout=2000000</td>
             <td>
-               <pre><![CDATA[
-<qos>
-   <state id='OK' info='Blah'/>
-</qos>
-               ]]></pre>
+               <pre>
+               /node/heron/client/subscribe/1/?sessionTimeout=2000000
+               </pre>
             </td>
-            <td>The returned string is XML encoded
+            <td>Similar as the request
+            </td>
+         </tr>
+         <tr>
+            <td>set client/publish/1/?addRemoteProperty=someKey&amp;someValue</td>
+            <td>
+            /node/heron/client/publish/1/?addRemoteProperty=someKey&amp;someValue
+            </td>
+            <td>Similar as the request
+            </td>
+         </tr>
+         <tr>
+            <td>set client/publish/1/?addRemoteProperty=someKey</td>
+            <td>
+            errorCode=user.illegalArgument message=#1.1.1 wrong number of arguments: '1' but should be '2'
+            </td>
+            <td>An error as the method addRemotProperty(String,String) expects
+            two arguments
             </td>
          </tr>
       </table>
