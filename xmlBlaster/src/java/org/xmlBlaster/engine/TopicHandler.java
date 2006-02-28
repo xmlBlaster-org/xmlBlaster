@@ -24,6 +24,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
@@ -161,6 +162,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private I_SubscriptionListener subscriptionListener;
 
    private Map msgUnitWrapperUnderConstruction = new HashMap();
+   
+   /** this is used for administrative gets (queries on callback queue) */
+   private QueueQueryPlugin queueQueryPlugin;
 
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
@@ -2292,6 +2296,25 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return this.historyQueue;
    }   
    
+   /**
+    * Query the history queue, can be peeking or consuming. 
+    * @param keyData Is currently unused but it is needed to be consistent with the 
+    * admin get convention (i.e. either take no parameters or always take a key
+    * and a qos).
+    * @param qosData Can be configured to be consuming
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
+    */
+   public MsgUnit[] getHistoryQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      if (this.queueQueryPlugin == null) {
+         synchronized (this) {
+            if (this.queueQueryPlugin == null) {
+               this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
+            } 
+         }
+      }
+      return this.queueQueryPlugin.query(this.historyQueue, keyData, qosData);
+   }
+
    /**
     * instantiates and initializes a MsgDistributorPlugin if the topic property requires so.
     * If such a plugin exists already it is left untouched.

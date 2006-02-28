@@ -6,8 +6,11 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.I_AdminUsage;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * Declares available methods of a client for administration. 
@@ -92,4 +95,14 @@ public interface I_AdminSubject extends I_AdminUsage {
     * @return The absolute file names dumped
     */
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception;
+   
+   /**
+    * Query the history queue, can be peeking or consuming. 
+    * @param keyData Is currently unused but it is needed to be consistent with the 
+    * admin get convention (i.e. either take no parameters or always take a key
+    * and a qos).
+    * @param qosData Can be configured to be consuming
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
+    */
+   public MsgUnit[] getSubjectQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
 }

@@ -15,6 +15,8 @@ import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -22,6 +24,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -32,6 +35,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.admin.I_AdminSession;
@@ -122,7 +126,9 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     */
    private I_Queue subjectQueue;
 
-
+   /** this is used for administrative gets (queries on callback queue) */
+   private QueueQueryPlugin queueQueryPlugin;
+   
    /** Statistics */
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
@@ -991,6 +997,27 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          return "INTERNAL_ERROR";
       }
    }
+   
+   /**
+    * Query the subject queue, can be peeking or consuming. 
+    * @param keyData Is currently unused but it is needed to be consistent with the 
+    * admin get convention (i.e. either take no parameters or always take a key
+    * and a qos).
+    * @param qosData Can be configured to be consuming
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
+    */
+   public MsgUnit[] getSubjectQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+      if (this.queueQueryPlugin == null) {
+         synchronized (this) {
+            if (this.queueQueryPlugin == null) {
+               this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
+            } 
+         }
+      }
+      return this.queueQueryPlugin.query(this.subjectQueue, keyData, qosData);
+   }
+   
+
 
    //=========== Enforced by I_AdminSubject and SubjectInfoProtector.java ================
    /**
