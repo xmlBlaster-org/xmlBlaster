@@ -1,0 +1,182 @@
+
+
+Export Import:
+==============
+use the command line tool bcp 
+A Table must exist when using bcp, i.e. it can appearently not create tables.
+The alternative is to use osql (probably better)
+
+
+
+SQL Enterprise Manager:
+=======================
+- Start SEM go on the navigation tree under "(local) (Windows NT)" (child of SQL Server Group)
+- Click with the left mouse button on Properties
+- Choose Security and choose Authentication you want.
+Note: I needed to put it first on pause. Then on choosing authentication it will ask me to restart the service.
+
+SQL Syntax:
+===========
+Created other database and other user (on that other database).
+Then an invocation would be
+
+SELECT * from database.user.table
+
+so I suppose database = catalog
+             user = schema
+
+
+WHEN ON SAME DATABASE (given in url when establishing the connection)
+as in oracle
+
+- Adding of triggers to foreign schema (inside the same database) works
+
+Transactions:
+=============
+
+select req_transactionID from master.dbo.syslockinfo where req_spid=@@spid
+
+
+
+
+CREATE TRIGGER xmlblaster.test_01 ON mic.test
+AFTER UPDATE
+AS 
+BEGIN
+DECLARE
+      @dbName  VARCHAR(250),
+      @dbName1 VARCHAR(250),
+      @tId     INTEGER,
+      @txt     VARCHAR(255)
+BEGIN
+   SELECT @dbName = age FROM inserted
+   SELECT @dbName1 = age FROM deleted
+   SELECT @tId = req_transactionID from master.dbo.syslockinfo where req_spid=@@spid
+   SET @txt = CONVERT(VARCHAR(255), @tId)
+
+  SET @dbName = 'updated age ' + @dbName1 + ' to be ' + @dbName + ' id:' + CONVERT(VARCHAR(50), NEWID())  + ' trans ' + @txt
+   -- SELECT @dbName1 = name FROM deleted
+   INSERT INTO debug values (@dbName)
+   -- INSERT INTO debug values (@dbName1)
+END
+END
+
+
+
+Test Code:
+==========
+
+-- select name from sysobjects where xtype='U' and uid=5
+-- select uid from sysusers where name='mic' or name='mic'
+
+
+
+-- select * from INFORMATION_SCHEMA.TABLES
+
+CREATE TRIGGER schemaTr ON INFORMATION_SCHEMA.TABLES INSTEAD OF INSERT
+AS 
+BEGIN
+DECLARE
+      @catalog  VARCHAR(128),
+      @schema VARCHAR(128),
+      @table VARCHAR(128),
+      @txt  VARCHAR(255)
+BEGIN
+     SELECT @catalog = table_catalog FROM inserted
+     SELECT @schema = table_schema FROM inserted
+     SELECT @table = table_name FROM inserted
+     SET @txt = @catalog + ' ' + @schema + ' ' + @table
+     INSERT INTO debug values (@txt)
+END
+END
+
+
+
+
+create VIEW xmlblaster.test_view (name) AS SELECT name from sysobjects where xtype='U' AND uid=5
+
+CREATE TRIGGER schemaTr ON xmlblaster.test_view INSTEAD OF INSERT
+AS 
+BEGIN
+DECLARE
+      @name  VARCHAR(255),
+      @txt  VARCHAR(255)
+BEGIN
+       INSERT INTO debug values ('PROVA')
+       SELECT @name = name FROM inserted
+       SET @txt = 'CREATE TABLE INVOKED FOR  ' + @name + ' into schema mic'
+       INSERT INTO debug values (@txt)
+END
+END
+
+
+CREATE TRIGGER schemaTr ON sysobjects
+AFTER INSERT
+AS 
+BEGIN
+DECLARE
+      @name  VARCHAR(255),
+      @uid INTEGER,
+      @xtype VARCHAR(5),
+      @txt  VARCHAR(255)
+BEGIN
+     SELECT @xtype = xtype FROM inserted
+     IF @xtype = 'U'
+     BEGIN
+       SELECT @name = name FROM inserted
+       SELECT @uid = name FROM inserted
+       SET @txt = 'CREATE TABLE INVOKED FOR  ' + @name + ' into schema mic'
+       INSERT INTO debug values (@txt)
+     END
+END
+END
+(gives a permission denied as xmlblaster, same this as user 'sa'):
+
+ 15:05:27  [CREATE - 0 row(s), 0.073 secs]  [Error Code: 229, SQL State: 42000]  [Microsoft][SQLServer 2000 Driver for JDBC][SQLServer]CREATE TRIGGER permission denied on object 'sysobjects', database 'eclettic', owner 'dbo'.
+... 1 statement(s) executed, 0 row(s) affected, database exec time 0.073 sec [0 successful, 0 warnings, 1 errors]
+
+
+
+
+
+
+
+
+
+CREATE TRIGGER test_01 ON mic.test
+AFTER UPDATE
+AS 
+BEGIN
+DECLARE
+      @dbName     VARCHAR(50),
+      @dbName1     VARCHAR(50)
+BEGIN
+   SELECT @dbName = age FROM inserted
+   SELECT @dbName1 = age FROM deleted
+
+  SET @dbName = 'updated age ' + @dbName1 + ' to be ' + @dbName + ' id:' + CONVERT(VARCHAR(50), NEWID())
+   -- SELECT @dbName1 = name FROM deleted
+   INSERT INTO debug values (@dbName)
+   -- INSERT INTO debug values (@dbName1)
+END
+END
+CREATE TRIGGER test_trigger ON eclettic.mic.test
+AFTER INSERT
+AS 
+BEGIN
+DECLARE
+      @dbName     VARCHAR(50)
+BEGIN
+   SET @dbName = 'DUMMY'
+   INSERT INTO debug values (@dbName)
+END
+END
+				
+
+INFO:
+=====
+http://www.akadia.com/services/sqlsrv_programming.html#Transaction%20Log%20Architecture
+(describes many things among these how to backup and restore a database)
+
+
+
