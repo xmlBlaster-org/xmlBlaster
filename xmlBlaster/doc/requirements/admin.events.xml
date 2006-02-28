@@ -587,6 +587,26 @@ $_{xml}
          </tr>
 
       </table>
+
+<p class="celltitel">JMX specific settings</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>jmx.content</td>
+            <td>$_{eventType}: $_{summary}</td>
+            <td>The template to generate the content of the message field of JMX.<br />
+            Use ${line.separator} instead of '\n' to enforce a new line.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.EventPlugin</see>
