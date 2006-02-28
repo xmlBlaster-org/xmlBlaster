@@ -87,6 +87,7 @@
  <tr><td>topic/*/event/dead</td><td>Captures if a topic is destroyed (on all topics)</td></tr>
  <tr><td>topic/[topicId]/event/dead</td><td>Captures event if the given topic is destroyed, e.g. "topic/hello/event/dead"</td></tr>
  <tr><td>client/[subjectId]/session/[publicSessionId]/event/callbackState</td><td>Captures event if the client callback server goes to ALIVE or POLLING, e.g. "client/joe/session/1/event/callbackState". Note that the status change to DEAD is currently not implemented (it is reported as POLLING). Wildcards are not supported.</td></tr>
+ <tr><td>client/*/session/*/event/remoteProperties</td><td>Captures event when the remote properties of a client change (all clients, triggered when a client publishes a message to topic <code>__sys__remoteProperties</code>)</td></tr>
  <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a logging/severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'logging/severe/*' to detect this.</td></tr>
  <tr><td>heartbeat.360000</td><td>Sends a heartbeat notification every given milli seconds. Setting <code>heartbeat</code> without millis specified defaults to one notification per day (86400000 millis).</td></tr>
  <tr><td>client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%</td><td>TODO</td></tr>
@@ -256,19 +257,23 @@
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='14'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='14'/>
    <font color="blue">&lt;attribute id='eventTypes'>
-        heartbeat.43200000
+   	 logging/severe/*,
+       heartbeat.43200000
    &lt;/attribute></font>
    <font color="red">&lt;attribute id='destination.smtp'>
       mail.smtp.from=xmlBlaster@localhost,
       mail.smtp.to=xmlblasterStatus@someadmin.somecompany.eu,
+      mail.content=$_{xml},
       mail.collectMillis=0
    &lt;/attribute></font>
 &lt;/plugin>
       </pre>
 
-      <p>The value 43200000 are milliseconds (== 12 hours).
+      <p>The value 43200000 are milliseconds (== 12 hours). Additionally we have configured
+      to send a heartbeat if a severe logging occurs. 
       The email subject is <code>[XmlBlaster event: heartbeat.43200000] heron</code>
-      and here is an example message which is transported in the body of the email:</p>
+      and here is an example message which is transported in the body of the email, it
+      replaces the <code>$_{xml}</code> placeholder:</p>
 
 <pre class="BORDER">
  &lt;node id='heron'>
@@ -283,7 +288,13 @@
   &lt;usedMem>3906184&lt;/usedMem>
   &lt;serverTimestamp>2006-01-11 12:55:03.59&lt;/serverTimestamp>
   &lt;numClients>2&lt;/numClients>
-  &lt;clientList>__sys__jdbc,__RequestBroker_internal[heron]&lt;/clientList>
+  &lt;clientList>__sys__jdbc,__RequestBroker_internal[heron],joe&lt;/clientList>
+  &lt;client id='joe'>
+   &lt;session id='1'>
+    &lt;state>ALIVE&lt;/state>
+    &lt;remoteProperty name='logging/error'>Some severe problem occurred&lt;/remoteProperty>
+   &lt;/session>
+  &lt;/client>
   &lt;numTopics>1&lt;/numTopics>
   &lt;topicList>__sys__Event&lt;/topicList>
   &lt;numGet>0&lt;/numGet>
@@ -349,7 +360,7 @@
 
 
    <example lang="XML" type="HTML">
-      <p id="remoteProperty" class="celltitel">Observing the status of connected clients</p>
+      <p id="remoteProperty" class="celltitel">Observing the remote status of connected clients</p>
       <p>Clients can publish their status to xmlBlaster and this status can be observed by the EventPlugin framework.
       For example a client can choose to send its error logging to xmlBlaster or other fatal situations
       like low memory or lost database connections.
@@ -363,7 +374,12 @@
       <li>Those client properties are kept in RAM by the xmlBlaster SessionInfo instance to this client, they are named <i>remoteProperties</i></li>
       <li>If configured, a heartbeat EventPlugin will send those properties to any configured sink</li>
       <li>Note: You can use the <code>jconsole</code> GUI to see the current remote properties in the running server
-          and manipulate them manually (add another, remove all)</li>
+          and manipulate them manually (add another, remove all). Access over telnet works as well.</li>
+      <li>Note: Access over telnet works as well. Start a telnet session (see requirement admin.telnet)
+                and type (with the connected 'publish' client from below):
+          <code>get client/publish/1/?remoteProperties</code> or
+          <code>set client/publish/1/?addRemoteProperty=someKey&amp;someValue</code> or
+          <code>get client/publish/1/?clearRemoteProperties</code></li>
       <li>Note: On xmlBlaster restart those properties are lost, the client needs to resend them if desired</li>
       </ol>
 
@@ -374,15 +390,35 @@
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='14'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='14'/>
    <font color="blue">&lt;attribute id='eventTypes'>
+        client/*/session/*/event/remoteProperties,
         heartbeat.43200000
    &lt;/attribute></font>
-   <font color="red">&lt;attribute id='destination.publish'/></font>
+   <font color="red">
+   &lt;attribute id='destination.publish'>
+      publish.content=$_{xml}
+   &lt;/attribute>
+   &lt;attribute id='destination.smtp'>
+      mail.smtp.from=xmlBlaster@localhost,
+      mail.smtp.to=blue8@localhost,
+      mail.content=$_{xml},
+      mail.collectMillis=0
+   &lt;/attribute>
+   &lt;attribute id='destination.jmx'>
+      jmx.content=$_{xml},
+   &lt;/attribute>
+   </font>
 &lt;/plugin>
       </pre>
 
+      <p>With the above configuration a heartbeat message is send every 12 hours (43200000 msec) and
+      additionally an event is send when the remote properties are changed. The events
+      are send to any JMX destination, additionally with email to <i>blue8@localhost</i> and finally
+      to the topic <i>__sys__Event</i>
+      </p>
+
       <p>Start a subscriber to receive the events:</p>
       <p>
-      <code>java javaclients.HelloWorldSubscribe -session.name subscribe/1 -oid __sys__Event</code>
+      <code>java javaclients.HelloWorldSubscribe -session.name subscribe/1 -oid __sys__Event -maxContentLength 3000</code>
       </p>
       <p>And now publish three remote properties:
       </p>
@@ -509,7 +545,10 @@ $_{nodeId}
 $_{eventType}
 $_{errorCode}
 $_{versionInfo}
+$_{xml}
       </code>
+      <p>The <code>$_{xml}</code> creates a xml dump of the current situation, containing
+      the current users, sessions, topics and some more detail data.</p>
 
 <p class="celltitel">Publish message specific settings</p>
       <table border="1">
@@ -537,12 +576,24 @@ $_{versionInfo}
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>publish.content</td>
+            <td>$_{eventType}</td>
+            <td>The template to generate the content of the message.<br />
+            Use ${line.separator} instead of '\n' to enforce a new line.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.EventPlugin</see>
    <see type="API">org.xmlBlaster.util.protocol.email.SmtpClient</see>
    <see type="REQ">admin</see>
+   <see type="REQ">admin.jmx</see>
+   <see type="REQ">admin.telnet</see>
    <see type="REQ">engine.LoginLogoutEvent</see>
    <see type="REQ">util.log.plugin</see>
    <author>xmlblast@marcelruff.info</author>
