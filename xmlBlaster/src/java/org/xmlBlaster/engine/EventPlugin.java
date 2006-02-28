@@ -44,6 +44,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SessionInfoProtector;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -289,12 +290,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    class PublishDestinationHelper {
       String destination;
       String key, qos;
+      String contentTemplate;
       public PublishDestinationHelper(String destination) throws XmlBlasterException {
          Map map = StringPairTokenizer.parseLineToProperties(destination);
          if (map.containsKey("publish.key"))
             this.key = (String) map.get("publish.key");
          if (map.containsKey("publish.qos"))
             this.qos = (String) map.get("publish.qos");
+         if (map.containsKey("publish.content"))
+            this.contentTemplate = (String) map.get("publish.content");
+         else
+            this.contentTemplate = "$_{eventType}";
       }
       MsgKeyData getPublishKey(String summary, String description,
             String eventType, String errorCode) throws XmlBlasterException {
@@ -360,9 +366,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return msgQosData;
       }
       MsgUnit getMsgUnit(String summary, String description,
-            String eventType, String errorCode, SessionName sessionName,
-            boolean useEventTypeAsContent) throws XmlBlasterException {
-         String content = (useEventTypeAsContent) ? eventType : description;
+            String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
+         String content = replaceTokens(
+            this.contentTemplate, summary, description, eventType, errorCode);
          return new MsgUnit(
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
@@ -378,8 +384,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    class JmxDestinationHelper {
       String destination;
+      String contentTemplate;
       public JmxDestinationHelper(String destination) throws XmlBlasterException {
-         //Map map = StringPairTokenizer.parseLineToProperties(destination);
+         Map map = StringPairTokenizer.parseLineToProperties(destination);
+         if (map.containsKey("jmx.content"))
+            this.contentTemplate = (String) map.get("jmx.content");
+         else
+            this.contentTemplate = "$_{eventType}: $_{summary}";
+      }
+      String getMessage(String summary, String description,
+            String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
+         String content = replaceTokens(
+            this.contentTemplate, summary, description, eventType, errorCode);
+         return content;
+         
       }
    }
    protected JmxDestinationHelper jmxDestinationHelper;
@@ -541,6 +559,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                log.fine("Register login/logout event = " + event);
                if (event.endsWith("/event/subscribe") || event.endsWith("/event/unSubscribe"))
                   this.requestBroker.addSubscriptionListener(this);
+               else if (event.endsWith("/event/remoteProperties"))
+                  this.requestBroker.addRemotePropertiesListener(this); // I_RemotePropertiesListener
                else
                   this.requestBroker.getAuthenticate().addClientListener(this);
                if (this.clientSet == null) this.clientSet = new TreeSet();
@@ -565,7 +585,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                else
                   this.heartbeatInterval = Constants.DAY_IN_MILLIS;
                if (this.heartbeatInterval > 0) {
-                  this.requestBroker.addRemotePropertiesListener(this);
                   // send the first heartbeat directly after startup:
                   long initialInterval = (this.heartbeatInterval > 2000) ? 2000L : this.heartbeatInterval;
                   this.heartbeatTimeout = new Timeout("EventPlugin-HeartbeatTimer");
@@ -598,16 +617,59 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * Called when a client sends his remote properties, for example client side errors. 
+    * Called when a client sends his remote properties, for example client side errors.
+    * eventType == client/* /session/* /event/remoteProperties 
     * Enforced by I_RemotePropertiesListener 
     */
    public void update(SessionInfo sessionInfo, Map remoteProperties) {
       log.fine("Received new remote properties from client " + sessionInfo.getId());
-      newHeartbeatNotification("heartbeat.remoteProperties");
+      SessionName sessionName = sessionInfo.getSessionName();
+      String relativeName = sessionName.getRelativeName();
+
+      String event = ContextNode.SEP + ContextNode.EVENT_MARKER_TAG + ContextNode.SEP + "remoteProperties";
+      String foundEvent = relativeName + event;  // "client/joe/session/1/event/remoteProperties"
+      if (!this.clientSet.contains(foundEvent)) {
+         // "client/joe/session/*/event/remoteProperties"
+         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+         if (!this.clientSet.contains(foundEvent)) {
+            // "client/*/session/*/event/remoteProperties"
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            if (!this.clientSet.contains(foundEvent)) {
+               return;
+            }
+         }
+      }
+      
+      try {
+         String summary = "Remote properties change for client " + sessionName.getAbsoluteName();
+         String description = summary;
+         ClientProperty[] cp = sessionInfo.getRemotePropertyArr();
+         for (int i=0; i<cp.length; i++)
+            description += "\n   " + cp[i].toXml("", "remoteProperty").trim();
+         String eventType = foundEvent;
+         String errorCode = null;
+
+         if (this.smtpDestinationHelper != null) {
+            sendEmail(summary, description, eventType, null, false);
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            sendMessage(summary, description,
+                    eventType, errorCode, sessionName);
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            sendJmxNotification(summary, description, eventType, null, false);
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+      
    }
    
    /**
     * Send a heartbeat message/notification. 
+    * Called by timeout or by manual trigger (e.g. over jconsole)
     * @param eventType
     */
    protected void newHeartbeatNotification(String eventType) {
@@ -615,23 +677,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          ContextNode contextNode = this.engineGlob.getContextNode();
          int rl = this.engineGlob.getRunlevelManager().getCurrentRunlevel();
          String summary = "Heartbeat event from " + contextNode.getAbsoluteName() + ", runlevel=" + RunlevelManager.toRunlevelStr(rl) + " (" + rl + ")";
-         /*
-         String description = "\nnodeId=" + contextNode.getAbsoluteName()
-               + "\nrelease=" + this.engineGlob.getVersion() + " " + this.engineGlob.getReleaseId()
-               + "\nstarted=" + this.engineGlob.getRequestBroker().getStartupDate()
-               + "\nnumClients=" + this.engineGlob.getRequestBroker().getAuthenticate().getNumClients()
-               + "\nnumTopics=" + this.engineGlob.getRequestBroker().getNumTopics()
-               + "\nmemory(used/free/max)=" + Global.byteString(usedMem) + "/" + Global.byteString(Global.heapMemoryUsage-usedMem) + "/" + Global.byteString(Global.heapMemoryUsage)
-               + "\nlastError=" + this.engineGlob.getRequestBroker().getLastError()
-               + "\nlastWarning=" + this.engineGlob.getRequestBroker().getLastWarning()
-               //Is added in sendEmail etc:
-               //+ "\nversionInfo=" + versionInfo
-               //+ "\n\n---"
-               //+ "\nSee URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html"
-               ;
-         */
-         String description = createStatusDump(this.engineGlob);
          String errorCode = null;
+         String description = "Heartbeat event from " + contextNode.getAbsoluteName() + ", runlevel=" + RunlevelManager.toRunlevelStr(rl) + " (" + rl + ")";
          SessionName sessionName = null;
    
          if (this.smtpDestinationHelper != null) {
@@ -641,7 +688,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             // Uses XML as message content
-            sendMessage(summary, description, eventType, errorCode, sessionName, false);
+            sendMessage(summary, description, eventType, errorCode, sessionName);
          }
    
          if (this.jmxDestinationHelper != null) {
@@ -668,12 +715,22 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @return The XML dump
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">The admin.commands requirement</a>
     */
-   public static String createStatusDump(org.xmlBlaster.engine.Global g) {
+   public static String createStatusDump(org.xmlBlaster.engine.Global g,
+         String summary, String description,
+         String eventType, String errorCode) {
       // Change to be configurable with ${amdincommands} replacements
       RequestBroker r = g.getRequestBroker();
       StringBuffer buf = new StringBuffer(4096);
       //buf.append("\n").append("<xmlBlaster>"); // Root tag not added, so we easily can collect different nodes to a big xml dump
       buf.append("\n ").append("<node id='").append(g.getId()).append("'>");
+      if (summary != null)
+      buf.append("\n  ").append("<_summary>").append(summary).append("</_summary>");
+      if (description != null)
+      buf.append("\n  ").append("<_description>").append(description).append("</_description>");
+      if (eventType != null)
+      buf.append("\n  ").append("<_eventType>").append(eventType).append("</_eventType>");
+      if (errorCode != null)
+         buf.append("\n  ").append("<_errorCode>").append(errorCode).append("</_errorCode>");
       buf.append("\n  ").append("<uptime>").append(r.getUptime()).append("</uptime>");
       buf.append("\n  ").append("<runlevel>").append(g.getRunlevelManager().getCurrentRunlevel()).append("</runlevel>");
       buf.append("\n  ").append("<instanceId>").append(g.getInstanceId()).append("</instanceId>");
@@ -766,6 +823,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          XmlBlasterException e = new XmlBlasterException(this.engineGlob,
             ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
          str = ReplaceVariable.replaceAll(str, "$_{versionInfo}", e.getVersionInfo());
+      }
+      if (str.indexOf("$_{xml}") != -1) {
+         str = ReplaceVariable.replaceAll(str, "$_{xml}", createStatusDump(this.engineGlob, summary, null,
+            eventType, errorCode));
+         return str;
       }
       return str;
    }
@@ -945,8 +1007,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (!this.isActive) return;
 
       try {
-         String message = eventType + ": " + summary; // Shows up under 'Message' in jconsole
-         //String message = eventType + ": " + description; // Shows up under 'Message' in jconsole
+         SessionName sessionName = null;
+         //String message = eventType + ": " + summary; // Shows up under 'Message' in jconsole
+         String message =this.jmxDestinationHelper.getMessage(summary, description,
+               eventType, errorCode, sessionName);
          String attributeName = eventType;
          String oldValue = ""; // TODO what to put here?
          String newValue = eventType + ": " + summary; // Won't work if attributeName is illegal
@@ -964,13 +1028,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
     */
    protected void sendMessage(String summary, String description,
-         String eventType, String errorCode, SessionName sessionName, boolean useEventTypeAsContent) {
+         String eventType, String errorCode, SessionName sessionName) {
       if (this.publishDestinationHelper == null) return;
       if (!this.isActive) return;
 
       try {
          MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-              eventType, errorCode, sessionName, useEventTypeAsContent);
+              eventType, errorCode, sessionName);
          // Done already in getMsgUnit() above
          //msgUnit.getQosData().addClientProperty("_summary", summary);
          this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -1120,7 +1184,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             try {
-               sendMessage(summary, description, eventType, null, null, true);
+               sendMessage(summary, description, eventType, null, null);
             } catch (Throwable e) {
                e.printStackTrace();
             }
@@ -1200,7 +1264,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                  eventType, errorCode, sessionName, true);
+                  eventType, errorCode, sessionName);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1283,7 +1347,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                    eventType, errorCode, sessionName, true);
+                    eventType, errorCode, sessionName);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1548,7 +1612,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode, sessionName, true);
+                    eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("_oid",
@@ -1625,7 +1689,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                     eventType, errorCode, sessionName, true);
+                     eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
                msgUnit.getQosData().addClientProperty("_oid",
@@ -1697,7 +1761,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
-                    eventType, errorCode, null, true);
+                    eventType, errorCode, null);
                msgUnit.getQosData().addClientProperty("_topicId",
                      topicHandler.getId());
                this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -1799,7 +1863,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
    
          if (this.publishDestinationHelper != null) {
-            sendMessage(summary, description, eventType, errorCode, sessionName, true);
+            sendMessage(summary, description, eventType, errorCode, sessionName);
          }
 
          if (this.jmxDestinationHelper != null) {
