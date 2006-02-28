@@ -44,7 +44,6 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.SessionInfoProtector;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -683,7 +682,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          if (this.smtpDestinationHelper != null) {
             // Ignores contentTemplate and forces the XML as last argument
-            sendEmail(summary, description, eventType, null, false, description);
+            sendEmail(summary, description, eventType, null, false);
          }
    
          if (this.publishDestinationHelper != null) {
@@ -1044,25 +1043,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * @see #sendEmail(String summary, String description,
-            String eventType, String errorCode, boolean forceSending, String contentTemp)
-    */
-   protected void sendEmail(String summary, String description,
-         String eventType, String errorCode, boolean forceSending) {
-      sendEmail(summary, description,
-                eventType, errorCode, forceSending, this.smtpDestinationHelper.contentTemplate);
-   }
-   /**
     * Sending email as configured with <code>destination.smtp</code>. 
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
     * @param description The event description to send, it is injected as $_{description}
     * @param eventType For example "logging/severe/*"
     * @param forceSending If true send directly and ignore the timeout
-    * @param contentTemp Overwrite the default this.contentTemplate
     * @see http://www.faqs.org/rfcs/rfc2822.html
     */
    protected void sendEmail(String summary, String description,
-            String eventType, String errorCode, boolean forceSending, String contentTemp) {
+            String eventType, String errorCode, boolean forceSending) {
       try {
          if (this.smtpDestinationHelper == null) return;
          if (!this.isActive) return;
@@ -1075,7 +1064,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             emailData.setSubject(replaceTokens(
                   this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
             emailData.setContent(replaceTokens(
-                  contentTemp, summary, description, eventType, errorCode));
+                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
             this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             return;
          }
@@ -1089,7 +1078,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
             emailData.setContent(old
                   + replaceTokens(
-                  contentTemp, summary, description, eventType, errorCode));
+                        this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
             
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
