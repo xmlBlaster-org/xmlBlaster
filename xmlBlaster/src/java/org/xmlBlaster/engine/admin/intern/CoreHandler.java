@@ -234,8 +234,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
          /*String ret = ""+*/setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getValue();
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         return cmd.getArgsString();
       }
 
       String loginName = cmd.getUserNameLevel();
@@ -253,8 +253,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (pubSessionId.startsWith("?")) {
          // for example "/node/heron/joe/?uptime"
          /*String ret = ""+*/setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getValue();
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         return cmd.getArgsString();
       }
 
       String sessionAttr = cmd.getSessionAttrLevel();
@@ -267,8 +267,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          /*String ret = ""+*/setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
-         return cmd.getValue();
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         return cmd.getArgsString();
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
@@ -440,13 +440,13 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: " + e.toString());
       }
    }
-
+   /*
    private Object setInvoke(String property, Object impl, Class aClass, String value) throws XmlBlasterException {
       String[] argValuesAsStrings = new String[1];
       argValuesAsStrings[0] = value;
       return setInvoke(property, impl, aClass, argValuesAsStrings);
    }
-
+   */
    public String help() {
       return "Administration of properties from system, xmlBlaster.properties and command line";
    }

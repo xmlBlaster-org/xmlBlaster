@@ -170,7 +170,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
          
       //  /node/heron/topic/hello/?content=Hello world
       String key = cmd.getKey();     // -> "content"
-      String value = cmd.getValue(); // -> "Hello world"
+      //String value = cmd.getValue(); // -> "Hello world"
 
       if (!key.equalsIgnoreCase("content"))
          throw new XmlBlasterException(glob, ErrorCode.USER_ADMIN_INVALID, ME,

@@ -7,6 +7,7 @@ Comment:   Contains the parsed command
 package org.xmlBlaster.engine.admin;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -15,8 +16,6 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.engine.Global;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -41,8 +40,8 @@ public final class CommandWrapper
    private final Global glob;
    private final LogChannel log;
 
-   private final static String PROP_SEPARATOR = "&";
-   private final static String XMLBLASTER_PREFIX = "xmlBlaster.";
+   //private final static String PROP_SEPARATOR = "&";
+   //private final static String XMLBLASTER_PREFIX = "xmlBlaster.";
 
    /** The original command (modified to be absolute) */
    private final String cmd;
@@ -66,8 +65,12 @@ public final class CommandWrapper
 
    /** "sysprop/?call[auth]=true" this is "call[auth]" */
    String key = null;
-   /** "sysprop/?call[auth]=true" this is "true" */
-   String value = null;
+   /** "sysprop/?call[auth]=true" this is "true"
+    * for "sysprop/?setSomtthing=true&17" it is "true", "17"
+    */
+   String[] value = null;
+   /** "true&17" */
+   private String argsString;
    
    /** the qos properties */
    QueryQosData qosData;
@@ -76,7 +79,7 @@ public final class CommandWrapper
    QueryKeyData keyData;
 
    /** the properties on the right end */
-   Map props = new HashMap();
+   //Map props = new HashMap();
 
    /**
     * this constructor is currently used for the get 
@@ -241,12 +244,13 @@ public final class CommandWrapper
    /**
     * @return If set() is invoked the value behind the "="
     * "sysprop/?trace[core]=true" would return 'true'
+    * Lenght is guaranteed to be >= 1
     * @exception XmlBlasterException if no value found
     */
-   public final String getValue() throws XmlBlasterException {
-      if (key == null && value == null)
+   public final String[] getValue() throws XmlBlasterException {
+      if (key == null && this.value == null)
          parseKeyValue();
-      return value;
+      return this.value;
    }
 
    /**
@@ -260,32 +264,52 @@ public final class CommandWrapper
       return key;
    }
 
+   /**
+    * set client/publish/1/?addRemoteProperty=arg1&arg2
+    * @throws XmlBlasterException
+    */
    private void parseKeyValue() throws XmlBlasterException {
       int qIndex = cmd.indexOf("?");
       if (qIndex < 1 || cmd.length() <= (qIndex+1)) {
          log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '?'");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '?'");
       }
+      // "addRemoteProperty=arg1&arg2"
       String propString = cmd.substring(qIndex+1);
-      StringTokenizer tokenizer = new StringTokenizer(propString.trim(), PROP_SEPARATOR);
+      int equalsIndex = propString.indexOf("=");
+      if (equalsIndex < 1 || propString.length() <= (equalsIndex+1)) {
+         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '='");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '='");
+      }
+      
+      this.key = propString.substring(0, equalsIndex);
+
+      // "arg1&arg2"
+      this.argsString = propString.substring(equalsIndex+1).trim(); 
+      
+      this.value = StringPairTokenizer.parseLine(argsString, '&');
+      if (this.value.length < 1) {
+         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find value behind '='");
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find value behind '='");
+      }
+      /*
+      StringTokenizer tokenizer = new StringTokenizer(propString.trim(), PROP_SEPARATOR); // "&"
 
       boolean keyAlreadyAssigned = false;
 
-
-      
       while (tokenizer.hasMoreTokens()) {
          String pair = tokenizer.nextToken().trim();
          if (pair.length() < 1) continue;
          int equalsIndex = pair.indexOf("=");
-         /*
-         if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
-            log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find assignment '='");
-            //Thread.currentThread().dumpStack();
-            throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find assignment '='");
-         }
+         
+         //if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
+         //   log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find assignment '='");
+         //   //Thread.currentThread().dumpStack();
+         //   throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find assignment '='");
+         //}
       
          String tmpKey = pair.substring(0,equalsIndex).trim();
-         */
+         
          String tmpKey = null;
          String tmpValue = null;
          if (equalsIndex < 1 || pair.length() <= (equalsIndex+1)) {
@@ -305,6 +329,7 @@ public final class CommandWrapper
          }
          else this.props.put(tmpKey, tmpValue);
       }
+      */
    }
 
    /**
@@ -424,6 +449,13 @@ public final class CommandWrapper
          this.keyData.setOid("__cmd:" + tmpCmd);
       }
       
+   }
+
+   /**
+    * @return Returns the argsString.
+    */
+   public String getArgsString() {
+      return this.argsString;
    }
 
 }

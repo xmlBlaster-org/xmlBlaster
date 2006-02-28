@@ -133,16 +133,16 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       String value = cmdString.substring(equalsIndex+1);
       */
       String key = cmd.getKey();
-      String value = cmd.getValue();
+      String[] values = cmd.getValue();
          
       if (isLogLevelRequest(key)) {
-         boolean bool = glob.changeLogLevel(key, value.trim());
+         boolean bool = glob.changeLogLevel(key, values[0].trim());
          log.info(ME, "Changed log level '" + key + "' to " + bool);
          return ""+bool;
       }
       else {
          try {
-            String ret = glob.getProperty().set(key, value);
+            String ret = glob.getProperty().set(key, values[0]);
             log.info(ME, "Changed property '" + key + "' to " + ret);
             return ret;
          }
