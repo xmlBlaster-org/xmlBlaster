@@ -3,7 +3,24 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn repository
 ======================
+ o #14780 Extended telnet features (requirement admin.telnet)
+   - Added support to invoke operations without bean-get/set convention
+   - Added support for setters with multiple arguments, separated by '&'
+
+ o #14779 Extended EventPlugin (requirement admin.event)
+   - Extended to support configurable event sources additionally to heartbeat
+   - New, configurable jmx/publish/smtp content "$_{xml}"
+
+ o #14779 EventPlugin admin.event
+   - Extended to support configurable event sources additionally to heartbeat
+   - New, configurable jmx/publish/smtp content "$_{xml}"
  
+ o #14777 Incompatible change of return markup of telnet commands
+   The returned string is now plain without key/qos markup for text/plain requests.
+   Changed to lookup operation methods without set prefix
+
+ o #14772 Added transient map to SessionInfo to hold remote, client side properties; Extended EventPlugin to send remote, client side properties; Extended RequestBroker to capture topics of type '__sys__remoteProperties'
+
  o #14765 nested ClientProperties are now allowed in ClientProperties after fix in XmlQoSBase
 
  o #14756 email protocol:
