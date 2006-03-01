@@ -355,13 +355,36 @@ public class EncodableData implements java.io.Serializable, Cloneable
       if (getType() != null) {
          sb.append(" type='").append(getType()).append("'");
       }
+
+      if (forceReadable) {
+         String val = getStringValue();
+         if (val != null) {
+            if (val.indexOf("<") != -1 ||
+                val.indexOf("&") != -1) {
+               sb.append(">");
+               sb.append("<![CDATA[");
+               sb.append(val);
+               sb.append("]]>");
+               sb.append("</").append(tmpTagName).append(">");
+               return sb.toString();
+            }
+            else if (this.value.indexOf("]]>") != -1) {
+               // readable is not possible
+               // fall thru
+            }
+            else {
+               sb.append(">");
+               sb.append(val);
+               sb.append("</").append(tmpTagName).append(">");
+            }
+         }
+      }
+      
       if (getEncoding() != null) {
-         if (!forceReadable)
-            sb.append(" encoding='").append(getEncoding()).append("'");
+         sb.append(" encoding='").append(getEncoding()).append("'");
       }
 
-      //sb.append(getValidatedValueForXml());
-      String val = (forceReadable) ? getStringValue() : getValueRaw();
+      String val = getValueRaw();
       if (val == null)
          sb.append("/>");
       else {
