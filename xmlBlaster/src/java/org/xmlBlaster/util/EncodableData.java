@@ -368,7 +368,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
                sb.append("</").append(tmpTagName).append(">");
                return sb.toString();
             }
-            else if (this.value.indexOf("]]>") != -1) {
+            else if (val.indexOf("]]>") != -1) {
                // readable is not possible
                // fall thru
             }
@@ -376,6 +376,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
                sb.append(">");
                sb.append(val);
                sb.append("</").append(tmpTagName).append(">");
+               return sb.toString();
             }
          }
       }
