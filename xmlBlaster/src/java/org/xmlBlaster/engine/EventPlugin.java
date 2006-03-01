@@ -754,7 +754,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             buf.append("\n    ").append("<state>").append(sessionInfo.getConnectionState()).append("</state>");
             ClientProperty[] props = sessionInfo.getRemotePropertyArr();
             for (int p=0; p<props.length; p++)
-               buf.append(props[p].toXml("   ", "remoteProperty"));
+               buf.append(props[p].toXml("   ", "remoteProperty", true));
             buf.append("\n   ").append("</session>");
          }
          buf.append("\n  ").append("</client>");
