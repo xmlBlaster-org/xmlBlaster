@@ -326,6 +326,18 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * @return internal state of the EncodableData as a XML ASCII string
     */
    public final String toXml(String extraOffset, String tmpTagName) {
+      return toXml(extraOffset, tmpTagName, false);
+   }
+   
+   /**
+    * You may set forceReadable==true to have nicer human readable output.
+    * For normal processing leave forceReadable==false. 
+    * @param extraOffset
+    * @param tmpTagName
+    * @param forceReadable
+    * @return
+    */
+   public final String toXml(String extraOffset, String tmpTagName, boolean forceReadable) {
       if (tmpTagName == null)
          tmpTagName = this.tagName;
       
@@ -344,11 +356,12 @@ public class EncodableData implements java.io.Serializable, Cloneable
          sb.append(" type='").append(getType()).append("'");
       }
       if (getEncoding() != null) {
-         sb.append(" encoding='").append(getEncoding()).append("'");
+         if (!forceReadable)
+            sb.append(" encoding='").append(getEncoding()).append("'");
       }
 
       //sb.append(getValidatedValueForXml());
-      String val = getValueRaw();
+      String val = (forceReadable) ? getStringValue() : getValueRaw();
       if (val == null)
          sb.append("/>");
       else {
