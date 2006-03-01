@@ -319,7 +319,7 @@ public final class ContextNode
       for (int i=0; i<refs.length; i++) {
          Object referent = refs[i].get();
          if (referent != null) {
-            list.add((ContextNode)referent);
+            list.add(referent);
          }
          else {
             this.childs.remove(refs[i]); // Cleanup the obsolete WeakReference
