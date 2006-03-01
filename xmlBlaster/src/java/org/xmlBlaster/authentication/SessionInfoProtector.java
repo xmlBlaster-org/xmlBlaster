@@ -255,7 +255,7 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       ClientProperty[] cp = this.sessionInfo.getRemotePropertyArr();
       String[] arr = new String[cp.length];
       for (int i=0; i<cp.length; i++)
-         arr[i] = cp[i].toXml("", "remoteProperty").trim();
+         arr[i] = cp[i].toXml("", "remoteProperty", true).trim();
       return arr;
    }
    
