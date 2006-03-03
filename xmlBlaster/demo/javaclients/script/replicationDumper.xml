@@ -1,0 +1,24 @@
+<!--
+   java javaclients.script.XmlScript -requestFile replicationDumper.xml
+-->
+
+<xmlBlaster>
+
+  <connect>
+    <qos>
+       <securityService type="htpasswd" version="1.0"><![CDATA[<user>ReplWriter-DEE_V_99-AIS</user><passwd>secret</passwd>]]></securityService>
+       <persistent/>
+       <session name='/node/replXbl/client/ReplWriter-DEE_V_99-AIS/1' timeout='0' maxSessions='100' clearSessions='false' reconnectSameClientOnly='false'/>
+       <queue relating='callback' maxEntries='10000' maxEntriesCache='1000'> 
+          <callback bootstrapHostname='laptopAir' pingInterval='10000' retries='-1' dispatchPlugin='ReplManager,1.0'>
+	  </callback>
+       </queue>
+    </qos>
+  </connect>
+  <wait delay="5000000" />
+</xmlBlaster>
+
+
+
+
+
