@@ -102,7 +102,7 @@ public class DbInfo implements I_Info {
       if (ret != null) {
          return this.helper.replace(ret);
       }
-      return null;
+      return def;
    }
 
    /**
