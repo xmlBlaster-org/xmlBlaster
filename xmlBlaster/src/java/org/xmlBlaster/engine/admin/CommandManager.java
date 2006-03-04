@@ -11,7 +11,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -152,19 +151,36 @@ public final class CommandManager implements I_RunlevelListener
     *        wrapped inside the cmd, i.e. here it is inside the oid of the key).
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, String querySpec) throws XmlBlasterException {
+      String oid = keyData.getOid();
+      if (log.CALL) log.call(ME, "get(" + oid + ")");
+      if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
+      // TODO: Change to use clientProperties arg1=..., arg2=...
+      String[] args = (querySpec == null) ? new String[0] : new String[] { querySpec };
+      return get(addressServer, sessionId, oid, args);
+   }
+   /**
+    * 
+    * @param addressServer
+    * @param sessionId
+    * @param oid "__cmd:...."
+    * @param args Can be null
+    * @return
+    * @throws XmlBlasterException
+    */
+   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, String oid, String[] args) throws XmlBlasterException {
       if (addressServer == null) {
          addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo
       }
       if (sessionId == null) {
          sessionId = this.sessionInfo.getSecuritySession().getSecretSessionId();
       }
-      String oid = keyData.getOid();
       if (log.CALL) log.call(ME, "get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       try {
-         CommandWrapper w = new CommandWrapper(glob, keyData, qosData);
+         CommandWrapper w = new CommandWrapper(glob, oid);
          String key = w.getThirdLevel();
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
@@ -194,7 +210,8 @@ public final class CommandManager implements I_RunlevelListener
     * @return The SetReturn object:<br />
     *         setReturn.returnString contains the actually set value or is null if not set. 
     */
-   public synchronized final SetReturn set(AddressServer addressServer, String sessionId, String cmd) throws XmlBlasterException {
+   public synchronized final SetReturn set(AddressServer addressServer,
+                String sessionId, String cmd) throws XmlBlasterException {
       if (addressServer == null) {
          addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo
       }
@@ -205,7 +222,7 @@ public final class CommandManager implements I_RunlevelListener
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
       try {
-         CommandWrapper w = new CommandWrapper(glob, cmd, null);
+         CommandWrapper w = new CommandWrapper(glob, cmd);
          String key = w.getThirdLevel();
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"

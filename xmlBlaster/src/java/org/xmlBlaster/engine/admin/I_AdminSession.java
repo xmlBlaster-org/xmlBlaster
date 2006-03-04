@@ -193,8 +193,14 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @return The absolute file names dumped
     */
    public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception;
-   /** gets the entries in the callback queue according to what is specified in the qosData object */
-   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException;
+   
+   /**
+    *  Gets the entries in the callback queue according
+    *  to what is specified in the querySpec
+    *  @param querySpec maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0
+    *  @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
+    */
+   public MsgUnit[] getCallbackQueueEntries(String querySpec) throws XmlBlasterException;
 
    /**
     * Removes all callback entries. 

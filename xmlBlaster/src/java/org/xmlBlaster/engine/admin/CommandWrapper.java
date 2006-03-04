@@ -10,10 +10,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.engine.Global;
 
 import java.util.StringTokenizer;
@@ -73,10 +69,10 @@ public final class CommandWrapper
    private String argsString;
    
    /** the qos properties */
-   QueryQosData qosData;
+   //QueryQosData qosData;
 
    /** the key (the admin command itself: it could also be seen as the destination of the admin command) */
-   QueryKeyData keyData;
+   //QueryKeyData keyData;
 
    /** the properties on the right end */
    //Map props = new HashMap();
@@ -84,39 +80,21 @@ public final class CommandWrapper
    /**
     * this constructor is currently used for the get 
     * @param glob
-    * @param keyData the oid must be adjusted inside if the qosData is null.
-    * @param qosData it is null in case the request comes from a telnet or a snmp gateway
+    * @param command the oid must be adjusted inside if the qosData is null.
     * @throws XmlBlasterException
     */
-   public CommandWrapper(Global glob, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
-      this(glob, CommandWrapper.stripCommand(glob, keyData.getOid()), qosData);
-      // this is for the smnp and telnet 
-      this.keyData = keyData;
-      if (this.qosData == null) {
-         fillKeyAndQos();
-      }
-   }
-
-   /**
-    * TODO This constructor is still used for the 'set' command but should be replaced
-    * @param glob
-    * @param cmd
-    * @param qosData
-    * @throws XmlBlasterException
-    * @deprecated the constructor taking a QueryKeyData should be used instead.
-    */
-   public CommandWrapper(Global glob, String cmd, QueryQosData qosData) throws XmlBlasterException {
+   public CommandWrapper(Global glob, String command) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.ME = "CommandWrapper-" + this.glob.getId();
       this.myStrippedClusterNodeId = getStrippedClusterNodeId();
-      if (cmd == null)
+      if (command == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Your command is null, aborted request");
-      if (!cmd.startsWith("/"))
-         this.cmd = "/node/" + myStrippedClusterNodeId + "/" + cmd;
+      command = CommandWrapper.stripCommand(glob, command); // string "__cmd:" away
+      if (!command.startsWith("/"))
+         this.cmd = "/node/" + myStrippedClusterNodeId + "/" + command;
       else
-         this.cmd = cmd;
-      this.qosData = qosData;
+         this.cmd = command;
       parse();
    }
 
@@ -278,8 +256,11 @@ public final class CommandWrapper
       String propString = cmd.substring(qIndex+1);
       int equalsIndex = propString.indexOf("=");
       if (equalsIndex < 1 || propString.length() <= (equalsIndex+1)) {
-         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '='");
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '='");
+         this.key = propString;
+         this.value = null;
+         return; // a getXy()
+         //log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '='");
+         //throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '='");
       }
       
       this.key = propString.substring(0, equalsIndex);
@@ -381,13 +362,13 @@ public final class CommandWrapper
       return sb.toString();
    }
    
-   public QueryQosData getQueryQosData() {
-      return this.qosData;
-   }
+   //public QueryQosData getQueryQosData() {
+   //   return this.qosData;
+   //}
 
-   public QueryKeyData getQueryKeyData() {
-      return this.keyData;
-   }
+   //public QueryKeyData getQueryKeyData() {
+   //   return this.keyData;
+   //}
 
    /**
     * Strips a given command (the oid of a queryKey before any any modification) by 
@@ -404,21 +385,20 @@ public final class CommandWrapper
       }
       command = command.trim();
       if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CommandWrapper.stripCommand", "Ignoring your empty command '" + command + "'.");
+         return command; //throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CommandWrapper.stripCommand", "Ignoring your empty command '" + command + "'.");
       }
 
       int dotIndex = command.indexOf(":");
       return command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
    }
    
-   /**
+   /*
     * This has to be invoked after the command has been parsed
     * @param value the non-null string containing the qos specification.
     *        for example if the entire command is
     * '__cmd:/node/heron/?numClients&xmlBlaster.qos=<qos>......</qos>'  
     * @param keyData must be non null
     * @param qosData
-    */
    private void fillKeyAndQos() throws XmlBlasterException {
       if (this.qosData != null) return;
       
@@ -450,6 +430,7 @@ public final class CommandWrapper
       }
       
    }
+*/
 
    /**
     * @return Returns the argsString.

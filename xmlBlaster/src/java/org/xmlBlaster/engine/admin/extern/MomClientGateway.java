@@ -15,6 +15,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -84,8 +85,21 @@ public final class MomClientGateway implements I_ExternGateway
          return msgs;
       }
       */
+      QuerySpecQos[] querySpecs = qosData.getQuerySpecArr();
+      String query = null;
+      if (querySpecs != null) {
+         for (int i=0; i < querySpecs.length; i++) {
+            if (querySpecs[i].getType().equals("QueueQuery")) {
+               QuerySpecQos querySpec = querySpecs[i];
+               if (querySpec.getQuery() != null) 
+                  query = querySpec.getQuery().getQuery();
+                  // "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
+               break;
+            }
+         }
+      }
 
-      MsgUnit[] msgs = commandManager.get(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), keyData, qosData);
+      MsgUnit[] msgs = commandManager.get(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), keyData, query);
       /*
       for (int ii=0; ii<msgs.length; ii++) {
          MsgUnitRaw msg = msgs[ii];

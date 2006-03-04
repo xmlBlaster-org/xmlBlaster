@@ -7,12 +7,11 @@ Comment:   Implementation for administrative property access
 package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.TopicHandler;
@@ -57,8 +56,10 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.ME = "CoreHandler" + this.glob.getLogPrefixDashed();
       this.listSeparator = this.glob.getProperty().get("xmlBlaster/admin/listSeparator", this.listSeparator);
       this.commandManager.register("DEFAULT", this);
-      this.commandManager.register("client", this);
-      this.commandManager.register("subscription", this);
+      this.commandManager.register(ContextNode.SUBJECT_MARKER_TAG, this); // "client"
+      this.commandManager.register(ContextNode.SUBSCRIPTION_MARKER_TAG, this); // "subscription"
+      // "topic" was handled by MsgHandler.java, changed 2006-02-028, marcel
+      this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this); // "topic"
       log.info(ME, "Core administration plugin is initialized");
    }
 
@@ -95,30 +96,75 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
    private MsgUnit[] doGetInvoke(CommandWrapper cmd, String property, Object impl, Class clazz) 
       throws XmlBlasterException {
-      Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
-      String ret = "";
-      if (tmp instanceof String[]) {
-         String[] tmpArr = (String[])tmp;
-         for (int i=0; i<tmpArr.length; i++) {
-            ret += tmpArr[i];
-            if (i < tmpArr.length-1)
-               ret += this.listSeparator; // "\n";
+      
+      Method method = null;
+      try {
+         Class[] argClasses = new Class[0];
+         method = clazz.getMethod(property, argClasses);
+         //This seems to need both set() AND get():
+         //PropertyDescriptor desc = new PropertyDescriptor(property, clazz); // if property=value it looks for setValue() or getValue()
+         //method = desc.getReadMethod();
+      }
+      catch (Exception e) { // try operations like 'addProperty' without set/get prefix
+         Method[] m = clazz.getMethods();
+         for (int i=0; m!=null&&i<m.length;i++) {
+            if (m[i].getName().equals(property)) {
+               method = m[i];
+               break;
+            }
          }
+         if (method == null) {
+            for (int i=0; m!=null&&i<m.length;i++) {
+               String mm = m[i].getName();
+               if (mm.startsWith("get")) {
+                  mm = mm.substring(3);
+                  String first = ""+mm.charAt(0);
+                  mm = first.toLowerCase() + mm.substring(1);
+               }
+                  
+               if (mm.equals(property)) {
+                  method = m[i];
+                  break;
+               }
+            }
+         }
+         if (method == null)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found");
       }
-      else {
-         ret = ""+ tmp;
-      }
-      if (log.TRACE) log.trace(ME, "Retrieved " + cmd.getCommand());
-      if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+      Object[] argValues = convertMethodArguments(method.getParameterTypes(), cmd.getValue());
 
-      MsgUnit[] msgs = null;
-      if (tmp instanceof MsgUnit[]) msgs = (MsgUnit[])tmp;
-      else {
-         msgs = new MsgUnit[1];
-         // msgs[0] = new MsgUnit(cmd.getQueryKeyData().toXml(), ret.getBytes(), "text/plain");
-         msgs[0] = new MsgUnit(cmd.getQueryKeyData(), ret.getBytes(), cmd.getQueryQosData());
+      try {
+         Object tmp = method.invoke (impl, argValues);
+         log.info(ME, "Successful invoked set method '" + property + "'");
+         
+         //Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
+         String ret = "";
+         if (tmp instanceof String[]) {
+            String[] tmpArr = (String[])tmp;
+            for (int i=0; i<tmpArr.length; i++) {
+               ret += tmpArr[i];
+               if (i < tmpArr.length-1)
+                  ret += this.listSeparator; // "\n";
+            }
+         }
+         else {
+            ret = ""+ tmp;
+         }
+         if (log.TRACE) log.trace(ME, "Retrieved " + cmd.getCommand());
+         if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+   
+         MsgUnit[] msgs = null;
+         if (tmp instanceof MsgUnit[]) msgs = (MsgUnit[])tmp;
+         else {
+            msgs = new MsgUnit[1];
+            // msgs[0] = new MsgUnit(cmd.getQueryKeyData().toXml(), ret.getBytes(), "text/plain");
+            msgs[0] = new MsgUnit("<key oid='__cmd:"+cmd.getCommand()+"'/>", ret.getBytes(), "<qos/>");
+         }
+         return msgs;
+        
+      } catch (Exception e) {
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found", e);
       }
-      return msgs;
    }
 
    /**
@@ -137,7 +183,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          return doGetInvoke(cmd, registerKey.substring(1), glob.getRequestBroker(), I_AdminNode.class); 
       }
 
-      if (registerKey.equals("client") || registerKey.equals("DEFAULT")) {
+      if (registerKey.equals(ContextNode.SUBJECT_MARKER_TAG) || registerKey.equals("DEFAULT")) {  // "client"
          String loginName = cmd.getUserNameLevel();
          if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
@@ -167,7 +213,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             return doGetInvoke(cmd, sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
          }
       }
-      else if (registerKey.equals("topic")) {
+      else if (registerKey.equals(ContextNode.TOPIC_MARKER_TAG)) { // "topic"
          String topicId = cmd.getUserNameLevel();
          if (topicId == null || topicId.length() < 1 || topicId.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid topicId in '" + cmd.getCommand() + "' with '" + topicId + "' is invalid");
@@ -185,7 +231,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             return doGetInvoke(cmd, methodName.substring(1), topicHandler, I_AdminTopic.class);
          }
       }
-      else if (registerKey.equals("queue")) {
+      else if (registerKey.equals(ContextNode.QUEUE_MARKER_TAG)) { // "queue"
          String queueId = cmd.getUserNameLevel();
          if (queueId == null || queueId.length() < 1 || queueId.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid queueId in '" + cmd.getCommand() + "' with '" + queueId + "' is invalid");
@@ -197,7 +243,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid mapId in '" + cmd.getCommand() + "' with '" + mapId + "' is invalid");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Administer map is not implemented");
       }
-      else if (registerKey.equals("subscription")) {
+      else if (registerKey.equals(ContextNode.SUBSCRIPTION_MARKER_TAG)) { // "subscription"
          String subscriptionId = cmd.getUserNameLevel();
          if (subscriptionId == null || subscriptionId.length() < 1 || subscriptionId.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid subscriptionId in '" + cmd.getCommand() + "' with '" + subscriptionId + "' is invalid");
@@ -280,7 +326,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * @param aClass e.g. I_AdminSubject.class
     * @return Object typically of type String or String[]
     */
-   private Object getInvoke(String property, Object impl, Class aInterface, QueryKeyData keyData, QueryQosData qosData) 
+   /*
+   private Object getInvoke(String property, Object impl, Class aInterface, QueryKeyData XXkeyData, QueryQosData qosData) 
       throws XmlBlasterException {
       String methodName = null;
       if (property == null || property.length() < 2)
@@ -292,14 +339,13 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          Object obj = invoker.execute(methodName, qosData, keyData);
          if (log.TRACE) log.trace(ME, "Return for '" + methodName + "' is '" + obj + "'");
          return obj;
-         /* This code worked only when a corresponding setXXX() was specified:
-         PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
-         Method method = desc.getReadMethod();
-         //Object[] argValues = new Object[0];
-         Object returnValue = method.invoke (impl, null); //argValues);
-         log.info(ME, "Invoke method '" + property + "' return=" + returnValue + " class=" + returnValue.getClass());
-         return returnValue;
-         */
+         // This code worked only when a corresponding setXXX() was specified:
+         //PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
+         //Method method = desc.getReadMethod();
+         ////Object[] argValues = new Object[0];
+         //Object returnValue = method.invoke (impl, null); //argValues);
+         //log.info(ME, "Invoke method '" + property + "' return=" + returnValue + " class=" + returnValue.getClass());
+         //return returnValue;
       }
       catch (Exception e1) {
          log.trace(ME, "Invoke for get method '" + methodName + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed: " + e1.toString());
@@ -318,9 +364,11 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          }
       }
    }
+   */
 
    private Object[] convertMethodArguments(Class[] classes, String[] args) 
       throws XmlBlasterException {
+      if (args == null) return new Object[0];
       if (classes.length != args.length) {
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".convertMethodArguments", "wrong number of arguments: '" + args.length + "' but should be '" + classes.length + "'");
       }
@@ -407,7 +455,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             if (method == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: No such method found");
          }
-         Object[] argValues =  convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
+         Object[] argValues = convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
 
          Object obj = method.invoke (impl, argValues);
          log.info(ME, "Successful invoked set method '" + property + "'");
@@ -469,6 +517,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
  * forced us to have to every getXXX() a setXXX() as well,
  * but some properties are read only!
  */
+/*
 class Invoker
 {
    private Global glob;
@@ -476,11 +525,9 @@ class Invoker
    private Class targetClass;
    boolean debug = true;
 
-   /**
-    * @param targetClass is passed explicitly, as target.getClass() would allow
-    *        to access methods in the implementing class (e.g. RequestBroker) instead
-    *        of only I_AdminClass
-    */
+    // @param targetClass is passed explicitly, as target.getClass() would allow
+    //        to access methods in the implementing class (e.g. RequestBroker) instead
+    //        of only I_AdminClass
    public Invoker(Global glob, Object target, Class targetClass) {
       this.glob = glob;
       this.invokeTarget = target;
@@ -488,7 +535,7 @@ class Invoker
    }
 
    // main method, sucht methode in object, wenn gefunden dann aufrufen.
-   public Object execute(String methodName, QueryQosData qosData, QueryKeyData keyData) 
+   public Object execute(String methodName, QueryQosData qosData, QueryKeyData XXkeyData) 
       throws XmlBlasterException {
       Class[] argClasses = new Class[0];
       Method method = null;
@@ -554,5 +601,5 @@ class Invoker
    }
 
 } // class Invoker
-
+*/
 

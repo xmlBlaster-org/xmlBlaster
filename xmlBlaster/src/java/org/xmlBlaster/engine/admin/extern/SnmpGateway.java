@@ -176,7 +176,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
          if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query.toXml());
 
          AddressServer addressServer = null; // TODO !!!
-         MsgUnit[] msgs = manager.get(addressServer, sessionId, query, /*qosData*/ null);
+         MsgUnit[] msgs = manager.get(addressServer, sessionId, query, null);
          if (msgs.length == 0)
             return "NOT FOUND";
          else {

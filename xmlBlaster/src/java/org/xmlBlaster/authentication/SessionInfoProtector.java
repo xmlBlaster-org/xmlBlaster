@@ -8,9 +8,7 @@ package org.xmlBlaster.authentication;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * SessionInfoProtector protects SessionInfo.java from direct access by administrative tasks. 
@@ -204,13 +202,8 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.peekCallbackMessages(numOfEntries);
    }
 
-   /**
-    * keyData is currently unused but it is needed to be consistent with the 
-    * admin get convention (i.e. either take no parameters or always take a key
-    * and a qos).
-    */
-   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
-      return this.sessionInfo.getCbQueueEntries(keyData, qosData);
+   public MsgUnit[] getCallbackQueueEntries(String querySpec) throws XmlBlasterException {
+      return this.sessionInfo.getCallbackQueueEntries(querySpec);
    }
 
    public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception {

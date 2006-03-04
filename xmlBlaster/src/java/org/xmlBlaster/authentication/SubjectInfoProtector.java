@@ -9,8 +9,6 @@ package org.xmlBlaster.authentication;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
 
 /**
  * SubjectInfoProtector protects SubjectInfo.java from direct access by administrative tasks. 
@@ -87,8 +85,8 @@ public final class SubjectInfoProtector implements /*I_AdminSubject,*/ SubjectIn
       return this.subjectInfo.peekSubjectMessagesToFile(numOfEntries, path);
    }
    
-   public MsgUnit[] getSubjectQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
-      return this.subjectInfo.getSubjectQueueEntries(keyData, qosData);
+   public MsgUnit[] getSubjectQueueEntries(String querySpec) throws XmlBlasterException {
+      return this.subjectInfo.getSubjectQueueEntries(querySpec);
    }
 
    /** JMX */

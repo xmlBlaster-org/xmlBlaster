@@ -43,8 +43,11 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
       this.ME = "MsgHandler" + this.glob.getLogPrefixDashed();
-      this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this);
-      log.info(ME, "Message administration plugin is initialized");
+      // "topic" now handled by CoreHandler.java to have all MBean accessors, changed 2006-02-028, marcel
+      //this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this);
+      // For old behavior we have no "_topic":
+      this.commandManager.register("_"+ContextNode.TOPIC_MARKER_TAG, this);
+      log.trace(ME, "Message administration plugin is initialized for '_topic/?content' etc.");
    }
 
    /**
@@ -110,9 +113,9 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String xmlKey = "<key oid='" + oid + "'/>";
       // String qos = "<qos/>";
 
-      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(addressServer, sessionId, xmlKey, cmd.getQueryQosData().toXml());
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(addressServer, sessionId, xmlKey, "<qos/>");//cmd.getQueryQosData().toXml());
       MsgUnit[] msgUnits = new MsgUnit[msgUnitArrRaw.length];
-      MethodName method = cmd.getQueryQosData().getMethod();
+      MethodName method = MethodName.GET; // cmd.getMethod();
       for (int i=0; i < msgUnits.length; i++) {
          msgUnits[i] = new MsgUnit(this.glob, msgUnitArrRaw[i], method);
       }

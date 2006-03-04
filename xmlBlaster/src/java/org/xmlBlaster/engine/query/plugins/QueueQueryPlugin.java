@@ -19,11 +19,8 @@ import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.qos.QuerySpecQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -73,16 +70,17 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
     * The query to the queue. The parameters specifying which kind of query it is
     * are specified in the qos, and more precisely in the QuerySpecQos.
     * @param source must be an I_Queue implementation (can not be null).
-    * @param qosData must be non null.
+    * @param query must not be null, e.g.
+    * "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
     */
-   public MsgUnit[] query(Object source, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "query for '" + keyData.getOid() + "'");
+   public MsgUnit[] query(Object source, String query) throws XmlBlasterException {
+      //if (this.log.CALL) this.log.call(ME, "query for '" + keyData.getOid() + "'");
       if (source == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the source on which do the query is null");
       if (! (source instanceof I_Queue) )
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "wrong type of source for query. Expected an 'I_Queue' implementation but was '" + source.getClass().getName() + "'");
-      if (qosData == null)
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the qos of the query was null");
+      if (query == null)
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the query string is null");
          
       I_Queue queue = (I_Queue)source;         
 
@@ -91,6 +89,7 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       boolean consumable = false;
       long waitingDelay = 0L; // no wait is default
       
+      /*
       QuerySpecQos[] querySpecs = qosData.getQuerySpecArr();
       QuerySpecQos querySpec = null;
       if (querySpecs != null) {
@@ -101,26 +100,25 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
             }
          }
       }
-
+      */
+      
       // get the query properties
-      if (querySpec != null) {
-         String query = "";
-         if (querySpec.getQuery() != null) query = querySpec.getQuery().getQuery();
-         // "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
-         Map props = StringPairTokenizer.parseToStringClientPropertyPairs(query, "&", "=");
-         ClientProperty prop = (ClientProperty)props.get("maxEntries");
-         if (prop != null) this.maxEntries = prop.getIntValue();
-         prop = (ClientProperty)props.get("maxSize");
-         if (prop != null) this.maxSize = prop.getLongValue();
-         if (this.maxSize > -1L)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: specification of maxSize is not implemented, please use the default value -1 or leave it untouched"); 
-         prop = (ClientProperty)props.get("consumable");
-         if (prop != null) consumable = prop.getBooleanValue();
-         prop = (ClientProperty)props.get("waitingDelay");
-         if (prop != null) waitingDelay = prop.getLongValue();
-      }
+      //if (querySpec.getQuery() != null) query = querySpec.getQuery().getQuery();
+      // "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
+      Map props = StringPairTokenizer.parseToStringClientPropertyPairs(query, "&", "=");
+      ClientProperty prop = (ClientProperty)props.get("maxEntries");
+      if (prop != null) this.maxEntries = prop.getIntValue();
+      prop = (ClientProperty)props.get("maxSize");
+      if (prop != null) this.maxSize = prop.getLongValue();
+      if (this.maxSize > -1L)
+         throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: specification of maxSize is not implemented, please use the default value -1 or leave it untouched"); 
+      prop = (ClientProperty)props.get("consumable");
+      if (prop != null) consumable = prop.getBooleanValue();
+      prop = (ClientProperty)props.get("waitingDelay");
+      if (prop != null) waitingDelay = prop.getLongValue();
+
       if (this.log.TRACE) 
-         this.log.trace(ME, "query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
+      this.log.trace(ME, "query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
       
       if (waitingDelay != 0L) {
          if (this.log.TRACE) this.log.trace(ME, "query: waiting delay is " + waitingDelay);

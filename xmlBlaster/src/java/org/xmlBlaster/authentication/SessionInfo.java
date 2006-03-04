@@ -15,9 +15,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -929,12 +927,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return this.sessionQueue.remove(numOfEntries, -1);
    }
 
-   /**
-    * keyData is currently unused but it is needed to be consistent with the 
-    * admin get convention (i.e. either take no parameters or always take a key
-    * and a qos).
-    */
-   public MsgUnit[] getCbQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+   public MsgUnit[] getCallbackQueueEntries(String query) throws XmlBlasterException {
       if (this.queueQueryPlugin == null) {
          synchronized (this) {
             if (this.queueQueryPlugin == null) {
@@ -942,7 +935,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
             } 
          }
       }
-      return this.queueQueryPlugin.query(this.sessionQueue, keyData, qosData);
+      return this.queueQueryPlugin.query(this.sessionQueue, query);
    }
    
    /** JMX Enforced by ConnectQosDataMBean interface. */

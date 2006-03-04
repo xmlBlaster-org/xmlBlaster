@@ -15,8 +15,6 @@ import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -1000,13 +998,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    
    /**
     * Query the subject queue, can be peeking or consuming. 
-    * @param keyData Is currently unused but it is needed to be consistent with the 
-    * admin get convention (i.e. either take no parameters or always take a key
-    * and a qos).
-    * @param qosData Can be configured to be consuming
+    * @param querySpec Can be configured to be consuming
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
     */
-   public MsgUnit[] getSubjectQueueEntries(QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+   public MsgUnit[] getSubjectQueueEntries(String querySpec) throws XmlBlasterException {
       if (this.queueQueryPlugin == null) {
          synchronized (this) {
             if (this.queueQueryPlugin == null) {
@@ -1014,7 +1009,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             } 
          }
       }
-      return this.queueQueryPlugin.query(this.subjectQueue, keyData, qosData);
+      return this.queueQueryPlugin.query(this.subjectQueue, querySpec);
    }
    
 
