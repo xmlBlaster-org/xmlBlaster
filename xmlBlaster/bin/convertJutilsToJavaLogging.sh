@@ -6,6 +6,7 @@
 #
 #  Usage:
 #    for i in `find . -name "*.java"` ; do $XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh $i ; done
+#   or
 #    find . -name "*.java" -exec $XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh {} \;
 
 echo "$0 Replacing file $1"
@@ -60,6 +61,7 @@ cp $FN $FN.tmp; cat $FN.tmp | sed s/"\.WARN[ ]*)"/.isLoggable\(Level.WARNING\)\)
 cp $FN $FN.tmp; cat $FN.tmp | sed s/"\.TRACE[ ]*)"/.isLoggable\(Level.FINE\)\)/ > $FN
 cp $FN $FN.tmp; cat $FN.tmp | sed s/"\.ERROR[ ]*)"/.isLoggable\(Level.SEVERE\)\)/ > $FN
 
+# Finally remove all LogChannel occurrences:
 #  public MsgInterceptor(Global glob, LogChannel log, I_Callback testsuite) {
 #   public final LogChannel getLog() {
 #      return (LogChannel)this.weaklog.get();
