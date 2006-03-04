@@ -348,6 +348,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
             key = new PublishKey(this.glob, changeKey);
          else 
             key = new PublishKey(this.glob);
+         key.setContentMime("text/xml");
          MsgUnit msg = new MsgUnit(key, out, qos);
          PublishReturnQos prq = this.con.publish(msg);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
@@ -374,8 +375,13 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       try {
          if (destination != null)
             pk = this.adminKey;
-         
          MsgUnit msgUnit = new MsgUnit(pk, out, this.publishQos);
+         String tmp = msgUnit.getKeyData().getContentMime();
+         // FIXME pass this in the map and set only if explicitly set in the map
+         if (tmp == null || tmp.equals("text/plain")) {
+            msgUnit.getKeyData().setContentMime("text/xml");
+         }
+ 
          if (destination != null)
             ((MsgQosData)msgUnit.getQosData()).addDestination(destination);
          // to force to fill the client properties map !!
