@@ -49,7 +49,7 @@ public class VersionTransformerCache {
     * @param filename
     * @return
     */
-   synchronized Transformer getCachedTransformer(String filename, String secondChoice, String thirdChoice, ClassLoader cl) {
+   private synchronized Transformer getTransformerAlsoFromCache(String filename, String secondChoice, String thirdChoice, ClassLoader cl) {
       Transformer ret = (Transformer)this.transformers.get(filename);
       if (ret != null)
          return ret;
@@ -57,7 +57,7 @@ public class VersionTransformerCache {
       if (this.checkedTransformers.contains(filename))
          return null;
       try {
-         ret = getTransformer(filename, cl);
+         ret = newTransformer(filename, cl);
       }
       catch (Throwable ex) {
          if (secondChoice == null && thirdChoice == null)
@@ -68,17 +68,18 @@ public class VersionTransformerCache {
          this.transformers.put(filename, ret);
       else {
          if (secondChoice != null) {
-            ret = getCachedTransformer(secondChoice, thirdChoice, null, cl);
+            ret = getTransformerAlsoFromCache(secondChoice, thirdChoice, null, cl);
             if (ret != null)
                return ret;
             else {
                if (thirdChoice != null) {
-                  ret = getCachedTransformer(thirdChoice, null, null, cl);
+                  ret = getTransformerAlsoFromCache(thirdChoice, null, null, cl);
                }
             }
          }
       }
-      this.transformers.put(filename, ret);
+      if (ret != null)
+         this.transformers.put(filename, ret);
       return ret;
    }
    
@@ -122,7 +123,7 @@ public class VersionTransformerCache {
    }
 
 
-   private static Transformer getTransformer(String systemId, String xslString, URIResolver uriResolver, Map params) throws Exception {
+   private static Transformer newTransformer(String systemId, String xslString, URIResolver uriResolver, Map params) throws Exception {
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       if (uriResolver != null)
          transformerFactory.setURIResolver(uriResolver);
@@ -143,21 +144,27 @@ public class VersionTransformerCache {
       return transformer;
    }
        
-   private static Transformer getTransformer(String filename, ClassLoader cl) throws Exception {
+   private static Transformer newTransformer(String filename, ClassLoader cl) throws Exception {
       final String systemId = null;
       final URIResolver uriResolver = null;
       final Map map = null;
       String xslt = getXslStringFromFile(filename, cl);
-      return getTransformer(systemId, xslt, uriResolver, map);
+      return newTransformer(systemId, xslt, uriResolver, map);
    }
 
    private String doXSLTransformation(String filename, String secondChoice, String thirdChoice, String xmlLiteral, ClassLoader cl) throws Exception {
-      Transformer transformer = getCachedTransformer(filename, secondChoice, thirdChoice, cl);
-      StreamSource xmlStreamSource = new StreamSource(new StringReader(xmlLiteral));
-      StringWriter stringWriter = new StringWriter();
-      StreamResult resultStream = new StreamResult(stringWriter);
-      transformer.transform(xmlStreamSource, resultStream);
-      return stringWriter.toString();
+      Transformer transformer = getTransformerAlsoFromCache(filename, secondChoice, thirdChoice, cl);
+      if (transformer == null) {
+         log.severe("Transformer for file '" + filename + "' not found (where second choice was '" + secondChoice + "' and third choice was '" + thirdChoice +  "'");
+         return xmlLiteral;
+      }
+      else {
+         StreamSource xmlStreamSource = new StreamSource(new StringReader(xmlLiteral));
+         StringWriter stringWriter = new StringWriter();
+         StreamResult resultStream = new StreamResult(stringWriter);
+         transformer.transform(xmlStreamSource, resultStream);
+         return stringWriter.toString();
+      }
    }
    
    public synchronized void clearCache() {
