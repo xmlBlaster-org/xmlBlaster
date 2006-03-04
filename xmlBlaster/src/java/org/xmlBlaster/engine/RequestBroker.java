@@ -356,14 +356,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    }
 
    /**
-    * Access the "core" Logger.
-    * @return The log channel for core xmlBlaster classes
-    */
-   public final Logger getLog() {
-      return this.log;
-   }
-
-   /**
     * @return The handle on the persistence storage for all topics
     */
    I_Map getTopicStore() {
