@@ -3,7 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn repository
 ======================
- 
+
+ o #14781 telnet access refactored, some access method names are changed, e.g.
+   - getCbQueueEntries() -> getCallbackQueueEntries(String query)
+   - "get topic/..." now access all I_AdminTopic methods
+
  o #14787 Consuming queue query
    - added consuming query for subject queue
    - added consuming query for history queue (telnet access not yet finished)
