@@ -32,7 +32,7 @@ import java.util.ArrayList;
  */
 public final class QueryQosData extends QosData implements java.io.Serializable, Cloneable
 {
-   private String ME = "QueryQosData";
+   private static final long serialVersionUID = 1L;
    private transient I_QueryQosFactory factory;
 
    /** A client can force a specific subscription id */
