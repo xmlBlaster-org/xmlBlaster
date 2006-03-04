@@ -46,35 +46,35 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/node/heron/client/joe/?sessionList";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
          assertEquals("Command '" + cmd + "' wrong parsed", "client", w.getThirdLevel());
          assertEquals("Command '" + cmd + "' wrong parsed", "joe/?sessionList", w.getTail());
       
          cmd = "/node/heron/client/joe/";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
          assertEquals("Command '" + cmd + "' wrong parsed", "client", w.getThirdLevel());
          assertEquals("Command '" + cmd + "' wrong parsed", "joe/", w.getTail());
 
          cmd = "/node/heron/client/joe";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
          assertEquals("Command '" + cmd + "' wrong parsed", "client", w.getThirdLevel());
          assertEquals("Command '" + cmd + "' wrong parsed", "joe", w.getTail());
 
          cmd = "/node/heron/client/";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
          assertEquals("Command '" + cmd + "' wrong parsed", "client", w.getThirdLevel());
          assertEquals("Command '" + cmd + "' wrong parsed", null, w.getTail());
 
          cmd = "/node/heron/client";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "/node/heron/client", w.getCommand());
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
@@ -82,14 +82,14 @@ public class CommandWrapperTest extends TestCase {
          assertEquals("Command '" + cmd + "' wrong parsed", null, w.getTail());
 
          cmd = "client/joe/?sessionList";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
          assertEquals("Command '" + cmd + "' wrong parsed", "client", w.getThirdLevel());
          assertEquals("Command '" + cmd + "' wrong parsed", "joe/?sessionList", w.getTail());
       
          cmd = "client";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          assertEquals("Command '" + cmd + "' wrong parsed", "/node/heron/client", w.getCommand());
          assertEquals("Command '" + cmd + "' wrong parsed", "node", w.getRoot());
          assertEquals("Command '" + cmd + "' wrong parsed", "heron", w.getClusterNodeId());
@@ -108,7 +108,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/node/heron/";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -117,7 +117,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/node/foeignNode/client/?joe";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -126,7 +126,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/strangeNode/heron/client/?joe";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -135,7 +135,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/node/";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -144,7 +144,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -153,7 +153,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -162,7 +162,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = null;
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -171,7 +171,7 @@ public class CommandWrapperTest extends TestCase {
 
       try {
          cmd = "/////";
-         w = new CommandWrapper(glob, cmd, null);
+         w = new CommandWrapper(glob, cmd);
          fail("Failed, expected exception for '" + cmd + "'");
       }
       catch(XmlBlasterException e) {
@@ -179,6 +179,7 @@ public class CommandWrapperTest extends TestCase {
       }
    }
 
+/*
    public void testQosData() {
       String cmd = null;
 
@@ -191,7 +192,7 @@ public class CommandWrapperTest extends TestCase {
       keyData.setOid("__cmd:" + cmd);
       
       try {
-         CommandWrapper w = new CommandWrapper(glob, keyData, null);
+         CommandWrapper w = new CommandWrapper(glob, keyData);
          QueryQosData qos = w.getQueryQosData();
          this.log.info(ME, qos.toXml());
          ClientProperty clp = qos.getClientProperty("_one");
@@ -207,12 +208,8 @@ public class CommandWrapperTest extends TestCase {
          e.printStackTrace();
          assertTrue("exception should not occur here: " + e.getMessage(), false);
       }
-      
-      
-
-
    }
-
+*/
    /**
     * Invoke: java org.xmlBlaster.test.client.TestCommandWrapperTest
     * <p />
@@ -229,7 +226,7 @@ public class CommandWrapperTest extends TestCase {
 
       CommandWrapperTest test = new CommandWrapperTest("CommandWrapperTest");
       test.setUp();
-      test.testQosData();
+      test.testInvalid();
       test.tearDown();
    }
 
