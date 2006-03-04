@@ -30,12 +30,12 @@ public class FilenameFilter implements FileFilter {
    public FilenameFilter() {
    }
 
-   public FilenameFilter(Global global, String pattern, boolean trueRegex) throws XmlBlasterException {
+   public FilenameFilter(String pattern, boolean trueRegex) throws XmlBlasterException {
       this();
-      setPattern(global, pattern, trueRegex);
+      setPattern(pattern, trueRegex);
    }
 
-   public void setPattern(Global global, String globPattern, boolean trueRegex) throws XmlBlasterException {
+   public void setPattern(String globPattern, boolean trueRegex) throws XmlBlasterException {
       if (trueRegex) {
          this.pattern = globPattern;
       }
@@ -121,7 +121,7 @@ public class FilenameFilter implements FileFilter {
          this.regex = new RE(this.pattern, RE.REG_ICASE);
       }
       catch (REException ex) {
-         throw new XmlBlasterException(global, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + this.pattern + "'", ex);
+         throw new XmlBlasterException(null, ErrorCode.USER_CONFIGURATION, "FilenameFilter", "wrong regex expression for filter '" + this.pattern + "'", ex);
       }
       //this.pattern = Pattern.compile(new String(rPat, 0, j), Pattern.CASE_INSENSITIVE);
    }

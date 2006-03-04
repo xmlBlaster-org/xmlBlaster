@@ -57,7 +57,7 @@ public class DirectoryManager {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
-         this.fileFilter = new FilenameFilter(this.global, filter, trueRegex);
+         this.fileFilter = new FilenameFilter(filter, trueRegex);
       this.log = this.global.getLog("filepoller");
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
@@ -72,7 +72,7 @@ public class DirectoryManager {
          if (!tmp.startsWith("*.")) {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, ME, "lockExtention must start with '*.' and be of the kind '*.lck'");
          }
-         this.lockExtention = new FilenameFilter(this.global, tmp, false);
+         this.lockExtention = new FilenameFilter(tmp, false);
          this.lockExt = tmp.substring(1); // '*.gif' -> '.gif' 
       }
       this.lockFiles = new HashSet();
@@ -456,7 +456,7 @@ public class DirectoryManager {
          System.out.println("The " + filterType + " filter is '" + filter + "'"); 
          System.out.println(""); 
          System.out.println("-----------Matching Results:----------------------");
-         FilenameFilter fileFilter = new FilenameFilter(global, filter, trueRegex);
+         FilenameFilter fileFilter = new FilenameFilter(filter, trueRegex);
          File[] files = directory.listFiles(fileFilter);
          if (files == null || files.length < 1) {
             System.out.println(""); 
