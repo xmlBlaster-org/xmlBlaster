@@ -222,6 +222,21 @@ public class TestRecordParsing extends XMLTestCase {
       SqlInfoParser parser = new SqlInfoParser(this.info);
       SqlInfo record = parser.readObject(xml);
       log.info(record.toXml(""));
+      
+      xml = "" +
+      "<?xml version='1.0' encoding='UTF-8' ?>\n" +
+      "<sql>\n" +
+      "  <row num='0'>\n" + 
+      "    <col name='TEST'>100</col>\n" + 
+      "    <attr name='oldContent' encoding='forcePlain'><col name='TEST' encoding='base64'>Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj5MVEQgICBSQUZJUzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8</col></attr>" +
+      "    <attr name='test1' encoding='forcePlain'><col name='test2'><![CDATA[>>>>>>>>>>>>>>>>>>>>>>>>>>LTD RAFIS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<]]></col></attr>" +
+      "  </row>\n" +
+      "</sql>\n";
+
+      record = parser.readObject(xml);
+      log.info(record.toXml(""));
+      
+      
       log.info("SUCCESS");
    }
    
