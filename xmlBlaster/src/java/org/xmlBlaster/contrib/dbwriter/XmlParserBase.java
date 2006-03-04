@@ -39,6 +39,7 @@ public class XmlParserBase extends SaxHandlerBase {
 
    public XmlParserBase(Global glob, String qosTag) {
       super(glob);
+      setUseLexicalHandler(true);
       if (qosTag != null)
          this.qosTag = qosTag.trim();
       this.allowedTagNames = new HashSet();
@@ -180,7 +181,17 @@ public class XmlParserBase extends SaxHandlerBase {
       endElementBase(uri, localName, name);
    }
    
+   public void startCDATA() {
+      if (this.inClientProperty > 0)
+         this.character.append("<![CDATA[");
+   }
 
+   public void endCDATA() {
+      if (this.inClientProperty > 0)
+         this.character.append("]]>");
+   }
+   
+   
    /**
     * If value contains XML harmful characters it needs to be
     * wrapped by CDATA or encoded to Base64. 
