@@ -30,18 +30,20 @@
          Responses of attributes have the key and the value, separated to lines.
          Messages are returned XML encoded.<br />
          The following table shows the return values of <i>get</i> invocations.
+         The 'Impl' column marks the implemented features.
       </p>
       <table border="1">
          <tr>
             <th>Command</th>
             <th>Return</th>
             <th>Description</th>
-            <th>Implemented</th>
+            <th>Impl</th>
          </tr>
          <tr>
             <td>get ?numNodes</td>
             <td><pre>
-/node/heron/?numNodes=5
+/node/heron/?numNodes
+5
             </pre></td>
             <td>The separator between the key and the value is '='
             </td>
@@ -62,8 +64,8 @@
          <tr>
             <td>get ?clientList</td>
             <td><pre>
-/node/heron/?clientList=joe,jack,
-   averell,william
+/node/heron/?clientList
+joe,jack,averell,william
             </pre></td>
             <td>The clientList is one attribute, containing the list of known clients
             </td>
@@ -72,7 +74,8 @@
          <tr>
             <td>get client/joe/?sessionList</td>
             <td><pre>
-/node/heron/client/joe/?sessionList=1
+/node/heron/client/joe/?sessionList
+1
             </pre></td>
             <td><code>joe</code> is logged in once and has the public session id <code>1</code>
             </td>
@@ -81,7 +84,8 @@
          <tr>
             <td>get client/joe/?subjectQueueNumMsgs</td>
             <td><pre>
-/node/heron/client/joe/?subjectQueueNumMsgs=780
+/node/heron/client/joe/?subjectQueueNumMsgs
+780
             </pre></td>
             <td>There are 780 messages in the subject queue of <code>joe</code>
             </td>
@@ -90,7 +94,8 @@
          <tr>
             <td>get client/joe/1/?cbQueueNumMsgs</td>
             <td><pre>
-/node/heron/client/joe/1/?cbQueueNumMsgs=5
+/node/heron/client/joe/1/?cbQueueNumMsgs
+5
             </pre></td>
             <td>There are 5 messages in the callback queue of the login session <code>1</code> of user <code>joe</code>
             </td>
@@ -99,7 +104,8 @@
          <tr>
             <td>get client/joe/1/?numUpdate</td>
             <td><pre>
-/node/heron/client/joe/1/?numUpdate=7537
+/node/heron/client/joe/1/?numUpdate
+7537
             </pre></td>
             <td>The login session <code>1</code> of user <code>joe</code> has delivered 7537 messages to the callback client up to now
             </td>
@@ -114,8 +120,110 @@
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
          <tr>
-            <td>get topic/?Hello</td>
+            <td>get topic/Hello/?topicXml</td>
+            <td>
+               <pre><![CDATA[
+<key oid='Hello' contentMime='text/xml'>
+ <org.xmlBlaster><demo-1></demo-1></org.xmlBlaster>
+</key>]]></pre></td>
+            <td>The XML markup of the topic
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>get topic/Hello/?numSubscribers</td>
+            <td>4</td>
+            <td>The number of subscribers for this topic</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>get topic/Hello/?numOfHistoryEntries</td>
+            <td>3</td>
+            <td>Number of queued back history entries for this topic</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>get topic/Hello/?subscribers</td>
+            <td>/node/heron/client/joe/1, /node/heron/client/jack/-5, /node/heron/client/jack/-7</td>
+            <td>The list of subscribers for the topic 'Hello'</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>get topic/Hello/?peekHistoryMessages=2</td>
+            <td>
+<pre><![CDATA[
+
+<MsgUnit index='0'>
+
+ <key oid='Hello' contentMime='text/xml'>
+  <org.xmlBlaster><demo-3></demo-3></org.xmlBlaster>
+ </key>
+  <content size='4'>Hi-3</content>
+
+ <qos>
+  <subscribable/>
+  <sender>/node/heron/client/publish/1</sender>
+  <expiration lifeTime='-1' forceDestroy='false'/>
+  <rcvTimestamp nanos='1141465549697000000'/>
+  <persistent/>
+  <forceUpdate/>
+ </qos>
+</MsgUnit>
+<MsgUnit index='1'>
+
+ <key oid='Hello' contentMime='text/xml'>
+  <org.xmlBlaster><demo-2></demo-2></org.xmlBlaster>
+ </key>
+  <content size='4'>Hi-2</content>
+
+ <qos>
+  <subscribable/>
+  <sender>/node/heron/client/publish/1</sender>
+  <expiration lifeTime='-1' forceDestroy='false'/>
+  <rcvTimestamp nanos='1141465548969000000'/>
+  <persistent/>
+  <forceUpdate/>
+ </qos>
+</MsgUnit>
+]]></pre></td>
+            <td>Access at most 2 messages from history queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>get topic/Hello/?historyQueueEntries= "maxEntries=3&amp;consumable=true&amp;waitingDelay=0"</td>
+            <td>
+<pre><![CDATA[
+
+<MsgUnit index='0'>
+
+ <key oid='Hello' contentMime='text/xml'>
+  <org.xmlBlaster><demo-3></demo-3></org.xmlBlaster>
+ </key>
+  <content size='4'>Hi-3</content>
+
+ <qos>
+  <subscribable/>
+  <sender>/node/heron/client/publish/1</sender>
+  <rcvTimestamp nanos='1141465549697000000'/>
+  <persistent/>
+  <forceUpdate/>
+ </qos>
+</MsgUnit>
+]]></pre></td>
+            <td>Query topic with a consuming tag set
+            TODO: Is currently buggy</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+
+         <tr>
+            <td>get _topic/?Hello</td>
             <td>
                <pre><![CDATA[
 <xmlBlaster>
@@ -125,12 +233,13 @@
 </xmlBlaster>
                ]]></pre>
             </td>
-            <td>The query returns exactly one message
+            <td>The query returns exactly one message.
+            deprecated: '_topic' uses the old implementation up to xmlBlaster 1.1.1, use peekHistoryMessages instead.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>get topic/?__sys__UserList</td>
+            <td>get _topic/?__sys__UserList</td>
             <td>
                <pre><![CDATA[
 <xmlBlaster>
@@ -149,6 +258,7 @@
                ]]></pre>
             </td>
             <td>The query returns exactly one message
+            deprecated: '_topic' uses the old implementation up to xmlBlaster 1.1.1, use peekHistoryMessages instead.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -166,17 +276,15 @@
          <tr>
             <td>set client/joe/1/?sessionTimeout=2000000</td>
             <td>
-               <pre>
-               /node/heron/client/subscribe/1/?sessionTimeout=2000000
-               </pre>
+/node/heron/client/subscribe/1/?sessionTimeout=2000000
             </td>
             <td>Similar as the request
             </td>
          </tr>
          <tr>
-            <td>set client/publish/1/?addRemoteProperty=someKey&amp;someValue</td>
+            <td>set client/publish/1/?addRemoteProperty=aKey&amp;aValue</td>
             <td>
-            /node/heron/client/publish/1/?addRemoteProperty=someKey&amp;someValue
+            /node/heron/client/publish/1/? addRemoteProperty=aKey&amp;aValue
             </td>
             <td>Similar as the request
             </td>

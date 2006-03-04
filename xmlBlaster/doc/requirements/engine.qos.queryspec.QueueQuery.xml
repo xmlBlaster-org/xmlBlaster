@@ -60,12 +60,20 @@
       When used from such administrative gateways which don't have the possibility to specify a key and a qos, for
       example via telnet, the qos is passed at the end of the command with a key <code>xmlBlaster.qos</code>.
       </p>
+      <p>Following queue types are supported:</p>
+      <ol>
+      <li>session queue: Each client session with a callback server has such a callback queue, for example <code>get client/joe/1/?cbQueueEntries</code></li>
+      <li>subject queue: Each client has a subject queue to hold PtP messages, for example <code>get client/joe/?subjectQueueEntries</code></li>
+      <li>history queue: Each topic has a history queue, for example <code>get topic/hello/?historyQueueEntries</code></li>
+      </ol>
    </description>
 
    <example lang="Java" type="HTML">
       <p>
       <b>These is an example key and QoS of a get() invoked from within the 
-         <a href="/xmlBlaster/doc/requirements/client.script.html">XmlScript</a> demo:</b>
+         <a href="/xmlBlaster/doc/requirements/client.script.html">XmlScript</a> demo,</b>
+         copy the script below into a file <code>test.xml</code> and invoke
+         <code>java javaclients.script.XmlScript -requestFile test.xml</code>:
       </p>
 
       <pre>
