@@ -80,7 +80,7 @@ function refresh() {
     	    <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
     	    <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
     	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
-    	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Version</th>
+    	    <th class="normal" title="Current version of the data on the slave." colspan="1">Version</th>
     	  </tr>
     
     <xsl:apply-templates/>

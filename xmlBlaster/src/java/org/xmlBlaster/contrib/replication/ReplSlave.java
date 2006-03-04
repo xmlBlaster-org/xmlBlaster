@@ -169,8 +169,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          this.maxReplKey = 0L;
       }
       this.srcVersion = info.get("replication.version", "");
-      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, this.srcVersion);
-      if (this.srcVersion != null && this.ownVersion != null && this.srcVersion.equalsIgnoreCase(this.ownVersion))
+      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, null);
+      
+      if (this.ownVersion != null) {
+         this.persistentInfo.put(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.ownVersion);
+      }
+      else {
+         this.ownVersion = this.persistentInfo.get(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.srcVersion);
+      }
+      
+      if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
          this.doTransform = true;
       this.initialized = true;
       this.forcedCounter = 0L;
@@ -261,6 +269,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          sendStatusInformation("dbInitStart");
       final boolean doPersist = true;
       doPause(doPersist); // stop the dispatcher
+      
+      // first unsubscribe (in case it did already an initial update previously, this is needed to remove the subscription
+      // (and thereby its outdate subscription qos from persistence). On a back replication, i.e. where you have more than
+      // one sources you don't want to do this.
+      if (individualInfo.getBoolean("replication.forceNewSubscription", true)) {
+         try {
+            session.unSubscribe(this.dataTopic, "");
+         }
+         catch (Throwable ex) {
+         }
+      }
+      
       SubscribeQos subQos = new SubscribeQos(this.global);
       subQos.setMultiSubscribe(false);
       subQos.setWantInitialUpdate(false);
@@ -350,6 +370,19 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.initialized = false;
    }
 
+
+   private final void doTransform(MsgUnit msgUnit) throws Exception {
+      if (this.doTransform) {
+         // ClientProperty prop = msgUnit.getQosData().getClientProperty(ReplicationConstants.DUMP_ACTION);
+         // if (prop == null) {
+         if (msgUnit.getContentMime() != null && msgUnit.getContentMime().equals("text/xml")) {
+            String newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, msgUnit.getContentStr());
+            msgUnit.setContent(newContent.getBytes());
+         }
+      }
+   }
+   
+   
    /**
     * FIXME TODO HERE
     */
@@ -370,9 +403,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          for (int i=entries.size()-1; i > -1; i--) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
-            
-            String txt = msgUnit.getContentStr();
-            
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
             if (replKey > -1L) {
                setMaxReplKey(replKey);
@@ -381,7 +411,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          }      
       }
       
-      // check if already processed ...
+      // check if already processed ... and at the same time do the versioning transformation (if needed)
       for (int i=entries.size()-1; i > -1; i--) {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);
          MsgUnit msgUnit = entry.getMsgUnit();
@@ -391,6 +421,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             queue.removeRandom(entry);
             entries.remove(i);
          }
+         else
+            doTransform(msgUnit);
       }
       
       // check if one of the messages is the transition end tag            
@@ -398,6 +430,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          ReferenceEntry entry = (ReferenceEntry)entries.get(i);
          MsgUnit msgUnit = entry.getMsgUnit();
          ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
+         
          if (endMsg != null) {
             log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
             setStatus(STATUS_NORMAL);
@@ -442,13 +475,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "] for client '" + this.slaveSessionId + "' ");
          if (replKey >= this.minReplKey || this.forceSending) {
             log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
-            
-            /* TODO reactivate this code after testing
-            if (this.doTransform) {
-               String newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, msgUnit.getContentStr());
-               msgUnit.setContent(newContent.getBytes());
-            }
-            */ 
+            doTransform(msgUnit);
             ret.add(entry);
             if (replKey > this.maxReplKey || this.forceSending) {
                log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");

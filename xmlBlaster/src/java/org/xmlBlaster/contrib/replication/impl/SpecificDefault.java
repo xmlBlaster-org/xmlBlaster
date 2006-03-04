@@ -54,12 +54,14 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       private InitialUpdater initialUpdater;
       private SqlInfo sqlInfo;
       private long newReplKey;
+      private String destination;
       
-      public ResultHandler(InitialUpdater initialUpdater, SqlInfo sqlInfo, long newReplKey, int rowsPerMessage) {
+      public ResultHandler(InitialUpdater initialUpdater, SqlInfo sqlInfo, long newReplKey, int rowsPerMessage, String destination) {
          this.initialUpdater = initialUpdater;
          this.sqlInfo = sqlInfo;
          this.newReplKey = newReplKey;
          this.rowsPerMessage = rowsPerMessage;
+         this.destination = destination;
       }
       
       /**
@@ -70,7 +72,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             // TODO clear the columns since not really used anymore ...
             int msgCount = 1; // since 0 was the create, the first must be 1
             int internalCount = 0;
-            String destination = null; // FIXME pass the correct ptp destination or null
             while (rs != null && rs.next()) {
                // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
                this.sqlInfo.fillOneRowWithObjects(rs, null);
@@ -80,13 +81,18 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   internalCount = 0;
                   // publish
                   log.fine("result: going to publish msg '" + msgCount + "' and internal count '" + internalCount + "'");
-                  this.initialUpdater.publishCreate(msgCount++, this.sqlInfo, this.newReplKey, destination);
+                  if (this.destination != null && cancelledUpdates.contains(this.destination)) {
+                     cancelledUpdates.remove(this.destination);
+                     log.info("The ongoing initial update for destination '" + this.destination + "' has been cancelled");
+                     return;
+                  }
+                  this.initialUpdater.publishCreate(msgCount++, this.sqlInfo, this.newReplKey, this.destination);
                   this.sqlInfo.getRows().clear(); // clear since re-using the same dbUpdateInfo
                }
             } // end while
             if (this.sqlInfo.getRows().size() > 0) {
                log.fine("result: going to publish last msg '" + msgCount + "' and internal count '" + internalCount + "'");
-               this.initialUpdater.publishCreate(msgCount, this.sqlInfo, this.newReplKey, destination);
+               this.initialUpdater.publishCreate(msgCount, this.sqlInfo, this.newReplKey, this.destination);
             }
          } catch (Exception e) {
             e.printStackTrace();
@@ -122,6 +128,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    
    private boolean isInMaster;
    
+   private Set cancelledUpdates = new HashSet();
+      
    class Replacer implements I_ReplaceVariable {
 
       private I_Info info;
@@ -787,7 +795,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             if (schema != null)
                table = schema + "." + table;
             String sql = new String("SELECT * FROM " + table);
-            I_ResultCb resultHandler = new ResultHandler(this.initialUpdater, sqlInfo, newReplKey, this.rowsPerMessage); 
+            I_ResultCb resultHandler = new ResultHandler(this.initialUpdater, sqlInfo, newReplKey, this.rowsPerMessage, destination); 
             this.dbPool.select(conn, sql, autoCommit, resultHandler);
          }
          conn.commit();
@@ -1294,6 +1302,24 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
       }
    }
-   
 
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#cancelUpdate(java.lang.String)
+    */
+   public void cancelUpdate(String replSlave) {
+      synchronized(this.cancelledUpdates) {
+         this.cancelledUpdates.add(replSlave);
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#clearCancelUpdate(java.lang.String)
+    */
+   public void clearCancelUpdate(String replSlave) {
+      synchronized(this.cancelledUpdates) {
+         this.cancelledUpdates.remove(replSlave);
+      }
+   }
+   
+   
 }

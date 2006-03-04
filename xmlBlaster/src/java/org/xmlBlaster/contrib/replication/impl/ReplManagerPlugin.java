@@ -837,7 +837,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    public void broadcastSql(String repl, String sql) throws Exception {
       final boolean highPrio = true;
       String requestId = "" + new Timestamp().getTimestamp();
-      sendBroadcastRequest(repl, sql, highPrio, requestId);
+      String replicationPrefix = VersionTransformerCache.stripReplicationPrefix(repl);
+      sendBroadcastRequest(replicationPrefix, sql, highPrio, requestId);
    }
 
    /**

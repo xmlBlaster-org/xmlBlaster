@@ -283,4 +283,16 @@ public interface I_DbSpecific extends I_ContribPlugin {
     */
    byte[] broadcastStatement(String sql, long maxResponseEntries, boolean isHighPrio, boolean isMaster, String sqlTopic, String statementId) throws Exception;
    
+   /**
+    * Tells the DbSpecific to cancel the ongoing initial update for the given slave.
+    * @param replSlave the String identifying the slave name.
+    */
+   void cancelUpdate(String replSlave);
+   
+   /**
+    * Tells the DbSpecific to clear the cancel flag for ongoing updates for the given slave.
+    * @param replSlave the String identifying the slave name.
+    */
+   void clearCancelUpdate(String replSlave);
+   
 }

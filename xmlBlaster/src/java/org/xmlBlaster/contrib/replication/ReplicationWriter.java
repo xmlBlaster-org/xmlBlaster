@@ -59,6 +59,7 @@ private final static String ME = "ReplicationWriter";
    private I_PrePostStatement prePostStatement;
    private boolean hasInitialCmd;
    private I_Parser parserForOldInUpdates;
+   private boolean nirvanaClient; // if true it does not store on the db (just consumes them
    
    public ReplicationWriter() {
    }
@@ -148,6 +149,7 @@ private final static String ME = "ReplicationWriter";
       }
       else
          log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
+      this.nirvanaClient = this.info.getBoolean("replication.nirvanaClient", false);
    }
 
    public void shutdown() throws Exception {
@@ -287,6 +289,8 @@ private final static String ME = "ReplicationWriter";
       
       // log.info(ME + ".store invoked for cmd='" + command + "' and identity ='" + identity + "'");
       log.info("store invoked for \n" + dbInfo.toXml(""));
+      if (this.nirvanaClient)
+         return;
       if (isAllowedCommand(command)) {
          Connection conn = this.pool.reserve();
          boolean oldAutoCommitKnown = false;
@@ -477,11 +481,16 @@ private final static String ME = "ReplicationWriter";
             catch (Throwable ex) {
                log.severe("store: an exception occured when trying to commit: " + ex.getMessage());
                ex.printStackTrace();
+               if (ex instanceof Exception)
+                  throw (Exception)ex;
+               else
+                  throw new Exception(ex);
             }
          }
          catch (Exception ex) {
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
             ex.printStackTrace();
+            throw ex;
          }
          finally {
             if (conn != null) {
@@ -522,6 +531,8 @@ private final static String ME = "ReplicationWriter";
     * This is invoked for dump files
     */
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
+      if (this.nirvanaClient)
+         return;
       ClientProperty prop = (ClientProperty)attrMap.get("_filename");
       String filename = null;
       if (prop == null) {

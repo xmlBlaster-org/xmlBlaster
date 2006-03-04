@@ -47,8 +47,6 @@ import org.xmlBlaster.jms.XBStreamingMessage;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -355,7 +353,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          return null;
       }
       else
-         return this.publisher.publish("", updateInfo.toXml("").getBytes(), map);
+         return this.publisher.publish("createTableMsg", updateInfo.toXml("").getBytes(), map);
    }
 
    /**
@@ -383,6 +381,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
             String slaveName = prop.getStringValue();
+            this.dbSpecific.clearCancelUpdate(slaveName);
 
             prop = (ClientProperty)attrMap.get(ReplicationConstants.REPL_VERSION);
             String requestedVersion = null;
@@ -399,6 +398,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
             String slaveName = prop.getStringValue();
+            this.dbSpecific.cancelUpdate(slaveName);
             synchronized (this) {
                Execute exec = (Execute)this.runningExecutes.remove(slaveName);
                if (exec != null)

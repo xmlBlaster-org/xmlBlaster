@@ -106,10 +106,10 @@ function refresh() {
             <table class="inner" width="550" align="center" summary="" border="1">
     	  <tr>
     	    <th class="normal" title="Unique Id identifying this request" colspan="1">Statement ID</th>
-    	    <th class="normal" title="Total Received responses (both successful and failed." colspan="1">Received</th>
-    	    <th class="normal" title="Number of failed messages" colspan="1">Failed</th>
-    	    <th class="normal" title="Clears (removes) this statement from memory." colspan="1">Clear</th>
-    	  </tr>
+    	    <th class="normal" title="Total number of received slave responses (both successful and failed)." colspan="1">Received</th>
+    	    <th class="normal" title="Number of slaves on which the response is not the expected one." colspan="1">Failed</th>
+    	    <th class="normal" title="Clears (removes) this statement response from memory." colspan="1">Clear response</th>
+    	  </tr>						 
     
     <xsl:apply-templates/>
 
